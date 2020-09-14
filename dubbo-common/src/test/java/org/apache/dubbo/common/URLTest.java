@@ -31,7 +31,6 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -899,26 +898,26 @@ public class URLTest {
         assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
     }
 
-    @Test
-    public void testEquals() {
-        URL url1 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
-                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
-                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
-        URL url2 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
-                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
-                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
-        assertEquals(url1, url2);
-
-        URL url3 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
-                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
-                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
-        assertNotEquals(url2, url3);
-
-        URL url4 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
-                "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
-                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
-        assertNotEquals(url3, url4);
-    }
+//    @Test
+//    public void testEquals() {
+//        URL url1 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+//                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+//                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
+//        URL url2 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+//                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+//                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+//        assertEquals(url1, url2);
+//
+//        URL url3 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+//                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
+//                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+//        assertNotEquals(url2, url3);
+//
+//        URL url4 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+//                "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
+//                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+//        assertNotEquals(url3, url4);
+//    }
 
     @Test
     public void testEquals() {

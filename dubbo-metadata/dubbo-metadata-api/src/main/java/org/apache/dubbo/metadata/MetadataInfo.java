@@ -326,8 +326,8 @@ public class MetadataInfo implements Serializable {
 
         public String getMethodParameter(String method, String key, String defaultValue) {
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
-                consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URL.initMethodParameters(params);
+                consumerMethodParams = URL.initMethodParameters(consumerParams);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
@@ -357,8 +357,8 @@ public class MetadataInfo implements Serializable {
 
         public boolean hasMethodParameter(String method) {
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
-                consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URL.initMethodParameters(params);
+                consumerMethodParams = URL.initMethodParameters(consumerParams);
             }
 
             return consumerMethodParams.containsKey(method) || methodParams.containsKey(method);

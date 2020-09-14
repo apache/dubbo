@@ -17,11 +17,13 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.InterfaceAddressURL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -55,12 +57,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -322,13 +325,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         }
         Set<URL> keys = new HashSet<>();
         String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
-        if (queryProtocols != null && queryProtocols.length() > 0) {
-            acceptProtocols = queryProtocols.split(",");
-        }
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
-            if (ArrayUtils.isNotEmpty(acceptProtocols)) {
+            if (queryProtocols != null && queryProtocols.length() > 0) {
                 boolean accept = false;
+                String[] acceptProtocols = queryProtocols.split(",");
                 for (String acceptProtocol : acceptProtocols) {
                     if (providerUrl.getProtocol().equals(acceptProtocol)) {
                         accept = true;
@@ -393,7 +394,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (providerUrl instanceof InterfaceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = ClusterUtils.mergeUrl(providerUrl, mergeMap); // Merge the consumer side parameters
+            providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
         }

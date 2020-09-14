@@ -34,6 +34,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,6 +60,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATI
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
@@ -190,17 +192,6 @@ class URL implements Serializable {
                int port,
                String path,
                Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, toMethodParameters(parameters));
-    }
-
-    public URL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
-               String path,
-               Map<String, String> parameters,
-               Map<String, Map<String, String>> methodParameters) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -329,7 +320,7 @@ class URL implements Serializable {
     }
 
     public URL setProtocol(String protocol) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getUsername() {
@@ -337,7 +328,7 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getPassword() {
@@ -345,7 +336,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAuthority() {
@@ -362,7 +353,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     /**
@@ -385,7 +376,7 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public int getPort(int defaultPort) {
@@ -409,7 +400,7 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getBackupAddress() {
@@ -445,7 +436,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return new URL(getProtocol(), username, password, host, port, path, getParameters());
+        return newURL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAbsolutePath() {
@@ -524,7 +515,7 @@ class URL implements Serializable {
         this.methodParameters = null;
     }
 
-    private Map<String, Map<String, String>> initMethodParameters(Map<String, String> parameters) {
+    public static Map<String, Map<String, String>> initMethodParameters(Map<String, String> parameters) {
         Map<String, Map<String, String>> methodParameters = new HashMap<>();
         if (parameters == null) {
             return methodParameters;
@@ -1072,7 +1063,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(getProtocol(), username, password, host, port, path, map);
+        return newURL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -1086,40 +1077,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(getProtocol(), username, password, host, port, path, map);
-    }
-
-    public URL addMethodParameter(String method, String key, String value) {
-        if (StringUtils.isEmpty(method)
-                || StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
-            return this;
-        }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(method + "." + key, value);
-        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
-        URL.putMethodParameter(method, key, value, methodMap);
-
-        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
-    }
-
-    public URL addMethodParameterIfAbsent(String method, String key, String value) {
-        if (StringUtils.isEmpty(method)
-                || StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
-            return this;
-        }
-        if (hasMethodParameter(method, key)) {
-            return this;
-        }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(method + "." + key, value);
-        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
-        URL.putMethodParameter(method, key, value, methodMap);
-
-        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
+        return newURL(getProtocol(), username, password, host, port, path, map);
     }
 
     /**
@@ -1157,7 +1115,7 @@ class URL implements Serializable {
         Map<String, String> newMap = new HashMap<>((int) ((srcParams.size() + parameters.size()) / 0.75 + 1));
         newMap.putAll(srcParams);
         newMap.putAll(parameters);
-        return new URL(getProtocol(), username, password, host, port, path, newMap);
+        return newURL(getProtocol(), username, password, host, port, path, newMap);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
@@ -1166,7 +1124,7 @@ class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<>(parameters);
         map.putAll(getParameters());
-        return new URL(getProtocol(), username, password, host, port, path, map);
+        return newURL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameters(String... pairs) {
@@ -1216,11 +1174,11 @@ class URL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URL(getProtocol(), username, password, host, port, path, map);
+        return newURL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL clearParameters() {
-        return new URL(getProtocol(), username, password, host, port, path, new HashMap<>());
+        return newURL(getProtocol(), username, password, host, port, path, new HashMap<>());
     }
 
     public String getRawParameter(String key) {
