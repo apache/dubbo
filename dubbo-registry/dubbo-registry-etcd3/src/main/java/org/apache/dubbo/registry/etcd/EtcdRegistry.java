@@ -22,9 +22,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.registry.RegistryNotifier;
+import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import org.apache.dubbo.remoting.etcd.ChildListener;
-import org.apache.dubbo.remoting.etcd.Constants;
 import org.apache.dubbo.remoting.etcd.EtcdClient;
 import org.apache.dubbo.remoting.etcd.EtcdTransporter;
 import org.apache.dubbo.remoting.etcd.StateListener;
@@ -40,15 +40,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
@@ -57,7 +54,7 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 /**
  * Support for ectd3 registry.
  */
-public class EtcdRegistry extends FailbackRegistry {
+public class EtcdRegistry extends CacheableFailbackRegistry {
 
     private final static Logger logger = LoggerFactory.getLogger(EtcdRegistry.class);
 
@@ -77,7 +74,7 @@ public class EtcdRegistry extends FailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address is invalid, actual: '" + url.getHost() + "'");
         }
-        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        String group = url.getGroup(DEFAULT_ROOT);
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
         }
@@ -220,8 +217,7 @@ public class EtcdRegistry extends FailbackRegistry {
                             Optional.ofNullable(listeners.get(listener))
                                     .orElseGet(() -> {
                                         ChildListener watchListener, prev;
-                                        prev = listeners.putIfAbsent(listener, watchListener = (parentPath, currentChildren) -> EtcdRegistry.this.notify(url, listener,
-                                                toUrlsWithEmpty(url, parentPath, currentChildren)));
+                                        prev = listeners.putIfAbsent(listener, watchListener = new RegistryChildListenerImpl(url, path, listener));
                                         return prev != null ? prev : watchListener;
                                     });
 
@@ -295,10 +291,10 @@ public class EtcdRegistry extends FailbackRegistry {
 
     protected String[] toCategoriesPath(URL url) {
         String[] categories;
-        if (ANY_VALUE.equals(url.getParameter(CATEGORY_KEY))) {
+        if (ANY_VALUE.equals(url.getCategory())) {
             categories = new String[]{PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY, CONFIGURATORS_CATEGORY};
         } else {
-            categories = url.getParameter(CATEGORY_KEY, new String[]{DEFAULT_CATEGORY});
+            categories = url.getCategory(new String[]{DEFAULT_CATEGORY});
         }
         String[] paths = new String[categories.length];
         for (int i = 0; i < categories.length; i++) {
@@ -308,7 +304,7 @@ public class EtcdRegistry extends FailbackRegistry {
     }
 
     protected String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getCategory(DEFAULT_CATEGORY);
     }
 
     protected String toUrlPath(URL url) {
@@ -318,7 +314,7 @@ public class EtcdRegistry extends FailbackRegistry {
     protected List<String> toUnsubscribedPath(URL url) {
         List<String> categories = new ArrayList<>();
         if (ANY_VALUE.equals(url.getServiceInterface())) {
-            String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+            String group = url.getGroup(DEFAULT_ROOT);
             if (!group.startsWith(PATH_SEPARATOR)) {
                 group = PATH_SEPARATOR + group;
             }
@@ -330,30 +326,26 @@ public class EtcdRegistry extends FailbackRegistry {
         return categories;
     }
 
-    protected List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
-        List<URL> urls = new ArrayList<>();
-        if (providers != null && providers.size() > 0) {
-            for (String provider : providers) {
-                provider = URL.decode(provider);
-                if (provider.contains(Constants.HTTP_SUBFIX_KEY)) {
-                    URL url = URL.valueOf(provider);
-                    if (UrlUtils.isMatch(consumer, url)) {
-                        urls.add(url);
-                    }
-                }
-            }
-        }
-        return urls;
+    @Override
+    protected boolean isMatch(URL subscribeUrl, URL providerUrl) {
+        return UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
-    protected List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
-        List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
-        if (urls == null || urls.isEmpty()) {
-            int i = path.lastIndexOf('/');
-            String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = consumer.setProtocol(EMPTY_PROTOCOL).addParameter(CATEGORY_KEY, category);
-            urls.add(empty);
+    private class RegistryChildListenerImpl implements ChildListener {
+        private RegistryNotifier notifier;
+
+        public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener) {
+            notifier = new RegistryNotifier(EtcdRegistry.this) {
+                @Override
+                protected void doNotify(Object rawAddresses) {
+                    EtcdRegistry.this.notify(consumerUrl, listener, EtcdRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
+                }
+            };
         }
-        return urls;
+
+        @Override
+        public void childChanged(String path, List<String> children) {
+            notifier.notify(children);
+        }
     }
 }

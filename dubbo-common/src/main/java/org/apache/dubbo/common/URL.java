@@ -44,8 +44,8 @@ import java.util.function.Predicate;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -55,8 +55,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
@@ -229,99 +232,29 @@ class URL implements Serializable {
     }
 
     /**
-     * NOTICE: This method allocate too much objects, we can use {@link URLStrParser#parseDecodedStr(String)} instead.
-     * <p>
-     * Parse url string
+     * parse decoded url string, formatted dubbo://host:port/path?param=value, into strutted URL.
      *
-     * @param url URL string
-     * @return URL instance
-     * @see URL
+     * @param url, decoded url string
+     * @return
      */
     public static URL valueOf(String url) {
-        if (url == null || (url = url.trim()).length() == 0) {
-            throw new IllegalArgumentException("url == null");
-        }
-        String protocol = null;
-        String username = null;
-        String password = null;
-        String host = null;
-        int port = 0;
-        String path = null;
-        Map<String, String> parameters = null;
-        int i = url.indexOf('?'); // separator between body and parameters
-        if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("&");
-            parameters = new HashMap<>();
-            for (String part : parts) {
-                part = part.trim();
-                if (part.length() > 0) {
-                    int j = part.indexOf('=');
-                    if (j >= 0) {
-                        String key = part.substring(0, j);
-                        String value = part.substring(j + 1);
-                        parameters.put(key, value);
-                        // compatible with lower versions registering "default." keys
-                        if (key.startsWith(DEFAULT_KEY_PREFIX)) {
-                            parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
-                        }
-                    } else {
-                        parameters.put(part, part);
-                    }
-                }
-            }
-            url = url.substring(0, i);
-        }
-        i = url.indexOf("://");
-        if (i >= 0) {
-            if (i == 0) {
-                throw new IllegalStateException("url missing protocol: \"" + url + "\"");
-            }
-            protocol = url.substring(0, i);
-            url = url.substring(i + 3);
-        } else {
-            // case: file:/path/to/file.txt
-            i = url.indexOf(":/");
-            if (i >= 0) {
-                if (i == 0) {
-                    throw new IllegalStateException("url missing protocol: \"" + url + "\"");
-                }
-                protocol = url.substring(0, i);
-                url = url.substring(i + 1);
-            }
-        }
+        return valueOf(url, false);
+    }
 
-        i = url.indexOf('/');
-        if (i >= 0) {
-            path = url.substring(i + 1);
-            url = url.substring(0, i);
+    /**
+     * parse normal or encoded url string into strutted URL:
+     * - dubbo://host:port/path?param=value
+     * - URL.encode("dubbo://host:port/path?param=value")
+     *
+     * @param url,     url string
+     * @param encoded, encoded or decoded
+     * @return
+     */
+    public static URL valueOf(String url, boolean encoded) {
+        if (encoded) {
+            return URLStrParser.parseEncodedStr(url, false);
         }
-        i = url.lastIndexOf('@');
-        if (i >= 0) {
-            username = url.substring(0, i);
-            int j = username.indexOf(':');
-            if (j >= 0) {
-                password = username.substring(j + 1);
-                username = username.substring(0, j);
-            }
-            url = url.substring(i + 1);
-        }
-        i = url.lastIndexOf(':');
-        if (i >= 0 && i < url.length() - 1) {
-            if (url.lastIndexOf('%') > i) {
-                // ipv6 address with scope id
-                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
-                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
-                // ignore
-            } else {
-                port = Integer.parseInt(url.substring(i + 1));
-                url = url.substring(0, i);
-            }
-        }
-        if (url.length() > 0) {
-            host = url;
-        }
-
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return URLStrParser.parseDecodedStr(url, false);
     }
 
     public static Map<String, Map<String, String>> toMethodParameters(Map<String, String> parameters) {
@@ -440,7 +373,7 @@ class URL implements Serializable {
     }
 
     public URL setProtocol(String protocol) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getUsername() {
@@ -448,7 +381,7 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getPassword() {
@@ -456,7 +389,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getAuthority() {
@@ -473,7 +406,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     /**
@@ -496,7 +429,7 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public int getPort(int defaultPort) {
@@ -520,7 +453,7 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getBackupAddress() {
@@ -556,7 +489,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return newURL(protocol, username, password, host, port, path, getParameters());
     }
 
     public String getAbsolutePath() {
@@ -1133,7 +1066,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
+        return newURL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -1147,40 +1080,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
-    }
-
-    public URL addMethodParameter(String method, String key, String value) {
-        if (StringUtils.isEmpty(method)
-                || StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
-            return this;
-        }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(method + "." + key, value);
-        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
-        URL.putMethodParameter(method, key, value, methodMap);
-
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
-    }
-
-    public URL addMethodParameterIfAbsent(String method, String key, String value) {
-        if (StringUtils.isEmpty(method)
-                || StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
-            return this;
-        }
-        if (hasMethodParameter(method, key)) {
-            return this;
-        }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(method + "." + key, value);
-        Map<String, Map<String, String>> methodMap = toMethodParameters(map);
-        URL.putMethodParameter(method, key, value, methodMap);
-
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
+        return newURL(protocol, username, password, host, port, path, map);
     }
 
     /**
@@ -1216,7 +1116,7 @@ class URL implements Serializable {
 
         Map<String, String> map = new HashMap<>(getParameters());
         map.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, map);
+        return newURL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
@@ -1225,7 +1125,7 @@ class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<>(parameters);
         map.putAll(getParameters());
-        return new URL(protocol, username, password, host, port, path, map);
+        return newURL(protocol, username, password, host, port, path, map);
     }
 
     public URL addParameters(String... pairs) {
@@ -1275,11 +1175,11 @@ class URL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URL(protocol, username, password, host, port, path, map);
+        return newURL(protocol, username, password, host, port, path, map);
     }
 
     public URL clearParameters() {
-        return new URL(protocol, username, password, host, port, path, new HashMap<>());
+        return newURL(protocol, username, password, host, port, path, new HashMap<>());
     }
 
     public String getRawParameter(String key) {
@@ -1690,6 +1590,80 @@ class URL implements Serializable {
     public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
         Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
         subParameter.put(key, value);
+    }
+
+
+    /* methods introduced for CompositeURL, CompositeURL must override to make the implementations meaningful */
+    protected <T extends URL> T newURL(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters) {
+        return (T) new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    public String getApplication(String defaultValue) {
+        String value = getParameter(APPLICATION_KEY);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getApplication() {
+        return getParameter(APPLICATION_KEY);
+    }
+
+    public String getRemoteApplication() {
+        return getParameter(REMOTE_APPLICATION_KEY);
+    }
+
+    public String getGroup() {
+        return getParameter(GROUP_KEY);
+    }
+
+    public String getGroup(String defaultValue) {
+        String value = getGroup();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getVersion() {
+        return getParameter(VERSION_KEY);
+    }
+
+    public String getVersion(String defaultValue) {
+        String value = getVersion();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getConcatenatedParameter(String key) {
+        return getParameter(key);
+    }
+
+    public String getCategory(String defaultValue) {
+        String value = getCategory();
+        if (StringUtils.isEmpty(value)) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    public String[] getCategory(String[] defaultValue) {
+        String value = getCategory();
+        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public String getCategory() {
+        return getParameter(CATEGORY_KEY);
+    }
+
+    public String getSide(String defaultValue) {
+        String value = getSide();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getSide() {
+        return getParameter(SIDE_KEY);
     }
 
 }

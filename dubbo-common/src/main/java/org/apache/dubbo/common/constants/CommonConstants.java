@@ -329,7 +329,6 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
-
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
      *
@@ -343,5 +342,7 @@ public interface CommonConstants {
      * @since 2.7.8
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
 }
