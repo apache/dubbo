@@ -64,7 +64,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
@@ -133,7 +132,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         // Start file save timer
         String defaultFilename = System.getProperty("user.home") +
                 "/.dubbo/dubbo-metadata-" +
-                reportServerURL.getParameter(APPLICATION_KEY) + "-" +
+                reportServerURL.getApplication() + "-" +
                 replace(reportServerURL.getAddress(), ":", "-") +
                 ".cache";
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);

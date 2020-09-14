@@ -795,6 +795,15 @@ class URL implements Serializable {
         return value;
     }
 
+    public String getMethodParameterStrict(String method, String key) {
+        Map<String, String> keyMap = getMethodParameters().get(method);
+        String value = null;
+        if (keyMap != null) {
+            value = keyMap.get(key);
+        }
+        return value;
+    }
+
     public String getMethodParameter(String method, String key, String defaultValue) {
         String value = getMethodParameter(method, key);
         return StringUtils.isEmpty(value) ? defaultValue : value;
@@ -1395,7 +1404,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        serviceKey = buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
+        serviceKey = buildKey(inf, getGroup(), getVersion());
         return serviceKey;
     }
 
@@ -1409,7 +1418,7 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
-        return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
+        return buildKey(inf, getGroup(), getVersion());
     }
 
     public static String buildKey(String path, String group, String version) {
@@ -1606,7 +1615,7 @@ class URL implements Serializable {
     }
 
     public String getApplication(String defaultValue) {
-        String value = getParameter(APPLICATION_KEY);
+        String value = getApplication();
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 

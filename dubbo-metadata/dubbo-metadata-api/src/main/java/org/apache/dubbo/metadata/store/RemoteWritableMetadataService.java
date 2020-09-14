@@ -28,12 +28,9 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 
 import java.util.SortedSet;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in metadata center when they
@@ -60,8 +57,8 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
     @Override
     protected void publishConsumerParameters(URL consumerURL) {
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
-                consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
-                consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+                consumerURL.getVersion(), consumerURL.getGroup(), CONSUMER_SIDE,
+                consumerURL.getApplication()), consumerURL.getParameters());
     }
 
     @Override
@@ -73,8 +70,8 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerURL.getParameters());
                 getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerURL.getServiceInterface(),
-                        providerURL.getParameter(VERSION_KEY), providerURL.getParameter(GROUP_KEY),
-                        PROVIDER_SIDE, providerURL.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                        providerURL.getVersion(), providerURL.getGroup(),
+                        PROVIDER_SIDE, providerURL.getApplication()), fullServiceDefinition);
                 return;
             }
             logger.error("publishProvider interfaceName is empty . url: " + providerURL.toFullString());

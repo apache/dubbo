@@ -29,8 +29,6 @@ import java.util.Set;
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
@@ -63,8 +61,8 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
             return;
         }
 
-        String group = exportedURL.getParameter(GROUP_KEY);
-        String version = exportedURL.getParameter(VERSION_KEY);
+        String group = exportedURL.getGroup();
+        String version = exportedURL.getVersion();
         String protocol = exportedURL.getProtocol();
 
         // the Dubbo Service Key as group
@@ -85,8 +83,8 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     public Set<String> get(URL subscribedURL) {
 
         String serviceInterface = subscribedURL.getServiceInterface();
-        String group = subscribedURL.getParameter(GROUP_KEY);
-        String version = subscribedURL.getParameter(VERSION_KEY);
+        String group = subscribedURL.getGroup();
+        String version = subscribedURL.getVersion();
         String protocol = subscribedURL.getProtocol();
 
         Set<String> serviceNames = new LinkedHashSet<>();

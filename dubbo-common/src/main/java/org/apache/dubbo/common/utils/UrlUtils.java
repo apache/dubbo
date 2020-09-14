@@ -402,8 +402,8 @@ public class UrlUtils {
             return false;
         }
 
-        if (!isMatchCategory(providerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY),
-                consumerUrl.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY))) {
+        if (!isMatchCategory(providerUrl.getCategory(DEFAULT_CATEGORY),
+                consumerUrl.getCategory(DEFAULT_CATEGORY))) {
             return false;
         }
         if (!providerUrl.getParameter(ENABLED_KEY, true)
@@ -411,12 +411,12 @@ public class UrlUtils {
             return false;
         }
 
-        String consumerGroup = consumerUrl.getParameter(GROUP_KEY);
-        String consumerVersion = consumerUrl.getParameter(VERSION_KEY);
+        String consumerGroup = consumerUrl.getGroup();
+        String consumerVersion = consumerUrl.getVersion();
         String consumerClassifier = consumerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
-        String providerGroup = providerUrl.getParameter(GROUP_KEY);
-        String providerVersion = providerUrl.getParameter(VERSION_KEY);
+        String providerGroup = providerUrl.getGroup();
+        String providerVersion = providerUrl.getVersion();
         String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
         return (ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                 && (ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
@@ -465,10 +465,10 @@ public class UrlUtils {
     public static boolean isServiceKeyMatch(URL pattern, URL value) {
         return pattern.getParameter(INTERFACE_KEY).equals(
                 value.getParameter(INTERFACE_KEY))
-                && isItemMatch(pattern.getParameter(GROUP_KEY),
-                value.getParameter(GROUP_KEY))
-                && isItemMatch(pattern.getParameter(VERSION_KEY),
-                value.getParameter(VERSION_KEY));
+                && isItemMatch(pattern.getGroup(),
+                value.getGroup())
+                && isItemMatch(pattern.getVersion(),
+                value.getVersion());
     }
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
@@ -477,18 +477,18 @@ public class UrlUtils {
 
     public static boolean isConfigurator(URL url) {
         return OVERRIDE_PROTOCOL.equals(url.getProtocol()) ||
-                CONFIGURATORS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+                CONFIGURATORS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isRoute(URL url) {
         return ROUTE_PROTOCOL.equals(url.getProtocol()) ||
-                ROUTERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+                ROUTERS_CATEGORY.equals(url.getCategory(DEFAULT_CATEGORY));
     }
 
     public static boolean isProvider(URL url) {
         return !OVERRIDE_PROTOCOL.equals(url.getProtocol()) &&
                 !ROUTE_PROTOCOL.equals(url.getProtocol()) &&
-                PROVIDERS_CATEGORY.equals(url.getParameter(CATEGORY_KEY, PROVIDERS_CATEGORY));
+                PROVIDERS_CATEGORY.equals(url.getCategory(PROVIDERS_CATEGORY));
     }
 
     public static boolean isRegistry(URL url) {

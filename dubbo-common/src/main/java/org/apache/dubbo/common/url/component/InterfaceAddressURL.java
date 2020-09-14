@@ -22,8 +22,11 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 
 public class InterfaceAddressURL extends URL {
@@ -91,12 +94,12 @@ public class InterfaceAddressURL extends URL {
 
     @Override
     public String getRemoteApplication() {
-        return super.getApplication();
+        return super.getParameter(APPLICATION_KEY);
     }
 
     @Override
     public String getGroup() {
-        String group = super.getGroup();
+        String group = super.getParameter(GROUP_KEY);
         if (StringUtils.isNotEmpty(group)) {
             return group;
         }
@@ -105,7 +108,7 @@ public class InterfaceAddressURL extends URL {
 
     @Override
     public String getVersion() {
-        String version = super.getVersion();
+        String version = super.getParameter(VERSION_KEY);
         if (StringUtils.isNotEmpty(version)) {
             return version;
         }
@@ -131,13 +134,16 @@ public class InterfaceAddressURL extends URL {
     public String getMethodParameter(String method, String key) {
         String value = null;
         if (overriddenURL != null) {
-            value = overriddenURL.getMethodParameter(method, key);
+            value = overriddenURL.getMethodParameterStrict(method, key);
         }
         if (StringUtils.isEmpty(value) && consumerURL != null) {
-            value = consumerURL.getMethodParameter(method, key);
+            value = consumerURL.getMethodParameterStrict(method, key);
         }
         if (StringUtils.isEmpty(value)) {
-            value = super.getMethodParameter(method, key);
+            value = super.getMethodParameterStrict(method, key);
+        }
+        if (StringUtils.isEmpty(value)) {
+            value = getParameter(key);
         }
         return value;
     }

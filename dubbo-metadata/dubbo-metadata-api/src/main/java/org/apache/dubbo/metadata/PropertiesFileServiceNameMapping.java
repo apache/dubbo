@@ -35,9 +35,7 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_PROPERTIES_FILE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.metadata.MetadataConstants.KEY_SEPARATOR;
 
@@ -92,8 +90,8 @@ public class PropertiesFileServiceNameMapping extends ReadOnlyServiceNameMapping
         String protocol = url.getProtocol();
         String serviceInterface = url.getServiceInterface();
         // Optional
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
+        String group = url.getGroup();
+        String version = url.getVersion();
 
         StringBuilder propertyKeyBuilder = new StringBuilder(protocol)
                 .append(KEY_SEPARATOR)

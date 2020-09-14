@@ -29,7 +29,6 @@ import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import java.util.List;
 
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.metadata.MetadataConstants.EXPORTED_URLS_TAG;
 
 /**
@@ -50,7 +49,7 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
     public ConfigCenterBasedMetadataReport(URL reportServerURL, KeyTypeEnum keyTypeEnum) {
         super(reportServerURL);
         this.keyType = keyTypeEnum;
-        this.group = reportServerURL.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        this.group = reportServerURL.getGroup(DEFAULT_ROOT);
         String extensionName = reportServerURL.getProtocol();
         DynamicConfigurationFactory dynamicConfigurationFactory = getDynamicConfigurationFactory(extensionName);
         dynamicConfiguration = dynamicConfigurationFactory.getDynamicConfiguration(reportServerURL);

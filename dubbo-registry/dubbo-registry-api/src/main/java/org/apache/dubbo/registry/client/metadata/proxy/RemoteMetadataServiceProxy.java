@@ -31,9 +31,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import static java.util.Collections.unmodifiableSortedSet;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.metadata.URLRevisionResolver.UNKNOWN_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
 
@@ -74,8 +72,8 @@ public class RemoteMetadataServiceProxy implements MetadataService {
                         .stream()
                         .map(URL::valueOf)
                         .filter(url -> serviceInterface == null || serviceInterface.equals(url.getServiceInterface()))
-                        .filter(url -> group == null || group.equals(url.getParameter(GROUP_KEY)))
-                        .filter(url -> version == null || version.equals(url.getParameter(VERSION_KEY)))
+                        .filter(url -> group == null || group.equals(url.getGroup()))
+                        .filter(url -> version == null || version.equals(url.getVersion()))
                         .filter(url -> protocol == null || protocol.equals(url.getProtocol()))
                         .map(URL::toFullString)
                         .collect(TreeSet::new, Set::add, Set::addAll)
