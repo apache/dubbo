@@ -258,7 +258,7 @@ public class ServiceConfigTest {
     @Test
     public void testApplicationInUrl() {
         service.export();
-        Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
-        Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
+        Assertions.assertNotNull(service.toUrl().getApplication());
+        Assertions.assertEquals("app", service.toUrl().getApplication());
     }
 }

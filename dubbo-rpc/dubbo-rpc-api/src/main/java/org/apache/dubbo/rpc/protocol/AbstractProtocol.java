@@ -36,9 +36,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
 /**
  * abstract ProtocolSupport.
  */
@@ -58,7 +55,7 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected static String serviceKey(URL url) {
         int port = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
-        return serviceKey(port, url.getPath(), url.getParameter(VERSION_KEY), url.getParameter(GROUP_KEY));
+        return serviceKey(port, url.getPath(), url.getVersion(), url.getGroup());
     }
 
     protected static String serviceKey(int port, String serviceName, String serviceVersion, String serviceGroup) {

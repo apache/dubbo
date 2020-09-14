@@ -30,11 +30,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
@@ -83,8 +80,8 @@ public class ConfigParserTest {
             Assertions.assertNotNull(urls);
             Assertions.assertEquals(1, urls.size());
             URL url = urls.get(0);
-            Assertions.assertEquals("testgroup", url.getParameter(GROUP_KEY));
-            Assertions.assertEquals("1.0.0", url.getParameter(VERSION_KEY));
+            Assertions.assertEquals("testgroup", url.getGroup());
+            Assertions.assertEquals("1.0.0", url.getVersion());
         }
     }
 
@@ -97,7 +94,7 @@ public class ConfigParserTest {
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
-            Assertions.assertNotNull(url.getParameter(APPLICATION_KEY));
+            Assertions.assertNotNull(url.getApplication());
         }
     }
 
@@ -123,7 +120,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("service1", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(url.getApplication(), "demo-consumer");
         }
     }
 
@@ -139,7 +136,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("*", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(url.getApplication(), "demo-consumer");
         }
     }
 
@@ -154,7 +151,7 @@ public class ConfigParserTest {
             Assertions.assertEquals("*", url.getServiceInterface());
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(url.getApplication(), "demo-consumer");
         }
     }
 
@@ -170,7 +167,7 @@ public class ConfigParserTest {
             Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
             Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
             Assertions.assertEquals("127.0.0.1:20880", url.getParameter(OVERRIDE_PROVIDERS_KEY));
-            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(url.getApplication(), "demo-consumer");
         }
     }
 

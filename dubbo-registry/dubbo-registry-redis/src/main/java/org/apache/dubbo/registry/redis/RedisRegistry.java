@@ -58,10 +58,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD;
@@ -178,7 +176,7 @@ public class RedisRegistry extends CacheableFailbackRegistry {
         }
 
         this.reconnectPeriod = url.getParameter(REGISTRY_RECONNECT_PERIOD_KEY, DEFAULT_REGISTRY_RECONNECT_PERIOD);
-        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        String group = url.getGroup(DEFAULT_ROOT);
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
         }
@@ -421,7 +419,7 @@ public class RedisRegistry extends CacheableFailbackRegistry {
         }
         long now = System.currentTimeMillis();
         List<URL> result = new ArrayList<>();
-        List<String> categories = Arrays.asList(url.getParameter(CATEGORY_KEY, new String[0]));
+        List<String> categories = Arrays.asList(url.getCategory(new String[0]));
         String consumerService = url.getServiceInterface();
         for (String key : keys) {
             if (!ANY_VALUE.equals(consumerService)) {
@@ -488,7 +486,7 @@ public class RedisRegistry extends CacheableFailbackRegistry {
     }
 
     private String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getCategory(DEFAULT_CATEGORY);
     }
 
     private class NotifySub extends JedisPubSub {

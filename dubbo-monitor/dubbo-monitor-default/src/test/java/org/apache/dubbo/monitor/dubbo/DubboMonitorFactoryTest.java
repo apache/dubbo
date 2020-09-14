@@ -63,6 +63,6 @@ public class DubboMonitorFactoryTest {
         verify(proxyFactory, atLeastOnce()).getProxy(invokerArgumentCaptor.capture());
 
         Invoker invoker = invokerArgumentCaptor.getValue();
-        assertThat(invoker.getUrl().getParameter(REFERENCE_FILTER_KEY), containsString("testFilter"));
+        assertThat(invoker.getUrl().getConcatenatedParameter(REFERENCE_FILTER_KEY), containsString("testFilter"));
     }
 }

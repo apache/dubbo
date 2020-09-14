@@ -46,8 +46,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
@@ -225,11 +223,11 @@ public class SofaRegistry extends CacheableFailbackRegistry {
         // return url.getServiceKey();
         StringBuilder buf = new StringBuilder();
         buf.append(url.getServiceInterface());
-        String version = url.getParameter(VERSION_KEY);
+        String version = url.getVersion();
         if (StringUtils.isNotEmpty(version)) {
             buf.append(":").append(version);
         }
-        String group = url.getParameter(GROUP_KEY);
+        String group = url.getGroup();
         if (StringUtils.isNotEmpty(group)) {
             buf.append(":").append(group);
         }

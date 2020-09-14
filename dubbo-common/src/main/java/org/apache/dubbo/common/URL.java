@@ -41,6 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
@@ -51,8 +52,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 
 /**
  * URL - Uniform Resource Locator (Immutable, ThreadSafe)
@@ -1520,4 +1524,76 @@ class URL implements Serializable {
         subParameter.put(key, value);
     }
 
+    protected <T extends URL> T newURL(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path,
+            Map<String, String> parameters) {
+        return (T) new URL(protocol, username, password, host, port, path, parameters);
+    }
+
+    /* methods introduced for CompositeURL, CompositeURL must override to make the implementations meaningful */
+    public String getApplication(String defaultValue) {
+        String value = getParameter(APPLICATION_KEY);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getApplication() {
+        return getParameter(APPLICATION_KEY);
+    }
+
+    public String getRemoteApplication() {
+        return getParameter(REMOTE_APPLICATION_KEY);
+    }
+
+    public String getGroup() {
+        return getParameter(GROUP_KEY);
+    }
+
+    public String getGroup(String defaultValue) {
+        String value = getGroup();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getVersion() {
+        return getParameter(VERSION_KEY);
+    }
+
+    public String getVersion(String defaultValue) {
+        String value = getVersion();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getConcatenatedParameter(String key) {
+        return getParameter(key);
+    }
+
+    public String getCategory(String defaultValue) {
+        String value = getCategory();
+        if (StringUtils.isEmpty(value)) {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    public String[] getCategory(String[] defaultValue) {
+        String value = getCategory();
+        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public String getCategory() {
+        return getParameter(CATEGORY_KEY);
+    }
+
+    public String getSide(String defaultValue) {
+        String value = getSide();
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String getSide() {
+        return getParameter(SIDE_KEY);
+    }
 }

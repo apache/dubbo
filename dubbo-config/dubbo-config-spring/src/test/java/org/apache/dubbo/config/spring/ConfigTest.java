@@ -588,7 +588,7 @@ public class ConfigTest {
 
         try {
             URL url = service.getExportedUrls().get(0);
-            assertEquals("api-override-properties", url.getParameter("application"));
+            assertEquals("api-override-properties", url.getApplication());
             assertEquals("world", url.getParameter("owner"));
             assertEquals(13123, url.getPort());
 
@@ -675,7 +675,7 @@ public class ConfigTest {
         try {
             ServiceConfig<DemoService> service = (ServiceConfig<DemoService>) providerContext.getBean("demoServiceConfig");
             URL url = service.getExportedUrls().get(0);
-            assertEquals("sysover", url.getParameter("application"));
+            assertEquals("sysover", url.getApplication());
             assertEquals("sysowner", url.getParameter("owner"));
             assertEquals("dubbo", url.getProtocol());
             assertEquals(20819, url.getPort());
@@ -789,7 +789,7 @@ public class ConfigTest {
 
             try {
                 URL url = service.getExportedUrls().get(0);
-                assertEquals("sysover", url.getParameter("application"));
+                assertEquals("sysover", url.getApplication());
                 assertEquals("sysowner", url.getParameter("owner"));
                 assertEquals("dubbo", url.getProtocol());
                 assertEquals(20834, url.getPort());
@@ -838,7 +838,7 @@ public class ConfigTest {
             try {
                 URL url = service.getExportedUrls().get(0);
                 // from api
-                assertEquals("aaa", url.getParameter("application"));
+                assertEquals("aaa", url.getApplication());
                 // from dubbo-binder.properties
                 assertEquals("world", url.getParameter("owner"));
                 // from system property

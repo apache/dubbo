@@ -40,10 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -76,7 +74,7 @@ public class EtcdRegistry extends CacheableFailbackRegistry {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address is invalid, actual: '" + url.getHost() + "'");
         }
-        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        String group = url.getGroup(DEFAULT_ROOT);
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
         }
@@ -293,10 +291,10 @@ public class EtcdRegistry extends CacheableFailbackRegistry {
 
     protected String[] toCategoriesPath(URL url) {
         String[] categories;
-        if (ANY_VALUE.equals(url.getParameter(CATEGORY_KEY))) {
+        if (ANY_VALUE.equals(url.getCategory())) {
             categories = new String[]{PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY, CONFIGURATORS_CATEGORY};
         } else {
-            categories = url.getParameter(CATEGORY_KEY, new String[]{DEFAULT_CATEGORY});
+            categories = url.getCategory(new String[]{DEFAULT_CATEGORY});
         }
         String[] paths = new String[categories.length];
         for (int i = 0; i < categories.length; i++) {
@@ -306,7 +304,7 @@ public class EtcdRegistry extends CacheableFailbackRegistry {
     }
 
     protected String toCategoryPath(URL url) {
-        return toServicePath(url) + PATH_SEPARATOR + url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        return toServicePath(url) + PATH_SEPARATOR + url.getCategory(DEFAULT_CATEGORY);
     }
 
     protected String toUrlPath(URL url) {
@@ -316,7 +314,7 @@ public class EtcdRegistry extends CacheableFailbackRegistry {
     protected List<String> toUnsubscribedPath(URL url) {
         List<String> categories = new ArrayList<>();
         if (ANY_VALUE.equals(url.getServiceInterface())) {
-            String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+            String group = url.getGroup(DEFAULT_ROOT);
             if (!group.startsWith(PATH_SEPARATOR)) {
                 group = PATH_SEPARATOR + group;
             }

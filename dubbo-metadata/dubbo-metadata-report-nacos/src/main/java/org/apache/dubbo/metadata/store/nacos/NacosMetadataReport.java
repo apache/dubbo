@@ -59,7 +59,6 @@ import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 
 /**
@@ -80,7 +79,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     public NacosMetadataReport(URL url) {
         super(url);
         this.configService = buildConfigService(url);
-        group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        group = url.getGroup(DEFAULT_ROOT);
     }
 
     public ConfigService buildConfigService(URL url) {

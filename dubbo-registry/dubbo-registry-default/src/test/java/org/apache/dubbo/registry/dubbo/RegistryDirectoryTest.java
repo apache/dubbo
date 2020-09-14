@@ -491,7 +491,7 @@ public class RegistryDirectoryTest {
 
         Assertions.assertEquals(1, invokers.size());
 //        Assertions.assertEquals(
-//                serviceURL.setPath(service).addParameters("check", "false", "interface", DemoService.class.getName(), REMOTE_APPLICATION_KEY, serviceURL.getParameter(APPLICATION_KEY))
+//                serviceURL.setPath(service).addParameters("check", "false", "interface", DemoService.class.getName(), REMOTE_APPLICATION_KEY, serviceURL.getApplication())
 //                , invokers.get(0).getUrl()
 //        );
 

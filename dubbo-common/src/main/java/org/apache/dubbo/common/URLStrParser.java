@@ -168,6 +168,21 @@ public final class URLStrParser {
         return parseEncodedStr(encodedURLStr, false);
     }
 
+    public static String[] parseEncodedStrToArrays(String encodedURLStr) {
+        String[] parts = new String[2];
+        int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
+        if (pathEndIdx >= 0) {
+            parts[0] = encodedURLStr.substring(0, pathEndIdx);
+            parts[1] = encodedURLStr.substring(pathEndIdx + 3);
+        } else {
+            parts = new String[]{encodedURLStr};
+        }
+        return parts;
+    }
+
+    public static Map<String, String> parseEncodedParams(String encodedParams) {
+        return parseEncodedParams(encodedParams, 0);
+    }
 
     /**
      * @param encodedURLStr : after {@link URL#encode(String)} string

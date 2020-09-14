@@ -68,7 +68,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
@@ -222,7 +221,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     protected boolean shouldRegister(URL providerURL) {
 
-        String side = providerURL.getParameter(SIDE_KEY);
+        String side = providerURL.getSide();
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
@@ -848,8 +847,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected Set<String> findMappedServices(URL subscribedURL) {
         String serviceInterface = subscribedURL.getServiceInterface();
-        String group = subscribedURL.getParameter(GROUP_KEY);
-        String version = subscribedURL.getParameter(VERSION_KEY);
+        String group = subscribedURL.getGroup();
+        String version = subscribedURL.getVersion();
         String protocol = subscribedURL.getParameter(PROTOCOL_KEY, DUBBO_PROTOCOL);
         return serviceNameMapping.get(serviceInterface, group, version, protocol);
     }

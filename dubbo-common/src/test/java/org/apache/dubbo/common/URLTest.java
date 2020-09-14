@@ -49,8 +49,8 @@ public class URLTest {
         assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = URL.valueOf("context/path?version=1.0.0&application=morgan");
         //                 ^^^^^^^ Caution , parse as host
@@ -62,8 +62,8 @@ public class URLTest {
         assertEquals(0, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
     private void assertURLStrDecoder(URL url) {
@@ -131,8 +131,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
     @Test
@@ -259,7 +259,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertNull(url.getPath());
         assertEquals(1, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getVersion());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
@@ -271,8 +271,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue=");
         assertURLStrDecoder(url);
@@ -284,8 +284,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
         assertEquals("noValue", url.getParameter("noValue"));
     }
 
@@ -402,8 +402,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = url.setPort(1);
 
@@ -416,8 +416,8 @@ public class URLTest {
         assertEquals(1, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = url.setPath("path");
 
@@ -430,8 +430,8 @@ public class URLTest {
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = url.setProtocol("protocol");
 
@@ -444,8 +444,8 @@ public class URLTest {
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = url.setUsername("username");
 
@@ -458,8 +458,8 @@ public class URLTest {
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
 
         url = url.setPassword("password");
 
@@ -472,8 +472,8 @@ public class URLTest {
         assertEquals(1, url.getPort());
         assertEquals("path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
     @Test
@@ -491,10 +491,10 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
-        assertNull(url.getParameter("version"));
+        assertNull(url.getVersion());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&k1=v1&k2=v2");
         url = url.removeParameters("version", "application", "NotExistedKey");
@@ -509,8 +509,8 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
-        assertNull(url.getParameter("version"));
-        assertNull(url.getParameter("application"));
+        assertNull(url.getVersion());
+        assertNull(url.getApplication());
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&k1=v1&k2=v2");
         url = url.removeParameters(Arrays.asList("version", "application"));
@@ -525,8 +525,8 @@ public class URLTest {
         assertEquals(2, url.getParameters().size());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
-        assertNull(url.getParameter("version"));
-        assertNull(url.getParameter("application"));
+        assertNull(url.getVersion());
+        assertNull(url.getApplication());
     }
 
     @Test
@@ -543,7 +543,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
     }
 
@@ -571,7 +571,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
 
@@ -587,7 +587,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
-        assertEquals("xxx", url.getParameter("application"));
+        assertEquals("xxx", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
 
@@ -603,7 +603,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(3, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
         assertEquals("v2", url.getParameter("k2"));
 
@@ -619,7 +619,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
         assertEquals("v1", url.getParameter("k1"));
 
         url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?application=morgan");
@@ -634,7 +634,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(1, url.getParameters().size());
-        assertEquals("xxx", url.getParameter("application"));
+        assertEquals("xxx", url.getApplication());
     }
 
     @Test
@@ -669,7 +669,7 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(1, url.getParameters().size());
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("morgan", url.getApplication());
     }
 
     @Test
@@ -768,8 +768,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
 
@@ -786,8 +786,8 @@ public class URLTest {
         assertEquals(20880, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
     @Test
@@ -800,8 +800,8 @@ public class URLTest {
         assertEquals(0, url.getPort());
         assertEquals("context/path", url.getPath());
         assertEquals(2, url.getParameters().size());
-        assertEquals("1.0.0", url.getParameter("version"));
-        assertEquals("morgan", url.getParameter("application"));
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("morgan", url.getApplication());
     }
 
     @Test

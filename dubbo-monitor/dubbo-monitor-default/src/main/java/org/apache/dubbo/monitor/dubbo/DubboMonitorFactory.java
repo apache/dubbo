@@ -61,7 +61,7 @@ public class DubboMonitorFactory extends AbstractMonitorFactory {
         if (StringUtils.isEmpty(url.getPath())) {
             urlBuilder.setPath(MonitorService.class.getName());
         }
-        String filter = url.getParameter(REFERENCE_FILTER_KEY);
+        String filter = url.getConcatenatedParameter(REFERENCE_FILTER_KEY);
         if (StringUtils.isEmpty(filter)) {
             filter = "";
         } else {

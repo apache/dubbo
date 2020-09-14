@@ -18,17 +18,26 @@ package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.URLStrParser;
+import org.apache.dubbo.common.url.component.InterfaceAddressURL;
+import org.apache.dubbo.common.url.component.URLAddress;
+import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 
@@ -36,35 +45,76 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
-
-    protected final ConcurrentMap<URL, ConcurrentMap<String, URL>> stringUrls = new ConcurrentHashMap<>();
+    protected final Map<URL, Map<String, InterfaceAddressURL>> stringUrls = new HashMap<>();
+    protected final Map<String, URLAddress> stringAddress = new HashMap<>();
+    protected final Map<String, URLParam> stringParam = new HashMap<>();
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
     }
 
+    /**
+     * TODO
+     * 1. tackle path and interface keys to further improve cache utilization between interfaces.
+     * 2. enable simplified mode on Provider side to remove timestamp key from provider URL.
+     *
+     * @param consumer
+     * @param providers
+     * @return
+     */
     protected List<URL> toUrlsWithoutEmpty(URL consumer, List<String> providers) {
         if (CollectionUtils.isNotEmpty(providers)) {
-            Map<String, URL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
-            Map<String, URL> copyOfStringUrls = new HashMap<>(consumerStringUrls);
+            URL copyOfConsumer = removeParamsFromConsumer(consumer);
+            Map<String, InterfaceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
+            long firstUpdatedStamp = 0l;
             for (String rawProvider : providers) {
-                URL cachedUrl = copyOfStringUrls.remove(rawProvider);
-                if (cachedUrl == null) {
-                    // parse encoded (URLEncoder.encode) url directly.
-                    URL url = URL.valueOf(rawProvider, true);
-                    if (isMatch(consumer, url)) {
-                        consumerStringUrls.put(rawProvider, url);
+                InterfaceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
+                if (cachedURL == null) {
+                    // use encoded value directly to avoid URLDecoder.decode allocation.
+                    String[] parts = URLStrParser.parseEncodedStrToArrays(rawProvider);
+                    if (parts.length <= 1) {
+                        logger.warn("Received url without any parameters " + rawProvider);
+                        consumerStringUrls.put(rawProvider, InterfaceAddressURL.valueOf(rawProvider, copyOfConsumer));
+                        break;
                     }
+
+                    String rawAddress = parts[0];
+                    String rawParams = parts[1];
+                    URLAddress address = stringAddress.get(rawAddress);
+                    if (address == null) {
+                        address = URLAddress.parseEncoded(rawAddress, DUBBO);
+                    }
+                    URLParam param = stringParam.get(rawParams);
+                    if (param == null) {
+                        param = URLParam.parseEncoded(rawParams);
+                    }
+
+                    cachedURL = InterfaceAddressURL.valueOf(address, param, copyOfConsumer);
+                    if (isMatch(consumer, cachedURL)) {
+                        consumerStringUrls.put(rawProvider, cachedURL);
+                    }
+                } else {
+                    cachedURL.setCreatedStamp(System.currentTimeMillis());
+                }
+                if (firstUpdatedStamp == 0) {
+                    firstUpdatedStamp = cachedURL.getCreatedStamp();
                 }
             }
-            copyOfStringUrls.keySet().forEach(consumerStringUrls::remove);
 
-            List<URL> urls = new ArrayList<>(consumerStringUrls.size());
-            consumerStringUrls.values().forEach(u -> urls.add(UrlUtils.newModifiableUrl(u)));
-            return urls;
+            List<URL> list = new ArrayList<>(consumerStringUrls.size());
+            Iterator<Map.Entry<String, InterfaceAddressURL>> iterator = consumerStringUrls.entrySet().iterator();
+            while (iterator.hasNext()) {
+                InterfaceAddressURL url = iterator.next().getValue();
+                if (url.getCreatedStamp() - firstUpdatedStamp < 0) {
+                    iterator.remove();
+                } else {
+                    list.add(url);
+                }
+            }
+
+            return list;
         }
 
-        stringUrls.remove(consumer);
         return new ArrayList<>(1);
     }
 
@@ -83,5 +133,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
+
+    private URL removeParamsFromConsumer(URL consumer) {
+        return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
+    }
 
 }

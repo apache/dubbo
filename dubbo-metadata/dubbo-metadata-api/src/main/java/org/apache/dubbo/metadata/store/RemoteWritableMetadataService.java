@@ -38,15 +38,11 @@ import java.util.SortedSet;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * The {@link WritableMetadataService} implementation stores the metadata of Dubbo services in metadata center when they
@@ -72,7 +68,7 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
 
     @Override
     public void publishServiceDefinition(URL url) {
-        String side = url.getParameter(SIDE_KEY);
+        String side = url.getSide();
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
             publishProvider(url);
@@ -95,8 +91,8 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerUrl.getParameters());
                 getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
-                        providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
-                        PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);
+                        providerUrl.getVersion(), providerUrl.getGroup(),
+                        PROVIDER_SIDE, providerUrl.getApplication()), fullServiceDefinition);
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
@@ -110,8 +106,8 @@ public class RemoteWritableMetadataService implements WritableMetadataService {
         consumerURL = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
                 Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
-                consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
-                consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
+                consumerURL.getVersion(), consumerURL.getGroup(), CONSUMER_SIDE,
+                consumerURL.getApplication()), consumerURL.getParameters());
     }
 
     @Override
