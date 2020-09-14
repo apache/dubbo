@@ -37,7 +37,6 @@ import org.apache.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
@@ -164,24 +163,17 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
             if (null != detectors) {
                 if (!detectors.stream().anyMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
-                    step = MigrationStep.INTERFACE_FIRST;
+                    step = MigrationStep.FORCE_INTERFACE;
                 }
             }
         }
 
         switch (step) {
-            case INTERFACE_FIRST:
-                if (interfaceInvokers.stream().filter(s -> s.isAvailable()).collect(Collectors.toList()).isEmpty()) {
-                    clusterRefresh(addreddChanged, interfaceInvokers);
-                }
+            case FORCE_INTERFACE:
+                clusterRefresh(addreddChanged, interfaceInvokers);
+                clusterDestory(addreddChanged, serviceInvokers);
+                return interfaceInvokers;
 
-                if (interfaceInvokers.stream().filter(s -> s.isAvailable()).collect(Collectors.toList()).isEmpty()) {
-                    return serviceInvokers;
-                } else {
-                    clusterDestory(addreddChanged, serviceInvokers);
-                    clusterRefresh(addreddChanged, interfaceInvokers);
-                    return interfaceInvokers;
-                }
             case APPLICATION_FIRST:
 
                 if (serviceInvokers.isEmpty()) {
