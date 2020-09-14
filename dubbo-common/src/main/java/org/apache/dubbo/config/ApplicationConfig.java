@@ -159,6 +159,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String repository;
 
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
     public ApplicationConfig() {
     }
 
@@ -445,6 +450,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.repository = repository;
     }
 
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
     @Override
     public void refresh() {
         super.refresh();
@@ -464,7 +478,13 @@ public class ApplicationConfig extends AbstractConfig {
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
-                    parameters.putAll(extraParameters);
+                    extraParameters.forEach((key, value) -> {
+                        String prefix = this.getPrefix() + ".";
+                        if (key.startsWith(prefix)) {
+                            key = key.substring(prefix.length());
+                        }
+                        parameters.put(key, value);
+                    });
                 }
             }
         }

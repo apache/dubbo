@@ -44,8 +44,8 @@ public class ThreadNameTest {
     @BeforeEach
     public void before() throws Exception {
         int port = NetUtils.getAvailablePort();
-        serverURL = URL.valueOf("netty://localhost?side=provider").setPort(port);
-        clientURL = URL.valueOf("netty://localhost?side=consumer").setPort(port);
+        serverURL = URL.valueOf("telnet://localhost?side=provider").setPort(port);
+        clientURL = URL.valueOf("telnet://localhost?side=consumer").setPort(port);
 
         serverHandler = new ThreadNameVerifyHandler(serverRegex, false);
         clientHandler = new ThreadNameVerifyHandler(clientRegex, true);

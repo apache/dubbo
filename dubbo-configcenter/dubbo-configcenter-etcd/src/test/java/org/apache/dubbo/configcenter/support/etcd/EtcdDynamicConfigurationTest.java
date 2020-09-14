@@ -49,7 +49,7 @@ public class EtcdDynamicConfigurationTest {
 
     private static EtcdDynamicConfiguration config;
 
-    public EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 3, false, false);
+    public EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 3, false);
 
     private static Client client;
 
