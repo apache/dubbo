@@ -394,7 +394,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (providerUrl instanceof InterfaceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
         }
