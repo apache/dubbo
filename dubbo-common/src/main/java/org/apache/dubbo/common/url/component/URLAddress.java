@@ -16,13 +16,9 @@
  */
 package org.apache.dubbo.common.url.component;
 
-import org.apache.dubbo.common.utils.StringUtils;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Objects;
-
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 public class URLAddress {
     private String rawAddress;
@@ -125,18 +121,20 @@ public class URLAddress {
         return rawAddress;
     }
 
-    public static URLAddress parseEncoded(String rawAddress, String protocol) {
+    public static URLAddress parse(String rawAddress, boolean encoded) {
         try {
-            return parse(URLDecoder.decode(rawAddress, "UTF-8"), protocol);
+            if (encoded) {
+                return parse(URLDecoder.decode(rawAddress, "UTF-8"));
+            } else {
+                return parse(rawAddress);
+            }
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    public static URLAddress parse(String rawAddress, String protocol) {
-        if (StringUtils.isEmpty(protocol)) {
-            protocol = DUBBO;
-        }
+    public static URLAddress parse(String rawAddress) {
+        String protocol = null;
         String copyOfRawAddress = rawAddress;
         String path = null, username = null, password = null, host = null;
         int port = 0;

@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
@@ -71,8 +71,13 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             for (String rawProvider : providers) {
                 InterfaceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
                 if (cachedURL == null) {
+                    boolean encoded = true;
                     // use encoded value directly to avoid URLDecoder.decode allocation.
-                    String[] parts = URLStrParser.parseEncodedStrToArrays(rawProvider);
+                    int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
+                    if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not shown, mark as not encoded.
+                        encoded = false;
+                    }
+                    String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
                     if (parts.length <= 1) {
                         logger.warn("Received url without any parameters " + rawProvider);
                         consumerStringUrls.put(rawProvider, InterfaceAddressURL.valueOf(rawProvider, copyOfConsumer));
@@ -83,11 +88,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     String rawParams = parts[1];
                     URLAddress address = stringAddress.get(rawAddress);
                     if (address == null) {
-                        address = URLAddress.parseEncoded(rawAddress, DUBBO);
+                        address = URLAddress.parse(rawAddress, encoded);
                     }
                     URLParam param = stringParam.get(rawParams);
                     if (param == null) {
-                        param = URLParam.parseEncoded(rawParams);
+                        param = URLParam.parse(rawParams, encoded);
                     }
 
                     cachedURL = InterfaceAddressURL.valueOf(address, param, copyOfConsumer);

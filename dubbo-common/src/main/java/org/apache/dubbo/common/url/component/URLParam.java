@@ -25,8 +25,8 @@ import java.util.Objects;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 
 public class URLParam {
-    public static URLParam parseEncoded(String rawParam) {
-        Map<String, String> parameters = URLStrParser.parseEncodedParams(rawParam);
+    public static URLParam parse(String rawParam, boolean encoded) {
+        Map<String, String> parameters = URLStrParser.parseParams(rawParam, encoded);
         return new URLParam(parameters);
     }
 

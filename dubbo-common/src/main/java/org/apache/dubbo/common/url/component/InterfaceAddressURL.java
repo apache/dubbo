@@ -29,6 +29,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 
+/**
+ * This class derived from URL, so the size of one single URL is not reduced.
+ * but it can avoid the map copy from consumer url to provider url by holding the consumer url reference directly.
+ */
 public class InterfaceAddressURL extends URL {
     public static InterfaceAddressURL valueOf(URLAddress urlAddress, URLParam urlParam, URL consumerUrl) {
         return valueOf(urlAddress, urlParam, consumerUrl, null);

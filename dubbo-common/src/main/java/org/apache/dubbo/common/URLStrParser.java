@@ -26,7 +26,7 @@ import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
 public final class URLStrParser {
-
+    public static final String ENCODED_QUESTION_MARK = "%3F";
     private static final char SPACE = 0x20;
 
     private static final ThreadLocal<TempBuf> DECODE_TEMP_BUF = ThreadLocal.withInitial(() -> new TempBuf(1024));
@@ -165,20 +165,29 @@ public final class URLStrParser {
         return parseEncodedStr(encodedURLStr, false);
     }
 
-    public static String[] parseEncodedStrToArrays(String encodedURLStr) {
+    public static String[] parseRawURLToArrays(String rawURLStr, int pathEndIdx) {
         String[] parts = new String[2];
-        int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
+        if (pathEndIdx == -1) {
+            pathEndIdx = rawURLStr.indexOf('?');
+            if (pathEndIdx == -1) {
+                // url with no params, decode anyway
+                rawURLStr = URL.decode(rawURLStr);
+            }
+        }
         if (pathEndIdx >= 0) {
-            parts[0] = encodedURLStr.substring(0, pathEndIdx);
-            parts[1] = encodedURLStr.substring(pathEndIdx + 3);
+            parts[0] = rawURLStr.substring(0, pathEndIdx);
+            parts[1] = rawURLStr.substring(pathEndIdx + 3);
         } else {
-            parts = new String[]{encodedURLStr};
+            parts = new String[]{rawURLStr};
         }
         return parts;
     }
 
-    public static Map<String, String> parseEncodedParams(String encodedParams) {
-        return parseEncodedParams(encodedParams, 0);
+    public static Map<String, String> parseParams(String rawParams, boolean encoded) {
+        if (encoded) {
+            return parseEncodedParams(rawParams, 0);
+        }
+        return parseDecodedParams(rawParams, 0);
     }
 
     /**
