@@ -16,10 +16,6 @@
  */
 package org.apache.dubbo.remoting.p2p.exchange.support;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -30,12 +26,16 @@ import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Networkers;
 import org.apache.dubbo.remoting.p2p.Peer;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -48,7 +48,7 @@ public class MulticastExchangeNetworkerTest {
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Peer peer1 = multicastExchangeNetworker.lookup(URL.valueOf(groupURL))
-                .join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()), new ExchangeHandlerAdapter() {
+                .join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"), new ExchangeHandlerAdapter() {
                     @Override
                     public CompletableFuture<Object> reply(ExchangeChannel channel, Object msg) throws RemotingException {
                         countDownLatch.countDown();
@@ -56,7 +56,7 @@ public class MulticastExchangeNetworkerTest {
                     }
                 });
         Peer peer2 = multicastExchangeNetworker.lookup(URL.valueOf(groupURL))
-                .join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()), mock(ExchangeHandler.class));
+                .join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"), mock(ExchangeHandler.class));
 
         while (true) {
             for (Channel channel : peer1.getChannels()) {
