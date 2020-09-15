@@ -34,9 +34,11 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         if (!serviceDiscoveryInvoker.isAvailable()) {
+            logger.info("No instance address available, will not migrate.");
             return false;
         }
         if (!invoker.isAvailable()) {
+            logger.info("No interface address available, will migrate.");
             return true;
         }
 
@@ -54,6 +56,8 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             logger.error("Invalid migration threshold " + rawThreshold);
             threshold = DEFAULT_THREAD;
         }
+
+        logger.info("Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
 
         if (newAddressSize != 0 && oldAddressSize == 0) {
             return true;
