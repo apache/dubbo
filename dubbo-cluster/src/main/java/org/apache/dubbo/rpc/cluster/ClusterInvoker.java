@@ -19,8 +19,6 @@ package org.apache.dubbo.rpc.cluster;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 /**
  * This is the final Invoker type referenced by the RPC proxy on Consumer side.
  * <p>
@@ -39,5 +37,4 @@ public interface ClusterInvoker<T> extends Invoker<T> {
     Directory<T> getDirectory();
 
     boolean isDestroyed();
-
 }
