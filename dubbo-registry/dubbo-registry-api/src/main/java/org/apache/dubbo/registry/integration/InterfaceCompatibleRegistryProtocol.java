@@ -84,7 +84,7 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
             serviceDiscoveryDirectory.setRegistry(registry);
             serviceDiscoveryDirectory.setProtocol(protocol);
             Map<String, String> parameters = new HashMap<String, String>(serviceDiscoveryDirectory.getConsumerUrl().getParameters());
-            URL urlToRegistry = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+            URL urlToRegistry = new URL(DEFAULT_REGISTRY, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
             if (serviceDiscoveryDirectory.isShouldRegister()) {
                 serviceDiscoveryDirectory.setRegisteredConsumerUrl(urlToRegistry);
                 registry.register(serviceDiscoveryDirectory.getRegisteredConsumerUrl());
