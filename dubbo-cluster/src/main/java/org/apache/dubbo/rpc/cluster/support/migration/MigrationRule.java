@@ -31,7 +31,7 @@ public class MigrationRule {
     private static DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
     private String key;
-    private MigrationStep step = MigrationStep.INTERFACE_FIRST;
+    private MigrationStep step = MigrationStep.FORCE_INTERFACE;
 
     public String getKey() {
         return key;
@@ -51,7 +51,7 @@ public class MigrationRule {
 
     public static MigrationRule parse(String rawRule) {
         if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
-            MigrationStep step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY, MigrationStep.INTERFACE_FIRST.name()));
+            MigrationStep step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY, MigrationStep.FORCE_INTERFACE.name()));
             MigrationRule rule = new MigrationRule();
             rule.setStep(step);
             return rule;

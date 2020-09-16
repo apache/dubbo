@@ -56,7 +56,7 @@ public class MigrationRuleListener<T> {
                 case FORCE_APPLICATION:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(true);
                     break;
-                case INTERFACE_FIRST:
+                case FORCE_INTERFACE:
                 default:
                     migrationInvoker.fallbackToInterfaceInvoker();
             }

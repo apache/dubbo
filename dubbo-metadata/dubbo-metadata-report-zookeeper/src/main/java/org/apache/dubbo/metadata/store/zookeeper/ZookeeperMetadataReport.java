@@ -203,7 +203,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
                             serviceMappingExecutor.shutdown();
                         }
                     }
-                }, 0, 3, TimeUnit.SECONDS);
+                }, 0, url.getParameter("SERVICE_MAPPING_PULL_INTERVAL", 300), TimeUnit.SECONDS);
             }
         }
 

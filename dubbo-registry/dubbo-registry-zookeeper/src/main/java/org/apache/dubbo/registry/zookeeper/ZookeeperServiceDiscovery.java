@@ -135,25 +135,30 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
             List<ServiceInstance> serviceInstances = new LinkedList<>();
 
-            List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
+            int totalSize = 0;
+            try {
+                List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
 
-            int totalSize = serviceIds.size();
+                totalSize = serviceIds.size();
 
-            Iterator<String> iterator = serviceIds.iterator();
+                Iterator<String> iterator = serviceIds.iterator();
 
-            for (int i = 0; i < offset; i++) {
-                if (iterator.hasNext()) { // remove the elements from 0 to offset
-                    iterator.next();
-                    iterator.remove();
+                for (int i = 0; i < offset; i++) {
+                    if (iterator.hasNext()) { // remove the elements from 0 to offset
+                        iterator.next();
+                        iterator.remove();
+                    }
                 }
-            }
 
-            for (int i = 0; i < pageSize; i++) {
-                if (iterator.hasNext()) {
-                    String serviceId = iterator.next();
-                    ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
-                    serviceInstances.add(serviceInstance);
+                for (int i = 0; i < pageSize; i++) {
+                    if (iterator.hasNext()) {
+                        String serviceId = iterator.next();
+                        ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
+                        serviceInstances.add(serviceInstance);
+                    }
                 }
+            } catch (KeeperException.NoNodeException e) {
+                logger.warn(p + " path not exist.", e);
             }
 
             return new DefaultPage<>(offset, pageSize, serviceInstances, totalSize);
