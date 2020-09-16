@@ -167,16 +167,19 @@ public final class URLStrParser {
 
     public static String[] parseRawURLToArrays(String rawURLStr, int pathEndIdx) {
         String[] parts = new String[2];
+        int paramStartIdx = pathEndIdx + 3;//skip ENCODED_QUESTION_MARK
         if (pathEndIdx == -1) {
             pathEndIdx = rawURLStr.indexOf('?');
             if (pathEndIdx == -1) {
                 // url with no params, decode anyway
                 rawURLStr = URL.decode(rawURLStr);
+            } else {
+                paramStartIdx = pathEndIdx + 1;
             }
         }
         if (pathEndIdx >= 0) {
             parts[0] = rawURLStr.substring(0, pathEndIdx);
-            parts[1] = rawURLStr.substring(pathEndIdx + 3);
+            parts[1] = rawURLStr.substring(paramStartIdx);
         } else {
             parts = new String[]{rawURLStr};
         }
