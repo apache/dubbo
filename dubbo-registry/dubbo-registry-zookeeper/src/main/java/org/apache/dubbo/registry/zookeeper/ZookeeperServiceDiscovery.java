@@ -158,7 +158,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
                     }
                 }
             } catch (KeeperException.NoNodeException e) {
-                logger.warn("/services/serviceName=" + serviceName + " path not exist.", e);
+                logger.warn("/services/" + serviceName + " path not exist.", e);
             }
 
             return new DefaultPage<>(offset, pageSize, serviceInstances, totalSize);
