@@ -32,10 +32,10 @@
     <dubbo:protocol name="dubbo" port="-1"/>
 
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
-<!--    <bean id="greetingService" class="org.apache.dubbo.demo.provider.GreetingServiceImpl"/>-->
+    <bean id="greetingService" class="org.apache.dubbo.demo.provider.GreetingServiceImpl"/>
 
     <dubbo:service interface="org.apache.dubbo.demo.DemoService" timeout="3000" ref="demoService" registry="registry1"/>
-<!--    <dubbo:service version="1.0.0" group="greeting" timeout="5000" interface="org.apache.dubbo.demo.GreetingService"-->
-<!--                   ref="greetingService"/>-->
+    <dubbo:service version="1.0.0" group="greeting" timeout="5000" interface="org.apache.dubbo.demo.GreetingService"
+                   ref="greetingService"/>
 
 </beans>

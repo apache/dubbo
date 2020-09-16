@@ -404,6 +404,11 @@
                 <artifactId>dubbo-metadata-report-nacos</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-report-failover</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
             <!-- config-center -->
             <dependency>
