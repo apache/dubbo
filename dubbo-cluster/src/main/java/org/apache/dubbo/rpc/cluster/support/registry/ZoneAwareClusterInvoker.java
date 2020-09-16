@@ -132,7 +132,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 interfaceInvokers.add(invoker);
             }
 
-            if (migrationCluserInvoker.addressChanged().compareAndSet(false, true)) {
+            if (migrationCluserInvoker.addressChanged().compareAndSet(true, false)) {
                 addreddChanged = true;
             }
         }
