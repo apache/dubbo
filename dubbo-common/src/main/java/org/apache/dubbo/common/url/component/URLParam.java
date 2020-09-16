@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREF
 public class URLParam {
     public static URLParam parse(String rawParam, boolean encoded) {
         Map<String, String> parameters = URLStrParser.parseParams(rawParam, encoded);
-        return new URLParam(parameters);
+        return new URLParam(parameters, rawParam);
     }
 
     public static URLParam parse(String rawParam) {
@@ -63,6 +63,11 @@ public class URLParam {
 
     public URLParam(Map<String, String> params) {
         this.params = params;
+    }
+
+    public URLParam(Map<String, String> params, String rawParam) {
+        this.params = params;
+        this.rawParam = rawParam;
     }
 
     public Map<String, String> getParams() {

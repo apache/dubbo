@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -84,8 +83,8 @@ public class InterfaceAddressURL extends URL {
             URL overrideURL
     ) {
         super(protocol, username, password, host, port, path, parameters);
-        // TODO, copied from RegistryDirectory.mergeUrl()
-        parameters.put(CHECK_KEY, String.valueOf(false));
+        // FIXME, copied from RegistryDirectory.mergeUrl()
+        //parameters.put(CHECK_KEY, String.valueOf(false));
         this.consumerURL = consumerURL;
         this.overriddenURL = overrideURL;
         this.createdStamp = System.currentTimeMillis();
