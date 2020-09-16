@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
@@ -49,6 +50,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
+        logger.info("Listening for migration rules on dataId-" + RULE_KEY + " group-" + DUBBO_SERVICEDISCOVERY_MIGRATION);
         configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
 
         String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
@@ -66,6 +68,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             return;
         }
 
+        logger.info("Using the following migration rule to migrate:");
+        logger.info(rawRule);
+
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.doMigrate(rawRule));
         }
@@ -77,7 +82,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker) {
+    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
         MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);

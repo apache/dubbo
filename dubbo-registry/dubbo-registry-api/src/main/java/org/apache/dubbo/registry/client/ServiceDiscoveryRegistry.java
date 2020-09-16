@@ -260,6 +260,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url, listener);
+
         if (CollectionUtils.isEmpty(serviceNames)) {
             throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
         }
@@ -363,12 +364,16 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by provided-by set by user.");
             subscribedServices.addAll(parseServices(serviceNames));
         }
 
         if (isEmpty(subscribedServices)) {
-            subscribedServices.addAll(findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener)));
+            Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener));
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by remote metadata center.");
+            subscribedServices.addAll(mappedServices);
             if (isEmpty(subscribedServices)) {
+                logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " by default.");
                 subscribedServices.addAll(getSubscribedServices());
             }
         }

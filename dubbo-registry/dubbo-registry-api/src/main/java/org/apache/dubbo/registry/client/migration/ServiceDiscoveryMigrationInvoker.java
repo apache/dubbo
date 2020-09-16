@@ -27,8 +27,8 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
 
-    public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
-        super(registryProtocol, cluster, registry, type, url);
+    public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+        super(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
     @Override
