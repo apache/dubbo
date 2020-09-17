@@ -173,12 +173,18 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             case FORCE_INTERFACE:
                 clusterRefresh(addreddChanged, interfaceInvokers);
                 clusterDestory(addreddChanged, serviceInvokers);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("step is FORCE_INTERFACE");
+                }
                 return interfaceInvokers;
 
             case APPLICATION_FIRST:
 
                 if (serviceInvokers.isEmpty()) {
                     clusterRefresh(addreddChanged, interfaceInvokers);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("step is APPLICATION_FIRST serviceInvokers.isEmpty() get interfaceInvokers");
+                    }
                     return  interfaceInvokers;
                 }
 
@@ -190,9 +196,15 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
                 if (availableServiceInvokers.size() > 0) {
                     clusterDestory(addreddChanged, interfaceInvokers);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("step is APPLICATION_FIRST get serviceInvokers");
+                    }
                     return serviceInvokers;
                 } else {
                     clusterRefresh(addreddChanged, interfaceInvokers);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("step is APPLICATION_FIRST availableServiceInvokers is empty get interfaceInvokers");
+                    }
                     return interfaceInvokers;
                 }
 
@@ -200,6 +212,10 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             case FORCE_APPLICATION:
                 clusterRefresh(addreddChanged, serviceInvokers);
                 clusterDestory(addreddChanged, interfaceInvokers);
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("step is FORCE_APPLICATION");
+                }
 
                 return serviceInvokers;
         }
