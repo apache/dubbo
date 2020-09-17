@@ -867,6 +867,12 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.report.MetadataReportFactory
                                     </resource>
                                 </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.store.failover.FailoverCondition
+                                    </resource>
+                                </transformer>
                                 <!-- @since 2.7.5 -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
