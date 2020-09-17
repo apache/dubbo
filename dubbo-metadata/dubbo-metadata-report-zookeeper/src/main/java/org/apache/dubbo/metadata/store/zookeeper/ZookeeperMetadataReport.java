@@ -214,18 +214,18 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         ChildListener zkListener = new ChildListener() {
             @Override
             public void childChanged(String path, List<String> children) {
-                onEvent(path, serviceKey, children, listener);
+                onEvent(serviceKey, children, listener);
             }
         };
         zkClient.addChildListener(path, zkListener);
         listenerMap.put(path, zkListener);
 
         if (onEvent) {
-            onEvent(path, serviceKey, zkClient.getChildren(path), listener);
+            onEvent(serviceKey, zkClient.getChildren(path), listener);
         }
     }
 
-    private  void onEvent(String path, String serviceKey,List<String> children, MappingListener listener) {
+    private void onEvent(String serviceKey, List<String> children, MappingListener listener) {
         MappingChangedEvent event = new MappingChangedEvent();
         event.setServiceKey(serviceKey);
         event.setApps(null != children ? new HashSet<>(children) : null);
