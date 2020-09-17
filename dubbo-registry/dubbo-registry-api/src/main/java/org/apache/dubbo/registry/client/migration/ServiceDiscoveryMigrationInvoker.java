@@ -38,7 +38,7 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
 
     @Override
     public synchronized void fallbackToInterfaceInvoker() {
-        destroyServiceDiscoveryInvoker();
+        destroyServiceDiscoveryInvoker(this.getServiceDiscoveryInvoker());
     }
 
     @Override
