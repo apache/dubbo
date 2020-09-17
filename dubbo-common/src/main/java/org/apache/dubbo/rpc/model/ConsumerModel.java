@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This model is bound to your reference's configuration, for example, group, version or method level configuration.
@@ -36,6 +37,7 @@ public class ConsumerModel {
     private String serviceKey;
     private final ServiceDescriptor serviceModel;
     private final ReferenceConfigBase<?> referenceConfig;
+    private final Set<String> apps = new TreeSet<>();
 
     private Object proxyObject;
 
@@ -108,6 +110,10 @@ public class ConsumerModel {
 
     public ReferenceConfigBase getReferenceConfig() {
         return referenceConfig;
+    }
+
+    public Set<String> getApps() {
+        return apps;
     }
 
     public AsyncMethodInfo getAsyncInfo(String methodName) {

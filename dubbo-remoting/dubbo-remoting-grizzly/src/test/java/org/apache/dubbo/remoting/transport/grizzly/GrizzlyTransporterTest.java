@@ -31,7 +31,7 @@ public class GrizzlyTransporterTest {
     @Test
     public void shouldAbleToBindGrizzly() throws Exception {
         int port = NetUtils.getAvailablePort();
-        URL url = new URL("http", "localhost", port,
+        URL url = new URL("telnet", "localhost", port,
                 new String[]{BIND_PORT_KEY, String.valueOf(port)});
 
         RemotingServer server = new GrizzlyTransporter().bind(url, new ChannelHandlerAdapter());

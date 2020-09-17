@@ -29,8 +29,13 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
@@ -46,7 +51,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
+
+    protected final Map<String, String> queryMap; // Initialization at construction time, assertion not null
+    protected final String consumedProtocol;
 
     protected RouterChain<T> routerChain;
 
@@ -59,8 +67,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new IllegalArgumentException("url == null");
         }
 
+        queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        String path = queryMap.get(PATH_KEY);
+        this.consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
         this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
-        this.consumerUrl = this.url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
+
+        this.consumerUrl = this.url.setProtocol(consumedProtocol).setPath(path == null ? queryMap.get(INTERFACE_KEY) : path).addParameters(queryMap)
+                .removeParameter(MONITOR_KEY);
 
         setRouterChain(routerChain);
     }
@@ -100,6 +113,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.consumerUrl = consumerUrl;
     }
 
+    @Override
     public boolean isDestroyed() {
         return destroyed;
     }

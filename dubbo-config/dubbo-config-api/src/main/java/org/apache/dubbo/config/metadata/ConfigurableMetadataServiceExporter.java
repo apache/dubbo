@@ -17,23 +17,25 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ArgumentConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.MetadataServiceType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static java.util.EnumSet.allOf;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
@@ -50,41 +52,79 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
  * @see ConfigManager
  * @since 2.7.5
  */
-public class ConfigurableMetadataServiceExporter extends AbstractMetadataServiceExporter {
+public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final MetadataService metadataService;
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
 
-    public ConfigurableMetadataServiceExporter() {
-        super(DEFAULT_METADATA_STORAGE_TYPE, MAX_PRIORITY, allOf(MetadataServiceType.class));
+    public ConfigurableMetadataServiceExporter(MetadataService metadataService) {
+        this.metadataService = metadataService;
     }
 
     @Override
-    protected void doExport() throws Exception {
+    public ConfigurableMetadataServiceExporter export() {
 
-        ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setApplication(getApplicationConfig());
-        serviceConfig.setRegistries(getRegistries());
-        serviceConfig.setProtocol(generateMetadataProtocol());
-        serviceConfig.setInterface(MetadataService.class);
-        serviceConfig.setRef(metadataService);
-        serviceConfig.setGroup(getApplicationConfig().getName());
-        serviceConfig.setVersion(metadataService.version());
+        if (!isExported()) {
 
-        // export
-        serviceConfig.export();
+            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
+            serviceConfig.setApplication(getApplicationConfig());
+            serviceConfig.setRegistries(getRegistries());
+            serviceConfig.setProtocol(generateMetadataProtocol());
+            serviceConfig.setInterface(MetadataService.class);
+            serviceConfig.setRef(metadataService);
+            serviceConfig.setGroup(getApplicationConfig().getName());
+            serviceConfig.setVersion(metadataService.version());
+            serviceConfig.setMethods(generateMethodConfig());
 
-        if (logger.isInfoEnabled()) {
-            logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            // export
+            serviceConfig.export();
+
+            if (logger.isInfoEnabled()) {
+                logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            }
+
+            this.serviceConfig = serviceConfig;
+
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+            }
         }
 
-        this.serviceConfig = serviceConfig;
+        return this;
+    }
+
+    /**
+     * Generate Method Config for Service Discovery Metadata <p/>
+     * <p>
+     * Make {@link MetadataService} support argument callback,
+     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
+     * metadata change event
+     *
+     * @since 3.0
+     */
+    private List<MethodConfig> generateMethodConfig() {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("getAndListenServiceDiscoveryMetadata");
+
+        ArgumentConfig argumentConfig = new ArgumentConfig();
+        argumentConfig.setIndex(1);
+        argumentConfig.setCallback(true);
+
+        methodConfig.setArguments(Collections.singletonList(argumentConfig));
+
+        return Collections.singletonList(methodConfig);
     }
 
     @Override
-    protected void doUnexport() throws Exception {
-        if (serviceConfig != null) {
+    public ConfigurableMetadataServiceExporter unexport() {
+        if (isExported()) {
             serviceConfig.unexport();
         }
+        return this;
     }
 
     @Override
@@ -94,11 +134,6 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
 
     public boolean isExported() {
         return serviceConfig != null && serviceConfig.isExported();
-    }
-
-    @Override
-    public int getPriority() {
-        return MAX_PRIORITY;
     }
 
     private ApplicationConfig getApplicationConfig() {
@@ -111,10 +146,27 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
 
     private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
-        defaultProtocol.setName(DUBBO);
-        // defaultProtocol.setHost() ?
-        // auto-increment port
-        defaultProtocol.setPort(-1);
+        Integer port = getApplicationConfig().getMetadataServicePort();
+
+        if (port == null || port < -1) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Metadata Service Port hasn't been set. " +
+                        "Use default protocol defined in protocols.");
+            }
+            List<ProtocolConfig> defaultProtocols = ApplicationModel.getConfigManager().getDefaultProtocols();
+
+            if (defaultProtocols.isEmpty()) {
+                defaultProtocol.setName(DUBBO_PROTOCOL);
+                defaultProtocol.setPort(-1);
+            } else {
+                return defaultProtocols.get(0);
+            }
+
+        } else {
+            defaultProtocol.setName(DUBBO_PROTOCOL);
+            defaultProtocol.setPort(port);
+        }
+
         return defaultProtocol;
     }
 }
