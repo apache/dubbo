@@ -41,6 +41,8 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private final InmemoryConfiguration appExternalConfiguration;
 
     private CompositeConfiguration globalConfiguration;
+    private CompositeConfiguration dynamicGlobalConfiguration;
+
 
     private Map<String, String> externalConfigurationMap = new HashMap<>();
     private Map<String, String> appExternalConfigurationMap = new HashMap<>();
@@ -146,22 +148,25 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public Configuration getConfiguration() {
         if (globalConfiguration == null) {
             globalConfiguration = new CompositeConfiguration();
-            if (dynamicConfiguration != null) {
-                globalConfiguration.addConfiguration(dynamicConfiguration);
-                globalConfiguration.setDynamicIncluded(true);
-            }
             globalConfiguration.addConfiguration(systemConfiguration);
             globalConfiguration.addConfiguration(environmentConfiguration);
             globalConfiguration.addConfiguration(appExternalConfiguration);
             globalConfiguration.addConfiguration(externalConfiguration);
             globalConfiguration.addConfiguration(propertiesConfiguration);
-        } else {
-            if (!globalConfiguration.isDynamicIncluded() && dynamicConfiguration != null) {
-                globalConfiguration.addConfigurationFirst(dynamicConfiguration);
-                globalConfiguration.setDynamicIncluded(true);
-            }
         }
         return globalConfiguration;
+    }
+
+    public Configuration getDynamicGlobalConfiguration() {
+        if (dynamicGlobalConfiguration == null) {
+            if (dynamicConfiguration != null) {
+                throw new IllegalStateException("Init dynamic configuration before use.");
+            }
+            dynamicGlobalConfiguration = new CompositeConfiguration();
+            dynamicGlobalConfiguration.addConfiguration(dynamicConfiguration);
+            dynamicGlobalConfiguration.addConfiguration(getConfiguration());
+        }
+        return dynamicGlobalConfiguration;
     }
 
     public boolean isConfigCenterFirst() {

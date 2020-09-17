@@ -46,7 +46,7 @@ public class MigrationRuleHandler<T> {
             logger.error("Find empty migration rule, will ignore.");
             return;
         } else if (INIT.equals(rawRule)) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             MigrationRule rule = MigrationRule.parse(rawRule);
             step = rule.getStep();

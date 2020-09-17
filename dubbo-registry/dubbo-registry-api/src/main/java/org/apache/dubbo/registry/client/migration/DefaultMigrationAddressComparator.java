@@ -28,7 +28,7 @@ import java.util.List;
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMigrationAddressComparator.class);
     private static final String MIGRATION_THRESHOLD = "dubbo.application.migration.threshold";
-    private static final String DEFAULT_THREAD_STRING = "0.8";
+    private static final String DEFAULT_THRESHOLD_STRING = "0.8";
     private static final float DEFAULT_THREAD = 0.8f;
 
     @Override
@@ -48,7 +48,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
         int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
 
-        String rawThreshold = ConfigurationUtils.getProperty(MIGRATION_THRESHOLD, DEFAULT_THREAD_STRING);
+        String rawThreshold = ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
         try {
             threshold = Float.parseFloat(rawThreshold);
