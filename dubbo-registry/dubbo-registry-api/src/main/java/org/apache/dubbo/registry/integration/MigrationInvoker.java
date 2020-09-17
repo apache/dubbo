@@ -145,7 +145,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     public synchronized void destroyServiceDiscoveryInvoker() {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
-            serviceDiscoveryInvoker = null;
+            //serviceDiscoveryInvoker = null;
         }
     }
 
@@ -171,7 +171,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     public synchronized void destroyInterfaceInvoker() {
         if (invoker != null) {
             invoker.destroy();
-            invoker = null;
+            //invoker = null;
         }
     }
 
