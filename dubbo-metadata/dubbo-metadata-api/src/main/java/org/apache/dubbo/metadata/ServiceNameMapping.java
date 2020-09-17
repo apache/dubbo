@@ -46,6 +46,8 @@ public interface ServiceNameMapping {
      */
     Set<String> getAndListen(URL url, MappingListener mappingListener);
 
+    Set<String> get(URL url);
+
     /**
      * Get the default extension of {@link ServiceNameMapping}
      *
@@ -69,4 +71,11 @@ public interface ServiceNameMapping {
         //        return groupBuilder.toString();
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
+
+    static class MappingException extends RuntimeException {
+        public MappingException(String message) {
+            super(message);
+        }
+    }
+
 }
