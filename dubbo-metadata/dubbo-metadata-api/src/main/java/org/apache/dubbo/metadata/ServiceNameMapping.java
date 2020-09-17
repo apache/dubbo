@@ -46,8 +46,6 @@ public interface ServiceNameMapping {
      */
     Set<String> getAndListen(URL url, MappingListener mappingListener);
 
-    Set<String> get(URL url);
-
     /**
      * Get the default extension of {@link ServiceNameMapping}
      *
