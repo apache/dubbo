@@ -267,6 +267,7 @@ public class ServiceDiscoveryRegistry implements Registry {
             if (check) {
                 throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
             }
+            return;
         }
 
         subscribeURLs(url, listener, serviceNames);

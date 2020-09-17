@@ -159,7 +159,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     public Configuration getDynamicGlobalConfiguration() {
         if (dynamicGlobalConfiguration == null) {
-            if (dynamicConfiguration != null) {
+            if (dynamicConfiguration == null) {
                 throw new IllegalStateException("Init dynamic configuration before use.");
             }
             dynamicGlobalConfiguration = new CompositeConfiguration();

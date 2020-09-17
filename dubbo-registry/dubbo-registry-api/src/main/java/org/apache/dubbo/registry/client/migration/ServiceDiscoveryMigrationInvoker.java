@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
@@ -26,6 +28,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
+    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryMigrationInvoker.class);
 
     public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
         super(registryProtocol, cluster, registry, type, url, consumerUrl);
@@ -38,7 +41,8 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
 
     @Override
     public synchronized void fallbackToInterfaceInvoker() {
-        destroyServiceDiscoveryInvoker(this.getServiceDiscoveryInvoker());
+        logger.error("Service discovery registry type does not support discovery of interface level addresses, " + getRegistryUrl());
+        migrateToServiceDiscoveryInvoker(true);
     }
 
     @Override
