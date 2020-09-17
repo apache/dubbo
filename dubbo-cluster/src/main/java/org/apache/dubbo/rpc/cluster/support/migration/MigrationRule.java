@@ -51,7 +51,7 @@ public class MigrationRule {
 
     public static MigrationRule parse(String rawRule) {
         if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
-            MigrationStep step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY, MigrationStep.FORCE_INTERFACE.name()));
+            MigrationStep step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY, MigrationStep.APPLICATION_FIRST.name()));
             MigrationRule rule = new MigrationRule();
             rule.setStep(step);
             return rule;

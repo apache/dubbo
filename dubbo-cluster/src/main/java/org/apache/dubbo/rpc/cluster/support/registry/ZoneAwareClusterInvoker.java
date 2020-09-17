@@ -159,6 +159,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         MigrationStep step = rule.getStep();
 
         // 地址比对
+        /*
         if (MigrationStep.APPLICATION_FIRST == step && addreddChanged) {
             Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
             if (null != detectors) {
@@ -166,7 +167,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     step = MigrationStep.FORCE_INTERFACE;
                 }
             }
-        }
+        }*/
 
         switch (step) {
             case FORCE_INTERFACE:
@@ -189,10 +190,10 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
                 if (availableServiceInvokers.size() > 0) {
                     clusterDestory(addreddChanged, interfaceInvokers);
-                    return availableServiceInvokers;
+                    return serviceInvokers;
                 } else {
                     clusterRefresh(addreddChanged, interfaceInvokers);
-                    return interfaceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+                    return interfaceInvokers;
                 }
 
 
