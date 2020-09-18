@@ -504,7 +504,7 @@ public class ConfigValidationUtils {
 
     private static String getRegistryProtocolType(URL url) {
         String registryProtocol = url.getParameter("registry-protocol-type");
-        return StringUtils.isEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
+        return StringUtils.isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
     public static void checkExtension(Class<?> type, String property, String value) {
