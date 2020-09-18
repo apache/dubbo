@@ -501,7 +501,7 @@ public class RegistryProtocol implements Protocol {
         invokerWrapper.setInvoker(invokerWrapper.getCluster().join(directory));
     }
 
-    private static URL toSubscribeUrl(URL url) {
+    public static URL toSubscribeUrl(URL url) {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
     }
 
