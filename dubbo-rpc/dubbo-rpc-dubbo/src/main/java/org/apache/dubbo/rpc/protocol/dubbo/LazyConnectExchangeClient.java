@@ -42,7 +42,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT
  * dubbo protocol support class.
  */
 @SuppressWarnings("deprecation")
-final class LazyConnectExchangeClient implements ExchangeClient {
+class LazyConnectExchangeClient implements ExchangeClient {
 
     /**
      * when this warning rises from invocation, program probably have bug.

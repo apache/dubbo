@@ -188,8 +188,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         /**
          * the order of judgment in the if statement cannot be changed.
          */
-        if (!(client instanceof LazyConnectExchangeClient) || client.isClosed()) {
-            client = new LazyConnectExchangeClient(lazyUrl, client.getExchangeHandler());
+        if (!(client instanceof LazyConnectCloseableExchangeClient) || client.isClosed()) {
+            client = new LazyConnectCloseableExchangeClient(lazyUrl, client.getExchangeHandler());
         }
     }
 
@@ -203,6 +203,14 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
      */
     public void incrementAndGetCount() {
         referenceCount.incrementAndGet();
+    }
+
+    /**
+     * check client can reuse
+     * @return
+     */
+    public boolean reuseable() {
+        return !client.getClass().equals(LazyConnectCloseableExchangeClient.class);
     }
 }
 
