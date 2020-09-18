@@ -492,7 +492,9 @@ public class UrlUtils {
     }
 
     public static boolean isRegistry(URL url) {
-        return REGISTRY_PROTOCOL.equals(url.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol());
+        return REGISTRY_PROTOCOL.equals(url.getProtocol())
+                || SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())
+                || (url.getProtocol() != null && url.getProtocol().endsWith("-registry-protocol"));
     }
 
     /**
