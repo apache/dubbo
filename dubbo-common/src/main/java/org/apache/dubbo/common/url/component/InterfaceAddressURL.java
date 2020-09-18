@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -68,7 +69,7 @@ public class InterfaceAddressURL extends URL {
 
     private transient URL consumerURL;
     private transient URL overriddenURL;
-    private transient Map<String, String> concatenatedPrams;
+    private transient Map<String, String> concatenatedPrams; //cache
     private transient long createdStamp;
 
     public InterfaceAddressURL(
@@ -154,7 +155,7 @@ public class InterfaceAddressURL extends URL {
     @Override
     public String getConcatenatedParameter(String key) {
         if (concatenatedPrams == null) {
-            concatenatedPrams = new HashMap<>();
+            concatenatedPrams = new HashMap<>(1);
         }
         String value = concatenatedPrams.get(key);
         if (StringUtils.isNotEmpty(value)) {
@@ -215,5 +216,36 @@ public class InterfaceAddressURL extends URL {
 
     public void setCreatedStamp(long createdStamp) {
         this.createdStamp = createdStamp;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        return prime * super.hashCode() + (overriddenURL == null ? 0 : overriddenURL.hashCode());
+    }
+
+    /**
+     * ignore consumer url compare.
+     *
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (!(obj instanceof InterfaceAddressURL)) {
+            return false;
+        }
+        if (!super.equals(obj)) {
+            return false;
+        }
+        InterfaceAddressURL interfaceAddressURL = (InterfaceAddressURL) obj;
+        // FIXME, override should be compared first for dubbo addresses
+        return Objects.equals(interfaceAddressURL.getOverriddenURL(), this.getOverriddenURL());
     }
 }

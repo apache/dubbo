@@ -126,7 +126,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private volatile List<Configurator> configurators; // The initial value is null and the midway may be assigned to null, please use the local variable reference
 
     // Map<url, Invoker> cache service url to invoker mapping.
-    private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
+    private volatile Map<URL, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
     private volatile List<Invoker<T>> invokers;
 
     // Set<invokerUrls> cache invokeUrls to invokers mapping.
@@ -298,7 +298,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             destroyAllInvokers(); // Close all invokers
         } else {
             this.forbidden = false; // Allow to access
-            Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
             }
@@ -311,7 +311,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             if (invokerUrls.isEmpty()) {
                 return;
             }
-            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
             /**
              * If the calculation is wrong, it is not processed.
@@ -403,8 +403,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param urls
      * @return invokers
      */
-    private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+    private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
+        Map<URL, Invoker<T>> newUrlInvokerMap = new HashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -437,14 +437,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             URL url = mergeUrl(providerUrl);
 
-            String key = url.toFullString(); // The parameter urls are sorted
-            if (keys.contains(key)) { // Repeated url
-                continue;
-            }
-            keys.add(key);
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
-            Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
-            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
+            Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
+            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(url);
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -460,10 +455,10 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
                 }
                 if (invoker != null) { // Put new invoker in cache
-                    newUrlInvokerMap.put(key, invoker);
+                    newUrlInvokerMap.put(url, invoker);
                 }
             } else {
-                newUrlInvokerMap.put(key, invoker);
+                newUrlInvokerMap.put(url, invoker);
             }
         }
         keys.clear();
@@ -549,7 +544,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * Close all invokers
      */
     private void destroyAllInvokers() {
-        Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
+        Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
         if (localUrlInvokerMap != null) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 try {
@@ -570,16 +565,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
-    private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
+    private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
             destroyAllInvokers();
             return;
         }
         // check deleted invoker
-        List<String> deleted = null;
+        List<URL> deleted = null;
         if (oldUrlInvokerMap != null) {
             Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
-            for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+            for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
                         deleted = new ArrayList<>();
@@ -590,7 +585,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
 
         if (deleted != null) {
-            for (String url : deleted) {
+            for (URL url : deleted) {
                 if (url != null) {
                     Invoker<T> invoker = oldUrlInvokerMap.remove(url);
                     if (invoker != null) {
@@ -667,7 +662,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (isDestroyed()) {
             return false;
         }
-        Map<String, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
+        Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
             for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
                 if (invoker.isAvailable()) {
@@ -685,7 +680,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     /**
      * Haomin: added for test purpose
      */
-    public Map<String, Invoker<T>> getUrlInvokerMap() {
+    public Map<URL, Invoker<T>> getUrlInvokerMap() {
         return urlInvokerMap;
     }
 
