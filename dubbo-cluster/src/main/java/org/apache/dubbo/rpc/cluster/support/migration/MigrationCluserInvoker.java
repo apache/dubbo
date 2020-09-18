@@ -35,4 +35,6 @@ public interface MigrationCluserInvoker<T> extends ClusterInvoker<T> {
     void refreshInterfaceInvoker();
 
     void destroyInterfaceInvoker();
+
+    boolean isMigrationMultiRegsitry();
 }

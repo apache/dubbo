@@ -27,11 +27,8 @@ public class MigrationRuleListener<T> {
 
     private MigrationInvoker<T> migrationInvoker;
 
-    private boolean migrationMultiRegsitry;
-
-    public MigrationRuleListener(MigrationInvoker<T> invoker, boolean migrationMultiRegsitry) {
+    public MigrationRuleListener(MigrationInvoker<T> invoker) {
         this.migrationInvoker = invoker;
-        this.migrationMultiRegsitry = migrationMultiRegsitry;
     }
 
     public void doMigrate(String rawRule) {
@@ -39,15 +36,12 @@ public class MigrationRuleListener<T> {
 
         migrationInvoker.setMigrationRule(rule);
 
-        if (migrationMultiRegsitry) {
+        if (migrationInvoker.isMigrationMultiRegsitry()) {
             if (migrationInvoker.isServiceInvoker()) {
                 migrationInvoker.refreshServiceDiscoveryInvoker();
             } else {
                 migrationInvoker.refreshInterfaceInvoker();
             }
-            // TODO 关注下会不会重复添加Listener？？？？
-            migrationInvoker.addAddressChangeListener();
-
         } else {
             switch (rule.getStep()) {
                 case APPLICATION_FIRST:

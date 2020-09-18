@@ -24,6 +24,7 @@
     <dubbo:application name="demo-service-consumer" metadata-type="remote">
         <dubbo:parameter key="mapping-type" value="metadata"/>
         <dubbo:parameter key="SERVICE_MAPPING_PULL_INTERVAL" value="5"/>
+        <dubbo:parameter key="MIGRATION_MULTI_REGSITRY" value="true"/>
     </dubbo:application>
 
     <dubbo:consumer check="false"/>

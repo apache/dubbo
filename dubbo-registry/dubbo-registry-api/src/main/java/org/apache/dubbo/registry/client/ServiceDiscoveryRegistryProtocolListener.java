@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -80,7 +81,7 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
     public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
         MigrationInvoker<T> migrationInvoker = (MigrationInvoker<T>) invoker;
 
-        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker, true);
+        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);

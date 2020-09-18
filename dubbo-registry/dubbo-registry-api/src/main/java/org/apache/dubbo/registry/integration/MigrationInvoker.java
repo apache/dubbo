@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.RegistryProtocol;
@@ -46,9 +47,11 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     private ClusterInvoker<T> invoker;
     private ClusterInvoker<T> serviceDiscoveryInvoker;
 
-    private AtomicBoolean addressChanged = new AtomicBoolean(false);
+    private AtomicBoolean addressChanged = new AtomicBoolean(true);
 
     private MigrationRule rule;
+
+    private boolean migrationMultiRegsitry;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -72,6 +75,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
         this.registry = registry;
         this.type = type;
         this.url = url;
+        this.migrationMultiRegsitry = Boolean.valueOf(url.getParameter("MIGRATION_MULTI_REGSITRY", RegistryConstants.MIGRATION_MULTI_REGSITRY));
     }
 
     public ClusterInvoker<T> getInvoker() {
@@ -130,6 +134,10 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     }
 
     public synchronized  void addAddressChangeListener() {
+        if (!migrationMultiRegsitry) {
+            return;
+        }
+
         if (isServiceInvoker()) {
             ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).addInvokersChangedListener(this::setAddressChanged);
         } else {
@@ -158,6 +166,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     public synchronized void refreshServiceDiscoveryInvoker() {
         if (needRefresh(serviceDiscoveryInvoker)) {
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
+            addAddressChangeListener();
         }
     }
 
@@ -165,6 +174,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
         if (needRefresh(invoker)) {
             // FIXME invoker.destroy();
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
+            addAddressChangeListener();
         }
     }
 
@@ -182,7 +192,7 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     }
 
     private boolean needRefresh(ClusterInvoker<T> invoker) {
-        return invoker == null || invoker.isDestroyed() || !invoker.isAvailable();
+        return invoker == null || invoker.isDestroyed();
     }
 
     @Override
@@ -265,5 +275,10 @@ public class MigrationInvoker<T> implements MigrationCluserInvoker<T> {
     @Override
     public void setMigrationRule(MigrationRule rule) {
         this.rule = rule;
+    }
+
+    @Override
+    public boolean isMigrationMultiRegsitry() {
+        return migrationMultiRegsitry;
     }
 }

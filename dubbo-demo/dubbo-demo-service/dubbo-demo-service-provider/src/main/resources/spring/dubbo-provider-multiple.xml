@@ -23,6 +23,7 @@
 
     <dubbo:application name="demo-service-provider" metadata-type="remote">
         <dubbo:parameter key="mapping-type" value="metadata"/>
+        <dubbo:parameter key="MIGRATION_MULTI_REGSITRY" value="true"/>
     </dubbo:application>
 
     <dubbo:config-center address="zookeeper://localhost:2181"/>
@@ -31,13 +32,13 @@
 
     <!--<dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />-->
 
+
     <dubbo:registry id="mutipleRegistry" protocol="multiple" address="xxx?registry-type=service">
        <dubbo:parameter key="child.zk1" value="zookeeper://localhost:2181" />
     </dubbo:registry>
 
+    <dubbo:registry address="zookeeper://localhost:2181"/>
 
-
-    <!--<dubbo:registry address="zookeeper://localhost:2181"/> -->
 
     <bean id="demoService" class="org.apache.dubbo.demo.provider.DemoServiceImpl"/>
     <bean id="greetingService" class="org.apache.dubbo.demo.provider.GreetingServiceImpl"/>

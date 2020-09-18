@@ -116,4 +116,6 @@ public interface RegistryConstants {
     String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
 
     String INIT = "INIT";
+
+    String MIGRATION_MULTI_REGSITRY = "false";
 }

@@ -172,7 +172,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         switch (step) {
             case FORCE_INTERFACE:
                 clusterRefresh(addreddChanged, interfaceInvokers);
-                clusterDestory(addreddChanged, serviceInvokers);
+                clusterDestory(addreddChanged, serviceInvokers, true);
                 if (logger.isDebugEnabled()) {
                     logger.debug("step is FORCE_INTERFACE");
                 }
@@ -195,12 +195,13 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
 
                 if (availableServiceInvokers.size() > 0) {
-                    clusterDestory(addreddChanged, interfaceInvokers);
+                    clusterDestory(addreddChanged, interfaceInvokers, false);
                     if (logger.isDebugEnabled()) {
                         logger.debug("step is APPLICATION_FIRST get serviceInvokers");
                     }
                     return serviceInvokers;
                 } else {
+                    clusterDestory(addreddChanged, serviceInvokers, false);
                     clusterRefresh(addreddChanged, interfaceInvokers);
                     if (logger.isDebugEnabled()) {
                         logger.debug("step is APPLICATION_FIRST availableServiceInvokers is empty get interfaceInvokers");
@@ -211,7 +212,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
             case FORCE_APPLICATION:
                 clusterRefresh(addreddChanged, serviceInvokers);
-                clusterDestory(addreddChanged, interfaceInvokers);
+                clusterDestory(addreddChanged, interfaceInvokers, true);
 
                 if (logger.isDebugEnabled()) {
                     logger.debug("step is FORCE_APPLICATION");
@@ -224,16 +225,20 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
 
-    private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers) {
+    private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers, boolean destroySub) {
         if (addressChanged) {
             invokers.forEach(s -> {
                 MigrationCluserInvoker invoker = (MigrationCluserInvoker)s;
                 if (invoker.isServiceInvoker()) {
                     invoker.discardServiceDiscoveryInvokerAddress();
-                    invoker.destroyServiceDiscoveryInvoker();
+                    if (destroySub) {
+                        invoker.destroyServiceDiscoveryInvoker();
+                    }
                 } else {
                     invoker.discardInterfaceInvokerAddress();
-                    invoker.destroyInterfaceInvoker();
+                    if (destroySub) {
+                        invoker.destroyInterfaceInvoker();
+                    }
                 }
             });
         }
