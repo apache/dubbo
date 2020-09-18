@@ -158,17 +158,6 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         MigrationStep step = rule.getStep();
 
-        // 地址比对
-        /*
-        if (MigrationStep.APPLICATION_FIRST == step && addreddChanged) {
-            Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
-            if (null != detectors) {
-                if (!detectors.stream().anyMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
-                    step = MigrationStep.FORCE_INTERFACE;
-                }
-            }
-        }*/
-
         switch (step) {
             case FORCE_INTERFACE:
                 clusterRefresh(addreddChanged, interfaceInvokers);
@@ -179,32 +168,26 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 return interfaceInvokers;
 
             case APPLICATION_FIRST:
+                clusterRefresh(addreddChanged, serviceInvokers);
+                clusterRefresh(addreddChanged, interfaceInvokers);
 
-                if (serviceInvokers.isEmpty()) {
-                    clusterRefresh(addreddChanged, interfaceInvokers);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("step is APPLICATION_FIRST serviceInvokers.isEmpty() get interfaceInvokers");
+                if (serviceInvokers.size() > 0) {
+                    if (shouldMigrate(addreddChanged, serviceInvokers, interfaceInvokers)) {
+                        //clusterDestory(addreddChanged, interfaceInvokers, false);
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("step is APPLICATION_FIRST shouldMigrate true get serviceInvokers");
+                        }
+                        return serviceInvokers;
+
+                    } else {
+                        if (logger.isDebugEnabled()) {
+                            logger.debug("step is APPLICATION_FIRST shouldMigrate false get interfaceInvokers");
+                        }
+                        return interfaceInvokers;
                     }
-                    return  interfaceInvokers;
-                }
-
-                List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
-                if (availableServiceInvokers.isEmpty()) {
-                    clusterRefresh(addreddChanged, serviceInvokers);
-                    availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
-                }
-
-                if (availableServiceInvokers.size() > 0) {
-                    clusterDestory(addreddChanged, interfaceInvokers, false);
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("step is APPLICATION_FIRST get serviceInvokers");
-                    }
-                    return serviceInvokers;
                 } else {
-                    clusterDestory(addreddChanged, serviceInvokers, false);
-                    clusterRefresh(addreddChanged, interfaceInvokers);
                     if (logger.isDebugEnabled()) {
-                        logger.debug("step is APPLICATION_FIRST availableServiceInvokers is empty get interfaceInvokers");
+                        logger.debug("step is APPLICATION_FIRST serviceInvokers is empty get interfaceInvokers");
                     }
                     return interfaceInvokers;
                 }
@@ -224,6 +207,17 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         throw new UnsupportedOperationException(rule.getStep().name());
     }
 
+
+    private boolean shouldMigrate(boolean addressChanged, List<Invoker<T>>  serviceInvokers, List<Invoker<T>>  interfaceInvokers) {
+        Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
+        if (null != detectors) {
+            if (detectors.stream().anyMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
+                return  true;
+            }
+        }
+
+        return false;
+    }
 
     private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers, boolean destroySub) {
         if (addressChanged) {
