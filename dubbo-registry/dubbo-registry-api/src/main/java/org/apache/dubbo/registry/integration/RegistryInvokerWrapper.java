@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
+public class RegistryInvokerWrapper<T> implements ClusterInvoker<T> {
     private RegistryDirectory<T> directory;
     private Cluster cluster;
     private Invoker<T> invoker;

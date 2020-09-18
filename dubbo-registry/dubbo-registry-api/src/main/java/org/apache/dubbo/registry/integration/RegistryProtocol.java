@@ -133,7 +133,7 @@ public class RegistryProtocol implements Protocol {
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
-    private Protocol protocol;
+    protected Protocol protocol;
     private RegistryFactory registryFactory;
     private ProxyFactory proxyFactory;
 
@@ -454,8 +454,8 @@ public class RegistryProtocol implements Protocol {
         return doRefer(cluster, registry, type, url);
     }
 
-    private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
+    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        RegistryDirectory<T> directory = new RegistryDirectory<>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
@@ -501,11 +501,11 @@ public class RegistryProtocol implements Protocol {
         invokerWrapper.setInvoker(invokerWrapper.getCluster().join(directory));
     }
 
-    private static URL toSubscribeUrl(URL url) {
+    public static URL toSubscribeUrl(URL url) {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
     }
 
-    private List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
+    protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
         return ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
                 .getActivateExtension(url, "registry.protocol.listener");
     }
