@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -49,6 +50,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected final Map<URL, Map<String, InterfaceAddressURL>> stringUrls = new HashMap<>();
     protected final Map<String, URLAddress> stringAddress = new HashMap<>();
     protected final Map<String, URLParam> stringParam = new HashMap<>();
+
+    private Map<InterfaceAddressURL, AtomicInteger> urlCount = new HashMap<>();
+    private Map<URLAddress, AtomicInteger> addressCount = new HashMap<>();
+    private Map<URLParam, AtomicInteger> paramCount = new HashMap<>();
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
@@ -89,10 +94,18 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     URLAddress address = stringAddress.get(rawAddress);
                     if (address == null) {
                         address = URLAddress.parse(rawAddress, encoded);
+                        stringAddress.put(rawAddress, address);
+                    } else {
+                        AtomicInteger i = addressCount.computeIfAbsent(address, k -> new AtomicInteger(0));
+                        i.incrementAndGet();
                     }
                     URLParam param = stringParam.get(rawParams);
                     if (param == null) {
                         param = URLParam.parse(rawParams, encoded);
+                        stringParam.put(rawParams, param);
+                    } else {
+                        AtomicInteger i = paramCount.computeIfAbsent(param, k -> new AtomicInteger(0));
+                        i.incrementAndGet();
                     }
 
                     cachedURL = InterfaceAddressURL.valueOf(address, param, copyOfConsumer);
@@ -101,6 +114,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     }
                 } else {
                     cachedURL.setCreatedStamp(System.currentTimeMillis());
+                    AtomicInteger i = urlCount.computeIfAbsent(cachedURL, k -> new AtomicInteger(0));
+                    i.incrementAndGet();
                 }
                 if (firstUpdatedStamp == 0) {
                     firstUpdatedStamp = cachedURL.getCreatedStamp();
