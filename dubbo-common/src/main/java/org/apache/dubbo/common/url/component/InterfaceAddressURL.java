@@ -46,7 +46,7 @@ public class InterfaceAddressURL extends URL {
                 urlAddress.getHost(),
                 urlAddress.getPort(),
                 urlAddress.getPath(),
-                urlParam.getParams(),
+                urlParam.getParameters(),
                 consumerUrl,
                 overrideURL
         );
@@ -85,7 +85,6 @@ public class InterfaceAddressURL extends URL {
     ) {
         super(protocol, username, password, host, port, path, parameters);
         // FIXME, copied from RegistryDirectory.mergeUrl()
-        //parameters.put(CHECK_KEY, String.valueOf(false));
         this.consumerURL = consumerURL;
         this.overriddenURL = overrideURL;
         this.createdStamp = System.currentTimeMillis();
