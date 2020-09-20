@@ -31,9 +31,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
@@ -47,16 +48,16 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
+    private final Map<String, String> extraParameters;
+
     protected final Map<URL, Map<String, InterfaceAddressURL>> stringUrls = new HashMap<>();
     protected final Map<String, URLAddress> stringAddress = new HashMap<>();
     protected final Map<String, URLParam> stringParam = new HashMap<>();
 
-    private Map<InterfaceAddressURL, AtomicInteger> urlCount = new HashMap<>();
-    private Map<URLAddress, AtomicInteger> addressCount = new HashMap<>();
-    private Map<URLParam, AtomicInteger> paramCount = new HashMap<>();
-
     public CacheableFailbackRegistry(URL url) {
         super(url);
+        extraParameters = new HashMap<>();
+        extraParameters.put(CHECK_KEY, String.valueOf(false));
     }
 
     /**
@@ -68,54 +69,21 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
      * @param providers
      * @return
      */
-    protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
+    protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers, Map<String, String> extraParameters) {
         if (CollectionUtils.isNotEmpty(providers)) {
             URL copyOfConsumer = removeParamsFromConsumer(consumer);
             Map<String, InterfaceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
-            long firstUpdatedStamp = 0l;
+            long firstUpdatedStamp = 0;
             for (String rawProvider : providers) {
                 InterfaceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
                 if (cachedURL == null) {
-                    boolean encoded = true;
-                    // use encoded value directly to avoid URLDecoder.decode allocation.
-                    int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
-                    if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not shown, mark as not encoded.
-                        encoded = false;
+                    cachedURL = createURL(rawProvider, copyOfConsumer);
+                    if (cachedURL == null) {
+                        continue;
                     }
-                    String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
-                    if (parts.length <= 1) {
-                        logger.warn("Received url without any parameters " + rawProvider);
-                        consumerStringUrls.put(rawProvider, InterfaceAddressURL.valueOf(rawProvider, copyOfConsumer));
-                        break;
-                    }
-
-                    String rawAddress = parts[0];
-                    String rawParams = parts[1];
-                    URLAddress address = stringAddress.get(rawAddress);
-                    if (address == null) {
-                        address = URLAddress.parse(rawAddress, encoded);
-                        stringAddress.put(rawAddress, address);
-                    } else {
-                        AtomicInteger i = addressCount.computeIfAbsent(address, k -> new AtomicInteger(0));
-                        i.incrementAndGet();
-                    }
-                    URLParam param = stringParam.get(rawParams);
-                    if (param == null) {
-                        param = URLParam.parse(rawParams, encoded);
-                        stringParam.put(rawParams, param);
-                    } else {
-                        AtomicInteger i = paramCount.computeIfAbsent(param, k -> new AtomicInteger(0));
-                        i.incrementAndGet();
-                    }
-
-                    cachedURL = InterfaceAddressURL.valueOf(address, param, copyOfConsumer);
-                    if (isMatch(consumer, cachedURL)) {
-                        consumerStringUrls.put(rawProvider, cachedURL);
-                    }
+                    consumerStringUrls.put(rawProvider, cachedURL);
                 } else {
                     cachedURL.setCreatedStamp(System.currentTimeMillis());
-                    AtomicInteger i = urlCount.computeIfAbsent(cachedURL, k -> new AtomicInteger(0));
-                    i.incrementAndGet();
                 }
                 if (firstUpdatedStamp == 0) {
                     firstUpdatedStamp = cachedURL.getCreatedStamp();
@@ -140,7 +108,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
-        List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
+        List<URL> urls = toUrlsWithoutEmpty(consumer, providers, getExtraParameters());
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
@@ -153,10 +121,52 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return urls;
     }
 
-    protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
+    protected InterfaceAddressURL createURL(String rawProvider, URL consumerURL) {
+        boolean encoded = true;
+        // use encoded value directly to avoid URLDecoder.decode allocation.
+        int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
+        if (paramStartIdx == -1) {// if ENCODED_QUESTION_MARK does not shown, mark as not encoded.
+            encoded = false;
+        }
+        String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
+        if (parts.length <= 1) {
+            logger.warn("Received url without any parameters " + rawProvider);
+            return InterfaceAddressURL.valueOf(rawProvider, consumerURL);
+        }
 
-    private URL removeParamsFromConsumer(URL consumer) {
+        String rawAddress = parts[0];
+        String rawParams = parts[1];
+        URLAddress address = stringAddress.get(rawAddress);
+        if (address == null) {
+            address = URLAddress.parse(rawAddress, getDefaultURLProtocol(), encoded);
+            stringAddress.put(rawAddress, address);
+        }
+
+        URLParam param = stringParam.get(rawParams);
+        if (param == null) {
+            param = URLParam.parse(rawParams, encoded, getExtraParameters());
+            stringParam.put(rawParams, param);
+        }
+
+        InterfaceAddressURL cachedURL = InterfaceAddressURL.valueOf(address, param, consumerURL);
+        if (isMatch(consumerURL, cachedURL)) {
+            return cachedURL;
+        }
+        return null;
+    }
+
+    protected URL removeParamsFromConsumer(URL consumer) {
         return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
     }
+
+    protected Map<String, String> getExtraParameters() {
+        return extraParameters;
+    }
+
+    protected String getDefaultURLProtocol() {
+        return DUBBO;
+    }
+
+    protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
 }

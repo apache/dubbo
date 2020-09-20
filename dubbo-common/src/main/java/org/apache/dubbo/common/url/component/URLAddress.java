@@ -16,86 +16,87 @@
  */
 package org.apache.dubbo.common.url.component;
 
+import org.apache.dubbo.common.utils.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Objects;
 
 public class URLAddress {
-    private String rawAddress;
+    private final String rawAddress;
 
-    private String protocol;
-    private String username;
-    private String password;
-    private String path;
-    private String host;
-    private int port;
+    private final String protocol;
+    private final String username;
+    private final String password;
+    private final String path;
+    private final String host;
+    private final int port;
 
-    public URLAddress() {
-    }
-
-    public URLAddress(String protocol, String username, String password, String path, String host, int port) {
+    public URLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
         this.path = path;
         this.host = host;
         this.port = port;
+
+        this.rawAddress = rawAddress;
     }
 
     public String getProtocol() {
         return protocol;
     }
 
-    public void setProtocol(String protocol) {
-        this.protocol = protocol;
+    public URLAddress setProtocol(String protocol) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public URLAddress setUsername(String username) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public URLAddress setPassword(String password) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getPath() {
         return path;
     }
 
-    public void setPath(String path) {
-        this.path = path;
+    public URLAddress setPath(String path) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getHost() {
         return host;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public URLAddress setHost(String host) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public URLAddress setPort(int port) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+    }
+
+    public URLAddress setAddress(String host, int port) {
+        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getRawAddress() {
         return rawAddress;
-    }
-
-    public void setRawAddress(String rawAddress) {
-        this.rawAddress = rawAddress;
     }
 
     @Override
@@ -118,23 +119,45 @@ public class URLAddress {
 
     @Override
     public String toString() {
-        return rawAddress;
+        if (rawAddress != null) {
+            return rawAddress;
+        }
+
+        StringBuilder buf = new StringBuilder();
+        if (StringUtils.isNotEmpty(protocol)) {
+            buf.append(protocol);
+            buf.append("://");
+        }
+
+        if (StringUtils.isNotEmpty(host)) {
+            buf.append(host);
+            if (port > 0) {
+                buf.append(":");
+                buf.append(port);
+            }
+        }
+
+        if (StringUtils.isNotEmpty(path)) {
+            buf.append("/");
+            buf.append(path);
+        }
+
+        return buf.toString();
     }
 
-    public static URLAddress parse(String rawAddress, boolean encoded) {
+    public static URLAddress parse(String rawAddress, String defaultProtocol, boolean encoded) {
         try {
             if (encoded) {
-                return parse(URLDecoder.decode(rawAddress, "UTF-8"));
-            } else {
-                return parse(rawAddress);
+                rawAddress = URLDecoder.decode(rawAddress, "UTF-8");
             }
+            return parse(rawAddress, defaultProtocol);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    public static URLAddress parse(String rawAddress) {
-        String protocol = null;
+    public static URLAddress parse(String rawAddress, String defaultProtocol) {
+        String protocol = defaultProtocol;
         String copyOfRawAddress = rawAddress;
         String path = null, username = null, password = null, host = null;
         int port = 0;
@@ -184,8 +207,22 @@ public class URLAddress {
                 host = rawAddress.substring(0, i);
             }
         }
-        URLAddress address = new URLAddress(protocol, username, password, path, host, port);
-        address.setRawAddress(copyOfRawAddress);
-        return address;
+        return new URLAddress(protocol, username, password, path, host, port, copyOfRawAddress);
+    }
+
+    public static URLAddress valueOf(
+            String protocol,
+            String username,
+            String password,
+            String host,
+            int port,
+            String path
+    ) {
+        port = Math.max(port, 0);
+        // trim the beginning "/"
+        while (path != null && path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return new URLAddress(protocol, username, password, path, host, port, null);
     }
 }
