@@ -123,23 +123,23 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 //                    Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new TreeSet<>());
 //                    set.add(revision);
 //                }
-
-                localServiceToRevisions.forEach((serviceKey, revisions) -> {
-                    List<URL> urls = revisionsToUrls.get(revisions);
-                    if (urls != null) {
-                        serviceUrls.put(serviceKey, urls);
-                    } else {
-                        urls = new ArrayList<>();
-                        for (String r : revisions) {
-                            for (ServiceInstance i : revisionToInstances.get(r)) {
-                                urls.add(i.toURL());
-                            }
-                        }
-                        revisionsToUrls.put(revisions, urls);
-                        serviceUrls.put(serviceKey, urls);
-                    }
-                });
             }
+
+            localServiceToRevisions.forEach((serviceKey, revisions) -> {
+                List<URL> urls = revisionsToUrls.get(revisions);
+                if (urls != null) {
+                    serviceUrls.put(serviceKey, urls);
+                } else {
+                    urls = new ArrayList<>();
+                    for (String r : revisions) {
+                        for (ServiceInstance i : revisionToInstances.get(r)) {
+                            urls.add(i.toURL());
+                        }
+                    }
+                    revisionsToUrls.put(revisions, urls);
+                    serviceUrls.put(serviceKey, urls);
+                }
+            });
         }
 
         this.notifyAddressChanged();

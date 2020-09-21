@@ -32,11 +32,11 @@
 
     <!--<dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />-->
 
-<!--
+
     <dubbo:registry id="mutipleRegistry" protocol="multiple" address="xxx?registry-type=service">
        <dubbo:parameter key="child.zk1" value="zookeeper://localhost:2181" />
     </dubbo:registry>
-    -->
+
 
     <dubbo:registry address="zookeeper://localhost:2181"/>
 
