@@ -4,6 +4,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,9 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author quhongwei
  * @version : MigrationCluserInvoker.java, v 0.1 2020年08月25日 20:19 quhongwei Exp $
  */
-public interface MigrationCluserInvoker<T> extends ClusterInvoker<T> {
-
-    AtomicBoolean addressChanged();
+public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     boolean isServiceInvoker();
 
@@ -24,17 +23,26 @@ public interface MigrationCluserInvoker<T> extends ClusterInvoker<T> {
 
     void setMigrationRule(MigrationRule rule);
 
-    void destroyServiceDiscoveryInvoker();
+    void destroyServiceDiscoveryInvoker(ClusterInvoker<?> invoker);
 
-    void discardServiceDiscoveryInvokerAddress();
+    void discardServiceDiscoveryInvokerAddress(ClusterInvoker<?> invoker);
 
-    void discardInterfaceInvokerAddress();
+    void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker);
 
     void refreshServiceDiscoveryInvoker();
 
     void refreshInterfaceInvoker();
 
-    void destroyInterfaceInvoker();
+    void destroyInterfaceInvoker(ClusterInvoker<T> invoker);
 
     boolean isMigrationMultiRegsitry();
+
+    void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
+
+    void reRefer(URL newSubscribeUrl);
+
+    void fallbackToInterfaceInvoker();
+
+    AtomicBoolean invokersChanged();
+
 }

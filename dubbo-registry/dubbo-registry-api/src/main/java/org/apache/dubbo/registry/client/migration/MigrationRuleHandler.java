@@ -14,25 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 
 @Activate
-public class MigrationRuleListener<T> {
-    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
+public class MigrationRuleHandler<T> {
+    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
     private MigrationInvoker<T> migrationInvoker;
 
-    public MigrationRuleListener(MigrationInvoker<T> invoker) {
+    public MigrationRuleHandler(MigrationInvoker<T> invoker) {
         this.migrationInvoker = invoker;
     }
 
+    private MigrationStep currentStep;
+
     public void doMigrate(String rawRule) {
         MigrationRule rule = MigrationRule.parse(rawRule);
+
+        if (null != currentStep && currentStep.equals(rule.getStep())) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Migration step is not change. rule.getStep is " + currentStep.name());
+            }
+            return;
+        } else {
+            currentStep = rule.getStep();
+        }
 
         migrationInvoker.setMigrationRule(rule);
 

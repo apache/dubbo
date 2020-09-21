@@ -128,7 +128,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
         }
 
-        invokersChanged();
+        // notify invokers refreshed
+        this.invokersChanged();
     }
 
     /**

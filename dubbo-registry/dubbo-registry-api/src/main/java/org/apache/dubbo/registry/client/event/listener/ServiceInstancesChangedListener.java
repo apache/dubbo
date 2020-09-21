@@ -88,6 +88,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
+        if (logger.isDebugEnabled()) {
+            logger.debug(event.getServiceInstances().toString());
+        }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
@@ -108,7 +111,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     metadata = getMetadataInfo(instance);
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
-                        revisionToMetadata.put(revision, getMetadataInfo(instance));
+                        revisionToMetadata.put(revision, metadata);
                     } else {
 
                     }
@@ -161,12 +164,18 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
+            if (logger.isDebugEnabled()) {
+                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+            }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.info("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
@@ -192,6 +201,13 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     public void addListener(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
+    }
+
+    public void removeListener(String serviceKey) {
+        listeners.remove(serviceKey);
+        if (listeners.isEmpty()) {
+            serviceDiscovery.removeServiceInstancesChangedListener(this);
+        }
     }
 
     public List<URL> getUrls(String serviceKey) {

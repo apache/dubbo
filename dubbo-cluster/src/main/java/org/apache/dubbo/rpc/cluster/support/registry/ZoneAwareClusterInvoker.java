@@ -28,7 +28,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
-import org.apache.dubbo.rpc.cluster.support.migration.MigrationCluserInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
@@ -125,14 +125,14 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         List<Invoker<T>>  serviceInvokers = new ArrayList<>();
         boolean addreddChanged = false;
         for (Invoker<T> invoker : invokers) {
-            MigrationCluserInvoker migrationCluserInvoker = (MigrationCluserInvoker) invoker;
-            if (migrationCluserInvoker.isServiceInvoker()) {
+            MigrationClusterInvoker migrationClusterInvoker = (MigrationClusterInvoker) invoker;
+            if (migrationClusterInvoker.isServiceInvoker()) {
                 serviceInvokers.add(invoker);
             } else {
                 interfaceInvokers.add(invoker);
             }
 
-            if (migrationCluserInvoker.addressChanged().compareAndSet(true, false)) {
+            if (migrationClusterInvoker.invokersChanged().compareAndSet(true, false)) {
                 addreddChanged = true;
             }
         }
@@ -144,12 +144,12 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
         MigrationRule rule = null;
 
         for (Invoker<T> invoker : serviceInvokers) {
-            MigrationCluserInvoker migrationCluserInvoker = (MigrationCluserInvoker) invoker;
+            MigrationClusterInvoker migrationClusterInvoker = (MigrationClusterInvoker) invoker;
             if (null == rule) {
-                rule = migrationCluserInvoker.getMigrationRule();
+                rule = migrationClusterInvoker.getMigrationRule();
             } else {
                 // 不一致
-                if (!rule.equals(migrationCluserInvoker.getMigrationRule())) {
+                if (!rule.equals(migrationClusterInvoker.getMigrationRule())) {
                     rule = MigrationRule.queryRule();
                     break;
                 }
@@ -222,16 +222,16 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers, boolean destroySub) {
         if (addressChanged) {
             invokers.forEach(s -> {
-                MigrationCluserInvoker invoker = (MigrationCluserInvoker)s;
+                MigrationClusterInvoker invoker = (MigrationClusterInvoker)s;
                 if (invoker.isServiceInvoker()) {
-                    invoker.discardServiceDiscoveryInvokerAddress();
+                    invoker.discardServiceDiscoveryInvokerAddress(invoker);
                     if (destroySub) {
-                        invoker.destroyServiceDiscoveryInvoker();
+                        invoker.destroyServiceDiscoveryInvoker(invoker);
                     }
                 } else {
-                    invoker.discardInterfaceInvokerAddress();
+                    invoker.discardInterfaceInvokerAddress(invoker);
                     if (destroySub) {
-                        invoker.destroyInterfaceInvoker();
+                        invoker.destroyInterfaceInvoker(invoker);
                     }
                 }
             });
@@ -241,7 +241,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private void clusterRefresh(boolean addressChanged, List<Invoker<T>> invokers) {
         if (addressChanged) {
             invokers.forEach( s -> {
-                MigrationCluserInvoker invoker = (MigrationCluserInvoker)s;
+                MigrationClusterInvoker invoker = (MigrationClusterInvoker)s;
                 if (invoker.isServiceInvoker()) {
                     invoker.refreshServiceDiscoveryInvoker();
                 } else {

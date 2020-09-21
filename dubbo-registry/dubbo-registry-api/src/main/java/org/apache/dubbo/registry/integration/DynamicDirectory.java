@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.client.migration.InvokersChangedListener;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -37,9 +38,7 @@ import org.apache.dubbo.rpc.cluster.RouterFactory;
 import org.apache.dubbo.rpc.cluster.directory.AbstractDirectory;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -248,7 +247,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("Failed to destroy service " + serviceKey, t);
         }
 
-        invokersChangedListeners.clear();
+        invokersChangedListener = null;
     }
 
     @Override
@@ -260,15 +259,23 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
     }
 
-    private Set<InvokersChangedListener> invokersChangedListeners = new HashSet<>();
+    private volatile InvokersChangedListener invokersChangedListener;
+    private volatile boolean addressChanged;
 
-    public void addInvokersChangedListener(InvokersChangedListener listener) {
-        invokersChangedListeners.add(listener);
+    public void setInvokersChangedListener(InvokersChangedListener listener) {
+        this.invokersChangedListener = listener;
+        if (addressChanged) {
+            invokersChangedListener.onChange();
+            this.addressChanged = false;
+        }
     }
 
     protected void invokersChanged() {
-        for (InvokersChangedListener l : invokersChangedListeners) {
-            l.onChange();
+        if (invokersChangedListener != null) {
+            invokersChangedListener.onChange();
+            this.addressChanged = false;
+        } else {
+            this.addressChanged = true;
         }
     }
 

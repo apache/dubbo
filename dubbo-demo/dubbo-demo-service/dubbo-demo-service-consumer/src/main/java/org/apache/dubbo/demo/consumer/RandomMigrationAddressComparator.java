@@ -5,11 +5,10 @@
 package org.apache.dubbo.demo.consumer;
 
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.cluster.support.migration.MigrationCluserInvoker;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
 
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 /**
@@ -21,8 +20,8 @@ import java.util.stream.Collectors;
 public class RandomMigrationAddressComparator implements MigrationClusterComparator {
     @Override
     public <T> boolean shouldMigrate(List<Invoker<T>> interfaceInvokers, List<Invoker<T>> serviceInvokers) {
-        List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
-        List<Invoker<T>>  availableInterfaceInvokers = interfaceInvokers.stream().filter( s -> ((MigrationCluserInvoker)s).isAvailable()).collect(Collectors.toList());
+        List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationClusterInvoker)s).isAvailable()).collect(Collectors.toList());
+        List<Invoker<T>>  availableInterfaceInvokers = interfaceInvokers.stream().filter( s -> ((MigrationClusterInvoker)s).isAvailable()).collect(Collectors.toList());
 
 
         if (availableServiceInvokers.isEmpty()) {

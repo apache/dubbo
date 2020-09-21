@@ -14,43 +14,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.registry.integration.MigrationInvoker;
-import org.apache.dubbo.registry.integration.MigrationRuleListener;
+import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 @Activate
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener, ConfigurationListener {
-    private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryProtocolListener.class);
+public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener {
+    private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
 
-    private Set<MigrationRuleListener> listeners = new ConcurrentHashSet<>();
+    private Set<MigrationRuleHandler> listeners = new ConcurrentHashSet<>();
     private DynamicConfiguration configuration;
 
     private volatile String rawRule;
 
-    public ServiceDiscoveryRegistryProtocolListener() {
+    public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
-        configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
+        logger.info("Listening for migration rules on dataId-" + RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
+        configuration.addListener(RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
 
         String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
         if (StringUtils.isEmpty(rawRule)) {
@@ -67,6 +68,9 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
             return;
         }
 
+        logger.info("Using the following migration rule to migrate:");
+        logger.info(rawRule);
+
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.doMigrate(rawRule));
         }
@@ -78,10 +82,10 @@ public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtoco
     }
 
     @Override
-    public synchronized <T> void onRefer(RegistryProtocol registryProtocol, Invoker<T> invoker) {
-        MigrationInvoker<T> migrationInvoker = (MigrationInvoker<T>) invoker;
+    public synchronized  void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
+        MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
-        MigrationRuleListener<T> migrationListener = new MigrationRuleListener<>(migrationInvoker);
+        MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);

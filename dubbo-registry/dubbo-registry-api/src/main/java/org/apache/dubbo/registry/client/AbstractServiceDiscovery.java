@@ -14,8 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.integration;
+package org.apache.dubbo.registry.client;
 
-public interface InvokersChangedListener {
-    void onChange();
+public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
+
+    protected ServiceInstance serviceInstance;
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
+    }
+
+    @Override
+    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    }
+
+    @Override
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        this.serviceInstance = serviceInstance;
+    }
 }

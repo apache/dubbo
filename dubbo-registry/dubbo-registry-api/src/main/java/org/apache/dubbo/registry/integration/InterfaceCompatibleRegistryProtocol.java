@@ -19,8 +19,8 @@ package org.apache.dubbo.registry.integration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.client.RegistryProtocol;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -65,9 +65,9 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
-    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
-        return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url);
+        return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
 }

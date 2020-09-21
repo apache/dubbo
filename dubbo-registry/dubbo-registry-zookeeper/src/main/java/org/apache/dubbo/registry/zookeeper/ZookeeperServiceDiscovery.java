@@ -70,7 +70,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
      */
-    private final Map<String, CuratorWatcher> watcherCaches = new ConcurrentHashMap<>();
+    private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -169,6 +169,14 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
+    }
+
+    @Override
+    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+        listener.getServiceNames().forEach(serviceName -> {
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
+            watcher.stopWatching();
+        });
     }
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {

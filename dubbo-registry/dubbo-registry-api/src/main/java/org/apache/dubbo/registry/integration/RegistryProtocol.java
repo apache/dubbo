@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -31,27 +31,22 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.registry.integration.AbstractConfiguratorListener;
-import org.apache.dubbo.registry.integration.DynamicDirectory;
-import org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol;
-import org.apache.dubbo.registry.integration.MigrationInvoker;
-import org.apache.dubbo.registry.integration.RegistryDirectory;
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
+import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.registry.retry.ReExportTask;
 import org.apache.dubbo.registry.support.SkipFailbackWrapperException;
 import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.MergeableCluster;
+import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
@@ -448,31 +443,32 @@ public class RegistryProtocol implements Protocol {
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
-                return doRefer(Cluster.getCluster(MergeableCluster.NAME), registry, type, url);
+                return doRefer(Cluster.getCluster(MergeableCluster.NAME), registry, type, url, qs);
             }
         }
 
         Cluster cluster = Cluster.getCluster(qs.get(CLUSTER_KEY));
-        return doRefer(cluster, registry, type, url);
+        return doRefer(cluster, registry, type, url, qs);
     }
 
-    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url);
-        return interceptInvoker(migrationInvoker, url);
+    protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {
+        URL consumerUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
+        return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
 
-    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
-        return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url);
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+        return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
-    protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url) {
+    protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl) {
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;
         }
 
         for (RegistryProtocolListener listener : listeners) {
-            listener.onRefer(this, invoker);
+            listener.onRefer(this, invoker, consumerUrl);
         }
         return invoker;
     }
@@ -504,19 +500,17 @@ public class RegistryProtocol implements Protocol {
         return (ClusterInvoker<T>) cluster.join(directory);
     }
 
-    public <T> void reRefer(DynamicDirectory<T> directory, URL newSubscribeUrl) {
-        URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
-        Registry registry = directory.getRegistry();
-        registry.unregister(directory.getRegisteredConsumerUrl());
-        directory.unSubscribe(toSubscribeUrl(oldSubscribeUrl));
-        registry.register(directory.getRegisteredConsumerUrl());
+    public <T> void reRefer(ClusterInvoker<?> invoker, URL newSubscribeUrl) {
+        if (!(invoker instanceof MigrationClusterInvoker)) {
+            logger.error("Only invoker type of MigrationClusterInvoker supports reRefer, current invoker is " + invoker.getClass());
+            return;
+        }
 
-        directory.setRegisteredConsumerUrl(newSubscribeUrl);
-        directory.buildRouterChain(newSubscribeUrl);
-        directory.subscribe(toSubscribeUrl(newSubscribeUrl));
+        MigrationClusterInvoker<?> migrationClusterInvoker = (MigrationClusterInvoker<?>)invoker;
+        migrationClusterInvoker.reRefer(newSubscribeUrl);
     }
 
-    protected static URL toSubscribeUrl(URL url) {
+    public static URL toSubscribeUrl(URL url) {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
     }
 
@@ -836,36 +830,5 @@ public class RegistryProtocol implements Protocol {
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
         }
         return INSTANCE;
-    }
-
-    public static class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
-
-        public ServiceDiscoveryMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url) {
-            super(registryProtocol, cluster, registry, type, url);
-        }
-
-        @Override
-        public synchronized void fallbackToInterfaceInvoker() {
-            destroyServiceDiscoveryInvoker();
-        }
-
-        @Override
-        public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
-            refreshServiceDiscoveryInvoker();
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            ClusterInvoker<T> invoker = getServiceDiscoveryInvoker();
-            if (invoker == null) {
-                throw new IllegalStateException("There's no service discovery invoker available for service " + invocation.getServiceName());
-            }
-            return invoker.invoke(invocation);
-        }
-
-        @Override
-        public boolean isServiceInvoker() {
-            return true;
-        }
     }
 }
