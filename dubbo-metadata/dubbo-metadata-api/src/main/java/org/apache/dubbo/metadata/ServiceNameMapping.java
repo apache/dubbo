@@ -69,4 +69,11 @@ public interface ServiceNameMapping {
         //        return groupBuilder.toString();
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
+
+    static class MappingException extends RuntimeException {
+        public MappingException(String message) {
+            super(message);
+        }
+    }
+
 }
