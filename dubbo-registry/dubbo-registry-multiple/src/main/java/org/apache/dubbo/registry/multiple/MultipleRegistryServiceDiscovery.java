@@ -94,7 +94,6 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
     @Override
     public Page<ServiceInstance> getInstances(String serviceName, int offset, int pageSize, boolean healthyOnly) throws NullPointerException, IllegalArgumentException, UnsupportedOperationException {
 
-        //TODO 注意有没有重复的， 怎么办
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
             Page<ServiceInstance> serviceInstancePage =  serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
@@ -133,10 +132,11 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
 
         @Override
         public void onEvent(ServiceInstancesChangedEvent event) {
-            //TODO怎么办
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
-                serviceInstances.addAll(singleListener.event.getServiceInstances());
+                if (null != singleListener.event) {
+                    serviceInstances.addAll(singleListener.event.getServiceInstances());
+                }
             }
 
             sourceListener.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));

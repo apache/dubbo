@@ -163,12 +163,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
         if (!checkInvokerAvailable(serviceDiscoveryInvoker)) {
-            logger.debug("Using interface addresses to handle invocation, interface " + type.getName() + ", total address size " + invoker.getDirectory().getAllInvokers().size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Using interface addresses to handle invocation, interface " + type.getName() + ", total address size " + (invoker.getDirectory().getAllInvokers() == null ? "is null" : invoker.getDirectory().getAllInvokers().size()));
+            }
             return invoker.invoke(invocation);
         }
 
         if (!checkInvokerAvailable(invoker)) {
-            logger.debug("Using instance addresses to handle invocation, interface " + type.getName() + ", total address size " + serviceDiscoveryInvoker.getDirectory().getAllInvokers().size());
+            if (logger.isDebugEnabled()) {
+                logger.debug("Using instance addresses to handle invocation, interface " + type.getName() + ", total address size " + (serviceDiscoveryInvoker.getDirectory().getAllInvokers() == null ? " is null " : serviceDiscoveryInvoker.getDirectory().getAllInvokers().size()));
+            }
             return serviceDiscoveryInvoker.invoke(invocation);
         }
 
@@ -234,7 +238,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         return invokersChanged;
     }
 
-    private volatile AtomicBoolean invokersChanged;
+    private volatile AtomicBoolean invokersChanged = new AtomicBoolean(true);
 
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged.set(true);
