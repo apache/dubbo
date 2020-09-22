@@ -94,7 +94,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
-        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
+        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap<>();
+        Map<String, List<URL>> newServiceUrls = new HashMap<>();//TODO
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
@@ -131,7 +132,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             localServiceToRevisions.forEach((serviceKey, revisions) -> {
                 List<URL> urls = revisionsToUrls.get(revisions);
                 if (urls != null) {
-                    serviceUrls.put(serviceKey, urls);
+                    newServiceUrls.put(serviceKey, urls);
                 } else {
                     urls = new ArrayList<>();
                     for (String r : revisions) {
@@ -140,11 +141,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                         }
                     }
                     revisionsToUrls.put(revisions, urls);
-                    serviceUrls.put(serviceKey, urls);
+                    newServiceUrls.put(serviceKey, urls);
                 }
             });
         }
 
+        this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
     }
 
