@@ -162,6 +162,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     private Boolean publishInterface;
 
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
     public ApplicationConfig() {
     }
 
@@ -455,6 +460,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setPublishInterface(Boolean publishInterface) {
         this.publishInterface = publishInterface;
+    }
+
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
     }
 
     @Override

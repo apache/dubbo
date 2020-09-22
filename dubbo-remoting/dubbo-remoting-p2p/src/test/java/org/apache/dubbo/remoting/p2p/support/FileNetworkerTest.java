@@ -55,13 +55,13 @@ public class FileNetworkerTest {
         Group group = networker.lookup(URL.valueOf(groupURL));
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Peer peer1 = group.join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()), new ChannelHandlerAdapter() {
+        Peer peer1 = group.join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"), new ChannelHandlerAdapter() {
             @Override
             public void received(Channel channel, Object message) {
                 countDownLatch.countDown();
             }
         });
-        Peer peer2 = group.join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()),
+        Peer peer2 = group.join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"),
                 mock(ChannelHandlerAdapter.class));
 
         while (true) {

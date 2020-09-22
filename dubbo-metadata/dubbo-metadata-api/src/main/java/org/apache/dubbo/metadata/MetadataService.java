@@ -228,4 +228,46 @@ public interface MetadataService {
     static SortedSet<String> toSortedStrings(Stream<URL> stream) {
         return unmodifiableSortedSet(stream.map(URL::toFullString).collect(TreeSet::new, Set::add, Set::addAll));
     }
+
+    /**
+     * Export Metadata in Service Instance of Service Discovery
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param metadata {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    default void exportServiceDiscoveryMetadata(String metadata) {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
+
+    /**
+     * Get all Metadata listener from local
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @return {@link Map} of {@link MetadataChangeListener}
+     * @since 3.0
+     */
+    default Map<String, MetadataChangeListener> getMetadataChangeListenerMap() {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
+
+    /**
+     * 1. Fetch Metadata in Service Instance of Service Discovery
+     * 2. Add a metadata change listener
+     * <p>
+     * Used for consumer to get Service Instance Metadata
+     * if Registry is unsupported with publishing metadata
+     *
+     * @param consumerId consumerId
+     * @param listener   {@link MetadataChangeListener} used to notify event
+     * @return {@link Map} of provider Service Instance Metadata
+     * @since 3.0
+     */
+    default String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
+        throw new UnsupportedOperationException("This operation is not supported for consumer.");
+    }
 }

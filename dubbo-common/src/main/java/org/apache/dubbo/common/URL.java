@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -200,10 +201,6 @@ class URL implements Serializable {
                String path,
                Map<String, String> parameters,
                Map<String, Map<String, String>> methodParameters) {
-        if (StringUtils.isEmpty(username)
-                && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
-        }
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -1686,9 +1683,20 @@ class URL implements Serializable {
             if (other.parameters != null) {
                 return false;
             }
-        } else if (!parameters.equals(other.parameters)) {
+        } else if (!parameters.keySet().equals(other.parameters.keySet())) {
             return false;
+        } else {
+            for (String key : parameters.keySet()) {
+                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
+                    continue;
+                }
+                if (!parameters.get(key).equals(other.parameters.get(key))) {
+                    return false;
+                }
+            }
+            return true;
         }
+
         if (!StringUtils.isEquals(password, other.password)) {
             return false;
         }
