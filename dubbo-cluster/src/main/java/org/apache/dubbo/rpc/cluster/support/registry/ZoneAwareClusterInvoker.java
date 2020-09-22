@@ -216,7 +216,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
-        return false;
+        return true;
     }
 
     private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers, boolean destroySub) {
