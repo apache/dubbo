@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
-import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 @Activate
 public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener {
@@ -50,8 +49,8 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
 
-        logger.info("Listening for migration rules on dataId-" + RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
-        configuration.addListener(RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
+        logger.info("Listening for migration rules on dataId-" + MigrationRule.RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
+        configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
 
         String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
         if (StringUtils.isEmpty(rawRule)) {
