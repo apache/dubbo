@@ -27,7 +27,10 @@
     </dubbo:application>
 
     <dubbo:config-center address="zookeeper://localhost:2181"/>
-    <dubbo:metadata-report address="zookeeper://localhost:2181"/>
+    <dubbo:metadata-report address="failover://127.0.1:2181?clusters=localhost:2181|localhost:2181">
+        <!--<dubbo:parameter key="strategy" value="local"/>-->
+        <dubbo:parameter key="protocol" value="zookeeper"/>
+    </dubbo:metadata-report>
 
 
     <!--<dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />-->
