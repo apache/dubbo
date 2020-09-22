@@ -40,13 +40,13 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     }
 
     @Override
-    public synchronized void fallbackToInterfaceInvoker() {
+    public void fallbackToInterfaceInvoker() {
         logger.error("Service discovery registry type does not support discovery of interface level addresses, " + getRegistryUrl());
         migrateToServiceDiscoveryInvoker(true);
     }
 
     @Override
-    public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
+    public void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
         refreshServiceDiscoveryInvoker();
     }
 

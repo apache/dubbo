@@ -29,7 +29,9 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     boolean isServiceDiscovery();
 
-    MigrationStep getCurrentStep();
+    MigrationStep getMigrationStep();
+
+    void setMigrationStep(MigrationStep step);
 
     boolean invokersChanged();
 
