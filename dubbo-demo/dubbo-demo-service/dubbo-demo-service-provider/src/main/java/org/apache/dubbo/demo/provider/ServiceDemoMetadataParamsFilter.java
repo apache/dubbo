@@ -3,10 +3,7 @@ package org.apache.dubbo.demo.provider;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.MetadataParamsFilter;
 
-/**
- * @author: hongwei.quhw
- * @date: 2020-08-05 19:33
- */
+
 @Activate
 public class ServiceDemoMetadataParamsFilter implements MetadataParamsFilter {
     @Override
