@@ -25,7 +25,7 @@ import org.apache.dubbo.metadata.tools.TestServiceImpl;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.TypeElement;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -73,7 +73,7 @@ public class ServiceAnnotationUtilsTest extends AbstractAnnotationProcessingTest
         assertEquals("interfaceName", INTERFACE_NAME_ATTRIBUTE_NAME);
         assertEquals("group", GROUP_ATTRIBUTE_NAME);
         assertEquals("version", VERSION_ATTRIBUTE_NAME);
-        assertEquals(new HashSet(asList("org.apache.dubbo.config.annotation.Service", "com.alibaba.dubbo.config.annotation.Service")), SUPPORTED_ANNOTATION_TYPES);
+        assertEquals(new LinkedHashSet<>(asList("org.apache.dubbo.config.annotation.DubboService", "org.apache.dubbo.config.annotation.Service", "com.alibaba.dubbo.config.annotation.Service")), SUPPORTED_ANNOTATION_TYPES);
     }
 
     @Test
