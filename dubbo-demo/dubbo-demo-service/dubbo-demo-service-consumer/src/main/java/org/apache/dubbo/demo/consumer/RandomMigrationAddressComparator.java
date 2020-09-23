@@ -55,8 +55,8 @@ public class RandomMigrationAddressComparator implements MigrationClusterCompara
         int serviceInvokerSize = 0;
         for (Invoker<T> invoker : serviceInvokers) {
             ServiceDiscoveryMigrationInvoker migrationInvoker = (ServiceDiscoveryMigrationInvoker) invoker;
-            if (migrationInvoker.isAvailable() && null != migrationInvoker.getInvoker().getDirectory().getAllInvokers()) {
-                serviceInvokerSize += migrationInvoker.getInvoker().getDirectory().getAllInvokers().size();
+            if (migrationInvoker.isAvailable() && null != migrationInvoker.getServiceDiscoveryInvoker().getDirectory().getAllInvokers()) {
+                serviceInvokerSize += migrationInvoker.getServiceDiscoveryInvoker().getDirectory().getAllInvokers().size();
             }
         }
 
