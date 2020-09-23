@@ -25,7 +25,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 public class MigrationRule {
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION_KEY = "dubbo.application.service-discovery.migration";
-    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP = "DUBBO_SERVICEDISCOVERY_MIGRATION";
+    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP = "MIGRATION";
     public static final String RULE_KEY = ApplicationModel.getName() + ".migration";
 
     private static DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);

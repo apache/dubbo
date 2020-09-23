@@ -29,7 +29,16 @@
 
     <dubbo:consumer check="false"/>
 
-    <dubbo:config-center address="zookeeper://localhost:2181"/>
+    <!--<dubbo:config-center address="zookeeper://localhost:2181"/>-->
+
+
+    <dubbo:config-center protocol="apollo" address="localhost:8080">
+        <dubbo:parameter key="env" value="dev"/>
+        <dubbo:parameter key="cluster" value="default"/>
+        <dubbo:parameter key="app.id" value="SampleApp"/>
+    </dubbo:config-center>
+
+
     <dubbo:metadata-report address="failover://127.0.1:2181?clusters=localhost:2181|localhost:2181">
         <!--<dubbo:parameter key="strategy" value="local"/>-->
         <dubbo:parameter key="protocol" value="zookeeper"/>
