@@ -151,7 +151,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
          * to the same cluster, random sorting has been done.
          */
         reports.forEach(holder -> {
-            if (isLocalDataCenter(url)) {
+            if (isLocalDataCenter(holder.url)) {
                 this.localDataCenterReportHolder = holder;
             }
         });
