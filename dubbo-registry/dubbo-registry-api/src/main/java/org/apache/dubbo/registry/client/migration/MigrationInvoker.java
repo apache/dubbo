@@ -276,7 +276,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (serviceDiscoveryInvoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding instance addresses, total size " + serviceDiscoveryInvoker.getDirectory().getAllInvokers().size());
+                logger.debug("Discarding instance addresses, total size " + (null == serviceDiscoveryInvoker.getDirectory().getAllInvokers() ? "null" : serviceDiscoveryInvoker.getDirectory().getAllInvokers().size()));
             }
             serviceDiscoveryInvoker.getDirectory().discordAddresses();
         }
@@ -349,7 +349,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding interface addresses, total address size " + invoker.getDirectory().getAllInvokers().size());
+                logger.debug("Discarding interface addresses, total address size " + (null == invoker.getDirectory().getAllInvokers() ? "null": invoker.getDirectory().getAllInvokers().size()));
             }
             invoker.getDirectory().discordAddresses();
         }

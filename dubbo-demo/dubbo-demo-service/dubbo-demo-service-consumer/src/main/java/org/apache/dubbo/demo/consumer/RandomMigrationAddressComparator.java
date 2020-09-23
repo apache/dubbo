@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.demo.consumer;
 
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registry.client.migration.ServiceDiscoveryMigrationInvoker;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationClusterComparator;
@@ -42,14 +44,26 @@ import java.util.stream.Collectors;
 public class RandomMigrationAddressComparator implements MigrationClusterComparator {
     @Override
     public <T> boolean shouldMigrate(List<Invoker<T>> interfaceInvokers, List<Invoker<T>> serviceInvokers) {
-        List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationClusterInvoker)s).isAvailable()).collect(Collectors.toList());
-        List<Invoker<T>>  availableInterfaceInvokers = interfaceInvokers.stream().filter( s -> ((MigrationClusterInvoker)s).isAvailable()).collect(Collectors.toList());
+        int interfaceInvokerSize = 0;
+        for (Invoker<T> invoker : interfaceInvokers) {
+            MigrationInvoker migrationInvoker = (MigrationInvoker)invoker;
+            if (migrationInvoker.isAvailable() && null != migrationInvoker.getInvoker().getDirectory().getAllInvokers()) {
+                interfaceInvokerSize += migrationInvoker.getInvoker().getDirectory().getAllInvokers().size();
+            }
+        }
 
+        int serviceInvokerSize = 0;
+        for (Invoker<T> invoker : serviceInvokers) {
+            ServiceDiscoveryMigrationInvoker migrationInvoker = (ServiceDiscoveryMigrationInvoker) invoker;
+            if (migrationInvoker.isAvailable() && null != migrationInvoker.getInvoker().getDirectory().getAllInvokers()) {
+                serviceInvokerSize += migrationInvoker.getInvoker().getDirectory().getAllInvokers().size();
+            }
+        }
 
-        if (availableServiceInvokers.isEmpty()) {
+        if (serviceInvokerSize == 0) {
             return false;
         }
 
-        return availableServiceInvokers.size() >= availableInterfaceInvokers.size();
+        return serviceInvokerSize >= interfaceInvokerSize;
     }
 }
