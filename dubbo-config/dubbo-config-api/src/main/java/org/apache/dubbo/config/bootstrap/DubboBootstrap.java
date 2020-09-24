@@ -551,7 +551,7 @@ public class DubboBootstrap extends GenericEventListener {
         // check Metadata
         Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadatas)) {
-            ConfigManager.tryAddDefaultConfigToManager(MetadataReportConfig.class, "setSsl", configManager);
+            ConfigManager.tryAddDefaultConfigToManager(MetadataReportConfig.class, "addMetadataReport", configManager);
             metadatas = configManager.getMetadataConfigs();
         }
         if (CollectionUtils.isNotEmpty(metadatas)) {
