@@ -211,8 +211,10 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
     private boolean shouldMigrate(boolean addressChanged, List<Invoker<T>>  serviceInvokers, List<Invoker<T>>  interfaceInvokers) {
         Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
         if (null != detectors) {
-            if (detectors.stream().anyMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
+            if (detectors.stream().allMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
                 return  true;
+            } else {
+                return false;
             }
         }
 
