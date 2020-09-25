@@ -1,0 +1,1 @@
+default=org.apache.dubbo.metadata.DefaultMetadataParamsFilter
