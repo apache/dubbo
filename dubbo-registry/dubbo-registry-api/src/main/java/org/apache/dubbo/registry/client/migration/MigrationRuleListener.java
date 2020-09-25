@@ -33,6 +33,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
@@ -47,15 +48,27 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private volatile String rawRule;
 
     public MigrationRuleListener() {
-        this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
+        Optional<DynamicConfiguration> optional =  ApplicationModel.getEnvironment().getDynamicConfiguration();
 
-        logger.info("Listening for migration rules on dataId-" + MigrationRule.RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
-        configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
+        if (optional.isPresent()) {
+            this.configuration = optional.orElseGet(null);
 
-        String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
-        if (StringUtils.isEmpty(rawRule)) {
+            logger.info("Listening for migration rules on dataId-" + MigrationRule.RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
+            configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
+
+            String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
+            if (StringUtils.isEmpty(rawRule)) {
+                rawRule = INIT;
+            }
+
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("configceneter is not configured!");
+            }
+
             rawRule = INIT;
         }
+
         process(new ConfigChangedEvent(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, rawRule));
     }
 
@@ -92,6 +105,8 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public void onDestroy() {
-        configuration.removeListener(MigrationRule.RULE_KEY, this);
+        if (null != configuration) {
+            configuration.removeListener(MigrationRule.RULE_KEY, this);
+        }
     }
 }

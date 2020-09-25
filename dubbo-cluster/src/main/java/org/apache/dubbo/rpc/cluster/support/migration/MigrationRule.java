@@ -23,12 +23,21 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.util.Optional;
+
 public class MigrationRule {
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION_KEY = "dubbo.application.service-discovery.migration";
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP = "MIGRATION";
     public static final String RULE_KEY = ApplicationModel.getName() + ".migration";
 
-    private static DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
+    private static DynamicConfiguration configuration = null;
+
+    static {
+        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
+        if (optional.isPresent()) {
+            configuration = optional.get();
+        }
+    }
 
     private String key;
     private MigrationStep step = MigrationStep.FORCE_INTERFACE;
@@ -50,11 +59,14 @@ public class MigrationRule {
     }
 
     public static MigrationRule parse(String rawRule) {
+        if (null == configuration) {
+            return getMigrationRule(null);
+        }
+
         if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
-            MigrationStep step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY, MigrationStep.APPLICATION_FIRST.name()));
-            MigrationRule rule = new MigrationRule();
-            rule.setStep(step);
-            return rule;
+            String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
+            return getMigrationRule(step);
+
         }
 
         Constructor constructor = new Constructor(MigrationRule.class);
@@ -63,7 +75,17 @@ public class MigrationRule {
     }
 
     public static MigrationRule queryRule() {
+        if (null == configuration) {
+            return getMigrationRule(null);
+        }
+
         String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
         return parse(rawRule);
+    }
+
+    private  static MigrationRule getMigrationRule(String step) {
+        MigrationRule rule = new MigrationRule();
+        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST.name() : step));
+        return rule;
     }
 }
