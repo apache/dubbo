@@ -91,17 +91,31 @@ public class ConfigCenterConfig extends AbstractConfig {
     public ConfigCenterConfig() {
     }
 
+    /**
+     * 组装url
+     * nacos://113.96.131.199:8848/ConfigCenterConfig?check=true&config-file=dubbo.properties&highest-priority=false&timeout=3000
+     * @return
+     */
     public URL toUrl() {
         Map<String, String> map = new HashMap<>();
+        /**
+         * 将config中有Parameter注解得get方法 重新存储到map
+         */
         appendParameters(map, this);
         if (StringUtils.isEmpty(address)) {
             address = ANYHOST_VALUE;
         }
         map.put(PATH_KEY, ConfigCenterConfig.class.getSimpleName());
         // use 'zookeeper' as the default configcenter.
+        /**
+         * 没有protocol  则默认zk为配置中心
+         */
         if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
             map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);
         }
+        /**
+         * 转换为url样式
+         */
         return UrlUtils.parseURL(address, map);
     }
 

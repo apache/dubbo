@@ -618,6 +618,7 @@ public class DubboBootstrap extends GenericEventListener {
 
         /**
          * 没有显示指定配置中心时   是否可以将注册中心作为默认得配置中心
+         * 过滤出允许的注册中心  将对应的配置信息缓存到configManager
          */
         useRegistryAsConfigCenterIfNecessary();
 
@@ -1083,7 +1084,15 @@ public class DubboBootstrap extends GenericEventListener {
     }
     /* serve for builder apis, end */
 
+    /**
+     * 准备环境
+     * @param configCenter
+     * @return
+     */
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+        /**
+         * 配置中心数据有效
+         */
         if (configCenter.isValid()) {
             if (!configCenter.checkOrUpdateInited()) {
                 return null;

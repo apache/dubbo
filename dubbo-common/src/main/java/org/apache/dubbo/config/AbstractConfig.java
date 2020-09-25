@@ -121,46 +121,83 @@ public abstract class AbstractConfig implements Serializable {
         appendParameters(parameters, config, null);
     }
 
+    /**
+     * 将config中有Parameter注解得get方法 重新存储到parameters
+     * @param parameters
+     * @param config
+     * @param prefix
+     */
     @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
         if (config == null) {
             return;
         }
+        /**
+         * 获取config下的方法并遍历
+         */
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
+                /**
+                 * 过滤  只保留get方法
+                 */
                 if (MethodUtils.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
+                    /**
+                     * 方法返回值类型为Object  或者 方法上有parameter注解且注解中变量excluded为true
+                     */
                     if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                         continue;
                     }
                     String key;
+
                     if (parameter != null && parameter.key().length() > 0) {
+                        /**
+                         * 若parameter有填写key字段则取key对应的value
+                         */
                         key = parameter.key();
                     } else {
+                        /**
+                         * 获取当前get方法对应的字段
+                         */
                         key = calculatePropertyFromGetter(name);
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
                         if (parameter != null && parameter.escaped()) {
+                            /**
+                             * 注解parameter有escaped字段  则encode
+                             */
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
+                            /**
+                             * 注解parameter有append字段  则获取parameters中ke对应的value  并与str结合
+                             */
                             String pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
                             }
                         }
                         if (prefix != null && prefix.length() > 0) {
+                            /**
+                             * 将prefix和key结合
+                             */
                             key = prefix + "." + key;
                         }
+                        /**
+                         * 重新向parameters注入get方法得返回值
+                         */
                         parameters.put(key, str);
                     } else if (parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
                 } else if (isParametersGetter(method)) {
+                    /**
+                     * 当前方法为getParameters  则将getParameters中的属性注入到parameters
+                     */
                     Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
                     parameters.putAll(convert(map, prefix));
                 }
