@@ -331,12 +331,18 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceListener.addListener(protocolServiceKey, listener);
         registerServiceInstancesChangedListener(url, serviceListener);
 
+
         serviceNames.forEach(serviceName -> {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-            serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+            if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+            } else {
+                logger.info("getInstances by serviceName=" + serviceName + " is empty, waiting for serviceListener callback. url=" + url);
+            }
         });
 
         listener.notify(serviceListener.getUrls(protocolServiceKey));
+
     }
 
     /**
