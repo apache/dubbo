@@ -26,12 +26,14 @@ import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -279,13 +281,14 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
-    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<?> serviceDiscoveryInvoker) {
+    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
         }
         if (serviceDiscoveryInvoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding instance addresses, total size " + serviceDiscoveryInvoker.getDirectory().getAllInvokers().size());
+                List<Invoker<T>>  invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
+                logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
             }
 //            serviceDiscoveryInvoker.getDirectory().discordAddresses();
         }
@@ -298,6 +301,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
+        } else {
+            ((DynamicDirectory)serviceDiscoveryInvoker.getDirectory()).markInvokersChanged();
         }
     }
 
@@ -310,6 +315,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
 
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
+        } else {
+            ((DynamicDirectory)invoker.getDirectory()).markInvokersChanged();
         }
     }
 
@@ -331,7 +338,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding interface addresses, total address size " + invoker.getDirectory().getAllInvokers().size());
+                List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
+                logger.debug("Discarding interface addresses, total address size " + (invokers == null ? 0 : invokers.size()));
             }
             //invoker.getDirectory().discordAddresses();
         }
