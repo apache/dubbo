@@ -619,6 +619,7 @@ public abstract class AbstractConfig implements Serializable {
         refreshed.compareAndSet(false, true);
     }
 
+    @Parameter(excluded = true)
     public boolean isRefreshed() {
         return refreshed.get();
     }
