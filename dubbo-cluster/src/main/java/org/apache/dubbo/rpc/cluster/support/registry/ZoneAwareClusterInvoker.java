@@ -210,15 +210,20 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private boolean shouldMigrate(boolean addressChanged, List<Invoker<T>>  serviceInvokers, List<Invoker<T>>  interfaceInvokers) {
         Set<MigrationClusterComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationClusterComparator.class).getSupportedExtensionInstances();
-        if (null != detectors) {
+        if (null != detectors && detectors.size() > 0) {
             if (detectors.stream().allMatch(s -> s.shouldMigrate(interfaceInvokers, serviceInvokers))) {
                 return  true;
             } else {
                 return false;
             }
+        } else {
+            List<Invoker<T>>  availableServiceInvokers = serviceInvokers.stream().filter( s -> ((MigrationClusterInvoker)s).isAvailable()).collect(Collectors.toList());
+            if (availableServiceInvokers.isEmpty()) {
+                return  false;
+            } else {
+                return  true;
+            }
         }
-
-        return true;
     }
 
     private void clusterDestory(boolean addressChanged, List<Invoker<T>> invokers, boolean destroySub) {
