@@ -64,6 +64,10 @@
         <dubbo:parameter key="child.sofa1" value="sofa://100.88.142.124:9603" />
     </dubbo:registry>
 
+    <dubbo:registry id="mutipleRegistry2" protocol="multiple" address="xxx?registry-type=service">
+        <dubbo:parameter key="child.zk2" value="zookeeper://localhost:2182" />
+    </dubbo:registry>
+
     <!--
     <dubbo:reference id="demoService"  interface="org.apache.dubbo.demo.DemoService" check="true"/>
    -->
