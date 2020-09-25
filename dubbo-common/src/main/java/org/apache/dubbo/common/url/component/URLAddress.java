@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.url.component;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -23,7 +24,7 @@ import java.net.URLDecoder;
 import java.util.Objects;
 
 public class URLAddress {
-    private final String rawAddress;
+    private transient final String rawAddress;
 
     private final String protocol;
     private final String username;
@@ -31,6 +32,12 @@ public class URLAddress {
     private final String path;
     private final String host;
     private final int port;
+
+    // cache
+    private volatile transient String address;
+    private volatile transient String ip;
+
+    private transient long timestamp = 0;
 
     public URLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
         this.protocol = protocol;
@@ -41,6 +48,7 @@ public class URLAddress {
         this.port = port;
 
         this.rawAddress = rawAddress;
+        this.timestamp = System.currentTimeMillis();
     }
 
     public String getProtocol() {
@@ -91,12 +99,46 @@ public class URLAddress {
         return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
+    /**
+     * Fetch IP address for this URL.
+     * <p>
+     * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
+     * which use address as its key.
+     *
+     * @return ip in string format
+     */
+    public String getIp() {
+        if (ip == null) {
+            ip = NetUtils.getIpByHost(getHost());
+        }
+        return ip;
+    }
+
+    public String getAddress() {
+        if (address == null) {
+            address = getAddress(getHost(), getPort());
+        }
+        return address;
+    }
+
     public URLAddress setAddress(String host, int port) {
         return new URLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     public String getRawAddress() {
         return rawAddress;
+    }
+
+    private String getAddress(String host, int port) {
+        return port <= 0 ? host : host + ':' + port;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     @Override

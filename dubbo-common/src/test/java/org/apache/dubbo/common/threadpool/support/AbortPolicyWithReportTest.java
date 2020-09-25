@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.threadpool.support;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executors;
@@ -27,7 +27,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class AbortPolicyWithReportTest {
     @Test
     public void jStackDumpTest() throws InterruptedException {
-        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue");
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory=/tmp&version=1.0.0&application=morgan&noValue=");
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
         try {

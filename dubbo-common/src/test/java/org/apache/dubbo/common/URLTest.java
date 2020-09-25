@@ -275,7 +275,7 @@ public class URLTest {
         assertEquals("1.0.0", url.getVersion());
         assertEquals("morgan", url.getParameter("application"));
 
-        url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
+        url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue=");
         assertURLStrDecoder(url);
         assertEquals("dubbo", url.getProtocol());
         assertEquals("admin", url.getUsername());
@@ -301,7 +301,7 @@ public class URLTest {
 
     @Test
     public void test_noValueKey() throws Exception {
-        URL url = URL.valueOf("http://1.2.3.4:8080/path?k0&k1=v1");
+        URL url = URL.valueOf("http://1.2.3.4:8080/path?k0=&k1=v1");
 
         assertURLStrDecoder(url);
         assertTrue(url.hasParameter("k0"));
@@ -896,5 +896,21 @@ public class URLTest {
         URL url = URL.valueOf("http://127.0.0.1:8080/path?i=1&b=false");
         assertEquals(Integer.valueOf(1), url.getParameter("i", Integer.class));
         assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
+    }
+
+    @Test
+    public void testEquals() {
+        URL url1 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        URL url2 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Assertions.assertEquals(url1, url2);
+
+        URL url3 = URL.valueOf("10.20.130.230:20881/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Assertions.assertNotEquals(url1, url3);
+
+        URL url4 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&weight=10&group=group&version=1.0.0");
+        Assertions.assertNotEquals(url1, url4);
+
+        URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&weight=10&group=group&version=1.0.0");
+        Assertions.assertEquals(url4, url5);
     }
 }

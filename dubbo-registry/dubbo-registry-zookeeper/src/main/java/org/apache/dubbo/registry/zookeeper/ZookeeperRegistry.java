@@ -214,7 +214,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     providers.addAll(children);
                 }
             }
-            return toUrlsWithoutEmpty(url, providers, null);
+            return toUrlsWithoutEmpty(url, providers);
         } catch (Throwable e) {
             throw new RpcException("Failed to lookup " + url + " from zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
         }

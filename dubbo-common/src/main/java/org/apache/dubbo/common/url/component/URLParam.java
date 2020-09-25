@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -33,21 +34,24 @@ public class URLParam {
     private final String rawParam;
     private final Map<String, String> params;
 
+    //cache
     private transient Map<String, Map<String, String>> methodParameters;
+    private transient long timestamp = 0;
 
     public URLParam(Map<String, String> params) {
-        this.params = params;
-        this.rawParam = null;
+        this(params, null);
     }
 
     public URLParam(Map<String, String> params, String rawParam) {
-        this.params = params;
+        this.params = Collections.unmodifiableMap(params == null ? new HashMap<>() : params);
         this.rawParam = rawParam;
+
+        this.timestamp = System.currentTimeMillis();
     }
 
     public Map<String, Map<String, String>> getMethodParameters() {
         if (methodParameters == null) {
-            methodParameters = initMethodParameters(this.params);
+            methodParameters = Collections.unmodifiableMap(initMethodParameters(this.params));
         }
         return methodParameters;
     }
@@ -197,6 +201,14 @@ public class URLParam {
         return rawParam;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(params);
@@ -217,8 +229,14 @@ public class URLParam {
         }
 
         StringBuilder buf = new StringBuilder();
+        boolean first = true;
         for (Map.Entry<String, String> entry : new TreeMap<>(params).entrySet()) {
             if (StringUtils.isNotEmpty(entry.getKey())) {
+                if (first) {
+                    first = false;
+                } else {
+                    buf.append("&");
+                }
                 buf.append(entry.getKey());
                 buf.append("=");
                 buf.append(entry.getValue() == null ? "" : entry.getValue().trim());

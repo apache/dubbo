@@ -157,7 +157,6 @@ public final class URLStrParser {
             host = decodedBody.substring(starIdx, endIdx);
         }
 
-
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 

@@ -23,7 +23,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.url.component.InterfaceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -472,7 +472,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * @return
      */
     private URL mergeUrl(URL providerUrl) {
-        if (providerUrl instanceof InterfaceAddressURL) {
+        if (providerUrl instanceof ServiceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
             providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
@@ -516,8 +516,8 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
         if (CollectionUtils.isNotEmpty(configurators)) {
-            if (url instanceof InterfaceAddressURL) {
-                InterfaceAddressURL interfaceAddressURL = (InterfaceAddressURL) url;
+            if (url instanceof ServiceAddressURL) {
+                ServiceAddressURL interfaceAddressURL = (ServiceAddressURL) url;
                 URL overriddenURL = interfaceAddressURL.getOverriddenURL();
                 if (overriddenURL == null) {
                     String appName = interfaceAddressURL.getApplication();
@@ -530,7 +530,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 for (Configurator configurator : configurators) {
                     overriddenURL = configurator.configure(overriddenURL);
                 }
-                ((InterfaceAddressURL) url).setOverriddenURL(overriddenURL);
+                url = new ServiceAddressURL(
+                        interfaceAddressURL.getUrlAddress(),
+                        interfaceAddressURL.getUrlParam(),
+                        interfaceAddressURL.getConsumerURL(),
+                        overriddenURL);
             } else {
                 for (Configurator configurator : configurators) {
                     url = configurator.configure(url);
