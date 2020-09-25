@@ -53,6 +53,7 @@ public interface MethodUtils {
     public static boolean isSetter(Method method) {
         return method.getName().startsWith("set")
                 && !"set".equals(method.getName())
+                && !"setValid".equals(method.getName())
                 && Modifier.isPublic(method.getModifiers())
                 && method.getParameterCount() == 1
                 && ClassUtils.isPrimitive(method.getParameterTypes()[0]);

@@ -471,7 +471,7 @@ public abstract class AbstractConfig implements Serializable {
                     try {
                         String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value) && !isDefaultValue(method, this, value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                             this.markRefreshed();
                         }
@@ -494,6 +494,34 @@ public abstract class AbstractConfig implements Serializable {
         } catch (Exception e) {
             logger.error("Failed to override ", e);
         }
+    }
+
+    private boolean isDefaultValue(Method setter, AbstractConfig config, String value) {
+        String propertyName = setter.getName().substring("set".length());
+        Method getter = null;
+        try {
+            getter = getClass().getMethod("get" + propertyName);
+        } catch (NoSuchMethodException e) {
+            try {
+                getter = getClass().getMethod("is" + propertyName);
+            } catch (NoSuchMethodException ex) {
+                logger.info("Failed to override the property " + propertyName, ex);
+                return true;
+            }
+        }
+
+        try {
+            getter.setAccessible(true);
+            Object defaultValue = getter.invoke(config, new Object[]{});
+            if (defaultValue == null) {
+                return false;
+            } else {
+                return value.equals(defaultValue.toString());
+            }
+        } catch (Exception e) {
+            logger.info("Failed to override the property " + propertyName, e);
+        }
+        return true;
     }
 
     @Override
