@@ -191,6 +191,12 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
+        try {
+            curatorFramework.create().forPath(path);
+        } catch (Exception e) {
+            throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.s", e);
+        }
+
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
                 new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
         try {
