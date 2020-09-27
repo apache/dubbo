@@ -193,8 +193,13 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         String path = buildServicePath(serviceName);
         try {
             curatorFramework.create().forPath(path);
+        } catch (KeeperException.NodeExistsException e) {
+            // ignored
+            if (logger.isDebugEnabled()) {
+                logger.debug(e);
+            }
         } catch (Exception e) {
-            throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.s", e);
+            throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.", e);
         }
 
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
