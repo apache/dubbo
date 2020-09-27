@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -24,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder {
+public final class URLBuilder extends URL {
     private String protocol;
 
     private String username;
@@ -40,6 +41,7 @@ public final class URLBuilder {
     private String path;
 
     private Map<String, String> parameters;
+    private Map<String, Object> attributes;
 
     private Map<String, Map<String, String>> methodParameters;
 
@@ -91,7 +93,6 @@ public final class URLBuilder {
         this.port = port;
         this.path = path;
         this.parameters = parameters != null ? parameters : new HashMap<>();
-        this.methodParameters = (methodParameters != null ? methodParameters : new HashMap<>());
     }
 
     public static URLBuilder from(URL url) {
@@ -112,7 +113,7 @@ public final class URLBuilder {
                 parameters);
     }
 
-    public URL build() {
+    public ServiceConfigURL build() {
         if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
@@ -129,7 +130,8 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        return new URL(protocol, username, password, host, port, path, parameters);
+        // TODO
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, false);
     }
 
 

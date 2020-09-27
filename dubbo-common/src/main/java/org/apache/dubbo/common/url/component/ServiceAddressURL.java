@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -29,30 +28,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
-/**
- * This class derived from URL, so the size of one single URL is not reduced.
- * but it can avoid the map copy from consumer url to provider url by holding the consumer url reference directly.
- */
-public class ServiceAddressURL extends URL {
-    public static ServiceAddressURL valueOf(URLAddress urlAddress, URLParam urlParam, URL consumerUrl) {
-        return valueOf(urlAddress, urlParam, consumerUrl, null);
-    }
-
-    public static ServiceAddressURL valueOf(URLAddress urlAddress, URLParam urlParam, URL consumerURL, URL overrideURL) {
-        return new ServiceAddressURL(urlAddress, urlParam, consumerURL, overrideURL);
-    }
-
-    public static ServiceAddressURL valueOf(String rawURL, URL consumerURL) {
-        return valueOf(rawURL, consumerURL, null);
-    }
-
-    public static ServiceAddressURL valueOf(String rawURL, URL consumerURL, URL overriddenURL) {
-        URL url = valueOf(rawURL, true);
-        return new ServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, overriddenURL);
-    }
-
-    private final transient URL consumerURL;
-    private final transient URL overriddenURL;
+public abstract class ServiceAddressURL extends URL {
+    protected final transient URL consumerURL;
 
     //cache
     private transient Map<String, String> concatenatedPrams;
@@ -67,19 +44,16 @@ public class ServiceAddressURL extends URL {
             int port,
             String path,
             Map<String, String> parameters,
-            URL consumerURL,
-            URL overrideURL
+            URL consumerURL
     ) {
         super(protocol, username, password, host, port, path, parameters);
         this.consumerURL = consumerURL;
-        this.overriddenURL = overrideURL;
         this.createdStamp = System.currentTimeMillis();
     }
 
-    public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL, URL overrideURL){
+    public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL){
         super(urlAddress, urlParam);
         this.consumerURL = consumerURL;
-        this.overriddenURL = overrideURL;
         this.createdStamp = System.currentTimeMillis();
     }
 
@@ -141,10 +115,7 @@ public class ServiceAddressURL extends URL {
     @Override
     public String getParameter(String key) {
         String value = null;
-        if (overriddenURL != null) {
-            value = overriddenURL.getParameter(key);
-        }
-        if (StringUtils.isEmpty(value) && consumerURL != null) {
+        if (consumerURL != null) {
             value = consumerURL.getParameter(key);
         }
         if (StringUtils.isEmpty(value)) {
@@ -156,10 +127,7 @@ public class ServiceAddressURL extends URL {
     @Override
     public String getMethodParameter(String method, String key) {
         String value = null;
-        if (overriddenURL != null) {
-            value = overriddenURL.getMethodParameterStrict(method, key);
-        }
-        if (StringUtils.isEmpty(value) && consumerURL != null) {
+        if (consumerURL != null) {
             value = consumerURL.getMethodParameterStrict(method, key);
         }
         if (StringUtils.isEmpty(value)) {
@@ -174,10 +142,7 @@ public class ServiceAddressURL extends URL {
     @Override
     public String getAnyMethodParameter(String key) {
         String value = null;
-        if (overriddenURL != null) {
-            value = overriddenURL.getAnyMethodParameter(key);
-        }
-        if (StringUtils.isEmpty(value) && consumerURL != null) {
+        if (consumerURL != null) {
             value = consumerURL.getAnyMethodParameter(key);
         }
         if (StringUtils.isEmpty(value)) {
@@ -224,16 +189,8 @@ public class ServiceAddressURL extends URL {
         return CONSUMER_SIDE;
     }
 
-    protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
-        return (T) new ServiceAddressURL(urlAddress, urlParam, this.consumerURL, this.overriddenURL);
-    }
-
     public URL getConsumerURL() {
         return consumerURL;
-    }
-
-    public URL getOverriddenURL() {
-        return overriddenURL;
     }
 
     public long getCreatedStamp() {
@@ -246,13 +203,12 @@ public class ServiceAddressURL extends URL {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        return prime * super.hashCode() + (overriddenURL == null ? 0 : overriddenURL.hashCode());
+        return super.hashCode() ;
     }
 
     /**
      * ignore consumer url compare.
-     * It's only meaningful for comparing two AddressURLs related to the same consumerURL.
+     * It's only meaningful for comparing two address urls related to the same consumerURL.
      *
      * @param obj
      * @return
@@ -268,26 +224,6 @@ public class ServiceAddressURL extends URL {
         if (!(obj instanceof ServiceAddressURL)) {
             return false;
         }
-        if (overriddenURL == null) {
-            return super.equals(obj);
-        } else {
-            ServiceAddressURL other = (ServiceAddressURL) obj;
-            boolean overrideEquals = Objects.equals(overriddenURL.getParameters(), other.getOverriddenURL().getParameters());
-            if (!overrideEquals) {
-                return false;
-            }
-
-            Map<String, String> params = this.getParameters();
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                String key = entry.getKey();
-                if (overriddenURL.getParameters().containsKey(key)) {
-                    continue;
-                }
-                if (!entry.getValue().equals(other.getUrlParam().getParameter(key))) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return super.equals(obj);
     }
 }

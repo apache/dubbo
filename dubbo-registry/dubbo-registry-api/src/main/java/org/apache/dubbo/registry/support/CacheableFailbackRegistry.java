@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
@@ -33,7 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
+import static org.apache.dubbo.common.URLStrParser.ENCODED_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -78,6 +81,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         Map<String, ServiceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
         long firstUpdatedStamp = 0;
         for (String rawProvider : providers) {
+            rawProvider = stripOffTimestamp(rawProvider);
             ServiceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
             if (cachedURL == null) {
                 cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
@@ -105,21 +109,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         }
 
         return list;
-    }
-
-    private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {
-        List<URL> urls = new ArrayList<>();
-        if (CollectionUtils.isNotEmpty(configurators)) {
-            for (String provider : configurators) {
-                if (provider.contains(PROTOCOL_SEPARATOR_ENCODED)) {
-                    URL url = URLStrParser.parseEncodedStr(provider);
-                    if (UrlUtils.isMatch(consumer, url)) {
-                        urls.add(url);
-                    }
-                }
-            }
-        }
-        return urls;
     }
 
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
@@ -156,7 +145,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
         if (parts.length <= 1) {
             logger.warn("Received url without any parameters " + rawProvider);
-            return ServiceAddressURL.valueOf(rawProvider, consumerURL);
+            return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
         }
 
         String rawAddress = parts[0];
@@ -177,15 +166,49 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             param.setTimestamp(System.currentTimeMillis());
         }
 
-        ServiceAddressURL cachedURL = ServiceAddressURL.valueOf(address, param, consumerURL);
+        ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
         if (isMatch(consumerURL, cachedURL)) {
             return cachedURL;
         }
         return null;
     }
 
+    protected ServiceAddressURL createServiceURL(URLAddress address, URLParam param, URL consumerURL) {
+        return new DubboServiceAddressURL(address, param, consumerURL, null);
+    }
+
     protected URL removeParamsFromConsumer(URL consumer) {
         return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
+    }
+
+    private String stripOffTimestamp(String rawProvider) {
+        int idxStart = rawProvider.indexOf(ENCODED_TIMESTAMP_KEY);
+        if (idxStart == -1) {
+            return rawProvider;
+        }
+        int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
+        String part1 = rawProvider.substring(0, idxStart);
+        if (idxEnd == -1) {
+            return part1;
+        }
+        String part2 = rawProvider.substring(idxEnd + 1);
+
+        return part1 + part2;
+    }
+
+    private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {
+        List<URL> urls = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            for (String provider : configurators) {
+                if (provider.contains(PROTOCOL_SEPARATOR_ENCODED)) {
+                    URL url = URLStrParser.parseEncodedStr(provider);
+                    if (UrlUtils.isMatch(consumer, url)) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return urls;
     }
 
     protected Map<String, String> getExtraParameters() {

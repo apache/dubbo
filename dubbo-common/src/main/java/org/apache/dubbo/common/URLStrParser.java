@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +30,10 @@ import static org.apache.dubbo.common.utils.StringUtils.decodeHexByte;
 import static org.apache.dubbo.common.utils.Utf8Utils.decodeUtf8;
 
 public final class URLStrParser {
+    private static final Logger logger = LoggerFactory.getLogger(URLStrParser.class);
     public static final String ENCODED_QUESTION_MARK = "%3F";
+    public static final String ENCODED_TIMESTAMP_KEY = "timestamp%3D";
+    public static final String ENCODED_AND_MARK = "%26";
     private static final char SPACE = 0x20;
 
     private static final ThreadLocal<TempBuf> DECODE_TEMP_BUF = ThreadLocal.withInitial(() -> new TempBuf(1024));
@@ -157,7 +164,7 @@ public final class URLStrParser {
             host = decodedBody.substring(starIdx, endIdx);
         }
 
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, modifiable);
     }
 
     public static URL parseEncodedStr(String encodedURLStr) {

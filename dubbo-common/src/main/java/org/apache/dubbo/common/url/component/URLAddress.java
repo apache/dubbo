@@ -24,63 +24,67 @@ import java.net.URLDecoder;
 import java.util.Objects;
 
 public class URLAddress {
-    private transient final String rawAddress;
-
-    private final String protocol;
-    private final String username;
-    private final String password;
-    private final String path;
-    private final String host;
-    private final int port;
+    protected String host;
+    protected int port;
 
     // cache
-    private volatile transient String address;
-    private volatile transient String ip;
+    protected transient final String rawAddress;
+    protected transient String address;
+    protected transient boolean modifiable;
+    protected transient long timestamp;
 
-    private transient long timestamp = 0;
+    public URLAddress(String host, int port) {
+        this(host, port, null);
+    }
 
-    public URLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
-        this.protocol = protocol;
-        this.username = username;
-        this.password = password;
-        this.path = path;
+    public URLAddress(String host, int port, boolean modifiable) {
+        this(host, port, null, modifiable);
+    }
+
+    public URLAddress(String host, int port, String rawAddress) {
+        this(host, port, rawAddress, false);
+    }
+
+    public URLAddress(String host, int port, String rawAddress, boolean modifiable) {
         this.host = host;
+        port = Math.max(port, 0);
         this.port = port;
 
         this.rawAddress = rawAddress;
+        this.modifiable = modifiable;
         this.timestamp = System.currentTimeMillis();
     }
 
     public String getProtocol() {
-        return protocol;
+        return "";
     }
 
     public URLAddress setProtocol(String protocol) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        return this;
     }
 
     public String getUsername() {
-        return username;
+        return "";
     }
 
     public URLAddress setUsername(String username) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        return this;
     }
 
     public String getPassword() {
-        return password;
+        return "";
     }
 
     public URLAddress setPassword(String password) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        return this;
     }
 
     public String getPath() {
-        return path;
+        return "";
     }
 
     public URLAddress setPath(String path) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        return this;
     }
 
     public String getHost() {
@@ -88,7 +92,12 @@ public class URLAddress {
     }
 
     public URLAddress setHost(String host) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        if (modifiable) {
+            this.host = host;
+            this.address = null;
+            return this;
+        }
+        return new URLAddress(host, port, rawAddress);
     }
 
     public int getPort() {
@@ -96,22 +105,12 @@ public class URLAddress {
     }
 
     public URLAddress setPort(int port) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
-    }
-
-    /**
-     * Fetch IP address for this URL.
-     * <p>
-     * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
-     * which use address as its key.
-     *
-     * @return ip in string format
-     */
-    public String getIp() {
-        if (ip == null) {
-            ip = NetUtils.getIpByHost(getHost());
+        if (modifiable) {
+            this.port = port;
+            this.address = null;
+            return this;
         }
-        return ip;
+        return new URLAddress(host, port, rawAddress);
     }
 
     public String getAddress() {
@@ -122,7 +121,17 @@ public class URLAddress {
     }
 
     public URLAddress setAddress(String host, int port) {
-        return new URLAddress(protocol, username, password, path, host, port, rawAddress);
+        if (modifiable) {
+            this.host = host;
+            this.port = port;
+            this.address = null;
+            return this;
+        }
+        return new URLAddress(host, port, rawAddress);
+    }
+
+    public String getIp() {
+        return NetUtils.getIpByHost(getHost());
     }
 
     public String getRawAddress() {
@@ -143,7 +152,7 @@ public class URLAddress {
 
     @Override
     public int hashCode() {
-        return Objects.hash(protocol, username, password, path, host, port);
+        return Objects.hash(host, port);
     }
 
     @Override
@@ -166,11 +175,6 @@ public class URLAddress {
         }
 
         StringBuilder buf = new StringBuilder();
-        if (StringUtils.isNotEmpty(protocol)) {
-            buf.append(protocol);
-            buf.append("://");
-        }
-
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
             if (port > 0) {
@@ -178,12 +182,6 @@ public class URLAddress {
                 buf.append(port);
             }
         }
-
-        if (StringUtils.isNotEmpty(path)) {
-            buf.append("/");
-            buf.append(path);
-        }
-
         return buf.toString();
     }
 
@@ -192,13 +190,40 @@ public class URLAddress {
             if (encoded) {
                 rawAddress = URLDecoder.decode(rawAddress, "UTF-8");
             }
-            return parse(rawAddress, defaultProtocol);
+
+            boolean isPathAddress = !Character.isDigit(rawAddress.charAt(0));
+            if (isPathAddress) {
+                return createPathURLAddress(rawAddress, defaultProtocol);
+            }
+            return createURLAddress(rawAddress, defaultProtocol);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    public static URLAddress parse(String rawAddress, String defaultProtocol) {
+    private static URLAddress createURLAddress(String rawAddress, String defaultProtocol) {
+        String host = null;
+        int port = 0;
+
+        int i = rawAddress.lastIndexOf(':');
+        if (i >= 0 && i < rawAddress.length() - 1) {
+            if (rawAddress.lastIndexOf('%') > i) {
+                // ipv6 address with scope id
+                // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
+                // see https://howdoesinternetwork.com/2013/ipv6-zone-id
+                // ignore
+            } else {
+                port = Integer.parseInt(rawAddress.substring(i + 1));
+                host = rawAddress.substring(0, i);
+            }
+        } else {
+            host = rawAddress;
+        }
+
+        return new URLAddress(host, port, rawAddress);
+    }
+
+    private static PathURLAddress createPathURLAddress(String rawAddress, String defaultProtocol) {
         String protocol = defaultProtocol;
         String copyOfRawAddress = rawAddress;
         String path = null, username = null, password = null, host = null;
@@ -249,22 +274,6 @@ public class URLAddress {
                 host = rawAddress.substring(0, i);
             }
         }
-        return new URLAddress(protocol, username, password, path, host, port, copyOfRawAddress);
-    }
-
-    public static URLAddress valueOf(
-            String protocol,
-            String username,
-            String password,
-            String host,
-            int port,
-            String path
-    ) {
-        port = Math.max(port, 0);
-        // trim the beginning "/"
-        while (path != null && path.startsWith("/")) {
-            path = path.substring(1);
-        }
-        return new URLAddress(protocol, username, password, path, host, port, null);
+        return new PathURLAddress(protocol, username, password, path, host, port, copyOfRawAddress);
     }
 }

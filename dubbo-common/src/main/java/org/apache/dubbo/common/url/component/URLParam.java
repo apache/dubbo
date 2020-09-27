@@ -36,16 +36,27 @@ public class URLParam {
 
     //cache
     private transient Map<String, Map<String, String>> methodParameters;
-    private transient long timestamp = 0;
+    private transient boolean modifiable;
+    private transient long timestamp;
 
     public URLParam(Map<String, String> params) {
         this(params, null);
     }
 
+    public URLParam(Map<String, String> params, boolean modifiable) {
+        this(params, null, modifiable);
+    }
+
     public URLParam(Map<String, String> params, String rawParam) {
-        this.params = Collections.unmodifiableMap(params == null ? new HashMap<>() : params);
+        this(params, rawParam, false);
+    }
+
+    public URLParam(Map<String, String> params, String rawParam, boolean modifiable) {
+        Map<String, String> map = (params == null ? new HashMap<>() : new HashMap<>(params));
+        this.params = modifiable ? map : Collections.unmodifiableMap(map);
         this.rawParam = rawParam;
 
+        this.modifiable = modifiable;
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -103,10 +114,14 @@ public class URLParam {
             return this;
         }
 
+        if (modifiable) {
+            params.put(key, value);
+            return this;
+        }
+
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
-
-        return new URLParam(map);
+        return new URLParam(map, rawParam);
     }
 
     public URLParam addParameterIfAbsent(String key, String value) {
@@ -117,10 +132,16 @@ public class URLParam {
         if (hasParameter(key)) {
             return this;
         }
+
+        if (modifiable) {
+            params.put(key, value);
+            return this;
+        }
+
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URLParam(map);
+        return new URLParam(map, rawParam);
     }
 
     /**
@@ -154,26 +175,49 @@ public class URLParam {
             return this;
         }
 
+        if (modifiable) {
+            params.putAll(parameters);
+            return this;
+        }
+
         Map<String, String> map = new HashMap<>((int)(getParameters().size() + parameters.size() / 0.75f) + 1);
         map.putAll(getParameters());
         map.putAll(parameters);
-        return new URLParam(map);
+        return new URLParam(map, rawParam);
     }
 
     public URLParam addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
+
+        if (modifiable) {
+            parameters.forEach((k, v) -> {
+                if (!params.containsKey(k)) {
+                    params.put(k, v);
+                }
+            });
+            return this;
+        }
+
         Map<String, String> map = new HashMap<>((int)(getParameters().size() + parameters.size() / 0.75f) + 1);
         map.putAll(parameters);
         map.putAll(getParameters());
-        return new URLParam(map);
+        return new URLParam(map, rawParam);
     }
 
     public URLParam removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
         }
+
+        if (modifiable) {
+            for (String key : keys) {
+                params.remove(key);
+            }
+            return this;
+        }
+
         Map<String, String> map = new HashMap<>(getParameters());
         for (String key : keys) {
             map.remove(key);
@@ -181,10 +225,14 @@ public class URLParam {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URLParam(map);
+        return new URLParam(map, rawParam);
     }
 
     public URLParam clearParameters() {
+        if (modifiable) {
+            params.clear();
+            return this;
+        }
         return new URLParam(new HashMap<>());
     }
 
@@ -194,7 +242,7 @@ public class URLParam {
     }
 
     public String getParameter(String key) {
-        return getParameters().get(key);
+        return params.get(key);
     }
 
     public String getRawParam() {
@@ -224,6 +272,9 @@ public class URLParam {
 
     @Override
     public String toString() {
+        if (StringUtils.isNotEmpty(rawParam)) {
+            return rawParam;
+        }
         if (params == null) {
             return "";
         }
@@ -274,15 +325,5 @@ public class URLParam {
             }
         }
         return new URLParam(parameters, rawParam);
-    }
-
-    public static URLParam valueOf(Map<String, String> parameters) {
-        if (parameters == null) {
-            parameters = new HashMap<>();
-        } else {
-            parameters = new HashMap<>(parameters);
-        }
-
-        return new URLParam(parameters, null);
     }
 }
