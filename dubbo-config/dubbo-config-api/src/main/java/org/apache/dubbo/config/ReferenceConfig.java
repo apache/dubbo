@@ -231,9 +231,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
+
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
+            bootstrap.initialize();
         }
 
         checkAndUpdateSubConfigs();

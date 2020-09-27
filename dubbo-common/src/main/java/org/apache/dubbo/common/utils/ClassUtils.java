@@ -44,21 +44,6 @@ public class ClassUtils {
      */
     public static final String ARRAY_SUFFIX = "[]";
     /**
-     * Prefix for internal array class names: "[L"
-     */
-    private static final String INTERNAL_ARRAY_PREFIX = "[L";
-    /**
-     * Map with primitive type name as key and corresponding primitive type as
-     * value, for example: "int" -> "int.class".
-     */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
-    /**
-     * Map with primitive wrapper type as key and corresponding primitive type
-     * as value, for example: Integer.class -> int.class.
-     */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
-
-    /**
      * Simple Types including:
      * <ul>
      *     <li>{@link Void}</li>
@@ -94,7 +79,20 @@ public class ClassUtils {
             Date.class,
             Object.class
     );
-
+    /**
+     * Prefix for internal array class names: "[L"
+     */
+    private static final String INTERNAL_ARRAY_PREFIX = "[L";
+    /**
+     * Map with primitive type name as key and corresponding primitive type as
+     * value, for example: "int" -> "int.class".
+     */
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
+    /**
+     * Map with primitive wrapper type as key and corresponding primitive type
+     * as value, for example: Integer.class -> int.class.
+     */
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
     static {

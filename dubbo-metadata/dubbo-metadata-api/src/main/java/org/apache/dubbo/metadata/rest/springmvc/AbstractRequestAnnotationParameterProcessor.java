@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
+import org.apache.dubbo.common.utils.AnnotationUtils;
 import org.apache.dubbo.metadata.rest.AbstractAnnotatedMethodParameterProcessor;
 import org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
 
@@ -49,11 +51,18 @@ public abstract class AbstractRequestAnnotationParameterProcessor extends Abstra
 
     @Override
     protected String getDefaultValue(Annotation annotation, Parameter parameter, int parameterIndex) {
-        String defaultValue = getAttribute(annotation, "defaultValue");
-        if (isEmpty(defaultValue)) {
-            defaultValue = super.getDefaultValue(annotation, parameter, parameterIndex);
+        String attributeName = "defaultValue";
+        String attributeValue = getAttribute(annotation, attributeName);
+
+        if (isEmpty(attributeValue) || isDefaultValue(annotation, attributeName, attributeValue)) {
+            attributeValue = super.getDefaultValue(annotation, parameter, parameterIndex);
         }
-        return defaultValue;
+        return attributeValue;
+    }
+
+    private boolean isDefaultValue(Annotation annotation, String attributeName, Object attributeValue) {
+        String defaultValue = AnnotationUtils.getDefaultValue(annotation, attributeName);
+        return Objects.equals(attributeValue, defaultValue);
     }
 
     protected boolean isEmpty(String str) {
