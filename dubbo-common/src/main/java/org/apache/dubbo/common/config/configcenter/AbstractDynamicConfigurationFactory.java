@@ -35,6 +35,9 @@ public abstract class AbstractDynamicConfigurationFactory implements DynamicConf
 
     @Override
     public final DynamicConfiguration getDynamicConfiguration(URL url) {
+        /**
+         * nacos://113.96.131.199:8848/ConfigCenterConfig
+         */
         String key = url == null ? DEFAULT_KEY : url.toServiceString();
         return dynamicConfigurations.computeIfAbsent(key, k -> createDynamicConfiguration(url));
     }

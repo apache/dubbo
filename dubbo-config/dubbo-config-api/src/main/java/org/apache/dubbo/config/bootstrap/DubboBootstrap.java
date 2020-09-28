@@ -1085,7 +1085,7 @@ public class DubboBootstrap extends GenericEventListener {
     /* serve for builder apis, end */
 
     /**
-     * 准备环境
+     * 准备环境  从配置中心读取数据填充到environment
      * @param configCenter
      * @return
      */
@@ -1098,11 +1098,17 @@ public class DubboBootstrap extends GenericEventListener {
                 return null;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            /**
+             * 从配置中心中获取数据
+             */
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = getApplication().getName();
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
+                /**
+                 * 从配置中心中获取数据
+                 */
                 appConfigContent = dynamicConfiguration.getProperties
                         (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
                                 appGroup
@@ -1110,7 +1116,13 @@ public class DubboBootstrap extends GenericEventListener {
             }
             try {
                 environment.setConfigCenterFirst(configCenter.isHighestPriority());
+                /**
+                 * 将configContent转为map存入environment
+                 */
                 environment.updateExternalConfigurationMap(parseProperties(configContent));
+                /**
+                 * 将appConfigContent转为map存入environment
+                 */
                 environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);

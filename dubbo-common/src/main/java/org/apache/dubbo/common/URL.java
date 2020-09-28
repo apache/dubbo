@@ -1520,6 +1520,10 @@ class URL implements Serializable {
         return buildString(true, false, false, true);
     }
 
+    /**
+     * nacos://113.96.131.199:8848/ConfigCenterConfig
+     * @return
+     */
     public String toServiceString() {
         return buildString(true, false, true, true);
     }

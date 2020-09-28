@@ -206,6 +206,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
+    /**
+     * 向nacos请求数据
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param timeout timeout value for fetching the target config
+     * @return
+     * @throws IllegalStateException
+     */
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         String resolvedGroup = resolveGroup(group);
@@ -214,6 +222,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             if (StringUtils.isEmpty(resolvedGroup)) {
                 resolvedGroup = DEFAULT_GROUP;
             }
+            /**
+             * 向nacos请求数据
+             */
             return configService.getConfig(key, resolvedGroup, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
