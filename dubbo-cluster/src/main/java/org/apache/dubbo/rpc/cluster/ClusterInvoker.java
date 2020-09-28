@@ -35,4 +35,6 @@ public interface ClusterInvoker<T> extends Invoker<T> {
     URL getRegistryUrl();
 
     Directory<T> getDirectory();
+
+    boolean isDestroyed();
 }

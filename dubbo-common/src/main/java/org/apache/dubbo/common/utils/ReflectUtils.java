@@ -904,7 +904,9 @@ public final class ReflectUtils {
      * @throws NoSuchMethodException
      * @throws ClassNotFoundException
      * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
      */
+    @Deprecated
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
         String signature = clazz.getName() + "." + methodName;
@@ -943,6 +945,16 @@ public final class ReflectUtils {
         return method;
     }
 
+    /**
+     * @param clazz      Target class to find method
+     * @param methodName Method signature, e.g.: method1(int, String). It is allowed to provide method name only, e.g.: method2
+     * @return target method
+     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException
+     * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
+     */
+    @Deprecated
     public static Method findMethodByMethodName(Class<?> clazz, String methodName)
             throws NoSuchMethodException, ClassNotFoundException {
         return findMethodByMethodSignature(clazz, methodName, null);

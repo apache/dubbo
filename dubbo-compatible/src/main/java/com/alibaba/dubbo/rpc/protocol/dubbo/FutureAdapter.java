@@ -45,6 +45,21 @@ public class FutureAdapter<V> implements Future<V> {
         this.future = future;
     }
 
+    public FutureAdapter(ResponseFuture responseFuture) {
+        this.future = new CompletableFuture<>();
+        responseFuture.setCallback(new ResponseCallback() {
+            @Override
+            public void done(Object response) {
+                future.complete(response);
+            }
+
+            @Override
+            public void caught(Throwable exception) {
+                future.completeExceptionally(exception);
+            }
+        });
+    }
+
     public ResponseFuture getFuture() {
         return new ResponseFuture() {
             @Override
