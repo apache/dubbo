@@ -323,20 +323,24 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceToAppsMapping.put(protocolServiceKey, serviceNamesKey);
 
         // register ServiceInstancesChangedListener
-        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
-                k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
-        serviceListener.setUrl(url);
-        listener.addServiceListener(serviceListener);
-
-        serviceNames.forEach(serviceName -> {
-            List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-            serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey, k -> {
+            ServiceInstancesChangedListener serviceInstancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+            serviceInstancesChangedListener.setUrl(url);
+            serviceNames.forEach(serviceName -> {
+                List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+                if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                    serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                }
+            });
+            return serviceInstancesChangedListener;
         });
 
-        listener.notify(serviceListener.getUrls(protocolServiceKey));
-
+        serviceListener.setUrl(url);
+        listener.addServiceListener(serviceListener);
         serviceListener.addListener(protocolServiceKey, listener);
         registerServiceInstancesChangedListener(url, serviceListener);
+
+        listener.notify(serviceListener.getUrls(protocolServiceKey));
     }
 
     /**
