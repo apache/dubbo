@@ -156,8 +156,12 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         public void onEvent(ServiceInstancesChangedEvent event) {
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
-                if (null != singleListener.event) {
-                    serviceInstances.addAll(singleListener.event.getServiceInstances());
+                if (null != singleListener.event && null != singleListener.event.getServiceInstances()) {
+                    for (ServiceInstance serviceInstance: singleListener.event.getServiceInstances()) {
+                        if (!serviceInstances.contains(serviceInstance)) {
+                            serviceInstances.add(serviceInstance);
+                        }
+                    }
                 }
             }
 

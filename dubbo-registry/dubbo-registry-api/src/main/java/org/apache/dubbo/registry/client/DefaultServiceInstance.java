@@ -184,7 +184,7 @@ public class DefaultServiceInstance implements ServiceInstance {
             if (entry.getKey().equals(REVISION_KEY)) {
                 continue;
             }
-            equals = equals && !entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+            equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
         }
 
         return equals;
