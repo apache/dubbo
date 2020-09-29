@@ -34,10 +34,6 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.*;
 
-/**
- * @author: hongwei.quhw
- * @date: 2020-08-06 14:25
- */
 public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistryServiceDiscovery.class);
 
