@@ -103,7 +103,7 @@ public class RpcStatus {
         }
         for (int i; ; ) {
             i = methodStatus.active.get();
-            if (i + 1 > max) {
+            if (i == Integer.MAX_VALUE || i + 1 > max) {
                 return false;
             }
             if (methodStatus.active.compareAndSet(i, i + 1)) {
