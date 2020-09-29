@@ -651,10 +651,16 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isNotEmpty(configCenters)) {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
+                /**
+                 * 从配置中心读取数据  封装到DynamicConfiguration  并存入configurations
+                 */
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
+        /**
+         * 对所有的配置执行刷新操作
+         */
         configManager.refreshAll();
     }
 

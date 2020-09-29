@@ -588,6 +588,7 @@ public abstract class AbstractConfig implements Serializable {
 
     /**
      * 刷新configCenterConfig
+     * 遍历compositeConfiguration中所有得配置项  调用当前config的set方法  更新数据
      */
     public void refresh() {
         Environment env = ApplicationModel.getEnvironment();
@@ -612,7 +613,7 @@ public abstract class AbstractConfig implements Serializable {
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             /**
-                             * 将value按method.getParameterTypes()[0]得类型进行转换  并调用set方法  修改当前ConfigCenterConfig中得值
+                             * 将value按method.getParameterTypes()[0]得类型进行转换  并调用set方法  修改当前Config中得值
                              */
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
