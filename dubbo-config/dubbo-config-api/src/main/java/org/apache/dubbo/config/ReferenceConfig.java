@@ -36,7 +36,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -66,7 +66,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -232,9 +231,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
+
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
+            bootstrap.initialize();
         }
 
         checkAndUpdateSubConfigs();
@@ -391,16 +391,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
-        /**
-         * @since 2.7.0
-         * ServiceData Store
-         */
-        String metadata = map.get(METADATA_KEY);
-        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? DEFAULT_METADATA_STORAGE_TYPE : metadata);
-        if (metadataService != null) {
-            URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-            metadataService.publishServiceDefinition(consumerURL);
-        }
+
+        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+        MetadataUtils.publishServiceDefinition(consumerURL);
+
         // create service proxy
         return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
@@ -437,6 +431,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         // get consumer's global configuration
         checkDefault();
+
+        // init some null configuration.
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initReferConfig(this));
+
         this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());

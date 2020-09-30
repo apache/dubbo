@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest;
 
-import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.annotation.DubboService;
 
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +35,7 @@ import java.util.Map;
  *
  * @since 2.7.6
  */
-@Service(version = "2.0.0", group = "spring")
+@DubboService(version = "2.0.0", group = "spring")
 @RestController
 public class SpringRestService implements RestService {
 
