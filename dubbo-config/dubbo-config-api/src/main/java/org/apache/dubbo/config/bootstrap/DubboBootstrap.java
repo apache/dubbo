@@ -535,6 +535,9 @@ public class DubboBootstrap extends GenericEventListener {
          */
         startConfigCenter();
 
+        /**
+         * 从配置中心中读取注册中心和protocol相关信息  并加载
+         */
         loadRemoteConfigs();
 
         checkGlobalConfigs();
@@ -562,6 +565,9 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isEmpty(metadatas)) {
             MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
             metadataReportConfig.refresh();
+            /**
+             * metadataReportConfig对应的address不为空
+             */
             if (metadataReportConfig.isValid()) {
                 configManager.addMetadataReport(metadataReportConfig);
                 metadatas = configManager.getMetadataConfigs();
@@ -882,9 +888,15 @@ public class DubboBootstrap extends GenericEventListener {
         return addresses[0];
     }
 
+    /**
+     * 加载配置中心属性
+     */
     private void loadRemoteConfigs() {
         // registry ids to registry configs
         List<RegistryConfig> tmpRegistries = new ArrayList<>();
+        /**
+         * 获取配置中心  包含【dubbo.registries.】的属性key
+         */
         Set<String> registryIds = configManager.getRegistryIds();
         registryIds.forEach(id -> {
             if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
@@ -901,6 +913,9 @@ public class DubboBootstrap extends GenericEventListener {
 
         // protocol ids to protocol configs
         List<ProtocolConfig> tmpProtocols = new ArrayList<>();
+        /**
+         * 获取配置中心  包含【dubbo.protocols.】的属性key
+         */
         Set<String> protocolIds = configManager.getProtocolIds();
         protocolIds.forEach(id -> {
             if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
@@ -1414,6 +1429,10 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    /**
+     * 获取ApplicationConfig  并刷新
+     * @return
+     */
     public ApplicationConfig getApplication() {
         ApplicationConfig application = configManager
                 .getApplication()

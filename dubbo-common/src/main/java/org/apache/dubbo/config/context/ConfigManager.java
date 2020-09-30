@@ -84,6 +84,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         addConfig(application, true);
     }
 
+    /**
+     * 在缓存中获取ApplicationConfig对应的配置
+     * @return
+     */
     public Optional<ApplicationConfig> getApplication() {
         return ofNullable(getConfig(getTagName(ApplicationConfig.class)));
     }
@@ -257,6 +261,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(ProtocolConfig.class));
     }
 
+    /**
+     * 获取配置中心  包含【dubbo.protocols.】的属性key
+     * @return
+     */
     public Set<String> getProtocolIds() {
         Set<String> protocolIds = new HashSet<>();
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
@@ -296,8 +304,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(RegistryConfig.class));
     }
 
+    /**
+     * 获取配置中心  包含【dubbo.registries.】的属性key
+     * @return
+     */
     public Set<String> getRegistryIds() {
         Set<String> registryIds = new HashSet<>();
+
+        /**
+         * 获取externalConfigurationMap和appExternalConfigurationMap中  定义的参数
+         *
+         * startConfigCenter方法中   从配置中心获取
+         */
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getExternalConfigurationMap(),
                 REGISTRIES_SUFFIX));
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getAppExternalConfigurationMap(),
@@ -342,6 +360,12 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfig(getTagName(ReferenceConfigBase.class), id);
     }
 
+    /**
+     * 过滤  只处理properties对应的key中  含有prefix的
+     * @param properties
+     * @param prefix
+     * @return
+     */
     protected static Set<String> getSubProperties(Map<String, String> properties, String prefix) {
         return properties.keySet().stream().filter(k -> k.contains(prefix)).map(k -> {
             k = k.substring(prefix.length());
@@ -449,6 +473,13 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         });
     }
 
+    /**
+     * 从configsCache中获取configType对应的属性
+     * @param configType
+     * @param <C>
+     * @return
+     * @throws IllegalStateException
+     */
     protected <C extends AbstractConfig> C getConfig(String configType) throws IllegalStateException {
         return read(() -> {
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
