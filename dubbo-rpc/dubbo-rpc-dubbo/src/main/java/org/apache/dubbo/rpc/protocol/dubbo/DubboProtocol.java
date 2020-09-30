@@ -455,8 +455,8 @@ public class DubboProtocol extends AbstractProtocol {
             return clients;
         }
 
-        locks.putIfAbsent(key, new Object());
-        synchronized (locks.get(key)) {
+        // We need to ensure that there is no key but value is null in locks, otherwise NPE will occur here
+        synchronized (locks.putIfAbsent(key, new Object())) {
             clients = referenceClientMap.get(key);
             // dubbo check
             if (checkClientCanUse(clients)) {
