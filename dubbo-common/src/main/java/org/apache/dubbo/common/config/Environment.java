@@ -35,7 +35,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public static final String NAME = "environment";
 
     private final PropertiesConfiguration propertiesConfiguration;
-    private final SystemConfiguration systemConfiguration;
     private final EnvironmentConfiguration environmentConfiguration;
     private final InmemoryConfiguration externalConfiguration;
     private final InmemoryConfiguration appExternalConfiguration;
@@ -51,7 +50,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     public Environment() {
         this.propertiesConfiguration = new PropertiesConfiguration();
-        this.systemConfiguration = new SystemConfiguration();
         this.environmentConfiguration = new EnvironmentConfiguration();
         this.externalConfiguration = new InmemoryConfiguration();
         this.appExternalConfiguration = new InmemoryConfiguration();
@@ -118,7 +116,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         if (this.isConfigCenterFirst()) {
             // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
             // Config center has the highest priority
-            prefixedConfiguration.addConfiguration(systemConfiguration);
             prefixedConfiguration.addConfiguration(environmentConfiguration);
             prefixedConfiguration.addConfiguration(appExternalConfiguration);
             prefixedConfiguration.addConfiguration(externalConfiguration);
@@ -127,7 +124,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         } else {
             // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
             // Config center has the highest priority
-            prefixedConfiguration.addConfiguration(systemConfiguration);
             prefixedConfiguration.addConfiguration(environmentConfiguration);
             prefixedConfiguration.addConfiguration(configuration);
             prefixedConfiguration.addConfiguration(appExternalConfiguration);
@@ -149,7 +145,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
             if (dynamicConfiguration != null) {
                 globalConfiguration.addConfiguration(dynamicConfiguration);
             }
-            globalConfiguration.addConfiguration(systemConfiguration);
             globalConfiguration.addConfiguration(environmentConfiguration);
             globalConfiguration.addConfiguration(appExternalConfiguration);
             globalConfiguration.addConfiguration(externalConfiguration);
@@ -186,9 +181,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         return propertiesConfiguration;
     }
 
-    public SystemConfiguration getSystemConfiguration() {
-        return systemConfiguration;
-    }
 
     public EnvironmentConfiguration getEnvironmentConfiguration() {
         return environmentConfiguration;

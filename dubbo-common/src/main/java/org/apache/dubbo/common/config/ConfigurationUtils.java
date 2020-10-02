@@ -38,15 +38,6 @@ public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
 
     /**
-     * Used to get properties from the jvm
-     *
-     * @return
-     */
-    public static Configuration getSystemConfiguration() {
-        return ApplicationModel.getEnvironment().getSystemConfiguration();
-    }
-
-    /**
      * Used to get properties from the os environment
      *
      * @return
