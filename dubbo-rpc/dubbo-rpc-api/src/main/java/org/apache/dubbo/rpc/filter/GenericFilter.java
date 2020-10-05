@@ -71,8 +71,13 @@ public class GenericFilter implements Filter, Filter.Listener {
                     args = new Object[params.length];
                 }
 
+                if(types == null) {
+                    types = new String[params.length];
+                }
+
                 if (args.length != types.length) {
-                    throw new RpcException("args.length != types.length");
+                    throw new RpcException("GenericFilter#invoke args.length != types.length, please check your "
+                            + "params");
                 }
                 String generic = inv.getAttachment(GENERIC_KEY);
 
