@@ -21,6 +21,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.mock.env.MockEnvironment;
@@ -49,7 +50,7 @@ public class ServiceBeanNameBuilderTest {
 
     private MockEnvironment environment;
 
-    @BeforeAll
+    @BeforeEach
     public void prepare() {
         environment = new MockEnvironment();
         environment.setProperty("dubbo.version", "1.0.0");

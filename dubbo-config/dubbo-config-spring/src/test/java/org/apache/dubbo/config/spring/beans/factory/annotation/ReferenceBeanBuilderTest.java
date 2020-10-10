@@ -79,7 +79,7 @@ public class ReferenceBeanBuilderTest {
     private ApplicationContext context;
 
     @BeforeAll
-    public void init() {
+    public static void init() {
         ApplicationModel.reset();
     }
 

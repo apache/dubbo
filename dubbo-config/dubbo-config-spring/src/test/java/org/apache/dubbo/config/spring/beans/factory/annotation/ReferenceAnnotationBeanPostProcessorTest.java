@@ -70,12 +70,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ReferenceAnnotationBeanPostProcessorTest {
 
     @BeforeAll
-    public void setUp() {
+    public static void setUp() {
         ApplicationModel.reset();
     }
 
     @AfterAll
-    public void tearDown() {
+    public static void tearDown() {
         ApplicationModel.reset();
     }
 

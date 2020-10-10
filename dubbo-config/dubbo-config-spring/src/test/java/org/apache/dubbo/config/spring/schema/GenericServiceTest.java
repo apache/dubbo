@@ -19,9 +19,7 @@ package org.apache.dubbo.config.spring.schema;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,12 +35,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
     }
