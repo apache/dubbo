@@ -26,10 +26,10 @@ import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.launcher.EtcdCluster;
 import io.etcd.jetcd.launcher.EtcdClusterFactory;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -58,8 +58,8 @@ public class EtcdDynamicConfigurationTest {
 
         put("/dubbo/config/org.apache.dubbo.etcd.testService/configurators", "hello");
         put("/dubbo/config/test/dubbo.properties", "aaa=bbb");
-        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
-        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assert.assertEquals("hello", config.getConfig("org.apache.dubbo.etcd.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assert.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
     }
 
     @Test
@@ -82,16 +82,16 @@ public class EtcdDynamicConfigurationTest {
 
         Thread.sleep(1000);
 
-        Assertions.assertTrue(latch.await(5, TimeUnit.SECONDS));
-        Assertions.assertEquals(1, listener1.getCount("/dubbo/config/AService/configurators"));
-        Assertions.assertEquals(1, listener2.getCount("/dubbo/config/AService/configurators"));
-        Assertions.assertEquals(1, listener3.getCount("/dubbo/config/testapp/tagrouters"));
-        Assertions.assertEquals(1, listener4.getCount("/dubbo/config/testapp/tagrouters"));
+        Assert.assertTrue(latch.await(5, TimeUnit.SECONDS));
+        Assert.assertEquals(1, listener1.getCount("/dubbo/config/AService/configurators"));
+        Assert.assertEquals(1, listener2.getCount("/dubbo/config/AService/configurators"));
+        Assert.assertEquals(1, listener3.getCount("/dubbo/config/testapp/tagrouters"));
+        Assert.assertEquals(1, listener4.getCount("/dubbo/config/testapp/tagrouters"));
 
-        Assertions.assertEquals("new value1", listener1.getValue());
-        Assertions.assertEquals("new value1", listener2.getValue());
-        Assertions.assertEquals("new value2", listener3.getValue());
-        Assertions.assertEquals("new value2", listener4.getValue());
+        Assert.assertEquals("new value1", listener1.getValue());
+        Assert.assertEquals("new value1", listener2.getValue());
+        Assert.assertEquals("new value2", listener3.getValue());
+        Assert.assertEquals("new value2", listener4.getValue());
     }
 
     private class TestListener implements ConfigurationListener {
@@ -128,7 +128,7 @@ public class EtcdDynamicConfigurationTest {
         }
     }
 
-    @BeforeEach
+    @Before
     public void setUp() {
 
         etcdCluster.start();
@@ -146,7 +146,7 @@ public class EtcdDynamicConfigurationTest {
         config = new EtcdDynamicConfiguration(url);
     }
 
-    @AfterEach
+    @After
     public void tearDown() {
         etcdCluster.close();
     }
