@@ -19,30 +19,29 @@ package org.apache.dubbo.config.spring.schema;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = GenericServiceTest.class)
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
 
-    @Before
+    @BeforeAll
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @After
+    @AfterAll
     public void tearDown() {
         ApplicationModel.reset();
     }
