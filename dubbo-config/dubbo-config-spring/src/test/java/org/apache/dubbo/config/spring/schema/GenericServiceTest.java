@@ -29,7 +29,8 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = GenericServiceTest.class)
