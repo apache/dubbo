@@ -16,16 +16,16 @@
  */
 package org.apache.dubbo.configcenter.support.apollo;
 
-import com.ctrip.framework.apollo.mockserver.EmbeddedApollo;
-import com.google.common.util.concurrent.SettableFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
+
+import com.ctrip.framework.apollo.mockserver.EmbeddedApollo;
+import com.google.common.util.concurrent.SettableFuture;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,10 +33,9 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
-
 
 /**
  * Apollo dynamic configuration mock test.
@@ -52,13 +51,13 @@ public class ApolloDynamicConfigurationTest {
     /**
      * The constant embeddedApollo.
      */
-    @RegisterExtension
+    @ClassRule
     public static EmbeddedApollo embeddedApollo = new EmbeddedApollo();
 
     /**
      * Sets up.
      */
-    @BeforeEach
+    @Before
     public void setUp() {
         String apolloUrl = System.getProperty("apollo.configService");
         String urlForDubbo = "apollo://" + apolloUrl.substring(apolloUrl.lastIndexOf("/") + 1) + "/org.apache.dubbo.apollo.testService?namespace=dubbo&check=true";
@@ -184,7 +183,7 @@ public class ApolloDynamicConfigurationTest {
     /**
      * Tear down.
      */
-    @AfterAll
+    @After
     public void tearDown() {
 
     }
