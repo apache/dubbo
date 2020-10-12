@@ -22,8 +22,8 @@ import org.apache.dubbo.config.spring.annotation.merged.MergedReference;
 import org.apache.dubbo.config.spring.annotation.merged.MergedService;
 import org.apache.dubbo.config.spring.api.DemoService;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.util.ReflectionUtils;
 
@@ -35,24 +35,24 @@ public class MergedAnnotationTest {
     public void testMergedReference() {
         Field field = ReflectionUtils.findField(TestBean1.class, "demoService");
         Reference reference = AnnotatedElementUtils.getMergedAnnotation(field, Reference.class);
-        Assert.assertEquals("dubbo", reference.group());
-        Assert.assertEquals("1.0.0", reference.version());
+        Assertions.assertEquals("dubbo", reference.group());
+        Assertions.assertEquals("1.0.0", reference.version());
 
         Field field2 = ReflectionUtils.findField(TestBean2.class, "demoService");
         Reference reference2 = AnnotatedElementUtils.getMergedAnnotation(field2, Reference.class);
-        Assert.assertEquals("group", reference2.group());
-        Assert.assertEquals("2.0", reference2.version());
+        Assertions.assertEquals("group", reference2.group());
+        Assertions.assertEquals("2.0", reference2.version());
     }
 
     @Test
     public void testMergedService() {
         Service service1 = AnnotatedElementUtils.getMergedAnnotation(DemoServiceImpl1.class, Service.class);
-        Assert.assertEquals("dubbo", service1.group());
-        Assert.assertEquals("1.0.0", service1.version());
+        Assertions.assertEquals("dubbo", service1.group());
+        Assertions.assertEquals("1.0.0", service1.version());
 
         Service service2 = AnnotatedElementUtils.getMergedAnnotation(DemoServiceImpl2.class, Service.class);
-        Assert.assertEquals("group", service2.group());
-        Assert.assertEquals("2.0", service2.version());
+        Assertions.assertEquals("group", service2.group());
+        Assertions.assertEquals("2.0", service2.version());
     }
 
     @MergedService
