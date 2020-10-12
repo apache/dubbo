@@ -39,6 +39,10 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private URL url;
     private String protocolServiceKey;
 
+    /**
+     *  动态代理中的hanler
+     * @param handler
+     */
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
         this.url = invoker.getUrl();
