@@ -19,6 +19,8 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.url.component.PathURLAddress;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -113,19 +115,7 @@ class URL implements Serializable {
 
     private volatile transient Map<String, URL> urls;
 
-    private volatile transient String ip;
-
-    private volatile transient String full;
-
-    private volatile transient String identity;
-
-    private volatile transient String parameter;
-
-    private volatile transient String string;
-
     private transient String serviceKey;
-
-    private transient String address;
 
     protected URL() {
         this.urlAddress = null;
@@ -181,8 +171,25 @@ class URL implements Serializable {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
 
-        this.urlAddress = URLAddress.valueOf(protocol, username, password, host, port, path);
-        this.urlParam = URLParam.valueOf(parameters);
+        this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
+        this.urlParam = new URLParam(parameters);
+    }
+
+    protected URL(String protocol,
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters,
+               boolean modifiable) {
+        if (StringUtils.isEmpty(username)
+                && StringUtils.isNotEmpty(password)) {
+            throw new IllegalArgumentException("Invalid url, password without username!");
+        }
+
+        this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
+        this.urlParam = new URLParam(parameters);
     }
 
     /**
@@ -205,10 +212,14 @@ class URL implements Serializable {
      * @return
      */
     public static URL valueOf(String url, boolean encoded) {
+        return valueOf(url, encoded, false);
+    }
+
+    public static URL valueOf(String url, boolean encoded, boolean modifiable) {
         if (encoded) {
-            return URLStrParser.parseEncodedStr(url, false);
+            return URLStrParser.parseEncodedStr(url, modifiable);
         }
-        return URLStrParser.parseDecodedStr(url, false);
+        return URLStrParser.parseDecodedStr(url, modifiable);
     }
 
     public static URL valueOf(String url, String... reserveParams) {
@@ -248,8 +259,8 @@ class URL implements Serializable {
                 }
             }
         }
-        return newMap.isEmpty() ? new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath())
-                : new URL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
+        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null)
+                : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
     }
 
     public static String encode(String value) {
@@ -299,7 +310,8 @@ class URL implements Serializable {
     }
 
     public URL setProtocol(String protocol) {
-        return newURL(urlAddress.setProtocol(protocol), urlParam);
+        URLAddress newURLAddress = urlAddress.setProtocol(protocol);
+        return returnURL(newURLAddress);
     }
 
     public String getUsername() {
@@ -307,7 +319,8 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        return newURL(urlAddress.setUsername(username), urlParam);
+        URLAddress newURLAddress = urlAddress.setUsername(username);
+        return returnURL(newURLAddress);
     }
 
     public String getPassword() {
@@ -315,7 +328,8 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return newURL(urlAddress.setPassword(password), urlParam);
+        URLAddress newURLAddress = urlAddress.setPassword(password);
+        return returnURL(newURLAddress);
     }
 
     public String getAuthority() {
@@ -332,30 +346,18 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return newURL(urlAddress.setHost(host), urlParam);
+        URLAddress newURLAddress = urlAddress.setHost(host);
+        return returnURL(newURLAddress);
     }
 
-    /**
-     * Fetch IP address for this URL.
-     * <p>
-     * Pls. note that IP should be used instead of Host when to compare with socket's address or to search in a map
-     * which use address as its key.
-     *
-     * @return ip in string format
-     */
-    public String getIp() {
-        if (ip == null) {
-            ip = NetUtils.getIpByHost(getHost());
-        }
-        return ip;
-    }
 
     public int getPort() {
         return urlAddress == null ? 0 : urlAddress.getPort();
     }
 
     public URL setPort(int port) {
-        return newURL(urlAddress.setPort(port), urlParam);
+        URLAddress newURLAddress = urlAddress.setPort(port);
+        return returnURL(newURLAddress);
     }
 
     public int getPort(int defaultPort) {
@@ -364,14 +366,7 @@ class URL implements Serializable {
     }
 
     public String getAddress() {
-        if (address == null) {
-            address = getAddress(getHost(), getPort());
-        }
-        return address;
-    }
-
-    private static String getAddress(String host, int port) {
-        return port <= 0 ? host : host + ':' + port;
+        return urlAddress.getAddress();
     }
 
     public URL setAddress(String address) {
@@ -384,7 +379,12 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        return newURL(urlAddress.setAddress(host, port), urlParam);
+        URLAddress newURLAddress = urlAddress.setAddress(host, port);
+        return returnURL(newURLAddress);
+    }
+
+    public String getIp() {
+        return urlAddress.getIp();
     }
 
     public String getBackupAddress() {
@@ -420,7 +420,8 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return newURL(urlAddress.setPath(path), urlParam);
+        URLAddress newURLAddress = urlAddress.setPath(path);
+        return returnURL(newURLAddress);
     }
 
     public String getAbsolutePath() {
@@ -466,7 +467,7 @@ class URL implements Serializable {
     }
 
     public String getParameter(String key) {
-        return getParameters().get(key);
+        return urlParam.getParameter(key);
     }
 
     public String getParameter(String key, String defaultValue) {
@@ -722,7 +723,7 @@ class URL implements Serializable {
             value = keyMap.get(key);
         }
         if (StringUtils.isEmpty(value)) {
-            value = getParameters().get(key);
+            value = urlParam.getParameter(key);
         }
         return value;
     }
@@ -919,6 +920,16 @@ class URL implements Serializable {
         return StringUtils.isNotEmpty(value);
     }
 
+    public String getAnyMethodParameter(String key) {
+        String suffix = "." + key;
+        for (String fullKey : getUrlParam().getParameters().keySet()) {
+            if (fullKey.endsWith(suffix)) {
+                return getUrlParam().getParameters().get(fullKey);
+            }
+        }
+        return null;
+    }
+
     public boolean hasMethodParameter(String method) {
         if (method == null) {
             return false;
@@ -995,11 +1006,13 @@ class URL implements Serializable {
     }
 
     public URL addParameter(String key, String value) {
-        return newURL(urlAddress, urlParam.addParameter(key, value));
+        URLParam newParam = urlParam.addParameter(key, value);
+        return returnURL(newParam);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
-        return newURL(urlAddress, urlParam.addParameterIfAbsent(key, value));
+        URLParam newParam = urlParam.addParameterIfAbsent(key, value);
+        return returnURL(newParam);
     }
 
     /**
@@ -1009,12 +1022,13 @@ class URL implements Serializable {
      * @return A new URL
      */
     public URL addParameters(Map<String, String> parameters) {
-        return newURL(urlAddress, urlParam.addParameters(parameters));
+        URLParam newParam = urlParam.addParameters(parameters);
+        return returnURL(newParam);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
-        return newURL(urlAddress, urlParam.addParametersIfAbsent(parameters));
-
+        URLParam newURLParam = urlParam.addParametersIfAbsent(parameters);
+        return returnURL(newURLParam);
     }
 
     public URL addParameters(String... pairs) {
@@ -1054,11 +1068,13 @@ class URL implements Serializable {
     }
 
     public URL removeParameters(String... keys) {
-        return newURL(urlAddress, urlParam.removeParameters(keys));
+        URLParam newURLParam = urlParam.removeParameters(keys);
+        return returnURL(newURLParam);
     }
 
     public URL clearParameters() {
-        return newURL(urlAddress, urlParam.clearParameters());
+        URLParam newURLParam = urlParam.clearParameters();
+        return returnURL(newURLParam);
     }
 
     public String getRawParameter(String key) {
@@ -1108,10 +1124,7 @@ class URL implements Serializable {
 
     @Override
     public String toString() {
-        if (string != null) {
-            return string;
-        }
-        return string = buildString(false, true); // no show username and password
+        return buildString(false, true); // no show username and password
     }
 
     public String toString(String... parameters) {
@@ -1119,10 +1132,7 @@ class URL implements Serializable {
     }
 
     public String toIdentityString() {
-        if (identity != null) {
-            return identity;
-        }
-        return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
+        return buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
     }
 
     public String toIdentityString(String... parameters) {
@@ -1130,10 +1140,7 @@ class URL implements Serializable {
     }
 
     public String toFullString() {
-        if (full != null) {
-            return full;
-        }
-        return full = buildString(true, true);
+        return buildString(true, true);
     }
 
     public String toFullString(String... parameters) {
@@ -1141,10 +1148,7 @@ class URL implements Serializable {
     }
 
     public String toParameterString() {
-        if (parameter != null) {
-            return parameter;
-        }
-        return parameter = toParameterString(new String[0]);
+        return toParameterString(new String[0]);
     }
 
     public String toParameterString(String... parameters) {
@@ -1153,7 +1157,7 @@ class URL implements Serializable {
         return buf.toString();
     }
 
-    private void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
+    protected void buildParameters(StringBuilder buf, boolean concat, String[] parameters) {
         if (CollectionUtils.isNotEmptyMap(getParameters())) {
             List<String> includes = (ArrayUtils.isEmpty(parameters) ? null : Arrays.asList(parameters));
             boolean first = true;
@@ -1196,7 +1200,7 @@ class URL implements Serializable {
         }
         String host;
         if (useIP) {
-            host = getIp();
+            host = urlAddress.getIp();
         } else {
             host = getHost();
         }
@@ -1425,7 +1429,7 @@ class URL implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (!(obj instanceof URL)) {
             return false;
         }
         URL other = (URL) obj;
@@ -1437,19 +1441,8 @@ class URL implements Serializable {
         subParameter.put(key, value);
     }
 
-    protected <T extends URL> T newURL(
-            String protocol,
-            String username,
-            String password,
-            String host,
-            int port,
-            String path,
-            Map<String, String> parameters) {
-        return (T) new URL(protocol, username, password, host, port, path, parameters);
-    }
-
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
-        return (T) new URL(urlAddress, urlParam);
+        return (T) new ServiceConfigURL(urlAddress, urlParam, null);
     }
 
     /* methods introduced for CompositeURL, CompositeURL must override to make the implementations meaningful */
@@ -1515,4 +1508,40 @@ class URL implements Serializable {
         return getParameter(SIDE_KEY);
     }
 
+    /* Service Config URL, START*/
+    public Map<String, Object> getAttributes() {
+        return new HashMap<>();
+    }
+
+    public Object getAttribute(String key) {
+        return null;
+    }
+
+    public URL setAttribute(String key, Object obj) {
+        return this;
+    }
+
+    public URL removeAttribute(String key) {
+        return this;
+    }
+
+    public boolean hasAttribute(String key) {
+        return true;
+    }
+
+    /* Service Config URL, END*/
+
+    private URL returnURL(URLAddress newURLAddress) {
+        if (urlAddress == newURLAddress) {
+            return this;
+        }
+        return newURL(newURLAddress, urlParam);
+    }
+
+    private URL returnURL(URLParam newURLParam) {
+        if (urlParam == newURLParam) {
+            return this;
+        }
+        return newURL(urlAddress, newURLParam);
+    }
 }

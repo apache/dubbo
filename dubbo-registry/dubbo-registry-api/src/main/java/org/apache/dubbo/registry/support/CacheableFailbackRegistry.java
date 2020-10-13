@@ -19,10 +19,12 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
-import org.apache.dubbo.common.url.component.InterfaceAddressURL;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,17 +34,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
+import static org.apache.dubbo.common.URLStrParser.ENCODED_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
 
 /**
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
@@ -50,13 +57,13 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private final Map<String, String> extraParameters;
 
-    protected final Map<URL, Map<String, InterfaceAddressURL>> stringUrls = new HashMap<>();
+    protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
     protected final Map<String, URLAddress> stringAddress = new HashMap<>();
     protected final Map<String, URLParam> stringParam = new HashMap<>();
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
-        extraParameters = new HashMap<>();
+        extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
     }
 
@@ -69,46 +76,53 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
      * @param providers
      * @return
      */
-    protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers, Map<String, String> extraParameters) {
-        if (CollectionUtils.isNotEmpty(providers)) {
-            URL copyOfConsumer = removeParamsFromConsumer(consumer);
-            Map<String, InterfaceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
-            long firstUpdatedStamp = 0;
-            for (String rawProvider : providers) {
-                InterfaceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
+    protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
+        URL copyOfConsumer = removeParamsFromConsumer(consumer);
+        Map<String, ServiceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
+        long firstUpdatedStamp = 0;
+        for (String rawProvider : providers) {
+            rawProvider = stripOffTimestamp(rawProvider);
+            ServiceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
+            if (cachedURL == null) {
+                cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
-                    cachedURL = createURL(rawProvider, copyOfConsumer);
-                    if (cachedURL == null) {
-                        continue;
-                    }
-                    consumerStringUrls.put(rawProvider, cachedURL);
-                } else {
-                    cachedURL.setCreatedStamp(System.currentTimeMillis());
+                    continue;
                 }
-                if (firstUpdatedStamp == 0) {
-                    firstUpdatedStamp = cachedURL.getCreatedStamp();
-                }
+                consumerStringUrls.put(rawProvider, cachedURL);
+            } else {
+                cachedURL.setCreatedStamp(System.currentTimeMillis());
             }
-
-            List<URL> list = new ArrayList<>(consumerStringUrls.size());
-            Iterator<Map.Entry<String, InterfaceAddressURL>> iterator = consumerStringUrls.entrySet().iterator();
-            while (iterator.hasNext()) {
-                InterfaceAddressURL url = iterator.next().getValue();
-                if (url.getCreatedStamp() - firstUpdatedStamp < 0) {
-                    iterator.remove();
-                } else {
-                    list.add(url);
-                }
+            if (firstUpdatedStamp == 0) {
+                firstUpdatedStamp = cachedURL.getCreatedStamp();
             }
-
-            return list;
         }
 
-        return new ArrayList<>(1);
+        List<URL> list = new ArrayList<>(consumerStringUrls.size());
+        Iterator<Map.Entry<String, ServiceAddressURL>> iterator = consumerStringUrls.entrySet().iterator();
+        while (iterator.hasNext()) {
+            ServiceAddressURL url = iterator.next().getValue();
+            if (url.getCreatedStamp() - firstUpdatedStamp < 0) {
+                iterator.remove();
+            } else {
+                list.add(url);
+            }
+        }
+
+        return list;
     }
 
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
-        List<URL> urls = toUrlsWithoutEmpty(consumer, providers, getExtraParameters());
+        List<URL> urls;
+        if (CollectionUtils.isEmpty(providers)) {
+            urls = new ArrayList<>(1);
+        } else {
+            String rawProvider = providers.iterator().next();
+            if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL)) {
+                urls = toConfiguratorsWithoutEmpty(consumer, providers);
+            } else {
+                urls = toUrlsWithoutEmpty(consumer, providers);
+            }
+        }
         if (urls.isEmpty()) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
@@ -121,7 +135,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return urls;
     }
 
-    protected InterfaceAddressURL createURL(String rawProvider, URL consumerURL) {
+    protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {
         boolean encoded = true;
         // use encoded value directly to avoid URLDecoder.decode allocation.
         int paramStartIdx = rawProvider.indexOf(ENCODED_QUESTION_MARK);
@@ -131,7 +145,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         String[] parts = URLStrParser.parseRawURLToArrays(rawProvider, paramStartIdx);
         if (parts.length <= 1) {
             logger.warn("Received url without any parameters " + rawProvider);
-            return InterfaceAddressURL.valueOf(rawProvider, consumerURL);
+            return DubboServiceAddressURL.valueOf(rawProvider, consumerURL);
         }
 
         String rawAddress = parts[0];
@@ -140,23 +154,61 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         if (address == null) {
             address = URLAddress.parse(rawAddress, getDefaultURLProtocol(), encoded);
             stringAddress.put(rawAddress, address);
+        } else {
+            address.setTimestamp(System.currentTimeMillis());
         }
 
         URLParam param = stringParam.get(rawParams);
         if (param == null) {
-            param = URLParam.parse(rawParams, encoded, getExtraParameters());
+            param = URLParam.parse(rawParams, encoded, extraParameters);
             stringParam.put(rawParams, param);
+        } else {
+            param.setTimestamp(System.currentTimeMillis());
         }
 
-        InterfaceAddressURL cachedURL = InterfaceAddressURL.valueOf(address, param, consumerURL);
+        ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
         if (isMatch(consumerURL, cachedURL)) {
             return cachedURL;
         }
         return null;
     }
 
+    protected ServiceAddressURL createServiceURL(URLAddress address, URLParam param, URL consumerURL) {
+        return new DubboServiceAddressURL(address, param, consumerURL, null);
+    }
+
     protected URL removeParamsFromConsumer(URL consumer) {
         return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
+    }
+
+    private String stripOffTimestamp(String rawProvider) {
+        int idxStart = rawProvider.indexOf(ENCODED_TIMESTAMP_KEY);
+        if (idxStart == -1) {
+            return rawProvider;
+        }
+        int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
+        String part1 = rawProvider.substring(0, idxStart);
+        if (idxEnd == -1) {
+            return part1;
+        }
+        String part2 = rawProvider.substring(idxEnd + 1);
+
+        return part1 + part2;
+    }
+
+    private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {
+        List<URL> urls = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(configurators)) {
+            for (String provider : configurators) {
+                if (provider.contains(PROTOCOL_SEPARATOR_ENCODED)) {
+                    URL url = URLStrParser.parseEncodedStr(provider);
+                    if (UrlUtils.isMatch(consumer, url)) {
+                        urls.add(url);
+                    }
+                }
+            }
+        }
+        return urls;
     }
 
     protected Map<String, String> getExtraParameters() {

@@ -334,13 +334,12 @@ public class ExtensionLoader<T> {
                 keyValue = arr[1];
             }
 
-            for (Map.Entry<String, String> entry : url.getParameters().entrySet()) {
-                String k = entry.getKey();
-                String v = entry.getValue();
-                if ((k.equals(key) || k.endsWith("." + key))
-                        && ((keyValue != null && keyValue.equals(v)) || (keyValue == null && ConfigUtils.isNotEmpty(v)))) {
-                    return true;
-                }
+            String realValue = url.getParameter(key);
+            if (StringUtils.isEmpty(realValue)) {
+                realValue = url.getAnyMethodParameter(key);
+            }
+            if ((keyValue != null && keyValue.equals(realValue)) || (keyValue == null && ConfigUtils.isNotEmpty(realValue))) {
+                return true;
             }
         }
         return false;

@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -480,7 +481,7 @@ public class NacosRegistry extends FailbackRegistry {
         List<URL> urls = new LinkedList<>();
         if (instances != null && !instances.isEmpty()) {
             for (Instance instance : instances) {
-                URL url = buildURL(instance);
+                URL url = buildURL(consumerURL, instance);
                 if (UrlUtils.isMatch(consumerURL, url)) {
                     urls.add(url);
                 }
@@ -525,15 +526,16 @@ public class NacosRegistry extends FailbackRegistry {
                 ALL_SUPPORTED_CATEGORIES : Arrays.asList(DEFAULT_CATEGORY);
     }
 
-    private URL buildURL(Instance instance) {
+    private URL buildURL(URL consumerURL, Instance instance) {
         Map<String, String> metadata = instance.getMetadata();
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);
-        return new URL(protocol,
+        URL url = new URL(protocol,
                 instance.getIp(),
                 instance.getPort(),
                 path,
                 instance.getMetadata());
+        return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
     }
 
     private Instance createInstance(URL url) {

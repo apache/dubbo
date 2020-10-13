@@ -21,58 +21,22 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
-/**
- * This class derived from URL, so the size of one single URL is not reduced.
- * but it can avoid the map copy from consumer url to provider url by holding the consumer url reference directly.
- */
-public class InterfaceAddressURL extends URL {
-    public static InterfaceAddressURL valueOf(URLAddress urlAddress, URLParam urlParam, URL consumerUrl) {
-        return valueOf(urlAddress, urlParam, consumerUrl, null);
-    }
+public abstract class ServiceAddressURL extends URL {
+    protected final transient URL consumerURL;
 
-    public static InterfaceAddressURL valueOf(URLAddress urlAddress, URLParam urlParam, URL consumerUrl, URL overrideURL) {
-        return new InterfaceAddressURL(
-                urlAddress.getProtocol(),
-                urlAddress.getUsername(),
-                urlAddress.getPassword(),
-                urlAddress.getHost(),
-                urlAddress.getPort(),
-                urlAddress.getPath(),
-                urlParam.getParameters(),
-                consumerUrl,
-                overrideURL
-        );
-    }
-
-    public static InterfaceAddressURL valueOf(String rawURL, URL consumerURL) {
-        URL url = valueOf(rawURL, true);
-        return new InterfaceAddressURL(
-                url.getProtocol(),
-                url.getUsername(),
-                url.getPassword(),
-                url.getHost(),
-                url.getPort(),
-                url.getPath(),
-                url.getParameters(),
-                consumerURL,
-                null
-        );
-    }
-
-    private transient URL consumerURL;
-    private transient URL overriddenURL;
-    private transient Map<String, String> concatenatedPrams; //cache
+    //cache
+    private transient Map<String, String> concatenatedPrams;
+//    private transient Map<String, String> allParameters;
     private transient long createdStamp;
 
-    public InterfaceAddressURL(
+    public ServiceAddressURL(
             String protocol,
             String username,
             String password,
@@ -80,14 +44,27 @@ public class InterfaceAddressURL extends URL {
             int port,
             String path,
             Map<String, String> parameters,
-            URL consumerURL,
-            URL overrideURL
+            URL consumerURL
     ) {
         super(protocol, username, password, host, port, path, parameters);
-        // FIXME, copied from RegistryDirectory.mergeUrl()
         this.consumerURL = consumerURL;
-        this.overriddenURL = overrideURL;
         this.createdStamp = System.currentTimeMillis();
+    }
+
+    public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL){
+        super(urlAddress, urlParam);
+        this.consumerURL = consumerURL;
+        this.createdStamp = System.currentTimeMillis();
+    }
+
+    @Override
+    public String getPath() {
+        return consumerURL.getPath();
+    }
+
+    @Override
+    public String getServiceInterface() {
+        return consumerURL.getServiceInterface();
     }
 
     @Override
@@ -118,13 +95,27 @@ public class InterfaceAddressURL extends URL {
         return consumerURL.getVersion();
     }
 
+    /**
+     * FIXME, Avoid calling this method on the main line.
+     */
+//    @Override
+//    public Map<String, String> getParameters() {
+//        Map<String, String> allParameters = new HashMap<>((int)(super.getParameters().size()/.75 + 1));
+//        allParameters.putAll(super.getParameters());
+//        if (consumerURL != null) {
+//            allParameters.putAll(consumerURL.getParameters());
+//        }
+//        if (overriddenURL != null) {
+//            allParameters.putAll(overriddenURL.getParameters());
+//        }
+//        allParameters.remove(CATEGORY_KEY);
+//        return Collections.unmodifiableMap(allParameters);
+//    }
+
     @Override
     public String getParameter(String key) {
         String value = null;
-        if (overriddenURL != null) {
-            value = overriddenURL.getParameter(key);
-        }
-        if (StringUtils.isEmpty(value) && consumerURL != null) {
+        if (consumerURL != null) {
             value = consumerURL.getParameter(key);
         }
         if (StringUtils.isEmpty(value)) {
@@ -136,10 +127,7 @@ public class InterfaceAddressURL extends URL {
     @Override
     public String getMethodParameter(String method, String key) {
         String value = null;
-        if (overriddenURL != null) {
-            value = overriddenURL.getMethodParameterStrict(method, key);
-        }
-        if (StringUtils.isEmpty(value) && consumerURL != null) {
+        if (consumerURL != null) {
             value = consumerURL.getMethodParameterStrict(method, key);
         }
         if (StringUtils.isEmpty(value)) {
@@ -147,6 +135,18 @@ public class InterfaceAddressURL extends URL {
         }
         if (StringUtils.isEmpty(value)) {
             value = getParameter(key);
+        }
+        return value;
+    }
+
+    @Override
+    public String getAnyMethodParameter(String key) {
+        String value = null;
+        if (consumerURL != null) {
+            value = consumerURL.getAnyMethodParameter(key);
+        }
+        if (StringUtils.isEmpty(value)) {
+            value = super.getAnyMethodParameter(key);
         }
         return value;
     }
@@ -166,47 +166,31 @@ public class InterfaceAddressURL extends URL {
         String localValue = consumerURL.getParameter(key);
         if (remoteValue != null && remoteValue.length() > 0
                 && localValue != null && localValue.length() > 0) {
-            concatenatedPrams.put(key, remoteValue + "," + localValue);
+            value = remoteValue + "," + localValue;
+            concatenatedPrams.put(key, value);
+            return value;
         }
-        return concatenatedPrams.get(key);
+        if (localValue != null && localValue.length() > 0) {
+            value = localValue;
+        } else if (remoteValue != null && remoteValue.length() > 0) {
+            value = remoteValue;
+        }
+        concatenatedPrams.put(key, value);
+        return value;
     }
 
     @Override
     public String getCategory() {
-        return super.getParameter(CATEGORY_KEY);
+        return PROVIDERS_CATEGORY;
     }
 
     @Override
     public String getSide() {
-        return super.getParameter(SIDE_KEY);
-    }
-
-    @Override
-    protected <T extends URL> T newURL(
-            String protocol,
-            String username,
-            String password,
-            String host,
-            int port,
-            String path,
-            Map<String, String> parameters) {
-        return (T) new InterfaceAddressURL(protocol, username, password, host, port, path, parameters, consumerURL, overriddenURL);
+        return CONSUMER_SIDE;
     }
 
     public URL getConsumerURL() {
         return consumerURL;
-    }
-
-    public void setConsumerURL(URL consumerURL) {
-        this.consumerURL = consumerURL;
-    }
-
-    public URL getOverriddenURL() {
-        return overriddenURL;
-    }
-
-    public void setOverriddenURL(URL overriddenURL) {
-        this.overriddenURL = overriddenURL;
     }
 
     public long getCreatedStamp() {
@@ -219,12 +203,12 @@ public class InterfaceAddressURL extends URL {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        return prime * super.hashCode() + (overriddenURL == null ? 0 : overriddenURL.hashCode());
+        return super.hashCode() ;
     }
 
     /**
      * ignore consumer url compare.
+     * It's only meaningful for comparing two address urls related to the same consumerURL.
      *
      * @param obj
      * @return
@@ -237,14 +221,9 @@ public class InterfaceAddressURL extends URL {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof InterfaceAddressURL)) {
+        if (!(obj instanceof ServiceAddressURL)) {
             return false;
         }
-        if (!super.equals(obj)) {
-            return false;
-        }
-        InterfaceAddressURL interfaceAddressURL = (InterfaceAddressURL) obj;
-        // FIXME, override should be compared first for dubbo addresses
-        return Objects.equals(interfaceAddressURL.getOverriddenURL(), this.getOverriddenURL());
+        return super.equals(obj);
     }
 }

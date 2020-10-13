@@ -29,7 +29,9 @@ import org.apache.curator.framework.recipes.cache.TreeCache;
 import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
+import org.apache.zookeeper.CreateMode;
 
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +60,8 @@ public class ZKTools {
             }
         }, executor);
 
-        tesConditionRule();
+        create26XOverride();
+//        tesConditionRule();
 
 //        testStartupConfig();
 //        testProviderConfig();
@@ -66,6 +69,24 @@ public class ZKTools {
 //        testTreeCache();
 //        testCuratorListener();
 //       Thread.sleep(100000);
+    }
+
+    public static void create26XOverride() {
+        String override = "override://0.0.0.0/org.apache.dubbo.demo.DemoService?category=configurators&dynamic=false&application=demo-consumer&timeout=2222";
+
+        try {
+            String path = "/dubbo/org.apache.dubbo.demo.DemoService/configurators/" + URLEncoder.encode(override);
+            if (client.checkExists().forPath(path) == null) {
+                client.create().creatingParentsIfNeeded().forPath(path);
+            }
+            setData(path, override);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addChild(String path) throws Exception {
+        client.create().withMode(CreateMode.PERSISTENT).forPath(path);
     }
 
     public static void testStartupConfig() {
