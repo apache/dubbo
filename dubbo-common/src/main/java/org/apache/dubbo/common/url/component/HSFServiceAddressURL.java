@@ -30,6 +30,10 @@ public class HSFServiceAddressURL extends ServiceAddressURL {
         super(urlAddress, urlParam, consumerURL);
     }
 
+    protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
+        return (T) new HSFServiceAddressURL(urlAddress, urlParam, this.consumerURL);
+    }
+
     @Override
     public String getPath() {
         return getConsumerURL().getPath();
