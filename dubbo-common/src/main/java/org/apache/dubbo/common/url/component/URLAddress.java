@@ -30,28 +30,18 @@ public class URLAddress {
     // cache
     protected transient final String rawAddress;
     protected transient String address;
-    protected transient boolean modifiable;
     protected transient long timestamp;
 
     public URLAddress(String host, int port) {
         this(host, port, null);
     }
 
-    public URLAddress(String host, int port, boolean modifiable) {
-        this(host, port, null, modifiable);
-    }
-
     public URLAddress(String host, int port, String rawAddress) {
-        this(host, port, rawAddress, false);
-    }
-
-    public URLAddress(String host, int port, String rawAddress, boolean modifiable) {
         this.host = host;
         port = Math.max(port, 0);
         this.port = port;
 
         this.rawAddress = rawAddress;
-        this.modifiable = modifiable;
         this.timestamp = System.currentTimeMillis();
     }
 
@@ -92,11 +82,6 @@ public class URLAddress {
     }
 
     public URLAddress setHost(String host) {
-        if (modifiable) {
-            this.host = host;
-            this.address = null;
-            return this;
-        }
         return new URLAddress(host, port, rawAddress);
     }
 
@@ -105,11 +90,6 @@ public class URLAddress {
     }
 
     public URLAddress setPort(int port) {
-        if (modifiable) {
-            this.port = port;
-            this.address = null;
-            return this;
-        }
         return new URLAddress(host, port, rawAddress);
     }
 
@@ -121,12 +101,6 @@ public class URLAddress {
     }
 
     public URLAddress setAddress(String host, int port) {
-        if (modifiable) {
-            this.host = host;
-            this.port = port;
-            this.address = null;
-            return this;
-        }
         return new URLAddress(host, port, rawAddress);
     }
 

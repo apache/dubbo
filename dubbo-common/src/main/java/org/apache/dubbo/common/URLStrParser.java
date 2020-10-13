@@ -164,7 +164,7 @@ public final class URLStrParser {
             host = decodedBody.substring(starIdx, endIdx);
         }
 
-        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, modifiable);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
     public static URL parseEncodedStr(String encodedURLStr) {

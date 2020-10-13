@@ -300,6 +300,12 @@ public interface CommonConstants {
     String GENERIC_WITH_CLZ_KEY = "generic.include.class";
 
     /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file.cache";
+
+
+    /**
      * The limit of callback service instances for one interface on every client
      */
     String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";

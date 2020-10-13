@@ -115,14 +115,6 @@ class URL implements Serializable {
 
     private volatile transient Map<String, URL> urls;
 
-    private volatile transient String full;
-
-    private volatile transient String identity;
-
-    private volatile transient String parameter;
-
-    private volatile transient String string;
-
     private transient String serviceKey;
 
     protected URL() {
@@ -196,8 +188,8 @@ class URL implements Serializable {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
 
-        this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port, modifiable);
-        this.urlParam = new URLParam(parameters, modifiable);
+        this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
+        this.urlParam = new URLParam(parameters);
     }
 
     /**
@@ -220,7 +212,7 @@ class URL implements Serializable {
      * @return
      */
     public static URL valueOf(String url, boolean encoded) {
-        return valueOf(url, encoded, true);
+        return valueOf(url, encoded, false);
     }
 
     public static URL valueOf(String url, boolean encoded, boolean modifiable) {
@@ -267,7 +259,7 @@ class URL implements Serializable {
                 }
             }
         }
-        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath())
+        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null)
                 : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
     }
 
@@ -1132,10 +1124,7 @@ class URL implements Serializable {
 
     @Override
     public String toString() {
-        if (string != null) {
-            return string;
-        }
-        return string = buildString(false, true); // no show username and password
+        return buildString(false, true); // no show username and password
     }
 
     public String toString(String... parameters) {
@@ -1143,10 +1132,7 @@ class URL implements Serializable {
     }
 
     public String toIdentityString() {
-        if (identity != null) {
-            return identity;
-        }
-        return identity = buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
+        return buildString(true, false); // only return identity message, see the method "equals" and "hashCode"
     }
 
     public String toIdentityString(String... parameters) {
@@ -1154,10 +1140,7 @@ class URL implements Serializable {
     }
 
     public String toFullString() {
-        if (full != null) {
-            return full;
-        }
-        return full = buildString(true, true);
+        return buildString(true, true);
     }
 
     public String toFullString(String... parameters) {
@@ -1165,10 +1148,7 @@ class URL implements Serializable {
     }
 
     public String toParameterString() {
-        if (parameter != null) {
-            return parameter;
-        }
-        return parameter = toParameterString(new String[0]);
+        return toParameterString(new String[0]);
     }
 
     public String toParameterString(String... parameters) {
@@ -1462,7 +1442,7 @@ class URL implements Serializable {
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
-        return (T) new ServiceConfigURL(urlAddress, urlParam);
+        return (T) new ServiceConfigURL(urlAddress, urlParam, null);
     }
 
     /* methods introduced for CompositeURL, CompositeURL must override to make the implementations meaningful */
@@ -1533,13 +1513,21 @@ class URL implements Serializable {
         return new HashMap<>();
     }
 
-    public void setAttributes(Map<String, Object> attributes) {}
-
     public Object getAttribute(String key) {
         return null;
     }
 
-    public void setAttribute(String key, Object obj) {}
+    public URL setAttribute(String key, Object obj) {
+        return this;
+    }
+
+    public URL removeAttribute(String key) {
+        return this;
+    }
+
+    public boolean hasAttribute(String key) {
+        return true;
+    }
 
     /* Service Config URL, END*/
 

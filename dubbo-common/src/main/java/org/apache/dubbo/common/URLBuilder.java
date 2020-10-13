@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder extends URL {
+public final class URLBuilder extends ServiceConfigURL {
     private String protocol;
 
     private String username;
@@ -41,6 +41,7 @@ public final class URLBuilder extends URL {
     private String path;
 
     private Map<String, String> parameters;
+
     private Map<String, Object> attributes;
 
     private Map<String, Map<String, String>> methodParameters;
@@ -53,6 +54,7 @@ public final class URLBuilder extends URL {
         port = 0;
         path = null;
         parameters = new HashMap<>();
+        attributes = new HashMap<>();
         methodParameters = new HashMap<>();
     }
 
@@ -85,7 +87,19 @@ public final class URLBuilder extends URL {
                       String password,
                       String host,
                       int port,
-                      String path, Map<String, String> parameters) {
+                      String path,
+                      Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, null);
+    }
+
+    public URLBuilder(String protocol,
+                      String username,
+                      String password,
+                      String host,
+                      int port,
+                      String path,
+                      Map<String, String> parameters,
+                      Map<String, Object> attributes) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -93,6 +107,7 @@ public final class URLBuilder extends URL {
         this.port = port;
         this.path = path;
         this.parameters = parameters != null ? parameters : new HashMap<>();
+        this.attributes = attributes != null ? attributes : new HashMap<>();
     }
 
     public static URLBuilder from(URL url) {
@@ -103,6 +118,7 @@ public final class URLBuilder extends URL {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
+        Map<String, Object> attributes = new HashMap<>(url.getAttributes());
         return new URLBuilder(
                 protocol,
                 username,
@@ -110,14 +126,15 @@ public final class URLBuilder extends URL {
                 host,
                 port,
                 path,
-                parameters);
+                parameters,
+                attributes);
     }
 
     public ServiceConfigURL build() {
         if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
-        port = port < 0 ? 0 : port;
+        port = Math.max(port, 0);
         // trim the leading "/"
         int firstNonSlash = 0;
         if (path != null) {
@@ -130,10 +147,14 @@ public final class URLBuilder extends URL {
                 path = path.substring(firstNonSlash);
             }
         }
-        // TODO
-        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, false);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, attributes);
     }
 
+    @Override
+    public URLBuilder setAttribute(String key, Object obj) {
+        attributes.put(key, obj);
+        return this;
+    }
 
     public URLBuilder setProtocol(String protocol) {
         this.protocol = protocol;

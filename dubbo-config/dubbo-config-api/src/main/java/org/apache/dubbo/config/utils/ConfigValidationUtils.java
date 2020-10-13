@@ -245,7 +245,7 @@ public class ConfigValidationUtils {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                    .setAttribute(REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }
         return null;

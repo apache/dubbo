@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.cluster.directory;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -29,6 +28,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -59,8 +59,8 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new IllegalArgumentException("url == null");
         }
 
-        this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
-        this.consumerUrl = this.url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
+        this.url = url.removeAttribute(REFER_KEY).removeParameter(MONITOR_KEY);
+        this.consumerUrl = this.url.addParameters((Map<String, String>)url.getAttribute(REFER_KEY));
 
         setRouterChain(routerChain);
     }

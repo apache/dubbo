@@ -23,7 +23,9 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -149,7 +151,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         }
         this.serviceType = serviceType;
         this.serviceKey = url.getServiceKey();
-        this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        this.queryMap = (Map<String, String>)url.getAttribute(REFER_KEY);
         this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
         String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
@@ -516,9 +518,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
         if (CollectionUtils.isNotEmpty(configurators)) {
-            if (url instanceof ServiceAddressURL) {
-                ServiceAddressURL interfaceAddressURL = (ServiceAddressURL) url;
-                URL overriddenURL = interfaceAddressURL.getOverriddenURL();
+            if (url instanceof DubboServiceAddressURL) {
+                DubboServiceAddressURL interfaceAddressURL = (DubboServiceAddressURL) url;
+                URL overriddenURL = interfaceAddressURL.getOverrideURL();
                 if (overriddenURL == null) {
                     String appName = interfaceAddressURL.getApplication();
                     String side = interfaceAddressURL.getSide();
@@ -530,11 +532,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 for (Configurator configurator : configurators) {
                     overriddenURL = configurator.configure(overriddenURL);
                 }
-                url = new ServiceAddressURL(
+                url = new DubboServiceAddressURL(
                         interfaceAddressURL.getUrlAddress(),
                         interfaceAddressURL.getUrlParam(),
                         interfaceAddressURL.getConsumerURL(),
-                        overriddenURL);
+                        (ServiceConfigURL) overriddenURL);
             } else {
                 for (Configurator configurator : configurators) {
                     url = configurator.configure(url);

@@ -22,13 +22,15 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+
 public class DubboServiceAddressURL extends ServiceAddressURL {
     public static DubboServiceAddressURL valueOf(String rawURL, URL consumerURL) {
         return valueOf(rawURL, consumerURL, null);
     }
 
     public static DubboServiceAddressURL valueOf(String rawURL, URL consumerURL, ServiceConfigURL overriddenURL) {
-        URL url = valueOf(rawURL, true, false);
+        URL url = valueOf(rawURL, true);
         return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, overriddenURL);
     }
 
@@ -41,6 +43,11 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
         return (T) new DubboServiceAddressURL(urlAddress, urlParam, this.consumerURL, this.overrideURL);
+    }
+
+    @Override
+    public String getSide() {
+        return consumerURL.getParameter(SIDE_KEY);
     }
 
     @Override
@@ -62,7 +69,7 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
             value = overrideURL.getMethodParameterStrict(method, key);
         }
         if (StringUtils.isEmpty(value)) {
-            value = super.getMethodParameterStrict(method, key);
+            value = super.getMethodParameter(method, key);
         }
         return value;
     }

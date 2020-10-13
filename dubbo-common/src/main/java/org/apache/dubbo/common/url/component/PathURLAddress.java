@@ -30,19 +30,11 @@ public class PathURLAddress extends URLAddress {
     private transient String ip;
 
     public PathURLAddress(String protocol, String username, String password, String path, String host, int port) {
-        this(protocol, username, password, path, host, port, false);
-    }
-
-    public PathURLAddress(String protocol, String username, String password, String path, String host, int port, boolean modifiable) {
-        this(protocol, username, password, path, host, port, null, modifiable);
+        this(protocol, username, password, path, host, port, null);
     }
 
     public PathURLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
-        this(protocol, username, password, path, host, port, rawAddress, false);
-    }
-
-    public PathURLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress, boolean modifiable) {
-        super(host, port, rawAddress, modifiable);
+        super(host, port, rawAddress);
 
         this.protocol = protocol;
         this.username = username;
@@ -60,10 +52,6 @@ public class PathURLAddress extends URLAddress {
     }
 
     public URLAddress setProtocol(String protocol) {
-        if (modifiable) {
-            this.protocol = protocol;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
@@ -72,10 +60,6 @@ public class PathURLAddress extends URLAddress {
     }
 
     public URLAddress setUsername(String username) {
-        if (modifiable) {
-            this.username = username;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
@@ -84,10 +68,6 @@ public class PathURLAddress extends URLAddress {
     }
 
     public PathURLAddress setPassword(String password) {
-        if (modifiable) {
-            this.password = password;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
@@ -96,43 +76,21 @@ public class PathURLAddress extends URLAddress {
     }
 
     public PathURLAddress setPath(String path) {
-        if (modifiable) {
-            this.path = path;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     @Override
     public URLAddress setHost(String host) {
-        if (modifiable) {
-            this.host = host;
-            this.address = null;
-            this.ip = null;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     @Override
     public URLAddress setPort(int port) {
-        if (modifiable) {
-            this.port = port;
-            this.address = null;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
     @Override
     public URLAddress setAddress(String host, int port) {
-        if (modifiable) {
-            this.host = host;
-            this.port = port;
-            this.address = null;
-            this.ip = null;
-            return this;
-        }
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 

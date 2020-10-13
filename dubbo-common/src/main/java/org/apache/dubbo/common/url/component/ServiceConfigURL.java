@@ -22,25 +22,30 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ServiceConfigURL extends URL {
-    private Map<String, Object> attributes;
+    private final Map<String, Object> attributes;
 
-    public ServiceConfigURL(String protocol,
-                            String username,
-                            String password,
-                            String host,
-                            int port,
-                            String path) {
-        this(protocol, username, password, host, port, path, null);
+    private volatile transient String full;
+    private volatile transient String string;
+    private volatile transient String identity;
+    private volatile transient String parameter;
+
+    public ServiceConfigURL() {
+        this.attributes = null;
+    }
+
+    public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
+        super(urlAddress, urlParam);
+        this.attributes = (attributes != null ? attributes : new HashMap<>());
     }
 
     public ServiceConfigURL(String protocol,
-                            String username,
-                            String password,
-                            String host,
-                            int port,
-                            String path,
-                            Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, true);
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters) {
+        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), null);
     }
 
     public ServiceConfigURL(String protocol,
@@ -50,38 +55,71 @@ public class ServiceConfigURL extends URL {
                             int port,
                             String path,
                             Map<String, String> parameters,
-                            boolean modifiable) {
-       super(protocol, username, password, host, port, path, parameters, modifiable);
-       this.attributes = new HashMap<>();
-    }
-
-    public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam) {
-        super(urlAddress, urlParam);
-        this.attributes = new HashMap<>();
+                            Map<String, Object> attributes) {
+        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), attributes);
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
-        return (T) new ServiceConfigURL(urlAddress, urlParam);
+        return (T) new ServiceConfigURL(urlAddress, urlParam, attributes);
     }
 
     public Map<String, Object> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(Map<String, Object> attributes) {
-        this.attributes = attributes;
-    }
-
     public Object getAttribute(String key) {
         return attributes.get(key);
     }
 
-    public void setAttribute(String key, Object obj) {
-        attributes.put(key, obj);
+    public ServiceConfigURL setAttribute(String key, Object obj) {
+        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        newAttributes.put(key, obj);
+
+        return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
     }
 
-    public static ServiceConfigURL valueOf(String rawURL) {
-        URL url = URL.valueOf(rawURL);
-        return new ServiceConfigURL(url.getUrlAddress(), url.getUrlParam());
+    @Override
+    public URL removeAttribute(String key) {
+        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        newAttributes.remove(key);
+
+        return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
+    }
+
+    @Override
+    public boolean hasAttribute(String key) {
+        return getAttribute(key) != null;
+    }
+
+    @Override
+    public String toString() {
+        if (string != null) {
+            return string;
+        }
+        return string = super.toString();
+    }
+
+    @Override
+    public String toFullString() {
+        if (full != null) {
+            return full;
+        }
+        return full = super.toFullString();
+    }
+
+    @Override
+    public String toIdentityString() {
+        if (identity != null) {
+            return identity;
+        }
+        return identity = super.toIdentityString();
+    }
+
+    @Override
+    public String toParameterString() {
+        if (parameter != null) {
+            return parameter;
+        }
+        return parameter = super.toParameterString();
     }
 }
