@@ -543,6 +543,9 @@ public class DubboBootstrap extends GenericEventListener {
         checkGlobalConfigs();
 
         // @since 2.7.8
+        /**
+         * 开启元数据中心
+         */
         startMetadataCenter();
 
         initMetadataService();
@@ -670,8 +673,14 @@ public class DubboBootstrap extends GenericEventListener {
         configManager.refreshAll();
     }
 
+    /**
+     * 开启元数据中心
+     */
     private void startMetadataCenter() {
 
+        /**
+         * 没有显示指定元数据中心时   是否可以将注册中心作为默认得元数据中心
+         */
         useRegistryAsMetadataCenterIfNecessary();
 
         ApplicationConfig applicationConfig = getApplication();
@@ -774,8 +783,14 @@ public class DubboBootstrap extends GenericEventListener {
         return cc;
     }
 
+    /**
+     * 没有显示指定元数据中心时   是否可以将注册中心作为默认得元数据中心
+     */
     private void useRegistryAsMetadataCenterIfNecessary() {
 
+        /**
+         * 获取MetadataReportConfig相关得配置
+         */
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
 
         if (CollectionUtils.isNotEmpty(metadataConfigs)) {
@@ -791,6 +806,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     }
 
+    /**
+     * 是否使用注册中心为元数据中心
+     * @param registryConfig
+     * @return
+     */
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
                 MetadataReportFactory.class);
@@ -859,6 +879,11 @@ public class DubboBootstrap extends GenericEventListener {
         return false;
     }
 
+    /**
+     * 将RegistryConfig转化为MetadataReportConfig
+     * @param registryConfig
+     * @return
+     */
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
