@@ -179,15 +179,12 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     protected void connect() throws RemotingException {
-
         connectLock.lock();
 
         try {
-
             if (isClosed()) {
                 throw new RemotingException(this, "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: client status is closed.");
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed.");
             }
 
             if (isConnected()) {
@@ -198,14 +195,14 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
             if (!isConnected()) {
                 throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
 
             } else {
                 if (logger.isInfoEnabled()) {
                     logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                            + ", channel is " + this.getChannel());
+                                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                    + ", channel is " + this.getChannel());
                 }
             }
 
@@ -214,8 +211,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
         } catch (Throwable e) {
             throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                    + ", cause: " + e.getMessage(), e);
+                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                            + ", cause: " + e.getMessage(), e);
 
         } finally {
             connectLock.unlock();
@@ -245,25 +242,47 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
-        if (!isConnected()) {
-            connectLock.lock();
-            try {
-                if (!isConnected()) {
-                    disconnect();
-                    connect();
-                }
-            } finally {
-                connectLock.unlock();
+        boolean isConnected = isConnected();
+        boolean isClosed = isClosed();
+        boolean isClosing = isClosing();
+        if (isConnected || isClosed || isClosing) {
+            logger.warn("No need to reconnect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is connectStatus:" + isConnected + " closedStatus:" + isClosed + " closingStatus:" + isClosing);
+            return ;
+        }
+
+        connectLock.lock();
+
+        try {
+            isConnected = isConnected();
+            isClosed = isClosed();
+            isClosing = isClosing();
+            if (isConnected || isClosed || isClosing) {
+                logger.warn("No need to reconnect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is connectStatus:" + isConnected + " closedStatus:" + isClosed + " closingStatus:" + isClosing);
+                return ;
             }
+
+            disconnect();
+            connect();
+
+        } finally {
+            connectLock.unlock();
         }
     }
 
     @Override
     public void close() {
+        if (isClosed()) {
+            logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+            return;
+        }
 
         connectLock.lock();
-
         try {
+            if (isClosed()) {
+                logger.warn("No need to close connection to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is closed.");
+                return;
+            }
+
             try {
                 super.close();
             } catch (Throwable e) {
