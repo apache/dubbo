@@ -137,11 +137,13 @@ public final class URLStrParser {
         String password = null;
         int pwdEndIdx = lastIndexOf(decodedBody, '@', starIdx, endIdx);
         if (pwdEndIdx > 0) {
-            int userNameEndIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
-            if (userNameEndIdx != -1) {//tolerate incomplete user pwd input, like '1234@'
-                username = decodedBody.substring(starIdx, userNameEndIdx);
+            int passwordStartIdx = indexOf(decodedBody, ':', starIdx, pwdEndIdx);
+            if (passwordStartIdx != -1) {//tolerate incomplete user pwd input, like '1234@'
+                username = decodedBody.substring(starIdx, passwordStartIdx);
+                password = decodedBody.substring(passwordStartIdx + 1, pwdEndIdx);
+            } else {
+                username = decodedBody.substring(starIdx, pwdEndIdx);
             }
-            password = decodedBody.substring(userNameEndIdx + 1, pwdEndIdx);
             starIdx = pwdEndIdx + 1;
         }
 
