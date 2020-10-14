@@ -78,7 +78,7 @@ public class AccessLogFilter implements Filter {
     // It's safe to declare it as singleton since it runs on single thread only
     private static final DateFormat FILE_NAME_FORMATTER = new SimpleDateFormat(FILE_DATE_FORMAT);
 
-    private static final Map<String, Set<AccessLogData>> LOG_ENTRIES = new ConcurrentHashMap<String, Set<AccessLogData>>();
+    private static final Map<String, Set<AccessLogData>> LOG_ENTRIES = new ConcurrentHashMap<>();
 
     private static final ScheduledExecutorService LOG_SCHEDULED = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-Access-Log", true));
 
@@ -118,32 +118,38 @@ public class AccessLogFilter implements Filter {
         if (logSet.size() < LOG_MAX_BUFFER) {
             logSet.add(accessLogData);
         } else {
-            //TODO we needs use force writing to file so that buffer gets clear and new log can be written.
-            logger.warn("AccessLog buffer is full skipping buffer ");
+            logger.warn("AccessLog buffer is full. Do a force writing to file to clear buffer.");
+            //just write current logSet to file.
+            writeLogSetToFile(accessLog, logSet);
+            //after force writing, add accessLogData to current logSet
+            logSet.add(accessLogData);
+        }
+    }
+
+    private void writeLogSetToFile(String accessLog, Set<AccessLogData> logSet) {
+        try {
+            if (ConfigUtils.isDefault(accessLog)) {
+                processWithServiceLogger(logSet);
+            } else {
+                File file = new File(accessLog);
+                createIfLogDirAbsent(file);
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Append log to " + accessLog);
+                }
+                renameFile(file);
+                processWithAccessKeyLogger(logSet, file);
+            }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
         }
     }
 
     private void writeLogToFile() {
         if (!LOG_ENTRIES.isEmpty()) {
             for (Map.Entry<String, Set<AccessLogData>> entry : LOG_ENTRIES.entrySet()) {
-                try {
-                    String accessLog = entry.getKey();
-                    Set<AccessLogData> logSet = entry.getValue();
-                    if (ConfigUtils.isDefault(accessLog)) {
-                        processWithServiceLogger(logSet);
-                    } else {
-                        File file = new File(accessLog);
-                        createIfLogDirAbsent(file);
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Append log to " + accessLog);
-                        }
-                        renameFile(file);
-                        processWithAccessKeyLogger(logSet, file);
-                    }
-
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                }
+                String accessLog = entry.getKey();
+                Set<AccessLogData> logSet = entry.getValue();
+                writeLogSetToFile(accessLog, logSet);
             }
         }
     }

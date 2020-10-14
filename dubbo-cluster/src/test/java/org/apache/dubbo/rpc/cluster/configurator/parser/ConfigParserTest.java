@@ -174,4 +174,20 @@ public class ConfigParserTest {
         }
     }
 
+    @Test
+    public void parseURLJsonArrayCompatible() {
+
+        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+
+        List<URL> urls = ConfigParser.parseConfigurators(configData);
+
+        Assertions.assertNotNull(urls);
+        Assertions.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+
+        Assertions.assertEquals("0.0.0.0", url.getAddress());
+        Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
+        Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+    }
+
 }

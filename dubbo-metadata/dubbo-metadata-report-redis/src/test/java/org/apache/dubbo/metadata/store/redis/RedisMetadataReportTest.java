@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -34,6 +35,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
+import redis.embedded.RedisServerBuilder;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -58,10 +60,20 @@ public class RedisMetadataReportTest {
         String methodName = testInfo.getTestMethod().get().getName();
         if ("testAuthRedisMetadata".equals(methodName) || ("testWrongAuthRedisMetadata".equals(methodName))) {
             String password = "チェリー";
-            redisServer = RedisServer.builder().port(redisPort).setting("requirepass " + password).build();
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
+            if (SystemUtils.IS_OS_WINDOWS) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort);
         } else {
-            redisServer = RedisServer.builder().port(redisPort).build();
+            RedisServerBuilder builder = RedisServer.builder().port(redisPort);
+            if (SystemUtils.IS_OS_WINDOWS) {
+                // set maxheap to fix Windows error 0x70 while starting redis
+                builder.setting("maxheap 128mb");
+            }
+            redisServer = builder.build();
             registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
 
@@ -75,7 +87,6 @@ public class RedisMetadataReportTest {
     public void tearDown() throws Exception {
         this.redisServer.stop();
     }
-
 
     @Test
     public void testAsyncStoreProvider() throws ClassNotFoundException {

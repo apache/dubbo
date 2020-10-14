@@ -70,7 +70,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
             if (msg instanceof Invocation) {
                 Invocation inv = (Invocation) msg;
-                String path = (String) inv.getAttachments().get(PATH_KEY);
+                String path = (String) inv.getObjectAttachments().get(PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
                         path, null, null);
                 DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
@@ -191,7 +191,7 @@ public class ThriftProtocol extends AbstractProtocol {
 
         ExchangeClient client;
 
-        url = url.addParameter(CODEC_KEY, ThriftCodec.NAME);
+//        url = url.addParameter(CODEC_KEY, ThriftCodec.NAME);
 
         try {
             client = Exchangers.connect(url);

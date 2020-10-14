@@ -187,7 +187,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         if (client != null) {
             return client.isClosed();
         } else {
-            return true;
+            return false;
         }
     }
 

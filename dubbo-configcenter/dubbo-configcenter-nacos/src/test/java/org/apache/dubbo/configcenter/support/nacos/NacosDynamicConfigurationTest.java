@@ -36,6 +36,9 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * Unit test for nacos config center support
@@ -138,6 +141,16 @@ public class NacosDynamicConfigurationTest {
         } catch (NacosException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testPublishConfig() {
+        String key = "user-service";
+        String group = "org.apache.dubbo.service.UserService";
+        String content = "test";
+
+        assertTrue(config.publishConfig(key, group, content));
+        assertEquals("test", config.getProperties(key, group));
     }
 
     @AfterAll

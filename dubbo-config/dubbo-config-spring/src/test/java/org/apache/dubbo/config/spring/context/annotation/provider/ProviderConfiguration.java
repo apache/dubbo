@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.context.annotation.provider;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.spring.beans.factory.ServiceBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 
 import org.springframework.context.annotation.Bean;
@@ -80,11 +79,6 @@ public class ProviderConfiguration {
         protocolConfig.setName("dubbo");
         protocolConfig.setPort(12345);
         return protocolConfig;
-    }
-
-    @Bean
-    public ServiceBeanPostProcessor serviceBeanPostProcessor() {
-        return new ServiceBeanPostProcessor();
     }
 
     @Primary

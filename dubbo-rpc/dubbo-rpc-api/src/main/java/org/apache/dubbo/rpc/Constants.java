@@ -27,6 +27,7 @@ public interface Constants {
     String DEPRECATED_KEY = "deprecated";
 
     String $ECHO = "$echo";
+    String $ECHO_PARAMETER_DESC = "Ljava/lang/Object;";
 
     String RETURN_PREFIX = "return ";
 
@@ -70,6 +71,8 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String INTERFACE = "interface";
+
     String INTERFACES = "interfaces";
 
     String GENERIC_KEY = "generic";
@@ -85,4 +88,6 @@ public interface Constants {
     String INPUT_KEY = "input";
     String OUTPUT_KEY = "output";
 
+    String CONSUMER_MODEL = "consumerModel";
+    String METHOD_MODEL = "methodModel";
 }

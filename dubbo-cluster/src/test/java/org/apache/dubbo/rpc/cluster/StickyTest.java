@@ -59,9 +59,11 @@ public class StickyTest {
     @BeforeEach
     public void setUp() throws Exception {
         dic = mock(Directory.class);
+
         invocation = new RpcInvocation();
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(StickyTest.class);
 

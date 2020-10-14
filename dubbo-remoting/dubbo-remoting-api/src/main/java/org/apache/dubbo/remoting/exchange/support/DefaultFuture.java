@@ -107,6 +107,10 @@ public class DefaultFuture extends CompletableFuture<Object> {
     public static DefaultFuture newFuture(Channel channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture future = new DefaultFuture(channel, request, timeout);
         future.setExecutor(executor);
+        // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
+        if (executor instanceof ThreadlessExecutor) {
+            ((ThreadlessExecutor) executor).setWaitingFuture(future);
+        }
         // timeout check
         timeoutCheck(future);
         return future;
@@ -138,6 +142,11 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (channel.equals(entry.getValue())) {
                 DefaultFuture future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
+                    ExecutorService futureExecutor = future.getExecutor();
+                    if (futureExecutor != null && !futureExecutor.isTerminated()) {
+                        futureExecutor.shutdownNow();
+                    }
+
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
@@ -167,9 +176,9 @@ public class DefaultFuture extends CompletableFuture<Object> {
             } else {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
-                        + ", response " + response
+                        + ", response status is " + response.getStatus()
                         + (channel == null ? "" : ", channel: " + channel.getLocalAddress()
-                        + " -> " + channel.getRemoteAddress()));
+                        + " -> " + channel.getRemoteAddress()) + ", please check provider side for detailed result.");
             }
         } finally {
             CHANNELS.remove(response.getId());
@@ -208,7 +217,8 @@ public class DefaultFuture extends CompletableFuture<Object> {
         if (executor != null && executor instanceof ThreadlessExecutor) {
             ThreadlessExecutor threadlessExecutor = (ThreadlessExecutor) executor;
             if (threadlessExecutor.isWaiting()) {
-                threadlessExecutor.notifyReturn();
+                threadlessExecutor.notifyReturn(new IllegalStateException("The result has returned, but the biz thread is still waiting" +
+                        " which is not an expected state, interrupt the thread manually by returning an exception."));
             }
         }
     }
@@ -242,7 +252,7 @@ public class DefaultFuture extends CompletableFuture<Object> {
         return (sent > 0 ? "Waiting server-side response timeout" : "Sending request timeout in client-side")
                 + (scan ? " by scan timer" : "") + ". start time: "
                 + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(start))) + ", end time: "
-                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date())) + ","
+                + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date(nowTimestamp))) + ","
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
@@ -270,17 +280,22 @@ public class DefaultFuture extends CompletableFuture<Object> {
             if (future == null || future.isDone()) {
                 return;
             }
+
             if (future.getExecutor() != null) {
-                future.getExecutor().execute(() -> {
-                    // create exception response.
-                    Response timeoutResponse = new Response(future.getId());
-                    // set timeout status.
-                    timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
-                    timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
-                    // handle response.
-                    DefaultFuture.received(future.getChannel(), timeoutResponse, true);
-                });
+                future.getExecutor().execute(() -> notifyTimeout(future));
+            } else {
+                notifyTimeout(future);
             }
+        }
+
+        private void notifyTimeout(DefaultFuture future) {
+            // create exception response.
+            Response timeoutResponse = new Response(future.getId());
+            // set timeout status.
+            timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
+            timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
+            // handle response.
+            DefaultFuture.received(future.getChannel(), timeoutResponse, true);
         }
     }
 }

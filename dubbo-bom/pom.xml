@@ -90,6 +90,11 @@
         <dependencies>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-cluster</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -186,11 +191,6 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-hessian</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-http-invoker</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -369,11 +369,6 @@
                 <version>${project.version}</version>
             </dependency>
             <!-- metadata -->
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-metadata-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-metadata-api</artifactId>

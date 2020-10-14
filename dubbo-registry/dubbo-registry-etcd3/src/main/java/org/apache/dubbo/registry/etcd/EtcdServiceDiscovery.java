@@ -24,9 +24,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -47,12 +46,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * 2019-07-08
  */
-public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
     private final static Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
 
@@ -60,8 +58,6 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     private final Set<String> services = new ConcurrentHashSet<>();
     private final Map<String, ChildListener> childListenerMap = new ConcurrentHashMap<>();
-
-    private final ConcurrentMap<URL, ConcurrentMap<NotifyListener, ChildListener>> etcdListeners = new ConcurrentHashMap<>();
 
     EtcdClient etcdClient;
     EventDispatcher dispatcher;
@@ -106,6 +102,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        super.register(serviceInstance);
         try {
             this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
@@ -131,6 +128,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        super.register(serviceInstance);
         try {
             String path = toPath(serviceInstance);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
@@ -162,7 +160,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        registerServiceWatcher(listener.getServiceName());
+        listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName));
     }
 
     @Override

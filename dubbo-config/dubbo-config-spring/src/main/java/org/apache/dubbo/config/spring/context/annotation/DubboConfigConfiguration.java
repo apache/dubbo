@@ -26,6 +26,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 
 import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBinding;
@@ -64,7 +65,8 @@ public class DubboConfigConfiguration {
             @EnableConfigurationBeanBinding(prefix = "dubbo.consumer", type = ConsumerConfig.class),
             @EnableConfigurationBeanBinding(prefix = "dubbo.config-center", type = ConfigCenterBean.class),
             @EnableConfigurationBeanBinding(prefix = "dubbo.metadata-report", type = MetadataReportConfig.class),
-            @EnableConfigurationBeanBinding(prefix = "dubbo.metrics", type = MetricsConfig.class)
+            @EnableConfigurationBeanBinding(prefix = "dubbo.metrics", type = MetricsConfig.class),
+            @EnableConfigurationBeanBinding(prefix = "dubbo.ssl", type = SslConfig.class)
     })
     public static class Single {
 

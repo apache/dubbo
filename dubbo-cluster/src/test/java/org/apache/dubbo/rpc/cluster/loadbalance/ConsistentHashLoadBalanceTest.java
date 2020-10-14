@@ -16,12 +16,15 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
-
+import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -51,4 +54,19 @@ public class ConsistentHashLoadBalanceTest extends LoadBalanceBaseTest {
                 hitedInvokers.values().iterator().next().intValue(), "the number of hited count should be the number of runs");
     }
 
+    // https://github.com/apache/dubbo/issues/5429
+    @Test
+    void testNormalWhenRouterEnabled() {
+        LoadBalance lb = getLoadBalance(ConsistentHashLoadBalance.NAME);
+        URL url = invokers.get(0).getUrl();
+        RouterChain<LoadBalanceBaseTest> routerChain = RouterChain.buildChain(url);
+        Invoker<LoadBalanceBaseTest> result = lb.select(invokers, url, invocation);
+
+        for (int i = 0; i < 100; i++) {
+            routerChain.setInvokers(invokers);
+            List<Invoker<LoadBalanceBaseTest>> routeInvokers = routerChain.route(url, invocation);
+            Invoker<LoadBalanceBaseTest> finalInvoker = lb.select(routeInvokers, url, invocation);
+            Assertions.assertEquals(result, finalInvoker);
+        }
+    }
 }

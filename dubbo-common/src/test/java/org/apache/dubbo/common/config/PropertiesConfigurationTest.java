@@ -24,8 +24,8 @@ public class PropertiesConfigurationTest {
 
     @Test
     public void testOrderPropertiesProviders() {
-        PropertiesConfiguration configuration = new PropertiesConfiguration("test", null);
-        Assertions.assertTrue(configuration.getInternalProperty("testKey").equals("999"));
+        PropertiesConfiguration configuration = new PropertiesConfiguration();
+        Assertions.assertEquals("999", configuration.getInternalProperty("testKey"));
     }
 
 }

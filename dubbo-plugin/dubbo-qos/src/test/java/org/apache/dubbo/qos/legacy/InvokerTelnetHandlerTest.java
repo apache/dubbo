@@ -150,6 +150,22 @@ public class InvokerTelnetHandlerTest {
         result = select.telnet(mockChannel, "1");
         //result dependent on method order.
         assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
+        result = select.telnet(mockChannel, "2");
+        assertTrue(result.contains("result: 8") || result.contains("result: \"Dubbo\""));
+    }
+
+    @Test
+    public void testInvokeMethodWithMapParameter() throws RemotingException {
+        mockChannel = mock(Channel.class);
+        given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
+        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
+        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+
+        registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
+
+        String param = "{1:\"Dubbo\",2:\"test\"}";
+        String result = invoke.telnet(mockChannel, "getMap(" + param + ")");
+        assertTrue(result.contains("result: {1:\"Dubbo\",2:\"test\"}"));
     }
 
     @Test

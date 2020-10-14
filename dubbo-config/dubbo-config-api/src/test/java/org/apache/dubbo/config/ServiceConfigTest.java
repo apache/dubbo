@@ -239,19 +239,26 @@ public class ServiceConfigTest {
         });
     }
 
-    @Test
-    public void testMock() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceConfig service = new ServiceConfig();
-            service.setMock("true");
-        });
-    }
+//    @Test
+//    public void testMock() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceConfig service = new ServiceConfig();
+//            service.setMock("true");
+//        });
+//    }
+//
+//    @Test
+//    public void testMock2() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceConfig service = new ServiceConfig();
+//            service.setMock(true);
+//        });
+//    }
 
     @Test
-    public void testMock2() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceConfig service = new ServiceConfig();
-            service.setMock(true);
-        });
+    public void testApplicationInUrl() {
+        service.export();
+        Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
+        Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
     }
 }

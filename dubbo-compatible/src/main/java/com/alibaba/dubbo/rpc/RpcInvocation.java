@@ -36,7 +36,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private Object[] arguments;
 
-    private Map<String, Object> attachments;
+    private Map<String, String> attachments;
 
     private transient Invoker<?> invoker;
 
@@ -45,7 +45,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
         this(invocation.getMethodName(), invocation.getParameterTypes(),
-                invocation.getArguments(), new HashMap<String, Object>(invocation.getAttachments()),
+                invocation.getArguments(), new HashMap<String, String>(invocation.getAttachments()),
                 invocation.getInvoker());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -80,7 +80,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this(method.getName(), method.getParameterTypes(), arguments, null, null);
     }
 
-    public RpcInvocation(Method method, Object[] arguments, Map<String, Object> attachment) {
+    public RpcInvocation(Method method, Object[] arguments, Map<String, String> attachment) {
         this(method.getName(), method.getParameterTypes(), arguments, attachment, null);
     }
 
@@ -88,15 +88,15 @@ public class RpcInvocation implements Invocation, Serializable {
         this(methodName, parameterTypes, arguments, null, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
+    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments) {
         this(methodName, parameterTypes, arguments, attachments, null);
     }
 
-    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments, Invoker<?> invoker) {
+    public RpcInvocation(String methodName, Class<?>[] parameterTypes, Object[] arguments, Map<String, String> attachments, Invoker<?> invoker) {
         this.methodName = methodName;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
-        this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
+        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
         this.invoker = invoker;
     }
 
@@ -106,6 +106,11 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setInvoker(Invoker<?> invoker) {
         this.invoker = invoker;
+    }
+
+    @Override
+    public String getProtocolServiceKey() {
+        return null;
     }
 
     public String getMethodName() {
@@ -132,24 +137,24 @@ public class RpcInvocation implements Invocation, Serializable {
         this.arguments = arguments == null ? new Object[0] : arguments;
     }
 
-    public Map<String, Object> getAttachments() {
+    public Map<String, String> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments == null ? new HashMap<String, Object>() : attachments;
+    public void setAttachments(Map<String, String> attachments) {
+        this.attachments = attachments == null ? new HashMap<String, String>() : attachments;
     }
 
     public void setAttachment(String key, String value) {
         if (attachments == null) {
-            attachments = new HashMap<String, Object>();
+            attachments = new HashMap<String, String>();
         }
         attachments.put(key, value);
     }
 
     public void setAttachmentIfAbsent(String key, String value) {
         if (attachments == null) {
-            attachments = new HashMap<String, Object>();
+            attachments = new HashMap<String, String>();
         }
         if (!attachments.containsKey(key)) {
             attachments.put(key, value);
@@ -161,7 +166,7 @@ public class RpcInvocation implements Invocation, Serializable {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, Object>();
+            this.attachments = new HashMap<String, String>();
         }
         this.attachments.putAll(attachments);
     }
