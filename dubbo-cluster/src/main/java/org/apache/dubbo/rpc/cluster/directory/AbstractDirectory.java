@@ -17,8 +17,10 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -30,7 +32,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
@@ -46,7 +52,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
 
     protected RouterChain<T> routerChain;
 
@@ -60,9 +66,26 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         }
 
         this.url = url.removeAttribute(REFER_KEY).removeParameter(MONITOR_KEY);
-        this.consumerUrl = this.url.addParameters((Map<String, String>)url.getAttribute(REFER_KEY));
+
+        Object referParams = url.getAttribute(REFER_KEY);
+        if (referParams != null) {
+            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, (Map<String, String>) referParams);
+        } else {
+            this.consumerUrl = url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)))
+                    .removeParameter(MONITOR_KEY);
+        }
 
         setRouterChain(routerChain);
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
+        return URLBuilder.from(url)
+                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
+                .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
+                .clearParameters()
+                .addParameters(queryMap)
+                .removeParameter(MONITOR_KEY)
+                .build();
     }
 
     @Override
