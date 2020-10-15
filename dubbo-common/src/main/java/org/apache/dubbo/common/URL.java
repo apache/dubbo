@@ -635,7 +635,8 @@ class URL implements Serializable {
     }
 
     public String getParameter(String key) {
-        return parameters.get(key);
+        String value = parameters.get(key);
+        return StringUtils.isEmpty(value) ? parameters.get(DEFAULT_KEY_PREFIX + key) : value;
     }
 
     public String getParameter(String key, String defaultValue) {
