@@ -183,12 +183,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
         connectLock.lock();
 
         try {
-            if (isClosed()) {
-                throw new RemotingException(this, "No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed.");
+            if (isConnected()) {
+                return;
             }
 
-            if (isConnected()) {
+            if (isClosed() || isClosing()) {
+                logger.warn("No need to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: client status is closed or closing.");
                 return;
             }
 
