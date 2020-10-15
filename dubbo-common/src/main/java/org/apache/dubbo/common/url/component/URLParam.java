@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +31,9 @@ import java.util.TreeMap;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
-public class URLParam {
+public class URLParam implements Serializable {
+    private static final long serialVersionUID = -1985165475234910535L;
+
     private final String rawParam;
     private final Map<String, String> params;
 
