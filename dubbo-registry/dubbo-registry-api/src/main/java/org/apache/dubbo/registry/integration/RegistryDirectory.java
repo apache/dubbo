@@ -71,6 +71,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -87,6 +88,7 @@ import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
@@ -470,6 +472,12 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
+        }
+
+        // FIXME, kept for mock
+        if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
+            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters());
         }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()

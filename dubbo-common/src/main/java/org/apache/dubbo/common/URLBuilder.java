@@ -151,7 +151,7 @@ public final class URLBuilder extends ServiceConfigURL {
     }
 
     @Override
-    public URLBuilder setAttribute(String key, Object obj) {
+    public URLBuilder putAttribute(String key, Object obj) {
         attributes.put(key, obj);
         return this;
     }

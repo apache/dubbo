@@ -57,6 +57,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
@@ -93,6 +94,9 @@ public class RegistryDirectoryTest {
     @BeforeEach
     public void setUp() {
         ApplicationModel.setApplication("RegistryDirectoryTest");
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put(INTERFACE_KEY, service);
+        noMeaningUrl = noMeaningUrl.putAttribute(REFER_KEY, attributes);
     }
 
     private RegistryDirectory getRegistryDirectory(URL url) {
@@ -140,12 +144,16 @@ public class RegistryDirectoryTest {
     public void test_Constructor_CheckStatus() throws Exception {
         URL url = URL.valueOf("notsupported://10.20.30.40/" + service + "?a=b").addParameterAndEncoded(REFER_KEY,
                 "foo=bar");
+        Map<String, Object> refer = new HashMap<>();
+        refer.put("foo", "bar");
+        refer.put(INTERFACE_KEY, service);
+        url = url.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory reg = getRegistryDirectory(url);
         Field field = reg.getClass().getDeclaredField("queryMap");
         field.setAccessible(true);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assertions.assertEquals("bar", queryMap.get("foo"));
-        Assertions.assertEquals(url.clearParameters().addParameter("foo", "bar"), reg.getConsumerUrl());
     }
 
     @Test
@@ -216,11 +224,14 @@ public class RegistryDirectoryTest {
             Assertions.assertEquals(RpcException.FORBIDDEN_EXCEPTION, e.getCode());
         }
     }
-
     //The test call is independent of the path of the registry url
     @Test
     public void test_NotifiedDubbo1() {
         URL errorPathUrl = URL.valueOf("notsupport:/" + "xxx" + "?refer=" + URL.encode("interface=" + service));
+        Map<String, Object> refer = new HashMap<>();
+        refer.put(INTERFACE_KEY, service);
+        errorPathUrl = errorPathUrl.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL Dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true");
@@ -333,6 +344,11 @@ public class RegistryDirectoryTest {
         RegistryDirectory registryDirectory = getRegistryDirectory();
         URL regurl = noMeaningUrl.addParameter("test", "reg").addParameterAndEncoded(REFER_KEY,
                 "key=query&" + LOADBALANCE_KEY + "=" + LeastActiveLoadBalance.NAME);
+        Map<String, Object> refer = new HashMap<>();
+        refer.put("interface", service);
+        refer.put("key", "query");
+        refer.put(LOADBALANCE_KEY, LeastActiveLoadBalance.NAME);
+        regurl = regurl.putAttribute(REFER_KEY, refer);
         RegistryDirectory<RegistryDirectoryTest> registryDirectory2 = new RegistryDirectory(
                 RegistryDirectoryTest.class,
                 regurl);
@@ -996,6 +1012,10 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Notified_acceptProtocol0() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx?refer=" + URL.encode("interface=" + service));
+        Map<String, Object> refer = new HashMap<>();
+        refer.put("interface", service);
+        errorPathUrl = errorPathUrl.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
@@ -1015,6 +1035,12 @@ public class RegistryDirectoryTest {
     public void test_Notified_acceptProtocol1() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx");
         errorPathUrl = errorPathUrl.addParameterAndEncoded(REFER_KEY, "interface=" + service + "&protocol=dubbo");
+
+        Map<String, Object> refer = new HashMap<>();
+        refer.put("interface", service);
+        refer.put("protocol", "dubbo");
+        errorPathUrl = errorPathUrl.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
@@ -1034,6 +1060,12 @@ public class RegistryDirectoryTest {
     public void test_Notified_acceptProtocol2() {
         URL errorPathUrl = URL.valueOf("notsupport:/xxx");
         errorPathUrl = errorPathUrl.addParameterAndEncoded(REFER_KEY, "interface=" + service + "&protocol=dubbo,injvm");
+
+        Map<String, Object> refer = new HashMap<>();
+        refer.put(INTERFACE_KEY, service);
+        refer.put("protocol", "dubbo,injvm");
+        errorPathUrl = errorPathUrl.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory registryDirectory = getRegistryDirectory(errorPathUrl);
         List<URL> serviceUrls = new ArrayList<URL>();
         URL dubbo1URL = URL.valueOf("dubbo://127.0.0.1:9098?lazy=true&methods=getXXX");
@@ -1051,6 +1083,13 @@ public class RegistryDirectoryTest {
     @Test
     public void test_Notified_withGroupFilter() {
         URL directoryUrl = noMeaningUrl.addParameterAndEncoded(REFER_KEY, "interface" + service + "&group=group1,group2");
+
+        Map<String, Object> refer = new HashMap<>();
+        refer.put(INTERFACE_KEY, service);
+        refer.put("group", "group1,group2");
+        refer.put(LOADBALANCE_KEY, LeastActiveLoadBalance.NAME);
+        directoryUrl = directoryUrl.putAttribute(REFER_KEY, refer);
+
         RegistryDirectory directory = this.getRegistryDirectory(directoryUrl);
         URL provider1 = URL.valueOf("dubbo://10.134.108.1:20880/" + service + "?methods=getXXX&group=group1&mock=false&application=mockApplication");
         URL provider2 = URL.valueOf("dubbo://10.134.108.1:20880/" + service + "?methods=getXXX&group=group2&mock=false&application=mockApplication");
@@ -1069,6 +1108,12 @@ public class RegistryDirectoryTest {
         Assertions.assertTrue(invokers.get(1) instanceof MockClusterInvoker);
 
         directoryUrl = noMeaningUrl.addParameterAndEncoded(REFER_KEY, "interface" + service + "&group=group1");
+
+        Map<String, Object> refer1 = new HashMap<>();
+        refer1.put(INTERFACE_KEY, service);
+        refer1.put("group", "group1");
+        directoryUrl = directoryUrl.putAttribute(REFER_KEY, refer1);
+
         directory = this.getRegistryDirectory(directoryUrl);
         directory.notify(providers);
 

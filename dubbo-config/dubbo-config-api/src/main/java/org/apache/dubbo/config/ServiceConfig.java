@@ -486,7 +486,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.setAttribute(EXPORT_KEY, url));
+                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.putAttribute(EXPORT_KEY, url));
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
