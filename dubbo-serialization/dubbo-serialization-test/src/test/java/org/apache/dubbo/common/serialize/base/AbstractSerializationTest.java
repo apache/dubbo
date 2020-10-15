@@ -32,6 +32,7 @@ import org.apache.dubbo.common.serialize.model.person.FullAddress;
 import org.apache.dubbo.common.serialize.model.person.PersonInfo;
 import org.apache.dubbo.common.serialize.model.person.PersonStatus;
 import org.apache.dubbo.common.serialize.model.person.Phone;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import org.junit.jupiter.api.Test;
 
@@ -1189,7 +1190,7 @@ public abstract class AbstractSerializationTest {
 
     @Test
     public void test_URL_mutable_withType() throws Exception {
-        URL data = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue");
+        URL data = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&noValue=");
 
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(data);
@@ -1199,8 +1200,8 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        URL actual = (URL) deserialize.readObject(URL.class);
-        assertEquals(data, actual);
+        URL actual = (URL) deserialize.readObject(ServiceConfigURL.class);
+        assertEquals(data.getAddress(), actual.getAddress());
         assertEquals(data.getParameters(), actual.getParameters());
 
         try {

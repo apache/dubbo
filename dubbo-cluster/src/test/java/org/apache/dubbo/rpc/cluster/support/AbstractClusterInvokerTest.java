@@ -94,7 +94,7 @@ public class AbstractClusterInvokerTest {
     public void setUp() throws Exception {
         Map<String, Object> attributes = new HashMap<>();
         attributes.put("application", "abstractClusterInvokerTest");
-        url = url.setAttribute(REFER_KEY, attributes);
+        url = url.putAttribute(REFER_KEY, attributes);
 
         invocation.setMethodName("sayHello");
 

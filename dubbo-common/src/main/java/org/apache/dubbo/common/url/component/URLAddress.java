@@ -19,11 +19,14 @@ package org.apache.dubbo.common.url.component;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Objects;
 
-public class URLAddress {
+public class URLAddress implements Serializable {
+    private static final long serialVersionUID = -1985165475234910535L;
+
     protected String host;
     protected int port;
 

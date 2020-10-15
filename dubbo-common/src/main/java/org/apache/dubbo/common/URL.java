@@ -1513,11 +1513,15 @@ class URL implements Serializable {
         return new HashMap<>();
     }
 
+    public URL addAttributes(Map<String, Object> attributes) {
+        return this;
+    }
+
     public Object getAttribute(String key) {
         return null;
     }
 
-    public URL setAttribute(String key, Object obj) {
+    public URL putAttribute(String key, Object obj) {
         return this;
     }
 
