@@ -1280,6 +1280,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         for (String key : keys) {
             map.remove(key);
+            map.remove(DEFAULT_KEY_PREFIX + key);
         }
         if (map.size() == getParameters().size()) {
             return this;
