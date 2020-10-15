@@ -7,7 +7,7 @@ import org.apache.dubbo.rpc.Invoker;
 
 public class RouterCache {
     protected ConcurrentHashMap<String, BitList<Invoker>> addrPool;
-    protected String addrMetadata;
+    protected Object addrMetadata;
 
     public ConcurrentHashMap<String, BitList<Invoker>> getAddrPool() {
         return addrPool;
@@ -18,11 +18,11 @@ public class RouterCache {
         this.addrPool = addrPool;
     }
 
-    public String getAddrMetadata() {
+    public Object getAddrMetadata() {
         return addrMetadata;
     }
 
-    public void setAddrMetadata(String addrMetadata) {
+    public void setAddrMetadata(Object addrMetadata) {
         this.addrMetadata = addrMetadata;
     }
 }
