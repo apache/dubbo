@@ -243,30 +243,16 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     @Override
     public void reconnect() throws RemotingException {
-        boolean isConnected = isConnected();
-        boolean isClosed = isClosed();
-        boolean isClosing = isClosing();
-        if (isConnected || isClosed || isClosing) {
-            logger.warn("No need to reconnect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is connectStatus:" + isConnected + " closedStatus:" + isClosed + " closingStatus:" + isClosing);
-            return ;
-        }
-
-        connectLock.lock();
-
-        try {
-            isConnected = isConnected();
-            isClosed = isClosed();
-            isClosing = isClosing();
-            if (isConnected || isClosed || isClosing) {
-                logger.warn("No need to reconnect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " " + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion() + ", cause: the client status is connectStatus:" + isConnected + " closedStatus:" + isClosed + " closingStatus:" + isClosing);
-                return ;
+        if (!isConnected()) {
+            connectLock.lock();
+            try {
+                if (!isConnected()) {
+                    disconnect();
+                    connect();
+                }
+            } finally {
+                connectLock.unlock();
             }
-
-            disconnect();
-            connect();
-
-        } finally {
-            connectLock.unlock();
         }
     }
 
