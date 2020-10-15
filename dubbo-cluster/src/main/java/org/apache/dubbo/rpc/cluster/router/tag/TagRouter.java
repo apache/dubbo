@@ -111,6 +111,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                     return result;
                 }
             } else {
+                // rule addresses empty,return all
                 // dynamic tag group doesn't have any item about the requested app OR it's null after filtered by
                 // dynamic tag group but force=false. check static tag
                 result = filterInvoker(invokers, invoker -> tag.equals(invoker.getUrl().getParameter(TAG_KEY)));
@@ -122,6 +123,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
             }
             // FAILOVER: return all Providers without any tags.
             else {
+                // 1 有tag，但是动态筛选没地址
                 List<Invoker<T>> tmp = filterInvoker(invokers, invoker -> addressNotMatches(invoker.getUrl(),
                         tagRouterRuleCopy.getAddresses()));
                 return filterInvoker(tmp, invoker -> StringUtils.isEmpty(invoker.getUrl().getParameter(TAG_KEY)));
@@ -139,6 +141,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 // 2. if there are some addresses that are not in any dynamic tag group, continue to filter using the
                 // static tag group.
             }
+            // 动态notag过滤，再静态notag过滤
             return filterInvoker(result, invoker -> {
                 String localTag = invoker.getUrl().getParameter(TAG_KEY);
                 return StringUtils.isEmpty(localTag) || !tagRouterRuleCopy.getTagNames().contains(localTag);

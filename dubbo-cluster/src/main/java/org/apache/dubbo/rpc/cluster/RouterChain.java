@@ -18,6 +18,9 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool;
 import org.apache.dubbo.common.utils.BitList;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -31,10 +34,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -61,15 +67,16 @@ public class RouterChain<T> {
     protected AtomicReference<AddrCache> cache;
     private Semaphore loopPermit = new Semaphore(1);
 
-    private static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1, new ThreadFactory() {
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread thread = new Thread(r);
-            thread.setDaemon(true);
-            thread.setName("dubbo.outlier.refresh-" + thread.getId());
-            return thread;
-        }
-    });
+    private final static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
+        new NamedInternalThreadFactory("dubbo-state-router-scheduled-", true));
+
+    private final static ExecutorService loopThreadPool = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("dubbo-state-router-loop-",true), new ThreadPoolExecutor.AbortPolicy());
+
+    private final static ExecutorService poolRouterThreadPool = new ThreadPoolExecutor(1, 1,
+        0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("dubbo-state-router-pool-",true), new ThreadPoolExecutor.AbortPolicy());
 
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
@@ -90,6 +97,7 @@ public class RouterChain<T> {
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
             .map(factory -> factory.getRouter(url))
+            .sorted(StateRouter::compareTo)
             .collect(Collectors.toList());
 
         // init state routers
@@ -115,7 +123,6 @@ public class RouterChain<T> {
     public void initWithStateRouters(List<StateRouter> builtinRouters) {
         this.builtinStateRouters = builtinRouters;
         this.stateRouters = new ArrayList<>(builtinRouters);
-        this.sortStateRouters();
     }
 
     private void sortStateRouters() {
@@ -158,7 +165,9 @@ public class RouterChain<T> {
 
         BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
         for (StateRouter stateRouter : stateRouters) {
-            finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache, url, invocation);
+            if (stateRouter.isEnable()) {
+                finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache.getCache().get(stateRouter), url, invocation);
+            }
         }
 
         List<Invoker<T>> finalInvokers = finalBitListInvokers.getUnmodifiableList();
@@ -180,7 +189,6 @@ public class RouterChain<T> {
         loop();
     }
 
-
     private void buildCache() {
         if (invokers == null || invokers.size() <= 0) {
             return;
@@ -190,15 +198,17 @@ public class RouterChain<T> {
         CountDownLatch cdl = new CountDownLatch(stateRouters.size());
         AddrCache newCache = new AddrCache();
         for (StateRouter stateRouter : (List<StateRouter>)stateRouters) {
-            executorService.execute(new Runnable() {
-                @Override
-                public void run() {
-                    RouterCache routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
-                    //file cache
-                    newCache.getCache().put(stateRouter.getName(), routerCache);
-                    cdl.countDown();
-                }
-            });
+            if (stateRouter.isEnable()) {
+                poolRouterThreadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        RouterCache routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
+                        //file cache
+                        newCache.getCache().put(stateRouter.getName(), routerCache);
+                        cdl.countDown();
+                    }
+                });
+            }
         }
         try {
             cdl.wait();
@@ -209,33 +219,15 @@ public class RouterChain<T> {
         this.cache.set(newCache);
     }
 
-    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker> invokers) {
+    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers) {
         String routerName = router.getName();
 
-        if (isCacheMiss(orign, routerName) || router.shouldRePool() || isDiff(orign.getInvokers(), invokers)) {
+        if (isCacheMiss(orign, routerName) || router.shouldRePool()) {
             return router.pool(invokers);
 
         } else {
             return orign.getCache().get(routerName);
         }
-    }
-
-    // todo 是否完全一样？
-    private boolean isDiff(List<Invoker> left, List<Invoker> right) {
-        if (left.size() != right.size()) {
-            return false;
-        }
-
-        for (Invoker l : left) {
-
-            for (Invoker r : right) {
-                // todo ?
-                if (l.getUrl().equals(r.getUrl())) {
-
-                }
-            }
-        }
-        return false;
     }
 
     private boolean isCacheMiss(AddrCache cache, String routerName) {
@@ -247,7 +239,7 @@ public class RouterChain<T> {
 
     private void loop() {
         if (loopPermit.tryAcquire()) {
-            executorService.submit(new Runnable() {
+            loopThreadPool.submit(new Runnable() {
                 @Override
                 public void run() {
                     loopPermit.release();
