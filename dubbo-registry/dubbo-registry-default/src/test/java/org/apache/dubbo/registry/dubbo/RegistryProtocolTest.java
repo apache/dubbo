@@ -61,7 +61,7 @@ public class RegistryProtocolTest {
     }
 
     final String service = DemoService.class.getName() + ":1.0.0";
-    final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer";
+    final URL serviceUrl = URL.valueOf("dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer");
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -103,7 +103,7 @@ public class RegistryProtocolTest {
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
-        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.putAttribute(EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
                 newRegistryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
@@ -151,7 +151,7 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testNotifyOverride_notmatch() throws Exception {
-        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.putAttribute(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
 
         ServiceDescriptor descriptor = ApplicationModel.getServiceRepository().registerService(DemoService.class);
@@ -174,7 +174,7 @@ public class RegistryProtocolTest {
      */
     @Test
     public void testDestoryRegistry() {
-        URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
+        URL newRegistryUrl = registryUrl.putAttribute(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
