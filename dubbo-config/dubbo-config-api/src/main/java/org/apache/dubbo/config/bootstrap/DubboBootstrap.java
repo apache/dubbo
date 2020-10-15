@@ -224,9 +224,17 @@ public class DubboBootstrap extends GenericEventListener {
         return registerConsumer == null || !registerConsumer;
     }
 
+    /**
+     * 获取metadataType
+     * @return
+     */
     private String getMetadataType() {
+        /**
+         * 获取application标签中的metadataType
+         */
         String type = getApplication().getMetadataType();
         if (StringUtils.isEmpty(type)) {
+            //local
             type = DEFAULT_METADATA_STORAGE_TYPE;
         }
         return type;
@@ -545,13 +553,23 @@ public class DubboBootstrap extends GenericEventListener {
         // @since 2.7.8
         /**
          * 开启元数据中心
+         * 若没有指定元数据中心  则以注册中心代替  并初始化元数据中心
          */
         startMetadataCenter();
 
+        /**
+         * 获取metadataType对应得WritableMetadataService实现
+         */
         initMetadataService();
 
+        /**
+         * 初始化MetadataServiceExporter对应得实现
+         */
         initMetadataServiceExports();
 
+        /**
+         * init监听
+         */
         initEventListener();
 
         if (logger.isInfoEnabled()) {
@@ -683,23 +701,44 @@ public class DubboBootstrap extends GenericEventListener {
          */
         useRegistryAsMetadataCenterIfNecessary();
 
+        /**
+         * 获取application配置
+         */
         ApplicationConfig applicationConfig = getApplication();
 
+        /**
+         * 获取applicationConfig对应得metadata-type属性
+         */
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
+        /**
+         * 获取元数据中心
+         */
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            /**
+             * metadataType不能为remote
+             */
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when 'metadata=remote' is enabled.");
             }
             return;
         }
+        /**
+         * 获取集合中得第一个metadataReportConfig
+         */
         MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
+        /**
+         * 校验metadataReportConfig
+         */
         ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
         if (!metadataReportConfig.isValid()) {
             return;
         }
 
+        /**
+         * init  初始化元数据中心
+         */
         MetadataReportInstance.init(metadataReportConfig.toUrl());
     }
 
@@ -797,6 +836,13 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
+        /**
+         * 过滤所有的注册中心  获取对应的isDefault属性为null或者true的注册中心
+         * stream
+         * 再次过滤  是否允许当前注册中心做配置中心
+         * 将registryConfig转换为MetadataReportConfig
+         * 缓存MetadataReportConfig配置信息
+         */
         configManager
                 .getDefaultRegistries()
                 .stream()
@@ -961,11 +1007,15 @@ public class DubboBootstrap extends GenericEventListener {
      * Initialize {@link #metadataService WritableMetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
+        /**
+         * 获取metadataType对应得WritableMetadataService实现
+         */
         this.metadataService = WritableMetadataService.getExtension(getMetadataType());
     }
 
     /**
      * Initialize {@link #metadataServiceExporters MetadataServiceExporter}
+     * 初始化MetadataServiceExporter对应得实现
      */
     private void initMetadataServiceExports() {
         this.metadataServiceExporters = getExtensionLoader(MetadataServiceExporter.class).getSupportedExtensionInstances();
@@ -1002,6 +1052,9 @@ public class DubboBootstrap extends GenericEventListener {
                 logger.info(NAME + " is starting...");
             }
             // 1. export Dubbo Services
+            /**
+             * 导出服务
+             */
             exportServices();
 
             // Not only provider register
@@ -1210,12 +1263,21 @@ public class DubboBootstrap extends GenericEventListener {
         return exporter.supports(getMetadataType());
     }
 
+    /**
+     * 导出服务
+     */
     private void exportServices() {
+        /**
+         * 遍历所有得服务
+         */
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
             serviceConfig.setBootstrap(this);
 
+            /**
+             * 同步或异步
+             */
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {

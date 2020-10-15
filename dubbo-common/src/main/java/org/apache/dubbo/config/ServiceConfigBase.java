@@ -208,6 +208,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         convertProtocolIdsToProtocols();
     }
 
+    /**
+     * 用于检测 provider、application 等核心配置类对象是否为空，
+     * 为空，则尝试从其他配置类对象中获取相应的实例。
+     */
     public void completeCompoundConfigs() {
         super.completeCompoundConfigs(provider);
         if (provider != null) {

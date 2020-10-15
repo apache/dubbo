@@ -60,6 +60,11 @@ public abstract class ConfigCenterBasedMetadataReportFactory implements Metadata
         this.keyType = keyType;
     }
 
+    /**
+     * 根据url中得protocol  初始化
+     * @param url
+     * @return
+     */
     @Override
     public ConfigCenterBasedMetadataReport getMetadataReport(URL url) {
         url = url.setPath(URL_PATH);

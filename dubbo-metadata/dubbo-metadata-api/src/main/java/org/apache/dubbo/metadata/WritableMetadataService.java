@@ -98,6 +98,11 @@ public interface WritableMetadataService extends MetadataService {
         return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
     }
 
+    /**
+     * 获取name对应得WritableMetadataService实现
+     * @param name
+     * @return
+     */
     static WritableMetadataService getExtension(String name) {
         return getExtensionLoader(WritableMetadataService.class).getOrDefaultExtension(name);
     }

@@ -117,12 +117,17 @@ public abstract class AbstractConfig implements Serializable {
         return StringUtils.camelToSplitName(tag, "-");
     }
 
+    /**
+     * 将config中有@Parameter注解得属性   通过get方法获取对应得值  重新存储到parameters
+     * @param parameters
+     * @param config
+     */
     public static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }
 
     /**
-     * 将config中有Parameter注解得get方法 重新存储到parameters
+     * 将config中有@Parameter注解得属性   通过get方法获取对应得值  重新存储到parameters
      * @param parameters
      * @param config
      * @param prefix
