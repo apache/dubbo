@@ -71,8 +71,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         if (referParams != null) {
             this.consumerUrl = turnRegistryUrlToConsumerUrl(url, (Map<String, String>) referParams);
         } else {
-            this.consumerUrl = url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)))
-                    .removeParameter(MONITOR_KEY);
+            this.consumerUrl = url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
         }
 
         setRouterChain(routerChain);
@@ -84,7 +83,6 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
                 .clearParameters()
                 .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
                 .build();
     }
 

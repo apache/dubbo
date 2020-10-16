@@ -156,6 +156,10 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (sticky) {
             stickyInvoker = invoker;
         }
+
+        // set context before invoke, this logic was in ConsumerContextFilter before Filter refactoring.
+        setContext(invoker);
+
         return invoker;
     }
 
@@ -191,7 +195,15 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                 logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
             }
         }
+
         return invoker;
+    }
+
+    private void setContext(Invoker<T> invoker) {
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(invoker)
+                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
     }
 
     /**
