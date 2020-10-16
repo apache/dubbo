@@ -98,7 +98,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
         try {
             checkInvokers(invokers, invocation);
             invoker = select(loadbalance, invocation, invokers, null);
-            return invoker.invoke(invocation);
+            return invokeWithContext(invoker, invocation);
         } catch (Throwable e) {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                     + e.getMessage() + ", ", e);
@@ -141,7 +141,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 Invoker<T> retryInvoker = select(loadbalance, invocation, invokers, Collections.singletonList(lastInvoker));
                 lastInvoker = retryInvoker;
-                retryInvoker.invoke(invocation);
+                invokeWithContext(retryInvoker, invocation);
             } catch (Throwable e) {
                 logger.error("Failed retry to invoke method " + invocation.getMethodName() + ", waiting again.", e);
                 if ((++retryTimes) >= retries) {
