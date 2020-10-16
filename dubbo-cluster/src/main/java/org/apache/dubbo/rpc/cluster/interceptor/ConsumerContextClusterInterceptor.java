@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
@@ -40,6 +41,11 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
     @Override
     public void after(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) {
         RpcContext.removeContext(true);
+    }
+
+    @Override
+    public Result intercept(AbstractClusterInvoker<?> clusterInvoker, Invocation invocation) throws RpcException {
+        return clusterInvoker.invoke(invocation);
     }
 
     @Override

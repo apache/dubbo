@@ -49,7 +49,6 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -443,7 +442,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
+                        invoker = protocol.refer(serviceType, url);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
@@ -727,24 +726,6 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             for (Configurator configurator : configurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
-        }
-    }
-
-    /**
-     * The delegate class, which is mainly used to store the URL address sent by the registry,and can be reassembled on the basis of providerURL queryMap overrideMap for re-refer.
-     *
-     * @param <T>
-     */
-    private static class InvokerDelegate<T> extends InvokerWrapper<T> {
-        private URL providerUrl;
-
-        public InvokerDelegate(Invoker<T> invoker, URL url, URL providerUrl) {
-            super(invoker, url);
-            this.providerUrl = providerUrl;
-        }
-
-        public URL getProviderUrl() {
-            return providerUrl;
         }
     }
 
