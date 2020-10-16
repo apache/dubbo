@@ -41,6 +41,10 @@ public class MethodDescriptor {
     private final String methodName;
     private final boolean generic;
 
+    /**
+     * 方法描述
+     * @param method
+     */
     public MethodDescriptor(Method method) {
         this.method = method;
         this.parameterClasses = method.getParameterTypes();

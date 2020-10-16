@@ -59,8 +59,16 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         }
     }
 
+    /**
+     * 注册服务描述符
+     * @param interfaceClazz
+     * @return
+     */
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
         return services.computeIfAbsent(interfaceClazz.getName(),
+                /**
+                 * 服务描述符
+                 */
                 _k -> new ServiceDescriptor(interfaceClazz));
     }
 
@@ -72,13 +80,24 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
      * 2. services share the same interface but has different group/version can share the same path.
      * 3. path's default value is the name of the interface.
      *
+     * 1。不允许具有不同接口的服务具有相同的路径。
+     * 2。服务共享相同的接口，但具有不同组/版本的服务可以共享同一路径。
+     * 3。路径的默认值是接口的名称
+     *
      * @param path
      * @param interfaceClass
      * @return
      */
     public ServiceDescriptor registerService(String path, Class<?> interfaceClass) {
+        /**
+         * 注册服务描述符
+         */
         ServiceDescriptor serviceDescriptor = registerService(interfaceClass);
         // if path is different with interface name, add extra path mapping
+        /**
+         * path与类名不同时
+         * 以path为key  再次存储serviceDescriptor
+         */
         if (!interfaceClass.getName().equals(path)) {
             services.putIfAbsent(path, serviceDescriptor);
         }
@@ -111,13 +130,28 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     }
 
+    /**
+     * 添加provider
+     * @param serviceKey
+     * @param serviceInstance
+     * @param serviceModel
+     * @param serviceConfig
+     * @param serviceMetadata
+     */
     public void registerProvider(String serviceKey,
                                  Object serviceInstance,
                                  ServiceDescriptor serviceModel,
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
+        /**
+         * 实例化ProviderModel
+         */
         ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
                 serviceMetadata);
+
+        /**
+         * 缓存providerModel
+         */
         providers.putIfAbsent(serviceKey, providerModel);
         providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
     }

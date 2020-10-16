@@ -404,6 +404,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
+        /**
+         * group/path:version
+         */
         return URL.buildKey(interfaceName, getGroup(), getVersion());
     }
 
