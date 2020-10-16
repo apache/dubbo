@@ -351,4 +351,6 @@ public interface CommonConstants {
 
     String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
+    String FILTER_BUILDER_KEY = "filter-builder";
+
 }

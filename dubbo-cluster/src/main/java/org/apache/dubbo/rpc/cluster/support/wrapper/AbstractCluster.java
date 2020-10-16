@@ -32,6 +32,8 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
 
@@ -135,11 +137,11 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     static class FilterInvoker<T> extends AbstractClusterInvoker<T> {
-
         private Invoker<T> filterInvoker;
 
         public FilterInvoker(AbstractClusterInvoker<T> invoker) {
-            filterInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getDefaultExtension()
+            filterInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class)
+                    .getExtension(invoker.getUrl().getParameter(FILTER_BUILDER_KEY, DEFAULT_KEY))
                     .buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
         }
 
