@@ -205,6 +205,12 @@ public class ConfigValidationUtils {
         return registryList;
     }
 
+    /**
+     * 向url中添加MonitorConfig信息
+     * @param interfaceConfig
+     * @param registryURL
+     * @return
+     */
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
         Map<String, String> map = new HashMap<String, String>();
         map.put(INTERFACE_KEY, MonitorService.class.getName());

@@ -109,6 +109,11 @@ public class NetUtils {
         return port;
     }
 
+    /**
+     * 是否是非法的端口
+     * @param port
+     * @return
+     */
     public static boolean isInvalidPort(int port) {
         return port <= MIN_PORT || port > MAX_PORT;
     }
@@ -127,6 +132,12 @@ public class NetUtils {
         return ANYHOST_VALUE.equals(host);
     }
 
+    /**
+     * 是否为非法的localhost
+     *
+     * @param host
+     * @return
+     */
     public static boolean isInvalidLocalHost(String host) {
         return host == null
                 || host.length() == 0
