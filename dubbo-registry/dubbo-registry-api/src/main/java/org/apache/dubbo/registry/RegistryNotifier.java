@@ -41,7 +41,7 @@ public abstract class RegistryNotifier {
         this.registry = registry;
     }
 
-    public void notify(Object rawAddresses) {
+    public synchronized void notify(Object rawAddresses) {
         this.rawAddresses = rawAddresses;
         long notifyTime = System.currentTimeMillis();
         this.lastEventTime = notifyTime;
@@ -57,9 +57,9 @@ public abstract class RegistryNotifier {
 
     protected abstract void doNotify(Object rawAddresses);
 
-    public class NotificationTask implements Runnable {
-        private RegistryNotifier listener;
-        private long time;
+    public static class NotificationTask implements Runnable {
+        private final RegistryNotifier listener;
+        private final long time;
 
         public NotificationTask(RegistryNotifier listener, long time) {
             this.listener = listener;
@@ -71,6 +71,11 @@ public abstract class RegistryNotifier {
             if (this.time == listener.lastEventTime) {
                 listener.doNotify(listener.rawAddresses);
                 listener.lastExecuteTime = System.currentTimeMillis();
+                synchronized (listener) {
+                    if (this.time == listener.lastEventTime) {
+                        listener.rawAddresses = null;
+                    }
+                }
             }
         }
     }
