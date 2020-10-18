@@ -104,7 +104,7 @@ public class UrlUtils {
             defaultParameters.remove(PORT_KEY);
             defaultParameters.remove(PATH_KEY);
         }
-        URL u = URL.valueOf(url);
+        URL u = URL.cacheableValueOf(url);
         boolean changed = false;
         String protocol = u.getProtocol();
         String username = u.getUsername();

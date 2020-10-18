@@ -25,6 +25,7 @@ import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -103,6 +104,8 @@ public /*final**/
 class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
+
+    private static Map<String, URL> cachedURLs = new LRUCache<>();
 
     private final URLAddress urlAddress;
     private final URLParam urlParam;
@@ -190,6 +193,16 @@ class URL implements Serializable {
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
         this.urlParam = new URLParam(parameters);
+    }
+
+    public static URL cacheableValueOf(String url) {
+        URL cachedURL =  cachedURLs.get(url);
+        if (cachedURL != null) {
+            return cachedURL;
+        }
+        cachedURL = valueOf(url, false);
+        cachedURLs.put(url, cachedURL);
+        return cachedURL;
     }
 
     /**

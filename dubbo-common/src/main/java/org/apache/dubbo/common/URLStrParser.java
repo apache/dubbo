@@ -19,6 +19,7 @@ package org.apache.dubbo.common;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.url.component.URLItemCache;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -166,6 +167,10 @@ public final class URLStrParser {
             host = decodedBody.substring(starIdx, endIdx);
         }
 
+        // check cache
+        protocol = URLItemCache.checkProtocol(protocol);
+        path = URLItemCache.checkPath(path);
+
         return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
@@ -280,7 +285,7 @@ public final class URLStrParser {
             } else {
                 value = decodeComponent(str, valueStart, valueEnd, false, tempBuf);
             }
-            params.put(name, value);
+            URLItemCache.putParams(params,name, value);
             // compatible with lower versions registering "default." keys
             if (name.startsWith(DEFAULT_KEY_PREFIX)) {
                 params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
@@ -293,7 +298,7 @@ public final class URLStrParser {
             } else {
                 value = str.substring(valueStart, valueEnd);
             }
-            params.put(name, value);
+            URLItemCache.putParams(params, name, value);
             // compatible with lower versions registering "default." keys
             if (name.startsWith(DEFAULT_KEY_PREFIX)) {
                 params.putIfAbsent(name.substring(DEFAULT_KEY_PREFIX.length()), value);
