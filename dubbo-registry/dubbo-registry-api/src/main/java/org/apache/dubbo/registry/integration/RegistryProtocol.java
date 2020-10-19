@@ -186,20 +186,44 @@ public class RegistryProtocol implements Protocol {
                 registered));
     }
 
+    /**
+     * 服务导出
+     * @param originInvoker
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+        /**
+         * 获取注册中心 URL，以 nacos 注册中心为例，得到的示例 URL 如下
+         * nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F192.168.50.39%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fanyhost%3Dtrue%26application%3Ddubbo-demo-annotation-provider%26bind.ip%3D192.168.50.39%26bind.port%3D20880%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26generic%3Dfalse%26group%3Dtest3342%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D11616%26release%3D%26revision%3D2.36.5%26sayHello.return%3Dtrue%26side%3Dprovider%26timestamp%3D1603097863974%26version%3D2.36.5&pid=11616&timestamp=1603097863972
+         */
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
+        /**
+         * 获取服务提供者的url
+         * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=test3342&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=11816&release=&revision=2.36.5&sayHello.return=true&side=provider&timestamp=1603097938985&version=2.36.5
+         */
         URL providerUrl = getProviderUrl(originInvoker);
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call
         //  the same service. Because the subscribed is cached key with the name of the service, it causes the
         //  subscription information to cover.
+        /**
+         * 当提供者订阅时，它将影响场景：某个JVM公开服务和调用同样的服务。
+         * 因为subscribed是带有服务名称的缓存密钥，因此会导致要覆盖的订阅信息
+         *
+         * 修改url对应的protocol为provider  并向parameters增加两对参数
+         */
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
+        /**
+         * 处理config？？？
+         */
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
@@ -250,8 +274,13 @@ public class RegistryProtocol implements Protocol {
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
         String key = getCacheKey(originInvoker);
 
+        // 写缓存
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
+            // 创建 Invoker 为委托类对象
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
+            /**
+             * 假设运行时协议为 dubbo，此处的 protocol 变量会在运行时加载 DubboProtocol，并调用 DubboProtocol 的 export 方法
+             */
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
     }
@@ -354,10 +383,24 @@ public class RegistryProtocol implements Protocol {
         return registryFactory.getRegistry(registryUrl);
     }
 
+    /**
+     * 获取注册中心url
+     * @param originInvoker
+     * @return
+     */
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
+        /**
+         * protocol为registry
+         */
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
+            /**
+             * 获取registry对应的值
+             */
             String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            /**
+             * 替换url对应的protocol并删除parameters中的registry
+             */
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
         return registryUrl;
@@ -401,6 +444,11 @@ public class RegistryProtocol implements Protocol {
 
     }
 
+    /**
+     * 修改url对应的protocol为provider  并向parameters增加两对参数
+     * @param registeredProviderUrl
+     * @return
+     */
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {
         return registeredProviderUrl.setProtocol(PROVIDER_PROTOCOL)
                 .addParameters(CATEGORY_KEY, CONFIGURATORS_CATEGORY, CHECK_KEY, String.valueOf(false));

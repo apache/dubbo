@@ -559,6 +559,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         // don't export when none is configured
         /**
          * scope不能等于none
+         *
+         * scope = none，不导出服务
+         * scope != remote，导出到本地
+         * scope != local，导出到远程
          */
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
 
@@ -611,7 +615,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
-                        // 为服务提供类(ref)生成 Invoker
+                        // 为服务提供类(ref)生成 Invoker  StubProxyFactoryWrapper => JavassistProxyFactory
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
                         // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
@@ -620,6 +624,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                          * 导出服务
                          * 导出服务
                          * 导出服务
+                         * ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol => DubboProtocol
                          */
                         Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
                         exporters.add(exporter);

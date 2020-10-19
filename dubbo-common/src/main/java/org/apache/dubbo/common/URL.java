@@ -1228,6 +1228,11 @@ class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, map);
     }
 
+    /**
+     * 增加参数
+     * @param pairs  成对出现
+     * @return
+     */
     public URL addParameters(String... pairs) {
         if (pairs == null || pairs.length == 0) {
             return this;
@@ -1495,6 +1500,9 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
+        /**
+         * group/path:version
+         */
         serviceKey = buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
         return serviceKey;
     }
