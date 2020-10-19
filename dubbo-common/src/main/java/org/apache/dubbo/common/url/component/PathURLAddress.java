@@ -27,6 +27,7 @@ public class PathURLAddress extends URLAddress {
     private String password;
     private String path;
 
+    private transient String address;
     private transient String ip;
 
     public PathURLAddress(String protocol, String username, String password, String path, String host, int port) {
@@ -94,6 +95,12 @@ public class PathURLAddress extends URLAddress {
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 
+    public String getAddress() {
+        if (address == null) {
+            address = getAddress(getHost(), getPort());
+        }
+        return address;
+    }
 
     /**
      * Fetch IP address for this URL.

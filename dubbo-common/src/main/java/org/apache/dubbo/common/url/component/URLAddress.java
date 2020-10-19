@@ -31,8 +31,7 @@ public class URLAddress implements Serializable {
     protected int port;
 
     // cache
-    protected transient final String rawAddress;
-    protected transient String address;
+    protected transient String rawAddress;
     protected transient long timestamp;
 
     public URLAddress(String host, int port) {
@@ -97,10 +96,10 @@ public class URLAddress implements Serializable {
     }
 
     public String getAddress() {
-        if (address == null) {
-            address = getAddress(getHost(), getPort());
+        if (rawAddress == null) {
+            rawAddress = getAddress(getHost(), getPort());
         }
-        return address;
+        return rawAddress;
     }
 
     public URLAddress setAddress(String host, int port) {
@@ -115,7 +114,7 @@ public class URLAddress implements Serializable {
         return rawAddress;
     }
 
-    private String getAddress(String host, int port) {
+    protected String getAddress(String host, int port) {
         return port <= 0 ? host : host + ':' + port;
     }
 
@@ -251,6 +250,11 @@ public class URLAddress implements Serializable {
                 host = rawAddress.substring(0, i);
             }
         }
+
+        // check cache
+        protocol = URLItemCache.checkProtocol(protocol);
+        path = URLItemCache.checkPath(path);
+
         return new PathURLAddress(protocol, username, password, path, host, port, copyOfRawAddress);
     }
 }
