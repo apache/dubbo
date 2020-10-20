@@ -65,6 +65,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
+    private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     private final Map<String, String> extraParameters;
@@ -279,7 +280,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected String[] getVariableKeys() {
-       return new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
+       return VARIABLE_KEYS;
     }
 
     protected String getDefaultURLProtocol() {
