@@ -34,7 +34,6 @@ public abstract class ServiceAddressURL extends URL {
     //cache
     private transient Map<String, String> concatenatedPrams;
 //    private transient Map<String, String> allParameters;
-    private transient long createdStamp;
 
     public ServiceAddressURL(
             String protocol,
@@ -48,13 +47,11 @@ public abstract class ServiceAddressURL extends URL {
     ) {
         super(protocol, username, password, host, port, path, parameters);
         this.consumerURL = consumerURL;
-        this.createdStamp = System.currentTimeMillis();
     }
 
     public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL){
         super(urlAddress, urlParam);
         this.consumerURL = consumerURL;
-        this.createdStamp = System.currentTimeMillis();
     }
 
     @Override
@@ -191,14 +188,6 @@ public abstract class ServiceAddressURL extends URL {
 
     public URL getConsumerURL() {
         return consumerURL;
-    }
-
-    public long getCreatedStamp() {
-        return createdStamp;
-    }
-
-    public void setCreatedStamp(long createdStamp) {
-        this.createdStamp = createdStamp;
     }
 
     @Override

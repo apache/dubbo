@@ -30,5 +30,8 @@ public class CacheableFailbackRegistryTest {
 
     }
 
+    public void testRemove() {
+
+    }
 
 }

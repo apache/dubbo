@@ -34,6 +34,7 @@ public final class URLStrParser {
     private static final Logger logger = LoggerFactory.getLogger(URLStrParser.class);
     public static final String ENCODED_QUESTION_MARK = "%3F";
     public static final String ENCODED_TIMESTAMP_KEY = "timestamp%3D";
+    public static final String ENCODED_PID_KEY = "pid%3D";
     public static final String ENCODED_AND_MARK = "%26";
     private static final char SPACE = 0x20;
 

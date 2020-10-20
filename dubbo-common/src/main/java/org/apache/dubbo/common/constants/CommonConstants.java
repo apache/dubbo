@@ -353,4 +353,7 @@ public interface CommonConstants {
 
     String FILTER_BUILDER_KEY = "filter-builder";
 
+    String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
+    String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
+
 }

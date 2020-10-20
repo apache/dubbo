@@ -19,11 +19,15 @@ package org.apache.dubbo.registry.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
+import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.util.ArrayList;
@@ -33,10 +37,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.URLStrParser.ENCODED_AND_MARK;
+import static org.apache.dubbo.common.URLStrParser.ENCODED_PID_KEY;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_QUESTION_MARK;
 import static org.apache.dubbo.common.URLStrParser.ENCODED_TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_TASK_INTERVAL;
+import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_WAITING_THRESHOLD;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -55,60 +65,97 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
+    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+
     private final Map<String, String> extraParameters;
 
     protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
     protected final Map<String, URLAddress> stringAddress = new HashMap<>();
     protected final Map<String, URLParam> stringParam = new HashMap<>();
 
+    private final ScheduledExecutorService cacheRemovalScheduler;
+    private final int cacheRemovalTaskIntervalInMillis;
+    private final int cacheClearWaitingThresholdInMillis;
+    private final Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
+    private final Semaphore semaphore = new Semaphore(1);
+
     public CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
+
+        this.cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
+        this.cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
+        this.cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 10 * 60 * 1000);
     }
 
-    /**
-     * TODO
-     * 1. tackle path and interface keys to further improve cache utilization between interfaces.
-     * 2. enable simplified mode on Provider side to remove timestamp key from provider URL.
-     *
-     * @param consumer
-     * @param providers
-     * @return
-     */
+    protected int getIntConfig(String key, int def) {
+        String str = ConfigurationUtils.getProperty(key);
+        int result = def;
+        if (StringUtils.isNotEmpty(str)) {
+            try {
+                result = Integer.parseInt(str);
+            } catch (NumberFormatException e) {
+                logger.warn("Invalid registry properties configuration key " + key + ", value " + str);
+            }
+        }
+        return result;
+    }
+
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
+        // keep old urls
+        Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
+        // create new urls
+        Map<String, ServiceAddressURL> newURLs;
         URL copyOfConsumer = removeParamsFromConsumer(consumer);
-        Map<String, ServiceAddressURL> consumerStringUrls = stringUrls.computeIfAbsent(consumer, (k) -> new ConcurrentHashMap<>());
-        long firstUpdatedStamp = 0;
-        for (String rawProvider : providers) {
-            rawProvider = stripOffTimestamp(rawProvider);
-            ServiceAddressURL cachedURL = consumerStringUrls.get(rawProvider);
-            if (cachedURL == null) {
-                cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
+        if (oldURLs == null) {
+            newURLs = new HashMap<>();
+            for (String rawProvider : providers) {
+                rawProvider = stripOffVariableKeys(rawProvider);
+                ServiceAddressURL cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
                 if (cachedURL == null) {
+                    logger.warn("Invalid address, failed to parse into URL " + rawProvider);
                     continue;
                 }
-                consumerStringUrls.put(rawProvider, cachedURL);
-            } else {
-                cachedURL.setCreatedStamp(System.currentTimeMillis());
+                newURLs.put(rawProvider, cachedURL);
             }
-            if (firstUpdatedStamp == 0) {
-                firstUpdatedStamp = cachedURL.getCreatedStamp();
+        } else {
+            newURLs = new HashMap<>((int)(oldURLs.size()/.75 + 1));
+            // maybe only default , or "env" + default
+            for (String rawProvider : providers) {
+                rawProvider = stripOffVariableKeys(rawProvider);
+                ServiceAddressURL cachedURL = oldURLs.remove(rawProvider);
+                if (cachedURL == null) {
+                    cachedURL = createURL(rawProvider, copyOfConsumer, getExtraParameters());
+                    if (cachedURL == null) {
+                        logger.warn("Invalid address, failed to parse into URL " + rawProvider);
+                        continue;
+                    }
+                }
+                newURLs.put(rawProvider, cachedURL);
             }
         }
 
-        List<URL> list = new ArrayList<>(consumerStringUrls.size());
-        Iterator<Map.Entry<String, ServiceAddressURL>> iterator = consumerStringUrls.entrySet().iterator();
-        while (iterator.hasNext()) {
-            ServiceAddressURL url = iterator.next().getValue();
-            if (url.getCreatedStamp() - firstUpdatedStamp < 0) {
-                iterator.remove();
-            } else {
-                list.add(url);
+        stringUrls.put(consumer, newURLs);
+
+        // destroy used urls
+        try {
+            if (oldURLs != null && oldURLs.size() > 0) {
+                Long currentTimestamp = System.currentTimeMillis();
+                for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
+                    waitForRemove.put(entry.getValue(), currentTimestamp);
+                }
+                if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
+                    if (semaphore.tryAcquire()) {
+                        cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                    }
+                }
             }
+        } catch (Exception e) {
+            logger.warn("Failed to evict url for " + consumer, e);
         }
 
-        return list;
+        return new ArrayList<>(newURLs.values());
     }
 
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
@@ -181,19 +228,35 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
     }
 
-    private String stripOffTimestamp(String rawProvider) {
-        int idxStart = rawProvider.indexOf(ENCODED_TIMESTAMP_KEY);
-        if (idxStart == -1) {
+    private String stripOffVariableKeys(String rawProvider) {
+        String[] keys = getVariableKeys();
+        if (keys == null || keys.length == 0) {
             return rawProvider;
         }
-        int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
-        String part1 = rawProvider.substring(0, idxStart);
-        if (idxEnd == -1) {
-            return part1;
-        }
-        String part2 = rawProvider.substring(idxEnd + 1);
 
-        return part1 + part2;
+        for (String key : keys) {
+            int idxStart = rawProvider.indexOf(key);
+            if (idxStart == -1) {
+                continue;
+            }
+            int idxEnd = rawProvider.indexOf(ENCODED_AND_MARK, idxStart);
+            String part1 = rawProvider.substring(0, idxStart);
+            if (idxEnd == -1) {
+                rawProvider = part1;
+            } else {
+                String part2 = rawProvider.substring(idxEnd + ENCODED_AND_MARK.length());
+                rawProvider = part1 + part2;
+            }
+        }
+
+        if (rawProvider.endsWith(ENCODED_AND_MARK)) {
+            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_AND_MARK.length());
+        }
+        if (rawProvider.endsWith(ENCODED_QUESTION_MARK)) {
+            rawProvider = rawProvider.substring(0, rawProvider.length() - ENCODED_QUESTION_MARK.length());
+        }
+
+        return rawProvider;
     }
 
     private List<URL> toConfiguratorsWithoutEmpty(URL consumer, Collection<String> configurators) {
@@ -215,10 +278,44 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return extraParameters;
     }
 
+    protected String[] getVariableKeys() {
+       return new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
+    }
+
     protected String getDefaultURLProtocol() {
         return DUBBO;
     }
 
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
+
+    private class RemovalTask implements Runnable {
+        @Override
+        public void run() {
+            semaphore.release();
+            logger.info("Clearing cached URLs, size " + waitForRemove.size());
+            Iterator<Map.Entry<ServiceAddressURL, Long>> it = waitForRemove.entrySet().iterator();
+            while(it.hasNext()) {
+                Map.Entry<ServiceAddressURL, Long> entry = it.next();
+                ServiceAddressURL removeURL = entry.getKey();
+                long removeTime = entry.getValue();
+                long current = System.currentTimeMillis();
+                if (current - removeTime >= cacheClearWaitingThresholdInMillis) {
+                    URLAddress urlAddress = removeURL.getUrlAddress();
+                    URLParam urlParam = removeURL.getUrlParam();
+                    if (current - urlAddress.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
+                        stringAddress.remove(urlAddress.getRawAddress());
+                    }
+                    if (current - urlParam.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
+                        stringParam.remove(urlParam.getRawParam());
+                    }
+                    it.remove();
+                }
+            }
+
+            if (semaphore.tryAcquire() && CollectionUtils.isNotEmptyMap(waitForRemove)) {//move to next schedule
+                cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+            }
+        }
+    }
 }
