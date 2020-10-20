@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.RemoteServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.Type;
 import org.apache.dubbo.rpc.service.EchoService;
 
+import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -42,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -106,6 +108,15 @@ public class DubboProtocolTest {
         assertEquals(echo.$echo("test"), "test");
         assertEquals(echo.$echo("abcdefg"), "abcdefg");
         assertEquals(echo.$echo(1234), 1234);
+
+        // test GenericService  $invoke / $invokeAsync
+        GenericService genericService = proxy.getProxy(protocol.refer(GenericService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
+                3000L)));
+        Object echoResult = genericService.$invoke("echo", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        assertEquals("haha", echoResult);
+
+        CompletableFuture<Object> echoFeature = genericService.$invokeAsync("echo", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        assertEquals("haha", echoFeature.get());
     }
 
     @Test
