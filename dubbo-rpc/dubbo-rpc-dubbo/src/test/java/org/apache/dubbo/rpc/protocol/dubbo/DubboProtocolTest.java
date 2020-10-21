@@ -46,6 +46,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * <code>ProxiesTest</code>
@@ -78,10 +80,10 @@ public class DubboProtocolTest {
 
     @Test
     public void testDubboProtocol() throws Exception {
-        DemoService service = new DemoServiceImpl();
+        DemoServiceImpl serviceImpl = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+        protocol.export(proxy.getInvoker(serviceImpl, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
                 3000L)));
         assertEquals(service.enumlength(new Type[]{}), Type.Lower);
         assertEquals(service.getSize(null), -1);
@@ -108,15 +110,59 @@ public class DubboProtocolTest {
         assertEquals(echo.$echo("test"), "test");
         assertEquals(echo.$echo("abcdefg"), "abcdefg");
         assertEquals(echo.$echo(1234), 1234);
+    }
 
-        // test GenericService  $invoke / $invokeAsync
-        GenericService genericService = proxy.getProxy(protocol.refer(GenericService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
+    @Test
+    public void testAsyncCall() throws Exception {
+        DemoServiceImpl serviceImpl = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(serviceImpl, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
                 3000L)));
-        Object echoResult = genericService.$invoke("echo", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        assertEquals("haha", echoResult);
 
-        CompletableFuture<Object> echoFeature = genericService.$invokeAsync("echo", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        assertEquals("haha", echoFeature.get());
+        String name = "haha";
+        String expected = "Hello, haha";
+
+        // test async
+        serviceImpl.resetCalled();
+        CompletableFuture<String> future = service.sayHelloAsync(name);
+        assertFalse(serviceImpl.isCalled());
+        assertEquals(expected, future.get());
+        assertTrue(serviceImpl.isCalled());
+    }
+
+        @Test
+    public void testGenericInvoke() throws Exception {
+        DemoServiceImpl serviceImpl = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(serviceImpl, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        DemoService service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+                3000L)));
+
+        String name = "haha";
+        String expected = "Hello, haha";
+
+        // test GenericService.$invoke
+        GenericService genericService = proxy.getProxy(protocol.refer(GenericService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+                3000L)));
+        Object echoResult = genericService.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{name});
+        assertEquals(expected, echoResult);
+
+        serviceImpl.resetCalled();
+        echoResult = genericService.$invoke("sayHelloAsync", new String[]{"java.lang.String"}, new Object[]{name});
+        assertTrue(serviceImpl.isCalled());
+        assertEquals(expected, echoResult);
+
+        // test GenericService.$invokeAsync
+        CompletableFuture<Object> echoFeature = genericService.$invokeAsync("sayHello", new String[]{"java.lang.String"}, new Object[]{name});
+        assertEquals(expected, echoFeature.get());
+
+        serviceImpl.resetCalled();
+        echoFeature = genericService.$invokeAsync("sayHelloAsync", new String[]{"java.lang.String"}, new Object[]{name});
+        assertFalse(serviceImpl.isCalled());
+        assertEquals(expected, echoFeature.get());
+        assertTrue(serviceImpl.isCalled());
+
     }
 
     @Test
@@ -210,7 +256,7 @@ public class DubboProtocolTest {
             service.nonSerializedParameter(new NonSerialized());
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+            assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
 
@@ -225,7 +271,7 @@ public class DubboProtocolTest {
             service.returnNonSerialized();
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+            assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
 
