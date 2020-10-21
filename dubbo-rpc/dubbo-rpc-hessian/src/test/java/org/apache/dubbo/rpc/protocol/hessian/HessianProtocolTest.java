@@ -98,8 +98,9 @@ public class HessianProtocolTest {
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
         GenericService client = proxyFactory.getProxy(invoker, true);
         CompletableFuture future = client.$invokeAsync("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
-        Assertions.assertTrue(server.isCalled());
+        Assertions.assertFalse(server.isCalled());
         Assertions.assertEquals("Hello, haha", future.get());
+        Assertions.assertTrue(server.isCalled());
         invoker.destroy();
         exporter.unexport();
     }
