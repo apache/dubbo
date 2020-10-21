@@ -31,6 +31,9 @@ public class RegistryFactoryWrapper implements RegistryFactory {
 
     @Override
     public Registry getRegistry(URL url) {
+        /**
+         * AbstractRegistryFactory$getRegistry()
+         */
         return new ListenerRegistryWrapper(registryFactory.getRegistry(url),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(RegistryServiceListener.class)
                         .getActivateExtension(url, "registry.listeners")));

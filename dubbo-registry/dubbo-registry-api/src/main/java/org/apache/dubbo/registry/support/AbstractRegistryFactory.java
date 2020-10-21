@@ -97,6 +97,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    /**
+     * 根据url获取对应的Registry
+     * @param url Registry address, is not allowed to be empty
+     * @return
+     */
     @Override
     public Registry getRegistry(URL url) {
         if (destroyed.get()) {
@@ -104,7 +109,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                     "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
         }
-
+        //url重新设置path  在parameter中新增interface属性并删除export属性
         url = URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
@@ -119,10 +124,16 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 return registry;
             }
             //create registry by spi/ioc
+            /**
+             * 创建url对应的Registry
+             */
             registry = createRegistry(url);
             if (registry == null) {
                 throw new IllegalStateException("Can not create registry " + url);
             }
+            /**
+             * 缓存
+             */
             REGISTRIES.put(key, registry);
             return registry;
         } finally {

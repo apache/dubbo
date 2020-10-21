@@ -215,7 +215,7 @@ public class RegistryProtocol implements Protocol {
          * 当提供者订阅时，它将影响场景：某个JVM公开服务和调用同样的服务。
          * 因为subscribed是带有服务名称的缓存密钥，因此会导致要覆盖的订阅信息
          *
-         * 修改url对应的protocol为provider  并向parameters增加两对参数
+         * 修改url对应的protocol为provider  并向parameters增加两对参数category和check
          */
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
@@ -226,9 +226,13 @@ public class RegistryProtocol implements Protocol {
          */
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
+        /**
+         * 导出服务  即服务启动
+         */
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
+        // 根据 URL 加载 Registry 实现类
         final Registry registry = getRegistry(originInvoker);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
@@ -271,7 +275,13 @@ public class RegistryProtocol implements Protocol {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * 导出服务
+     */
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
+        /**
+         * 获取cacheKey 即获取originInvoker对应的服务提供者的url并在parameters中移除两个属性   dynamic和enabled
+         */
         String key = getCacheKey(originInvoker);
 
         // 写缓存
@@ -379,7 +389,9 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     protected Registry getRegistry(final Invoker<?> originInvoker) {
+        //获取注册中心url
         URL registryUrl = getRegistryUrl(originInvoker);
+        //RegistryFactoryWrapper
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -475,7 +487,13 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private String getCacheKey(final Invoker<?> originInvoker) {
+        /**
+         * 获取originInvoker对应的服务提供者的url
+         */
         URL providerUrl = getProviderUrl(originInvoker);
+        /**
+         * 在parameters中移除两个属性   dynamic和enabled
+         */
         String key = providerUrl.removeParameters("dynamic", "enabled").toFullString();
         return key;
     }
