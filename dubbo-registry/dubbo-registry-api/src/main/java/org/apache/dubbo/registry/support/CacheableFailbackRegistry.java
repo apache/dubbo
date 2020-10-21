@@ -21,6 +21,8 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
 import org.apache.dubbo.common.url.component.ServiceAddressURL;
@@ -65,32 +67,34 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
  */
 public abstract class CacheableFailbackRegistry extends FailbackRegistry {
+    private static final Logger logger = LoggerFactory.getLogger(CacheableFailbackRegistry.class);
     private static String[] VARIABLE_KEYS = new String[]{ENCODED_TIMESTAMP_KEY, ENCODED_PID_KEY};
-    private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+
+    protected final static Map<String, URLAddress> stringAddress = new ConcurrentHashMap<>();
+    protected final static Map<String, URLParam> stringParam = new ConcurrentHashMap<>();
+    private static final ScheduledExecutorService cacheRemovalScheduler;
+    private static final int cacheRemovalTaskIntervalInMillis;
+    private static final int cacheClearWaitingThresholdInMillis;
+    private final static Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
+    private static final Semaphore semaphore = new Semaphore(1);
 
     private final Map<String, String> extraParameters;
-
     protected final Map<URL, Map<String, ServiceAddressURL>> stringUrls = new HashMap<>();
-    protected final Map<String, URLAddress> stringAddress = new HashMap<>();
-    protected final Map<String, URLParam> stringParam = new HashMap<>();
 
-    private final ScheduledExecutorService cacheRemovalScheduler;
-    private final int cacheRemovalTaskIntervalInMillis;
-    private final int cacheClearWaitingThresholdInMillis;
-    private final Map<ServiceAddressURL, Long> waitForRemove = new ConcurrentHashMap<>();
-    private final Semaphore semaphore = new Semaphore(1);
+    static {
+        ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
+        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 10 * 60 * 1000);
+    }
 
     public CacheableFailbackRegistry(URL url) {
         super(url);
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
-
-        this.cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
-        this.cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
-        this.cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 10 * 60 * 1000);
     }
 
-    protected int getIntConfig(String key, int def) {
+    protected static int getIntConfig(String key, int def) {
         String str = ConfigurationUtils.getProperty(key);
         int result = def;
         if (StringUtils.isNotEmpty(str)) {
@@ -198,21 +202,20 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
         String rawAddress = parts[0];
         String rawParams = parts[1];
-        URLAddress address = stringAddress.get(rawAddress);
-        if (address == null) {
-            address = URLAddress.parse(rawAddress, getDefaultURLProtocol(), encoded);
-            stringAddress.put(rawAddress, address);
-        } else {
-            address.setTimestamp(System.currentTimeMillis());
-        }
+        boolean isEncoded = encoded;
+        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> {
+            URLAddress newAddress = URLAddress.parse(k, getDefaultURLProtocol(), isEncoded);
+            stringAddress.put(k, newAddress);
+            return newAddress;
+        });
+        address.setTimestamp(System.currentTimeMillis());
 
-        URLParam param = stringParam.get(rawParams);
-        if (param == null) {
-            param = URLParam.parse(rawParams, encoded, extraParameters);
-            stringParam.put(rawParams, param);
-        } else {
-            param.setTimestamp(System.currentTimeMillis());
-        }
+        URLParam param = stringParam.computeIfAbsent(rawParams, k -> {
+            URLParam newParam = URLParam.parse(k, isEncoded, extraParameters);
+            stringParam.put(k, newParam);
+            return newParam;
+        });
+        param.setTimestamp(System.currentTimeMillis());
 
         ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
         if (isMatch(consumerURL, cachedURL)) {
@@ -220,6 +223,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         }
         return null;
     }
+
 
     protected ServiceAddressURL createServiceURL(URLAddress address, URLParam param, URL consumerURL) {
         return new DubboServiceAddressURL(address, param, consumerURL, null);
@@ -290,7 +294,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
 
-    private class RemovalTask implements Runnable {
+    private static class RemovalTask implements Runnable {
         @Override
         public void run() {
             semaphore.release();

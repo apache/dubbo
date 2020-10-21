@@ -23,9 +23,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class URLItemCache {
     // thread safe with limited size, by default 1000
-    private static final Map<String, String> PARAM_KEY_CACHE = new LRUCache<>();
-    private static final Map<String, String> PARAM_VALUE_CACHE = new LRUCache<>(10000);
-    private static final Map<String, String> PATH_CACHE = new LRUCache<>();
+    private static final Map<String, String> PARAM_KEY_CACHE = new LRUCache<>(10000);
+    private static final Map<String, String> PARAM_VALUE_CACHE = new LRUCache<>(100000);
+    private static final Map<String, String> PATH_CACHE = new LRUCache<>(10000);
     private static final Map<String, String> PROTOCOL_CACHE = new ConcurrentHashMap<>();
 
     public static void putParams(Map<String, String> params, String key, String value) {
@@ -44,6 +44,9 @@ public class URLItemCache {
     }
 
     public static String checkProtocol(String _protocol) {
+        if (_protocol == null) {
+            return _protocol;
+        }
         String cachedProtocol = PROTOCOL_CACHE.putIfAbsent(_protocol, _protocol);
         if (cachedProtocol != null) {
             return cachedProtocol;
@@ -52,6 +55,9 @@ public class URLItemCache {
     }
 
     public static String checkPath(String _path) {
+        if (_path == null) {
+            return _path;
+        }
         String cachedPath = PATH_CACHE.putIfAbsent(_path, _path);
         if (cachedPath != null) {
             return cachedPath;

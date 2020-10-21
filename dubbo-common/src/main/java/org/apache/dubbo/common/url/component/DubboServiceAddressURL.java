@@ -34,7 +34,7 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
         return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, overriddenURL);
     }
 
-    protected ServiceConfigURL overrideURL;
+    private ServiceConfigURL overrideURL;
 
     public DubboServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL, ServiceConfigURL overrideURL) {
         super(urlAddress, urlParam, consumerURL);
