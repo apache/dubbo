@@ -20,6 +20,7 @@ import com.pszymczyk.consul.ConsulProcess;
 import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
@@ -43,7 +44,7 @@ public class ConsulRegistryTest {
     private static ConsulProcess consul;
     private ConsulRegistry consulRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
-    private URL serviceUrl = URL.valueOf("consul://127.0.0.1:8012/" + service + "?notify=false&methods=test1,test2");
+    private URL serviceUrl = URL.valueOf("consul://127.0.0.1:" + NetUtils.getAvailablePort() + "/" + service + "?notify=false&methods=test1,test2");
     private URL registryUrl;
     private ConsulRegistryFactory consulRegistryFactory;
 

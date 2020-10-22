@@ -17,11 +17,11 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,10 +30,9 @@ import org.mockito.Mockito;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-
-import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 
 public class TokenFilterTest {
 
@@ -46,12 +45,12 @@ public class TokenFilterTest {
         Invoker invoker = Mockito.mock(Invoker.class);
         URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
         when(invoker.getUrl()).thenReturn(url);
-        when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+        when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-        Map<String, String> attachments = new HashMap<String, String>();
+        Map<String, Object> attachments = new HashMap<>();
         attachments.put(TOKEN_KEY, token);
         Invocation invocation = Mockito.mock(Invocation.class);
-        when(invocation.getAttachments()).thenReturn(attachments);
+        when(invocation.getObjectAttachments()).thenReturn(attachments);
 
         Result result = tokenFilter.invoke(invoker, invocation);
         Assertions.assertEquals("result", result.getValue());
@@ -65,12 +64,12 @@ public class TokenFilterTest {
             Invoker invoker = Mockito.mock(Invoker.class);
             URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
             when(invoker.getUrl()).thenReturn(url);
-            when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+            when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
-            Map<String, String> attachments = new HashMap<String, String>();
+            Map<String, Object> attachments = new HashMap<>();
             attachments.put(TOKEN_KEY, "wrongToken");
             Invocation invocation = Mockito.mock(Invocation.class);
-            when(invocation.getAttachments()).thenReturn(attachments);
+            when(invocation.getObjectAttachments()).thenReturn(attachments);
 
             tokenFilter.invoke(invoker, invocation);
         });
@@ -84,7 +83,7 @@ public class TokenFilterTest {
             Invoker invoker = Mockito.mock(Invoker.class);
             URL url = URL.valueOf("test://test:11/test?accesslog=true&group=dubbo&version=1.1&token=" + token);
             when(invoker.getUrl()).thenReturn(url);
-            when(invoker.invoke(any(Invocation.class))).thenReturn(new RpcResult("result"));
+            when(invoker.invoke(any(Invocation.class))).thenReturn(new AppResponse("result"));
 
             Invocation invocation = Mockito.mock(Invocation.class);
 

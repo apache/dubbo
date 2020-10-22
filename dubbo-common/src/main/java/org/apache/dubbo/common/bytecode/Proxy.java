@@ -102,7 +102,7 @@ public abstract class Proxy {
         String key = sb.toString();
 
         // get cache by class loader.
-        Map<String, Object> cache;
+        final Map<String, Object> cache;
         synchronized (PROXY_CACHE_MAP) {
             cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new HashMap<>());
         }
@@ -155,7 +155,10 @@ public abstract class Proxy {
 
                 for (Method method : ics[i].getMethods()) {
                     String desc = ReflectUtils.getDesc(method);
-                    if (worked.contains(desc)) {
+                    if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
+                        continue;
+                    }
+                    if (ics[i].isInterface() && Modifier.isStatic(method.getModifiers())) {
                         continue;
                     }
                     worked.add(desc);

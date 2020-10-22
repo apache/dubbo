@@ -18,9 +18,9 @@
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.configcenter.AbstractDynamicConfigurationFactory;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
 import com.alibaba.nacos.api.PropertyKeyConst;
 

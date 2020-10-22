@@ -21,12 +21,19 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
-    <dubbo:application name="demo-consumer"/>
+    <dubbo:application name="demo-consumer">
+        <dubbo:parameter key="mapping-type" value="metadata"/>
+        <dubbo:parameter key="enable-auto-migration" value="true"/>
+    </dubbo:application>
 
-    <dubbo:registry address="multicast://224.5.6.7:1234"/>
+    <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
 
-    <!-- generate proxy for the remote service, then demoService can be used in the same way as the
-    local regular interface -->
-    <dubbo:reference id="demoService" check="false" interface="org.apache.dubbo.demo.DemoService"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
+
+    <dubbo:reference provided-by="demo-provider" id="demoService" check="false"
+                     interface="org.apache.dubbo.demo.DemoService"/>
+
+    <dubbo:reference provided-by="demo-provider" version="1.0.0" group="greeting" id="greetingService" check="false"
+                     interface="org.apache.dubbo.demo.GreetingService"/>
 
 </beans>

@@ -22,12 +22,5 @@ package org.apache.dubbo.common.constants;
  */
 public interface RemotingConstants {
 
-    String HEARTBEAT_KEY = "heartbeat";
-
-    int DEFAULT_HEARTBEAT = 60 * 1000;
-
     String BACKUP_KEY = "backup";
-
-    String HEARTBEAT_TIMEOUT_KEY = "heartbeat.timeout";
-
 }

@@ -35,7 +35,9 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
  * continue the same behaviour un till it is <10.
  */
 @Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
-public class ExecuteLimitFilter implements Filter {
+public class ExecuteLimitFilter implements Filter, Filter.Listener {
+
+    private static final String EXECUTE_LIMIT_FILTER_START_TIME = "execute_limit_filter_start_time";
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -43,25 +45,42 @@ public class ExecuteLimitFilter implements Filter {
         String methodName = invocation.getMethodName();
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
         if (!RpcStatus.beginCount(url, methodName, max)) {
-            throw new RpcException("Failed to invoke method " + invocation.getMethodName() + " in provider " +
-                    url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
-                    "\" /> limited.");
+            throw new RpcException(RpcException.LIMIT_EXCEEDED_EXCEPTION,
+                    "Failed to invoke method " + invocation.getMethodName() + " in provider " +
+                            url + ", cause: The service using threads greater than <dubbo:service executes=\"" + max +
+                            "\" /> limited.");
         }
 
-        long begin = System.currentTimeMillis();
-        boolean isSuccess = true;
+        invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
         try {
             return invoker.invoke(invocation);
         } catch (Throwable t) {
-            isSuccess = false;
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             } else {
                 throw new RpcException("unexpected exception when ExecuteLimitFilter", t);
             }
-        } finally {
-            RpcStatus.endCount(url, methodName, System.currentTimeMillis() - begin, isSuccess);
         }
     }
 
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), true);
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        if (t instanceof RpcException) {
+            RpcException rpcException = (RpcException) t;
+            if (rpcException.isLimitExceed()) {
+                return;
+            }
+        }
+        RpcStatus.endCount(invoker.getUrl(), invocation.getMethodName(), getElapsed(invocation), false);
+    }
+
+    private long getElapsed(Invocation invocation) {
+        Object beginTime = invocation.get(EXECUTE_LIMIT_FILTER_START_TIME);
+        return beginTime != null ? System.currentTimeMillis() - (Long) beginTime : 0;
+    }
 }

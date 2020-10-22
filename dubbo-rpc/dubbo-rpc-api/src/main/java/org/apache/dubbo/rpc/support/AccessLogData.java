@@ -204,14 +204,14 @@ public final class AccessLogData {
                 .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
-        if (StringUtils.isNotEmpty(group.toString())) {
+        if (StringUtils.isNotEmpty(group)) {
             sn.append(group).append("/");
         }
 
         sn.append(get(SERVICE));
 
         String version = get(VERSION) != null ? get(VERSION).toString() : "";
-        if (StringUtils.isNotEmpty(version.toString())) {
+        if (StringUtils.isNotEmpty(version)) {
             sn.append(":").append(version);
         }
 

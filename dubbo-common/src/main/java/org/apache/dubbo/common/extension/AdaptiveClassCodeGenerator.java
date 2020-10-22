@@ -16,70 +16,73 @@
  */
 package org.apache.dubbo.common.extension;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 /**
  * Code generator for Adaptive class
  */
 public class AdaptiveClassCodeGenerator {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(AdaptiveClassCodeGenerator.class);
 
     private static final String CLASSNAME_INVOCATION = "org.apache.dubbo.rpc.Invocation";
-    
+
     private static final String CODE_PACKAGE = "package %s;\n";
-    
+
     private static final String CODE_IMPORTS = "import %s;\n";
-    
+
     private static final String CODE_CLASS_DECLARATION = "public class %s$Adaptive implements %s {\n";
-    
+
     private static final String CODE_METHOD_DECLARATION = "public %s %s(%s) %s {\n%s}\n";
-    
+
     private static final String CODE_METHOD_ARGUMENT = "%s arg%d";
-    
+
     private static final String CODE_METHOD_THROWS = "throws %s";
-    
+
     private static final String CODE_UNSUPPORTED = "throw new UnsupportedOperationException(\"The method %s of interface %s is not adaptive method!\");\n";
-    
+
     private static final String CODE_URL_NULL_CHECK = "if (arg%d == null) throw new IllegalArgumentException(\"url == null\");\n%s url = arg%d;\n";
-    
+
     private static final String CODE_EXT_NAME_ASSIGNMENT = "String extName = %s;\n";
-    
+
     private static final String CODE_EXT_NAME_NULL_CHECK = "if(extName == null) "
                     + "throw new IllegalStateException(\"Failed to get extension (%s) name from url (\" + url.toString() + \") use keys(%s)\");\n";
-    
+
     private static final String CODE_INVOCATION_ARGUMENT_NULL_CHECK = "if (arg%d == null) throw new IllegalArgumentException(\"invocation == null\"); "
                     + "String methodName = arg%d.getMethodName();\n";
-    
-    
+
+
     private static final String CODE_EXTENSION_ASSIGNMENT = "%s extension = (%<s)%s.getExtensionLoader(%s.class).getExtension(extName);\n";
-    
+
+    private static final String CODE_EXTENSION_METHOD_INVOKE_ARGUMENT = "arg%d";
+
     private final Class<?> type;
-    
+
     private String defaultExtName;
-    
+
     public AdaptiveClassCodeGenerator(Class<?> type, String defaultExtName) {
         this.type = type;
         this.defaultExtName = defaultExtName;
     }
-    
+
     /**
-     * test if given type has at least one method annotated with <code>SPI</code>
+     * test if given type has at least one method annotated with <code>Adaptive</code>
      */
     private boolean hasAdaptiveMethod() {
         return Arrays.stream(type.getMethods()).anyMatch(m -> m.isAnnotationPresent(Adaptive.class));
     }
-    
+
     /**
      * generate and return class code
      */
@@ -93,13 +96,13 @@ public class AdaptiveClassCodeGenerator {
         code.append(generatePackageInfo());
         code.append(generateImports());
         code.append(generateClassDeclaration());
-        
+
         Method[] methods = type.getMethods();
         for (Method method : methods) {
             code.append(generateMethod(method));
         }
         code.append("}");
-        
+
         if (logger.isDebugEnabled()) {
             logger.debug(code.toString());
         }
@@ -126,18 +129,18 @@ public class AdaptiveClassCodeGenerator {
     private String generateClassDeclaration() {
         return String.format(CODE_CLASS_DECLARATION, type.getSimpleName(), type.getCanonicalName());
     }
-    
+
     /**
-     * generate method not annotated with Adaptive with throwing unsupported exception 
+     * generate method not annotated with Adaptive with throwing unsupported exception
      */
     private String generateUnsupported(Method method) {
         return String.format(CODE_UNSUPPORTED, method, type.getName());
     }
-    
+
     /**
      * get index of parameter with type URL
      */
-    private int getUrlTypeIndex(Method method) {            
+    private int getUrlTypeIndex(Method method) {
         int urlTypeIndex = -1;
         Class<?>[] pts = method.getParameterTypes();
         for (int i = 0; i < pts.length; ++i) {
@@ -148,7 +151,7 @@ public class AdaptiveClassCodeGenerator {
         }
         return urlTypeIndex;
     }
-    
+
     /**
      * generate method declaration
      */
@@ -170,9 +173,9 @@ public class AdaptiveClassCodeGenerator {
                         .mapToObj(i -> String.format(CODE_METHOD_ARGUMENT, pts[i].getCanonicalName(), i))
                         .collect(Collectors.joining(", "));
     }
-    
+
     /**
-     * generate method throws 
+     * generate method throws
      */
     private String generateMethodThrows(Method method) {
         Class<?>[] ets = method.getExceptionTypes();
@@ -183,14 +186,14 @@ public class AdaptiveClassCodeGenerator {
             return "";
         }
     }
-    
+
     /**
-     * generate method URL argument null check 
+     * generate method URL argument null check
      */
     private String generateUrlNullCheck(int index) {
         return String.format(CODE_URL_NULL_CHECK, index, URL.class.getName(), index);
     }
-    
+
     /**
      * generate method content
      */
@@ -201,7 +204,7 @@ public class AdaptiveClassCodeGenerator {
             return generateUnsupported(method);
         } else {
             int urlTypeIndex = getUrlTypeIndex(method);
-            
+
             // found parameter in URL type
             if (urlTypeIndex != -1) {
                 // Null Point check
@@ -214,19 +217,19 @@ public class AdaptiveClassCodeGenerator {
             String[] value = getMethodAdaptiveValue(adaptiveAnnotation);
 
             boolean hasInvocation = hasInvocationArgument(method);
-            
+
             code.append(generateInvocationArgumentNullCheck(method));
-            
+
             code.append(generateExtNameAssignment(value, hasInvocation));
             // check extName == null?
             code.append(generateExtNameNullCheck(value));
-            
+
             code.append(generateExtensionAssignment());
 
             // return statement
             code.append(generateReturnAndInvocation(method));
         }
-        
+
         return code.toString();
     }
 
@@ -278,7 +281,7 @@ public class AdaptiveClassCodeGenerator {
                 }
             }
         }
-        
+
         return String.format(CODE_EXT_NAME_ASSIGNMENT, getNameCode);
     }
 
@@ -294,12 +297,14 @@ public class AdaptiveClassCodeGenerator {
      */
     private String generateReturnAndInvocation(Method method) {
         String returnStatement = method.getReturnType().equals(void.class) ? "" : "return ";
-        
-        String args = Arrays.stream(method.getParameters()).map(Parameter::getName).collect(Collectors.joining(", "));
+
+        String args = IntStream.range(0, method.getParameters().length)
+                .mapToObj(i -> String.format(CODE_EXTENSION_METHOD_INVOKE_ARGUMENT, i))
+                .collect(Collectors.joining(", "));
 
         return returnStatement + String.format("extension.%s(%s);\n", method.getName(), args);
     }
-    
+
     /**
      * test if method has argument of type <code>Invocation</code>
      */
@@ -307,7 +312,7 @@ public class AdaptiveClassCodeGenerator {
         Class<?>[] pts = method.getParameterTypes();
         return Arrays.stream(pts).anyMatch(p -> CLASSNAME_INVOCATION.equals(p.getName()));
     }
-    
+
     /**
      * generate code to test argument of type <code>Invocation</code> is null
      */
@@ -340,7 +345,8 @@ public class AdaptiveClassCodeGenerator {
      */
     private String generateUrlAssignmentIndirectly(Method method) {
         Class<?>[] pts = method.getParameterTypes();
-        
+
+        Map<String, Integer> getterReturnUrl = new HashMap<>();
         // find URL getter method
         for (int i = 0; i < pts.length; ++i) {
             for (Method m : pts[i].getMethods()) {
@@ -350,15 +356,24 @@ public class AdaptiveClassCodeGenerator {
                         && !Modifier.isStatic(m.getModifiers())
                         && m.getParameterTypes().length == 0
                         && m.getReturnType() == URL.class) {
-                    return generateGetUrlNullCheck(i, pts[i], name);
+                    getterReturnUrl.put(name, i);
                 }
             }
         }
-        
-        // getter method not found, throw
-        throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
-                        + ": not found url parameter or url attribute in parameters of method " + method.getName());
 
+        if (getterReturnUrl.size() <= 0) {
+            // getter method not found, throw
+            throw new IllegalStateException("Failed to create adaptive class for interface " + type.getName()
+                    + ": not found url parameter or url attribute in parameters of method " + method.getName());
+        }
+
+        Integer index = getterReturnUrl.get("getUrl");
+        if (index != null) {
+            return generateGetUrlNullCheck(index, pts[index], "getUrl");
+        } else {
+            Map.Entry<String, Integer> entry = getterReturnUrl.entrySet().iterator().next();
+            return generateGetUrlNullCheck(entry.getValue(), pts[entry.getValue()], entry.getKey());
+        }
     }
 
     /**
@@ -377,5 +392,5 @@ public class AdaptiveClassCodeGenerator {
         code.append(String.format("%s url = arg%d.%s();\n", URL.class.getName(), index, method));
         return code.toString();
     }
-    
+
 }

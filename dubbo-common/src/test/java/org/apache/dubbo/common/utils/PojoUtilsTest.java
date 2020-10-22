@@ -24,6 +24,8 @@ import org.apache.dubbo.common.model.person.FullAddress;
 import org.apache.dubbo.common.model.person.PersonInfo;
 import org.apache.dubbo.common.model.person.PersonStatus;
 import org.apache.dubbo.common.model.person.Phone;
+
+import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,19 +36,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PojoUtilsTest {
@@ -276,6 +279,41 @@ public class PojoUtilsTest {
         assertThat(message.getFrom(), equalTo("dubbo"));
         assertTrue(message.isUrgent());
     }
+
+    @Test
+    public void testJsonObjectToMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setMap", Map.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        @SuppressWarnings("unchecked")
+        Map<Integer, Object> value = (Map<Integer, Object>)PojoUtils.realize(jsonObject,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), value);
+        assertEquals("test", value.get(1));
+    }
+
+    @Test
+    public void testListJsonObjectToListMap() throws Exception {
+        Method method = PojoUtilsTest.class.getMethod("setListMap", List.class);
+        assertNotNull(method);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("1", "test");
+        List<JSONObject> list = new ArrayList<>(1);
+        list.add(jsonObject);
+        @SuppressWarnings("unchecked")
+        List<Map<Integer, Object>> result = (List<Map<Integer, Object>>)PojoUtils.realize(
+                list,
+                method.getParameterTypes()[0],
+                method.getGenericParameterTypes()[0]);
+        method.invoke(new PojoUtilsTest(), result);
+        assertEquals("test", result.get(0).get(1));
+    }
+
+    public void setMap(Map<Integer, Object> map) {}
+
+    public void setListMap(List<Map<Integer, Object>> list) {}
 
     @Test
     public void testException() throws Exception {
@@ -560,9 +598,9 @@ public class PojoUtilsTest {
 
         Object obj = PojoUtils.generalize(data);
         Assertions.assertEquals(3, data.getChildren().size());
-        assertTrue(data.getChildren().get("first").getClass() == Child.class);
+        assertSame(data.getChildren().get("first").getClass(), Child.class);
         Assertions.assertEquals(1, data.getList().size());
-        assertTrue(data.getList().get(0).getClass() == Child.class);
+        assertSame(data.getList().get(0).getClass(), Child.class);
 
         TestData realizadData = (TestData) PojoUtils.realize(obj, TestData.class);
         Assertions.assertEquals(data.getChildren().size(), realizadData.getChildren().size());
@@ -620,7 +658,7 @@ public class PojoUtilsTest {
         assertTrue(realizeObject instanceof ListResult);
         ListResult listResult = (ListResult) realizeObject;
         List l = listResult.getResult();
-        assertTrue(l.size() == 1);
+        assertEquals(1, l.size());
         assertTrue(l.get(0) instanceof Parent);
         Parent realizeParent = (Parent) l.get(0);
         Assertions.assertEquals(parent.getName(), realizeParent.getName());
@@ -680,6 +718,38 @@ public class PojoUtilsTest {
         Object timestamp = PojoUtils.realize(dateTimeStr, java.sql.Timestamp.class, (Type) java.sql.Timestamp.class);
         assertEquals(java.sql.Timestamp.class, timestamp.getClass());
         assertEquals(dateTimeStr, new SimpleDateFormat(dateFormat[0]).format(timestamp));
+    }
+
+    @Test
+    public void testIntToBoolean() throws Exception {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", "myname");
+        map.put("male", 1);
+        map.put("female", 0);
+
+        PersonInfo personInfo = (PersonInfo) PojoUtils.realize(map, PersonInfo.class);
+
+        assertEquals("myname", personInfo.getName());
+        assertTrue(personInfo.isMale());
+        assertFalse(personInfo.isFemale());
+    }
+
+    @Test
+    public void testRealizeCollectionWithNullElement() {
+        LinkedList<String> listStr = new LinkedList<>();
+        listStr.add("arrayValue");
+        listStr.add(null);
+        HashSet<String> setStr = new HashSet<>();
+        setStr.add("setValue");
+        setStr.add(null);
+
+        Object listResult = PojoUtils.realize(listStr, LinkedList.class);
+        assertEquals(LinkedList.class, listResult.getClass());
+        assertEquals(listResult, listStr);
+
+        Object setResult = PojoUtils.realize(setStr, HashSet.class);
+        assertEquals(HashSet.class, setResult.getClass());
+        assertEquals(setResult, setStr);
     }
 
     public enum Day {

@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.RpcConstants.CONNECTIONS_KEY;
+import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
 
 /**
  * PerformanceClientTest

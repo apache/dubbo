@@ -192,7 +192,7 @@ final class MessageFormatter {
                             throwableCandidate);
                 } else { // add the tail string which contains no variables and return
                     // the result.
-                    sbuf.append(messagePattern.substring(i, messagePattern.length()));
+                    sbuf.append(messagePattern.substring(i));
                     return new FormattingTuple(sbuf.toString(), argArray,
                             throwableCandidate);
                 }
@@ -200,27 +200,27 @@ final class MessageFormatter {
                 if (isEscapedDelimeter(messagePattern, j)) {
                     if (!isDoubleEscaped(messagePattern, j)) {
                         l--; // DELIM_START was escaped, thus should not be incremented
-                        sbuf.append(messagePattern.substring(i, j - 1));
+                        sbuf.append(messagePattern, i, j - 1);
                         sbuf.append(DELIM_START);
                         i = j + 1;
                     } else {
                         // The escape character preceding the delimiter start is
                         // itself escaped: "abc x:\\{}"
                         // we have to consume one backward slash
-                        sbuf.append(messagePattern.substring(i, j - 1));
+                        sbuf.append(messagePattern, i, j - 1);
                         deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                         i = j + 2;
                     }
                 } else {
                     // normal case
-                    sbuf.append(messagePattern.substring(i, j));
+                    sbuf.append(messagePattern, i, j);
                     deeplyAppendParameter(sbuf, argArray[l], new HashMap<Object[], Void>());
                     i = j + 2;
                 }
             }
         }
         // append the characters following the last {} pair.
-        sbuf.append(messagePattern.substring(i, messagePattern.length()));
+        sbuf.append(messagePattern.substring(i));
         if (l < argArray.length - 1) {
             return new FormattingTuple(sbuf.toString(), argArray, throwableCandidate);
         } else {

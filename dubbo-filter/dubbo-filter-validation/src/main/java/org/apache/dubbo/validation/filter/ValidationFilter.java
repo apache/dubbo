@@ -18,14 +18,16 @@ package org.apache.dubbo.validation.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.validation.Validation;
 import org.apache.dubbo.validation.Validator;
+
+import javax.validation.ValidationException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
@@ -89,8 +91,11 @@ public class ValidationFilter implements Filter {
                 }
             } catch (RpcException e) {
                 throw e;
+            } catch (ValidationException e) {
+                // only use exception's message to avoid potential serialization issue
+                return AsyncRpcResult.newDefaultAsyncResult(new ValidationException(e.getMessage()), invocation);
             } catch (Throwable t) {
-                return new RpcResult(t);
+                return AsyncRpcResult.newDefaultAsyncResult(t, invocation);
             }
         }
         return invoker.invoke(invocation);

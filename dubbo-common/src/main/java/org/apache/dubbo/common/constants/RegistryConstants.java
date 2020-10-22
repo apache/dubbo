@@ -18,25 +18,18 @@
 package org.apache.dubbo.common.constants;
 
 public interface RegistryConstants {
-    String REGISTER_KEY = "register";
-
-    String SUBSCRIBE_KEY = "subscribe";
 
     String REGISTRY_KEY = "registry";
 
-    String DEFAULT_REGISTRY = "dubbo";
+    String REGISTRY_CLUSTER_KEY = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER_TYPE_KEY = "registry-cluster-type";
 
     String REGISTRY_PROTOCOL = "registry";
 
     String DYNAMIC_KEY = "dynamic";
-
-    String REGISTER = "register";
-
-    String UNREGISTER = "unregister";
-
-    String SUBSCRIBE = "subscribe";
-
-    String UNSUBSCRIBE = "unsubscribe";
 
     String CATEGORY_KEY = "category";
 
@@ -56,81 +49,69 @@ public interface RegistryConstants {
 
     String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";
 
-    String CONFIGURATORS_SUFFIX = ".configurators";
-
     String ROUTERS_SUFFIX = ".routers";
-
-    String TRACE_PROTOCOL = "trace";
 
     String EMPTY_PROTOCOL = "empty";
 
-    String ADMIN_PROTOCOL = "admin";
-
-    String PROVIDER_PROTOCOL = "provider";
-
-    String CONSUMER_PROTOCOL = "consumer";
-
     String ROUTE_PROTOCOL = "route";
-
-    String SCRIPT_PROTOCOL = "script";
-
-    String CONDITION_PROTOCOL = "condition";
-
-    /**
-     * simple the registry for provider.
-     *
-     * @since 2.7.0
-     */
-    String SIMPLIFIED_KEY = "simplified";
-
-    /**
-     * After simplify the registry, should add some paramter individually for provider.
-     *
-     * @since 2.7.0
-     */
-    String EXTRA_KEYS_KEY = "extra-keys";
 
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    /**
-     * To decide whether register center saves file synchronously, the default value is asynchronously
-     */
-    String REGISTRY_FILESAVE_SYNC_KEY = "save.file";
+    String REGISTRY_DUPLICATE_KEY = "duplicate";
+
+    String ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION = "enable-auto-migration";
 
     /**
-     * Period of registry center's retry interval
+     * The parameter key of Dubbo Registry type
+     *
+     * @since 2.7.5
      */
-    String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
+    String REGISTRY_TYPE_KEY = "registry-type";
 
     /**
-     * Most retry times
+     * The parameter value of Service-Oriented Registry type
+     *
+     * @since 2.7.5
      */
-    String REGISTRY_RETRY_TIMES_KEY = "retry.times";
+    String SERVICE_REGISTRY_TYPE = "service";
 
     /**
-     * Default value for the period of retry interval in milliseconds: 5000
+     * The protocol for Service Discovery
+     *
+     * @since 2.7.5
      */
-    int DEFAULT_REGISTRY_RETRY_PERIOD = 5 * 1000;
+    String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
 
     /**
-     * Default value for the times of retry: 3
+     * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
+     *
+     * @since 2.7.5
      */
-    int DEFAULT_REGISTRY_RETRY_TIMES = 3;
+    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
+
+    String PROVIDED_BY = "provided-by";
 
     /**
-     * Reconnection period in milliseconds for register center
+     * The request size of service instances
+     *
+     * @since 2.7.5
      */
-    String REGISTRY_RECONNECT_PERIOD_KEY = "reconnect.period";
+    String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
 
-    int DEFAULT_REGISTRY_RECONNECT_PERIOD = 3 * 1000;
-
-    String SESSION_TIMEOUT_KEY = "session";
-
-    int DEFAULT_SESSION_TIMEOUT = 60 * 1000;
     /**
-     * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
+     * The default request size of service instances
      */
-    String ROUTER_KEY = "router";
+    int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
+
+    String ACCEPTS_KEY = "accepts";
+
+    String REGISTRY_ZONE = "registry_zone";
+    String REGISTRY_ZONE_FORCE = "registry_zone_force";
+    String ZONE_KEY = "zone";
+
+    String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
 }

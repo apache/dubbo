@@ -42,6 +42,8 @@ public final class Version {
 
     // Dubbo RPC protocol version, for compatibility, it must not be between 2.0.10 ~ 2.6.2
     public static final String DEFAULT_DUBBO_PROTOCOL_VERSION = "2.0.2";
+    // version 1.0.0 represents Dubbo rpc protocol before v2.6.2
+    public static final int LEGACY_DUBBO_PROTOCOL_VERSION = 10000; // 1.0.0
     // Dubbo implementation version, usually is jar version.
     private static final String VERSION = getVersion(Version.class, "");
 
@@ -50,7 +52,8 @@ public final class Version {
      * Because {@link #isSupportResponseAttachment} is checked for every call, int compare expect to has higher
      * performance than string.
      */
-    private static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
+    public static final int LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT = 2000200; // 2.0.2
+    public static final int HIGHEST_PROTOCOL_VERSION = 2009900; // 2.0.99
     private static final Map<String, Integer> VERSION2INT = new HashMap<String, Integer>();
 
     static {
@@ -85,40 +88,45 @@ public final class Version {
     /**
      * Check the framework release version number to decide if it's 2.6.3 or higher
      *
-     * Because response attachments feature is firstly introduced in 2.6.3
-     * and moreover we have no other approach to know the framework's version, so we use
-     * isSupportResponseAttachment to decide if it's v2.6.3.
+     * @param version, the sdk version
      */
     public static boolean isRelease263OrHigher(String version) {
-        return isSupportResponseAttachment(version);
+        return getIntVersion(version) >= 2060300;
     }
 
+    /**
+     * Dubbo 2.x protocol version numbers are limited to 2.0.2/2000200 ~ 2.0.99/2009900, other versions are consider as
+     * invalid or not from official release.
+     *
+     * @param version, the protocol version.
+     * @return
+     */
     public static boolean isSupportResponseAttachment(String version) {
         if (StringUtils.isEmpty(version)) {
             return false;
         }
-        // for previous dubbo version(2.0.10/020010~2.6.2/020602), this version is the jar's version, so they need to
-        // be ignore
         int iVersion = getIntVersion(version);
-        if (iVersion >= 2001000 && iVersion <= 2060200) {
-            return false;
+        if (iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT && iVersion <= HIGHEST_PROTOCOL_VERSION) {
+            return true;
         }
 
-        // 2.8.x is reserved for dubbox
-        if (iVersion >= 2080000 && iVersion < 2090000) {
-            return false;
-        }
-
-        return iVersion >= LOWEST_VERSION_FOR_RESPONSE_ATTACHMENT;
+        return false;
     }
 
     public static int getIntVersion(String version) {
         Integer v = VERSION2INT.get(version);
         if (v == null) {
-            v = parseInt(version);
-            // e.g., version number 2.6.3 will convert to 2060300
-            if (version.split("\\.").length == 3) {
-                v = v * 100;
+            try {
+                v = parseInt(version);
+                // e.g., version number 2.6.3 will convert to 2060300
+                if (version.split("\\.").length == 3) {
+                    v = v * 100;
+                }
+            } catch (Exception e) {
+                logger.warn("Please make sure your version value has the right format: " +
+                        "\n 1. only contains digital number: 2.0.0; \n 2. with string suffix: 2.6.7-stable. " +
+                        "\nIf you are using Dubbo before v2.6.2, the version value is the same with the jar version.");
+                v = LEGACY_DUBBO_PROTOCOL_VERSION;
             }
             VERSION2INT.put(version, v);
         }
@@ -130,7 +138,10 @@ public final class Version {
         String[] vArr = version.split("\\.");
         int len = vArr.length;
         for (int i = 0; i < len; i++) {
-            v += Integer.parseInt(getPrefixDigits(vArr[i])) * Math.pow(10, (len - i - 1) * 2);
+            String subV = getPrefixDigits(vArr[i]);
+            if (StringUtils.isNotEmpty(subV)) {
+                v += Integer.parseInt(subV) * Math.pow(10, (len - i - 1) * 2);
+            }
         }
         return v;
     }
@@ -153,17 +164,17 @@ public final class Version {
             String version = null;
             if (pkg != null) {
                 version = pkg.getImplementationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
 
                 version = pkg.getSpecificationVersion();
-                if (!StringUtils.isEmpty(version)) {
+                if (StringUtils.isNotEmpty(version)) {
                     return version;
                 }
             }
 
-            // guess version fro jar file name if nothing's found from MANIFEST.MF
+            // guess version from jar file name if nothing's found from MANIFEST.MF
             CodeSource codeSource = cls.getProtectionDomain().getCodeSource();
             if (codeSource == null) {
                 logger.info("No codeSource for class " + cls.getName() + " when getVersion, use default version " + defaultVersion);
@@ -251,7 +262,7 @@ public final class Version {
             URL url = urls.nextElement();
             if (url != null) {
                 String file = url.getFile();
-                if (file != null && file.length() > 0) {
+                if (StringUtils.isNotEmpty(file)) {
                     files.add(file);
                 }
             }

@@ -18,12 +18,12 @@ package org.apache.dubbo.rpc.protocol.memcached;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
@@ -56,7 +56,7 @@ public class MemcachedProtocol extends AbstractProtocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(final Class<T> type, final URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(final Class<T> type, final URL url) throws RpcException {
         try {
             String address = url.getAddress();
             String backup = url.getParameter(RemotingConstants.BACKUP_KEY);
@@ -73,26 +73,26 @@ public class MemcachedProtocol extends AbstractProtocol {
                 @Override
                 protected Result doInvoke(Invocation invocation) throws Throwable {
                     try {
+                        Object value = null;
                         if (get.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The memcached get method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
-                            return new RpcResult(memcachedClient.get(String.valueOf(invocation.getArguments()[0])));
+                            value = memcachedClient.get(String.valueOf(invocation.getArguments()[0]));
                         } else if (set.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 2) {
                                 throw new IllegalArgumentException("The memcached set method arguments mismatch, must be two arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.set(String.valueOf(invocation.getArguments()[0]), expiry, invocation.getArguments()[1]);
-                            return new RpcResult();
                         } else if (delete.equals(invocation.getMethodName())) {
                             if (invocation.getArguments().length != 1) {
                                 throw new IllegalArgumentException("The memcached delete method arguments mismatch, must only one arguments. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url);
                             }
                             memcachedClient.delete(String.valueOf(invocation.getArguments()[0]));
-                            return new RpcResult();
                         } else {
                             throw new UnsupportedOperationException("Unsupported method " + invocation.getMethodName() + " in memcached service.");
                         }
+                        return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
                     } catch (Throwable t) {
                         RpcException re = new RpcException("Failed to invoke memcached service method. interface: " + type.getName() + ", method: " + invocation.getMethodName() + ", url: " + url + ", cause: " + t.getMessage(), t);
                         if (t instanceof TimeoutException || t instanceof SocketTimeoutException) {

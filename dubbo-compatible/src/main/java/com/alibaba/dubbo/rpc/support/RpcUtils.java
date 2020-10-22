@@ -20,9 +20,7 @@ package com.alibaba.dubbo.rpc.support;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.rpc.Invocation;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Map;
 
 /**
  * 2019-04-18
@@ -74,15 +72,7 @@ public class RpcUtils extends org.apache.dubbo.rpc.support.RpcUtils {
         return org.apache.dubbo.rpc.support.RpcUtils.isReturnTypeFuture(inv);
     }
 
-    public static boolean hasFutureReturnType(Method method) {
-        return org.apache.dubbo.rpc.support.RpcUtils.hasFutureReturnType(method);
-    }
-
     public static boolean isOneway(URL url, Invocation inv) {
         return org.apache.dubbo.rpc.support.RpcUtils.isOneway(url.getOriginalURL(), inv);
-    }
-
-    public static Map<String, String> getNecessaryAttachments(Invocation inv) {
-        return org.apache.dubbo.rpc.support.RpcUtils.getNecessaryAttachments(inv);
     }
 }

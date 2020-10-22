@@ -17,12 +17,13 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -55,7 +56,7 @@ public class FailoverClusterInvokerTest {
     private Invoker<FailoverClusterInvokerTest> invoker2 = mock(Invoker.class);
     private RpcInvocation invocation = new RpcInvocation();
     private Directory<FailoverClusterInvokerTest> dic;
-    private Result result = new RpcResult();
+    private Result result = new AppResponse();
 
     /**
      * @throws java.lang.Exception
@@ -67,6 +68,7 @@ public class FailoverClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");
@@ -145,6 +147,7 @@ public class FailoverClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(null);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");
@@ -179,17 +182,16 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
-        Callable<Object> callable = new Callable<Object>() {
-            public Object call() throws Exception {
-                //Simulation: all invokers are destroyed
-                for (Invoker<Demo> invoker : invokers) {
-                    invoker.destroy();
-                }
-                invokers.clear();
-                MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
-                invokers.add(invoker3);
-                return null;
+        Callable<Object> callable = () -> {
+            //Simulation: all invokers are destroyed
+            for (Invoker<Demo> invoker : invokers) {
+                invoker.destroy();
             }
+            invokers.clear();
+            MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
+            invokers.add(invoker3);
+            return null;
         };
         invoker1.setCallable(callable);
         invoker2.setCallable(callable);
@@ -203,7 +205,7 @@ public class FailoverClusterInvokerTest {
         clusterinvoker.invoke(inv);
     }
 
-    public static interface Demo {
+    public interface Demo {
     }
 
     public static class MockInvoker<T> extends AbstractInvoker<T> {

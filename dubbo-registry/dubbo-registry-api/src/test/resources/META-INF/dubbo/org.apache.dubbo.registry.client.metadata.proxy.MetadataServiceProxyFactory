@@ -1,0 +1,2 @@
+# Override "local" implementation
+local=org.apache.dubbo.registry.client.metadata.proxy.MyMetadataServiceProxyFactory

@@ -84,7 +84,7 @@ public class DemoServiceImpl implements DemoService {
         return arg1.toString();
     }
 
-    public byte getbyte(byte arg) {
+    public int getInt(int arg) {
         return arg;
     }
 
@@ -120,5 +120,10 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String getPerson(Man man) {
         return man.getName();
+    }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
     }
 }

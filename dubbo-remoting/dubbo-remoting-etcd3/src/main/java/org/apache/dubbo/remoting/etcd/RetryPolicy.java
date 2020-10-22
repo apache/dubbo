@@ -26,6 +26,6 @@ public interface RetryPolicy {
      * @param sleep   should be sleep
      * @return true should be retry
      */
-    public boolean shouldRetry(int retried, long elapsed, boolean sleep);
+    boolean shouldRetry(int retried, long elapsed, boolean sleep);
 
 }

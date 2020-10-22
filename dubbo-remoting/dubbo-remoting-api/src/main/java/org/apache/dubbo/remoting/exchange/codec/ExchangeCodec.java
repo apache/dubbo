@@ -278,7 +278,7 @@ public class ExchangeCodec extends TelnetCodec {
             // encode response data or error message.
             if (status == Response.OK) {
                 if (res.isHeartbeat()) {
-                    encodeHeartbeatData(channel, out, res.getResult());
+                    encodeEventData(channel, out, res.getResult());
                 } else {
                     encodeResponseData(channel, out, res.getResult(), res.getVersion());
                 }
@@ -349,11 +349,7 @@ public class ExchangeCodec extends TelnetCodec {
 
     @Deprecated
     protected Object decodeHeartbeatData(ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
+        return decodeEventData(null, in);
     }
 
     protected Object decodeRequestData(ObjectInput in) throws IOException {
@@ -378,7 +374,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     private void encodeEventData(ObjectOutput out, Object data) throws IOException {
-        out.writeObject(data);
+        out.writeEvent(data);
     }
 
     @Deprecated
@@ -401,19 +397,15 @@ public class ExchangeCodec extends TelnetCodec {
 
     protected Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
         try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
+            return in.readEvent();
+        } catch (IOException | ClassNotFoundException e) {
+            throw new IOException(StringUtils.toString("Decode dubbo protocol event failed.", e));
         }
     }
 
     @Deprecated
     protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
+        return decodeEventData(channel, in);
     }
 
     protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {

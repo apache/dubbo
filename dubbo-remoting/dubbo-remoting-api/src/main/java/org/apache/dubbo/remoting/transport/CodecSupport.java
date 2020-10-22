@@ -40,6 +40,7 @@ public class CodecSupport {
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
+    private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
@@ -55,6 +56,7 @@ public class CodecSupport {
             }
             ID_SERIALIZATION_MAP.put(idByte, serialization);
             ID_SERIALIZATIONNAME_MAP.put(idByte, name);
+            SERIALIZATIONNAME_ID_MAP.put(name, idByte);
         }
     }
 
@@ -63,6 +65,10 @@ public class CodecSupport {
 
     public static Serialization getSerializationById(Byte id) {
         return ID_SERIALIZATION_MAP.get(id);
+    }
+
+    public static byte getIDByName(String name) {
+        return SERIALIZATIONNAME_ID_MAP.get(name);
     }
 
     public static Serialization getSerialization(URL url) {

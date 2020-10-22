@@ -53,7 +53,7 @@ public interface EtcdClient {
     /**
      * save the specified path to the etcd registry.
      * if node disconnect from etcd, it will be deleted
-     * automatically by etcd when sessian timeout.
+     * automatically by etcd when session timeout.
      *
      * @param path the path to be saved
      * @return the lease of current path.
@@ -154,7 +154,7 @@ public interface EtcdClient {
      * @throws TimeoutException if the wait timed out
      * @return lease id from etcd
      */
-    public long createLease(long ttl, long timeout, TimeUnit unit)
+    long createLease(long ttl, long timeout, TimeUnit unit)
             throws InterruptedException, ExecutionException, TimeoutException;
 
     /**
@@ -179,5 +179,13 @@ public interface EtcdClient {
      * @return true if put success
      */
     boolean put(String key, String value);
+
+    /**
+     * Put the key value pair to etcd (Ephemeral)
+     * @param key the specified key
+     * @param value the paired value
+     * @return true if put success
+     */
+    boolean putEphemeral(String key, String value);
 
 }

@@ -16,18 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.http;
 
-
-/**
- * HttpService
- */
 public interface HttpService {
-
     String sayHello(String name);
-    
-    String sayHello(String name, int times);
 
     void timeOut(int millis);
 
     String customException();
 
+    String getRemoteApplicationName();
 }

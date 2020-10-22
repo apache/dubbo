@@ -18,11 +18,12 @@
 package org.apache.dubbo.common.serialize.protostuff.utils;
 
 import org.apache.dubbo.common.serialize.protostuff.Wrapper;
+import org.apache.dubbo.common.serialize.protostuff.delegate.SqlDateDelegate;
 import org.apache.dubbo.common.serialize.protostuff.delegate.TimeDelegate;
+import org.apache.dubbo.common.serialize.protostuff.delegate.TimestampDelegate;
 
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeEnv;
-import org.apache.dubbo.common.serialize.protostuff.delegate.TimestampDelegate;
 
 import java.math.BigDecimal;
 import java.sql.Time;
@@ -55,6 +56,7 @@ public class WrapperUtils {
         if (RuntimeEnv.ID_STRATEGY instanceof DefaultIdStrategy) {
             ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimeDelegate());
             ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new TimestampDelegate());
+            ((DefaultIdStrategy) RuntimeEnv.ID_STRATEGY).registerDelegate(new SqlDateDelegate());
         }
 
         WRAPPER_SET.add(Map.class);
@@ -84,6 +86,7 @@ public class WrapperUtils {
         WRAPPER_SET.add(Calendar.class);
         WRAPPER_SET.add(Time.class);
         WRAPPER_SET.add(Timestamp.class);
+        WRAPPER_SET.add(java.sql.Date.class);
 
         WRAPPER_SET.add(Wrapper.class);
 

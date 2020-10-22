@@ -27,11 +27,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMER_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_RETRY_PERIOD_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class FailbackRegistryTest {
@@ -154,36 +153,6 @@ public class FailbackRegistryTest {
     }
 
     @Test
-    public void testDoRetry_nofify() throws Exception {
-
-        //Initial value 0
-        final AtomicInteger count = new AtomicInteger(0);
-
-        NotifyListener listner = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                count.incrementAndGet();
-                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1l) {
-                    throw new RuntimeException("test exception please ignore");
-                }
-            }
-        };
-        registry = new MockRegistry(registryUrl, new CountDownLatch(0));
-        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
-
-        assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
-        //Wait for the timer.
-        for (int i = 0; i < trytimes; i++) {
-            System.out.println("failback notify retry ,times:" + i);
-            if (count.get() == 2)
-                break;
-            Thread.sleep(sleeptime);
-        }
-        assertEquals(2, count.get());
-    }
-
-    @Test
     public void testRecover() throws Exception {
         CountDownLatch countDownLatch = new CountDownLatch(4);
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
@@ -203,7 +172,7 @@ public class FailbackRegistryTest {
         countDownLatch.await();
         Assertions.assertEquals(0, mockRegistry.getFailedRegistered().size());
         FailbackRegistry.Holder h = new FailbackRegistry.Holder(registryUrl, listener);
-        Assertions.assertEquals(null, mockRegistry.getFailedSubscribed().get(h));
+        Assertions.assertNull(mockRegistry.getFailedSubscribed().get(h));
         Assertions.assertEquals(countDownLatch.getCount(), 0);
     }
 

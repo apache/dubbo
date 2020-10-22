@@ -18,8 +18,22 @@
 package com.alibaba.dubbo.remoting.exchange;
 
 /**
- * 2019-04-18
+ * 2019-06-20
  */
 @Deprecated
-public interface ResponseCallback extends org.apache.dubbo.remoting.exchange.ResponseCallback {
+public interface ResponseCallback {
+    /**
+     * done.
+     *
+     * @param response
+     */
+    void done(Object response);
+
+    /**
+     * caught exception.
+     *
+     * @param exception
+     */
+    void caught(Throwable exception);
+
 }

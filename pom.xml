@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.apache</groupId>
         <artifactId>apache</artifactId>
-        <version>21</version>
+        <version>23</version>
     </parent>
 
     <groupId>org.apache.dubbo</groupId>
@@ -31,7 +31,7 @@
 
     <name>${project.artifactId}</name>
     <description>The parent project of dubbo</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -42,9 +42,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
     <mailingLists>
@@ -83,12 +83,12 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <properties>
         <!-- Test libs -->
-        <junit_jupiter_version>5.4.0</junit_jupiter_version>
+        <junit_jupiter_version>5.6.0</junit_jupiter_version>
         <hazelcast_version>3.11.1</hazelcast_version>
         <hamcrest_version>1.3</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
@@ -103,6 +103,7 @@
         <skip_maven_deploy>false</skip_maven_deploy>
         <updateReleaseInfo>true</updateReleaseInfo>
         <project.build.sourceEncoding>${file_encoding}</project.build.sourceEncoding>
+        <project.build.outputTimestamp>2020-04-01T08:04:00Z</project.build.outputTimestamp>
 
         <profile.name>oss</profile.name>
         <!-- for maven compiler plugin -->
@@ -110,21 +111,22 @@
         <java_target_version>1.8</java_target_version>
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
-        <maven_jar_version>3.0.2</maven_jar_version>
+        <maven_jar_version>3.2.0</maven_jar_version>
         <maven_surefire_version>2.22.1</maven_surefire_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
         <maven_compiler_version>3.6.0</maven_compiler_version>
-        <maven_source_version>3.0.1</maven_source_version>
+        <maven_source_version>3.2.1</maven_source_version>
         <maven_javadoc_version>3.0.1</maven_javadoc_version>
         <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
         <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.2</maven_jacoco_version>
+        <maven_jacoco_version>0.8.6</maven_jacoco_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
+        <maven_enforce_version>3.0.0-M2</maven_enforce_version>
         <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.2-SNAPSHOT</revision>
+        <revision>2.7.9-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -145,9 +147,10 @@
         <module>dubbo-bom</module>
         <module>dubbo-all</module>
         <module>dubbo-distribution</module>
-        <module>dubbo-metadata-report</module>
         <module>dubbo-configcenter</module>
         <module>dubbo-dependencies</module>
+        <module>dubbo-metadata</module>
+        <module>dubbo-build-tools</module>
     </modules>
 
     <dependencyManagement>
@@ -197,6 +200,35 @@
 
     <profiles>
         <profile>
+            <id>snapshot-ci-deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>${maven_enforce_version}</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-no-releases</id>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireSnapshotVersion>
+                                            <message>No Releases Allowed!</message>
+                                            <failWhenParentIsRelease>false</failWhenParentIsRelease>
+                                        </requireSnapshotVersion>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
             <id>javadoc-lint</id>
             <activation>
                 <jdk>[1.8,)</jdk>
@@ -222,6 +254,11 @@
                                 <artifactId>checkstyle</artifactId>
                                 <version>8.9</version>
                             </dependency>
+                            <dependency>
+                                <groupId>org.apache.dubbo</groupId>
+                                <artifactId>dubbo-build-tools</artifactId>
+                                <version>1.0.0</version>
+                            </dependency>
                         </dependencies>
                         <executions>
                             <execution>
@@ -233,10 +270,41 @@
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
-                                    <excludes>**/JSONWriter.java</excludes>
+                                    <excludes>
+                                        **/JSONWriter.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
+                                        **/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java,
+                                        **/org/apache/dubbo/common/timer/TimerTask.java,
+                                        **/org/apache/dubbo/common/timer/Timer.java,
+                                        **/org/apache/dubbo/common/timer/Timeout.java,
+                                        **/org/apache/dubbo/common/timer/HashedWheelTimer.java,
+                                        **/org/apache/dubbo/common/utils/CIDRUtils.java,
+                                        **/org/apache/dubbo/common/utils/Utf8Utils.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
+                                        **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                    </excludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>sources</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven_source_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
                                 </goals>
                             </execution>
                         </executions>
@@ -252,6 +320,18 @@
             <build>
                 <plugins>
                     <plugin>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven_source_version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <version>${maven_javadoc_version}</version>
                         <executions>
@@ -259,6 +339,7 @@
                                 <id>attach-javadoc</id>
                                 <goals>
                                     <goal>jar</goal>
+                                    <goal>aggregate</goal>
                                 </goals>
                                 <configuration>
                                     <additionalDependencies>
@@ -285,6 +366,11 @@
                                 <link>http://docs.oracle.com/javase/8/docs/api</link>
                             </links>
                             <doclint>none</doclint>
+                            <excludePackageNames>
+                                org.apache.dubbo.demo,org.apache.dubbo.demo.*
+                            </excludePackageNames>
+                            <doctitle>Apache Dubbo ${project.version} API</doctitle>
+                            <windowtitle>Apache Dubbo ${project.version} API</windowtitle>
                         </configuration>
                     </plugin>
                     <plugin>
@@ -296,6 +382,41 @@
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>licenseCheck</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>license-maven-plugin</artifactId>
+                        <version>1.20</version>
+                        <executions>
+                            <execution>
+                                <id>license-check</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>add-third-party</goal>
+                                </goals>
+                                <configuration>
+                                    <includeOptional>false</includeOptional>
+                                    <useMissingFile>false</useMissingFile>
+                                    <failOnMissing>false</failOnMissing>
+                                    <licenseMerges>
+                                        <licenseMerge>Apache License, Version 2.0|The Apache Software License, Version
+                                            2.0|ASF 2.0|Apache 2|Apache-2.0|Apache 2.0 License|Apache 2.0|Apache License v2.0|Apache License 2.0|The Apache License, Version 2.0|The Apache Software License, Version 2.0
+                                        </licenseMerge>
+                                        <licenseMerge>The MIT License|MIT License</licenseMerge>
+                                        <licenseMerge>The 3-Clause BSD License|New BSD License|3-Clause BSD
+                                            License|BSD|3-Clause BSD License|The New BSD License
+                                        </licenseMerge>
+                                    </licenseMerges>
+                                </configuration>
                             </execution>
                         </executions>
                     </plugin>
@@ -323,18 +444,6 @@
         </resources>
         <plugins>
             <plugin>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>${maven_source_version}</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven_jar_version}</version>
                 <configuration>
@@ -355,7 +464,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>${maven_surefire_version}</version>
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
@@ -378,7 +486,10 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${maven_compiler_version}</version>
                 <configuration>
-                    <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <compilerArg>-proc:none</compilerArg>
+                        <compilerArg>-parameters</compilerArg>
+                    </compilerArgs>
                     <fork>true</fork>
                     <source>${java_source_version}</source>
                     <target>${java_target_version}</target>
@@ -449,11 +560,31 @@
                                 <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
                                 <exclude>CONTRIBUTING.md</exclude>
                                 <exclude>README.md</exclude>
+                                <exclude>Jenkinsfile</exclude>
                                 <exclude>**/codestyle/*</exclude>
                                 <exclude>**/resources/META-INF/**</exclude>
-                                <!-- exclude the internal threadlocal files -->
+                                <!-- exclude the netty files -->
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
                                 <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                                <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                                <!-- exclude the edazdarevic files -->
+                                <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                                <!-- exclude protobuf generated files -->
+                                <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
+                                </exclude>
+                                <exclude>
+                                    **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
+                                </exclude>
+                                <exclude>
+                                    **/org/apache/dubbo/common/utils/Utf8Utils.java
+                                </exclude>
+                                <exclude>.github/**</exclude>
+                                <exclude>compiler/**</exclude>
+                                <!-- exclude mockito extensions spi files -->
+                                <exclude>**/mockito-extensions/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -462,7 +593,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <autoVersionSubmodules>true</autoVersionSubmodules>
                     <useReleaseProfile>false</useReleaseProfile>
@@ -503,7 +634,7 @@
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.1</version>
+                    <version>${maven_surefire_version}</version>
                 </plugin>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
@@ -546,7 +677,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>2.4.3</version>
+                    <version>3.2.2</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>

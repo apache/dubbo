@@ -17,13 +17,13 @@ public class ClassNameTestThrift {
 
     public interface Iface {
 
-        public String echo(String arg) throws org.apache.thrift.TException;
+        String echo(String arg) throws org.apache.thrift.TException;
 
     }
 
     public interface AsyncIface {
 
-        public void echo(String arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echo_call> resultHandler) throws org.apache.thrift.TException;
+        void echo(String arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echo_call> resultHandler) throws org.apache.thrift.TException;
 
     }
 

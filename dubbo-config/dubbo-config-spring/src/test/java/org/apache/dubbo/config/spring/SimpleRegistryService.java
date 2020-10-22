@@ -45,11 +45,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     public void register(String service, URL url) {
         super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
-        Map<String, URL> urls = remoteRegistered.get(client);
-        if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<String, URL>());
-            urls = remoteRegistered.get(client);
-        }
+        Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
     }
@@ -77,7 +73,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             register(service, new URL("dubbo",
                     NetUtils.getLocalHost(),
                     RpcContext.getContext().getLocalPort(),
-                    org.apache.dubbo.registry.RegistryService.class.getName(),
+                    RegistryService.class.getName(),
                     url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
@@ -88,11 +84,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         }
         super.subscribe(service, url, listener);
 
-        Map<String, NotifyListener> listeners = remoteListeners.get(client);
-        if (listeners == null) {
-            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
-            listeners = remoteListeners.get(client);
-        }
+        Map<String, NotifyListener> listeners = remoteListeners.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         listeners.put(service, listener);
         urls = getRegistered().get(service);
         if (urls != null && urls.size() > 0) {
@@ -134,7 +126,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
                 super.unsubscribe(service, new URL("subscribe",
                         RpcContext.getContext().getRemoteHost(),
                         RpcContext.getContext().getRemotePort(),
-                        org.apache.dubbo.registry.RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
+                        RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }
     }

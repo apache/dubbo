@@ -26,7 +26,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +39,7 @@ public class SpringExtensionFactoryTest {
 
     @BeforeEach
     public void init() {
+        SpringExtensionFactory.clearContexts();
         context1 = new AnnotationConfigApplicationContext();
         context1.register(getClass());
         context1.refresh();
@@ -60,22 +60,8 @@ public class SpringExtensionFactoryTest {
     public void testGetExtensionByName() {
         DemoService bean = springExtensionFactory.getExtension(DemoService.class, "bean1");
         Assertions.assertNotNull(bean);
-    }
-
-    @Test
-    public void testGetExtensionByTypeMultiple() {
-        try {
-            springExtensionFactory.getExtension(DemoService.class, "beanname-not-exist");
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assertions.assertTrue(e instanceof NoUniqueBeanDefinitionException);
-        }
-    }
-
-    @Test
-    public void testGetExtensionByType() {
-        HelloService bean = springExtensionFactory.getExtension(HelloService.class, "beanname-not-exist");
-        Assertions.assertNotNull(bean);
+        HelloService hello = springExtensionFactory.getExtension(HelloService.class, "hello");
+        Assertions.assertNotNull(hello);
     }
 
     @AfterEach

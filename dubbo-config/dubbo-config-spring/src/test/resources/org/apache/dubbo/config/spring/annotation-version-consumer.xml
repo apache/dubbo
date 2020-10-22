@@ -23,6 +23,6 @@
 
     <dubbo:application name="annotation-consumer"/>
     <dubbo:registry address="127.0.0.1:4548"/>
-    <dubbo:annotation package="org.apache.dubbo.config.spring.annotation.consumer"/>
+    <dubbo:annotation package="org.apache.dubbo.config.spring.com.alibaba.dubbo.config.annotation.consumer"/>
 
 </beans>

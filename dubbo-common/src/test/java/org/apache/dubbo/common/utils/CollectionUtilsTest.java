@@ -24,21 +24,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.CollectionUtils.isNotEmpty;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.CollectionUtils.toMap;
 import static org.apache.dubbo.common.utils.CollectionUtils.toStringMap;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CollectionUtilsTest {
@@ -194,5 +198,21 @@ public class CollectionUtilsTest {
     @Test
     public void testIsNotEmpty() throws Exception {
         assertThat(isNotEmpty(singleton("a")), is(true));
+    }
+
+    @Test
+    public void testOfSet() {
+        Set<String> set = ofSet();
+        assertEquals(emptySet(), set);
+
+        set = ofSet(((String[]) null));
+        assertEquals(emptySet(), set);
+
+        set = ofSet("A", "B", "C");
+        Set<String> expectedSet = new LinkedHashSet<>();
+        expectedSet.add("A");
+        expectedSet.add("B");
+        expectedSet.add("C");
+        assertEquals(expectedSet, set);
     }
 }

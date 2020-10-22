@@ -62,6 +62,11 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
     }
 
     @Override
+    public List<Invoker<T>> getAllInvokers() {
+        return invokers;
+    }
+
+    @Override
     public boolean isAvailable() {
         if (isDestroyed()) {
             return false;

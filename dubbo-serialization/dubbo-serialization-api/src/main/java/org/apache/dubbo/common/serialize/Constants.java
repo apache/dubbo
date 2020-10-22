@@ -30,4 +30,7 @@ public interface Constants {
     byte AVRO_SERIALIZATION_ID = 11;
     byte GSON_SERIALIZATION_ID = 16;
     byte PROTOBUF_JSON_SERIALIZATION_ID = 21;
+
+    byte PROTOBUF_SERIALIZATION_ID = 22;
+    byte KRYO_SERIALIZATION2_ID = 25;
 }

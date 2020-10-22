@@ -66,7 +66,7 @@ public class UrlTestBase {
             {"deprecated", "deprecated", "boolean", false, true, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
             {"accesslog", "accesslog", "string", "", "haominTest", "", "", "", "", ""},
-            {"document", "document", "string", "", "http://b2b-doc.alibaba-inc.com/display/RC/dubbo_devguide.htm?testquery=你好你好", "", "", "", "", ""},
+            {"document", "document", "string", "", "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好", "", "", "", "", ""},
             {"weight", "weight", "int", 0, 90, "", "", "", "", ""},
 
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},

@@ -33,8 +33,16 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Miscellaneous io utility methods.
+ * Mainly for internal use within the framework.
+ *
+ * @author william.liangf
+ * @since 2.0.7
+ */
 public class IOUtils {
     private static final int BUFFER_SIZE = 1024 * 8;
+    public static final int EOF = -1;
 
     private IOUtils() {
     }
@@ -45,7 +53,7 @@ public class IOUtils {
      * @param is InputStream instance.
      * @param os OutputStream instance.
      * @return count.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static long write(InputStream is, OutputStream os) throws IOException {
         return write(is, os, BUFFER_SIZE);
@@ -58,20 +66,30 @@ public class IOUtils {
      * @param os         OutputStream instance.
      * @param bufferSize buffer size.
      * @return count.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static long write(InputStream is, OutputStream os, int bufferSize) throws IOException {
-        int read;
-        long total = 0;
         byte[] buff = new byte[bufferSize];
-        while (is.available() > 0) {
-            read = is.read(buff, 0, buff.length);
-            if (read > 0) {
-                os.write(buff, 0, read);
-                total += read;
-            }
+        return write(is, os, buff);
+    }
+
+    /**
+     * write.
+     *
+     * @param input  InputStream instance.
+     * @param output OutputStream instance.
+     * @param buffer buffer byte array
+     * @return count.
+     * @throws IOException If an I/O error occurs
+     */
+    public static long write(final InputStream input, final OutputStream output, final byte[] buffer) throws IOException {
+        long count = 0;
+        int n;
+        while (EOF != (n = input.read(buffer))) {
+            output.write(buffer, 0, n);
+            count += n;
         }
-        return total;
+        return count;
     }
 
     /**
@@ -79,15 +97,12 @@ public class IOUtils {
      *
      * @param reader Reader instance.
      * @return String.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static String read(Reader reader) throws IOException {
-        StringWriter writer = new StringWriter();
-        try {
+        try (StringWriter writer = new StringWriter()) {
             write(reader, writer);
             return writer.getBuffer().toString();
-        } finally {
-            writer.close();
         }
     }
 
@@ -96,14 +111,11 @@ public class IOUtils {
      *
      * @param writer Writer instance.
      * @param string String.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static long write(Writer writer, String string) throws IOException {
-        Reader reader = new StringReader(string);
-        try {
+        try (Reader reader = new StringReader(string)) {
             return write(reader, writer);
-        } finally {
-            reader.close();
         }
     }
 
@@ -113,7 +125,7 @@ public class IOUtils {
      * @param reader Reader.
      * @param writer Writer.
      * @return count.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static long write(Reader reader, Writer writer) throws IOException {
         return write(reader, writer, BUFFER_SIZE);
@@ -126,12 +138,12 @@ public class IOUtils {
      * @param writer     Writer.
      * @param bufferSize buffer size.
      * @return count.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static long write(Reader reader, Writer writer, int bufferSize) throws IOException {
         int read;
         long total = 0;
-        char[] buf = new char[BUFFER_SIZE];
+        char[] buf = new char[bufferSize];
         while ((read = reader.read(buf)) != -1) {
             writer.write(buf, 0, read);
             total += read;
@@ -144,7 +156,7 @@ public class IOUtils {
      *
      * @param file file.
      * @return lines.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static String[] readLines(File file) throws IOException {
         if (file == null || !file.exists() || !file.canRead()) {
@@ -159,19 +171,16 @@ public class IOUtils {
      *
      * @param is input stream.
      * @return lines.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static String[] readLines(InputStream is) throws IOException {
         List<String> lines = new ArrayList<String>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-        try {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 lines.add(line);
             }
             return lines.toArray(new String[0]);
-        } finally {
-            reader.close();
         }
     }
 
@@ -180,17 +189,14 @@ public class IOUtils {
      *
      * @param os    output stream.
      * @param lines lines.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static void writeLines(OutputStream os, String[] lines) throws IOException {
-        PrintWriter writer = new PrintWriter(new OutputStreamWriter(os));
-        try {
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(os))) {
             for (String line : lines) {
                 writer.println(line);
             }
             writer.flush();
-        } finally {
-            writer.close();
         }
     }
 
@@ -199,7 +205,7 @@ public class IOUtils {
      *
      * @param file  file.
      * @param lines lines.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static void writeLines(File file, String[] lines) throws IOException {
         if (file == null) {
@@ -213,7 +219,7 @@ public class IOUtils {
      *
      * @param file  file.
      * @param lines lines.
-     * @throws IOException
+     * @throws IOException If an I/O error occurs
      */
     public static void appendLines(File file, String[] lines) throws IOException {
         if (file == null) {

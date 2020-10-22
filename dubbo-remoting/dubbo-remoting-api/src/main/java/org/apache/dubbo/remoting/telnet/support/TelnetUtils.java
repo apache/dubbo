@@ -131,7 +131,7 @@ public class TelnetUtils {
 //                        }
                     }
 
-                    rowbuf.append(cell.substring(cell.length() - remaing, cell.length() - remaing + 1));
+                    rowbuf.append(cell, cell.length() - remaing, cell.length() - remaing + 1);
                     remaing--;
                 }
                 int pad = widths[j] - cell.length();

@@ -23,7 +23,6 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.mock.MockRegistry;
 
 import org.junit.jupiter.api.AfterEach;
@@ -34,7 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.apache.dubbo.common.constants.ConfigConstants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 
 public class InvokerSideConfigUrlTest extends UrlTestBase {
@@ -137,13 +136,13 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     public void setUp() {
         initServConf();
         initRefConf();
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach()
     public void teardown() {
         //RegistryServer.reloadCache();
-        ConfigManager.getInstance().clear();
+//        ApplicationModel.getConfigManager().clear();
     }
 
 

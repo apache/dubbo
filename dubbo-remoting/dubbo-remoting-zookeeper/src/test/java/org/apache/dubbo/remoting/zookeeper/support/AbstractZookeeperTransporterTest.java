@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting.zookeeper.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
 
 import org.apache.curator.test.TestingServer;
@@ -30,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -63,34 +61,6 @@ public class AbstractZookeeperTransporterTest {
     public void testZookeeperClient() {
         assertThat(zookeeperClient, not(nullValue()));
         zookeeperClient.close();
-    }
-
-    @Test
-    public void testCreateServerURL() {
-        URL url = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828&timeout=2300");
-        URL newUrl = abstractZookeeperTransporter.toClientURL(url);
-        Assertions.assertEquals(newUrl.getProtocol(), "zookeeper");
-        Assertions.assertEquals(newUrl.getHost(), "127.0.0.1");
-        Assertions.assertEquals(newUrl.getPort(), zkServerPort);
-        Assertions.assertNull(newUrl.getUsername());
-        Assertions.assertNull(newUrl.getPassword());
-        Assertions.assertEquals(newUrl.getParameter(TIMEOUT_KEY, 5000), 2300);
-        Assertions.assertEquals(newUrl.getParameters().size(), 1);
-        Assertions.assertEquals(newUrl.getPath(), ZookeeperTransporter.class.getName());
-    }
-
-
-    @Test
-    public void testToCreateURLWhenHasUser() {
-        URL url = URL.valueOf("zookeeper://us2:pw2@127.0.0.1:" + zkServerPort + "/org.apache.dubbo.registry.RegistryService?application=metadatareport-local-xml-provider2&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&pid=47418&specVersion=2.7.0-SNAPSHOT&timestamp=1547102428828");
-        URL newUrl = abstractZookeeperTransporter.toClientURL(url);
-        Assertions.assertEquals(newUrl.getProtocol(), "zookeeper");
-        Assertions.assertEquals(newUrl.getHost(), "127.0.0.1");
-        Assertions.assertEquals(newUrl.getPort(), zkServerPort);
-        Assertions.assertEquals(newUrl.getUsername(), "us2");
-        Assertions.assertEquals(newUrl.getPassword(), "pw2");
-        Assertions.assertEquals(newUrl.getParameters().size(), 0);
-        Assertions.assertEquals(newUrl.getPath(), ZookeeperTransporter.class.getName());
     }
 
     @Test
@@ -234,5 +204,22 @@ public class AbstractZookeeperTransporterTest {
 
         zkServer2.stop();
         zkServer3.stop();
+    }
+
+    @Test
+    public void testSameHostWithDifferentUser() throws Exception {
+        int zkPort1 = NetUtils.getAvailablePort();
+        int zkPort2 = NetUtils.getAvailablePort();
+        try (TestingServer zkServer1 = new TestingServer(zkPort1, true)) {
+            try (TestingServer zkServer2 = new TestingServer(zkPort2, true)) {
+                URL url1 = URL.valueOf("zookeeper://us1:pw1@127.0.0.1:" + zkPort1 + "/path1");
+                URL url2 = URL.valueOf("zookeeper://us2:pw2@127.0.0.1:" + zkPort1 + "/path2");
+
+                ZookeeperClient client1 = abstractZookeeperTransporter.connect(url1);
+                ZookeeperClient client2 = abstractZookeeperTransporter.connect(url2);
+
+                assertThat(client1, not(client2));
+            }
+        }
     }
 }

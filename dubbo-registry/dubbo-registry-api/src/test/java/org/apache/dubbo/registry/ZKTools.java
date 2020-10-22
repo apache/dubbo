@@ -30,6 +30,7 @@ import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
 import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -233,7 +234,7 @@ public class ZKTools {
 
                 if (data.getPath().split("/").length == 5) {
                     byte[] value = data.getData();
-                    String stringValue = new String(value, "utf-8");
+                    String stringValue = new String(value, StandardCharsets.UTF_8);
 
                     // fire event to all listeners
                     Map<String, Object> added = null;

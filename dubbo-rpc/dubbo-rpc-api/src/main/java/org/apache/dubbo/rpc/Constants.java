@@ -27,6 +27,7 @@ public interface Constants {
     String DEPRECATED_KEY = "deprecated";
 
     String $ECHO = "$echo";
+    String $ECHO_PARAMETER_DESC = "Ljava/lang/Object;";
 
     String RETURN_PREFIX = "return ";
 
@@ -42,14 +43,6 @@ public interface Constants {
 
     String FORCE_USE_TAG = "dubbo.force.tag";
 
-    String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
-
-    String GENERIC_SERIALIZATION_DEFAULT = "true";
-
-    String GENERIC_SERIALIZATION_BEAN = "bean";
-
-    String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
-
     String TPS_LIMIT_RATE_KEY = "tps";
 
     String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
@@ -57,8 +50,6 @@ public interface Constants {
     long DEFAULT_TPS_LIMIT_INTERVAL = 60 * 1000;
 
     String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
-
-    String STUB_EVENT_KEY = "dubbo.stub.event";
 
     boolean DEFAULT_STUB_EVENT = false;
 
@@ -68,14 +59,6 @@ public interface Constants {
 
     String EXECUTES_KEY = "executes";
 
-    String REFERENCE_FILTER_KEY = "reference.filter";
-
-    String INVOKER_LISTENER_KEY = "invoker.listener";
-
-    String SERVICE_FILTER_KEY = "service.filter";
-
-    String EXPORTER_LISTENER_KEY = "exporter.listener";
-
     String ACCESS_LOG_KEY = "accesslog";
 
     String ACTIVES_KEY = "actives";
@@ -84,13 +67,11 @@ public interface Constants {
 
     String ASYNC_KEY = "async";
 
-    String FUTURE_GENERATED_KEY = "future_generated";
-
-    String FUTURE_RETURNTYPE_KEY = "future_returntype";
-
     String RETURN_KEY = "return";
 
     String TOKEN_KEY = "token";
+
+    String INTERFACE = "interface";
 
     String INTERFACES = "interfaces";
 
@@ -99,4 +80,14 @@ public interface Constants {
     String LOCAL_PROTOCOL = "injvm";
 
     String DEFAULT_REMOTING_SERVER = "netty";
+
+    String SCOPE_KEY = "scope";
+    String SCOPE_LOCAL = "local";
+    String SCOPE_REMOTE = "remote";
+
+    String INPUT_KEY = "input";
+    String OUTPUT_KEY = "output";
+
+    String CONSUMER_MODEL = "consumerModel";
+    String METHOD_MODEL = "methodModel";
 }

@@ -122,7 +122,7 @@ public final class GooglePB {
 
     private final int value;
 
-    private PhoneType(int value) {
+    PhoneType(int value) {
       this.value = value;
     }
 
@@ -1753,7 +1753,7 @@ public final class GooglePB {
       }
       private com.google.protobuf.MapField<String, PhoneNumber>
       internalGetMutableDoubleMap() {
-        onChanged();;
+        onChanged();
         if (doubleMap_ == null) {
           doubleMap_ = com.google.protobuf.MapField.newMapField(
               DoubleMapDefaultEntryHolder.defaultEntry);
