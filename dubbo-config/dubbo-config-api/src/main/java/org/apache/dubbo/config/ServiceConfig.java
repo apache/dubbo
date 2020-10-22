@@ -546,6 +546,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
          * 获取协议暴露端口   如果指定端口小于0  则生成随机端口
          */
         Integer port = findConfigedPorts(protocolConfig, name, map);
+
+        /**
+         * 生成url   以map为对应的parameters
+         */
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         // You can customize Configurator to append extra parameters
@@ -627,6 +631,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                          * ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol => DubboProtocol
                          */
                         Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
+                        /**
+                         * 缓存
+                         */
                         exporters.add(exporter);
                     }
                 } else {
@@ -643,6 +650,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                  * @since 2.7.0
                  * ServiceData Store
                  */
+                //remote
                 WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, DEFAULT_METADATA_STORAGE_TYPE));
                 if (metadataService != null) {
                     metadataService.publishServiceDefinition(url);

@@ -64,6 +64,10 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());
     }
 
+    /**
+     * 服务提供者注册元数据信息
+     * @param providerURL
+     */
     @Override
     protected void publishProviderServiceDefinition(URL providerURL) {
         try {
@@ -72,6 +76,11 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
                 Class interfaceClass = Class.forName(interfaceName);
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerURL.getParameters());
+                /**
+                 * 存储元数据
+                 * 存储元数据
+                 * 存储元数据
+                 */
                 getMetadataReport().storeProviderMetadata(new MetadataIdentifier(providerURL.getServiceInterface(),
                         providerURL.getParameter(VERSION_KEY), providerURL.getParameter(GROUP_KEY),
                         PROVIDER_SIDE, providerURL.getParameter(APPLICATION_KEY)), fullServiceDefinition);

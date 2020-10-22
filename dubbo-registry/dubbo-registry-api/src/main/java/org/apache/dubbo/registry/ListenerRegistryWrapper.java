@@ -51,9 +51,16 @@ public class ListenerRegistryWrapper implements Registry {
         registry.destroy();
     }
 
+    /**
+     * 注册
+     * @param url  Registration information , is not allowed to be empty, e.g: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     */
     @Override
     public void register(URL url) {
         try {
+            /**
+             * 注册
+             */
             registry.register(url);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {

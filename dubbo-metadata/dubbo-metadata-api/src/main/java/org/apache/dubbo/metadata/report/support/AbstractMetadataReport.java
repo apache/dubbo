@@ -259,15 +259,27 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 存储元数据
+     * @param providerMetadataIdentifier
+     * @param serviceDefinition
+     */
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         if (syncReport) {
+            //同步
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
+            //异步
             reportCacheExecutor.execute(() -> storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition));
         }
     }
 
+    /**
+     * 注册元数据
+     * @param providerMetadataIdentifier
+     * @param serviceDefinition
+     */
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
@@ -277,11 +289,20 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.remove(providerMetadataIdentifier);
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
+            /**
+             * 注册元数据  ConfigCenterBasedMetadataReport
+             */
             doStoreProviderMetadata(providerMetadataIdentifier, data);
+            /**
+             *
+             */
             saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(providerMetadataIdentifier, serviceDefinition);
+            /**
+             * 重试
+             */
             metadataReportRetry.startRetryTask();
             logger.error("Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
         }
@@ -368,13 +389,22 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * @return if need to continue
      */
     public boolean retry() {
+        //重试
         return doHandleMetadataCollection(failedReports);
     }
 
+    /**
+     * 重新注册元数据信息
+     * @param metadataMap
+     * @return
+     */
     private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap) {
         if (metadataMap.isEmpty()) {
             return true;
         }
+        /**
+         * 遍历metadataMap   依照side来重新注册元数据
+         */
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
@@ -439,8 +469,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                             public void run() {
                                 // Check and connect to the metadata
                                 try {
+                                    //记录重试次数
                                     int times = retryCounter.incrementAndGet();
                                     logger.info("start to retry task for metadata report. retry times:" + times);
+                                    //重试且计算次数
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }

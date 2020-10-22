@@ -173,11 +173,28 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
+    /**
+     * 注册
+     * @param registryUrl  获取对应的注册中心
+     * @param registeredProviderUrl   将要注册的服务
+     */
     private void register(URL registryUrl, URL registeredProviderUrl) {
+        /**
+         * 取缓存
+         */
         Registry registry = registryFactory.getRegistry(registryUrl);
+        /**
+         * ListenerRegistryWrapper
+         */
         registry.register(registeredProviderUrl);
     }
 
+    /**
+     * 在ProviderModel  缓存
+     * @param registryUrl
+     * @param registeredProviderUrl
+     * @param registered
+     */
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
@@ -227,22 +244,31 @@ public class RegistryProtocol implements Protocol {
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
         /**
-         * 导出服务  即服务启动
+         * 导出服务  即服务启动   DubboProtocol
+         * 导出服务  即服务启动   DubboProtocol
+         * 导出服务  即服务启动   DubboProtocol
          */
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
         // 根据 URL 加载 Registry 实现类
         final Registry registry = getRegistry(originInvoker);
+        /**
+         * 调整providerUrl
+         */
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
+            /**
+             * 向注册中心注册
+             */
             register(registryUrl, registeredProviderUrl);
         }
 
         // register stated url on provider model
+        //在ProviderModel  缓存
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
 
@@ -252,6 +278,9 @@ public class RegistryProtocol implements Protocol {
         // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
+        /**
+         * 通知   ？？？？？
+         */
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<>(exporter);
@@ -435,6 +464,9 @@ public class RegistryProtocol implements Protocol {
     private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
         if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
+            /**
+             * getFilteredKeys   获取providerUrl对应的parameter中  以【.】开头的属性
+             */
             return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(
                     MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
                     INTERFACES);

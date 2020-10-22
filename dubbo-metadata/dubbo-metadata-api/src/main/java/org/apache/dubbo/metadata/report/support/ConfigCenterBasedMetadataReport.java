@@ -68,8 +68,16 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
     }
 
 
+    /**
+     * 注册元数据
+     * @param providerMetadataIdentifier
+     * @param serviceDefinitions
+     */
     @Override
     protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
+        /**
+         * 注册元数据
+         */
         saveMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
@@ -129,8 +137,19 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
         dynamicConfiguration.publishConfig(key, group, value);
     }
 
+    /**
+     * 保存元数据
+     * @param metadataIdentifier
+     * @param value
+     */
     protected void saveMetadata(MetadataIdentifier metadataIdentifier, String value) {
+        /**
+         * 配置中心的key
+         */
         String key = getKey(metadataIdentifier);
+        /**
+         * 存储
+         */
         dynamicConfiguration.publishConfig(key, group, value);
     }
 

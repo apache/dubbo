@@ -56,14 +56,28 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
         // Remove the useless parameters
         url = url.removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY, TIMESTAMP_KEY);
 
+        /**
+         * 获取side属性
+         */
         String side = url.getParameter(SIDE_KEY);
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
+            /**
+             * 服务提供者注册源数据信息
+             */
             publishProviderServiceDefinition(url);
         } else {
+            /**
+             * 服务消费者
+             */
             publishConsumerParameters(url);
         }
     }
 
+    /**
+     * 服务提供者注册元数据信息
+     *
+     * @param url
+     */
     protected void publishProviderServiceDefinition(URL url) {
         String serviceDefinition = getServiceDefinition(url);
         if (!StringUtils.isBlank(serviceDefinition)) {

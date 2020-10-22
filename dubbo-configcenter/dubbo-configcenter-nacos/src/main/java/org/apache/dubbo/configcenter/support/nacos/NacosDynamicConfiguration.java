@@ -242,11 +242,22 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return null;
     }
 
+    /**
+     * 配置中心 存储元数据
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param content the content of configuration
+     * @return
+     */
     @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
+        //将/替换为-
         String resolvedGroup = resolveGroup(group);
         try {
+            /**
+             * 保存元数据
+             */
             published = configService.publishConfig(key, resolvedGroup, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg(), e);

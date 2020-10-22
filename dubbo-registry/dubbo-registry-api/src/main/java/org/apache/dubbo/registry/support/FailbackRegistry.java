@@ -226,17 +226,30 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedNotified;
     }
 
+    /**
+     * 注册
+     * @param url
+     */
     @Override
     public void register(URL url) {
         if (!acceptable(url)) {
             logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
             return;
         }
+        /**
+         * 缓存
+         */
         super.register(url);
+        /**
+         * 取消缓存中url对应的注册失败记录
+         */
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
+            /**
+             * 注册
+             */
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -256,6 +269,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 缓存失败记录
+             */
             addFailedRegistered(url);
         }
     }

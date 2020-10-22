@@ -51,6 +51,12 @@ public final class ServiceDefinitionBuilder {
         return sd;
     }
 
+    /**
+     * 生成FullServiceDefinition对象
+     * @param interfaceClass
+     * @param params
+     * @return
+     */
     public static FullServiceDefinition buildFullDefinition(final Class<?> interfaceClass, Map<String, String> params) {
         FullServiceDefinition sd = new FullServiceDefinition();
         build(sd, interfaceClass);

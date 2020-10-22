@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
 
-@DubboService(version = "2.36.5",group = "test3342",methods = {@Method(name = "sayHello",arguments ={@Argument(type = "3434")} ) })
+@DubboService
 public class DemoServiceImpl implements DemoService {
     private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
 
