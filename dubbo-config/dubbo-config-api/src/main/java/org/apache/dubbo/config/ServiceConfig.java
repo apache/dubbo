@@ -224,7 +224,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         /**
-         * 向nacos配置中心添加数据
+         * 向nacos配置中心添加数据   key为应用名称  content为当前时间
          */
         exported();
     }
@@ -234,7 +234,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     public void exported() {
         // dispatch a ServiceConfigExportedEvent since 2.7.4
-        //ServiceNameMappingListener处理
+        //ServiceNameMappingListener处理  将当前sc放入ServiceConfigExportedEvent
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
