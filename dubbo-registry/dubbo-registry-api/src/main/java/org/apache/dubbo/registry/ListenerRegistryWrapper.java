@@ -59,7 +59,7 @@ public class ListenerRegistryWrapper implements Registry {
     public void register(URL url) {
         try {
             /**
-             * 注册
+             * 注册  FailbackRegistry
              */
             registry.register(url);
         } finally {

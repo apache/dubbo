@@ -47,6 +47,10 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    /**
+     * 将已导出服务的配置信息  存储到配置中心
+     * @param url
+     */
     @Override
     public void publishServiceDefinition(URL url) {
         if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) { // Ignore the interface "MetadataService"
@@ -62,7 +66,7 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
         String side = url.getParameter(SIDE_KEY);
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             /**
-             * 服务提供者注册源数据信息
+             * 将已导出服务的配置信息  存储到配置中心  RemoteWritableMetadataService
              */
             publishProviderServiceDefinition(url);
         } else {

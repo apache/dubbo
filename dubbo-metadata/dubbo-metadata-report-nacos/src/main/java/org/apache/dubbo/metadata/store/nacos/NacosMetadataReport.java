@@ -114,8 +114,16 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         return dynamicConfiguration.getConfig(serviceName, exportedServicesRevision, SECONDS.toMillis(3));
     }
 
+    /**
+     * 存储元数据
+     * @param identifier
+     * @param value
+     */
     private void storeMetadata(BaseMetadataIdentifier identifier, String value) {
         try {
+            /**
+             * 存储
+             */
             boolean publishResult = dynamicConfiguration.publishConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, value);
             if (!publishResult) {
                 throw new RuntimeException("publish nacos metadata failed");

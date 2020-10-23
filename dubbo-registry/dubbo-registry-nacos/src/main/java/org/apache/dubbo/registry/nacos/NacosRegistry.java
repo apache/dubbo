@@ -147,6 +147,10 @@ public class NacosRegistry extends FailbackRegistry {
         return urls;
     }
 
+    /**
+     * 将服务注册到注册中心
+     * @param url
+     */
     @Override
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
@@ -156,6 +160,11 @@ public class NacosRegistry extends FailbackRegistry {
          *  default {@link DEFAULT_GROUP}
          *
          * in https://github.com/apache/dubbo/issues/5978
+         */
+        /**
+         * 将服务注册到注册中心
+         * 将服务注册到注册中心
+         * 将服务注册到注册中心
          */
         execute(namingService -> namingService.registerInstance(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP), instance));

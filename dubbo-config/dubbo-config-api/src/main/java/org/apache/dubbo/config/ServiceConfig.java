@@ -229,8 +229,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exported();
     }
 
+    /**
+     * 分发事件
+     */
     public void exported() {
         // dispatch a ServiceConfigExportedEvent since 2.7.4
+        //ServiceNameMappingListener处理
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
@@ -392,7 +396,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // TODO, uncomment this line once service key is unified
             serviceMetadata.setServiceKey(pathKey);
             /**
-             * 导出
+             * 导出服务
+             * 导出服务
+             * 导出服务
              */
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
@@ -625,9 +631,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
                         /**
-                         * 导出服务
-                         * 导出服务
-                         * 导出服务
+                         * 导出服务到注册中心
+                         * 导出服务到注册中心
+                         * 导出服务到注册中心
                          * ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol => DubboProtocol
                          */
                         Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
@@ -653,6 +659,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 //remote
                 WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, DEFAULT_METADATA_STORAGE_TYPE));
                 if (metadataService != null) {
+                    /**
+                     * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
+                     *
+                     * 将已导出服务的配置信息  存储到配置中心
+                     */
                     metadataService.publishServiceDefinition(url);
                 }
             }

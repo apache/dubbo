@@ -244,9 +244,9 @@ public class RegistryProtocol implements Protocol {
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
         /**
-         * 导出服务  即服务启动   DubboProtocol
-         * 导出服务  即服务启动   DubboProtocol
-         * 导出服务  即服务启动   DubboProtocol
+         * 服务启动   DubboProtocol
+         * 服务启动   DubboProtocol
+         * 服务启动   DubboProtocol
          */
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
@@ -262,7 +262,9 @@ public class RegistryProtocol implements Protocol {
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             /**
-             * 向注册中心注册
+             * 将导出的服务注册到注册中心
+             * 将导出的服务注册到注册中心
+             * 将导出的服务注册到注册中心
              */
             register(registryUrl, registeredProviderUrl);
         }

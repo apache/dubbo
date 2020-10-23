@@ -164,6 +164,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         this.reportURL = url;
     }
 
+    /**
+     * 本地文件记录
+     * @param version
+     */
     private void doSaveProperties(long version) {
         if (version < lastCacheChanged.get()) {
             return;
@@ -218,18 +222,31 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 文本文件保存
+     * @param metadataIdentifier
+     * @param value
+     * @param add
+     * @param sync
+     */
     private void saveProperties(MetadataIdentifier metadataIdentifier, String value, boolean add, boolean sync) {
         if (localCacheFile == null) {
             return;
         }
 
         try {
+            /**
+             * 向properties添加或删除属性
+             */
             if (add) {
                 properties.setProperty(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), value);
             } else {
                 properties.remove(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
+            /**
+             * 同步或异步
+             */
             if (sync) {
                 new SaveProperties(version).run();
             } else {
@@ -255,6 +272,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         @Override
         public void run() {
+            /**
+             * 本地文件保存
+             */
             doSaveProperties(version);
         }
     }
@@ -294,7 +314,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
              */
             doStoreProviderMetadata(providerMetadataIdentifier, data);
             /**
-             *
+             * 本地文件保存属性
              */
             saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {

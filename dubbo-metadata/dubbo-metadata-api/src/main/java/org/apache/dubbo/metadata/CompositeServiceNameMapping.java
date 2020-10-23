@@ -70,6 +70,11 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
         }
     }
 
+    /**
+     *
+     * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=11768&release=&side=provider&timestamp=1603427805390
+     * @param exportedURL the {@link URL} that the Dubbo Provider exported
+     */
     @Override
     public void map(URL exportedURL) {
         List<ServiceNameMapping> serviceNameMappings = getServiceNameMappings();
