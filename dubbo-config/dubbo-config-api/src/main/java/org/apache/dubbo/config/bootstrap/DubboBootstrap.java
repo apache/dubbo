@@ -1075,7 +1075,7 @@ public class DubboBootstrap extends GenericEventListener {
             }
 
             /**
-             * 如果当前服务提供者同时又是服务消费者
+             * 服务消费者
              */
             referServices();
             if (asyncExportingFutures.size() > 0) {
@@ -1329,6 +1329,9 @@ public class DubboBootstrap extends GenericEventListener {
         exportedServices.clear();
     }
 
+    /**
+     * 服务消费者
+     */
     private void referServices() {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
@@ -1343,6 +1346,9 @@ public class DubboBootstrap extends GenericEventListener {
             referenceConfig.setBootstrap(this);
 
             if (rc.shouldInit()) {
+                /**
+                 * 同步或异步
+                 */
                 if (referAsync) {
                     CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
                             executorRepository.getServiceExporterExecutor(),
@@ -1353,6 +1359,9 @@ public class DubboBootstrap extends GenericEventListener {
                     );
                     asyncReferringFutures.add(future);
                 } else {
+                    /**
+                     * get
+                     */
                     cache.get(rc);
                 }
             }
