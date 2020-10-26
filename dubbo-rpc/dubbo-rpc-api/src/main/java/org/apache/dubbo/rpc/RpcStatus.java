@@ -137,21 +137,28 @@ public class RpcStatus {
         status.total.incrementAndGet();
         status.totalElapsed.addAndGet(elapsed);
 
-        if (status.maxElapsed.get() < elapsed) {
-            status.maxElapsed.set(elapsed);
+        synchronized (status.maxElapsed) {
+            if (status.maxElapsed.get() < elapsed) {
+                status.maxElapsed.set(elapsed);
+            }
         }
 
         if (succeeded) {
-            if (status.succeededMaxElapsed.get() < elapsed) {
-                status.succeededMaxElapsed.set(elapsed);
+            synchronized (status.succeededMaxElapsed) {
+                if (status.succeededMaxElapsed.get() < elapsed) {
+                    status.succeededMaxElapsed.set(elapsed);
+                }
             }
-
         } else {
             status.failed.incrementAndGet();
             status.failedElapsed.addAndGet(elapsed);
-            if (status.failedMaxElapsed.get() < elapsed) {
-                status.failedMaxElapsed.set(elapsed);
+
+            synchronized (status.failedMaxElapsed) {
+                if (status.failedMaxElapsed.get() < elapsed) {
+                    status.failedMaxElapsed.set(elapsed);
+                }
             }
+
         }
     }
 
