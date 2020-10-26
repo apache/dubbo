@@ -219,6 +219,10 @@ public class DubboBootstrap extends GenericEventListener {
         DubboShutdownHook.getDubboShutdownHook().unregister();
     }
 
+    /**
+     * 判断application标签上得registerConsumer属性
+     * @return
+     */
     private boolean isOnlyRegisterProvider() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
         return registerConsumer == null || !registerConsumer;
@@ -1054,17 +1058,25 @@ public class DubboBootstrap extends GenericEventListener {
             // 1. export Dubbo Services
             /**
              * 导出服务
+             * 1、将导出的服务启动，供消费者访问
+             * 2、将服务注册到注册中心
+             * 3、将导出服务信息配置写到配置中心
              */
             exportServices();
 
             // Not only provider register
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
+                //导出元数据服务
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
+                //注册本地服务实例
                 registerServiceInstance();
             }
 
+            /**
+             * 如果当前服务提供者同时又是服务消费者
+             */
             referServices();
             if (asyncExportingFutures.size() > 0) {
                 new Thread(() -> {
@@ -1091,6 +1103,10 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
+    /**
+     * ExportedURLs不为空
+     * @return
+     */
     private boolean hasExportedServices() {
         return !metadataService.getExportedURLs().isEmpty();
     }
@@ -1318,6 +1334,9 @@ public class DubboBootstrap extends GenericEventListener {
             cache = ReferenceConfigCache.getCache();
         }
 
+        /**
+         * 遍历所有得References
+         */
         configManager.getReferences().forEach(rc -> {
             // TODO, compatible with  ReferenceConfig.refer()
             ReferenceConfig referenceConfig = (ReferenceConfig) rc;
@@ -1327,6 +1346,9 @@ public class DubboBootstrap extends GenericEventListener {
                 if (referAsync) {
                     CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
                             executorRepository.getServiceExporterExecutor(),
+                            /**
+                             * get
+                             */
                             () -> cache.get(rc)
                     );
                     asyncReferringFutures.add(future);

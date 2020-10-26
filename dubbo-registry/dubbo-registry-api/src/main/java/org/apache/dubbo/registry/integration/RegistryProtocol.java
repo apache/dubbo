@@ -254,7 +254,7 @@ public class RegistryProtocol implements Protocol {
         // 根据 URL 加载 Registry 实现类
         final Registry registry = getRegistry(originInvoker);
         /**
-         * 调整providerUrl
+         * 调整providerUrl的参数
          */
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
@@ -281,7 +281,7 @@ public class RegistryProtocol implements Protocol {
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
         /**
-         * 通知   ？？？？？
+         * 通知   待其他业务实现  目前只保留了接口
          */
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export

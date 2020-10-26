@@ -58,19 +58,32 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
         super(DEFAULT_METADATA_STORAGE_TYPE, MAX_PRIORITY, allOf(MetadataServiceType.class));
     }
 
+    /**
+     * 导出元数据服务
+     * @throws Exception
+     */
     @Override
     protected void doExport() throws Exception {
-
+        /**
+         * 为元数据服务  配置ServiceConfig
+         */
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setApplication(getApplicationConfig());
         serviceConfig.setRegistries(getRegistries());
         serviceConfig.setProtocol(generateMetadataProtocol());
+        //接口
         serviceConfig.setInterface(MetadataService.class);
+        //实现类   InMemoryWritableMetadataService
         serviceConfig.setRef(metadataService);
         serviceConfig.setGroup(getApplicationConfig().getName());
         serviceConfig.setVersion(metadataService.version());
 
         // export
+        /**
+         * 导出服务
+         * 导出服务
+         * 导出服务
+         */
         serviceConfig.export();
 
         if (logger.isInfoEnabled()) {
