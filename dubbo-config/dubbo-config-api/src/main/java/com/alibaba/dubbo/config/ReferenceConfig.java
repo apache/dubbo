@@ -252,7 +252,7 @@ public class ReferenceConfig<T> extends AbstractReferenceConfig {
             if (module == null) {
                 module = consumer.getModule();
             }
-            if (registries == null) {
+            if (registries == null || registries.size()==0) {
                 registries = consumer.getRegistries();
             }
             if (monitor == null) {
