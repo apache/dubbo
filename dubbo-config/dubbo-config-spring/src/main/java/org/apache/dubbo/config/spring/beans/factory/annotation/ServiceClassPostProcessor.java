@@ -297,6 +297,9 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
+            if (!serviceBeanDefinition.getPropertyValues().contains("id")) {
+                serviceBeanDefinition.getPropertyValues().addPropertyValue("id", beanName);
+            }
 
             if (logger.isInfoEnabled()) {
                 logger.info("The BeanDefinition[" + serviceBeanDefinition +
