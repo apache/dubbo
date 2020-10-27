@@ -49,7 +49,7 @@ public class GenericImplFilterTest {
     public void testInvoke() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
-                new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+                "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -77,7 +77,7 @@ public class GenericImplFilterTest {
     public void testInvokeWithException() throws Exception {
 
         RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
-                new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+                "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
@@ -104,8 +104,8 @@ public class GenericImplFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), genericInvoke.getParameterTypes(),
-                new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
+        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "org.apache.dubbo.rpc.support.DemoService:dubbo",
+                genericInvoke.getParameterTypes(), new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");

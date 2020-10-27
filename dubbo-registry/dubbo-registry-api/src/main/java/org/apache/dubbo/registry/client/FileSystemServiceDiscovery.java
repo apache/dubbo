@@ -62,6 +62,8 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     private FileSystemDynamicConfiguration dynamicConfiguration;
 
+    private ServiceInstance serviceInstance;
+
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
 
@@ -129,7 +131,18 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     @Override
+    public URL getUrl() {
+        return null;
+    }
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
+    }
+
+    @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        this.serviceInstance = serviceInstance;
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
         String content = toJSONString(serviceInstance);

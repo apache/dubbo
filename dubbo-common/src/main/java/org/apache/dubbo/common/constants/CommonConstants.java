@@ -191,6 +191,12 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
+    String MAPPING_KEY = "mapping-type";
+
+    String CONFIG_MAPPING_TYPE = "config";
+
+    String METADATA_MAPPING_TYPE = "metadata";
+
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
