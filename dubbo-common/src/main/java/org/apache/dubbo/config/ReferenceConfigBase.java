@@ -119,6 +119,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
     }
 
+    /**
+     * 如果是泛化接口  则获取真正得接口
+     * @return
+     */
     public Class<?> getActualInterface() {
         Class actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
@@ -223,29 +227,39 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return DUBBO + ".reference." + interfaceName;
     }
 
+    /**
+     * 获取文件配置
+     */
     public void resolveFile() {
+        // 从系统变量中获取与接口名对应的属性值
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
+            // 从系统属性中获取解析文件路径
             resolveFile = System.getProperty("dubbo.resolve.file");
             if (StringUtils.isEmpty(resolveFile)) {
+                // 从指定位置加载配置文件
                 File userResolveFile = new File(new File(System.getProperty("user.home")), "dubbo-resolve.properties");
                 if (userResolveFile.exists()) {
+                    // 获取文件绝对路径
                     resolveFile = userResolveFile.getAbsolutePath();
                 }
             }
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
                 try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
+                    // 从文件中加载配置
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
                 }
 
+                // 获取与接口名对应的配置
                 resolve = properties.getProperty(interfaceName);
             }
         }
         if (resolve != null && resolve.length() > 0) {
+            // 将 resolve 赋值给 url
             url = resolve;
             if (logger.isWarnEnabled()) {
                 if (resolveFile != null) {

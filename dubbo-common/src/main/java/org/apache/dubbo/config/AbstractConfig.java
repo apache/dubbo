@@ -593,7 +593,7 @@ public abstract class AbstractConfig implements Serializable {
 
     /**
      * 刷新Config
-     * 遍历compositeConfiguration中所有得配置项  调用当前config的set方法  更新数据
+     * 遍历compositeConfiguration中所有得配置项  调用当前config的set方法  更新config
      */
     public void refresh() {
         Environment env = ApplicationModel.getEnvironment();

@@ -1075,7 +1075,7 @@ public class DubboBootstrap extends GenericEventListener {
             }
 
             /**
-             * 服务消费者
+             * 服务引入
              */
             referServices();
             if (asyncExportingFutures.size() > 0) {

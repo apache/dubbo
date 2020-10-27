@@ -41,6 +41,8 @@ public class Application {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setInterface(DemoService.class);
         reference.setGeneric("true");
+        reference.setVersion("2.0.0");
+        reference.setGroup("test11");
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))

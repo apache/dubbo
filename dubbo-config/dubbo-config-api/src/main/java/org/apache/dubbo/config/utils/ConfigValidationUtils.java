@@ -165,19 +165,27 @@ public class ConfigValidationUtils {
      */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
-
+    /**
+     * 获取interfaceConfig对应注册中心配置  并转化为url
+     * @param interfaceConfig
+     * @param provider
+     * @return
+     */
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
         List<URL> registryList = new ArrayList<URL>();
         ApplicationConfig application = interfaceConfig.getApplication();
         List<RegistryConfig> registries = interfaceConfig.getRegistries();
+        // <dubbo:registry address="nacos://113.96.131.199:8848" protocol="nacos" port="8848" />
         if (CollectionUtils.isNotEmpty(registries)) {
             for (RegistryConfig config : registries) {
+                // nacos://113.96.131.199:8848
                 String address = config.getAddress();
                 if (StringUtils.isEmpty(address)) {
                     address = ANYHOST_VALUE;
                 }
                 if (!RegistryConfig.NO_AVAILABLE.equalsIgnoreCase(address)) {
+                    // 将application和config等对应得属性  注入map
                     Map<String, String> map = new HashMap<String, String>();
                     AbstractConfig.appendParameters(map, application);
                     AbstractConfig.appendParameters(map, config);
@@ -186,16 +194,20 @@ public class ConfigValidationUtils {
                     if (!map.containsKey(PROTOCOL_KEY)) {
                         map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                     }
+                    // 使用address和map组成url
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
                     for (URL url : urls) {
-
+                        // 添加registry属性  并修改url对应得protocol
+                        //registry://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-consumer&dubbo=2.0.2&pid=10352&registry=nacos&timestamp=1603788540715
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(extractRegistryType(url))
                                 .build();
+                        //服务端且register非false   或者消费端且subscribe非false
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                                 || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
+                            //
                             registryList.add(url);
                         }
                     }
@@ -206,7 +218,7 @@ public class ConfigValidationUtils {
     }
 
     /**
-     * 向url中添加MonitorConfig信息
+     * 校验MonitorConfig信息  如果不为空则向url注入属性  为空则返回null
      * @param interfaceConfig
      * @param registryURL
      * @return
@@ -261,8 +273,12 @@ public class ConfigValidationUtils {
      * Legitimacy check and setup of local simulated operations. The operations can be a string with Simple operation or
      * a classname whose {@link Class} implements a particular function
      *
+     * 本地模拟作战的合法性检查和设置。操作可以是具有简单操作或类名的字符串，其{@link Class}实现了一个特定的函数
+     *
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface that will be referenced
+     *                       对于提供者端，它是将要导出的服务的{@link Class}；
+     *                       对于使用者端，将被引用的是远程服务接口的{@link Class}
      */
     public static void checkMock(Class<?> interfaceClass, AbstractInterfaceConfig config) {
         String mock = config.getMock();
@@ -343,6 +359,10 @@ public class ConfigValidationUtils {
         }
     }
 
+    /**
+     * 校验config
+     * @param config
+     */
     public static void validateReferenceConfig(ReferenceConfig config) {
         checkMultiExtension(InvokerListener.class, "listener", config.getListener());
         checkKey(VERSION_KEY, config.getVersion());

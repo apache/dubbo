@@ -113,7 +113,7 @@ public class ReferenceConfigCache {
         ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);
         proxiesOfType.computeIfAbsent(key, _k -> {
             /**
-             * get
+             * get   ReferenceConfig
              */
             Object proxy = referenceConfig.get();
             referredReferences.put(key, referenceConfig);

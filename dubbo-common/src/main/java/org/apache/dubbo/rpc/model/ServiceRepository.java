@@ -112,13 +112,23 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         services.remove(path);
     }
 
+    /**
+     *
+     * @param serviceKey
+     * @param serviceDescriptor
+     * @param rc
+     * @param proxy
+     * @param serviceMetadata
+     */
     public void registerConsumer(String serviceKey,
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
+        // 实例化ConsumerModel
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
                 serviceMetadata);
+        // 缓存
         consumers.putIfAbsent(serviceKey, consumerModel);
     }
 
