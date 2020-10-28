@@ -106,9 +106,17 @@ public class ListenerRegistryWrapper implements Registry {
         }
     }
 
+    /**
+     * 订阅
+     * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     * @param listener A listener of the change event, not allowed to be empty
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         try {
+            /**
+             * FailbackRegistry
+             */
             registry.subscribe(url, listener);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {

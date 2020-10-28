@@ -155,10 +155,20 @@ public class NacosServiceName {
         return !isWildcard(value) && !isRange(value);
     }
 
+    /**
+     * 非*
+     * @param value
+     * @return
+     */
     private boolean isWildcard(String value) {
         return WILDCARD.equals(value);
     }
 
+    /**
+     * 含有【，】
+     * @param value
+     * @return
+     */
     private boolean isRange(String value) {
         return value != null && value.indexOf(VALUE_SEPARATOR) > -1 && value.split(VALUE_SEPARATOR).length > 1;
     }

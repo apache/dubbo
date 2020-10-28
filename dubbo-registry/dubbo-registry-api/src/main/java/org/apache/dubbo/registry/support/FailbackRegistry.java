@@ -152,6 +152,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 移除对应得失败记录
+     * @param url
+     * @param listener
+     */
     private void removeFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask f = failedSubscribed.remove(h);
@@ -342,12 +347,25 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 订阅
+     * @param url
+     * @param listener
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
+        /**
+         * 移除对应得失败记录
+         */
         removeFailedSubscribed(url, listener);
         try {
             // Sending a subscription request to the server side
+            /**
+             * 订阅
+             * 订阅
+             * 订阅
+             */
             doSubscribe(url, listener);
         } catch (Exception e) {
             Throwable t = e;

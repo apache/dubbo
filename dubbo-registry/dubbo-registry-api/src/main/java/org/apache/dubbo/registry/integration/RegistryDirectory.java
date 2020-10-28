@@ -134,12 +134,19 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     private ReferenceConfigurationListener serviceConfigurationListener;
 
 
+    /**
+     * 实例化RegistryDirectory
+     * @param serviceType
+     * @param url
+     */
     public RegistryDirectory(Class<T> serviceType, URL url) {
+        // 生成url和consumerUrl
         super(url);
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
 
+        // 属性赋值
         shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
         shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
@@ -178,10 +185,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         return shouldRegister;
     }
 
+    /**
+     * 订阅
+     * @param url consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=2976&side=consumer&sticky=false&timestamp=1603870460255&version=2.0.0
+     */
     public void subscribe(URL url) {
         setConsumerUrl(url);
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         serviceConfigurationListener = new ReferenceConfigurationListener(this, url);
+        /**
+         * ListenerRegistryWrapper
+         */
         registry.subscribe(url, this);
     }
 

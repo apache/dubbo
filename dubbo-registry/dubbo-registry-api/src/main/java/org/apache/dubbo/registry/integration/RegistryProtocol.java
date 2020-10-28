@@ -535,13 +535,19 @@ public class RegistryProtocol implements Protocol {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        // nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-consumer&dubbo=2.0.2&pid=3900&refer=application%3Ddubbo-demo-annotation-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26init%3Dfalse%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D3900%26register.ip%3D192.168.50.39%26side%3Dconsumer%26sticky%3Dfalse%26timestamp%3D1603862513141&timestamp=1603862513208
         url = getRegistryUrl(url);
+        /**
+         * 获取url对应得Registry
+         * RegistryFactoryWrapper
+         */
         Registry registry = registryFactory.getRegistry(url);
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
 
         // group="a,b" or group="*"
+        // 将refer对应得值转换为map
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
@@ -550,22 +556,46 @@ public class RegistryProtocol implements Protocol {
             }
         }
 
+        /**
+         * 获取对应得Cluster
+         */
         Cluster cluster = Cluster.getCluster(qs.get(CLUSTER_KEY));
         return doRefer(cluster, registry, type, url);
     }
 
+    /**
+     *
+     * @param cluster
+     * @param registry
+     * @param type
+     * @param url
+     * @param <T>
+     * @return
+     */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        //实例化RegistryDirectory
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
+        // consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=10988&side=consumer&sticky=false&timestamp=1603867214469&version=2.0.0
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(subscribeUrl);
+            /**
+             * ListenerRegistryWrapper
+             * 向注册中心写入服务消费者url
+             * 向注册中心写入服务消费者url
+             * 向注册中心写入服务消费者url
+             * consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=9552&side=consumer&sticky=false&timestamp=1603868897635&version=2.0.0
+             */
             registry.register(directory.getRegisteredConsumerUrl());
         }
         directory.buildRouterChain(subscribeUrl);
+        /**
+         * 订阅
+         */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
         Invoker<T> invoker = cluster.join(directory);

@@ -359,7 +359,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         } else {
             urls.clear();
             /**
-             * 用户指定url  可能希望点对点调用或注册中心地址
+             * 用户指定url  希望点对点调用或注册中心地址
              */
             if (url != null && url.length() > 0) { // user specified URL, could be peer-to-peer address, or register center's address.
                 String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
@@ -384,6 +384,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
             } else { // assemble URL from register center's configuration
                 // if protocols not injvm checkRegistry
+                /**
+                 * 消费者没有指定url  则获取注册中心
+                 */
                 // protocol非injvm
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     // 检查注册中心
@@ -410,6 +413,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
             // 单个注册中心或服务提供者(用户指定url，下同)
             if (urls.size() == 1) {
+                /**
+                 * ProtocolFilterWrapper->ProtocolListenerWrapper->RegistryProtocol
+                 */
                 invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
             } else {// 多个注册中心或多个服务提供者，或者两者混合
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
@@ -421,16 +427,30 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                      * 并调用实例的refer方法
                      */
                     invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+                    /**
+                     * url对应得protocol为register   则使用最后一个注册中心url
+                     */
                     if (UrlUtils.isRegistry(url)) {
                         registryURL = url; // use last registry url
                     }
                 }
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
+                    /**
+                     * 对于多订阅方案，默认使用“区域感知”策略
+                     */
                     String cluster = registryURL.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
                     // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
+                    /**
+                     * 调用程序包装序列将是：ZoneAwareClusterInvoker（StaticDirectory）
+                     * ->FailoverClusterInvoker（RegistryDirectory，路由发生在这里）
+                     * ->invoker
+                     */
                     invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryURL, invokers));
                 } else { // not a registry url, must be direct invoke.
+                    /**
+                     * 不是注册表url，必须是直接调用。
+                     */
                     String cluster = CollectionUtils.isNotEmpty(invokers)
                             ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
                             : Cluster.DEFAULT;

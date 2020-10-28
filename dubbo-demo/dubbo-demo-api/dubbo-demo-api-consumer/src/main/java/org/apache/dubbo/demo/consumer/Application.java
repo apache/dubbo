@@ -43,6 +43,7 @@ public class Application {
         reference.setGeneric("true");
         reference.setVersion("2.0.0");
         reference.setGroup("test11");
+        reference.setCheck(false);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))

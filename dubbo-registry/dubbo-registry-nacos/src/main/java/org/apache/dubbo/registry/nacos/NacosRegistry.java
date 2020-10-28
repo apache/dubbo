@@ -154,6 +154,9 @@ public class NacosRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
+        /**
+         * instance
+         */
         final Instance instance = createInstance(url);
         /**
          *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
@@ -182,17 +185,32 @@ public class NacosRegistry extends FailbackRegistry {
         });
     }
 
+    /**
+     * 订阅
+     * @param url consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=3404&side=consumer&sticky=false&timestamp=1603872721516&version=2.0.0
+     * @param listener
+     */
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
+        /**
+         * 获取要订阅得服务名列表 即服务提供者对应得serviceNames
+         *  0 -> providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
+         */
         Set<String> serviceNames = getServiceNames(url, listener);
 
         //Set corresponding serviceNames for easy search later
         if (isServiceNamesWithCompatibleMode(url)) {
             for (String serviceName : serviceNames) {
+                /**
+                 * 加入CORRESPONDING_SERVICE_NAMES_MAP
+                 */
                 NacosInstanceManageUtil.setCorrespondingServiceNames(serviceName, serviceNames);
             }
         }
 
+        /**
+         *
+         */
         doSubscribe(url, listener, serviceNames);
     }
 
@@ -211,8 +229,12 @@ public class NacosRegistry extends FailbackRegistry {
                  * in https://github.com/apache/dubbo/issues/5978
                  */
                 for (String serviceName : serviceNames) {
+                    /**
+                     * 获取服务提供者信息
+                     */
                     List<Instance> instances = namingService.getAllInstances(serviceName,
                             getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
+                    // 缓存
                     NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     allCorrespondingInstanceList.addAll(instances);
                 }
@@ -263,12 +285,13 @@ public class NacosRegistry extends FailbackRegistry {
 
     /**
      * Get the service names from the specified {@link URL url}
-     *
+     * 获取服务名列表
      * @param url      {@link URL}
      * @param listener {@link NotifyListener}
      * @return non-null
      */
     private Set<String> getServiceNames(URL url, NotifyListener listener) {
+        // admin
         if (isAdminProtocol(url)) {
             scheduleServiceNamesLookup(url, listener);
             return getServiceNamesForOps(url);
@@ -277,7 +300,13 @@ public class NacosRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * 获取serviceName列表
+     * @param url
+     * @return
+     */
     private Set<String> getServiceNames0(URL url) {
+        // providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
         NacosServiceName serviceName = createServiceName(url);
 
         final Set<String> serviceNames;
@@ -286,6 +315,7 @@ public class NacosRegistry extends FailbackRegistry {
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
             // Add the legacy service name since 2.7.6
+            //获取与Dubbo 2.7.3及更低版本兼容的旧版订阅服务名称
             String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
             if (!serviceName.toString().equals(legacySubscribedServiceName)) {
                 //avoid duplicated service names
@@ -318,7 +348,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     /**
      * Get the legacy subscribed service name for compatible with Dubbo 2.7.3 and below
-     *
+     * 获取与Dubbo 2.7.3及更低版本兼容的旧版订阅服务名称
      * @param url {@link URL}
      * @return non-null
      * @since 2.7.6
@@ -560,6 +590,11 @@ public class NacosRegistry extends FailbackRegistry {
                 instance.getMetadata());
     }
 
+    /**
+     *
+     * @param url
+     * @return
+     */
     private Instance createInstance(URL url) {
         // Append default category if absent
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
@@ -571,6 +606,7 @@ public class NacosRegistry extends FailbackRegistry {
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);
+        // 元数据
         instance.setMetadata(new HashMap<>(newURL.getParameters()));
         return instance;
     }
