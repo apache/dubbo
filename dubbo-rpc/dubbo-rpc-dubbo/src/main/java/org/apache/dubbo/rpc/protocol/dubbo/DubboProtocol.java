@@ -221,6 +221,7 @@ public class DubboProtocol extends AbstractProtocol {
         return INSTANCE;
     }
 
+    @Override
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
     }
@@ -458,7 +459,7 @@ public class DubboProtocol extends AbstractProtocol {
         locks.putIfAbsent(key, new Object());
         synchronized (locks.get(key)) {
             clients = referenceClientMap.get(key);
-            // dubbo check
+            // double check
             if (checkClientCanUse(clients)) {
                 batchClientRefIncr(clients);
                 return clients;
@@ -488,8 +489,10 @@ public class DubboProtocol extends AbstractProtocol {
             /*
              * I understand that the purpose of the remove operation here is to avoid the expired url key
              * always occupying this memory space.
+             * But "locks.remove(key);" can lead to "synchronized (locks.get(key)) {" NPE, considering that the key of locks is "IP + port",
+             * it will not lead to the expansion of "locks" in theory, so I will annotate it here.
              */
-            locks.remove(key);
+//            locks.remove(key);
 
             return clients;
         }
