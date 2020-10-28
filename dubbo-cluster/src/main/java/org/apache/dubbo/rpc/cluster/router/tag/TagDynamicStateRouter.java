@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag;
 
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.BitList;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -39,7 +41,9 @@ import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
+import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 
 /**
  * TagRouter, "application.tag-router"
@@ -87,6 +91,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url,
         Invocation invocation) throws RpcException {
 
+
         final TagRouterRule tagRouterRuleCopy = (TagRouterRule)cache.getAddrMetadata();
 
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
@@ -99,13 +104,18 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         } else {
             BitList<Invoker> result = addrPool.get(tag);
 
-            if (CollectionUtils.isNotEmpty(result) || tagRouterRuleCopy.isForce()) {
+            if (CollectionUtils.isNotEmpty(result) || (tagRouterRuleCopy != null && tagRouterRuleCopy.isForce())
+                || isForceUseTag(invocation)) {
                 return invokers.intersect((BitList)result, invokers.getUnmodifiableList());
             } else {
                 invocation.setAttachment(TAG_KEY, NO_TAG);
                 return invokers;
             }
         }
+    }
+
+    private boolean isForceUseTag(Invocation invocation) {
+        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     @Override
@@ -115,7 +125,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public boolean isEnable() {
-        return false;
+        return true;
     }
 
     @Override
@@ -126,7 +136,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public String getName() {
-        return null;
+        return "TagDynamic";
     }
 
     @Override
@@ -137,21 +147,18 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     @Override
     public <T> RouterCache pool(List<Invoker<T>> invokers) {
 
+        RouterCache routerCache = new RouterCache();
         ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = new ConcurrentHashMap<>();
 
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
 
 
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
-            return null;
+            return routerCache;
         }
 
         List<String> tagNames = tagRouterRuleCopy.getTagNames();
         Map<String, List<String>> tagnameToAddresses = tagRouterRuleCopy.getTagnameToAddresses();
-
-        RouterCache routerCache = new RouterCache();
-
-
 
         for (String tag : tagNames) {
             List<String> addresses = tagnameToAddresses.get(tag);
@@ -160,10 +167,10 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
             if (CollectionUtils.isEmpty(addresses)) {
                 list.addAll(invokers);
             } else {
-                for (Invoker<T> invoker : invokers) {
-                    String address = invoker.getUrl().getAddress();
-                    if (addresses.contains(address)) {
-                        list.add(invoker);
+                for (int index = 0; index < invokers.size(); index++) {
+                    Invoker<T> invoker = invokers.get(index);
+                    if (addressMatches(invoker.getUrl(), addresses)) {
+                        list.addIndex(index);
                     }
                 }
             }
@@ -174,9 +181,10 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         List<String> addresses = tagRouterRuleCopy.getAddresses();
         BitList<Invoker<T>> noTagList = new BitList<>(invokers, true);
 
-        for (Invoker<T> invoker : invokers) {
-            if (!addresses.contains(invoker.getUrl().getAddress())) {
-                noTagList.add(invoker);
+        for (int index = 0; index < invokers.size(); index++) {
+            Invoker<T> invoker = invokers.get(index);
+            if (addressNotMatches(invoker.getUrl(), addresses)) {
+                noTagList.addIndex(index);
             }
         }
         addrPool.put(NO_TAG, noTagList);
@@ -184,6 +192,32 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         routerCache.setAddrMetadata(tagRouterRuleCopy);
 
         return routerCache;
+    }
+
+    private boolean addressMatches(URL url, List<String> addresses) {
+        return addresses != null && checkAddressMatch(addresses, url.getHost(), url.getPort());
+    }
+
+    private boolean addressNotMatches(URL url, List<String> addresses) {
+        return addresses == null || !checkAddressMatch(addresses, url.getHost(), url.getPort());
+    }
+
+    private boolean checkAddressMatch(List<String> addresses, String host, int port) {
+        for (String address : addresses) {
+            try {
+                if (NetUtils.matchIpExpression(address, host, port)) {
+                    return true;
+                }
+                if ((ANYHOST_VALUE + ":" + port).equals(address)) {
+                    return true;
+                }
+            } catch (UnknownHostException e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            } catch (Exception e) {
+                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
+            }
+        }
+        return false;
     }
 
     public void setApplication(String app) {
