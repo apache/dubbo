@@ -16,30 +16,33 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertNotNull;
-import static junit.framework.TestCase.assertNull;
-import static junit.framework.TestCase.assertTrue;
-import static junit.framework.TestCase.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ReflectUtilsTest {
     @Test
@@ -70,6 +73,7 @@ public class ReflectUtilsTest {
         assertThat(ReflectUtils.getBoxedClass(char.class), sameInstance(Character.class));
         assertThat(ReflectUtils.getBoxedClass(byte.class), sameInstance(Byte.class));
         assertThat(ReflectUtils.getBoxedClass(short.class), sameInstance(Short.class));
+        assertThat(ReflectUtils.getBoxedClass(String.class), sameInstance(String.class));
     }
 
     @Test
@@ -189,9 +193,12 @@ public class ReflectUtilsTest {
         assertNotNull(ReflectUtils.findMethodByMethodName(Foo.class, "hello"));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testFindMethodByMethodName2() throws Exception {
-        ReflectUtils.findMethodByMethodName(Foo2.class, "hello");
+    @Test
+    public void testFindMethodByMethodName2() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ReflectUtils.findMethodByMethodName(Foo2.class, "hello");
+        });
+
     }
 
     @Test
@@ -372,13 +379,13 @@ public class ReflectUtilsTest {
         assertTrue(ReflectUtils.getEmptyObject(Map.class) instanceof Map);
         assertTrue(ReflectUtils.getEmptyObject(Object[].class) instanceof Object[]);
         assertEquals(ReflectUtils.getEmptyObject(String.class), "");
-        assertEquals(ReflectUtils.getEmptyObject(short.class), Short.valueOf((short) 0));
-        assertEquals(ReflectUtils.getEmptyObject(byte.class), Byte.valueOf((byte) 0));
-        assertEquals(ReflectUtils.getEmptyObject(int.class), Integer.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(long.class), Long.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(float.class), Float.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(double.class), Double.valueOf(0));
-        assertEquals(ReflectUtils.getEmptyObject(char.class), Character.valueOf('\0'));
+        assertEquals(ReflectUtils.getEmptyObject(short.class), (short) 0);
+        assertEquals(ReflectUtils.getEmptyObject(byte.class), (byte) 0);
+        assertEquals(ReflectUtils.getEmptyObject(int.class), 0);
+        assertEquals(ReflectUtils.getEmptyObject(long.class), 0L);
+        assertEquals(ReflectUtils.getEmptyObject(float.class), (float) 0);
+        assertEquals(ReflectUtils.getEmptyObject(double.class), (double) 0);
+        assertEquals(ReflectUtils.getEmptyObject(char.class), '\0');
         assertEquals(ReflectUtils.getEmptyObject(boolean.class), Boolean.FALSE);
         EmptyClass object = (EmptyClass) ReflectUtils.getEmptyObject(EmptyClass.class);
         assertNotNull(object);
@@ -390,9 +397,37 @@ public class ReflectUtilsTest {
         assertThat(ReflectUtils.forName(ReflectUtils.class.getName()), sameInstance(ReflectUtils.class));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testForName2() throws Exception {
-        ReflectUtils.forName("a.c.d.e.F");
+    @Test
+    public void testForName2() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            ReflectUtils.forName("a.c.d.e.F");
+        });
+    }
+
+    @Test
+    public void testGetReturnTypes () throws Exception{
+        Class clazz = TypeClass.class;
+
+        Type[] types = ReflectUtils.getReturnTypes(clazz.getMethod("getFuture"));
+        Assertions.assertEquals("java.lang.String", types[0].getTypeName());
+        Assertions.assertEquals("java.lang.String", types[1].getTypeName());
+
+        Type[] types1 = ReflectUtils.getReturnTypes(clazz.getMethod("getString"));
+        Assertions.assertEquals("java.lang.String", types1[0].getTypeName());
+        Assertions.assertEquals("java.lang.String", types1[1].getTypeName());
+
+        Type[] types2 = ReflectUtils.getReturnTypes(clazz.getMethod("getListFuture"));
+        Assertions.assertEquals("java.util.List", types2[0].getTypeName());
+        Assertions.assertEquals("java.util.List<java.lang.String>", types2[1].getTypeName());
+    }
+
+    public interface TypeClass {
+
+        CompletableFuture<String> getFuture();
+
+        String getString();
+
+        CompletableFuture<List<String>> getListFuture();
     }
 
     public static class EmptyClass {

@@ -17,13 +17,14 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Date: 4/26/11
@@ -33,16 +34,17 @@ public class NettyStringTest {
     static ExchangeServer server;
     static ExchangeChannel client;
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         //int port = (int) (1000 * Math.random() + 10000);
-        int port = 10001;
+        //int port = 10001;
+        int port = NetUtils.getAvailablePort();
         System.out.println(port);
         server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3"), new TelnetServerHandler());
         client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3"), new TelnetClientHandler());
     }
 
-    @AfterClass
+    @AfterAll
     public static void tearDown() throws Exception {
         try {
             if (server != null)
@@ -59,6 +61,6 @@ public class NettyStringTest {
         /*client.request("world\r\n");
         Future future = client.request("world", 10000);
         String result = (String)future.get();
-        Assert.assertEquals("Did you say 'world'?\r\n",result);*/
+        Assertions.assertEquals("Did you say 'world'?\r\n",result);*/
     }
 }

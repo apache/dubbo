@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.java;
 
-
 import org.apache.dubbo.common.serialize.nativejava.NativeJavaObjectOutput;
 
 import java.io.IOException;
@@ -24,7 +23,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 /**
- * Java Object output.
+ * Java object output implementation
  */
 public class JavaObjectOutput extends NativeJavaObjectOutput {
     public JavaObjectOutput(OutputStream os) throws IOException {

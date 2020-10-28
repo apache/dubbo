@@ -22,11 +22,21 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invocation;
 
 /**
- * CacheFactory
+ * Interface needs to be implemented by all the cache store provider.Along with implementing <b>CacheFactory</b> interface
+ * entry needs to be added in org.apache.dubbo.cache.CacheFactory file in a classpath META-INF sub directories.
+ *
+ * @see Cache
  */
 @SPI("lru")
 public interface CacheFactory {
 
+    /**
+     * CacheFactory implementation class needs to implement this return underlying cache instance for method against
+     * url and invocation.
+     * @param url
+     * @param invocation
+     * @return Instance of Cache containing cached value against method url and invocation.
+     */
     @Adaptive("cache")
     Cache getCache(URL url, Invocation invocation);
 

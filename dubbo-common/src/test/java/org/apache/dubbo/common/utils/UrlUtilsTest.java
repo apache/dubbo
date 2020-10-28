@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,12 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UrlUtilsTest {
 
@@ -54,6 +56,12 @@ public class UrlUtilsTest {
         assertEquals("dubbo.test.api", url.getPath());
         assertEquals(9090, url.getPort());
         assertEquals("remote", url.getProtocol());
+    }
+
+    @Test
+    public void testParseURLWithSpecial() {
+        String address = "127.0.0.1:2181?backup=127.0.0.1:2182,127.0.0.1:2183";
+        assertEquals("dubbo://" + address, UrlUtils.parseURL(address, null).toString());
     }
 
     @Test
@@ -92,9 +100,9 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrl2() {
-        String address = "127.0.0.1";
-        String backupAddress1 = "127.0.0.2";
-        String backupAddress2 = "127.0.0.3";
+        String address = "192.168.0.1";
+        String backupAddress1 = "192.168.0.2";
+        String backupAddress2 = "192.168.0.3";
 
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
@@ -102,25 +110,25 @@ public class UrlUtilsTest {
         parameters.put("port", "10000");
         parameters.put("protocol", "dubbo");
         URL url = UrlUtils.parseURL(address + "," + backupAddress1 + "," + backupAddress2, parameters);
-        assertEquals(localAddress + ":10000", url.getAddress());
+        assertEquals("192.168.0.1:10000", url.getAddress());
         assertEquals("root", url.getUsername());
         assertEquals("alibaba", url.getPassword());
         assertEquals(10000, url.getPort());
         assertEquals("dubbo", url.getProtocol());
-        assertEquals("127.0.0.2" + "," + "127.0.0.3", url.getParameter("backup"));
+        assertEquals("192.168.0.2" + "," + "192.168.0.3", url.getParameter("backup"));
     }
 
     @Test
     public void testParseUrls() {
-        String addresses = "127.0.0.1|127.0.0.2|127.0.0.3";
+        String addresses = "192.168.0.1|192.168.0.2|192.168.0.3";
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("username", "root");
         parameters.put("password", "alibaba");
         parameters.put("port", "10000");
         parameters.put("protocol", "dubbo");
         List<URL> urls = UrlUtils.parseURLs(addresses, parameters);
-        assertEquals(localAddress + ":10000", urls.get(0).getAddress());
-        assertEquals("127.0.0.2" + ":10000", urls.get(1).getAddress());
+        assertEquals("192.168.0.1" + ":10000", urls.get(0).getAddress());
+        assertEquals("192.168.0.2" + ":10000", urls.get(1).getAddress());
     }
 
     @Test
@@ -324,17 +332,17 @@ public class UrlUtilsTest {
 
     @Test
     public void testIsServiceKeyMatch() throws Exception {
-        URL url = URL.valueOf("test://127.0.0.0");
-        URL pattern = url.addParameter(Constants.GROUP_KEY, "test")
-                .addParameter(Constants.INTERFACE_KEY, "test")
-                .addParameter(Constants.VERSION_KEY, "test");
+        URL url = URL.valueOf("test://127.0.0.1");
+        URL pattern = url.addParameter(GROUP_KEY, "test")
+                .addParameter(INTERFACE_KEY, "test")
+                .addParameter(VERSION_KEY, "test");
         URL value = pattern;
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.GROUP_KEY, "*");
+        pattern = pattern.addParameter(GROUP_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
 
-        pattern = pattern.addParameter(Constants.VERSION_KEY, "*");
+        pattern = pattern.addParameter(VERSION_KEY, "*");
         assertTrue(UrlUtils.isServiceKeyMatch(pattern, value));
     }
 
@@ -354,5 +362,18 @@ public class UrlUtilsTest {
         assertTrue(UrlUtils.isMatchGlobPattern("*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("v*e", "value"));
         assertTrue(UrlUtils.isMatchGlobPattern("$key", "value", URL.valueOf("dubbo://localhost:8080/Foo?key=v*e")));
+    }
+
+    @Test
+    public void testIsMatchUrlWithDefaultPrefix() {
+        URL url = URL.valueOf("dubbo://127.0.0.1:20880/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertEquals("1.0.0", url.getParameter("version"));
+        assertEquals("1.0.0", url.getParameter("default.version"));
+
+        URL consumerUrl = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?version=1.0.0&group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
+
+        URL consumerUrl1 = URL.valueOf("consumer://127.0.0.1/com.xxx.XxxService?default.version=1.0.0&default.group=test");
+        assertTrue(UrlUtils.isMatch(consumerUrl, url));
     }
 }

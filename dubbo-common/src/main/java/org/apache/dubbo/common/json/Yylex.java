@@ -45,7 +45,7 @@ public class Yylex {
      * at the beginning of a line
      * l is of the form l = 2*k, k a non negative integer
      */
-    private static final int ZZ_LEXSTATE[] = {
+    private static final int[] ZZ_LEXSTATE = {
             0, 0, 1, 1, 2, 2
     };
 
@@ -92,7 +92,7 @@ public class Yylex {
     /**
      * The transition table of the DFA
      */
-    private static final int ZZ_TRANS[] = {
+    private static final int[] ZZ_TRANS = {
             3, 4, 5, 5, 6, 3, 5, 3, 7, 8,
             3, 9, 3, 5, 10, 11, 5, 12, 5, 5,
             13, 5, 5, 5, 5, 5, 14, 5, 5, 5,
@@ -247,7 +247,7 @@ public class Yylex {
     private static final int ZZ_NO_MATCH = 1;
     private static final int ZZ_PUSHBACK_2BIG = 2;
     /* error messages for the codes above */
-    private static final String ZZ_ERROR_MSG[] = {
+    private static final String[] ZZ_ERROR_MSG = {
             "Unkown internal scanner error",
             "Error: could not match input",
             "Error: pushback value was too large"
@@ -276,7 +276,7 @@ public class Yylex {
      * this buffer contains the current text to be matched and is
      * the source of the yytext() string
      */
-    private char zzBuffer[] = new char[ZZ_BUFFERSIZE];
+    private char[] zzBuffer = new char[ZZ_BUFFERSIZE];
     /**
      * the textposition at the last accepting state
      */
@@ -340,7 +340,9 @@ public class Yylex {
         while (i < l) {
             int count = packed.charAt(i++);
             int value = packed.charAt(i++);
-            do result[j++] = value; while (--count > 0);
+            do {
+                result[j++] = value;
+            } while (--count > 0);
         }
         return j;
     }
@@ -393,7 +395,9 @@ public class Yylex {
         while (i < l) {
             int count = packed.charAt(i++);
             int value = packed.charAt(i++);
-            do result[j++] = value; while (--count > 0);
+            do {
+                result[j++] = value;
+            } while (--count > 0);
         }
         return j;
     }
@@ -411,7 +415,9 @@ public class Yylex {
         while (i < 122) {
             int count = packed.charAt(i++);
             char value = packed.charAt(i++);
-            do map[j++] = value; while (--count > 0);
+            do {
+                map[j++] = value;
+            } while (--count > 0);
         }
         return map;
     }
@@ -441,7 +447,7 @@ public class Yylex {
     /* is the buffer big enough? */
         if (zzCurrentPos >= zzBuffer.length) {
       /* if not: blow it up */
-            char newBuffer[] = new char[zzCurrentPos * 2];
+            char[] newBuffer = new char[zzCurrentPos * 2];
             System.arraycopy(zzBuffer, 0, newBuffer, 0, zzBuffer.length);
             zzBuffer = newBuffer;
         }
@@ -477,8 +483,9 @@ public class Yylex {
         zzAtEOF = true;            /* indicate end of file */
         zzEndRead = zzStartRead;  /* invalidate buffer    */
 
-        if (zzReader != null)
+        if (zzReader != null) {
             zzReader.close();
+        }
     }
 
 
@@ -588,8 +595,9 @@ public class Yylex {
      *               This number must not be greater than yylength()!
      */
     public void yypushback(int number) {
-        if (number > yylength())
+        if (number > yylength()) {
             zzScanError(ZZ_PUSHBACK_2BIG);
+        }
 
         zzMarkedPos -= number;
     }
@@ -631,9 +639,9 @@ public class Yylex {
             {
                 while (true) {
 
-                    if (zzCurrentPosL < zzEndReadL)
+                    if (zzCurrentPosL < zzEndReadL) {
                         zzInput = zzBufferL[zzCurrentPosL++];
-                    else if (zzAtEOF) {
+                    } else if (zzAtEOF) {
                         zzInput = YYEOF;
                         break zzForAction;
                     } else {
@@ -654,14 +662,18 @@ public class Yylex {
                         }
                     }
                     int zzNext = zzTransL[zzRowMapL[zzState] + zzCMapL[zzInput]];
-                    if (zzNext == -1) break zzForAction;
+                    if (zzNext == -1) {
+                        break zzForAction;
+                    }
                     zzState = zzNext;
 
                     int zzAttributes = zzAttrL[zzState];
                     if ((zzAttributes & 1) == 1) {
                         zzAction = zzState;
                         zzMarkedPosL = zzCurrentPosL;
-                        if ((zzAttributes & 8) == 8) break zzForAction;
+                        if ((zzAttributes & 8) == 8) {
+                            break zzForAction;
+                        }
                     }
 
                 }
@@ -825,6 +837,7 @@ public class Yylex {
                         return null;
                     } else {
                         zzScanError(ZZ_NO_MATCH);
+                        break;
                     }
             }
         }

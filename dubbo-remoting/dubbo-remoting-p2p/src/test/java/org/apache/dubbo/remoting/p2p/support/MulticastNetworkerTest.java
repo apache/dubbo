@@ -23,14 +23,15 @@ import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Networkers;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
 public class MulticastNetworkerTest {
@@ -38,7 +39,7 @@ public class MulticastNetworkerTest {
     @Test
     public void testJoin() throws RemotingException, InterruptedException {
         final String groupURL = "multicast://224.5.6.7:1234";
-        final String peerURL = "dubbo://0.0.0.0:" + NetUtils.getAvailablePort();
+        final String peerURL = "exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header";
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Peer peer1 = Networkers.join(groupURL, peerURL, new ChannelHandlerAdapter() {
@@ -47,7 +48,7 @@ public class MulticastNetworkerTest {
                 countDownLatch.countDown();
             }
         });
-        Peer peer2 = Networkers.join(groupURL, "dubbo://0.0.0.0:" + NetUtils.getAvailablePort(),
+        Peer peer2 = Networkers.join(groupURL, "exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header",
                 mock(ChannelHandlerAdapter.class));
 
         while (true) {

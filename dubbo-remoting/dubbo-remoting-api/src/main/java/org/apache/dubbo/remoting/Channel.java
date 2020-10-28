@@ -21,11 +21,9 @@ import java.net.InetSocketAddress;
 /**
  * Channel. (API/SPI, Prototype, ThreadSafe)
  *
- *
- *
  * @see org.apache.dubbo.remoting.Client
- * @see org.apache.dubbo.remoting.Server#getChannels()
- * @see org.apache.dubbo.remoting.Server#getChannel(InetSocketAddress)
+ * @see RemotingServer#getChannels()
+ * @see RemotingServer#getChannel(InetSocketAddress)
  */
 public interface Channel extends Endpoint {
 
@@ -73,5 +71,4 @@ public interface Channel extends Endpoint {
      * @param key key.
      */
     void removeAttribute(String key);
-
 }

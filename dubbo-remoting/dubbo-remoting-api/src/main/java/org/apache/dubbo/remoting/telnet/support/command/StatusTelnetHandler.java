@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.remoting.telnet.support.command;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.status.support.StatusUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.Help;
@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 
 /**
  * StatusTelnetHandler
@@ -43,12 +45,12 @@ public class StatusTelnetHandler implements TelnetHandler {
 
     @Override
     public String telnet(Channel channel, String message) {
-        if (message.equals("-l")) {
+        if ("-l".equals(message)) {
             List<StatusChecker> checkers = extensionLoader.getActivateExtension(channel.getUrl(), "status");
             String[] header = new String[]{"resource", "status", "message"};
             List<List<String>> table = new ArrayList<List<String>>();
             Map<String, Status> statuses = new HashMap<String, Status>();
-            if (checkers != null && !checkers.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(checkers)) {
                 for (StatusChecker checker : checkers) {
                     String name = extensionLoader.getExtensionName(checker);
                     Status stat;
@@ -79,8 +81,8 @@ public class StatusTelnetHandler implements TelnetHandler {
         }
         String status = channel.getUrl().getParameter("status");
         Map<String, Status> statuses = new HashMap<String, Status>();
-        if (status != null && status.length() > 0) {
-            String[] ss = Constants.COMMA_SPLIT_PATTERN.split(status);
+        if (CollectionUtils.isNotEmptyMap(statuses)) {
+            String[] ss = COMMA_SPLIT_PATTERN.split(status);
             for (String s : ss) {
                 StatusChecker handler = extensionLoader.getExtension(s);
                 Status stat;

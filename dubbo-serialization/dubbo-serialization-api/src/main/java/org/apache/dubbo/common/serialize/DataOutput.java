@@ -19,7 +19,7 @@ package org.apache.dubbo.common.serialize;
 import java.io.IOException;
 
 /**
- * Data output.
+ * Basic data type output interface.
  */
 public interface DataOutput {
 
@@ -98,9 +98,9 @@ public interface DataOutput {
     /**
      * Write byte array.
      *
-     * @param v   value.
-     * @param off offset.
-     * @param len length.
+     * @param v value.
+     * @param off the start offset in the data.
+     * @param len the number of bytes that are written.
      * @throws IOException
      */
     void writeBytes(byte[] v, int off, int len) throws IOException;

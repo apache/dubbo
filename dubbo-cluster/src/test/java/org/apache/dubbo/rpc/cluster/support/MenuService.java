@@ -20,8 +20,8 @@ import java.util.List;
 
 public interface MenuService {
 
-    public Menu getMenu();
+    Menu getMenu();
 
-    public void addMenu(String menu, List<String> items);
+    void addMenu(String menu, List<String> items);
 
 }

@@ -82,6 +82,7 @@ public class ChannelEventRunnable implements Runnable {
                     logger.warn("ChannelEventRunnable handle " + state + " operation error, channel is " + channel
                             + ", message is " + message, e);
                 }
+                break;
             case CAUGHT:
                 try {
                     handler.caught(channel, exception);

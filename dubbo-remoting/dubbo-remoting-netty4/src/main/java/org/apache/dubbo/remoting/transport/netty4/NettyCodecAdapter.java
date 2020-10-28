@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * NettyCodecAdapter.
  */
-final class NettyCodecAdapter {
+final public class NettyCodecAdapter {
 
     private final ChannelHandler encoder = new InternalEncoder();
 
@@ -66,11 +66,7 @@ final class NettyCodecAdapter {
             org.apache.dubbo.remoting.buffer.ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
             Channel ch = ctx.channel();
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
-            try {
-                codec.encode(channel, buffer, msg);
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ch);
-            }
+            codec.encode(channel, buffer, msg);
         }
     }
 
@@ -83,35 +79,23 @@ final class NettyCodecAdapter {
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 
-            Object msg;
-
-            int saveReaderIndex;
-
-            try {
-                // decode object.
-                do {
-                    saveReaderIndex = message.readerIndex();
-                    try {
-                        msg = codec.decode(channel, message);
-                    } catch (IOException e) {
-                        throw e;
+            // decode object.
+            do {
+                int saveReaderIndex = message.readerIndex();
+                Object msg = codec.decode(channel, message);
+                if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
+                    message.readerIndex(saveReaderIndex);
+                    break;
+                } else {
+                    //is it possible to go here ?
+                    if (saveReaderIndex == message.readerIndex()) {
+                        throw new IOException("Decode without read data.");
                     }
-                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
-                        message.readerIndex(saveReaderIndex);
-                        break;
-                    } else {
-                        //is it possible to go here ?
-                        if (saveReaderIndex == message.readerIndex()) {
-                            throw new IOException("Decode without read data.");
-                        }
-                        if (msg != null) {
-                            out.add(msg);
-                        }
+                    if (msg != null) {
+                        out.add(msg);
                     }
-                } while (message.readable());
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ctx.channel());
-            }
+                }
+            } while (message.readable());
         }
     }
 }

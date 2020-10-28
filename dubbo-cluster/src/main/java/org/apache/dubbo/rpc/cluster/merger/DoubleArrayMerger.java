@@ -17,23 +17,21 @@
 
 package org.apache.dubbo.rpc.cluster.merger;
 
+import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.rpc.cluster.Merger;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 public class DoubleArrayMerger implements Merger<double[]> {
 
     @Override
     public double[] merge(double[]... items) {
-        int total = 0;
-        for (double[] array : items) {
-            total += array.length;
+        if (ArrayUtils.isEmpty(items)) {
+            return new double[0];
         }
-        double[] result = new double[total];
-        int index = 0;
-        for (double[] array : items) {
-            for (double item : array) {
-                result[index++] = item;
-            }
-        }
-        return result;
+        return Arrays.stream(items).filter(Objects::nonNull)
+                .flatMapToDouble(Arrays::stream)
+                .toArray();
     }
 }

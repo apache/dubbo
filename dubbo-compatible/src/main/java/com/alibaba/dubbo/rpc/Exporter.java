@@ -20,6 +20,7 @@ package com.alibaba.dubbo.rpc;
 @Deprecated
 public interface Exporter<T> extends org.apache.dubbo.rpc.Exporter<T> {
 
+    @Override
     Invoker<T> getInvoker();
 
     class CompatibleExporter<T> implements Exporter<T> {

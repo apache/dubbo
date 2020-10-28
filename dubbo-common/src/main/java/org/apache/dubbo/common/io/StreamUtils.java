@@ -40,21 +40,26 @@ public class StreamUtils {
             }
 
             @Override
-            public int read(byte b[], int off, int len) throws IOException {
-                if (b == null)
+            public int read(byte[] b, int off, int len) throws IOException {
+                if (b == null) {
                     throw new NullPointerException();
+                }
 
-                if (off < 0 || len < 0 || len > b.length - off)
+                if (off < 0 || len < 0 || len > b.length - off) {
                     throw new IndexOutOfBoundsException();
+                }
 
-                if (mPosition >= mLimit)
+                if (mPosition >= mLimit) {
                     return -1;
+                }
 
-                if (mPosition + len > mLimit)
+                if (mPosition + len > mLimit) {
                     len = mLimit - mPosition;
+                }
 
-                if (len <= 0)
+                if (len <= 0) {
                     return 0;
+                }
 
                 is.read(b, off, len);
                 mPosition += len;
@@ -63,11 +68,13 @@ public class StreamUtils {
 
             @Override
             public long skip(long len) throws IOException {
-                if (mPosition + len > mLimit)
+                if (mPosition + len > mLimit) {
                     len = mLimit - mPosition;
+                }
 
-                if (len <= 0)
+                if (len <= 0) {
                     return 0;
+                }
 
                 is.skip(len);
                 mPosition += len;
@@ -98,6 +105,7 @@ public class StreamUtils {
 
             @Override
             public void close() throws IOException {
+                is.close();
             }
         };
     }
@@ -127,7 +135,9 @@ public class StreamUtils {
                     }
 
                     if (!mInReset) {
-                        if (mDry) return -1;
+                        if (mDry) {
+                            return -1;
+                        }
 
                         if (null == mMarkBuffer) {
                             mMarkBuffer = new byte[markBufferSize];
@@ -179,7 +189,7 @@ public class StreamUtils {
             @Override
             public synchronized void reset() throws IOException {
                 if (!mInMarked) {
-                    throw new IOException("should mark befor reset!");
+                    throw new IOException("should mark before reset!");
                 }
 
                 mInReset = true;
@@ -195,9 +205,16 @@ public class StreamUtils {
             public int available() throws IOException {
                 int available = is.available();
 
-                if (mInMarked && mInReset) available += mCount - mPosition;
+                if (mInMarked && mInReset) {
+                    available += mCount - mPosition;
+                }
 
                 return available;
+            }
+
+            @Override
+            public void close() throws IOException {
+                is.close();
             }
         };
     }

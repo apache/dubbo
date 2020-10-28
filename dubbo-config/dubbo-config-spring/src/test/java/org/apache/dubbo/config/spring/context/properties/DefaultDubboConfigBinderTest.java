@@ -20,18 +20,31 @@ package org.apache.dubbo.config.spring.context.properties;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
-@TestPropertySource(locations = "classpath:/dubbo.properties")
+@ExtendWith(SpringExtension.class)
+@TestPropertySource(locations = "classpath:/dubbo-binder.properties")
 @ContextConfiguration(classes = DefaultDubboConfigBinder.class)
 public class DefaultDubboConfigBinderTest {
+
+    @BeforeEach
+    public void setUp() {
+        ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        ApplicationModel.reset();
+    }
 
     @Autowired
     private DubboConfigBinder dubboConfigBinder;
@@ -41,16 +54,16 @@ public class DefaultDubboConfigBinderTest {
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         dubboConfigBinder.bind("dubbo.application", applicationConfig);
-        Assert.assertEquals("hello", applicationConfig.getName());
-        Assert.assertEquals("world", applicationConfig.getOwner());
+        Assertions.assertEquals("hello", applicationConfig.getName());
+        Assertions.assertEquals("world", applicationConfig.getOwner());
 
         RegistryConfig registryConfig = new RegistryConfig();
         dubboConfigBinder.bind("dubbo.registry", registryConfig);
-        Assert.assertEquals("10.20.153.17", registryConfig.getAddress());
+        Assertions.assertEquals("10.20.153.17", registryConfig.getAddress());
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
         dubboConfigBinder.bind("dubbo.protocol", protocolConfig);
-        Assert.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
+        Assertions.assertEquals(Integer.valueOf(20881), protocolConfig.getPort());
 
     }
 }

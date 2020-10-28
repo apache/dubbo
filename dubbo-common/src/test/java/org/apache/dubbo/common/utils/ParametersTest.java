@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.utils;
 
-import junit.framework.TestCase;
-
 import java.util.HashMap;
 import java.util.Map;
 
-public class ParametersTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ParametersTest {
     final String ServiceName = "org.apache.dubbo.rpc.service.GenericService";
     final String ServiceVersion = "1.0.15";
     final String LoadBalance = "lcr";

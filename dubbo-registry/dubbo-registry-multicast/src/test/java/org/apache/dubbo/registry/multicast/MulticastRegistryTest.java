@@ -19,32 +19,35 @@ package org.apache.dubbo.registry.multicast;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MulticastRegistryTest {
 
     private String service = "org.apache.dubbo.test.injvmServie";
-    private URL registryUrl = URL.valueOf("multicast://239.255.255.255/");
+    private URL registryUrl = URL.valueOf("multicast://239.239.239.239/");
     private URL serviceUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/" + service
             + "?methods=test1,test2");
     private URL adminUrl = URL.valueOf("dubbo://" + NetUtils.getLocalHost() + "/*");
     private URL consumerUrl = URL.valueOf("subscribe://" + NetUtils.getLocalHost() + "/" + service + "?arg1=1&arg2=2");
     private MulticastRegistry registry = new MulticastRegistry(registryUrl);
 
-    @Before
+    @BeforeEach
     public void setUp() {
         registry.register(serviceUrl);
     }
@@ -52,19 +55,23 @@ public class MulticastRegistryTest {
     /**
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testUrlError() {
-        URL errorUrl = URL.valueOf("multicast://mullticast/");
-        new MulticastRegistry(errorUrl);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            URL errorUrl = URL.valueOf("multicast://mullticast/");
+            new MulticastRegistry(errorUrl);
+        });
     }
 
     /**
      * Test method for {@link org.apache.dubbo.registry.multicast.MulticastRegistry#MulticastRegistry(URL)}.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testAnyHost() {
-        URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
-        new MulticastRegistry(errorUrl);
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
+            new MulticastRegistry(errorUrl);
+        });
     }
 
     /**
@@ -73,7 +80,7 @@ public class MulticastRegistryTest {
     @Test
     public void testGetCustomPort() {
         int port = NetUtils.getAvailablePort();
-        URL customPortUrl = URL.valueOf("multicast://239.255.255.255:" + port);
+        URL customPortUrl = URL.valueOf("multicast://239.239.239.239:" + port);
         MulticastRegistry multicastRegistry = new MulticastRegistry(customPortUrl);
         assertThat(multicastRegistry.getUrl().getPort(), is(port));
     }
@@ -86,7 +93,9 @@ public class MulticastRegistryTest {
         Set<URL> registered;
         // clear first
         registered = registry.getRegistered();
-        registered.clear();
+        for (URL url : registered) {
+            registry.unregister(url);
+        }
 
         for (int i = 0; i < 2; i++) {
             registry.register(serviceUrl);
@@ -124,15 +133,20 @@ public class MulticastRegistryTest {
     @Test
     public void testSubscribe() {
         // verify listener
-        registry.subscribe(consumerUrl, new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                assertEquals(serviceUrl.toFullString(), urls.get(0).toFullString());
+        final URL[] notifyUrl = new URL[1];
+        for (int i = 0; i < 10; i++) {
+            registry.register(serviceUrl);
+            registry.subscribe(consumerUrl, urls -> {
+                notifyUrl[0] = urls.get(0);
 
                 Map<URL, Set<NotifyListener>> subscribed = registry.getSubscribed();
                 assertEquals(consumerUrl, subscribed.keySet().iterator().next());
+            });
+            if (!EMPTY_PROTOCOL.equalsIgnoreCase(notifyUrl[0].getProtocol())) {
+                break;
             }
-        });
+        }
+        assertEquals(serviceUrl.toFullString(), notifyUrl[0].toFullString());
     }
 
     /**
@@ -177,12 +191,12 @@ public class MulticastRegistryTest {
      */
     @Test
     public void testDestroy() {
-        MulticastSocket socket = registry.getMutilcastSocket();
+        MulticastSocket socket = registry.getMulticastSocket();
         assertFalse(socket.isClosed());
 
         // then destroy, the multicast socket will be closed
         registry.destroy();
-        socket = registry.getMutilcastSocket();
+        socket = registry.getMulticastSocket();
         assertTrue(socket.isClosed());
     }
 
@@ -193,8 +207,8 @@ public class MulticastRegistryTest {
     public void testDefaultPort() {
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7"));
         try {
-            MulticastSocket multicastSocket = multicastRegistry.getMutilcastSocket();
-            Assert.assertEquals(1234, multicastSocket.getLocalPort());
+            MulticastSocket multicastSocket = multicastRegistry.getMulticastSocket();
+            Assertions.assertEquals(1234, multicastSocket.getLocalPort());
         } finally {
             multicastRegistry.destroy();
         }
@@ -208,11 +222,48 @@ public class MulticastRegistryTest {
         int port = NetUtils.getAvailablePort();
         MulticastRegistry multicastRegistry = new MulticastRegistry(URL.valueOf("multicast://224.5.6.7:" + port));
         try {
-            MulticastSocket multicastSocket = multicastRegistry.getMutilcastSocket();
+            MulticastSocket multicastSocket = multicastRegistry.getMulticastSocket();
             assertEquals(port, multicastSocket.getLocalPort());
         } finally {
             multicastRegistry.destroy();
         }
+    }
+
+    @Test
+    public void testMulticastAddress() {
+        InetAddress multicastAddress = null;
+        MulticastSocket multicastSocket = null;
+        try {
+            // ipv4 multicast address
+            multicastAddress = InetAddress.getByName("224.55.66.77");
+            multicastSocket = new MulticastSocket(2345);
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, false);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Exception e) {
+            Assertions.fail(e);
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
+        // multicast ipv6 address,
+        try {
+            multicastAddress = InetAddress.getByName("ff01::1");
+
+            multicastSocket = new MulticastSocket();
+            multicastSocket.setLoopbackMode(false);
+            NetUtils.setInterface(multicastSocket, true);
+            multicastSocket.joinGroup(multicastAddress);
+        } catch (Throwable t) {
+            t.printStackTrace();
+        } finally {
+            if (multicastSocket != null) {
+                multicastSocket.close();
+            }
+        }
+
     }
 
 }

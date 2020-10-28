@@ -33,7 +33,7 @@ import java.util.Set;
  */
 public class InternalThreadLocal<V> {
 
-    private static final int variablesToRemoveIndex = InternalThreadLocalMap.nextVariableIndex();
+    private static final int VARIABLES_TO_REMOVE_INDEX = InternalThreadLocalMap.nextVariableIndex();
 
     private final int index;
 
@@ -54,7 +54,7 @@ public class InternalThreadLocal<V> {
         }
 
         try {
-            Object v = threadLocalMap.indexedVariable(variablesToRemoveIndex);
+            Object v = threadLocalMap.indexedVariable(VARIABLES_TO_REMOVE_INDEX);
             if (v != null && v != InternalThreadLocalMap.UNSET) {
                 Set<InternalThreadLocal<?>> variablesToRemove = (Set<InternalThreadLocal<?>>) v;
                 InternalThreadLocal<?>[] variablesToRemoveArray =
@@ -86,11 +86,11 @@ public class InternalThreadLocal<V> {
 
     @SuppressWarnings("unchecked")
     private static void addToVariablesToRemove(InternalThreadLocalMap threadLocalMap, InternalThreadLocal<?> variable) {
-        Object v = threadLocalMap.indexedVariable(variablesToRemoveIndex);
+        Object v = threadLocalMap.indexedVariable(VARIABLES_TO_REMOVE_INDEX);
         Set<InternalThreadLocal<?>> variablesToRemove;
         if (v == InternalThreadLocalMap.UNSET || v == null) {
             variablesToRemove = Collections.newSetFromMap(new IdentityHashMap<InternalThreadLocal<?>, Boolean>());
-            threadLocalMap.setIndexedVariable(variablesToRemoveIndex, variablesToRemove);
+            threadLocalMap.setIndexedVariable(VARIABLES_TO_REMOVE_INDEX, variablesToRemove);
         } else {
             variablesToRemove = (Set<InternalThreadLocal<?>>) v;
         }
@@ -101,7 +101,7 @@ public class InternalThreadLocal<V> {
     @SuppressWarnings("unchecked")
     private static void removeFromVariablesToRemove(InternalThreadLocalMap threadLocalMap, InternalThreadLocal<?> variable) {
 
-        Object v = threadLocalMap.indexedVariable(variablesToRemoveIndex);
+        Object v = threadLocalMap.indexedVariable(VARIABLES_TO_REMOVE_INDEX);
 
         if (v == InternalThreadLocalMap.UNSET || v == null) {
             return;

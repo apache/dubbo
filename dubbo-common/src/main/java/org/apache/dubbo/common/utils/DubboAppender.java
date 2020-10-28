@@ -16,17 +16,24 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.FileAppender;
 import org.apache.log4j.spi.LoggingEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DubboAppender extends ConsoleAppender {
+public class DubboAppender extends FileAppender {
+
+    private static final String DEFAULT_FILE_NAME = "dubbo.log";
+
+    public DubboAppender() {
+        super();
+        setFile(DEFAULT_FILE_NAME);
+    }
 
     public static boolean available = false;
 
-    public static List<Log> logList = new ArrayList<Log>();
+    public static List<Log> logList = new ArrayList<>();
 
     public static void doStart() {
         available = true;

@@ -30,7 +30,7 @@ public final class InternalThreadLocalMap {
 
     private static ThreadLocal<InternalThreadLocalMap> slowThreadLocalMap = new ThreadLocal<InternalThreadLocalMap>();
 
-    private static final AtomicInteger nextIndex = new AtomicInteger();
+    private static final AtomicInteger NEXT_INDEX = new AtomicInteger();
 
     public static final Object UNSET = new Object();
 
@@ -64,16 +64,16 @@ public final class InternalThreadLocalMap {
     }
 
     public static int nextVariableIndex() {
-        int index = nextIndex.getAndIncrement();
+        int index = NEXT_INDEX.getAndIncrement();
         if (index < 0) {
-            nextIndex.decrementAndGet();
+            NEXT_INDEX.decrementAndGet();
             throw new IllegalStateException("Too many thread-local indexed variables");
         }
         return index;
     }
 
     public static int lastVariableIndex() {
-        return nextIndex.get() - 1;
+        return NEXT_INDEX.get() - 1;
     }
 
     private InternalThreadLocalMap() {

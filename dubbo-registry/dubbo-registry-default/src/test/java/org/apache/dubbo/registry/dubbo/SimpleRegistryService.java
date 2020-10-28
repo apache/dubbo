@@ -41,15 +41,15 @@ public class SimpleRegistryService extends AbstractRegistryService {
     private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
 
+    public SimpleRegistryService() {
+
+    }
+
     @Override
     public void register(String service, URL url) {
         super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
-        Map<String, URL> urls = remoteRegistered.get(client);
-        if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<String, URL>());
-            urls = remoteRegistered.get(client);
-        }
+        Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
     }
@@ -88,11 +88,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         }
         super.subscribe(service, url, listener);
 
-        Map<String, NotifyListener> listeners = remoteListeners.get(client);
-        if (listeners == null) {
-            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
-            listeners = remoteListeners.get(client);
-        }
+        Map<String, NotifyListener> listeners = remoteListeners.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         listeners.put(service, listener);
         urls = getRegistered().get(service);
         if (urls != null && urls.size() > 0) {

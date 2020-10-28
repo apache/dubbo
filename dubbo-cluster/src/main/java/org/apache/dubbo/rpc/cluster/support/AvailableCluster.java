@@ -16,15 +16,10 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.cluster.LoadBalance;
-
-import java.util.List;
 
 /**
  * AvailableCluster
@@ -36,19 +31,7 @@ public class AvailableCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
-
-        return new AbstractClusterInvoker<T>(directory) {
-            @Override
-            public Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-                for (Invoker<T> invoker : invokers) {
-                    if (invoker.isAvailable()) {
-                        return invoker.invoke(invocation);
-                    }
-                }
-                throw new RpcException("No provider available in " + invokers);
-            }
-        };
-
+        return new AvailableClusterInvoker<>(directory);
     }
 
 }

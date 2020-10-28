@@ -16,15 +16,16 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class AtomicPositiveIntegerTest {
     private AtomicPositiveInteger i1 = new AtomicPositiveInteger();
@@ -159,24 +160,28 @@ public class AtomicPositiveIntegerTest {
         assertEquals(2, i3.get());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testCompareAndSet1() throws Exception {
-        i1.compareAndSet(i1.get(), -1);
+    @Test
+    public void testCompareAndSet1() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            i1.compareAndSet(i1.get(), -1);
+        });
     }
 
     @Test
-    public void testCompareAndSet2() throws Exception {
+    public void testCompareAndSet2() {
         assertThat(i1.compareAndSet(i1.get(), 2), is(true));
         assertThat(i1.get(), is(2));
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testWeakCompareAndSet1() throws Exception {
-        i1.weakCompareAndSet(i1.get(), -1);
+    @Test
+    public void testWeakCompareAndSet1() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            i1.weakCompareAndSet(i1.get(), -1);
+        });
     }
 
     @Test
-    public void testWeakCompareAndSet2() throws Exception {
+    public void testWeakCompareAndSet2() {
         assertThat(i1.weakCompareAndSet(i1.get(), 2), is(true));
         assertThat(i1.get(), is(2));
     }

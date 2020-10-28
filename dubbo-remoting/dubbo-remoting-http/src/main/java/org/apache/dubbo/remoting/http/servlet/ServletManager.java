@@ -28,12 +28,12 @@ public class ServletManager {
 
     public static final int EXTERNAL_SERVER_PORT = -1234;
 
-    private static final ServletManager instance = new ServletManager();
+    private static final ServletManager INSTANCE = new ServletManager();
 
     private final Map<Integer, ServletContext> contextMap = new ConcurrentHashMap<Integer, ServletContext>();
 
     public static ServletManager getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     public void addServletContext(int port, ServletContext servletContext) {

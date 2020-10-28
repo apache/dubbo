@@ -16,28 +16,28 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invoker;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.lang.reflect.Method;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 public class InvokerInvocationHandlerTest {
 
-    @Mock
     private Invoker<?> invoker;
-    @InjectMocks
     private InvokerInvocationHandler invokerInvocationHandler;
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        URL url = URL.valueOf("mock://localhost:8080/FooService?group=mock&version=1.0.0");
+        invoker = Mockito.mock(Invoker.class);
+        when(invoker.getUrl()).thenReturn(url);
+        invokerInvocationHandler = new InvokerInvocationHandler(invoker);
     }
 
     @Test
@@ -48,7 +48,7 @@ public class InvokerInvocationHandlerTest {
         Method method = invoker.getClass().getMethod(methodName);
 
         Object result = invokerInvocationHandler.invoke(null, method, new Object[]{});
-        Assert.assertEquals(methodName, result);
+        Assertions.assertEquals(methodName, result);
     }
 
 }

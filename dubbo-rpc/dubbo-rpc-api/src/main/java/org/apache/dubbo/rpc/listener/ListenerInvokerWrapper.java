@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.InvokerListener;
@@ -44,7 +45,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         }
         this.invoker = invoker;
         this.listeners = listeners;
-        if (listeners != null && !listeners.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(listeners)) {
             for (InvokerListener listener : listeners) {
                 if (listener != null) {
                     try {
@@ -87,7 +88,7 @@ public class ListenerInvokerWrapper<T> implements Invoker<T> {
         try {
             invoker.destroy();
         } finally {
-            if (listeners != null && !listeners.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(listeners)) {
                 for (InvokerListener listener : listeners) {
                     if (listener != null) {
                         try {

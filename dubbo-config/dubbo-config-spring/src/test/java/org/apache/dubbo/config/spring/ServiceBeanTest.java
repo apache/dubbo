@@ -17,8 +17,9 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.config.annotation.Service;
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -31,7 +32,7 @@ public class ServiceBeanTest {
         ServiceBean serviceBean = new ServiceBean(service);
 
         Service beanService = serviceBean.getService();
-        Assert.assertThat(beanService, not(nullValue()));
+        MatcherAssert.assertThat(beanService, not(nullValue()));
     }
 
     abstract class TestService implements Service {

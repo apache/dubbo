@@ -23,47 +23,45 @@ import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
-import java.io.IOException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
 
 public class FileNetworkerTest {
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
 
-    @Before
-    public void setUp() throws Exception {
-        folder.create();
+    @BeforeEach
+    public void setUp(@TempDir Path folder) throws Exception {
+        folder.toFile().createNewFile();
     }
 
-    @After
-    public void tearDown() throws Exception {
-        folder.delete();
+    @AfterEach
+    public void tearDown(@TempDir Path folder) {
+        folder.getFileName().toAbsolutePath().toFile().delete();
     }
 
     @Test
-    public void testJoin() throws RemotingException, InterruptedException, IOException {
-        final String groupURL = "file://" + folder.newFile();
+    public void testJoin(@TempDir Path folder) throws RemotingException, InterruptedException {
+        final String groupURL = "file:///" + folder.getFileName().toAbsolutePath();
 
         FileNetworker networker = new FileNetworker();
         Group group = networker.lookup(URL.valueOf(groupURL));
 
         final CountDownLatch countDownLatch = new CountDownLatch(1);
-        Peer peer1 = group.join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()), new ChannelHandlerAdapter() {
+        Peer peer1 = group.join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"), new ChannelHandlerAdapter() {
             @Override
             public void received(Channel channel, Object message) {
                 countDownLatch.countDown();
             }
         });
-        Peer peer2 = group.join(URL.valueOf("dubbo://0.0.0.0:" + NetUtils.getAvailablePort()),
+        Peer peer2 = group.join(URL.valueOf("exchange://0.0.0.0:" + NetUtils.getAvailablePort() + "?exchanger=header"),
                 mock(ChannelHandlerAdapter.class));
 
         while (true) {

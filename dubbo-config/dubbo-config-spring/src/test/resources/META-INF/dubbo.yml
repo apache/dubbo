@@ -1,0 +1,8 @@
+dubbo:
+  consumer:
+    default: false
+    client: netty
+    threadpool: cached
+    corethreads: 1
+    threads: 10
+    queues: 99

@@ -17,10 +17,9 @@
 
 package org.apache.dubbo.common.threadlocal;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,12 +48,7 @@ public class InternalThreadLocalTest {
         };
 
         for (int i = 0; i < THREADS; i++) {
-            Thread t = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    internalThreadLocal.get();
-                }
-            });
+            Thread t = new Thread(internalThreadLocal::get);
             t.start();
         }
 
@@ -65,26 +59,26 @@ public class InternalThreadLocalTest {
     public void testRemoveAll() throws InterruptedException {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
-        Assert.assertTrue("set failed", internalThreadLocal.get() == 1);
+        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "set failed");
 
         final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
         internalThreadLocalString.set("value");
-        Assert.assertTrue("set failed", "value".equals(internalThreadLocalString.get()));
+        Assertions.assertEquals("value", internalThreadLocalString.get(), "set failed");
 
         InternalThreadLocal.removeAll();
-        Assert.assertTrue("removeAll failed!", internalThreadLocal.get() == null);
-        Assert.assertTrue("removeAll failed!", internalThreadLocalString.get() == null);
+        Assertions.assertNull(internalThreadLocal.get(), "removeAll failed!");
+        Assertions.assertNull(internalThreadLocalString.get(), "removeAll failed!");
     }
 
     @Test
     public void testSize() throws InterruptedException {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
-        Assert.assertTrue("size method is wrong!", InternalThreadLocal.size() == 1);
+        Assertions.assertEquals(1, InternalThreadLocal.size(), "size method is wrong!");
 
         final InternalThreadLocal<String> internalThreadLocalString = new InternalThreadLocal<String>();
         internalThreadLocalString.set("value");
-        Assert.assertTrue("size method is wrong!", InternalThreadLocal.size() == 2);
+        Assertions.assertEquals(2, InternalThreadLocal.size(), "size method is wrong!");
     }
 
     @Test
@@ -92,18 +86,17 @@ public class InternalThreadLocalTest {
         final Integer testVal = 10;
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(testVal);
-        Assert.assertTrue("set is not equals get",
-                Objects.equals(testVal, internalThreadLocal.get()));
+        Assertions.assertEquals(testVal, internalThreadLocal.get(), "set is not equals get");
     }
 
     @Test
     public void testRemove() {
         final InternalThreadLocal<Integer> internalThreadLocal = new InternalThreadLocal<Integer>();
         internalThreadLocal.set(1);
-        Assert.assertTrue("get method false!", internalThreadLocal.get() == 1);
+        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
 
         internalThreadLocal.remove();
-        Assert.assertTrue("remove failed!", internalThreadLocal.get() == null);
+        Assertions.assertNull(internalThreadLocal.get(), "remove failed!");
     }
 
     @Test
@@ -117,10 +110,10 @@ public class InternalThreadLocalTest {
             }
         };
         internalThreadLocal.set(1);
-        Assert.assertTrue("get method false!", internalThreadLocal.get() == 1);
+        Assertions.assertEquals(1, (int)internalThreadLocal.get(), "get method false!");
 
         internalThreadLocal.remove();
-        Assert.assertTrue("onRemove method failed!", valueToRemove[0] == 2);
+        Assertions.assertEquals(2, (int)valueToRemove[0], "onRemove method failed!");
     }
 
     @Test
@@ -134,8 +127,7 @@ public class InternalThreadLocalTest {
             public void run() {
 
                 internalThreadLocal.set(testVal1);
-                Assert.assertTrue("set is not equals get",
-                        Objects.equals(testVal1, internalThreadLocal.get()));
+                Assertions.assertEquals(testVal1, internalThreadLocal.get(), "set is not equals get");
                 countDownLatch.countDown();
             }
         });
@@ -145,8 +137,7 @@ public class InternalThreadLocalTest {
             @Override
             public void run() {
                 internalThreadLocal.set(testVal2);
-                Assert.assertTrue("set is not equals get",
-                        Objects.equals(testVal2, internalThreadLocal.get()));
+                Assertions.assertEquals(testVal2, internalThreadLocal.get(), "set is not equals get");
                 countDownLatch.countDown();
             }
         });

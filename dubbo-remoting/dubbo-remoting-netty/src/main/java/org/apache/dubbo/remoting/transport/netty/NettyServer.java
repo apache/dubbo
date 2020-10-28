@@ -16,17 +16,18 @@
  */
 package org.apache.dubbo.remoting.transport.netty;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.transport.AbstractServer;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelHandlers;
 
@@ -44,10 +45,13 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BACKLOG_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+
 /**
  * NettyServer
  */
-public class NettyServer extends AbstractServer implements Server {
+public class NettyServer extends AbstractServer implements RemotingServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
@@ -58,7 +62,7 @@ public class NettyServer extends AbstractServer implements Server {
     private org.jboss.netty.channel.Channel channel;
 
     public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
-        super(url, ChannelHandlers.wrap(handler, ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME)));
+        super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
     }
 
     @Override
@@ -66,7 +70,7 @@ public class NettyServer extends AbstractServer implements Server {
         NettyHelper.setNettyLoggerFactory();
         ExecutorService boss = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerBoss", true));
         ExecutorService worker = Executors.newCachedThreadPool(new NamedThreadFactory("NettyServerWorker", true));
-        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(Constants.IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
+        ChannelFactory channelFactory = new NioServerSocketChannelFactory(boss, worker, getUrl().getPositiveParameter(IO_THREADS_KEY, Constants.DEFAULT_IO_THREADS));
         bootstrap = new ServerBootstrap(channelFactory);
 
         final NettyHandler nettyHandler = new NettyHandler(getUrl(), this);
@@ -75,6 +79,7 @@ public class NettyServer extends AbstractServer implements Server {
         // https://issues.jboss.org/browse/NETTY-379
         // final Timer timer = new HashedWheelTimer(new NamedThreadFactory("NettyIdleTimer", true));
         bootstrap.setOption("child.tcpNoDelay", true);
+        bootstrap.setOption("backlog", getUrl().getPositiveParameter(BACKLOG_KEY, Constants.DEFAULT_BACKLOG));
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() {
@@ -106,7 +111,7 @@ public class NettyServer extends AbstractServer implements Server {
         }
         try {
             Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
-            if (channels != null && !channels.isEmpty()) {
+            if (CollectionUtils.isNotEmpty(channels)) {
                 for (org.apache.dubbo.remoting.Channel channel : channels) {
                     try {
                         channel.close();

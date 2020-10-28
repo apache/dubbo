@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.RegistryFactory;
  */
 public class MockRegistryFactory implements RegistryFactory {
 
-    /* 
+    /*
      * @see org.apache.dubbo.registry.RegistryFactory#getRegistry(org.apache.dubbo.common.URL)
      */
     @Override

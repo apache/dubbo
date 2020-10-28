@@ -17,31 +17,18 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.config.mock.MockProtocol2;
-import org.apache.dubbo.rpc.Protocol;
-import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class ProtocolConfigTest {
-
-    @Test
-    public void testDestroy() throws Exception {
-        Protocol protocol = Mockito.mock(Protocol.class);
-        MockProtocol2.delegate = protocol;
-        ProtocolConfig protocolConfig = new ProtocolConfig();
-        protocolConfig.setName("mockprotocol2");
-        protocolConfig.destroy();
-        Mockito.verify(protocol).destroy();
-    }
 
     @Test
     public void testName() throws Exception {
@@ -86,6 +73,13 @@ public class ProtocolConfigTest {
         protocol.setPath("path");
         assertThat(protocol.getPath(), equalTo("path"));
         assertThat(protocol.getContextpath(), equalTo("path"));
+    }
+
+    @Test
+    public void testCorethreads() throws Exception {
+        ProtocolConfig protocol = new ProtocolConfig();
+        protocol.setCorethreads(10);
+        assertThat(protocol.getCorethreads(), is(10));
     }
 
     @Test

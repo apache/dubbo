@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-config</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
     </parent>
     <artifactId>dubbo-config-spring</artifactId>
     <packaging>jar</packaging>
@@ -32,11 +32,6 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-bootstrap</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
@@ -55,6 +50,19 @@
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.spring</groupId>
+            <artifactId>spring-context-support</artifactId>
+        </dependency>
+
+        <!-- Testing Dependencies -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>1.9.5</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -112,46 +120,61 @@
             <artifactId>javax.el</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Zookeeper dependencies for testing -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-zookeeper</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-zookeeper</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Nacos dependencies for testing -->
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-registry-nacos</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-configcenter-nacos</artifactId>
+            <version>${project.parent.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
-    <build>
-        <plugins>
-            <!-- upload xsd file command line
-            mvn org.codehaus.mojo:wagon-maven-plugin:1.0-beta-3:upload-single -Dwagon.fromFile=src/main/resources/META-INF/dubbo.xsd -Dwagon.url=dav:http://code.alibabatech.com/schema/dubbo/ -Dwagon.serverId=opensesame.releases.account
-            -->
-            <!--
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>wagon-maven-plugin</artifactId>
-                <version>1.0-beta-3</version>
-                <executions>
-                    <execution>
-                        <id>upload-schema</id>
-                        <phase>deploy</phase>
-                        <goals>
-                            <goal>upload-single</goal>
-                        </goals>
-                        <configuration>
-                            <fromFile>${basedir}/src/main/resources/META-INF/dubbo.xsd</fromFile>
-                            <url>dav:http://code.alibabatech.com/schema/dubbo/</url>
-                            <serverId>opensesame.releases.account</serverId>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
-        </plugins>
-    </build>
 </project>

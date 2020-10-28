@@ -17,16 +17,19 @@
 
 package org.apache.dubbo.qos.command;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class DefaultCommandExecutorTest {
-    @Test(expected = NoSuchCommandException.class)
+    @Test
     public void testExecute1() throws Exception {
-        DefaultCommandExecutor executor = new DefaultCommandExecutor();
-        executor.execute(CommandContextFactory.newInstance("not-exit"));
+        Assertions.assertThrows(NoSuchCommandException.class, () -> {
+            DefaultCommandExecutor executor = new DefaultCommandExecutor();
+            executor.execute(CommandContextFactory.newInstance("not-exit"));
+        });
     }
 
     @Test

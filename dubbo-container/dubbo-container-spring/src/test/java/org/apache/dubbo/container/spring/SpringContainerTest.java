@@ -19,8 +19,8 @@ package org.apache.dubbo.container.spring;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.container.Container;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * StandaloneContainerTest
@@ -31,7 +31,7 @@ public class SpringContainerTest {
     public void testContainer() {
         SpringContainer container = (SpringContainer) ExtensionLoader.getExtensionLoader(Container.class).getExtension("spring");
         container.start();
-        Assert.assertEquals(SpringContainer.class, container.context.getBean("container").getClass());
+        Assertions.assertEquals(SpringContainer.class, container.context.getBean("container").getClass());
         container.stop();
     }
 

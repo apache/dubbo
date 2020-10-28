@@ -18,17 +18,17 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.log4j.Level;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class LogUtilTest {
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
         DubboAppender.logList.clear();
     }

@@ -53,11 +53,13 @@ public class JSONWriter {
     }
 
     private static String escape(String str) {
-        if (str == null)
+        if (str == null) {
             return str;
+        }
         int len = str.length();
-        if (len == 0)
+        if (len == 0) {
             return str;
+        }
 
         char c;
         StringBuilder sb = null;
@@ -82,8 +84,9 @@ public class JSONWriter {
                         sb.append('\\').append(c);
                         break;
                     default:
-                        if (sb != null)
+                        if (sb != null) {
                             sb.append(c);
+                        }
                 }
             }
         }
@@ -263,14 +266,16 @@ public class JSONWriter {
     private void beforeValue() throws IOException {
         switch (mState.type) {
             case ARRAY:
-                if (mState.itemCount++ > 0)
+                if (mState.itemCount++ > 0) {
                     mWriter.write(JSON.COMMA);
+                }
                 return;
             case OBJECT:
                 throw new IOException("Must call objectItem first.");
             case OBJECT_VALUE:
                 mState.type = OBJECT;
                 return;
+            default:
         }
     }
 
@@ -280,8 +285,9 @@ public class JSONWriter {
                 mWriter.write(JSON.NULL);
             case OBJECT:
                 mState.type = OBJECT_VALUE;
-                if (mState.itemCount++ > 0)
+                if (mState.itemCount++ > 0) {
                     mWriter.write(JSON.COMMA);
+                }
                 return;
             default:
                 throw new IOException("Must call objectBegin first.");

@@ -26,13 +26,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.NATIVE_JAVA_SERIALIZATION_ID;
+
+/**
+ * Native java serialization implementation
+ *
+ * <pre>
+ *     e.g. &lt;dubbo:protocol serialization="nativejava" /&gt;
+ * </pre>
+ */
 public class NativeJavaSerialization implements Serialization {
 
-    public static final String NAME = "nativejava";
 
     @Override
     public byte getContentTypeId() {
-        return 7;
+        return NATIVE_JAVA_SERIALIZATION_ID;
     }
 
     @Override

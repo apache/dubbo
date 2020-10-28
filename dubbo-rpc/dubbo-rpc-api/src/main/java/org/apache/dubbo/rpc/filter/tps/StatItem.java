@@ -16,8 +16,12 @@
  */
 package org.apache.dubbo.rpc.filter.tps;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.LongAdder;
 
+/**
+ * Judge whether a particular invocation of service provider method should be allowed within a configured time interval.
+ * As a state it contain name of key ( e.g. method), last invocation time, interval and rate count.
+ */
 class StatItem {
 
     private String name;
@@ -26,7 +30,7 @@ class StatItem {
 
     private long interval;
 
-    private AtomicInteger token;
+    private LongAdder token;
 
     private int rate;
 
@@ -35,32 +39,39 @@ class StatItem {
         this.rate = rate;
         this.interval = interval;
         this.lastResetTime = System.currentTimeMillis();
-        this.token = new AtomicInteger(rate);
+        this.token = buildLongAdder(rate);
     }
 
     public boolean isAllowable() {
         long now = System.currentTimeMillis();
         if (now > lastResetTime + interval) {
-            token.set(rate);
+            token = buildLongAdder(rate);
             lastResetTime = now;
         }
 
-        int value = token.get();
-        boolean flag = false;
-        while (value > 0 && !flag) {
-            flag = token.compareAndSet(value, value - 1);
-            value = token.get();
+        if (token.sum() < 0) {
+            return false;
         }
-
-        return flag;
+        token.decrement();
+        return true;
     }
+
+    public long getInterval() {
+        return interval;
+    }
+
+
+    public int getRate() {
+        return rate;
+    }
+
 
     long getLastResetTime() {
         return lastResetTime;
     }
 
-    int getToken() {
-        return token.get();
+    long getToken() {
+        return token.sum();
     }
 
     @Override
@@ -70,6 +81,12 @@ class StatItem {
                 .append("rate = ").append(rate).append(", ")
                 .append("interval = ").append(interval).append("]")
                 .toString();
+    }
+
+    private LongAdder buildLongAdder(int rate) {
+        LongAdder adder = new LongAdder();
+        adder.add(rate);
+        return adder;
     }
 
 }

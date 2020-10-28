@@ -18,9 +18,9 @@ package org.apache.dubbo.common.json;
 
 import org.apache.dubbo.common.io.UnsafeStringReader;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class JSONReaderTest extends TestCase {
+public class JSONReaderTest  {
     public void testMain() throws Exception {
         String json = "{ name: 'name', friends: [ 1, null, 3.2, ] }";
         JSONReader reader = new JSONReader(new UnsafeStringReader(json));

@@ -18,7 +18,7 @@
 package org.apache.dubbo.common.utils;
 
 import org.apache.dubbo.common.logger.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.verify;

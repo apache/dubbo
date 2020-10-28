@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.dubbo;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -27,6 +26,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.List;
@@ -36,9 +36,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.registry.Constants.REGISTRY_RECONNECT_PERIOD_KEY;
+
 /**
  * DubboRegistry
- *
  */
 public class DubboRegistry extends FailbackRegistry {
 
@@ -70,16 +71,13 @@ public class DubboRegistry extends FailbackRegistry {
         this.registryInvoker = registryInvoker;
         this.registryService = registryService;
         // Start reconnection timer
-        this.reconnectPeriod = registryInvoker.getUrl().getParameter(Constants.REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
-        reconnectFuture = reconnectTimer.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                // Check and connect to the registry
-                try {
-                    connect();
-                } catch (Throwable t) { // Defensive fault tolerance
-                    logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
-                }
+        this.reconnectPeriod = registryInvoker.getUrl().getParameter(REGISTRY_RECONNECT_PERIOD_KEY, RECONNECT_PERIOD_DEFAULT);
+        reconnectFuture = reconnectTimer.scheduleWithFixedDelay(() -> {
+            // Check and connect to the registry
+            try {
+                connect();
+            } catch (Throwable t) { // Defensive fault tolerance
+                logger.error("Unexpected error occur at reconnect, cause: " + t.getMessage(), t);
             }
         }, reconnectPeriod, reconnectPeriod, TimeUnit.MILLISECONDS);
     }
@@ -116,8 +114,9 @@ public class DubboRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        if (registryInvoker == null)
+        if (registryInvoker == null) {
             return false;
+        }
         return registryInvoker.isAvailable();
     }
 
@@ -126,9 +125,7 @@ public class DubboRegistry extends FailbackRegistry {
         super.destroy();
         try {
             // Cancel the reconnection timer
-            if (!reconnectFuture.isCancelled()) {
-                reconnectFuture.cancel(true);
-            }
+            ExecutorUtil.cancelScheduledFuture(reconnectFuture);
         } catch (Throwable t) {
             logger.warn("Failed to cancel reconnect timer", t);
         }
@@ -137,22 +134,22 @@ public class DubboRegistry extends FailbackRegistry {
     }
 
     @Override
-    protected void doRegister(URL url) {
+    public void doRegister(URL url) {
         registryService.register(url);
     }
 
     @Override
-    protected void doUnregister(URL url) {
+    public void doUnregister(URL url) {
         registryService.unregister(url);
     }
 
     @Override
-    protected void doSubscribe(URL url, NotifyListener listener) {
+    public void doSubscribe(URL url, NotifyListener listener) {
         registryService.subscribe(url, listener);
     }
 
     @Override
-    protected void doUnsubscribe(URL url, NotifyListener listener) {
+    public void doUnsubscribe(URL url, NotifyListener listener) {
         registryService.unsubscribe(url, listener);
     }
 

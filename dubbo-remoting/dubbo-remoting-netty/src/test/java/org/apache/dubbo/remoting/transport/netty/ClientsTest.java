@@ -19,13 +19,14 @@ package org.apache.dubbo.remoting.transport.netty;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Transporter;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class ClientsTest {
 
@@ -39,10 +40,12 @@ public class ClientsTest {
         }
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetTransportNull() {
-        String name = null;
-        ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            String name = null;
+            ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name);
+        });
     }
 
     @Test
@@ -51,9 +54,11 @@ public class ClientsTest {
         assertEquals(NettyTransporter.class, ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testGetTransportWrong() {
-        String name = "nety";
-        assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            String name = "nety";
+            assertNull(ExtensionLoader.getExtensionLoader(Transporter.class).getExtension(name).getClass());
+        });
     }
 }

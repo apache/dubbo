@@ -25,6 +25,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Type;
 
+/**
+ * Native java object input implementation
+ */
 public class NativeJavaObjectInput implements ObjectInput {
 
     private final ObjectInputStream inputStream;

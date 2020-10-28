@@ -18,11 +18,11 @@ package org.apache.dubbo.remoting.transport.codec;
 
 import org.apache.dubbo.remoting.codec.ExchangeCodecTest;
 
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 
 public class CodecAdapterTest extends ExchangeCodecTest {
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         codec = new CodecAdapter(new DeprecatedExchangeCodec());
     }

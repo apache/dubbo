@@ -17,14 +17,90 @@
 
 package com.alibaba.dubbo.rpc;
 
+import java.util.Collections;
 import java.util.Map;
 
 @Deprecated
 public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
+    @Override
     Invoker<?> getInvoker();
 
     default org.apache.dubbo.rpc.Invocation getOriginal() {
+        return null;
+    }
+
+    @Override
+    default void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    default void setAttachmentIfAbsent(String key, String value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
+
+    @Override
+    default void setObjectAttachmentIfAbsent(String key, Object value) {
+    }
+
+    @Override
+    default void setObjectAttachment(String key, Object value) {
+
+    }
+
+    @Override
+    default void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    default void setAttachmentIfAbsent(String key, Object value) {
+        setObjectAttachmentIfAbsent(key, value);
+    }
+
+    @Override
+    default String getServiceName() {
+        return null;
+    }
+
+    @Override
+    default String getTargetServiceUniqueName() {
+        return null;
+    }
+
+    @Override
+    default String getAttachment(String key, String defaultValue) {
+        return null;
+    }
+
+    @Override
+    default Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    default Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    default Map<Object, Object> getAttributes() {
+        return null;
+    }
+
+    @Override
+    default Map<String, Object> getObjectAttachments() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    default Object getObjectAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key, Object defaultValue) {
         return null;
     }
 
@@ -34,6 +110,16 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
         public CompatibleInvocation(org.apache.dubbo.rpc.Invocation invocation) {
             this.delegate = invocation;
+        }
+
+        @Override
+        public String getTargetServiceUniqueName() {
+            return delegate.getTargetServiceUniqueName();
+        }
+
+        @Override
+        public String getProtocolServiceKey() {
+            return delegate.getProtocolServiceKey();
         }
 
         @Override
@@ -71,6 +157,22 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
         }
 
+        @Override
+        public Object put(Object key, Object value) {
+            return delegate.put(key, value);
+        }
+
+        @Override
+        public Object get(Object key) {
+            return delegate.get(key);
+        }
+
+        @Override
+        public Map<Object, Object> getAttributes() {
+            return delegate.getAttributes();
+        }
+
+        @Override
         public org.apache.dubbo.rpc.Invocation getOriginal() {
             return delegate;
         }

@@ -16,11 +16,41 @@
  */
 package org.apache.dubbo.common.compiler.support;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class JdkCompilerTest {
+import java.lang.reflect.Method;
+
+public class JdkCompilerTest extends JavaCodeTest {
+
     @Test
-    public void test_compileProtocol() throws Exception {
+    public void test_compileJavaClass() throws Exception {
+        JdkCompiler compiler = new JdkCompiler();
+        Class<?> clazz = compiler.compile(getSimpleCode(), JdkCompiler.class.getClassLoader());
+        Object instance = clazz.newInstance();
+        Method sayHello = instance.getClass().getMethod("sayHello");
+        Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+    }
 
+    @Test
+    public void test_compileJavaClass0() throws Exception {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            JdkCompiler compiler = new JdkCompiler();
+            Class<?> clazz = compiler.compile(getSimpleCodeWithoutPackage(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.newInstance();
+            Method sayHello = instance.getClass().getMethod("sayHello");
+            Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+        });
+    }
+
+    @Test
+    public void test_compileJavaClass1() throws Exception {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            JdkCompiler compiler = new JdkCompiler();
+            Class<?> clazz = compiler.compile(getSimpleCodeWithSyntax(), JdkCompiler.class.getClassLoader());
+            Object instance = clazz.newInstance();
+            Method sayHello = instance.getClass().getMethod("sayHello");
+            Assertions.assertEquals("Hello world!", sayHello.invoke(instance));
+        });
     }
 }

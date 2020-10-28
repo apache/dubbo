@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.io;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class UnsafeByteArrayInputStreamTest {
     @Test
@@ -58,22 +59,28 @@ public class UnsafeByteArrayInputStreamTest {
         assertThat(stream.read(), is((int) 'b'));
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testWrongLength() {
-        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
-        stream.read(new byte[1], 0, 100);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
+            stream.read(new byte[1], 0, 100);
+        });
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     public void testWrongOffset() {
-        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
-        stream.read(new byte[1], -1, 1);
+        Assertions.assertThrows(IndexOutOfBoundsException.class, () -> {
+            UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
+            stream.read(new byte[1], -1, 1);
+        });
     }
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void testReadEmptyByteArray() {
-        UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
-        stream.read(null, 0, 1);
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            UnsafeByteArrayInputStream stream = new UnsafeByteArrayInputStream("abc".getBytes());
+            stream.read(null, 0, 1);
+        });
     }
 
     @Test

@@ -16,18 +16,24 @@
  */
 package org.apache.dubbo.validation;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.SPI;
 
+import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
+
 /**
- * Validation
+ * Instance of Validation interface provide instance of {@link Validator} based on the value of <b>validation</b> attribute.
  */
 @SPI("jvalidation")
 public interface Validation {
 
-    @Adaptive(Constants.VALIDATION_KEY)
+    /**
+     * Return the instance of {@link Validator} for a given url.
+     * @param url Invocation url
+     * @return Instance of {@link Validator}
+     */
+    @Adaptive(VALIDATION_KEY)
     Validator getValidator(URL url);
 
 }

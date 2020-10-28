@@ -25,7 +25,7 @@ import org.apache.dubbo.common.Resetable;
  *
  * @see org.apache.dubbo.remoting.Transporter#connect(org.apache.dubbo.common.URL, ChannelHandler)
  */
-public interface Client extends Endpoint, Channel, Resetable {
+public interface Client extends Endpoint, Channel, Resetable, IdleSensible {
 
     /**
      * reconnect.

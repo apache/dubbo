@@ -16,29 +16,24 @@
  */
 package org.apache.dubbo.remoting.transport.dispatcher;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.store.DataStore;
-import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDelegate;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class WrappedChannelHandler implements ChannelHandlerDelegate {
 
     protected static final Logger logger = LoggerFactory.getLogger(WrappedChannelHandler.class);
-
-    protected static final ExecutorService SHARED_EXECUTOR = Executors.newCachedThreadPool(new NamedThreadFactory("DubboSharedHandler", true));
-
-    protected final ExecutorService executor;
 
     protected final ChannelHandler handler;
 
@@ -47,24 +42,10 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
     public WrappedChannelHandler(ChannelHandler handler, URL url) {
         this.handler = handler;
         this.url = url;
-        executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
-
-        String componentKey = Constants.EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (Constants.CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(Constants.SIDE_KEY))) {
-            componentKey = Constants.CONSUMER_SIDE;
-        }
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
-        dataStore.put(componentKey, Integer.toString(url.getPort()), executor);
     }
 
     public void close() {
-        try {
-            if (executor != null) {
-                executor.shutdown();
-            }
-        } catch (Throwable t) {
-            logger.warn("fail to destroy thread pool of server: " + t.getMessage(), t);
-        }
+
     }
 
     @Override
@@ -92,8 +73,16 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         handler.caught(channel, exception);
     }
 
-    public ExecutorService getExecutor() {
-        return executor;
+    protected void sendFeedback(Channel channel, Request request, Throwable t) throws RemotingException {
+        if (request.isTwoWay()) {
+            String msg = "Server side(" + url.getIp() + "," + url.getPort()
+                    + ") thread pool is exhausted, detail msg:" + t.getMessage();
+            Response response = new Response(request.getId(), request.getVersion());
+            response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
+            response.setErrorMessage(msg);
+            channel.send(response);
+            return;
+        }
     }
 
     @Override
@@ -109,12 +98,52 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return url;
     }
 
-    public ExecutorService getExecutorService() {
-        ExecutorService cexecutor = executor;
-        if (cexecutor == null || cexecutor.isShutdown()) {
-            cexecutor = SHARED_EXECUTOR;
+    /**
+     * Currently, this method is mainly customized to facilitate the thread model on consumer side.
+     * 1. Use ThreadlessExecutor, aka., delegate callback directly to the thread initiating the call.
+     * 2. Use shared executor to execute the callback.
+     *
+     * @param msg
+     * @return
+     */
+    public ExecutorService getPreferredExecutorService(Object msg) {
+        if (msg instanceof Response) {
+            Response response = (Response) msg;
+            DefaultFuture responseFuture = DefaultFuture.getFuture(response.getId());
+            // a typical scenario is the response returned after timeout, the timeout response may has completed the future
+            if (responseFuture == null) {
+                return getSharedExecutorService();
+            } else {
+                ExecutorService executor = responseFuture.getExecutor();
+                if (executor == null || executor.isShutdown()) {
+                    executor = getSharedExecutorService();
+                }
+                return executor;
+            }
+        } else {
+            return getSharedExecutorService();
         }
-        return cexecutor;
     }
+
+    /**
+     * get the shared executor for current Server or Client
+     *
+     * @return
+     */
+    public ExecutorService getSharedExecutorService() {
+        ExecutorRepository executorRepository =
+                ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        ExecutorService executor = executorRepository.getExecutor(url);
+        if (executor == null) {
+            executor = executorRepository.createExecutorIfAbsent(url);
+        }
+        return executor;
+    }
+
+    @Deprecated
+    public ExecutorService getExecutorService() {
+        return getSharedExecutorService();
+    }
+
 
 }

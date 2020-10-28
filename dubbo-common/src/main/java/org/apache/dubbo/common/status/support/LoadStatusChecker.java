@@ -37,6 +37,11 @@ public class LoadStatusChecker implements StatusChecker {
         try {
             Method method = OperatingSystemMXBean.class.getMethod("getSystemLoadAverage", new Class<?>[0]);
             load = (Double) method.invoke(operatingSystemMXBean, new Object[0]);
+            if (load == -1) {
+                com.sun.management.OperatingSystemMXBean bean =
+                        (com.sun.management.OperatingSystemMXBean) operatingSystemMXBean;
+                load = bean.getSystemCpuLoad();
+            }
         } catch (Throwable e) {
             load = -1;
         }

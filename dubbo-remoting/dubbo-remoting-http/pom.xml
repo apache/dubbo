@@ -19,7 +19,8 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting</artifactId>
-        <version>2.7.0-SNAPSHOT</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-remoting-http</artifactId>
     <packaging>jar</packaging>
@@ -35,14 +36,17 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>jetty</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.mortbay.jetty</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>

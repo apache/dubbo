@@ -17,87 +17,115 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.AtomicPositiveInteger;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 
-import java.util.LinkedHashMap;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Round robin load balance.
- *
  */
 public class RoundRobinLoadBalance extends AbstractLoadBalance {
-
     public static final String NAME = "roundrobin";
 
-    private final ConcurrentMap<String, AtomicPositiveInteger> sequences = new ConcurrentHashMap<String, AtomicPositiveInteger>();
+    private static final int RECYCLE_PERIOD = 60000;
+
+    protected static class WeightedRoundRobin {
+        private int weight;
+        private AtomicLong current = new AtomicLong(0);
+        private long lastUpdate;
+
+        public int getWeight() {
+            return weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
+            current.set(0);
+        }
+
+        public long increaseCurrent() {
+            return current.addAndGet(weight);
+        }
+
+        public void sel(int total) {
+            current.addAndGet(-1 * total);
+        }
+
+        public long getLastUpdate() {
+            return lastUpdate;
+        }
+
+        public void setLastUpdate(long lastUpdate) {
+            this.lastUpdate = lastUpdate;
+        }
+    }
+
+    private ConcurrentMap<String, ConcurrentMap<String, WeightedRoundRobin>> methodWeightMap = new ConcurrentHashMap<String, ConcurrentMap<String, WeightedRoundRobin>>();
+
+    /**
+     * get invoker addr list cached for specified invocation
+     * <p>
+     * <b>for unit test only</b>
+     *
+     * @param invokers
+     * @param invocation
+     * @return
+     */
+    protected <T> Collection<String> getInvokerAddrList(List<Invoker<T>> invokers, Invocation invocation) {
+        String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
+        Map<String, WeightedRoundRobin> map = methodWeightMap.get(key);
+        if (map != null) {
+            return map.keySet();
+        }
+        return null;
+    }
 
     @Override
     protected <T> Invoker<T> doSelect(List<Invoker<T>> invokers, URL url, Invocation invocation) {
         String key = invokers.get(0).getUrl().getServiceKey() + "." + invocation.getMethodName();
-        int length = invokers.size(); // Number of invokers
-        int maxWeight = 0; // The maximum weight
-        int minWeight = Integer.MAX_VALUE; // The minimum weight
-        final LinkedHashMap<Invoker<T>, IntegerWrapper> invokerToWeightMap = new LinkedHashMap<Invoker<T>, IntegerWrapper>();
-        int weightSum = 0;
-        for (int i = 0; i < length; i++) {
-            int weight = getWeight(invokers.get(i), invocation);
-            maxWeight = Math.max(maxWeight, weight); // Choose the maximum weight
-            minWeight = Math.min(minWeight, weight); // Choose the minimum weight
-            if (weight > 0) {
-                invokerToWeightMap.put(invokers.get(i), new IntegerWrapper(weight));
-                weightSum += weight;
+        ConcurrentMap<String, WeightedRoundRobin> map = methodWeightMap.computeIfAbsent(key, k -> new ConcurrentHashMap<>());
+        int totalWeight = 0;
+        long maxCurrent = Long.MIN_VALUE;
+        long now = System.currentTimeMillis();
+        Invoker<T> selectedInvoker = null;
+        WeightedRoundRobin selectedWRR = null;
+        for (Invoker<T> invoker : invokers) {
+            String identifyString = invoker.getUrl().toIdentityString();
+            int weight = getWeight(invoker, invocation);
+            WeightedRoundRobin weightedRoundRobin = map.computeIfAbsent(identifyString, k -> {
+                WeightedRoundRobin wrr = new WeightedRoundRobin();
+                wrr.setWeight(weight);
+                return wrr;
+            });
+
+            if (weight != weightedRoundRobin.getWeight()) {
+                //weight changed
+                weightedRoundRobin.setWeight(weight);
             }
-        }
-        AtomicPositiveInteger sequence = sequences.get(key);
-        if (sequence == null) {
-            sequences.putIfAbsent(key, new AtomicPositiveInteger());
-            sequence = sequences.get(key);
-        }
-        int currentSequence = sequence.getAndIncrement();
-        if (maxWeight > 0 && minWeight < maxWeight) {
-            int mod = currentSequence % weightSum;
-            for (int i = 0; i < maxWeight; i++) {
-                for (Map.Entry<Invoker<T>, IntegerWrapper> each : invokerToWeightMap.entrySet()) {
-                    final Invoker<T> k = each.getKey();
-                    final IntegerWrapper v = each.getValue();
-                    if (mod == 0 && v.getValue() > 0) {
-                        return k;
-                    }
-                    if (v.getValue() > 0) {
-                        v.decrement();
-                        mod--;
-                    }
-                }
+            long cur = weightedRoundRobin.increaseCurrent();
+            weightedRoundRobin.setLastUpdate(now);
+            if (cur > maxCurrent) {
+                maxCurrent = cur;
+                selectedInvoker = invoker;
+                selectedWRR = weightedRoundRobin;
             }
+            totalWeight += weight;
         }
-        // Round robin
-        return invokers.get(currentSequence % length);
-    }
-
-    private static final class IntegerWrapper {
-        private int value;
-
-        public IntegerWrapper(int value) {
-            this.value = value;
+        if (invokers.size() != map.size()) {
+            map.entrySet().removeIf(item -> now - item.getValue().getLastUpdate() > RECYCLE_PERIOD);
         }
-
-        public int getValue() {
-            return value;
+        if (selectedInvoker != null) {
+            selectedWRR.sel(totalWeight);
+            return selectedInvoker;
         }
-
-        public void setValue(int value) {
-            this.value = value;
-        }
-
-        public void decrement() {
-            this.value--;
-        }
+        // should not happen here
+        return invokers.get(0);
     }
 
 }

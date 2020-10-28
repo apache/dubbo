@@ -115,4 +115,8 @@ public class MockChannel implements Channel {
     public List<Object> getSentObjects() {
         return Collections.unmodifiableList(sentObjects);
     }
+
+    public boolean isClosing() {
+        return closing;
+    }
 }

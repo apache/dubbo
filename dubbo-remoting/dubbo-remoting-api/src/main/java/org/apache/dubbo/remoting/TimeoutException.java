@@ -22,8 +22,7 @@ import java.net.InetSocketAddress;
  * TimeoutException. (API, Prototype, ThreadSafe)
  *
  * @export
- * @see org.apache.dubbo.remoting.exchange.ResponseFuture#get()
- * @see org.apache.dubbo.remoting.exchange.ResponseFuture#get(int)
+ * @see org.apache.dubbo.remoting.exchange.support.DefaultFuture#get()
  */
 public class TimeoutException extends RemotingException {
 

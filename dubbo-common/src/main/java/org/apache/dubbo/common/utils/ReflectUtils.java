@@ -21,6 +21,8 @@ import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -28,19 +30,31 @@ import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
 /**
  * ReflectUtils
@@ -120,7 +134,21 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
 
     private ReflectUtils() {
     }
@@ -138,22 +166,23 @@ public final class ReflectUtils {
     }
 
     public static Class<?> getBoxedClass(Class<?> c) {
-        if (c == int.class)
+        if (c == int.class) {
             c = Integer.class;
-        else if (c == boolean.class)
+        } else if (c == boolean.class) {
             c = Boolean.class;
-        else if (c == long.class)
+        } else if (c == long.class) {
             c = Long.class;
-        else if (c == float.class)
+        } else if (c == float.class) {
             c = Float.class;
-        else if (c == double.class)
+        } else if (c == double.class) {
             c = Double.class;
-        else if (c == char.class)
+        } else if (c == char.class) {
             c = Character.class;
-        else if (c == byte.class)
+        } else if (c == byte.class) {
             c = Byte.class;
-        else if (c == short.class)
+        } else if (c == short.class) {
             c = Short.class;
+        }
         return c;
     }
 
@@ -186,25 +215,36 @@ public final class ReflectUtils {
      */
     public static boolean isCompatible(Class<?>[] cs, Object[] os) {
         int len = cs.length;
-        if (len != os.length) return false;
-        if (len == 0) return true;
-        for (int i = 0; i < len; i++)
-            if (!isCompatible(cs[i], os[i])) return false;
+        if (len != os.length) {
+            return false;
+        }
+        if (len == 0) {
+            return true;
+        }
+        for (int i = 0; i < len; i++) {
+            if (!isCompatible(cs[i], os[i])) {
+                return false;
+            }
+        }
         return true;
     }
 
     public static String getCodeBase(Class<?> cls) {
-        if (cls == null)
+        if (cls == null) {
             return null;
+        }
         ProtectionDomain domain = cls.getProtectionDomain();
-        if (domain == null)
+        if (domain == null) {
             return null;
+        }
         CodeSource source = domain.getCodeSource();
-        if (source == null)
+        if (source == null) {
             return null;
+        }
         URL location = source.getLocation();
-        if (location == null)
+        if (location == null) {
             return null;
+        }
         return location.getFile();
     }
 
@@ -237,19 +277,24 @@ public final class ReflectUtils {
         try {
             ParameterizedType parameterizedType = ((ParameterizedType) cls.getGenericInterfaces()[0]);
             Object genericClass = parameterizedType.getActualTypeArguments()[i];
-            if (genericClass instanceof ParameterizedType) { // handle nested generic type
+
+            // handle nested generic type
+            if (genericClass instanceof ParameterizedType) {
                 return (Class<?>) ((ParameterizedType) genericClass).getRawType();
-            } else if (genericClass instanceof GenericArrayType) { // handle array generic type
-                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
-            } else if (((Class) genericClass).isArray()) {
-                // Requires JDK 7 or higher, Foo<int[]> is no longer GenericArrayType
-                return ((Class) genericClass).getComponentType();
-            } else {
-                return (Class<?>) genericClass;
             }
+
+            // handle array generic type
+            if (genericClass instanceof GenericArrayType) {
+                return (Class<?>) ((GenericArrayType) genericClass).getGenericComponentType();
+            }
+
+            // Requires JDK 7 or higher, Foo<int[]> is no longer GenericArrayType
+            if (((Class) genericClass).isArray()) {
+                return ((Class) genericClass).getComponentType();
+            }
+            return (Class<?>) genericClass;
         } catch (Throwable e) {
-            throw new IllegalArgumentException(cls.getName()
-                    + " generic type undefined!", e);
+            throw new IllegalArgumentException(cls.getName() + " generic type undefined!", e);
         }
     }
 
@@ -266,8 +311,9 @@ public final class ReflectUtils {
         ret.append(m.getName()).append('(');
         Class<?>[] parameterTypes = m.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 ret.append(',');
+            }
             ret.append(getName(parameterTypes[i]));
         }
         ret.append(')');
@@ -303,8 +349,9 @@ public final class ReflectUtils {
         StringBuilder ret = new StringBuilder("(");
         Class<?>[] parameterTypes = c.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
-            if (i > 0)
+            if (i > 0) {
                 ret.append(',');
+            }
             ret.append(getName(parameterTypes[i]));
         }
         ret.append(')');
@@ -330,15 +377,25 @@ public final class ReflectUtils {
 
         if (c.isPrimitive()) {
             String t = c.getName();
-            if ("void".equals(t)) ret.append(JVM_VOID);
-            else if ("boolean".equals(t)) ret.append(JVM_BOOLEAN);
-            else if ("byte".equals(t)) ret.append(JVM_BYTE);
-            else if ("char".equals(t)) ret.append(JVM_CHAR);
-            else if ("double".equals(t)) ret.append(JVM_DOUBLE);
-            else if ("float".equals(t)) ret.append(JVM_FLOAT);
-            else if ("int".equals(t)) ret.append(JVM_INT);
-            else if ("long".equals(t)) ret.append(JVM_LONG);
-            else if ("short".equals(t)) ret.append(JVM_SHORT);
+            if ("void".equals(t)) {
+                ret.append(JVM_VOID);
+            } else if ("boolean".equals(t)) {
+                ret.append(JVM_BOOLEAN);
+            } else if ("byte".equals(t)) {
+                ret.append(JVM_BYTE);
+            } else if ("char".equals(t)) {
+                ret.append(JVM_CHAR);
+            } else if ("double".equals(t)) {
+                ret.append(JVM_DOUBLE);
+            } else if ("float".equals(t)) {
+                ret.append(JVM_FLOAT);
+            } else if ("int".equals(t)) {
+                ret.append(JVM_INT);
+            } else if ("long".equals(t)) {
+                ret.append(JVM_LONG);
+            } else if ("short".equals(t)) {
+                ret.append(JVM_SHORT);
+            }
         } else {
             ret.append('L');
             ret.append(c.getName().replace('.', '/'));
@@ -356,12 +413,14 @@ public final class ReflectUtils {
      * @throws NotFoundException
      */
     public static String getDesc(final Class<?>[] cs) {
-        if (cs.length == 0)
+        if (cs.length == 0) {
             return "";
+        }
 
         StringBuilder sb = new StringBuilder(64);
-        for (Class<?> c : cs)
+        for (Class<?> c : cs) {
             sb.append(getDesc(c));
+        }
         return sb.toString();
     }
 
@@ -376,10 +435,21 @@ public final class ReflectUtils {
     public static String getDesc(final Method m) {
         StringBuilder ret = new StringBuilder(m.getName()).append('(');
         Class<?>[] parameterTypes = m.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
+        for (int i = 0; i < parameterTypes.length; i++) {
             ret.append(getDesc(parameterTypes[i]));
+        }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
+    }
+
+    public static String[] getDescArray(final Method m) {
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        String[] arr = new String[parameterTypes.length];
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            arr[i] = getDesc(parameterTypes[i]);
+        }
+        return arr;
     }
 
     /**
@@ -392,8 +462,9 @@ public final class ReflectUtils {
     public static String getDesc(final Constructor<?> c) {
         StringBuilder ret = new StringBuilder("(");
         Class<?>[] parameterTypes = c.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
+        for (int i = 0; i < parameterTypes.length; i++) {
             ret.append(getDesc(parameterTypes[i]));
+        }
         ret.append(')').append('V');
         return ret.toString();
     }
@@ -409,8 +480,9 @@ public final class ReflectUtils {
         StringBuilder ret = new StringBuilder();
         ret.append('(');
         Class<?>[] parameterTypes = m.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
+        for (int i = 0; i < parameterTypes.length; i++) {
             ret.append(getDesc(parameterTypes[i]));
+        }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
     }
@@ -431,15 +503,25 @@ public final class ReflectUtils {
             ret.append(getDesc(c.getComponentType()));
         } else if (c.isPrimitive()) {
             String t = c.getName();
-            if ("void".equals(t)) ret.append(JVM_VOID);
-            else if ("boolean".equals(t)) ret.append(JVM_BOOLEAN);
-            else if ("byte".equals(t)) ret.append(JVM_BYTE);
-            else if ("char".equals(t)) ret.append(JVM_CHAR);
-            else if ("double".equals(t)) ret.append(JVM_DOUBLE);
-            else if ("float".equals(t)) ret.append(JVM_FLOAT);
-            else if ("int".equals(t)) ret.append(JVM_INT);
-            else if ("long".equals(t)) ret.append(JVM_LONG);
-            else if ("short".equals(t)) ret.append(JVM_SHORT);
+            if ("void".equals(t)) {
+                ret.append(JVM_VOID);
+            } else if ("boolean".equals(t)) {
+                ret.append(JVM_BOOLEAN);
+            } else if ("byte".equals(t)) {
+                ret.append(JVM_BYTE);
+            } else if ("char".equals(t)) {
+                ret.append(JVM_CHAR);
+            } else if ("double".equals(t)) {
+                ret.append(JVM_DOUBLE);
+            } else if ("float".equals(t)) {
+                ret.append(JVM_FLOAT);
+            } else if ("int".equals(t)) {
+                ret.append(JVM_INT);
+            } else if ("long".equals(t)) {
+                ret.append(JVM_LONG);
+            } else if ("short".equals(t)) {
+                ret.append(JVM_SHORT);
+            }
         } else {
             ret.append('L');
             ret.append(c.getName().replace('.', '/'));
@@ -458,8 +540,9 @@ public final class ReflectUtils {
     public static String getDesc(final CtMethod m) throws NotFoundException {
         StringBuilder ret = new StringBuilder(m.getName()).append('(');
         CtClass[] parameterTypes = m.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
-            ret.append(getDesc(parameterTypes[i]));
+        for (CtClass parameterType : parameterTypes) {
+            ret.append(getDesc(parameterType));
+        }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
     }
@@ -474,8 +557,9 @@ public final class ReflectUtils {
     public static String getDesc(final CtConstructor c) throws NotFoundException {
         StringBuilder ret = new StringBuilder("(");
         CtClass[] parameterTypes = c.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
+        for (int i = 0; i < parameterTypes.length; i++) {
             ret.append(getDesc(parameterTypes[i]));
+        }
         ret.append(')').append('V');
         return ret.toString();
     }
@@ -491,8 +575,9 @@ public final class ReflectUtils {
         StringBuilder ret = new StringBuilder();
         ret.append('(');
         CtClass[] parameterTypes = m.getParameterTypes();
-        for (int i = 0; i < parameterTypes.length; i++)
+        for (int i = 0; i < parameterTypes.length; i++) {
             ret.append(getDesc(parameterTypes[i]));
+        }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
     }
@@ -511,17 +596,30 @@ public final class ReflectUtils {
             c = (name.length() - index) / 2;
             name = name.substring(0, index);
         }
-        while (c-- > 0) sb.append("[");
-        if ("void".equals(name)) sb.append(JVM_VOID);
-        else if ("boolean".equals(name)) sb.append(JVM_BOOLEAN);
-        else if ("byte".equals(name)) sb.append(JVM_BYTE);
-        else if ("char".equals(name)) sb.append(JVM_CHAR);
-        else if ("double".equals(name)) sb.append(JVM_DOUBLE);
-        else if ("float".equals(name)) sb.append(JVM_FLOAT);
-        else if ("int".equals(name)) sb.append(JVM_INT);
-        else if ("long".equals(name)) sb.append(JVM_LONG);
-        else if ("short".equals(name)) sb.append(JVM_SHORT);
-        else sb.append('L').append(name.replace('.', '/')).append(';');
+        while (c-- > 0) {
+            sb.append("[");
+        }
+        if ("void".equals(name)) {
+            sb.append(JVM_VOID);
+        } else if ("boolean".equals(name)) {
+            sb.append(JVM_BOOLEAN);
+        } else if ("byte".equals(name)) {
+            sb.append(JVM_BYTE);
+        } else if ("char".equals(name)) {
+            sb.append(JVM_CHAR);
+        } else if ("double".equals(name)) {
+            sb.append(JVM_DOUBLE);
+        } else if ("float".equals(name)) {
+            sb.append(JVM_FLOAT);
+        } else if ("int".equals(name)) {
+            sb.append(JVM_INT);
+        } else if ("long".equals(name)) {
+            sb.append(JVM_LONG);
+        } else if ("short".equals(name)) {
+            sb.append(JVM_SHORT);
+        } else {
+            sb.append('L').append(name.replace('.', '/')).append(';');
+        }
         return sb.toString();
     }
 
@@ -579,13 +677,23 @@ public final class ReflectUtils {
         } else {
             sb.append(desc.substring(c + 1, desc.length() - 1).replace('/', '.'));
         }
-        while (c-- > 0) sb.append("[]");
+        while (c-- > 0) {
+            sb.append("[]");
+        }
         return sb.toString();
     }
 
     public static Class<?> forName(String name) {
         try {
             return name2class(name);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException("Not found class " + name + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    public static Class<?> forName(ClassLoader cl, String name) {
+        try {
+            return name2class(cl, name);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Not found class " + name + ", cause: " + e.getMessage(), e);
         }
@@ -600,7 +708,7 @@ public final class ReflectUtils {
      * @return Class instance.
      */
     public static Class<?> name2class(String name) throws ClassNotFoundException {
-        return name2class(ClassHelper.getClassLoader(), name);
+        return name2class(ClassUtils.getClassLoader(), name);
     }
 
     /**
@@ -620,34 +728,66 @@ public final class ReflectUtils {
         }
         if (c > 0) {
             StringBuilder sb = new StringBuilder();
-            while (c-- > 0)
+            while (c-- > 0) {
                 sb.append("[");
+            }
 
-            if ("void".equals(name)) sb.append(JVM_VOID);
-            else if ("boolean".equals(name)) sb.append(JVM_BOOLEAN);
-            else if ("byte".equals(name)) sb.append(JVM_BYTE);
-            else if ("char".equals(name)) sb.append(JVM_CHAR);
-            else if ("double".equals(name)) sb.append(JVM_DOUBLE);
-            else if ("float".equals(name)) sb.append(JVM_FLOAT);
-            else if ("int".equals(name)) sb.append(JVM_INT);
-            else if ("long".equals(name)) sb.append(JVM_LONG);
-            else if ("short".equals(name)) sb.append(JVM_SHORT);
-            else sb.append('L').append(name).append(';'); // "java.lang.Object" ==> "Ljava.lang.Object;"
+            if ("void".equals(name)) {
+                sb.append(JVM_VOID);
+            } else if ("boolean".equals(name)) {
+                sb.append(JVM_BOOLEAN);
+            } else if ("byte".equals(name)) {
+                sb.append(JVM_BYTE);
+            } else if ("char".equals(name)) {
+                sb.append(JVM_CHAR);
+            } else if ("double".equals(name)) {
+                sb.append(JVM_DOUBLE);
+            } else if ("float".equals(name)) {
+                sb.append(JVM_FLOAT);
+            } else if ("int".equals(name)) {
+                sb.append(JVM_INT);
+            } else if ("long".equals(name)) {
+                sb.append(JVM_LONG);
+            } else if ("short".equals(name)) {
+                sb.append(JVM_SHORT);
+            } else {
+                // "java.lang.Object" ==> "Ljava.lang.Object;"
+                sb.append('L').append(name).append(';');
+            }
             name = sb.toString();
         } else {
-            if ("void".equals(name)) return void.class;
-            else if ("boolean".equals(name)) return boolean.class;
-            else if ("byte".equals(name)) return byte.class;
-            else if ("char".equals(name)) return char.class;
-            else if ("double".equals(name)) return double.class;
-            else if ("float".equals(name)) return float.class;
-            else if ("int".equals(name)) return int.class;
-            else if ("long".equals(name)) return long.class;
-            else if ("short".equals(name)) return short.class;
+            if ("void".equals(name)) {
+                return void.class;
+            }
+            if ("boolean".equals(name)) {
+                return boolean.class;
+            }
+            if ("byte".equals(name)) {
+                return byte.class;
+            }
+            if ("char".equals(name)) {
+                return char.class;
+            }
+            if ("double".equals(name)) {
+                return double.class;
+            }
+            if ("float".equals(name)) {
+                return float.class;
+            }
+            if ("int".equals(name)) {
+                return int.class;
+            }
+            if ("long".equals(name)) {
+                return long.class;
+            }
+            if ("short".equals(name)) {
+                return short.class;
+            }
         }
 
-        if (cl == null)
-            cl = ClassHelper.getClassLoader();
+        if (cl == null) {
+            cl = ClassUtils.getClassLoader();
+        }
         Class<?> clazz = NAME_CLASS_CACHE.get(name);
         if (clazz == null) {
             clazz = Class.forName(name, true, cl);
@@ -666,7 +806,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?> desc2class(String desc) throws ClassNotFoundException {
-        return desc2class(ClassHelper.getClassLoader(), desc);
+        return desc2class(ClassUtils.getClassLoader(), desc);
     }
 
     /**
@@ -700,17 +840,20 @@ public final class ReflectUtils {
             case JVM_SHORT:
                 return short.class;
             case 'L':
-                desc = desc.substring(1, desc.length() - 1).replace('/', '.'); // "Ljava/lang/Object;" ==> "java.lang.Object"
+                // "Ljava/lang/Object;" ==> "java.lang.Object"
+                desc = desc.substring(1, desc.length() - 1).replace('/', '.');
                 break;
             case '[':
-                desc = desc.replace('/', '.');  // "[[Ljava/lang/Object;" ==> "[[Ljava.lang.Object;"
+                // "[[Ljava/lang/Object;" ==> "[[Ljava.lang.Object;"
+                desc = desc.replace('/', '.');
                 break;
             default:
                 throw new ClassNotFoundException("Class not found: " + desc);
         }
 
-        if (cl == null)
-            cl = ClassHelper.getClassLoader();
+        if (cl == null) {
+            cl = ClassUtils.getClassLoader();
+        }
         Class<?> clazz = DESC_CLASS_CACHE.get(desc);
         if (clazz == null) {
             clazz = Class.forName(desc, true, cl);
@@ -727,7 +870,7 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     public static Class<?>[] desc2classArray(String desc) throws ClassNotFoundException {
-        Class<?>[] ret = desc2classArray(ClassHelper.getClassLoader(), desc);
+        Class<?>[] ret = desc2classArray(ClassUtils.getClassLoader(), desc);
         return ret;
     }
 
@@ -740,13 +883,15 @@ public final class ReflectUtils {
      * @throws ClassNotFoundException
      */
     private static Class<?>[] desc2classArray(ClassLoader cl, String desc) throws ClassNotFoundException {
-        if (desc.length() == 0)
+        if (desc.length() == 0) {
             return EMPTY_CLASS_ARRAY;
+        }
 
         List<Class<?>> cs = new ArrayList<Class<?>>();
         Matcher m = DESC_PATTERN.matcher(desc);
-        while (m.find())
+        while (m.find()) {
             cs.add(desc2class(cl, m.group()));
+        }
         return cs.toArray(EMPTY_CLASS_ARRAY);
     }
 
@@ -759,14 +904,16 @@ public final class ReflectUtils {
      * @throws NoSuchMethodException
      * @throws ClassNotFoundException
      * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
      */
+    @Deprecated
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
         String signature = clazz.getName() + "." + methodName;
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = Signature_METHODS_CACHE.get(signature);
+        Method method = SIGNATURE_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -794,10 +941,20 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        Signature_METHODS_CACHE.put(signature, method);
+        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 
+    /**
+     * @param clazz      Target class to find method
+     * @param methodName Method signature, e.g.: method1(int, String). It is allowed to provide method name only, e.g.: method2
+     * @return target method
+     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException
+     * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
+     */
+    @Deprecated
     public static Method findMethodByMethodName(Class<?> clazz, String methodName)
             throws NoSuchMethodException, ClassNotFoundException {
         return findMethodByMethodSignature(clazz, methodName, null);
@@ -850,71 +1007,102 @@ public final class ReflectUtils {
     }
 
     public static Object getEmptyObject(Class<?> returnType) {
-        return getEmptyObject(returnType, new HashMap<Class<?>, Object>(), 0);
+        return getEmptyObject(returnType, new HashMap<>(), 0);
     }
 
     private static Object getEmptyObject(Class<?> returnType, Map<Class<?>, Object> emptyInstances, int level) {
-        if (level > 2)
+        if (level > 2) {
             return null;
+        }
         if (returnType == null) {
             return null;
-        } else if (returnType == boolean.class || returnType == Boolean.class) {
+        }
+        if (returnType == boolean.class || returnType == Boolean.class) {
             return false;
-        } else if (returnType == char.class || returnType == Character.class) {
+        }
+        if (returnType == char.class || returnType == Character.class) {
             return '\0';
-        } else if (returnType == byte.class || returnType == Byte.class) {
+        }
+        if (returnType == byte.class || returnType == Byte.class) {
             return (byte) 0;
-        } else if (returnType == short.class || returnType == Short.class) {
+        }
+        if (returnType == short.class || returnType == Short.class) {
             return (short) 0;
-        } else if (returnType == int.class || returnType == Integer.class) {
+        }
+        if (returnType == int.class || returnType == Integer.class) {
             return 0;
-        } else if (returnType == long.class || returnType == Long.class) {
+        }
+        if (returnType == long.class || returnType == Long.class) {
             return 0L;
-        } else if (returnType == float.class || returnType == Float.class) {
+        }
+        if (returnType == float.class || returnType == Float.class) {
             return 0F;
-        } else if (returnType == double.class || returnType == Double.class) {
+        }
+        if (returnType == double.class || returnType == Double.class) {
             return 0D;
-        } else if (returnType.isArray()) {
+        }
+        if (returnType.isArray()) {
             return Array.newInstance(returnType.getComponentType(), 0);
-        } else if (returnType.isAssignableFrom(ArrayList.class)) {
-            return new ArrayList<Object>(0);
-        } else if (returnType.isAssignableFrom(HashSet.class)) {
-            return new HashSet<Object>(0);
-        } else if (returnType.isAssignableFrom(HashMap.class)) {
-            return new HashMap<Object, Object>(0);
-        } else if (String.class.equals(returnType)) {
+        }
+        if (returnType.isAssignableFrom(ArrayList.class)) {
+            return new ArrayList<>(0);
+        }
+        if (returnType.isAssignableFrom(HashSet.class)) {
+            return new HashSet<>(0);
+        }
+        if (returnType.isAssignableFrom(HashMap.class)) {
+            return new HashMap<>(0);
+        }
+        if (String.class.equals(returnType)) {
             return "";
-        } else if (!returnType.isInterface()) {
-            try {
-                Object value = emptyInstances.get(returnType);
-                if (value == null) {
-                    value = returnType.newInstance();
-                    emptyInstances.put(returnType, value);
-                }
-                Class<?> cls = value.getClass();
-                while (cls != null && cls != Object.class) {
-                    Field[] fields = cls.getDeclaredFields();
-                    for (Field field : fields) {
-                        if (field.isSynthetic()) {
-                            continue;
-                        }
-                        Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
-                        if (property != null) {
-                            try {
-                                if (!field.isAccessible()) {
-                                    field.setAccessible(true);
-                                }
-                                field.set(value, property);
-                            } catch (Throwable e) {
+        }
+        if (returnType.isInterface()) {
+            return null;
+        }
+
+        try {
+            Object value = emptyInstances.get(returnType);
+            if (value == null) {
+                value = returnType.newInstance();
+                emptyInstances.put(returnType, value);
+            }
+            Class<?> cls = value.getClass();
+            while (cls != null && cls != Object.class) {
+                Field[] fields = cls.getDeclaredFields();
+                for (Field field : fields) {
+                    if (field.isSynthetic()) {
+                        continue;
+                    }
+                    Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
+                    if (property != null) {
+                        try {
+                            if (!field.isAccessible()) {
+                                field.setAccessible(true);
                             }
+                            field.set(value, property);
+                        } catch (Throwable ignored) {
                         }
                     }
-                    cls = cls.getSuperclass();
                 }
-                return value;
-            } catch (Throwable e) {
-                return null;
+                cls = cls.getSuperclass();
             }
+            return value;
+        } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
         } else {
             return null;
         }
@@ -1003,5 +1191,141 @@ public final class ReflectUtils {
         }
 
         return properties;
+    }
+
+    public static Type[] getReturnTypes(Method method) {
+        Class<?> returnType = method.getReturnType();
+        Type genericReturnType = method.getGenericReturnType();
+        if (Future.class.isAssignableFrom(returnType)) {
+            if (genericReturnType instanceof ParameterizedType) {
+                Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
+                if (actualArgType instanceof ParameterizedType) {
+                    returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else {
+                    returnType = (Class<?>) actualArgType;
+                    genericReturnType = returnType;
+                }
+            } else {
+                returnType = null;
+                genericReturnType = null;
+            }
+        }
+        return new Type[]{returnType, genericReturnType};
+    }
+
+    /**
+     * Find the {@link Set} of {@link ParameterizedType}
+     *
+     * @param sourceClass the source {@link Class class}
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
+        // Add Generic Interfaces
+        List<Type> genericTypes = new LinkedList<>(asList(sourceClass.getGenericInterfaces()));
+        // Add Generic Super Class
+        genericTypes.add(sourceClass.getGenericSuperclass());
+
+        Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
+                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
+                .map(type -> ParameterizedType.class.cast(type))  // cast to ParameterizedType
+                .collect(Collectors.toSet());
+
+        if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
+            genericTypes.stream()
+                    .filter(type -> type instanceof Class)
+                    .map(type -> Class.class.cast(type))
+                    .forEach(superClass -> {
+                        parameterizedTypes.addAll(findParameterizedTypes(superClass));
+                    });
+        }
+
+        return unmodifiableSet(parameterizedTypes);                     // build as a Set
+
+    }
+
+    /**
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
+     *
+     * @param sourceClass the source {@link Class class}
+     * @param matchType   the type to match
+     * @param <T>         the type to match
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static <T> Set<Class<T>> findHierarchicalTypes(Class<?> sourceClass, Class<T> matchType) {
+        if (sourceClass == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Class<T>> hierarchicalTypes = new LinkedHashSet<>();
+
+        if (matchType.isAssignableFrom(sourceClass)) {
+            hierarchicalTypes.add((Class<T>) sourceClass);
+        }
+
+        // Find all super classes
+        hierarchicalTypes.addAll(findHierarchicalTypes(sourceClass.getSuperclass(), matchType));
+
+        return unmodifiableSet(hierarchicalTypes);
+    }
+
+    /**
+     * Get the value from the specified bean and its getter method.
+     *
+     * @param bean       the bean instance
+     * @param methodName the name of getter
+     * @param <T>        the type of property value
+     * @return
+     * @since 2.7.5
+     */
+    public static <T> T getProperty(Object bean, String methodName) {
+        Class<?> beanClass = bean.getClass();
+        BeanInfo beanInfo = null;
+        T propertyValue = null;
+
+        try {
+            beanInfo = Introspector.getBeanInfo(beanClass);
+            propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
+                    .findFirst()
+                    .map(method -> {
+                        try {
+                            return method.getMethod().invoke(bean);
+                        } catch (Exception e) {
+                            //ignore
+                        }
+                        return null;
+                    }).get();
+        } catch (Exception e) {
+
+        }
+        return propertyValue;
+    }
+
+    /**
+     * Resolve the types of the specified values
+     *
+     * @param values the values
+     * @return If can't be resolved, return {@link ReflectUtils#EMPTY_CLASS_ARRAY empty class array}
+     * @since 2.7.6
+     */
+    public static Class[] resolveTypes(Object... values) {
+
+        if (isEmpty(values)) {
+            return EMPTY_CLASS_ARRAY;
+        }
+
+        int size = values.length;
+
+        Class[] types = new Class[size];
+
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            types[i] = value == null ? null : value.getClass();
+        }
+
+        return types;
     }
 }

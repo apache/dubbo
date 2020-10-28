@@ -29,6 +29,7 @@ import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Priority(Integer.MIN_VALUE + 1)
@@ -69,20 +70,37 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
-            if (entry.getValue().contains(",") || entry.getValue().contains("=")
-                    || entry.getKey().contains(",") || entry.getKey().contains("=")) {
+        for (Map.Entry<String, Object> entry : RpcContext.getContext().getObjectAttachments().entrySet()) {
+            String key = entry.getKey();
+            String value = (String) entry.getValue();
+            if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
             }
 
             // TODO for now we don't consider the differences of encoding and server limit
-            size += entry.getValue().getBytes("UTF-8").length;
+            if (value != null) {
+                size += value.getBytes(StandardCharsets.UTF_8).length;
+            }
             if (size > MAX_HEADER_SIZE) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " is too big");
             }
 
-            String attachments = entry.getKey() + "=" + entry.getValue();
+            String attachments = key + "=" + value;
             requestContext.getHeaders().add(DUBBO_ATTACHMENT_HEADER, attachments);
         }
+    }
+
+    private boolean illegalHttpHeaderKey(String key) {
+        if (StringUtils.isNotEmpty(key)) {
+            return key.contains(",") || key.contains("=");
+        }
+        return false;
+    }
+
+    private boolean illegalHttpHeaderValue(String value) {
+        if (StringUtils.isNotEmpty(value)) {
+            return value.contains(",");
+        }
+        return false;
     }
 }

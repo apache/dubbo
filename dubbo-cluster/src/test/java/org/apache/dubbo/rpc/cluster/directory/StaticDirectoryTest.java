@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.directory;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invoker;
@@ -25,11 +24,13 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
 import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 
 /**
  * StaticDirectory Test
@@ -38,7 +39,7 @@ public class StaticDirectoryTest {
     private URL SCRIPT_URL = URL.valueOf("condition://0.0.0.0/com.foo.BarService");
 
     private URL getRouteUrl(String rule) {
-        return SCRIPT_URL.addParameterAndEncoded(Constants.RULE_KEY, rule);
+        return SCRIPT_URL.addParameterAndEncoded(RULE_KEY, rule);
     }
 
     @Test
@@ -54,12 +55,12 @@ public class StaticDirectoryTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
-        StaticDirectory staticDirectory = new StaticDirectory(filteredInvokers);
-        Boolean isAvailable = staticDirectory.isAvailable();
-        Assert.assertTrue(!isAvailable);
-        List<Invoker> newInvokers = staticDirectory.list(new MockDirInvocation());
-        Assert.assertTrue(newInvokers.size() > 0);
+        StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
+        boolean isAvailable = staticDirectory.isAvailable();
+        Assertions.assertTrue(!isAvailable);
+        List<Invoker<String>> newInvokers = staticDirectory.list(new MockDirInvocation());
+        Assertions.assertTrue(newInvokers.size() > 0);
         staticDirectory.destroy();
-        Assert.assertTrue(newInvokers.size() == 0);
+        Assertions.assertEquals(0, newInvokers.size());
     }
 }

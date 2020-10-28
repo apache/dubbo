@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.grizzly;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +38,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+
 /**
  * GrizzlyServer
  */
@@ -58,25 +62,27 @@ public class GrizzlyServer extends AbstractServer {
     protected void doOpen() throws Throwable {
         FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         filterChainBuilder.add(new TransportFilter());
-
         filterChainBuilder.add(new GrizzlyCodecAdapter(getCodec(), getUrl(), this));
         filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
+
         TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
-        ThreadPoolConfig config = builder.getWorkerThreadPoolConfig();
+        ThreadPoolConfig config = ThreadPoolConfig.defaultConfig();
         config.setPoolName(SERVER_THREAD_POOL_NAME).setQueueLimit(-1);
-        String threadpool = getUrl().getParameter(Constants.THREADPOOL_KEY, Constants.DEFAULT_THREADPOOL);
-        if (Constants.DEFAULT_THREADPOOL.equals(threadpool)) {
-            int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS);
+        String threadpool = getUrl().getParameter(THREADPOOL_KEY, DEFAULT_THREADPOOL);
+        if (DEFAULT_THREADPOOL.equals(threadpool)) {
+            int threads = getUrl().getPositiveParameter(THREADS_KEY, DEFAULT_THREADS);
             config.setCorePoolSize(threads).setMaxPoolSize(threads)
                     .setKeepAliveTime(0L, TimeUnit.SECONDS);
         } else if ("cached".equals(threadpool)) {
-            int threads = getUrl().getPositiveParameter(Constants.THREADS_KEY, Integer.MAX_VALUE);
+            int threads = getUrl().getPositiveParameter(THREADS_KEY, Integer.MAX_VALUE);
             config.setCorePoolSize(0).setMaxPoolSize(threads)
                     .setKeepAliveTime(60L, TimeUnit.SECONDS);
         } else {
             throw new IllegalArgumentException("Unsupported threadpool type " + threadpool);
         }
-        builder.setKeepAlive(true).setReuseAddress(false)
+        builder.setWorkerThreadPoolConfig(config)
+                .setKeepAlive(true)
+                .setReuseAddress(false)
                 .setIOStrategy(SameThreadIOStrategy.getInstance());
         transport = builder.build();
         transport.setProcessor(filterChainBuilder.build());
