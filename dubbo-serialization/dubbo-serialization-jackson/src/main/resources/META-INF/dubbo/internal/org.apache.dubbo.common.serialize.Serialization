@@ -1,0 +1,1 @@
+jackson=org.apache.dubbo.common.serialize.jackson.JacksonSerialization

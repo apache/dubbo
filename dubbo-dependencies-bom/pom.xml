@@ -120,6 +120,7 @@
         <kryo_version>4.0.2</kryo_version>
         <kryo_serializers_version>0.42</kryo_serializers_version>
         <fst_version>2.48-jdk-6</fst_version>
+        <jackson_version>2.11.3</jackson_version>
         <avro_version>1.8.2</avro_version>
         <apollo_client_version>1.1.1</apollo_client_version>
         <snakeyaml_version>1.20</snakeyaml_version>
@@ -702,6 +703,22 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-grpclb</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
