@@ -6,7 +6,7 @@ import org.apache.dubbo.common.utils.BitList;
 import org.apache.dubbo.rpc.Invoker;
 
 public class RouterCache {
-    protected ConcurrentHashMap<String, BitList<Invoker>> addrPool;
+    protected ConcurrentHashMap<String, BitList<Invoker>> addrPool = new ConcurrentHashMap<>();
     protected Object addrMetadata;
 
     public ConcurrentHashMap<String, BitList<Invoker>> getAddrPool() {

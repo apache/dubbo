@@ -65,8 +65,11 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         }
 
         ConcurrentHashMap<String, BitList<Invoker>> pool = routerCache.getAddrPool();
-
-        return invokers.intersect((BitList)pool.get(tag), invokers.getUnmodifiableList());
+        BitList res = pool.get(tag);
+        if (res == null) {
+            return invokers;
+        }
+        return invokers.intersect((BitList)res, invokers.getUnmodifiableList());
     }
 
 
@@ -77,7 +80,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
 
     @Override
     public boolean isEnable() {
-        return false;
+        return true;
     }
 
     @Override
@@ -88,7 +91,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
 
     @Override
     public String getName() {
-        return null;
+        return "TagStatic";
     }
 
     @Override
@@ -102,21 +105,22 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         RouterCache routerCache = new RouterCache();
         ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = new ConcurrentHashMap<>();
 
-        for (Invoker<T> invoker : invokers) {
+        for (int index = 0; index < invokers.size(); index++) {
+            Invoker<T> invoker = invokers.get(index);
             String tag = invoker.getUrl().getParameter(TAG_KEY);
             if (StringUtils.isEmpty(tag)) {
                 BitList<Invoker<T>> noTagList = addrPool.putIfAbsent(NO_TAG, new BitList<>(invokers, true));
                 if (noTagList == null) {
                     noTagList = addrPool.get(NO_TAG);
                 }
-                noTagList.add(invoker);
+                noTagList.addIndex(index);
+            } else {
+                BitList<Invoker<T>> list = addrPool.putIfAbsent(tag, new BitList<>(invokers, true));
+                if (list == null) {
+                    list = addrPool.get(tag);
+                }
+                list.addIndex(index);
             }
-
-            BitList<Invoker<T>> list = addrPool.putIfAbsent(tag, new BitList<>(invokers, true));
-            if (list == null) {
-                list = addrPool.get(tag);
-            }
-            list.add(invoker);
         }
 
         routerCache.setAddrPool((ConcurrentHashMap)addrPool);

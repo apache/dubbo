@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -64,7 +65,7 @@ public class RouterChain<T> {
 
     protected URL url;
 
-    protected AtomicReference<AddrCache> cache;
+    protected AtomicReference<AddrCache> cache = new AtomicReference<>();
     private Semaphore loopPermit = new Semaphore(1);
 
     private final static ScheduledExecutorService executorService = new ScheduledThreadPoolExecutor(1,
@@ -162,15 +163,21 @@ public class RouterChain<T> {
     public List<Invoker<T>> route(URL url, Invocation invocation) {
 
         AddrCache cache = this.cache.get();
-
+        //if (cache == null) {
+        //    buildCache();
+        //}
         BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
         for (StateRouter stateRouter : stateRouters) {
             if (stateRouter.isEnable()) {
-                finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache.getCache().get(stateRouter), url, invocation);
+                finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache.getCache().get(stateRouter.getName()), url, invocation);
             }
         }
 
-        List<Invoker<T>> finalInvokers = finalBitListInvokers.getUnmodifiableList();
+        List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
+        Iterator<Invoker<T>> iter = finalBitListInvokers.iterator();
+        while (iter.hasNext()) {
+            finalInvokers.add(iter.next());
+        }
 
         for (Router router : routers) {
             finalInvokers = router.route(finalInvokers, url, invocation);
@@ -197,21 +204,28 @@ public class RouterChain<T> {
         List copyInvokers = new ArrayList<>(this.invokers);
         CountDownLatch cdl = new CountDownLatch(stateRouters.size());
         AddrCache newCache = new AddrCache();
+        newCache.setInvokers((List)invokers);
         for (StateRouter stateRouter : (List<StateRouter>)stateRouters) {
             if (stateRouter.isEnable()) {
                 poolRouterThreadPool.execute(new Runnable() {
                     @Override
                     public void run() {
-                        RouterCache routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
-                        //file cache
-                        newCache.getCache().put(stateRouter.getName(), routerCache);
-                        cdl.countDown();
+                        RouterCache routerCache = null;
+                        try {
+                            routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
+                            //file cache
+                            newCache.getCache().put(stateRouter.getName(), routerCache);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        } finally {
+                            cdl.countDown();
+                        }
                     }
                 });
             }
         }
         try {
-            cdl.wait();
+            cdl.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

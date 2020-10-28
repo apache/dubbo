@@ -7,7 +7,7 @@ import org.apache.dubbo.rpc.Invoker;
 
 public class AddrCache {
     protected List<Invoker> invokers;
-    protected ConcurrentHashMap<String, RouterCache> cache;
+    protected ConcurrentHashMap<String, RouterCache> cache = new ConcurrentHashMap<>();
 
     public List<Invoker> getInvokers() {
         return invokers;
