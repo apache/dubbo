@@ -26,7 +26,7 @@ limitations under the License.
     <artifactId>dubbo-serialization-jackson</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The fastjson serialization module of dubbo project</description>
+    <description>The jackson serialization module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
