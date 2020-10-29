@@ -28,6 +28,7 @@ import java.util.List;
 
 import org.apache.dubbo.common.serialize.model.Organization;
 import org.apache.dubbo.common.serialize.model.Person;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +71,7 @@ public class JacksonObjectInputTest {
         JacksonObjectInput = new JacksonObjectInput(new StringReader("1"));
         short result = JacksonObjectInput.readShort();
 
-        assertThat(result, is((short)1));
+        assertThat(result, is((short) 1));
     }
 
     @Test
@@ -144,9 +145,9 @@ public class JacksonObjectInputTest {
     @Test
     public void testReadObjectWithoutClass() throws IOException, ClassNotFoundException {
         JacksonObjectInput = new JacksonObjectInput(
-            new StringReader("{\"@c\":\"" + JSONObject.class.getName() + "\",\"name\":\"John\", \"age\":30 }"));
+                new StringReader("{\"@c\":\"" + JSONObject.class.getName() + "\",\"name\":\"John\", \"age\":30 }"));
 
-        JSONObject readObject = (JSONObject)JacksonObjectInput.readObject();
+        JSONObject readObject = (JSONObject) JacksonObjectInput.readObject();
 
         assertThat(readObject, not(nullValue()));
         assertThat(readObject.getString("name"), is("John"));
@@ -156,8 +157,8 @@ public class JacksonObjectInputTest {
     @Test
     public void testReadObjectWithTowType() throws Exception {
         JacksonObjectInput = new JacksonObjectInput(
-            new StringReader("[{\"@c\":\"" + Person.class.getName() + "\",\"name\":\"John\",\"age\":30},{\"@c\":\""
-                + Person.class.getName() + "\",\"name\":\"Born\",\"age\":24}]"));
+                new StringReader("[{\"@c\":\"" + Person.class.getName() + "\",\"name\":\"John\",\"age\":30},{\"@c\":\""
+                        + Person.class.getName() + "\",\"name\":\"Born\",\"age\":24}]"));
 
         Method methodReturnType = getClass().getMethod("towLayer");
         Type type = methodReturnType.getGenericReturnType();
@@ -173,9 +174,9 @@ public class JacksonObjectInputTest {
     @Test
     public void testReadObjectWithThreeType() throws Exception {
         JacksonObjectInput = new JacksonObjectInput(new StringReader(
-            "{\"@c\":\"" + Organization.class.getName() + "\",\"data\":[\"java.util.ArrayList\",[{\"@c\":\""
-                + Person.class.getName() + "\",\"name\":\"John\",\"age\":30},{\"@c\":\"" + Person.class.getName()
-                + "\",\"name\":\"Born\",\"age\":24}]]}"));
+                "{\"@c\":\"" + Organization.class.getName() + "\",\"data\":[\"java.util.ArrayList\",[{\"@c\":\""
+                        + Person.class.getName() + "\",\"name\":\"John\",\"age\":30},{\"@c\":\"" + Person.class.getName()
+                        + "\",\"name\":\"Born\",\"age\":24}]]}"));
 
         Method methodReturnType = getClass().getMethod("threeLayer");
         Type type = methodReturnType.getGenericReturnType();

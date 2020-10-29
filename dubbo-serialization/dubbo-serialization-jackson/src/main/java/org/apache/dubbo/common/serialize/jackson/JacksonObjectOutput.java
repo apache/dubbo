@@ -100,7 +100,7 @@ public class JacksonObjectOutput implements ObjectOutput {
         writeObjectClass(data);
     }
 
-    private void writeObjectClass(Object data) throws JsonProcessingException {
+    protected void writeObjectClass(Object data) throws JsonProcessingException {
         String value;
         if (JacksonUtils.isArray(data)) {
             value = JacksonUtils.writeValueAsString(data);

@@ -59,4 +59,5 @@ public abstract class JacksonUtils {
     public static boolean isArray(Object obj) {
         return obj != null && obj.getClass().isArray() || obj instanceof Collection;
     }
+
 }

@@ -22,6 +22,7 @@ import java.io.OutputStream;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +42,7 @@ public class JacksonSerializationTest {
 
     @Test
     public void testContentTypeId() {
-        assertThat(JacksonSerialization.getContentTypeId(), is((byte)18));
+        assertThat(JacksonSerialization.getContentTypeId(), is((byte) 18));
     }
 
     @Test

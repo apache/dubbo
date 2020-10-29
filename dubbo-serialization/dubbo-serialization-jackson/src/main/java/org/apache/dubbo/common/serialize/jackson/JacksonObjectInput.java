@@ -1,10 +1,15 @@
 package org.apache.dubbo.common.serialize.jackson;
 
-import java.io.*;
-import java.lang.reflect.Type;
-
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.jackson.utils.JacksonUtils;
+
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.lang.reflect.Type;
 
 /**
  * Jackson object input implementation
@@ -89,7 +94,7 @@ public class JacksonObjectInput implements ObjectInput {
         return line;
     }
 
-    private <T> T read(Class<T> cls) throws IOException {
+    protected <T> T read(Class<T> cls) throws IOException {
         return JacksonUtils.readValue(readLine(), cls);
     }
 }
