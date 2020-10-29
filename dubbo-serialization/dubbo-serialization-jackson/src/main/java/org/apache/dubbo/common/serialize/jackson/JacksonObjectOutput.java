@@ -1,16 +1,18 @@
 package org.apache.dubbo.common.serialize.jackson;
 
-import java.io.*;
-
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.jackson.utils.JacksonUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+
 /**
  * Jackson object output implementation
- *
- * @author Johnson.Jia
  */
 public class JacksonObjectOutput implements ObjectOutput {
 
@@ -99,8 +101,13 @@ public class JacksonObjectOutput implements ObjectOutput {
     }
 
     private void writeObjectClass(Object data) throws JsonProcessingException {
-        String value =
-                "{\"@c\":\"" + data.getClass().getName() + "\"," + JacksonUtils.writeValueAsString(data).substring(1);
+        String value;
+        if (JacksonUtils.isArray(data)) {
+            value = JacksonUtils.writeValueAsString(data);
+        } else {
+            value =
+                    "{\"@c\":\"" + data.getClass().getName() + "\"," + JacksonUtils.writeValueAsString(data).substring(1);
+        }
         char[] json = value.toCharArray();
         writer.write(json, 0, json.length);
         writer.println();

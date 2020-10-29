@@ -10,11 +10,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 
 /**
  * The jackson utils used by dubbo
- *
- * @author Johnson.Jia
  */
 public abstract class JacksonUtils {
 
@@ -57,4 +56,7 @@ public abstract class JacksonUtils {
         return OBJECT_MAPPER.writeValueAsString(value);
     }
 
+    public static boolean isArray(Object obj) {
+        return obj != null && obj.getClass().isArray() || obj instanceof Collection;
+    }
 }

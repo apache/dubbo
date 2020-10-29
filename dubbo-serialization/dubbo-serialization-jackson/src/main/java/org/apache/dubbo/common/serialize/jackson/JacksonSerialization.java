@@ -17,8 +17,6 @@ import static org.apache.dubbo.common.serialize.Constants.JACKSON_SERIALIZATION_
  * <pre>
  *     e.g. &lt;dubbo:protocol serialization="jackson" /&gt;
  * </pre>
- *
- * @author Johnson.Jia
  */
 public class JacksonSerialization implements Serialization {
 

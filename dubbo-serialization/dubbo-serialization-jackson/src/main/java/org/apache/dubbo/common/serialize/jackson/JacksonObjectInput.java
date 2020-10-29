@@ -8,8 +8,6 @@ import org.apache.dubbo.common.serialize.jackson.utils.JacksonUtils;
 
 /**
  * Jackson object input implementation
- *
- * @author Johnson.Jia
  */
 public class JacksonObjectInput implements ObjectInput {
 
