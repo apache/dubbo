@@ -8,9 +8,8 @@ import org.apache.dubbo.common.serialize.jackson.utils.JacksonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
- *
  * Jackson object output implementation
- * 
+ *
  * @author Johnson.Jia
  */
 public class JacksonObjectOutput implements ObjectOutput {
@@ -101,7 +100,7 @@ public class JacksonObjectOutput implements ObjectOutput {
 
     private void writeObjectClass(Object data) throws JsonProcessingException {
         String value =
-            "{\"@c\":\"" + data.getClass().getName() + "\"," + JacksonUtils.writeValueAsString(data).substring(1);
+                "{\"@c\":\"" + data.getClass().getName() + "\"," + JacksonUtils.writeValueAsString(data).substring(1);
         char[] json = value.toCharArray();
         writer.write(json, 0, json.length);
         writer.println();

@@ -30,27 +30,25 @@ public abstract class JacksonUtils {
         // 在遇到未知属性时防止异常
         OBJECT_MAPPER.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         OBJECT_MAPPER.activateDefaultTypingAsProperty(OBJECT_MAPPER.getPolymorphicTypeValidator(),
-            ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT, "@c");
+                ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT, "@c");
     }
 
     /**
      * Method to deserialize JSON content from given JSON content String.
      *
-     * @throws JsonParseException
-     *             if underlying input contains invalid content of type {@link JsonParser} supports (JSON for default
-     *             case)
-     * @throws JsonMappingException
-     *             if the input JSON structure does not match structure expected for result type (or has other mismatch
-     *             issues)
+     * @throws JsonParseException   if underlying input contains invalid content of type {@link JsonParser} supports (JSON for default
+     *                              case)
+     * @throws JsonMappingException if the input JSON structure does not match structure expected for result type (or has other mismatch
+     *                              issues)
      */
     public static <T> T readValue(String content, Class<T> valueType)
-        throws JsonProcessingException, JsonMappingException {
+            throws JsonProcessingException, JsonMappingException {
         return OBJECT_MAPPER.readValue(content, valueType);
     }
 
     /**
      * Method that can be used to serialize any Java value as a String. Functionally equivalent to calling
-     * {@link ObjectMapper#writeValue(Writer,Object)} with {@link java.io.StringWriter} and constructing String, but
+     * {@link ObjectMapper#writeValue(Writer, Object)} with {@link java.io.StringWriter} and constructing String, but
      * more efficient.
      * <p>
      * Note: prior to version 2.1, throws clause included {@link IOException}; 2.1 removed it.
