@@ -138,12 +138,20 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 订阅重试
+     * @param url
+     * @param listener
+     */
     protected void addFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask oldOne = failedSubscribed.get(h);
         if (oldOne != null) {
             return;
         }
+        /**
+         * 重试任务
+         */
         FailedSubscribedTask newTask = new FailedSubscribedTask(url, this, listener);
         oldOne = failedSubscribed.putIfAbsent(h, newTask);
         if (oldOne == null) {
@@ -356,7 +364,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
         /**
-         * 移除对应得失败记录
+         * 移除对应得订阅失败记录
          */
         removeFailedSubscribed(url, listener);
         try {
@@ -390,6 +398,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 重试
+             */
             addFailedSubscribed(url, listener);
         }
     }
@@ -422,6 +433,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 通知
+     * @param url      consumer side url  consumer://192.168.50.39/org.apache.dubbo.demo.DemoService?application=dubbo-demo-annotation-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=5124&side=consumer&sticky=false&timestamp=1603958300664
+     * @param listener listener
+     * @param urls     provider latest urls  0 -> dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-provider&category=providers&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&path=org.apache.dubbo.demo.DemoService&pid=12368&protocol=dubbo&release=&side=provider&timestamp=1603940688145
+     */
     @Override
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
@@ -440,6 +457,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
+        // AbstractRegistry
         super.notify(url, listener, urls);
     }
 

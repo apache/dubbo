@@ -209,7 +209,7 @@ public class NacosRegistry extends FailbackRegistry {
         }
 
         /**
-         *
+         * 订阅
          */
         doSubscribe(url, listener, serviceNames);
     }
@@ -230,7 +230,7 @@ public class NacosRegistry extends FailbackRegistry {
                  */
                 for (String serviceName : serviceNames) {
                     /**
-                     * 获取服务提供者信息
+                     * 获取注册中心中对应的服务提供者信息
                      */
                     List<Instance> instances = namingService.getAllInstances(serviceName,
                             getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
@@ -238,6 +238,10 @@ public class NacosRegistry extends FailbackRegistry {
                     NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     allCorrespondingInstanceList.addAll(instances);
                 }
+
+                /**
+                 *
+                 */
                 notifySubscriber(url, listener, allCorrespondingInstanceList);
                 for (String serviceName : serviceNames) {
                     subscribeEventListener(serviceName, url, listener);
@@ -296,6 +300,9 @@ public class NacosRegistry extends FailbackRegistry {
             scheduleServiceNamesLookup(url, listener);
             return getServiceNamesForOps(url);
         } else {
+            /**
+             * 获取url对应得serviceName
+             */
             return getServiceNames0(url);
         }
     }
@@ -306,7 +313,10 @@ public class NacosRegistry extends FailbackRegistry {
      * @return
      */
     private Set<String> getServiceNames0(URL url) {
-        // providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
+        /**
+         * 获取serviceName
+         * providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
+         */
         NacosServiceName serviceName = createServiceName(url);
 
         final Set<String> serviceNames;
@@ -501,7 +511,16 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
+    /**
+     * 将instances转换为url
+     * @param consumerURL
+     * @param instances
+     * @return
+     */
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
+        /**
+         * 转换并匹配
+         */
         List<URL> urls = buildURLs(consumerURL, instances);
         if (urls.size() == 0) {
             URL empty = URLBuilder.from(consumerURL)
@@ -517,7 +536,13 @@ public class NacosRegistry extends FailbackRegistry {
         List<URL> urls = new LinkedList<>();
         if (instances != null && !instances.isEmpty()) {
             for (Instance instance : instances) {
+                /**
+                 * instance转url
+                 */
                 URL url = buildURL(instance);
+                /**
+                 * 匹配成功
+                 */
                 if (UrlUtils.isMatch(consumerURL, url)) {
                     urls.add(url);
                 }
@@ -562,9 +587,16 @@ public class NacosRegistry extends FailbackRegistry {
         List<Instance> healthyInstances = new LinkedList<>(instances);
         if (healthyInstances.size() > 0) {
             // Healthy Instances
+            /**
+             * 过滤健康的服务提供者节点
+             */
             filterHealthyInstances(healthyInstances);
         }
+        /**
+         * 将健康的节点转换为url
+         */
         List<URL> urls = toUrlWithEmpty(url, healthyInstances);
+        // FailbackRegistry
         NacosRegistry.this.notify(url, listener, urls);
     }
 
@@ -580,6 +612,9 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private URL buildURL(Instance instance) {
+        /**
+         * 元数据
+         */
         Map<String, String> metadata = instance.getMetadata();
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);

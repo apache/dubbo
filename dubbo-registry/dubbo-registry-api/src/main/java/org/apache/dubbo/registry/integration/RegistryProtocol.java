@@ -547,7 +547,9 @@ public class RegistryProtocol implements Protocol {
         }
 
         // group="a,b" or group="*"
-        // 将refer对应得值转换为map
+        /**
+         * 将refer对应得值转换为map
+         */
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
