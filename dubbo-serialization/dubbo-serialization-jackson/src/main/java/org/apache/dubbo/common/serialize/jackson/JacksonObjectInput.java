@@ -89,7 +89,7 @@ public class JacksonObjectInput implements ObjectInput {
 
     @Override
     public Object readObject() throws IOException, ClassNotFoundException {
-        return JacksonUtils.readValue(readLine(), Object.class);
+        return read(Object.class);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class JacksonObjectInput implements ObjectInput {
 
     @Override
     public <T> T readObject(Class<T> cls, Type type) throws IOException, ClassNotFoundException {
-        return readObject(cls);
+        return read(cls);
     }
 
     private String readLine() throws IOException {
