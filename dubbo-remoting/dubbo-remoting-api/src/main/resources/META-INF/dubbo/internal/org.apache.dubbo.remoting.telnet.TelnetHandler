@@ -1,0 +1,5 @@
+clear=org.apache.dubbo.remoting.telnet.support.command.ClearTelnetHandler
+exit=org.apache.dubbo.remoting.telnet.support.command.ExitTelnetHandler
+help=org.apache.dubbo.remoting.telnet.support.command.HelpTelnetHandler
+status=org.apache.dubbo.remoting.telnet.support.command.StatusTelnetHandler
+log=org.apache.dubbo.remoting.telnet.support.command.LogTelnetHandler

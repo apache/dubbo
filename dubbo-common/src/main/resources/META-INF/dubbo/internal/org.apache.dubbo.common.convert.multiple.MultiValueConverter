@@ -1,0 +1,12 @@
+# org.apache.dubbo.common.convert.multiple.MultiValueConverter
+string-to-array=org.apache.dubbo.common.convert.multiple.StringToArrayConverter
+string-to-blocking-deque=org.apache.dubbo.common.convert.multiple.StringToBlockingDequeConverter
+string-to-blocking-queue=org.apache.dubbo.common.convert.multiple.StringToBlockingQueueConverter
+string-to-collection=org.apache.dubbo.common.convert.multiple.StringToCollectionConverter
+string-to-deque=org.apache.dubbo.common.convert.multiple.StringToDequeConverter
+string-to-list=org.apache.dubbo.common.convert.multiple.StringToListConverter
+string-to-navigable-set=org.apache.dubbo.common.convert.multiple.StringToNavigableSetConverter
+string-to-queue=org.apache.dubbo.common.convert.multiple.StringToQueueConverter
+string-to-set=org.apache.dubbo.common.convert.multiple.StringToSetConverter
+string-to-sorted-set=org.apache.dubbo.common.convert.multiple.StringToSortedSetConverter
+string-to-transfer-queue=org.apache.dubbo.common.convert.multiple.StringToTransferQueueConverter
