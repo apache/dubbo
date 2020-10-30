@@ -197,6 +197,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 添加失败记录  并创建重试任务
+     * @param url
+     * @param listener
+     * @param urls
+     */
     private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
         Holder h = new Holder(url, listener);
         FailedNotifiedTask newTask = new FailedNotifiedTask(url, listener);
@@ -448,9 +454,15 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
+            /**
+             *
+             */
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 添加失败记录  并创建重试任务
+             */
             addFailedNotified(url, listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }

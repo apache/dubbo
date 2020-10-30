@@ -432,14 +432,24 @@ public abstract class AbstractRegistry implements Registry {
             categoryNotified.put(category, categoryList);
             /**
              * RegistryDirectory
+             * RegistryDirectory
+             * RegistryDirectory
              */
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
+            /**
+             * 我们将在每次通知后更新缓存文件，
+             * 当我们的注册表由于网络抖动而导致订阅失败时，我们至少可以返回现有的缓存URL。
+             */
             saveProperties(url);
         }
     }
 
+    /**
+     * 更新缓存文件，当我们的注册表由于网络抖动而导致订阅失败时，我们至少可以返回现有的缓存URL。
+     * @param url
+     */
     private void saveProperties(URL url) {
         if (file == null) {
             return;
@@ -460,6 +470,7 @@ public abstract class AbstractRegistry implements Registry {
             }
             properties.setProperty(url.getServiceKey(), buf.toString());
             long version = lastCacheChanged.incrementAndGet();
+            // 同步或异步
             if (syncSaveFile) {
                 doSaveProperties(version);
             } else {

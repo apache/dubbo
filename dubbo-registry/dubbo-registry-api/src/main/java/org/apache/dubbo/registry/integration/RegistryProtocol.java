@@ -596,7 +596,7 @@ public class RegistryProtocol implements Protocol {
         }
         directory.buildRouterChain(subscribeUrl);
         /**
-         * 订阅
+         * 启动服务消费者并订阅服务提供者实例
          */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 

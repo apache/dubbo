@@ -367,6 +367,9 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             }
             /**
              * 将urls转换为invokers  如果url已经执行refer则不会被重新引用
+             * 将urls转换为invokers  如果url已经执行refer则不会被重新引用
+             * 将urls转换为invokers  如果url已经执行refer则不会被重新引用
+             * Invoker对应着每个服务提供者实例  用来与实例通讯
              */
             Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
@@ -377,6 +380,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
              *    eg: consumer protocol = dubbo, provider only has other protocol services(rest).
              * 2. The registration center is not robust and pushes illegal specification data.
              *
+             */
+            /**
+             * 计算错误则不进行处理
+             * 1。客户端配置的协议与服务器的协议不一致。例如：consumer protocol=dubbo，提供者只有其他协议服务（rest）。
+             * 2。注册中心不健壮，并推送非法规范数据。
              */
             if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
                 logger.error(new IllegalStateException("urls to invokers error .invokerUrls.size :" + invokerUrls.size() + ", invoker.size :0. urls :" + invokerUrls
@@ -389,9 +397,16 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
             routerChain.setInvokers(newInvokers);
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            /**
+             * 更新urlInvokerMap为最新的invoker
+             */
             this.urlInvokerMap = newUrlInvokerMap;
 
             try {
+                /**
+                 * 检查缓存中的invokers是否需要destroyed
+                 * 如果设置url的属性：refer.autodestroy=false，则invokers只会增加而不减少，可能会出现引用泄漏
+                 */
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
@@ -470,6 +485,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
+            // 校验
             if (queryProtocols != null && queryProtocols.length() > 0) {
                 boolean accept = false;
                 String[] acceptProtocols = queryProtocols.split(",");
@@ -483,9 +499,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     continue;
                 }
             }
+            // 非空
             if (EMPTY_PROTOCOL.equals(providerUrl.getProtocol())) {
                 continue;
             }
+            // 过滤不支持的协议
             if (!ExtensionLoader.getExtensionLoader(Protocol.class).hasExtension(providerUrl.getProtocol())) {
                 logger.error(new IllegalStateException("Unsupported protocol " + providerUrl.getProtocol() +
                         " in notified url: " + providerUrl + " from registry " + getUrl().getAddress() +
@@ -493,14 +511,22 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                         ExtensionLoader.getExtensionLoader(Protocol.class).getSupportedExtensions()));
                 continue;
             }
+            /**
+             * providerUrl  dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-provider&category=providers&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&path=org.apache.dubbo.demo.DemoService&pid=10252&protocol=dubbo&release=&side=provider&timestamp=1604021242779
+             * url          dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-consumer&category=providers&check=false&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&path=org.apache.dubbo.demo.DemoService&pid=10732&protocol=dubbo&register.ip=192.168.50.39&release=&remote.application=dubbo-demo-annotation-provider&side=consumer&sticky=false&timestamp=1604021242779
+             */
             URL url = mergeUrl(providerUrl);
 
             String key = url.toFullString(); // The parameter urls are sorted
+            // 去重
             if (keys.contains(key)) { // Repeated url
                 continue;
             }
             keys.add(key);
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
+            /**
+             * 缓存不与consumer端参数合并的url，无论consumer如何组合参数，如果服务器url更改，则再次引用
+             */
             Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
             if (invoker == null) { // Not in the cache, refer again
@@ -513,13 +539,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     }
                     if (enabled) {
                         /**
-                         *
+                         * 创建invoker  即启动服务消费者连接
+                         * 创建invoker  即启动服务消费者连接
+                         * 创建invoker  即启动服务消费者连接
+                         * ProtocolFilterWrapper -> ProtocolListenerWrapper -> AbstractProtocol -> DubboProtocol$protocolBindingRefer
                          */
                         invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
                 }
+                // 缓存
                 if (invoker != null) { // Put new invoker in cache
                     newUrlInvokerMap.put(key, invoker);
                 }
@@ -612,18 +642,28 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
      * Check whether the invoker in the cache needs to be destroyed
      * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
      *
+     * 检查缓存中的invokers是否需要destroyed
+     * 如果设置url的属性：refer.autodestroy=false，则invokers只会增加而不减少，可能会出现引用泄漏
+     *
      * @param oldUrlInvokerMap
      * @param newUrlInvokerMap
      */
     private void destroyUnusedInvokers(Map<String, Invoker<T>> oldUrlInvokerMap, Map<String, Invoker<T>> newUrlInvokerMap) {
+        //全部关闭
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
             destroyAllInvokers();
             return;
         }
         // check deleted invoker
+        /**
+         * 比较oldUrlInvokerMap和newUrlInvokerMap  找出待删除的invoker
+         */
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
             Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
+            /**
+             * 遍历oldUrlInvokerMap  找出在newInvokers中不存在的invoker
+             */
             for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
@@ -637,9 +677,13 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         if (deleted != null) {
             for (String url : deleted) {
                 if (url != null) {
+                    /**
+                     * 在oldUrlInvokerMap中删除invoker
+                     */
                     Invoker<T> invoker = oldUrlInvokerMap.remove(url);
                     if (invoker != null) {
                         try {
+                            // destroy
                             invoker.destroy();
                             if (logger.isDebugEnabled()) {
                                 logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");

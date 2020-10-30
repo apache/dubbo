@@ -115,7 +115,7 @@ public class ListenerRegistryWrapper implements Registry {
     public void subscribe(URL url, NotifyListener listener) {
         try {
             /**
-             * FailbackRegistry
+             * FailbackRegistry  启动服务消费者并开启提供者服务实例订阅
              */
             registry.subscribe(url, listener);
         } finally {

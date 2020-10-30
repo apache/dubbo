@@ -60,6 +60,14 @@ public class HeaderExchangeClient implements ExchangeClient {
 
         if (startTimer) {
             URL url = client.getUrl();
+            /**
+             * 1.ReferenceCountExchangeClient
+             * 2.HeaderExchangeClient
+             * 3.HeaderExchangeChannel
+             * 4.NettyClient
+             * 5.NettyChannel
+             * 6.NioSocketChannel
+             */
             startReconnectTask(url);
             startHeartBeatTask(url);
         }
