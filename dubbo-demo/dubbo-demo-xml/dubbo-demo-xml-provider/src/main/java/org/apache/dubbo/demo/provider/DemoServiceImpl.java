@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.demo.ChainService;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.RpcContext;
 
@@ -26,6 +27,12 @@ import java.util.concurrent.CompletableFuture;
 
 public class DemoServiceImpl implements DemoService {
     private static final Logger logger = LoggerFactory.getLogger(DemoServiceImpl.class);
+
+    private ChainService chainService;
+
+    public void setChainService(ChainService chainService) {
+        this.chainService = chainService;
+    }
 
     @Override
     public String sayHello(String name) {
@@ -49,5 +56,14 @@ public class DemoServiceImpl implements DemoService {
             return "async result";
         });
         return cf;
+    }
+
+    @Override
+    public String chain(String input) {
+        logger.info("Received " + input + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
+        logger.info("Calling chain service with request " + input);
+        String chainRes = chainService.chain(input);
+        logger.info("Received " + chainRes + "from remote chain service.");
+        return chainRes;
     }
 }
