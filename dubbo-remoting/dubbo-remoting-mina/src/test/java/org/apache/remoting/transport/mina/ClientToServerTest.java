@@ -26,6 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -40,7 +41,7 @@ public abstract class ClientToServerTest {
 
     protected ExchangeChannel client;
 
-    protected WorldHandler handler = new WorldHandler();
+    protected Replier<World> handler;
 
     protected abstract ExchangeServer newServer(int port, Replier<?> receiver) throws RemotingException;
 
@@ -48,6 +49,8 @@ public abstract class ClientToServerTest {
 
     @BeforeEach
     protected void setUp() throws Exception {
+        handler = Mockito.mock(Replier.class);
+        Mockito.when(handler.reply(Mockito.any(ExchangeChannel.class), Mockito.any(World.class))).thenAnswer(invo -> new Hello("hello," + ((World) invo.getArgument(1)).getName()));
         int port = NetUtils.getAvailablePort();
         server = newServer(port, handler);
         client = newClient(port);

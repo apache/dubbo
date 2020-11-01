@@ -24,7 +24,9 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.RegistryProtocol;
 import org.apache.dubbo.registry.support.AbstractRegistry;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
+import org.apache.dubbo.remoting.exchange.support.Replier;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -40,9 +42,15 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeoutException;
 
 import static org.apache.dubbo.registry.client.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
@@ -89,10 +97,59 @@ public class RegistryProtocolTest {
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
             registryProtocol.setProtocol(dubboProtocol);
-            Invoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
-                    registryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
+            Invoker<DemoService> invoker = new DubboInvoker<>(DemoService.class,
+                    registryUrl, new ExchangeClient[]{mockExchangeClient("10.20.20.20", 2222, new boolean[]{true})});
             registryProtocol.export(invoker);
         });
+    }
+
+    private ExchangeClient mockExchangeClient(String host, int port, boolean[] connected) {
+        ExchangeClient res = Mockito.mock(ExchangeClient.class);
+        InetSocketAddress address = new InetSocketAddress(host, port);
+        Object[] received = new Object[1];
+        Object[] sent = new Object[1];
+        Object[] invoked = new Object[1];
+        Replier<?>[] handler = new Replier<?>[1];
+        boolean[] closed = new boolean[1];
+        Mockito.doAnswer(invo -> {
+            closed[0] = true;
+            return null;
+        }).when(res).close();
+        try {
+            Mockito.doAnswer(invo -> {
+                sent[0] = invo.getArgument(0);
+                return null;
+            }).when(res).send(Mockito.any());
+            Mockito.when(res.request(Mockito.any())).thenAnswer(invo -> res.request(invo.getArgument(0), null));
+            Mockito.when(res.request(Mockito.any(), Mockito.anyInt())).thenAnswer(invo -> res.request(invo.getArgument(0), invo.getArgument(1), null));
+            Mockito.when(res.request(Mockito.any(), Mockito.any(ExecutorService.class))).thenAnswer(invo -> res.request(invo.getArgument(0), 0, invo.getArgument(1)));
+            Mockito.when(res.request(Mockito.any(), Mockito.anyInt(), Mockito.any(ExecutorService.class))).thenAnswer(invo -> {
+                invoked[0] = invo.getArgument(0);
+                return new CompletableFuture<Object>() {
+                    public Object get() throws InterruptedException, ExecutionException {
+                        return received;
+                    }
+
+                    public Object get(int timeoutInMillis) throws InterruptedException, ExecutionException, TimeoutException {
+                        return received;
+                    }
+
+                    public boolean isDone() {
+                        return true;
+                    }
+                };
+            });
+        } catch (RemotingException e) {
+            e.printStackTrace();
+        }
+        Mockito.when(res.isConnected()).thenAnswer(invo -> connected);
+        Mockito.when(res.getRemoteAddress()).thenAnswer(invo -> address);
+        Mockito.doAnswer(invo -> {
+            res.close();
+            return null;
+        }).when(res).close(Mockito.anyInt());
+        Mockito.when(res.isClosed()).thenAnswer(invo -> closed);
+        return res;
     }
 
     @Test

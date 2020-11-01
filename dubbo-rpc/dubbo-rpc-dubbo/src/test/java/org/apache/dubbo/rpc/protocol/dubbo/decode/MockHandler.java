@@ -16,11 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
+import org.apache.dubbo.remoting.RemotingException;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.mockito.Mockito;
 
+import java.net.InetSocketAddress;
 import java.util.function.Consumer;
 
 public class MockHandler extends ChannelDuplexHandler {
@@ -35,6 +41,20 @@ public class MockHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        this.handler.received(new MockChannel(consumer), msg);
+        Channel channel = Mockito.mock(Channel.class);
+        Mockito.when(channel.getRemoteAddress()).thenAnswer(invo -> new InetSocketAddress(NetUtils.getAvailablePort()));
+        Mockito.when(channel.getUrl()).thenAnswer(invo -> new URL("dubbo", "localhost", 20880));
+        Mockito.when(channel.getLocalAddress()).thenAnswer(invo -> new InetSocketAddress(20883));
+        try {
+            Mockito.doAnswer(invo -> {
+                if (consumer != null) {
+                    consumer.accept(invo.getArgument(0));
+                }
+                return null;
+            }).when(channel).send(Mockito.any());
+        } catch (RemotingException e) {
+            e.printStackTrace();
+        }
+        this.handler.received(channel, msg);
     }
 }

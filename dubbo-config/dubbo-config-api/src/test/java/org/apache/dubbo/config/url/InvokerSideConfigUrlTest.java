@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.url;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -24,17 +25,18 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.mock.MockRegistry;
+import org.apache.dubbo.registry.Registry;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
-
 
 public class InvokerSideConfigUrlTest extends UrlTestBase {
     private static final Logger log = LoggerFactory.getLogger(InvokerSideConfigUrlTest.class);

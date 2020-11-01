@@ -21,16 +21,38 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.serialize.ObjectInput;
 import com.alibaba.dubbo.common.serialize.ObjectOutput;
 import com.alibaba.dubbo.common.serialize.Serialization;
+import org.mockito.Mockito;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 
 public class MySerialization implements Serialization {
 
+    private ObjectOutput mockObjectOutput(OutputStream output) {
+        ObjectOutput res = Mockito.mock(ObjectOutput.class);
+        final BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+        try {
+            Mockito.doAnswer(invo -> {
+                writer.write((String) invo.getArgument(1));
+                writer.write('\n');
+                return null;
+            }).when(res).writeUTF(Mockito.anyString());
+            Mockito.doAnswer(invo -> {
+                writer.flush();
+                return null;
+            }).when(res).flushBuffer();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
     @Override
     public ObjectOutput serialize(URL url, OutputStream output) throws IOException {
-        return new MyObjectOutput(output);
+        return mockObjectOutput(output);
     }
 
     @Override

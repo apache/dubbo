@@ -18,8 +18,11 @@ package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -43,11 +46,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  * These junit tests aim to test unpack and stick pack of dubbo and telnet
@@ -180,13 +186,13 @@ public class DubboTelnetDecodeTest {
      * |               telnet(incomplete)                 |
      * +--------------------------------------------------+
      * <p>
-     *
+     * <p>
      * Second ByteBuf:
      * +--------------------------++----------------------+
      * |  telnet(the remaining)   ||   dubbo(complete)    |
      * +--------------------------++----------------------+
-     *                            ||
-     *                        Magic Code
+     * ||
+     * Magic Code
      *
      * @throws InterruptedException
      */
@@ -253,7 +259,7 @@ public class DubboTelnetDecodeTest {
      * |               telnet(incomplete)                 |
      * +--------------------------------------------------+
      * <p>
-     *
+     * <p>
      * Second ByteBuf (secondByteBuf):
      * +--------------------------------------------------+
      * |  telnet(the remaining)   |   telnet(complete)    |
@@ -323,8 +329,8 @@ public class DubboTelnetDecodeTest {
      * +-------------------------++-----------------------+
      * |  dubbo(the remaining)   ||    dubbo(complete)    |
      * +-------------------------++-----------------------+
-     *                           ||
-     *                       Magic Code
+     * ||
+     * Magic Code
      *
      * @throws InterruptedException
      */
@@ -464,7 +470,22 @@ public class DubboTelnetDecodeTest {
         ByteBuf dubboByteBuf = Unpooled.buffer();
         ChannelBuffer buffer = new NettyBackedChannelBuffer(dubboByteBuf);
         DubboCodec dubboCodec = new DubboCodec();
-        dubboCodec.encode(new MockChannel(), buffer, request);
+        Channel channel = Mockito.mock(Channel.class);
+        Consumer consumer = null;
+        Mockito.when(channel.getRemoteAddress()).thenAnswer(invo -> new InetSocketAddress(NetUtils.getAvailablePort()));
+        Mockito.when(channel.getUrl()).thenAnswer(invo -> new URL("dubbo", "localhost", 20880));
+        Mockito.when(channel.getLocalAddress()).thenAnswer(invo -> new InetSocketAddress(20883));
+        try {
+            Mockito.doAnswer(invo -> {
+                if (consumer != null) {
+                    consumer.accept(invo.getArgument(0));
+                }
+                return null;
+            }).when(channel).send(Mockito.any());
+        } catch (RemotingException e) {
+            e.printStackTrace();
+        }
+        dubboCodec.encode(channel, buffer, request);
 
         return dubboByteBuf;
     }
