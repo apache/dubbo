@@ -111,10 +111,10 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
         return mH2i.readInputStream();
     }
 
-	@Override
-	public void cleanup() {
-		if(mH2i != null) {
-			mH2i.reset();
-		}
-	}
+    @Override
+    public void cleanup() {
+        if(mH2i != null) {
+            mH2i.reset();
+        }
+    }
 }

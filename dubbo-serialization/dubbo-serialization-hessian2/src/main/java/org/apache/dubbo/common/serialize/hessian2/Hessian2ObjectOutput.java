@@ -108,10 +108,10 @@ public class Hessian2ObjectOutput implements ObjectOutput, Cleanable {
         return mH2o.getBytesOutputStream();
     }
 
-	@Override
-	public void cleanup() {
-		if(mH2o != null) {
-			mH2o.reset();
-		}
-	}
+    @Override
+    public void cleanup() {
+        if(mH2o != null) {
+            mH2o.reset();
+        }
+    }
 }
