@@ -28,7 +28,7 @@ import java.io.OutputStream;
 /**
  * Hessian2 object output implementation
  */
-public class Hessian2ObjectOutput implements ObjectOutput,Cleanable {
+public class Hessian2ObjectOutput implements ObjectOutput, Cleanable {
 
     private static ThreadLocal<Hessian2Output> OUTPUT_TL = ThreadLocal.withInitial(() -> {
         Hessian2Output h2o = new Hessian2Output(null);
@@ -110,7 +110,6 @@ public class Hessian2ObjectOutput implements ObjectOutput,Cleanable {
 
 	@Override
 	public void cleanup() {
-		// TODO Auto-generated method stub
 		if(mH2o != null) {
 			mH2o.reset();
 		}

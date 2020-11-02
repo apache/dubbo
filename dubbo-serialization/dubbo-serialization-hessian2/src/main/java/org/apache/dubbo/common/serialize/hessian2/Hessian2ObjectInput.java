@@ -29,7 +29,7 @@ import java.lang.reflect.Type;
 /**
  * Hessian2 object input implementation
  */
-public class Hessian2ObjectInput implements ObjectInput,Cleanable {
+public class Hessian2ObjectInput implements ObjectInput, Cleanable {
 
     private static ThreadLocal<Hessian2Input> INPUT_TL = ThreadLocal.withInitial(() -> {
         Hessian2Input h2i = new Hessian2Input(null);
@@ -113,7 +113,6 @@ public class Hessian2ObjectInput implements ObjectInput,Cleanable {
 
 	@Override
 	public void cleanup() {
-		// TODO Auto-generated method stub
 		if(mH2i != null) {
 			mH2i.reset();
 		}
