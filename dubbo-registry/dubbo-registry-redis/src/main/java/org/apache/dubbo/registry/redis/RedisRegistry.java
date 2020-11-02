@@ -214,7 +214,6 @@ public class RedisRegistry extends FailbackRegistry {
         String key = toCategoryPath(url);
         String value = url.toFullString();
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
-        boolean success = false;
         RpcException exception = null;
         try {
             redisClient.hset(key, value, expire);
@@ -224,11 +223,7 @@ public class RedisRegistry extends FailbackRegistry {
         }
 
         if (exception != null) {
-            if (success) {
-                logger.warn(exception.getMessage(), exception);
-            } else {
-                throw exception;
-            }
+            throw exception;
         }
     }
 
