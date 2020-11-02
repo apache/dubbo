@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -102,7 +104,7 @@ public class DubboBootstrapTest {
     @Test
     public void testLoadRegistries() {
         System.setProperty("dubbo.registry.address", "addr1");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
+        AbstractInterfaceConfig interfaceConfig = Mockito.spy(AbstractInterfaceConfig.class);
         // FIXME: now we need to check first, then load
         interfaceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
         interfaceConfig.checkRegistry();
@@ -123,7 +125,7 @@ public class DubboBootstrapTest {
     public void testLoadMonitor() {
         System.setProperty("dubbo.monitor.address", "monitor-addr:12080");
         System.setProperty("dubbo.monitor.protocol", "monitor");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
+        AbstractInterfaceConfig interfaceConfig = Mockito.spy(AbstractInterfaceConfig.class);
         interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
         interfaceConfig.setMonitor(new MonitorConfig());
         URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new URL("dubbo", "addr1", 9090));

@@ -26,6 +26,7 @@ import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.Map;
 
@@ -35,7 +36,9 @@ public class CacheTest {
     public void testCacheFactory() {
         URL url = URL.valueOf("test://test:11/test?cache=jacache&.cache.write.expire=1");
         CacheFactory cacheFactory = new MyCacheFactory();
-        Invocation invocation = new NullInvocation();
+        Invocation invocation = Mockito.mock(Invocation.class);
+        Mockito.when(invocation.getParameterTypes()).thenAnswer(invo -> new Class[0]);
+        Mockito.when(invocation.getArguments()).thenAnswer(invo -> new Class[0]);
         Cache cache = cacheFactory.getCache(url, invocation);
         cache.put("testKey", "testValue");
 
@@ -47,65 +50,5 @@ public class CacheTest {
         Assertions.assertEquals("testValue", v);
     }
 
-    static class NullInvocation implements Invocation {
-        @Override
-        public String getTargetServiceUniqueName() {
-            return null;
-        }
 
-        @Override
-        public String getProtocolServiceKey() {
-            return null;
-        }
-
-        @Override
-        public String getMethodName() {
-            return null;
-        }
-
-        @Override
-        public Class<?>[] getParameterTypes() {
-            return new Class[0];
-        }
-
-        @Override
-        public Object[] getArguments() {
-            return new Object[0];
-        }
-
-        @Override
-        public Map<String, String> getAttachments() {
-            return null;
-        }
-
-        @Override
-        public String getAttachment(String key) {
-            return null;
-        }
-
-        @Override
-        public String getAttachment(String key, String defaultValue) {
-            return null;
-        }
-
-        @Override
-        public Invoker<?> getInvoker() {
-            return null;
-        }
-
-        @Override
-        public Object put(Object key, Object value) {
-            return null;
-        }
-
-        @Override
-        public Object get(Object key) {
-            return null;
-        }
-
-        @Override
-        public Map<Object, Object> getAttributes() {
-            return null;
-        }
-    }
 }

@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.Mockito;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -62,11 +63,11 @@ public class AbstractInterfaceConfigTest {
     public void testCheckRegistry1() {
         System.setProperty("dubbo.registry.address", "addr1");
         try {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setApplication(new ApplicationConfig("testCheckRegistry1"));
-            interfaceConfig.checkRegistry();
-            Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
-            Assertions.assertEquals("addr1", interfaceConfig.getRegistries().get(0).getAddress());
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setApplication(new ApplicationConfig("testCheckRegistry1"));
+            config.checkRegistry();
+            Assertions.assertEquals(1, config.getRegistries().size());
+            Assertions.assertEquals("addr1", config.getRegistries().get(0).getAddress());
         } finally {
             System.clearProperty("dubbo.registry.address");
         }
@@ -75,24 +76,24 @@ public class AbstractInterfaceConfigTest {
     @Test
     public void testCheckRegistry2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkRegistry();
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.checkRegistry();
         });
     }
 
     @Test
     public void checkInterfaceAndMethods1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(null, null);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.checkInterfaceAndMethods(null, null);
         });
     }
 
     @Test
     public void checkInterfaceAndMethods2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
         });
     }
 
@@ -100,8 +101,8 @@ public class AbstractInterfaceConfigTest {
     public void checkInterfaceAndMethod3() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             MethodConfig methodConfig = new MethodConfig();
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
         });
     }
 
@@ -110,8 +111,8 @@ public class AbstractInterfaceConfigTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             MethodConfig methodConfig = new MethodConfig();
             methodConfig.setName("nihao");
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
         });
     }
 
@@ -119,239 +120,236 @@ public class AbstractInterfaceConfigTest {
     public void checkInterfaceAndMethod5() {
         MethodConfig methodConfig = new MethodConfig();
         methodConfig.setName("hello");
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
     }
 
     @Test
     public void checkStubAndMock1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setLocal(GreetingLocal1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setLocal(GreetingLocal1.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock2() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setLocal(GreetingLocal2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setLocal(GreetingLocal2.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock3() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal(GreetingLocal3.class.getName());
-        interfaceConfig.checkStubAndLocal(Greeting.class);
-        ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setLocal(GreetingLocal3.class.getName());
+        config.checkStubAndLocal(Greeting.class);
+        ConfigValidationUtils.checkMock(Greeting.class, config);
     }
 
     @Test
     public void checkStubAndMock4() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setStub(GreetingLocal1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setStub(GreetingLocal1.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock5() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setStub(GreetingLocal2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setStub(GreetingLocal2.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock6() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setStub(GreetingLocal3.class.getName());
-        interfaceConfig.checkStubAndLocal(Greeting.class);
-        ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setStub(GreetingLocal3.class.getName());
+        config.checkStubAndLocal(Greeting.class);
+        ConfigValidationUtils.checkMock(Greeting.class, config);
     }
 
     @Test
     public void checkStubAndMock7() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock("return {a, b}");
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setMock("return {a, b}");
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock8() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock(GreetingMock1.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setMock(GreetingMock1.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void checkStubAndMock9() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setMock(GreetingMock2.class.getName());
-            interfaceConfig.checkStubAndLocal(Greeting.class);
-            ConfigValidationUtils.checkMock(Greeting.class, interfaceConfig);
+            AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+            config.setMock(GreetingMock2.class.getName());
+            config.checkStubAndLocal(Greeting.class);
+            ConfigValidationUtils.checkMock(Greeting.class, config);
         });
     }
 
     @Test
     public void testLocal() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLocal((Boolean) null);
-        Assertions.assertNull(interfaceConfig.getLocal());
-        interfaceConfig.setLocal(true);
-        Assertions.assertEquals("true", interfaceConfig.getLocal());
-        interfaceConfig.setLocal("GreetingMock");
-        Assertions.assertEquals("GreetingMock", interfaceConfig.getLocal());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setLocal((Boolean) null);
+        Assertions.assertNull(config.getLocal());
+        config.setLocal(true);
+        Assertions.assertEquals("true", config.getLocal());
+        config.setLocal("GreetingMock");
+        Assertions.assertEquals("GreetingMock", config.getLocal());
     }
 
     @Test
     public void testStub() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setStub((Boolean) null);
-        Assertions.assertNull(interfaceConfig.getStub());
-        interfaceConfig.setStub(true);
-        Assertions.assertEquals("true", interfaceConfig.getStub());
-        interfaceConfig.setStub("GreetingMock");
-        Assertions.assertEquals("GreetingMock", interfaceConfig.getStub());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setStub((Boolean) null);
+        Assertions.assertNull(config.getStub());
+        config.setStub(true);
+        Assertions.assertEquals("true", config.getStub());
+        config.setStub("GreetingMock");
+        Assertions.assertEquals("GreetingMock", config.getStub());
     }
 
     @Test
     public void testCluster() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setCluster("mockcluster");
-        Assertions.assertEquals("mockcluster", interfaceConfig.getCluster());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setCluster("mockcluster");
+        Assertions.assertEquals("mockcluster", config.getCluster());
     }
 
     @Test
     public void testProxy() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setProxy("mockproxyfactory");
-        Assertions.assertEquals("mockproxyfactory", interfaceConfig.getProxy());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setProxy("mockproxyfactory");
+        Assertions.assertEquals("mockproxyfactory", config.getProxy());
     }
 
     @Test
     public void testConnections() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setConnections(1);
-        Assertions.assertEquals(1, interfaceConfig.getConnections().intValue());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setConnections(1);
+        Assertions.assertEquals(1, config.getConnections().intValue());
     }
 
     @Test
     public void testFilter() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setFilter("mockfilter");
-        Assertions.assertEquals("mockfilter", interfaceConfig.getFilter());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setFilter("mockfilter");
+        Assertions.assertEquals("mockfilter", config.getFilter());
     }
 
     @Test
     public void testListener() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setListener("mockinvokerlistener");
-        Assertions.assertEquals("mockinvokerlistener", interfaceConfig.getListener());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setListener("mockinvokerlistener");
+        Assertions.assertEquals("mockinvokerlistener", config.getListener());
     }
 
     @Test
     public void testLayer() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setLayer("layer");
-        Assertions.assertEquals("layer", interfaceConfig.getLayer());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setLayer("layer");
+        Assertions.assertEquals("layer", config.getLayer());
     }
 
     @Test
     public void testApplication() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
         ApplicationConfig applicationConfig = new ApplicationConfig();
-        interfaceConfig.setApplication(applicationConfig);
-        Assertions.assertSame(applicationConfig, interfaceConfig.getApplication());
+        config.setApplication(applicationConfig);
+        Assertions.assertSame(applicationConfig, config.getApplication());
     }
 
     @Test
     public void testModule() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
         ModuleConfig moduleConfig = new ModuleConfig();
-        interfaceConfig.setModule(moduleConfig);
-        Assertions.assertSame(moduleConfig, interfaceConfig.getModule());
+        config.setModule(moduleConfig);
+        Assertions.assertSame(moduleConfig, config.getModule());
     }
 
     @Test
     public void testRegistry() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
         RegistryConfig registryConfig = new RegistryConfig();
-        interfaceConfig.setRegistry(registryConfig);
-        Assertions.assertSame(registryConfig, interfaceConfig.getRegistry());
+        config.setRegistry(registryConfig);
+        Assertions.assertSame(registryConfig, config.getRegistry());
     }
 
     @Test
     public void testRegistries() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
         RegistryConfig registryConfig = new RegistryConfig();
-        interfaceConfig.setRegistries(Collections.singletonList(registryConfig));
-        Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
-        Assertions.assertSame(registryConfig, interfaceConfig.getRegistries().get(0));
+        config.setRegistries(Collections.singletonList(registryConfig));
+        Assertions.assertEquals(1, config.getRegistries().size());
+        Assertions.assertSame(registryConfig, config.getRegistries().get(0));
     }
 
     @Test
     public void testMonitor() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setMonitor("monitor-addr");
-        Assertions.assertEquals("monitor-addr", interfaceConfig.getMonitor().getAddress());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setMonitor("monitor-addr");
+        Assertions.assertEquals("monitor-addr", config.getMonitor().getAddress());
         MonitorConfig monitorConfig = new MonitorConfig();
-        interfaceConfig.setMonitor(monitorConfig);
-        Assertions.assertSame(monitorConfig, interfaceConfig.getMonitor());
+        config.setMonitor(monitorConfig);
+        Assertions.assertSame(monitorConfig, config.getMonitor());
     }
 
     @Test
     public void testOwner() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setOwner("owner");
-        Assertions.assertEquals("owner", interfaceConfig.getOwner());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setOwner("owner");
+        Assertions.assertEquals("owner", config.getOwner());
     }
 
     @Test
     public void testCallbacks() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setCallbacks(2);
-        Assertions.assertEquals(2, interfaceConfig.getCallbacks().intValue());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setCallbacks(2);
+        Assertions.assertEquals(2, config.getCallbacks().intValue());
     }
 
     @Test
     public void testOnconnect() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setOnconnect("onConnect");
-        Assertions.assertEquals("onConnect", interfaceConfig.getOnconnect());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setOnconnect("onConnect");
+        Assertions.assertEquals("onConnect", config.getOnconnect());
     }
 
     @Test
     public void testOndisconnect() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setOndisconnect("onDisconnect");
-        Assertions.assertEquals("onDisconnect", interfaceConfig.getOndisconnect());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setOndisconnect("onDisconnect");
+        Assertions.assertEquals("onDisconnect", config.getOndisconnect());
     }
 
     @Test
     public void testScope() {
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.setScope("scope");
-        Assertions.assertEquals("scope", interfaceConfig.getScope());
+        AbstractInterfaceConfig config = Mockito.spy(AbstractInterfaceConfig.class);
+        config.setScope("scope");
+        Assertions.assertEquals("scope", config.getScope());
     }
-
-    public static class InterfaceConfig extends AbstractInterfaceConfig {
-
-    }
+    
 }
