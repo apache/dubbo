@@ -596,11 +596,17 @@ public class RegistryProtocol implements Protocol {
         }
         directory.buildRouterChain(subscribeUrl);
         /**
-         * 启动服务消费者并订阅服务提供者实例
+         * 启动服务消费者
+         * 从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
+         * 订阅服务生产者实例  随时更新invoker列表
          */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
         Invoker<T> invoker = cluster.join(directory);
+
+        /**
+         * RegistryProtocolListener扩展   由客户实现
+         */
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;

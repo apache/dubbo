@@ -223,7 +223,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     /**
-     * 文本文件保存
+     * 本地文件保存属性
      * @param metadataIdentifier
      * @param value
      * @param add
@@ -328,6 +328,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 存储服务消费者配置
+     * @param consumerMetadataIdentifier
+     * @param serviceParameterMap
+     */
     @Override
     public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
@@ -337,6 +342,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 存储服务消费者配置
+     * @param consumerMetadataIdentifier
+     * @param serviceParameterMap
+     */
     public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
@@ -347,7 +357,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
             Gson gson = new Gson();
             String data = gson.toJson(serviceParameterMap);
+            /**
+             * 存储元数据  ConfigCenterBasedMetadataReport
+             */
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
+            /**
+             * 本地文件保存属性
+             */
             saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.

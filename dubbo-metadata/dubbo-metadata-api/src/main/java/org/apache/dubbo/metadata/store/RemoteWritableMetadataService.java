@@ -57,8 +57,15 @@ public class RemoteWritableMetadataService extends AbstractAbstractWritableMetad
         return MetadataReportInstance.getMetadataReport(true);
     }
 
+    /**
+     * 存储服务消费者配置
+     * @param consumerURL
+     */
     @Override
     protected void publishConsumerParameters(URL consumerURL) {
+        /**
+         * 存储服务消费者配置   AbstractMetadataReport
+         */
         getMetadataReport().storeConsumerMetadata(new MetadataIdentifier(consumerURL.getServiceInterface(),
                 consumerURL.getParameter(VERSION_KEY), consumerURL.getParameter(GROUP_KEY), CONSUMER_SIDE,
                 consumerURL.getParameter(APPLICATION_KEY)), consumerURL.getParameters());

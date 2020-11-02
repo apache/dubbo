@@ -663,6 +663,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                      * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
                      *
                      * 将已导出服务的配置信息  存储到配置中心
+                     * org.apache.dubbo.demo.GreetingService:::provider:dubbo-demo-annotation-provider
                      */
                     metadataService.publishServiceDefinition(url);
                 }
