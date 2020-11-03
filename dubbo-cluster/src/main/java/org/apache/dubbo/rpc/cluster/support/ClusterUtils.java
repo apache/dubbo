@@ -17,9 +17,11 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Constants;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ALIVE_KEY;
@@ -115,6 +117,23 @@ public class ClusterUtils {
         }
 
         return remoteUrl.clearParameters().addParameters(map);
+    }
+
+    public static URL mergeProviderUrl(URL remoteUrl, Map<String, String> localMap) {
+
+        //urlprocessor => upc
+        List<ProviderURLMergeProcessor> providerURLMergeProcessors = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class)
+                .getActivateExtension(remoteUrl, "upc");
+
+        if (providerURLMergeProcessors != null && providerURLMergeProcessors.size() > 0) {
+            for (ProviderURLMergeProcessor providerURLMergeProcessor : providerURLMergeProcessors) {
+                if (providerURLMergeProcessor.accept(remoteUrl, localMap)) {
+                    return providerURLMergeProcessor.mergeProviderUrl(remoteUrl, localMap);
+                }
+            }
+        }
+
+        return mergeUrl(remoteUrl, localMap);
     }
 
 }

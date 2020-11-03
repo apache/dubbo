@@ -18,8 +18,6 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.common.context.Lifecycle;
 
-import org.springframework.context.annotation.Import;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -31,11 +29,14 @@ import java.lang.annotation.Target;
  * Enables Dubbo {@link Lifecycle} components
  *
  * @since 2.7.5
+ * @deprecated as 2.7.6,  Dubbo {@link Lifecycle} components will be registered automatically. Current annotation may be
+ * removed in the future
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
-@Import(DubboLifecycleComponentRegistrar.class)
+//@Import(DubboLifecycleComponentRegistrar.class) // Disabled since 2.7.6
+@Deprecated
 public @interface EnableDubboLifecycle {
 }

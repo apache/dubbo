@@ -30,7 +30,10 @@ import static com.alibaba.spring.util.AnnotatedBeanDefinitionRegistryUtils.regis
  * A {@link ImportBeanDefinitionRegistrar register} for the {@link Lifecycle Dubbo Lifecycle} components
  *
  * @since 2.7.5
+ * @deprecated as 2.7.6,  Dubbo {@link Lifecycle} components will be registered automatically. Current class may be
+ * removed in the future
  */
+@Deprecated
 public class DubboLifecycleComponentRegistrar implements ImportBeanDefinitionRegistrar {
 
     @Override

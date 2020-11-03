@@ -113,7 +113,7 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
-        return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
+        return WRAPPER_MAP.computeIfAbsent(c, Wrapper::makeWrapper);
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
@@ -226,7 +226,7 @@ public abstract class Wrapper {
             }
         }
         c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
+        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class " + c.getName() + ".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();

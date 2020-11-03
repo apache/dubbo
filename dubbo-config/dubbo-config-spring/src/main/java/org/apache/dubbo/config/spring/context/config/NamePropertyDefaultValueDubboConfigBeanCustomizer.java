@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.config;
 
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 
 import org.springframework.util.ReflectionUtils;
 
@@ -32,7 +33,9 @@ import static org.springframework.beans.BeanUtils.getPropertyDescriptor;
  * if absent.
  *
  * @since 2.6.6
+ * @deprecated {@link DubboConfigDefaultPropertyValueBeanPostProcessor} instead
  */
+@Deprecated
 public class NamePropertyDefaultValueDubboConfigBeanCustomizer implements DubboConfigBeanCustomizer {
 
     /**

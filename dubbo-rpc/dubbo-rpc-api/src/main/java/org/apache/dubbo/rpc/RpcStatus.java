@@ -32,10 +32,14 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class RpcStatus {
 
-    private static final ConcurrentMap<String, RpcStatus> SERVICE_STATISTICS = new ConcurrentHashMap<String, RpcStatus>();
+    private static final ConcurrentMap<String, RpcStatus> SERVICE_STATISTICS = new ConcurrentHashMap<String,
+            RpcStatus>();
 
-    private static final ConcurrentMap<String, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS = new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
+    private static final ConcurrentMap<String, ConcurrentMap<String, RpcStatus>> METHOD_STATISTICS =
+            new ConcurrentHashMap<String, ConcurrentMap<String, RpcStatus>>();
+
     private final ConcurrentMap<String, Object> values = new ConcurrentHashMap<String, Object>();
+
     private final AtomicInteger active = new AtomicInteger();
     private final AtomicLong total = new AtomicLong();
     private final AtomicInteger failed = new AtomicInteger();
@@ -101,13 +105,21 @@ public class RpcStatus {
         if (methodStatus.active.get() == Integer.MAX_VALUE) {
             return false;
         }
-        if (methodStatus.active.incrementAndGet() > max) {
-            methodStatus.active.decrementAndGet();
-            return false;
-        } else {
-            appStatus.active.incrementAndGet();
-            return true;
+        for (int i; ; ) {
+            i = methodStatus.active.get();
+
+            if (i == Integer.MAX_VALUE || i + 1 > max) {
+                return false;
+            }
+
+            if (methodStatus.active.compareAndSet(i, i + 1)) {
+                break;
+            }
         }
+
+        appStatus.active.incrementAndGet();
+
+        return true;
     }
 
     /**
@@ -124,13 +136,16 @@ public class RpcStatus {
         status.active.decrementAndGet();
         status.total.incrementAndGet();
         status.totalElapsed.addAndGet(elapsed);
+
         if (status.maxElapsed.get() < elapsed) {
             status.maxElapsed.set(elapsed);
         }
+
         if (succeeded) {
             if (status.succeededMaxElapsed.get() < elapsed) {
                 status.succeededMaxElapsed.set(elapsed);
             }
+
         } else {
             status.failed.incrementAndGet();
             status.failedElapsed.addAndGet(elapsed);

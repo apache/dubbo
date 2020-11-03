@@ -92,10 +92,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
     }
 
-    public void exported() {
-
-    }
-
     @Deprecated
     private static List<ProtocolConfig> convertProviderToProtocol(List<ProviderConfig> providers) {
         if (CollectionUtils.isEmpty(providers)) {
@@ -197,23 +193,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void checkDefault() {
-        createProviderIfAbsent();
-    }
-
-    private void createProviderIfAbsent() {
-        if (provider != null) {
-            return;
+    public void checkDefault() throws IllegalStateException {
+        if (provider == null) {
+            provider = ApplicationModel.getConfigManager()
+                    .getDefaultProvider()
+                    .orElse(new ProviderConfig());
         }
-        setProvider(
-                ApplicationModel.getConfigManager()
-                        .getDefaultProvider()
-                        .orElseGet(() -> {
-                            ProviderConfig providerConfig = new ProviderConfig();
-                            providerConfig.refresh();
-                            return providerConfig;
-                        })
-        );
     }
 
     public void checkProtocol() {
@@ -224,8 +209,8 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void completeCompoundConfigs() {
-    	super.completeCompoundConfigs(provider);
-    	if(provider != null) {
+        super.completeCompoundConfigs(provider);
+        if (provider != null) {
             if (protocols == null) {
                 setProtocols(provider.getProtocols());
             }
@@ -238,8 +223,9 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             if (StringUtils.isEmpty(protocolIds)) {
                 setProtocolIds(provider.getProtocolIds());
             }
-    	}
+        }
     }
+
     private void convertProtocolIdsToProtocols() {
         computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
@@ -248,8 +234,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                 if (protocolConfigs.isEmpty()) {
                     protocolConfigs = new ArrayList<>(1);
                     ProtocolConfig protocolConfig = new ProtocolConfig();
+                    protocolConfig.setDefault(true);
                     protocolConfig.refresh();
                     protocolConfigs.add(protocolConfig);
+                    ApplicationModel.getConfigManager().addProtocol(protocolConfig);
                 }
                 setProtocols(protocolConfigs);
             }
@@ -318,9 +306,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public T getRef() {
@@ -373,15 +362,15 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
-    @Override
-    public void setMock(Boolean mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
-
-    @Override
-    public void setMock(String mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
+//    @Override
+//    public void setMock(String mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
+//
+//    @Override
+//    public void setMock(Object mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
 
     public ServiceMetadata getServiceMetadata() {
         return serviceMetadata;
@@ -411,7 +400,17 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        return URL.buildKey(interfaceName, group, version);
+        return URL.buildKey(interfaceName, getGroup(), getVersion());
+    }
+
+    @Override
+    public String getGroup() {
+        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
+    }
+
+    @Override
+    public String getVersion() {
+        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
     }
 
     private void computeValidProtocolIds() {

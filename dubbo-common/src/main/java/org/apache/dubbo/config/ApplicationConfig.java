@@ -36,6 +36,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -157,6 +158,11 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean registerConsumer;
 
     private String repository;
+
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
 
     public ApplicationConfig() {
     }
@@ -419,6 +425,7 @@ public class ApplicationConfig extends AbstractConfig {
         return !StringUtils.isEmpty(name);
     }
 
+    @Parameter(key = METADATA_KEY)
     public String getMetadataType() {
         return metadataType;
     }
@@ -443,6 +450,15 @@ public class ApplicationConfig extends AbstractConfig {
         this.repository = repository;
     }
 
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
     @Override
     public void refresh() {
         super.refresh();
@@ -462,7 +478,13 @@ public class ApplicationConfig extends AbstractConfig {
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
-                    parameters.putAll(extraParameters);
+                    extraParameters.forEach((key, value) -> {
+                        String prefix = this.getPrefix() + ".";
+                        if (key.startsWith(prefix)) {
+                            key = key.substring(prefix.length());
+                        }
+                        parameters.put(key, value);
+                    });
                 }
             }
         }

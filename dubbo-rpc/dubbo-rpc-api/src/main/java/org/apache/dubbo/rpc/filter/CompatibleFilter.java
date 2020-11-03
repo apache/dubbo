@@ -45,7 +45,7 @@ import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
  * @see Filter
  *
  */
-public class CompatibleFilter implements Filter, Filter.Listener2 {
+public class CompatibleFilter implements Filter, Filter.Listener {
 
     private static Logger logger = LoggerFactory.getLogger(CompatibleFilter.class);
 
@@ -55,7 +55,7 @@ public class CompatibleFilter implements Filter, Filter.Listener2 {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         if (!invocation.getMethodName().startsWith("$") && !appResponse.hasException()) {
             Object value = appResponse.getValue();
             if (value != null) {

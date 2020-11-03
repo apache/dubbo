@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.CompositeConfiguration;
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,7 +27,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -320,7 +318,13 @@ public abstract class AbstractConfig implements Serializable {
                 && method.getReturnType() == void.class);
     }
 
-    private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
+    /**
+     * @param parameters the raw parameters
+     * @param prefix     the prefix
+     * @return the parameters whose raw key will replace "-" to "."
+     * @revised 2.7.8 "private" to be "protected"
+     */
+    protected static Map<String, String> convert(Map<String, String> parameters, String prefix) {
         if (parameters == null || parameters.isEmpty()) {
             return Collections.emptyMap();
         }
@@ -459,16 +463,7 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         Environment env = ApplicationModel.getEnvironment();
         try {
-            CompositeConfiguration compositeConfiguration = env.getConfiguration(getPrefix(), getId());
-            Configuration config = new ConfigConfigurationAdapter(this);
-            if (env.isConfigCenterFirst()) {
-                // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration -> AbstractConfig -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(4, config);
-            } else {
-                // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-                compositeConfiguration.addConfiguration(2, config);
-            }
-
+            CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(this);
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {

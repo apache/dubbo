@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -38,6 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER
 /**
  * ListenerProtocol
  */
+@Activate(order = 200)
 public class ProtocolListenerWrapper implements Protocol {
 
     private final Protocol protocol;

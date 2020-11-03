@@ -18,6 +18,8 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+import com.alibaba.spring.context.OnceApplicationContextEventListener;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
@@ -30,12 +32,19 @@ import org.springframework.core.Ordered;
  *
  * @since 2.7.5
  */
-public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicationContextEventListener
-        implements Ordered {
+public class DubboBootstrapApplicationListener extends OnceApplicationContextEventListener implements Ordered {
+
+    /**
+     * The bean name of {@link DubboBootstrapApplicationListener}
+     *
+     * @since 2.7.6
+     */
+    public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
 
     private final DubboBootstrap dubboBootstrap;
 
-    public DubboBootstrapApplicationListener() {
+    public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
+        super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
     }
 

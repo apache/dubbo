@@ -38,15 +38,19 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     private static final Logger logger = LoggerFactory.getLogger(AbstractConfiguratorListener.class);
 
     protected List<Configurator> configurators = Collections.emptyList();
-
+    protected GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(
+            GovernanceRuleRepository.class).getDefaultExtension();
 
     protected final void initWith(String key) {
-        GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
         ruleRepository.addListener(key, this);
         String rawConfig = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
         if (!StringUtils.isEmpty(rawConfig)) {
             genConfiguratorsFromRawRule(rawConfig);
         }
+    }
+
+    protected final void stopListen(String key) {
+        ruleRepository.removeListener(key, this);
     }
 
     @Override

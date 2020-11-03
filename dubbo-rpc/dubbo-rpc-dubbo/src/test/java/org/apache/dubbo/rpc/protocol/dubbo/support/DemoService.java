@@ -51,7 +51,7 @@ public interface DemoService {
 
     String get(CustomArgument arg1);
 
-    byte getbyte(byte arg);
+    int getInt(int arg);
 
     void nonSerializedParameter(NonSerialized ns);
 

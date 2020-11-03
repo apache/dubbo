@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ServiceConfigBase;
 
@@ -32,7 +33,7 @@ import java.util.Set;
  * ProviderModel is about published services
  */
 public class ProviderModel {
-    private final String serviceKey;
+    private String serviceKey;
     private final Object serviceInstance;
     private final ServiceDescriptor serviceModel;
     private final ServiceConfigBase<?> serviceConfig;
@@ -56,6 +57,7 @@ public class ProviderModel {
     public String getServiceKey() {
         return serviceKey;
     }
+
 
     public Class<?> getServiceInterfaceClass() {
         return serviceModel.getServiceInterfaceClass();
@@ -137,6 +139,15 @@ public class ProviderModel {
 
         this.serviceMetadata = serviceMetadata;
         initMethod(serviceModel.getServiceInterfaceClass());
+    }
+
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+        if (serviceMetadata != null) {
+            serviceMetadata.setServiceKey(serviceKey);
+            serviceMetadata.setGroup(BaseServiceMetadata.groupFromServiceKey(serviceKey));
+        }
     }
 
     public String getServiceName() {

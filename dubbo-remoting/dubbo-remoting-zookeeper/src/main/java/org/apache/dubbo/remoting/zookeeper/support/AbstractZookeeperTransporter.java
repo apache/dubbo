@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -52,6 +53,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     @Override
     public ZookeeperClient connect(URL url) {
         ZookeeperClient zookeeperClient;
+        // address format: {[username:password@]address}
         List<String> addressList = getURLBackupAddress(url);
         // The field define the zookeeper server , including protocol, host, port, username, password
         if ((zookeeperClient = fetchAndUpdateZookeeperClientCache(addressList)) != null && zookeeperClient.isConnected()) {
@@ -111,8 +113,29 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
     List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
         addressList.add(url.getAddress());
-
         addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
+
+        String authPrefix = null;
+        if (StringUtils.isNotEmpty(url.getUsername())) {
+            StringBuilder buf = new StringBuilder();
+            buf.append(url.getUsername());
+            if (StringUtils.isNotEmpty(url.getPassword())) {
+                buf.append(":");
+                buf.append(url.getPassword());
+            }
+            buf.append("@");
+            authPrefix = buf.toString();
+        }
+
+        if (StringUtils.isNotEmpty(authPrefix)) {
+            List<String> authedAddressList = new ArrayList<>(addressList.size());
+            for (String addr : addressList) {
+                authedAddressList.add(authPrefix + addr);
+            }
+            return authedAddressList;
+        }
+
+
         return addressList;
     }
 

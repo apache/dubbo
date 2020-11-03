@@ -59,7 +59,7 @@ public class RestProtocolTest {
 
     @Test
     public void testRestProtocol() {
-        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
         DemoServiceImpl server = new DemoServiceImpl();
 
         this.registerProvider(url, server, DemoService.class);
@@ -80,7 +80,8 @@ public class RestProtocolTest {
     public void testRestProtocolWithContextPath() {
         DemoServiceImpl server = new DemoServiceImpl();
         Assertions.assertFalse(server.isCalled());
-        URL url = URL.valueOf("rest://127.0.0.1:5341/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("rest://127.0.0.1:" + port + "/a/b/c?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
 
         this.registerProvider(url, server, DemoService.class);
 
@@ -95,7 +96,7 @@ public class RestProtocolTest {
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, url));
 
-        url = URL.valueOf("rest://127.0.0.1:5341/a/b/c/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
+        url = URL.valueOf("rest://127.0.0.1:" + port + "/a/b/c/?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
         Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
         DemoService client = proxy.getProxy(invoker);
         String result = client.sayHello("haha");
@@ -176,7 +177,7 @@ public class RestProtocolTest {
 
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
 
-        RpcInvocation rpcInvocation = new RpcInvocation("hello", DemoService.class.getName(), new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
+        RpcInvocation rpcInvocation = new RpcInvocation("hello", DemoService.class.getName(), "", new Class[]{Integer.class, Integer.class}, new Integer[]{2, 3});
 
         Result result = exporter.getInvoker().invoke(rpcInvocation);
         assertThat(result.getValue(), CoreMatchers.<Object>is(5));
@@ -253,7 +254,7 @@ public class RestProtocolTest {
 
     @Test
     public void testRemoteApplicationName() {
-        URL url = URL.valueOf("rest://127.0.0.1:5342/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService").addParameter("application","consumer");
+        URL url = URL.valueOf("rest://127.0.0.1:" + NetUtils.getAvailablePort() + "/rest/say?version=1.0.0&interface=org.apache.dubbo.rpc.protocol.rest.DemoService").addParameter("application", "consumer");
         DemoServiceImpl server = new DemoServiceImpl();
 
         this.registerProvider(url, server, DemoService.class);

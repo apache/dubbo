@@ -93,7 +93,7 @@ public class UrlUtils {
         String defaultPassword = defaults == null ? null : defaults.get(PASSWORD_KEY);
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(PORT_KEY));
         String defaultPath = defaults == null ? null : defaults.get(PATH_KEY);
-        Map<String, String> defaultParameters = defaults == null ? null : new HashMap<String, String>(defaults);
+        Map<String, String> defaultParameters = defaults == null ? null : new HashMap<>(defaults);
         if (defaultParameters != null) {
             defaultParameters.remove(PROTOCOL_KEY);
             defaultParameters.remove(USERNAME_KEY);
@@ -110,8 +110,8 @@ public class UrlUtils {
         String host = u.getHost();
         int port = u.getPort();
         String path = u.getPath();
-        Map<String, String> parameters = new HashMap<String, String>(u.getParameters());
-        if ((protocol == null || protocol.length() == 0) && defaultProtocol != null && defaultProtocol.length() > 0) {
+        Map<String, String> parameters = new HashMap<>(u.getParameters());
+        if (protocol == null || protocol.length() == 0) {
             changed = true;
             protocol = defaultProtocol;
         }
