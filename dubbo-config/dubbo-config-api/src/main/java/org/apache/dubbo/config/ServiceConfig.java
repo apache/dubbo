@@ -182,13 +182,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public synchronized void export() {
-        if (!shouldExport()) {
+        if (!shouldExport() || exported) {
             return;
         }
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
+            bootstrap.service(this);
         }
 
         checkAndUpdateSubConfigs();
