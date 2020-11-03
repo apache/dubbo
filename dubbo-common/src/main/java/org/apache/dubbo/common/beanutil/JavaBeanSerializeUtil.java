@@ -348,7 +348,7 @@ public final class JavaBeanSerializeUtil {
             }
         }
 
-        return cl.newInstance();
+        return cl.getDeclaredConstructor().newInstance();
     }
 
     public static Object getConstructorArg(Class<?> cl) {
