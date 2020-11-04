@@ -607,7 +607,7 @@ public class PojoUtils {
         if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if ("bool".equals(parameterType.getName())) {
+        if ("boolean".equals(parameterType.getName())) {
             return false;
         }
         return parameterType.isPrimitive() ? 0 : null;
