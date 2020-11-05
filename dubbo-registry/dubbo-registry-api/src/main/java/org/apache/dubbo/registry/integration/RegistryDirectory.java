@@ -311,7 +311,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         /**
-         *
+         * 根据url刷新invoker
          */
         refreshInvoker(urls);
     }
@@ -357,9 +357,11 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                 invokerUrls = new ArrayList<>();
             }
             if (invokerUrls.isEmpty() && this.cachedInvokerUrls != null) {
+                // 添加缓存 url 到 invokerUrls 中
                 invokerUrls.addAll(this.cachedInvokerUrls);
             } else {
                 this.cachedInvokerUrls = new HashSet<>();
+                // 缓存 invokerUrls
                 this.cachedInvokerUrls.addAll(invokerUrls);//Cached invoker urls, convenient for comparison
             }
             if (invokerUrls.isEmpty()) {
@@ -482,12 +484,14 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
             return newUrlInvokerMap;
         }
         Set<String> keys = new HashSet<>();
+        // 获取服务消费端配置的协议
         String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
             // 校验
             if (queryProtocols != null && queryProtocols.length() > 0) {
                 boolean accept = false;
+                // 检测服务提供者协议是否被服务消费者所支持
                 String[] acceptProtocols = queryProtocols.split(",");
                 for (String acceptProtocol : acceptProtocols) {
                     if (providerUrl.getProtocol().equals(acceptProtocol)) {
@@ -496,6 +500,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     }
                 }
                 if (!accept) {
+                    // 若服务消费者协议头不被消费者所支持，则忽略当前 providerUrl
                     continue;
                 }
             }
@@ -528,13 +533,17 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
              * 缓存不与consumer端参数合并的url，无论consumer如何组合参数，如果服务器url更改，则再次引用
              */
             Map<String, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
+            // 获取与 url 对应的 Invoker
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(key);
+            // 缓存未命中
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
                     if (url.hasParameter(DISABLED_KEY)) {
+                        // 获取 disable 配置，取反，然后赋值给 enable 变量
                         enabled = !url.getParameter(DISABLED_KEY, false);
                     } else {
+                        // 获取 enable 配置，并赋值给 enable 变量
                         enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
@@ -554,6 +563,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
                     newUrlInvokerMap.put(key, invoker);
                 }
             } else {
+                // 将 invoker 存储到 newUrlInvokerMap 中
                 newUrlInvokerMap.put(key, invoker);
             }
         }
@@ -700,6 +710,7 @@ public class RegistryDirectory<T> extends AbstractDirectory<T> implements Notify
     @Override
     public List<Invoker<T>> doList(Invocation invocation) {
         if (forbidden) {
+            // 服务提供者关闭或禁用了服务，此时抛出 No provider 异常
             // 1. No service provider 2. Service providers are disabled
             throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "No provider available from registry " +
                     getUrl().getAddress() + " for service " + getConsumerUrl().getServiceKey() + " on consumer " +
