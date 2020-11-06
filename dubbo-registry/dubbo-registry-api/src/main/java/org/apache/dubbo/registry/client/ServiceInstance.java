@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.client;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.SortedMap;
 
 /**
  * The model class of an instance of a service, which is used for service registration and discovery.
@@ -83,6 +84,8 @@ public interface ServiceInstance extends Serializable {
      * @return non-null, mutable and unsorted {@link Map}
      */
     Map<String, String> getMetadata();
+
+    SortedMap<String, String> getSortedMetadata();
 
     Map<String, String> getExtendParams();
 

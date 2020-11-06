@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
@@ -33,9 +34,12 @@ public class MigrationRuleHandler<T> {
 
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
+    private MigrationRule rule;
+    private URL consumerURL;
 
-    public MigrationRuleHandler(MigrationClusterInvoker<T> invoker) {
+    public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
+        this.consumerURL = url;
     }
 
     public void doMigrate(String rawRule) {
@@ -48,8 +52,13 @@ public class MigrationRuleHandler<T> {
         } else if (INIT.equals(rawRule)) {
             step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
-            MigrationRule rule = MigrationRule.parse(rawRule);
-            step = rule.getStep();
+            try {
+                rule = MigrationRule.parse(rawRule);
+                setMigrationRule(rule);
+                step = rule.getStep(consumerURL.getServiceKey());
+            } catch (Exception e) {
+                logger.error("Parse migration rule error, will use default step " + step, e);
+            }
         }
 
         if (currentStep == null || currentStep != step) {
@@ -70,6 +79,9 @@ public class MigrationRuleHandler<T> {
 
     public void setCurrentStep(MigrationStep currentStep) {
         this.currentStep = currentStep;
+    }
+
+    public void setMigrationRule(MigrationRule rule) {
         this.migrationInvoker.setMigrationStep(currentStep);
     }
 }

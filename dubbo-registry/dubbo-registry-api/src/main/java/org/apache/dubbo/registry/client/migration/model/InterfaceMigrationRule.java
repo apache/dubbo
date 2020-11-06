@@ -14,13 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.migration;
+package org.apache.dubbo.registry.client.migration.model;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.registry.client.migration.model.MigrationRule;
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+public class InterfaceMigrationRule {
+    private String serviceKey;
+    private MigrationStep step;
+    private String threshold;
 
-@SPI
-public interface MigrationAddressComparator {
-    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule);
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
+    public MigrationStep getStep() {
+        return step;
+    }
+
+    public void setStep(MigrationStep step) {
+        this.step = step;
+    }
+
+    public String getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(String threshold) {
+        this.threshold = threshold;
+    }
 }

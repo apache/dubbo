@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -97,7 +98,7 @@ public class MetadataInfo implements Serializable {
 
         StringBuilder sb = new StringBuilder();
         sb.append(app);
-        for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {
+        for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
             sb.append(entry.getValue().toDescString());
         }
         this.revision = RevisionResolver.calRevision(sb.toString());
@@ -365,7 +366,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toDescString() {
-            return this.getMatchKey() + getMethodSignaturesString() + getParams();
+            return this.getMatchKey() + getMethodSignaturesString() + new TreeMap<>(getParams());
         }
 
         private String getMethodSignaturesString() {

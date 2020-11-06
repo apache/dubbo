@@ -511,11 +511,6 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
-    @Deprecated
-    public void init() {
-        initialize();
-    }
-
     /**
      * Initialize
      */
@@ -928,7 +923,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean hasExportedServices() {
-        return !metadataService.getExportedURLs().isEmpty();
+        return CollectionUtils.isNotEmpty(configManager.getServices());
     }
 
     /**

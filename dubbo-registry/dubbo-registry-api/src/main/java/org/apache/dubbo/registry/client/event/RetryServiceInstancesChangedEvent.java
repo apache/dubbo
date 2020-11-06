@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.migration;
+package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.registry.client.migration.model.MigrationRule;
-import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+/**
+ * A retry task when is failed.
+ */
+public class RetryServiceInstancesChangedEvent extends ServiceInstancesChangedEvent {
 
-@SPI
-public interface MigrationAddressComparator {
-    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule);
+    private volatile long failureRecordTime;
+
+    public RetryServiceInstancesChangedEvent() {
+        super();
+        this.failureRecordTime = System.currentTimeMillis();
+    }
+
+    public long getFailureRecordTime() {
+        return failureRecordTime;
+    }
 }
