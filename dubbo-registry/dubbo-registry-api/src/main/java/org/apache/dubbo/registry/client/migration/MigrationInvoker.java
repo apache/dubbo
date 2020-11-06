@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
@@ -52,6 +53,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
     private volatile ClusterInvoker<T> currentAvailableInvoker;
     private volatile MigrationStep step;
+    private volatile MigrationRule rule;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -249,6 +251,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     @Override
+    public MigrationRule getMigrationRule() {
+        return rule;
+    }
+
+    @Override
+    public void setMigrationRule(MigrationRule rule) {
+        this.rule = rule;
+    }
+
+    @Override
     public boolean invokersChanged() {
         return invokersChanged;
     }
@@ -262,7 +274,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
-        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker))) {
+        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             discardInterfaceInvokerAddress(invoker);
         } else {
             discardServiceDiscoveryInvokerAddress(serviceDiscoveryInvoker);

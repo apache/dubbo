@@ -85,7 +85,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
-        MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
+        MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker, url);
         listeners.add(migrationListener);
 
         migrationListener.doMigrate(rawRule);
