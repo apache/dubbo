@@ -20,6 +20,8 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
@@ -32,7 +34,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     private static final float DEFAULT_THREAD = 0.8f;
 
     @Override
-    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
+    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
         if (!serviceDiscoveryInvoker.isAvailable()) {
             logger.info("No instance address available, will not migrate.");
             return false;
@@ -48,7 +50,8 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
         int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
 
-        String rawThreshold = ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
+        String rawThreshold = rule.getThreshold(invoker.getUrl().getServiceKey());
+        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
         try {
             threshold = Float.parseFloat(rawThreshold);

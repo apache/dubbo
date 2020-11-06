@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
@@ -32,6 +33,10 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
     MigrationStep getMigrationStep();
 
     void setMigrationStep(MigrationStep step);
+
+    MigrationRule getMigrationRule();
+
+    void setMigrationRule(MigrationRule rule);
 
     boolean invokersChanged();
 
