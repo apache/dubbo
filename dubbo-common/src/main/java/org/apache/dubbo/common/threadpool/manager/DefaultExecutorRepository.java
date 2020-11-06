@@ -52,6 +52,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
+    private ScheduledExecutorService serviceDiscveryAddressNotificationExecutor;
+
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
@@ -62,6 +64,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
+        serviceDiscveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
     }
 
     /**
@@ -152,6 +155,10 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public ScheduledExecutorService getServiceExporterExecutor() {
         return serviceExporterExecutor;
+    }
+
+    public ScheduledExecutorService getServiceDiscveryAddressNotificationExecutor() {
+        return serviceDiscveryAddressNotificationExecutor;
     }
 
     @Override

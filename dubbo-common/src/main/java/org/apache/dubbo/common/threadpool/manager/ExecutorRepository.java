@@ -57,6 +57,8 @@ public interface ExecutorRepository {
 
     ScheduledExecutorService getServiceExporterExecutor();
 
+    ScheduledExecutorService getServiceDiscveryAddressNotificationExecutor();
+
     /**
      * Get the default shared threadpool.
      *
