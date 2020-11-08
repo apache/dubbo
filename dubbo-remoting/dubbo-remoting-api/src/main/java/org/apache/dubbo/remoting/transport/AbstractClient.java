@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 
 /**
  * AbstractClient
@@ -90,12 +91,21 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
-        url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        url = appendThreadNameAndThreadPoolIfAbsent(url);
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
+    private static URL appendThreadNameAndThreadPoolIfAbsent(URL url) {
+        URL retUrl = url;
+        if (!retUrl.hasParameter(THREAD_NAME_KEY)) {
+            retUrl = ExecutorUtil.setThreadName(retUrl, CLIENT_THREAD_POOL_NAME);
+        }
+        retUrl = retUrl.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
+        return retUrl;
+    }
+
     protected static ChannelHandler wrapChannelHandler(URL url, ChannelHandler handler) {
+        url = appendThreadNameAndThreadPoolIfAbsent(url);
         return ChannelHandlers.wrap(handler, url);
     }
 
