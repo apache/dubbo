@@ -81,8 +81,7 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final static String DEFAULT_ROOT = "dubbo";
 
-    private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1,
-            new NamedThreadFactory("DubboRegistryExpireTimer", true));
+    private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
 
     private final ScheduledFuture<?> expireFuture;
 
