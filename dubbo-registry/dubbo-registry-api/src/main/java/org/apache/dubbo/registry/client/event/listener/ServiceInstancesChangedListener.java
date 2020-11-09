@@ -130,7 +130,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
                 // it means fetching Meta Server failed if metadata is null
                 ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
-                newRevisionToMetadata.put(revision, metadata);
+                newRevisionToMetadata.putIfAbsent(revision, metadata);
             }
         }
 
@@ -249,7 +249,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 if (metadata != null) {
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     failureCounter.set(0);
-                    revisionToMetadata.put(revision, metadata);
+                    revisionToMetadata.putIfAbsent(revision, metadata);
                     parseMetadata(revision, metadata, localServiceToRevisions);
                 } else {
                     logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
@@ -258,8 +258,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     failureCounter.incrementAndGet();
                 }
             }
-        } else if (subInstances.size() < 1) {
-            // "subInstances.size() >= 1" means metadata of this revision has been parsed, ignore
+        } else if (subInstances.size() == 1) {
+            // "subInstances.size() >= 2" means metadata of this revision has been parsed, ignore
             parseMetadata(revision, metadata, localServiceToRevisions);
         }
         return metadata;
