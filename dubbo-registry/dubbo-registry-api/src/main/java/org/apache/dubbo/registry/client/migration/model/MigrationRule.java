@@ -54,14 +54,19 @@ public class MigrationRule {
     }
 
     public MigrationStep getStep(String serviceKey) {
-        InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
-        if (rule != null) {
-            return rule.getStep() == null ? step : rule.getStep();
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getStep() == null ? step : rule.getStep();
+            }
         }
         return step;
     }
 
     public InterfaceMigrationRule getInterfaceRule(String serviceKey) {
+        if (interfaceRules == null) {
+            return null;
+        }
         return interfaceRules.get(serviceKey);
     }
 
@@ -70,9 +75,11 @@ public class MigrationRule {
     }
 
     public String getThreshold(String serviceKey) {
-        InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
-        if (rule != null) {
-            return rule.getThreshold() == null ? threshold : rule.getThreshold();
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getThreshold() == null ? threshold : rule.getThreshold();
+            }
         }
         return threshold;
     }

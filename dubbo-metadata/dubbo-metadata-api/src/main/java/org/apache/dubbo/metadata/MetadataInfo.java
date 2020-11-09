@@ -340,13 +340,15 @@ public class MetadataInfo implements Serializable {
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
-            Map<String, String> keyMap = map.get(method);
             String value = null;
-            if (keyMap != null) {
-                value = keyMap.get(key);
-            }
-            if (StringUtils.isEmpty(value)) {
-                value = getParameter(key);
+            if (map != null) {
+                Map<String, String> keyMap = map.get(method);
+                if (keyMap != null) {
+                    value = keyMap.get(key);
+                }
+                if (StringUtils.isEmpty(value)) {
+                    value = getParameter(key);
+                }
             }
             return value;
         }
