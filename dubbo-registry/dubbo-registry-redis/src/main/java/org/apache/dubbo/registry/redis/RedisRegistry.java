@@ -136,8 +136,7 @@ public class RedisRegistry extends FailbackRegistry {
         for (URL url : new HashSet<>(getRegistered())) {
             if (url.getParameter(DYNAMIC_KEY, true)) {
                 String key = toCategoryPath(url);
-                if (redisClient.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod))
-                        == 1) {
+                if (redisClient.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
                     redisClient.publish(key, REGISTER);
                 }
             }
@@ -163,8 +162,7 @@ public class RedisRegistry extends FailbackRegistry {
                                 redisClient.hdel(key, entry.getKey());
                                 delete = true;
                                 if (logger.isWarnEnabled()) {
-                                    logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey()
-                                            + ", expire: " + new Date(expire) + ", now: " + new Date(now));
+                                    logger.warn("Delete expired key: " + key + " -> value: " + entry.getKey() + ", expire: " + new Date(expire) + ", now: " + new Date(now));
                                 }
                             }
                         }
@@ -200,8 +198,7 @@ public class RedisRegistry extends FailbackRegistry {
         try {
             redisClient.destroy();
         } catch (Throwable t) {
-            logger.warn("Failed to destroy the redis registry client. registry: " + getUrl().getAddress()
-                    + ", cause: " + t.getMessage(), t);
+            logger.warn("Failed to destroy the redis registry client. registry: " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
         }
         ExecutorUtil.gracefulShutdown(expireExecutor, expirePeriod);
     }
@@ -215,8 +212,7 @@ public class RedisRegistry extends FailbackRegistry {
             redisClient.hset(key, value, expire);
             redisClient.publish(key, REGISTER);
         } catch (Throwable t) {
-            throw new RpcException("Failed to register service to redis registry. registry: " + url.getAddress()
-                    + ", service: " + url + ", cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to register service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -228,8 +224,7 @@ public class RedisRegistry extends FailbackRegistry {
             redisClient.hdel(key, value);
             redisClient.publish(key, UNREGISTER);
         } catch (Throwable t) {
-            throw new RpcException("Failed to unregister service to redis registry. registry: " + url.getAddress()
-                    + ", service: " + url + ", cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to unregister service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -261,12 +256,10 @@ public class RedisRegistry extends FailbackRegistry {
                     }
                 }
             } else {
-                doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url,
-                        Collections.singletonList(listener));
+                doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
             }
         } catch (Throwable t) {
-            throw new RpcException("Failed to subscribe service from redis registry. registry: " + url.getAddress()
-                    + ", service: " + url + ", cause: " + t.getMessage(), t);
+            throw new RpcException("Failed to subscribe service from redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -470,12 +463,10 @@ public class RedisRegistry extends FailbackRegistry {
                                         doNotify(service);
                                         resetSkip();
                                     }
-                                    redisClient.psubscribe(new NotifySub(),
-                                            service + PATH_SEPARATOR + ANY_VALUE); // blocking
+                                    redisClient.psubscribe(new NotifySub(), service + PATH_SEPARATOR + ANY_VALUE); // blocking
                                 }
                             } catch (Throwable t) { // Retry another server
-                                logger.warn("Failed to subscribe service from redis registry. registry: "
-                                        + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
+                                logger.warn("Failed to subscribe service from redis registry. registry: " + getUrl().getAddress() + ", cause: " + t.getMessage(), t);
                                 // If you only have a single redis, you need to take a rest to avoid overtaking a lot of CPU resources
                                 sleep(reconnectPeriod);
                             }
