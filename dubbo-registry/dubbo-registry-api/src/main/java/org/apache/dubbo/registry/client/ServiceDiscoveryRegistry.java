@@ -147,10 +147,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     public ServiceDiscoveryRegistry(URL registryURL) {
         super(registryURL);
+        // 实例化registryURL对应的serviceDiscovery  并初始化
         this.serviceDiscovery = createServiceDiscovery(registryURL);
+        // 获取默认实现 CompositeServiceNameMapping
         this.serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         String metadataStorageType = getMetadataStorageType(registryURL);
+        // 获取metadataStorageType对应的WritableMetadataService实现
         this.writableMetadataService = WritableMetadataService.getExtension(metadataStorageType);
+        // spi  获取SubscribedURLsSynthesizer的实现
         this.subscribedURLsSynthesizers = initSubscribedURLsSynthesizers();
     }
 
@@ -175,9 +179,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return non-null
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
+        /**
+         * 获取registryURL中协议对应的ServiceDiscovery实现
+         */
         ServiceDiscovery originalServiceDiscovery = getServiceDiscovery(registryURL);
+        // NacosServiceDiscovery
         ServiceDiscovery serviceDiscovery = enhanceEventPublishing(originalServiceDiscovery);
         execute(() -> {
+            // 初始化   EventPublishingServiceDiscovery -> NacosServiceDiscovery
             serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
                     .removeParameter(REGISTRY_TYPE_KEY));
         });
@@ -211,10 +220,15 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return new EventPublishingServiceDiscovery(original);
     }
 
+    /**
+     * dubbo://2.0.1.17:20885/org.apache.dubbo.config.bootstrap.EchoService?anyhost=true&application=dubbo-nacos-provider-demo&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=test&interface=org.apache.dubbo.config.bootstrap.EchoService&metadata-type=remote&methods=echo&pid=6320&release=&revision=1.0.1&side=provider&timestamp=1604907434619&version=1.0.1
+     * @param providerURL
+     * @return
+     */
     protected boolean shouldRegister(URL providerURL) {
-
+        // 获取side对应的值
         String side = providerURL.getParameter(SIDE_KEY);
-
+        //side对应的值是否为provider
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
         if (!should) {
@@ -232,6 +246,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public final void register(URL url) {
+        /**
+         * url对应的side值非provider 则返回
+         */
         if (!shouldRegister(url)) { // Should Not Register
             return;
         }
@@ -240,6 +257,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
+        /**
+         *
+         */
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));

@@ -267,9 +267,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // Sending a registration request to the server side
             /**
-             * 将服务注册到注册中心
-             * 将服务注册到注册中心
-             * 将服务注册到注册中心
+             * 将服务注册到注册中心  是否服务自省
+             * 将服务注册到注册中心  是否服务自省
+             * 将服务注册到注册中心  是否服务自省
              */
             doRegister(url);
         } catch (Exception e) {

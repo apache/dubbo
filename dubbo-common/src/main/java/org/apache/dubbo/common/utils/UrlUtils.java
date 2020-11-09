@@ -520,6 +520,7 @@ public class UrlUtils {
         if (parameters == null || parameters.isEmpty()) {
             return false;
         }
+        // "service".equals(parameters.get("registry-type"))
         return SERVICE_REGISTRY_TYPE.equals(parameters.get(REGISTRY_TYPE_KEY));
     }
 

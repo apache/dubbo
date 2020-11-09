@@ -26,21 +26,21 @@ public class RegistryServiceListener1 implements RegistryServiceListener {
 
     @Override
     public void onRegister(URL url) {
-        delegate.onRegister(url);
+//        delegate.onRegister(url);
     }
 
     @Override
     public void onUnregister(URL url) {
-        delegate.onUnregister(url);
+//        delegate.onUnregister(url);
     }
 
     @Override
     public void onSubscribe(URL url) {
-        delegate.onSubscribe(url);
+//        delegate.onSubscribe(url);
     }
 
     @Override
     public void onUnsubscribe(URL url) {
-        delegate.onUnsubscribe(url);
+//        delegate.onUnsubscribe(url);
     }
 }

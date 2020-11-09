@@ -60,6 +60,7 @@ public class ListenerRegistryWrapper implements Registry {
         try {
             /**
              * 注册  FailbackRegistry
+             * 是否服务自省
              */
             registry.register(url);
         } finally {

@@ -377,7 +377,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         );
 
         /**
-         * 获取注册中心url
+         * 获取注册中心url   是否采用服务自省
+         * 获取注册中心url   是否采用服务自省
+         * 获取注册中心url   是否采用服务自省
          */
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 

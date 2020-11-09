@@ -237,6 +237,9 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
         executeWithEvents(
                 of(new ServiceDiscoveryInitializingEvent(this, serviceDiscovery)),
+                /**
+                 * 初始化  调用对应的注册中心实现
+                 */
                 () -> serviceDiscovery.initialize(registryURL),
                 of(new ServiceDiscoveryInitializedEvent(this, serviceDiscovery))
         );

@@ -180,7 +180,7 @@ public class RegistryProtocol implements Protocol {
      */
     private void register(URL registryUrl, URL registeredProviderUrl) {
         /**
-         * 取缓存
+         * 取缓存  是否服务自省
          */
         Registry registry = registryFactory.getRegistry(registryUrl);
         /**
@@ -252,6 +252,12 @@ public class RegistryProtocol implements Protocol {
 
         // url to registry
         // 根据 URL 加载 Registry 实现类
+        /**
+         * 服务自省    注册中心地址添加registry-type=service
+         * 服务自省    注册中心地址添加registry-type=service
+         * 服务自省    注册中心地址添加registry-type=service
+         * nacos://xxxxxx:8848?registry-type=service
+         */
         final Registry registry = getRegistry(originInvoker);
         /**
          * 调整providerUrl的参数
@@ -262,9 +268,9 @@ public class RegistryProtocol implements Protocol {
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             /**
-             * 将导出的服务注册到注册中心
-             * 将导出的服务注册到注册中心
-             * 将导出的服务注册到注册中心
+             * 将导出的服务注册到注册中心   是否服务自省
+             * 将导出的服务注册到注册中心   是否服务自省
+             * 将导出的服务注册到注册中心   是否服务自省
              */
             register(registryUrl, registeredProviderUrl);
         }
@@ -420,9 +426,9 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     protected Registry getRegistry(final Invoker<?> originInvoker) {
-        //获取注册中心url
+        // 获取注册中心url
         URL registryUrl = getRegistryUrl(originInvoker);
-        //RegistryFactoryWrapper
+        // RegistryFactoryWrapper     是否为服务自省
         return registryFactory.getRegistry(registryUrl);
     }
 

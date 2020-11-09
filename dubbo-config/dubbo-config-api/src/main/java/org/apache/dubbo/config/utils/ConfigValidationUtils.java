@@ -167,6 +167,7 @@ public class ConfigValidationUtils {
 
     /**
      * 获取interfaceConfig对应注册中心配置  并转化为url
+     * 判断是否采用服务自省
      * @param interfaceConfig
      * @param provider
      * @return
@@ -199,7 +200,12 @@ public class ConfigValidationUtils {
 
                     for (URL url : urls) {
                         // 添加registry属性  并修改url对应得protocol
-                        //registry://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-consumer&dubbo=2.0.2&pid=10352&registry=nacos&timestamp=1603788540715
+                        // registry://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-consumer&dubbo=2.0.2&pid=10352&registry=nacos&timestamp=1603788540715
+                        /**
+                         * extractRegistryType  判断当前是否采用服务自省
+                         * extractRegistryType  判断当前是否采用服务自省
+                         * extractRegistryType  判断当前是否采用服务自省
+                         */
                         url = URLBuilder.from(url)
                                 .addParameter(REGISTRY_KEY, url.getProtocol())
                                 .setProtocol(extractRegistryType(url))
@@ -531,6 +537,11 @@ public class ConfigValidationUtils {
         }
     }
 
+    /**
+     * 服务自省还是注册中心
+     * @param url
+     * @return
+     */
     private static String extractRegistryType(URL url) {
         return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
     }
