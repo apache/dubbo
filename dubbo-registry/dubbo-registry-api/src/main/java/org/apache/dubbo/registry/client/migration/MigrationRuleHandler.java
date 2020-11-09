@@ -65,7 +65,7 @@ public class MigrationRuleHandler<T> {
         }
 
         if ((currentStep == null || currentStep != step) || (!currentThreshold.equals(threshold))) {
-            setCurrentStep(step);
+            setCurrentStepAndThreshold(step, threshold);
             switch (step) {
                 case APPLICATION_FIRST:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
@@ -80,8 +80,9 @@ public class MigrationRuleHandler<T> {
         }
     }
 
-    public void setCurrentStep(MigrationStep currentStep) {
+    public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
         this.currentStep = currentStep;
+        this.currentThreshold = currentThreshold;
     }
 
     public void setMigrationRule(MigrationRule rule) {
