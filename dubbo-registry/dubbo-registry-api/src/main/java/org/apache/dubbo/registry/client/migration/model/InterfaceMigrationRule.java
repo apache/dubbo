@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client.migration.model;
 public class InterfaceMigrationRule {
     private String serviceKey;
     private MigrationStep step;
-    private String threshold;
+    private Float threshold;
 
     public String getServiceKey() {
         return serviceKey;
@@ -37,11 +37,11 @@ public class InterfaceMigrationRule {
         this.step = step;
     }
 
-    public String getThreshold() {
+    public Float getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(String threshold) {
+    public void setThreshold(Float threshold) {
         this.threshold = threshold;
     }
 }

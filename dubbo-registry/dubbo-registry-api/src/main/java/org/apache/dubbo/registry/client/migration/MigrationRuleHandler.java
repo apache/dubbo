@@ -34,6 +34,7 @@ public class MigrationRuleHandler<T> {
 
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
+    private Float currentThreshold = 0f;
     private MigrationRule rule;
     private URL consumerURL;
 
@@ -46,6 +47,7 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
                 ? MigrationStep.FORCE_APPLICATION
                 : MigrationStep.INTERFACE_FIRST;
+        Float threshold = 0f;
         if (StringUtils.isEmpty(rawRule)) {
             logger.error("Find empty migration rule, will ignore.");
             return;
@@ -56,12 +58,13 @@ public class MigrationRuleHandler<T> {
                 rule = MigrationRule.parse(rawRule);
                 setMigrationRule(rule);
                 step = rule.getStep(consumerURL.getServiceKey());
+                threshold = rule.getThreshold(consumerURL.getServiceKey());
             } catch (Exception e) {
                 logger.error("Parse migration rule error, will use default step " + step, e);
             }
         }
 
-        if (currentStep == null || currentStep != step) {
+        if ((currentStep == null || currentStep != step) || (!currentThreshold.equals(threshold))) {
             setCurrentStep(step);
             switch (step) {
                 case APPLICATION_FIRST:

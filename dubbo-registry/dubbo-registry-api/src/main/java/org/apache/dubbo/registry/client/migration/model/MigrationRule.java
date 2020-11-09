@@ -40,7 +40,7 @@ import java.util.Map;
 public class MigrationRule {
     private String key;
     private MigrationStep step;
-    private String threshold;
+    private Float threshold;
     private List<InterfaceMigrationRule> interfaces;
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
@@ -74,7 +74,7 @@ public class MigrationRule {
         return step;
     }
 
-    public String getThreshold(String serviceKey) {
+    public Float getThreshold(String serviceKey) {
         if (interfaceRules != null) {
             InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
             if (rule != null) {
@@ -84,11 +84,11 @@ public class MigrationRule {
         return threshold;
     }
 
-    public String getThreshold() {
+    public Float getThreshold() {
         return threshold;
     }
 
-    public void setThreshold(String threshold) {
+    public void setThreshold(Float threshold) {
         this.threshold = threshold;
     }
 
