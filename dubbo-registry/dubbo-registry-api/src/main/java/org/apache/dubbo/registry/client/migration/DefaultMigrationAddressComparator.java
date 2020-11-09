@@ -51,7 +51,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
 
         String rawThreshold = null;
-        Float configedThreshold = rule.getThreshold(invoker.getUrl().getServiceKey());
+        Float configedThreshold = rule == null ? null : rule.getThreshold(invoker.getUrl().getServiceKey());
         if (configedThreshold != null) {
             rawThreshold = String.valueOf(configedThreshold);
         }

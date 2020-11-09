@@ -87,5 +87,6 @@ public class MigrationRuleHandler<T> {
 
     public void setMigrationRule(MigrationRule rule) {
         this.migrationInvoker.setMigrationStep(currentStep);
+        this.migrationInvoker.setMigrationRule(rule);
     }
 }
