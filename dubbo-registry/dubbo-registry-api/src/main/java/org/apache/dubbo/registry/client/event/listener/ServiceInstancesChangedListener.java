@@ -101,24 +101,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        String appName = event.getServiceName();
-        List<ServiceInstance> appInstances = event.getServiceInstances();
-        if (event instanceof RetryServiceInstancesChangedEvent) {
-            RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
-            logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
-            if (retryEvent.getFailureRecordTime() < lastRefreshTime) {
-                logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
-                return;
-            }
-            logger.warn("Retrying address notification...");
-        } else {
-            logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
-            allInstances.put(appName, appInstances);
-            lastRefreshTime = System.currentTimeMillis();
+        if (this.isRetryAndExpired(event)) {
+            return;
         }
 
         if (logger.isDebugEnabled()) {
-            logger.debug(appInstances.toString());
+            logger.debug(event.getServiceInstances().toString());
         }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
@@ -151,15 +139,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 scheduler.submit(new AddressRefreshRetryTask(retryPermission));
                 logger.warn("Address refresh try task submitted.");
             }
-            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new refresh event.");
+            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
             this.revisionToMetadata = newRevisionToMetadata;
             return;
         }
 
-        if (revisionToMetadata.size() != 0) {
-            logger.info("Revisions removed: " + revisionToMetadata.keySet());
-            revisionToMetadata.clear();
-        }
         this.revisionToMetadata = newRevisionToMetadata;
 
         localServiceToRevisions.forEach((serviceKey, revisions) -> {
@@ -182,6 +166,67 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.notifyAddressChanged();
     }
 
+    public void addListener(String serviceKey, NotifyListener listener) {
+        this.listeners.put(serviceKey, listener);
+    }
+
+    public void removeListener(String serviceKey) {
+        listeners.remove(serviceKey);
+        if (listeners.isEmpty()) {
+            serviceDiscovery.removeServiceInstancesChangedListener(this);
+        }
+    }
+
+    public List<URL> getUrls(String serviceKey) {
+        return toUrlsWithEmpty(serviceUrls.get(serviceKey));
+    }
+
+    /**
+     * Get the correlative service name
+     *
+     * @return the correlative service name
+     */
+    public final Set<String> getServiceNames() {
+        return serviceNames;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    /**
+     * @param event {@link ServiceInstancesChangedEvent event}
+     * @return If service name matches, return <code>true</code>, or <code>false</code>
+     */
+    public final boolean accept(ServiceInstancesChangedEvent event) {
+        return serviceNames.contains(event.getServiceName());
+    }
+
+
+    private boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
+        String appName = event.getServiceName();
+        List<ServiceInstance> appInstances = event.getServiceInstances();
+
+        if (event instanceof RetryServiceInstancesChangedEvent) {
+            RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
+            logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
+            if (retryEvent.getFailureRecordTime() < lastRefreshTime) {
+                logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
+                return true;
+            }
+            logger.warn("Retrying address notification...");
+        } else {
+            logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
+            allInstances.put(appName, appInstances);
+            lastRefreshTime = System.currentTimeMillis();
+        }
+        return false;
+    }
+
     private boolean hasEmptyMetadata(Map<String, MetadataInfo> revisionToMetadata) {
         if (revisionToMetadata == null) {
             return false;
@@ -197,13 +242,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     private MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<String, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
-        MetadataInfo metadata = revisionToMetadata.remove(revision);
+        MetadataInfo metadata = revisionToMetadata.get(revision);
         if (metadata == null) {
             if (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 5000)) {
                 metadata = getMetadataInfo(instance);
                 if (metadata != null) {
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     failureCounter.set(0);
+                    revisionToMetadata.put(revision, metadata);
                     parseMetadata(revision, metadata, localServiceToRevisions);
                 } else {
                     logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
@@ -212,7 +258,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     failureCounter.incrementAndGet();
                 }
             }
-        } else if (subInstances.size() > 1) {// check if metadata info parsed
+        } else if (subInstances.size() < 1) {
+            // "subInstances.size() >= 1" means metadata of this revision has been parsed, ignore
             parseMetadata(revision, metadata, localServiceToRevisions);
         }
         return metadata;
@@ -266,46 +313,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             urls = Collections.emptyList();
         }
         return urls;
-    }
-
-    public void addListener(String serviceKey, NotifyListener listener) {
-        this.listeners.put(serviceKey, listener);
-    }
-
-    public void removeListener(String serviceKey) {
-        listeners.remove(serviceKey);
-        if (listeners.isEmpty()) {
-            serviceDiscovery.removeServiceInstancesChangedListener(this);
-        }
-    }
-
-    public List<URL> getUrls(String serviceKey) {
-        return toUrlsWithEmpty(serviceUrls.get(serviceKey));
-    }
-
-    /**
-     * Get the correlative service name
-     *
-     * @return the correlative service name
-     */
-    public final Set<String> getServiceNames() {
-        return serviceNames;
-    }
-
-    public void setUrl(URL url) {
-        this.url = url;
-    }
-
-    public URL getUrl() {
-        return url;
-    }
-
-    /**
-     * @param event {@link ServiceInstancesChangedEvent event}
-     * @return If service name matches, return <code>true</code>, or <code>false</code>
-     */
-    public final boolean accept(ServiceInstancesChangedEvent event) {
-        return serviceNames.contains(event.getServiceName());
     }
 
     @Override
