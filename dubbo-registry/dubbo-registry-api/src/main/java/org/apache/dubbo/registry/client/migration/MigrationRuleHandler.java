@@ -34,6 +34,7 @@ public class MigrationRuleHandler<T> {
 
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
+    private Float currentThreshold = 0f;
     private MigrationRule rule;
     private URL consumerURL;
 
@@ -46,6 +47,7 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
                 ? MigrationStep.FORCE_APPLICATION
                 : MigrationStep.INTERFACE_FIRST;
+        Float threshold = 0f;
         if (StringUtils.isEmpty(rawRule)) {
             logger.error("Find empty migration rule, will ignore.");
             return;
@@ -56,13 +58,14 @@ public class MigrationRuleHandler<T> {
                 rule = MigrationRule.parse(rawRule);
                 setMigrationRule(rule);
                 step = rule.getStep(consumerURL.getServiceKey());
+                threshold = rule.getThreshold(consumerURL.getServiceKey());
             } catch (Exception e) {
                 logger.error("Parse migration rule error, will use default step " + step, e);
             }
         }
 
-        if (currentStep == null || currentStep != step) {
-            setCurrentStep(step);
+        if ((currentStep == null || currentStep != step) || (!currentThreshold.equals(threshold))) {
+            setCurrentStepAndThreshold(step, threshold);
             switch (step) {
                 case APPLICATION_FIRST:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
@@ -77,11 +80,13 @@ public class MigrationRuleHandler<T> {
         }
     }
 
-    public void setCurrentStep(MigrationStep currentStep) {
+    public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
         this.currentStep = currentStep;
+        this.currentThreshold = currentThreshold;
     }
 
     public void setMigrationRule(MigrationRule rule) {
         this.migrationInvoker.setMigrationStep(currentStep);
+        this.migrationInvoker.setMigrationRule(rule);
     }
 }
