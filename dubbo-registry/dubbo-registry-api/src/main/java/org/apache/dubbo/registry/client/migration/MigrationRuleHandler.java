@@ -57,8 +57,8 @@ public class MigrationRuleHandler<T> {
             try {
                 rule = MigrationRule.parse(rawRule);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (!consumerURL.getHost().equals(rule.getTargetIp())) {
-                    logger.info("Migration rule ignored, rule target ip" + rule.getTargetIp() + " and local ip " + consumerURL.getHost() + " do not match");
+                if (rule.getTargetIps() == null || !rule.getTargetIps().contains(consumerURL.getHost())) {
+                    logger.info("Migration rule ignored, rule target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
                     return;
                 }
                 setMigrationRule(rule);
