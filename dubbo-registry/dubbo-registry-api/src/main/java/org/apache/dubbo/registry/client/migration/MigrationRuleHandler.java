@@ -58,7 +58,7 @@ public class MigrationRuleHandler<T> {
             try {
                 rule = MigrationRule.parse(rawRule);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isEmpty(rule.getTargetIps()) || (rule.getTargetIps() != null && rule.getTargetIps().contains(consumerURL.getHost()))) {
+                if (CollectionUtils.isEmpty(rule.getTargetIps()) || rule.getTargetIps().contains(consumerURL.getHost())) {
                     setMigrationRule(rule);
                     step = rule.getStep(consumerURL.getServiceKey());
                     threshold = rule.getThreshold(consumerURL.getServiceKey());
