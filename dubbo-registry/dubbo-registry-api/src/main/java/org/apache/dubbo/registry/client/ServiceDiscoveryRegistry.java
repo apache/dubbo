@@ -258,7 +258,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         /**
-         *
+         * 本地缓存url  InMemoryWritableMetadataService
          */
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {

@@ -71,7 +71,7 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
         serviceConfig.setApplication(getApplicationConfig());
         serviceConfig.setRegistries(getRegistries());
         serviceConfig.setProtocol(generateMetadataProtocol());
-        //接口
+        // 元数据
         serviceConfig.setInterface(MetadataService.class);
         //实现类   InMemoryWritableMetadataService
         serviceConfig.setRef(metadataService);
@@ -80,9 +80,9 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
 
         // export
         /**
-         * 导出服务
-         * 导出服务
-         * 导出服务
+         * 导出元数据服务
+         * 导出元数据服务
+         * 导出元数据服务
          */
         serviceConfig.export();
 

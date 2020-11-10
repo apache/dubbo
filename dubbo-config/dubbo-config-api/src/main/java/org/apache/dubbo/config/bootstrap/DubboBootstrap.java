@@ -1059,15 +1059,18 @@ public class DubboBootstrap extends GenericEventListener {
             /**
              * 导出服务
              * 1、将导出的服务启动，供消费者访问
-             * 2、将服务注册到注册中心
+             * 2、非服务自省：将服务注册到注册中心  服务自省：将服务信息缓存到本地
              * 3、将导出服务信息配置写到配置中心
              */
             exportServices();
 
             // Not only provider register
+            /**
+             * 服务自省   serviceInstance注册
+             */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
-                //导出元数据服务
+                //启动元数据服务，导出元数据服务到本地缓存
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
                 //注册本地服务实例
@@ -1382,6 +1385,9 @@ public class DubboBootstrap extends GenericEventListener {
         cache.destroyAll();
     }
 
+    /**
+     * 服务自省   注册ServiceInstance
+     */
     private void registerServiceInstance() {
         if (CollectionUtils.isEmpty(getServiceDiscoveries())) {
             return;
@@ -1391,12 +1397,18 @@ public class DubboBootstrap extends GenericEventListener {
 
         String serviceName = application.getName();
 
+        /**
+         * 获取本地元数据中心中缓存的一个url（rest协议优先，没有则选取最后一个）
+         */
         URL exportedURL = selectMetadataServiceExportedURL();
 
         String host = exportedURL.getHost();
 
         int port = exportedURL.getPort();
 
+        /**
+         * 实例化
+         */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
         preRegisterServiceInstance(serviceInstance);
@@ -1424,27 +1436,43 @@ public class DubboBootstrap extends GenericEventListener {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
+        /**
+         * 获取ServiceInstanceCustomizer对应的所有实现
+         */
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
             customizer.customize(serviceInstance);
         });
     }
 
+    /**
+     * 获取本地缓存中服务的url
+     * @return
+     */
     private URL selectMetadataServiceExportedURL() {
 
         URL selectedURL = null;
 
+        /**
+         * 获取本地元数据中心缓存的服务   过滤掉MetadataService
+         */
         SortedSet<String> urlValues = metadataService.getExportedURLs();
 
+        /**
+         * 遍历urlValues
+         */
         for (String urlValue : urlValues) {
             URL url = URL.valueOf(urlValue);
+            // 如果是MetadataService则跳过
             if (MetadataService.class.getName().equals(url.getServiceInterface())) {
                 continue;
             }
+            // rest协议则命中且退出玄幻
             if ("rest".equals(url.getProtocol())) { // REST first
                 selectedURL = url;
                 break;
             } else {
+                // 其他则选取最后一个
                 selectedURL = url; // If not found, take any one
             }
         }
