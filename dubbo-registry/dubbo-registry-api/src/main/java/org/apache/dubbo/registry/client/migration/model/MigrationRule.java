@@ -41,6 +41,8 @@ public class MigrationRule {
     private String key;
     private MigrationStep step;
     private Float threshold;
+    // FIXME
+    private List<String> targetIps;
     private List<InterfaceMigrationRule> interfaces;
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
@@ -100,6 +102,13 @@ public class MigrationRule {
         return interfaces;
     }
 
+    public List<String> getTargetIps() {
+        return targetIps;
+    }
+
+    public void setTargetIps(List<String> targetIps) {
+        this.targetIps = targetIps;
+    }
 
     public void setInterfaces(List<InterfaceMigrationRule> interfaces) {
         this.interfaces = interfaces;
