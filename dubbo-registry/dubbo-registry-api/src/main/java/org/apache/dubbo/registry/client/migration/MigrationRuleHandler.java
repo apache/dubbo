@@ -21,6 +21,7 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
@@ -57,7 +58,7 @@ public class MigrationRuleHandler<T> {
             try {
                 rule = MigrationRule.parse(rawRule);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (rule.getTargetIps() == null || (rule.getTargetIps() != null && rule.getTargetIps().contains(consumerURL.getHost()))) {
+                if (CollectionUtils.isEmpty(rule.getTargetIps()) || (rule.getTargetIps() != null && rule.getTargetIps().contains(consumerURL.getHost()))) {
                     setMigrationRule(rule);
                     step = rule.getStep(consumerURL.getServiceKey());
                     threshold = rule.getThreshold(consumerURL.getServiceKey());
