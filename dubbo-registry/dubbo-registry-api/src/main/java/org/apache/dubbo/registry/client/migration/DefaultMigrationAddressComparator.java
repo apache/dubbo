@@ -52,7 +52,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
 
         String rawThreshold = null;
         Float configedThreshold = rule == null ? null : rule.getThreshold(invoker.getUrl().getServiceKey());
-        if (configedThreshold != null) {
+        if (configedThreshold != null && configedThreshold >= 0) {
             rawThreshold = String.valueOf(configedThreshold);
         }
         rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
