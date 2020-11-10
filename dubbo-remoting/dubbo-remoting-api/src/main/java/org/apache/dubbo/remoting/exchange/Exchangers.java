@@ -67,6 +67,8 @@ public class Exchangers {
             throw new IllegalArgumentException("handler == null");
         }
         url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
+        // 获取 Exchanger，默认为 HeaderExchanger。
+        // 紧接着调用 HeaderExchanger 的 bind 方法创建 ExchangeServer 实例
         return getExchanger(url).bind(url, handler);
     }
 
@@ -98,6 +100,13 @@ public class Exchangers {
         return connect(URL.valueOf(url), handler);
     }
 
+    /**
+     *
+     * @param url
+     * @param handler
+     * @return
+     * @throws RemotingException
+     */
     public static ExchangeClient connect(URL url, ExchangeHandler handler) throws RemotingException {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
@@ -106,6 +115,9 @@ public class Exchangers {
             throw new IllegalArgumentException("handler == null");
         }
         url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
+        /**
+         * HeaderExchanger
+         */
         return getExchanger(url).connect(url, handler);
     }
 

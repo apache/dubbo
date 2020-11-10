@@ -38,21 +38,40 @@ public class ServiceDescriptor {
     private final Map<String, List<MethodDescriptor>> methods = new HashMap<>();
     private final Map<String, Map<String, MethodDescriptor>> descToMethods = new HashMap<>();
 
+    /**
+     * 服务描述符
+     * @param interfaceClass
+     */
     public ServiceDescriptor(Class<?> interfaceClass) {
         this.serviceInterfaceClass = interfaceClass;
         this.serviceName = interfaceClass.getName();
+        /**
+         * 记录方法描述符
+         */
         initMethods();
     }
 
     private void initMethods() {
+        /**
+         * 获取类对应得方法
+         */
         Method[] methodsToExport = this.serviceInterfaceClass.getMethods();
+        /**
+         * 填充methods
+         */
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
             List<MethodDescriptor> methodModels = methods.computeIfAbsent(method.getName(), (k) -> new ArrayList<>(1));
+            /**
+             * 方法描述符
+             */
             methodModels.add(new MethodDescriptor(method));
         }
 
+        /**
+         * 填充descToMethods
+         */
         methods.forEach((methodName, methodList) -> {
             Map<String, MethodDescriptor> descMap = descToMethods.computeIfAbsent(methodName, k -> new HashMap<>());
             methodList.forEach(methodModel -> descMap.put(methodModel.getParamDesc(), methodModel));

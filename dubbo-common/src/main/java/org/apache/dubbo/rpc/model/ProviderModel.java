@@ -138,6 +138,9 @@ public class ProviderModel {
         this(serviceKey, serviceInstance, serviceModel, serviceConfig);
 
         this.serviceMetadata = serviceMetadata;
+        /**
+         * provider记录方法
+         */
         initMethod(serviceModel.getServiceInterfaceClass());
     }
 
@@ -179,10 +182,17 @@ public class ProviderModel {
         return resultList == null ? Collections.emptyList() : resultList;
     }
 
+    /**
+     * 记录方法
+     * @param serviceInterfaceClass
+     */
     private void initMethod(Class<?> serviceInterfaceClass) {
         Method[] methodsToExport;
         methodsToExport = serviceInterfaceClass.getMethods();
 
+        /**
+         * provider添加method
+         */
         for (Method method : methodsToExport) {
             method.setAccessible(true);
 
@@ -191,6 +201,9 @@ public class ProviderModel {
                 methodModels = new ArrayList<ProviderMethodModel>();
                 methods.put(method.getName(), methodModels);
             }
+            /**
+             * methods添加methodModels
+             */
             methodModels.add(new ProviderMethodModel(method));
         }
     }

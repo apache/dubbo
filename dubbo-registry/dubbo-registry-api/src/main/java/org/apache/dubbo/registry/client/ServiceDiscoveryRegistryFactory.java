@@ -26,10 +26,20 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
 
 public class ServiceDiscoveryRegistryFactory extends AbstractRegistryFactory {
 
+    /**
+     * service-discovery-registry://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-nacos-provider-demo&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&metadata-type=remote&password=nacos&pid=12916&registry=nacos&registry-type=service&registry.type=service&timestamp=1604897547641&username=nacos
+     * @param url
+     * @return
+     */
     @Override
     protected Registry createRegistry(URL url) {
+        /**
+         * 服务自省
+         */
         if (SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+            // 则获取真正的注册中心协议
             String protocol = url.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            // 修改协议并去除属性
             url = url.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
         return new ServiceDiscoveryRegistry(url);

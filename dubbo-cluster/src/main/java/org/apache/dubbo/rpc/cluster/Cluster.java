@@ -52,6 +52,7 @@ public interface Cluster {
 
     static Cluster getCluster(String name, boolean wrap) {
         if (StringUtils.isEmpty(name)) {
+            // failover
             name = Cluster.DEFAULT;
         }
         return ExtensionLoader.getExtensionLoader(Cluster.class).getExtension(name, wrap);

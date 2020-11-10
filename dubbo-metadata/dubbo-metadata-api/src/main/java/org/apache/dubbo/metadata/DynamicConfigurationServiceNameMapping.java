@@ -56,13 +56,13 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
     @Override
     public void map(URL exportedURL) {
-
+        //org.apache.dubbo.demo.GreetingService
         String serviceInterface = exportedURL.getServiceInterface();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
-
+        //获取参数
         String group = exportedURL.getParameter(GROUP_KEY);
         String version = exportedURL.getParameter(VERSION_KEY);
         String protocol = exportedURL.getProtocol();
@@ -70,9 +70,18 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         // the Dubbo Service Key as group
         // the service(application) name as key
         // It does matter whatever the content is, we just need a record
+        /**
+         * application名称
+         */
         String key = getName();
+        /**
+         * 记录当前时间   用作比对
+         */
         String content = valueOf(System.currentTimeMillis());
         execute(() -> {
+            /**
+             * 存储到配置中心   CompositeDynamicConfiguration
+             */
             getDynamicConfiguration().publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",

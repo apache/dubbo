@@ -138,12 +138,20 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 订阅重试
+     * @param url
+     * @param listener
+     */
     protected void addFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask oldOne = failedSubscribed.get(h);
         if (oldOne != null) {
             return;
         }
+        /**
+         * 重试任务
+         */
         FailedSubscribedTask newTask = new FailedSubscribedTask(url, this, listener);
         oldOne = failedSubscribed.putIfAbsent(h, newTask);
         if (oldOne == null) {
@@ -152,6 +160,11 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 移除对应得失败记录
+     * @param url
+     * @param listener
+     */
     private void removeFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask f = failedSubscribed.remove(h);
@@ -184,6 +197,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 添加失败记录  并创建重试任务
+     * @param url
+     * @param listener
+     * @param urls
+     */
     private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
         Holder h = new Holder(url, listener);
         FailedNotifiedTask newTask = new FailedNotifiedTask(url, listener);
@@ -226,17 +245,32 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         return failedNotified;
     }
 
+    /**
+     * 注册
+     * @param url
+     */
     @Override
     public void register(URL url) {
         if (!acceptable(url)) {
             logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
             return;
         }
+        /**
+         * 缓存
+         */
         super.register(url);
+        /**
+         * 取消缓存中url对应的注册失败记录
+         */
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
         try {
             // Sending a registration request to the server side
+            /**
+             * 将服务注册到注册中心  是否服务自省
+             * 将服务注册到注册中心  是否服务自省
+             * 将服务注册到注册中心  是否服务自省
+             */
             doRegister(url);
         } catch (Exception e) {
             Throwable t = e;
@@ -256,6 +290,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 缓存失败记录
+             */
             addFailedRegistered(url);
         }
     }
@@ -324,12 +361,25 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 订阅
+     * @param url
+     * @param listener
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
+        /**
+         * 移除对应得订阅失败记录
+         */
         removeFailedSubscribed(url, listener);
         try {
             // Sending a subscription request to the server side
+            /**
+             * 订阅
+             * 订阅
+             * 订阅
+             */
             doSubscribe(url, listener);
         } catch (Exception e) {
             Throwable t = e;
@@ -354,6 +404,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             }
 
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 重试
+             */
             addFailedSubscribed(url, listener);
         }
     }
@@ -386,6 +439,12 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
+    /**
+     * 通知
+     * @param url      consumer side url  consumer://192.168.50.39/org.apache.dubbo.demo.DemoService?application=dubbo-demo-annotation-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=5124&side=consumer&sticky=false&timestamp=1603958300664
+     * @param listener listener
+     * @param urls     provider latest urls  0 -> dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-provider&category=providers&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&path=org.apache.dubbo.demo.DemoService&pid=12368&protocol=dubbo&release=&side=provider&timestamp=1603940688145
+     */
     @Override
     protected void notify(URL url, NotifyListener listener, List<URL> urls) {
         if (url == null) {
@@ -395,15 +454,22 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             throw new IllegalArgumentException("notify listener == null");
         }
         try {
+            /**
+             *
+             */
             doNotify(url, listener, urls);
         } catch (Exception t) {
             // Record a failed registration request to a failed list, retry regularly
+            /**
+             * 添加失败记录  并创建重试任务
+             */
             addFailedNotified(url, listener, urls);
             logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
         }
     }
 
     protected void doNotify(URL url, NotifyListener listener, List<URL> urls) {
+        // AbstractRegistry
         super.notify(url, listener, urls);
     }
 

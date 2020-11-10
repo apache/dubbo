@@ -173,11 +173,28 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
+    /**
+     * 注册
+     * @param registryUrl  获取对应的注册中心
+     * @param registeredProviderUrl   将要注册的服务
+     */
     private void register(URL registryUrl, URL registeredProviderUrl) {
+        /**
+         * 取缓存  是否服务自省
+         */
         Registry registry = registryFactory.getRegistry(registryUrl);
+        /**
+         * ListenerRegistryWrapper
+         */
         registry.register(registeredProviderUrl);
     }
 
+    /**
+     * 在ProviderModel  缓存
+     * @param registryUrl
+     * @param registeredProviderUrl
+     * @param registered
+     */
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
@@ -186,35 +203,80 @@ public class RegistryProtocol implements Protocol {
                 registered));
     }
 
+    /**
+     * 服务导出
+     * @param originInvoker
+     * @param <T>
+     * @return
+     * @throws RpcException
+     */
     @Override
     public <T> Exporter<T> export(final Invoker<T> originInvoker) throws RpcException {
+        /**
+         * 获取注册中心 URL，以 nacos 注册中心为例，得到的示例 URL 如下
+         * nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F192.168.50.39%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fanyhost%3Dtrue%26application%3Ddubbo-demo-annotation-provider%26bind.ip%3D192.168.50.39%26bind.port%3D20880%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26generic%3Dfalse%26group%3Dtest3342%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D11616%26release%3D%26revision%3D2.36.5%26sayHello.return%3Dtrue%26side%3Dprovider%26timestamp%3D1603097863974%26version%3D2.36.5&pid=11616&timestamp=1603097863972
+         */
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally
+        /**
+         * 获取服务提供者的url
+         * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=test3342&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=11816&release=&revision=2.36.5&sayHello.return=true&side=provider&timestamp=1603097938985&version=2.36.5
+         */
         URL providerUrl = getProviderUrl(originInvoker);
 
         // Subscribe the override data
         // FIXME When the provider subscribes, it will affect the scene : a certain JVM exposes the service and call
         //  the same service. Because the subscribed is cached key with the name of the service, it causes the
         //  subscription information to cover.
+        /**
+         * 当提供者订阅时，它将影响场景：某个JVM公开服务和调用同样的服务。
+         * 因为subscribed是带有服务名称的缓存密钥，因此会导致要覆盖的订阅信息
+         *
+         * 修改url对应的protocol为provider  并向parameters增加两对参数category和check
+         */
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
+        /**
+         * 处理config？？？
+         */
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
+        /**
+         * 服务启动   DubboProtocol
+         * 服务启动   DubboProtocol
+         * 服务启动   DubboProtocol
+         */
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
+        // 根据 URL 加载 Registry 实现类
+        /**
+         * 服务自省    注册中心地址添加registry-type=service
+         * 服务自省    注册中心地址添加registry-type=service
+         * 服务自省    注册中心地址添加registry-type=service
+         * nacos://xxxxxx:8848?registry-type=service
+         */
         final Registry registry = getRegistry(originInvoker);
+        /**
+         * 调整providerUrl的参数
+         */
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
+            /**
+             * 将导出的服务注册到注册中心   是否服务自省
+             * 将导出的服务注册到注册中心   是否服务自省
+             * 将导出的服务注册到注册中心   是否服务自省
+             */
             register(registryUrl, registeredProviderUrl);
         }
 
         // register stated url on provider model
+        //在ProviderModel  缓存
         registerStatedUrl(registryUrl, registeredProviderUrl, register);
 
 
@@ -224,6 +286,9 @@ public class RegistryProtocol implements Protocol {
         // Deprecated! Subscribe to override rules in 2.6.x or before.
         registry.subscribe(overrideSubscribeUrl, overrideSubscribeListener);
 
+        /**
+         * 通知   待其他业务实现  目前只保留了接口
+         */
         notifyExport(exporter);
         //Ensure that a new exporter instance is returned every time export
         return new DestroyableExporter<>(exporter);
@@ -247,11 +312,22 @@ public class RegistryProtocol implements Protocol {
     }
 
     @SuppressWarnings("unchecked")
+    /**
+     * 导出服务
+     */
     private <T> ExporterChangeableWrapper<T> doLocalExport(final Invoker<T> originInvoker, URL providerUrl) {
+        /**
+         * 获取cacheKey 即获取originInvoker对应的服务提供者的url并在parameters中移除两个属性   dynamic和enabled
+         */
         String key = getCacheKey(originInvoker);
 
+        // 写缓存
         return (ExporterChangeableWrapper<T>) bounds.computeIfAbsent(key, s -> {
+            // 创建 Invoker 为委托类对象
             Invoker<?> invokerDelegate = new InvokerDelegate<>(originInvoker, providerUrl);
+            /**
+             * 假设运行时协议为 dubbo，此处的 protocol 变量会在运行时加载 DubboProtocol，并调用 DubboProtocol 的 export 方法
+             */
             return new ExporterChangeableWrapper<>((Exporter<T>) protocol.export(invokerDelegate), originInvoker);
         });
     }
@@ -350,14 +426,30 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     protected Registry getRegistry(final Invoker<?> originInvoker) {
+        // 获取注册中心url
         URL registryUrl = getRegistryUrl(originInvoker);
+        // RegistryFactoryWrapper     是否为服务自省
         return registryFactory.getRegistry(registryUrl);
     }
 
+    /**
+     * 获取注册中心url
+     * @param originInvoker
+     * @return
+     */
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
         URL registryUrl = originInvoker.getUrl();
+        /**
+         * protocol为registry
+         */
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
+            /**
+             * 获取registry对应的值
+             */
             String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
+            /**
+             * 替换url对应的protocol并删除parameters中的registry
+             */
             registryUrl = registryUrl.setProtocol(protocol).removeParameter(REGISTRY_KEY);
         }
         return registryUrl;
@@ -380,6 +472,9 @@ public class RegistryProtocol implements Protocol {
     private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
         if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
+            /**
+             * getFilteredKeys   获取providerUrl对应的parameter中  以【.】开头的属性
+             */
             return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(
                     MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
                     INTERFACES);
@@ -401,6 +496,11 @@ public class RegistryProtocol implements Protocol {
 
     }
 
+    /**
+     * 修改url对应的protocol为provider  并向parameters增加两对参数
+     * @param registeredProviderUrl
+     * @return
+     */
     private URL getSubscribedOverrideUrl(URL registeredProviderUrl) {
         return registeredProviderUrl.setProtocol(PROVIDER_PROTOCOL)
                 .addParameters(CATEGORY_KEY, CONFIGURATORS_CATEGORY, CHECK_KEY, String.valueOf(false));
@@ -427,7 +527,13 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private String getCacheKey(final Invoker<?> originInvoker) {
+        /**
+         * 获取originInvoker对应的服务提供者的url
+         */
         URL providerUrl = getProviderUrl(originInvoker);
+        /**
+         * 在parameters中移除两个属性   dynamic和enabled
+         */
         String key = providerUrl.removeParameters("dynamic", "enabled").toFullString();
         return key;
     }
@@ -435,13 +541,21 @@ public class RegistryProtocol implements Protocol {
     @Override
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        // nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-consumer&dubbo=2.0.2&pid=3900&refer=application%3Ddubbo-demo-annotation-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26init%3Dfalse%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D3900%26register.ip%3D192.168.50.39%26side%3Dconsumer%26sticky%3Dfalse%26timestamp%3D1603862513141&timestamp=1603862513208
         url = getRegistryUrl(url);
+        /**
+         * 获取url对应得Registry
+         * RegistryFactoryWrapper
+         */
         Registry registry = registryFactory.getRegistry(url);
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
 
         // group="a,b" or group="*"
+        /**
+         * 将refer对应得值转换为map
+         */
         Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
@@ -450,25 +564,55 @@ public class RegistryProtocol implements Protocol {
             }
         }
 
+        /**
+         * 获取对应得Cluster
+         */
         Cluster cluster = Cluster.getCluster(qs.get(CLUSTER_KEY));
         return doRefer(cluster, registry, type, url);
     }
 
+    /**
+     *
+     * @param cluster
+     * @param registry
+     * @param type
+     * @param url
+     * @param <T>
+     * @return
+     */
     private <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url) {
+        //实例化RegistryDirectory
         RegistryDirectory<T> directory = new RegistryDirectory<T>(type, url);
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
+        // consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=10988&side=consumer&sticky=false&timestamp=1603867214469&version=2.0.0
         URL subscribeUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(subscribeUrl);
+            /**
+             * ListenerRegistryWrapper
+             * 向注册中心写入服务消费者url
+             * 向注册中心写入服务消费者url
+             * 向注册中心写入服务消费者url
+             * consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=9552&side=consumer&sticky=false&timestamp=1603868897635&version=2.0.0
+             */
             registry.register(directory.getRegisteredConsumerUrl());
         }
         directory.buildRouterChain(subscribeUrl);
+        /**
+         * 启动服务消费者
+         * 从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
+         * 订阅服务生产者实例  随时更新invoker列表
+         */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
         Invoker<T> invoker = cluster.join(directory);
+
+        /**
+         * RegistryProtocolListener扩展   由客户实现
+         */
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;

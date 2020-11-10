@@ -87,6 +87,9 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
             SortedSet<URL> urls = entry.getValue();
             if (urls != null) {
                 for (URL url : urls) {
+                    /**
+                     * 过滤MetadataService
+                     */
                     if (!MetadataService.class.getName().equals(url.getServiceInterface())) {
                         bizURLs.add(url);
                     }
@@ -96,6 +99,14 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
         return MetadataService.toSortedStrings(bizURLs);
     }
 
+    /**
+     * 获取服务自省  本地缓存url
+     * @param serviceInterface The class name of Dubbo service interface
+     * @param group            the Dubbo Service Group (optional)
+     * @param version          the Dubbo Service Version (optional)
+     * @param protocol         the Dubbo Service Protocol (optional)
+     * @return
+     */
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
         if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
@@ -105,6 +116,11 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
         return unmodifiableSortedSet(getServiceURLs(exportedServiceURLs, serviceKey, protocol));
     }
 
+    /**
+     * 服务自省   本地缓存
+     * @param url a {@link URL}
+     * @return
+     */
     @Override
     public boolean exportURL(URL url) {
         return addURL(exportedServiceURLs, url);
@@ -147,6 +163,12 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
         return unmodifiableSortedMap(serviceDefinitions);
     }
 
+    /**
+     * 本地缓存
+     * @param serviceURLs
+     * @param url
+     * @return
+     */
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
             SortedSet<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), this::newSortedURLs);

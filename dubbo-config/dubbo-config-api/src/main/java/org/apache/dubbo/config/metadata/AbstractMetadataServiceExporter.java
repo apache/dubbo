@@ -65,6 +65,10 @@ public abstract class AbstractMetadataServiceExporter implements MetadataService
         this.supportedMetadataServiceTypes = supportedMetadataServiceTypes;
     }
 
+    /**
+     * 导出元数据服务
+     * @return
+     */
     @Override
     public final MetadataServiceExporter export() {
         if (!isExported()) {

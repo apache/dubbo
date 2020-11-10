@@ -100,6 +100,12 @@ public class ConfigurationUtils {
         return StringUtils.trim(ApplicationModel.getEnvironment().getConfiguration().getString(property, defaultValue));
     }
 
+    /**
+     * 将content转为map
+     * @param content
+     * @return
+     * @throws IOException
+     */
     public static Map<String, String> parseProperties(String content) throws IOException {
         Map<String, String> map = new HashMap<>();
         if (StringUtils.isEmpty(content)) {

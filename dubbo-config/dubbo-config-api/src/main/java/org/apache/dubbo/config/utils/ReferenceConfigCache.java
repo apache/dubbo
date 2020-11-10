@@ -104,6 +104,7 @@ public class ReferenceConfigCache {
 
     @SuppressWarnings("unchecked")
     public <T> T get(ReferenceConfigBase<T> referenceConfig) {
+        //group1/org.apache.dubbo.foo.FooService:1.0.0
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
 
@@ -111,6 +112,9 @@ public class ReferenceConfigCache {
 
         ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);
         proxiesOfType.computeIfAbsent(key, _k -> {
+            /**
+             * get   ReferenceConfig
+             */
             Object proxy = referenceConfig.get();
             referredReferences.put(key, referenceConfig);
             return proxy;

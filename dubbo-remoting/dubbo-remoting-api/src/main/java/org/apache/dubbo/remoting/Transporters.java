@@ -51,8 +51,10 @@ public class Transporters {
         if (handlers.length == 1) {
             handler = handlers[0];
         } else {
+            // 如果 handlers 元素数量大于1，则创建 ChannelHandler 分发器
             handler = new ChannelHandlerDispatcher(handlers);
         }
+        // 获取自适应 Transporter 实例，并调用实例方法   netty4
         return getTransporter().bind(url, handler);
     }
 
@@ -70,8 +72,11 @@ public class Transporters {
         } else if (handlers.length == 1) {
             handler = handlers[0];
         } else {
+            // 如果 handler 数量大于1，则创建一个 ChannelHandler 分发器
             handler = new ChannelHandlerDispatcher(handlers);
         }
+
+        // 获取 Transporter 自适应拓展类，并调用 connect 方法生成 Client 实例   一般为netty4
         return getTransporter().connect(url, handler);
     }
 

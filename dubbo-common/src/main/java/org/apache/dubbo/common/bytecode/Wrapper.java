@@ -99,6 +99,7 @@ public abstract class Wrapper {
 
     /**
      * get wrapper.
+     * 子类代码生成逻辑会对 getWrapper 方法传入的 Class 对象进行解析，拿到诸如类方法，类成员变量等信息。以及生成 invokeMethod 方法代码和其他一些方法代码。
      *
      * @param c Class instance.
      * @return Wrapper instance(not null).
@@ -113,9 +114,18 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
+        /**
+         * 从缓存中获取 Wrapper 实例
+         * 缓存未命中，创建 Wrapper
+         */
         return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
     }
 
+    /**
+     * 需要对 javassist 框架有了解
+     * @param c
+     * @return
+     */
     private static Wrapper makeWrapper(Class<?> c) {
         if (c.isPrimitive()) {
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);

@@ -180,6 +180,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
+    /**
+     * 导出服务
+     */
     public synchronized void export() {
         if (!shouldExport()) {
             return;
@@ -190,9 +193,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             bootstrap.initialize();
         }
 
+        /**
+         * 检查所有得配置   没有则新增
+         * 懒得看
+         */
         checkAndUpdateSubConfigs();
 
         //init serviceMetadata
+        /**
+         * 初始化
+         */
         serviceMetadata.setVersion(getVersion());
         serviceMetadata.setGroup(getGroup());
         serviceMetadata.setDefaultGroup(getGroup());
@@ -200,23 +210,45 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());
 
+
         if (shouldDelay()) {
+            /**
+             * 暂缓导出
+             */
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
+            /**
+             * 即刻导出
+             */
             doExport();
         }
 
+        /**
+         * 向nacos配置中心添加数据   key为应用名称  content为当前时间
+         */
         exported();
     }
 
+    /**
+     * 分发事件
+     */
     public void exported() {
         // dispatch a ServiceConfigExportedEvent since 2.7.4
+        //ServiceNameMappingListener处理  将当前sc放入ServiceConfigExportedEvent
         dispatch(new ServiceConfigExportedEvent(this));
     }
 
+    /**
+     * 检测
+     */
     private void checkAndUpdateSubConfigs() {
         // Use default configs defined explicitly with global scope
+        /**
+         * 用于检测 provider、application 等核心配置类对象是否为空，
+         * 为空，则尝试从其他配置类对象中获取相应的实例。
+         */
         completeCompoundConfigs();
+        // 检测 provider 是否为空，为空则新建一个，并通过系统变量为其初始化
         checkDefault();
         checkProtocol();
         // init some null configuration.
@@ -226,6 +258,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // if protocol is not injvm checkRegistry
         if (!isOnlyInJvm()) {
+            //检测是否存在注册中心配置类，不存在则抛出异常
             checkRegistry();
         }
         this.refresh();
@@ -234,11 +267,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
         }
 
+        // 检测 ref 是否为泛化服务类型
         if (ref instanceof GenericService) {
+            // 设置 interfaceClass 为 GenericService.class
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
+                // 设置 generic = "true"
                 generic = Boolean.TRUE.toString();
             }
+
+            // ref 非 GenericService 类型
         } else {
             try {
                 interfaceClass = Class.forName(interfaceName, true, Thread.currentThread()
@@ -246,20 +284,27 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            // 对 interfaceClass，以及 <dubbo:method> 标签中的必要字段进行检查
             checkInterfaceAndMethods(interfaceClass, getMethods());
+            // 对 ref 合法性进行检测
             checkRef();
+            // 设置 generic = "false"
             generic = Boolean.FALSE.toString();
         }
+
+        // local 和 stub 在功能应该是一致的，用于配置本地存根
         if (local != null) {
             if ("true".equals(local)) {
                 local = interfaceName + "Local";
             }
             Class<?> localClass;
             try {
+                // 获取本地存根类
                 localClass = ClassUtils.forNameWithThreadContextClassLoader(local);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            // 检测本地存根类是否可赋值给接口类，若不可赋值则会抛出异常，提醒使用者本地存根类类型不合法
             if (!interfaceClass.isAssignableFrom(localClass)) {
                 throw new IllegalStateException("The local implementation class " + localClass.getName() + " not implement interface " + interfaceName);
             }
@@ -270,10 +315,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
             Class<?> stubClass;
             try {
+                // 获取Stub存根类
                 stubClass = ClassUtils.forNameWithThreadContextClassLoader(stub);
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
+            // 检测Stub根类是否可赋值给接口类，若不可赋值则会抛出异常，提醒使用者Stub存根类类型不合法
             if (!interfaceClass.isAssignableFrom(stubClass)) {
                 throw new IllegalStateException("The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
             }
@@ -284,7 +331,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         postProcessConfig();
     }
 
-
+    /**
+     * 导出服务
+     */
     protected synchronized void doExport() {
         if (unexported) {
             throw new IllegalStateException("The service " + interfaceClass.getName() + " has already unexported!");
@@ -297,13 +346,28 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
         }
+        /**
+         * 导出
+         */
         doExportUrls();
     }
 
+    /**
+     * 导出
+     */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        /**
+         * 获取repository
+         */
         ServiceRepository repository = ApplicationModel.getServiceRepository();
+        /**
+         * 注册服务描述符
+         */
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
+        /**
+         * 添加provider
+         */
         repository.registerProvider(
                 getUniqueServiceName(),
                 ref,
@@ -312,26 +376,50 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceMetadata
         );
 
+        /**
+         * 获取注册中心url   是否采用服务自省
+         * 获取注册中心url   是否采用服务自省
+         * 获取注册中心url   是否采用服务自省
+         */
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
         for (ProtocolConfig protocolConfig : protocols) {
+            /**
+             * group/path:version
+             */
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
                     .orElse(path), group, version);
             // In case user specified path, register service one more time to map it to path.
+            /**
+             * 以path为key  再次存储serviceDescriptor
+             */
             repository.registerService(pathKey, interfaceClass);
             // TODO, uncomment this line once service key is unified
             serviceMetadata.setServiceKey(pathKey);
+            /**
+             * 导出服务
+             * 导出服务
+             * 导出服务
+             */
             doExportUrlsFor1Protocol(protocolConfig, registryURLs);
         }
     }
 
+    /**
+     *
+     * @param protocolConfig
+     * @param registryURLs
+     */
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
         }
 
+        /**
+         * 缓存与导出服务相关的数据
+         */
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
@@ -344,10 +432,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        /**
+         * 元数据配置
+         */
         MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
         }
+        /**
+         * @DubboService中是否含有@method
+         */
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
@@ -358,6 +452,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         map.put(method.getName() + ".retries", "0");
                     }
                 }
+                /**
+                 * @method是否含有@Argument
+                 */
                 List<ArgumentConfig> arguments = method.getArguments();
                 if (CollectionUtils.isNotEmpty(arguments)) {
                     for (ArgumentConfig argument : arguments) {
@@ -408,11 +505,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             map.put(GENERIC_KEY, generic);
             map.put(METHODS_KEY, ANY_VALUE);
         } else {
+            /**
+             * 计算revision
+             */
             String revision = Version.getVersion(interfaceClass, version);
             if (revision != null && revision.length() > 0) {
                 map.put(REVISION_KEY, revision);
             }
 
+            /**
+             * 获取待注册服务下的方法
+             */
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
                 logger.warn("No method found in service interface " + interfaceClass.getName());
@@ -437,11 +540,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         //init serviceMetadata attachments
+        /**
+         * 向serviceMetadata存储map
+         */
         serviceMetadata.getAttachments().putAll(map);
 
         // export service
+        /**
+         * 获取协议暴露ip
+         */
         String host = findConfigedHosts(protocolConfig, registryURLs, map);
+        /**
+         * 获取协议暴露端口   如果指定端口小于0  则生成随机端口
+         */
         Integer port = findConfigedPorts(protocolConfig, name, map);
+
+        /**
+         * 生成url   以map为对应的parameters
+         */
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         // You can customize Configurator to append extra parameters
@@ -453,23 +569,48 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
+        /**
+         * scope不能等于none
+         *
+         * scope = none，不导出服务
+         * scope != remote，导出到本地
+         * scope != local，导出到远程
+         */
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
 
             // export to local if the config is not remote (export to remote only when config is remote)
+            /**
+             * 配置非remote 则导出到本地
+             */
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
             // export to remote if the config is not local (export to local only when config is local)
+            /**
+             * 配置非local  则导出到远程
+             */
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
                 if (CollectionUtils.isNotEmpty(registryURLs)) {
+                    /**
+                     * 遍历注册中心
+                     */
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
+                        /**
+                         * 过滤jvm
+                         */
                         if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
                             continue;
                         }
                         url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
+                        /**
+                         * 向registryURL添加MonitorConfig配置
+                         */
                         URL monitorUrl = ConfigValidationUtils.loadMonitor(this, registryURL);
                         if (monitorUrl != null) {
+                            /**
+                             * 向url添加monitorUrl
+                             */
                             url = url.addParameterAndEncoded(MONITOR_KEY, monitorUrl.toFullString());
                         }
                         if (logger.isInfoEnabled()) {
@@ -486,10 +627,21 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                             registryURL = registryURL.addParameter(PROXY_KEY, proxy);
                         }
 
+                        // 为服务提供类(ref)生成 Invoker  StubProxyFactoryWrapper => JavassistProxyFactory
                         Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.addParameterAndEncoded(EXPORT_KEY, url.toFullString()));
+                        // DelegateProviderMetaDataInvoker 用于持有 Invoker 和 ServiceConfig
                         DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
 
+                        /**
+                         * 导出服务到注册中心
+                         * 导出服务到注册中心
+                         * 导出服务到注册中心
+                         * ProtocolFilterWrapper => ProtocolListenerWrapper => RegistryProtocol => DubboProtocol
+                         */
                         Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
+                        /**
+                         * 缓存
+                         */
                         exporters.add(exporter);
                     }
                 } else {
@@ -506,8 +658,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                  * @since 2.7.0
                  * ServiceData Store
                  */
+                //remote
                 WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, DEFAULT_METADATA_STORAGE_TYPE));
                 if (metadataService != null) {
+                    /**
+                     * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
+                     *
+                     * 将已导出服务的配置信息  存储到配置中心
+                     * org.apache.dubbo.demo.GreetingService:::provider:dubbo-demo-annotation-provider
+                     */
                     metadataService.publishServiceDefinition(url);
                 }
             }
@@ -544,8 +703,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     /**
      * Register & bind IP address for service provider, can be configured separately.
+     * 注册并绑定服务提供商的IP地址，可以单独配置。
      * Configuration priority: environment variables -> java system properties -> host property in config file ->
      * /etc/hosts -> default network address -> first available network address
+     *
+     * 环境变量->java系统属性->配置文件中的主机属性->/etc/hosts->默认网络地址->第一个可用网络地址
      *
      * @param protocolConfig
      * @param registryURLs
@@ -557,6 +719,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                                      Map<String, String> map) {
         boolean anyhost = false;
 
+        /**
+         * protocolConfig的DUBBO_IP_TO_BIND
+         */
         String hostToBind = getValueFromConfig(protocolConfig, DUBBO_IP_TO_BIND);
         if (hostToBind != null && hostToBind.length() > 0 && isInvalidLocalHost(hostToBind)) {
             throw new IllegalArgumentException("Specified invalid bind ip from property:" + DUBBO_IP_TO_BIND + ", value:" + hostToBind);
@@ -564,13 +729,22 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // if bind ip is not found in environment, keep looking up
         if (StringUtils.isEmpty(hostToBind)) {
+            /**
+             * protocolConfig的host属性
+             */
             hostToBind = protocolConfig.getHost();
             if (provider != null && StringUtils.isEmpty(hostToBind)) {
+                /**
+                 * ProviderConfig的host属性
+                 */
                 hostToBind = provider.getHost();
             }
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
                 try {
+                    /**
+                     * 从环境变量中无法获取  则从dns获取
+                     */
                     logger.info("No valid ip found from environment, try to find valid host from DNS.");
                     hostToBind = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
@@ -578,11 +752,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 }
                 if (isInvalidLocalHost(hostToBind)) {
                     if (CollectionUtils.isNotEmpty(registryURLs)) {
+                        /**
+                         * 遍历注册中心
+                         */
                         for (URL registryURL : registryURLs) {
+                            /**
+                             * 跳过多注册中心
+                             */
                             if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
                                 // skip multicast registry since we cannot connect to it via Socket
                                 continue;
                             }
+                            /**
+                             * 链接注册中心
+                             */
                             try (Socket socket = new Socket()) {
                                 SocketAddress addr = new InetSocketAddress(registryURL.getHost(), registryURL.getPort());
                                 socket.connect(addr, 1000);
@@ -594,15 +777,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         }
                     }
                     if (isInvalidLocalHost(hostToBind)) {
+                        /**
+                         * 获取localhost
+                         */
                         hostToBind = getLocalHost();
                     }
                 }
             }
         }
 
+        /**
+         * 缓存bind.ip
+         */
         map.put(BIND_IP_KEY, hostToBind);
 
         // registry ip is not used for bind ip by default
+        /**
+         * 获取protocolConfig对应的DUBBO_IP_TO_REGISTRY
+         */
         String hostToRegistry = getValueFromConfig(protocolConfig, DUBBO_IP_TO_REGISTRY);
         if (hostToRegistry != null && hostToRegistry.length() > 0 && isInvalidLocalHost(hostToRegistry)) {
             throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
@@ -611,6 +803,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             hostToRegistry = hostToBind;
         }
 
+        /**
+         * 缓存anyhost
+         */
         map.put(ANYHOST_KEY, String.valueOf(anyhost));
 
         return hostToRegistry;
@@ -619,8 +814,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     /**
      * Register port and bind port for the provider, can be configured separately
+     * 提供程序的注册端口和绑定端口，可以单独配置
      * Configuration priority: environment variable -> java system properties -> port property in protocol config file
      * -> protocol default port
+     *
+     * 配置优先级：环境变量->java系统属性->协议配置文件中的端口属性->协议默认端口
      *
      * @param protocolConfig
      * @param name
@@ -632,19 +830,37 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         Integer portToBind = null;
 
         // parse bind port from environment
+        /**
+         * 获取protocolConfig对应的DUBBO_PORT_TO_BIND
+         */
         String port = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_BIND);
+        /**
+         * 类型转换
+         */
         portToBind = parsePort(port);
 
         // if there's no bind port found from environment, keep looking up.
         if (portToBind == null) {
+            /**
+             * protocolConfig对应的port
+             */
             portToBind = protocolConfig.getPort();
             if (provider != null && (portToBind == null || portToBind == 0)) {
+                /**
+                 * provider对应的port
+                 */
                 portToBind = provider.getPort();
             }
+            /**
+             * 20880
+             */
             final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
             if (portToBind == null || portToBind == 0) {
                 portToBind = defaultPort;
             }
+            /**
+             * 随机端口
+             */
             if (portToBind <= 0) {
                 portToBind = getRandomPort(name);
                 if (portToBind == null || portToBind < 0) {
@@ -654,11 +870,20 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
+        /**
+         * 缓存
+         */
         // save bind port, used as url's key later
         map.put(BIND_PORT_KEY, String.valueOf(portToBind));
 
         // registry port, not used as bind port by default
+        /**
+         * protocolConfig对应的DUBBO_PORT_TO_REGISTRY
+         */
         String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+        /**
+         * 转换
+         */
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
             portToRegistry = portToBind;
@@ -667,11 +892,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return portToRegistry;
     }
 
+    /**
+     * 转化
+     * @param configPort
+     * @return
+     */
     private Integer parsePort(String configPort) {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
                 Integer intPort = Integer.parseInt(configPort);
+                /**
+                 * 非法的端口
+                 */
                 if (isInvalidPort(intPort)) {
                     throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
                 }
@@ -683,6 +916,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         return port;
     }
 
+    /**
+     * 获取protocolConfig对应的key的值
+     * @param protocolConfig
+     * @param key
+     * @return
+     */
     private String getValueFromConfig(ProtocolConfig protocolConfig, String key) {
         String protocolPrefix = protocolConfig.getName().toUpperCase() + "_";
         String value = ConfigUtils.getSystemProperty(protocolPrefix + key);

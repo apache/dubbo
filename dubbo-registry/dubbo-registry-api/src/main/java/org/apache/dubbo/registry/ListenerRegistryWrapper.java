@@ -51,9 +51,17 @@ public class ListenerRegistryWrapper implements Registry {
         registry.destroy();
     }
 
+    /**
+     * 注册
+     * @param url  Registration information , is not allowed to be empty, e.g: dubbo://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     */
     @Override
     public void register(URL url) {
         try {
+            /**
+             * 注册  FailbackRegistry
+             * 是否服务自省
+             */
             registry.register(url);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {
@@ -99,9 +107,17 @@ public class ListenerRegistryWrapper implements Registry {
         }
     }
 
+    /**
+     * 订阅
+     * @param url      Subscription condition, not allowed to be empty, e.g. consumer://10.20.153.10/org.apache.dubbo.foo.BarService?version=1.0.0&application=kylin
+     * @param listener A listener of the change event, not allowed to be empty
+     */
     @Override
     public void subscribe(URL url, NotifyListener listener) {
         try {
+            /**
+             * FailbackRegistry  启动服务消费者并开启提供者服务实例订阅
+             */
             registry.subscribe(url, listener);
         } finally {
             if (CollectionUtils.isNotEmpty(listeners)) {

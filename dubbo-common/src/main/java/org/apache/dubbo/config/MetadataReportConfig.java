@@ -85,12 +85,19 @@ public class MetadataReportConfig extends AbstractConfig {
         setAddress(address);
     }
 
+    /**
+     * 生成url
+     * @return
+     */
     public URL toUrl() {
         String address = this.getAddress();
         if (StringUtils.isEmpty(address)) {
             return null;
         }
         Map<String, String> map = new HashMap<String, String>();
+        /**
+         * 将config中有@Parameter注解得属性   通过get方法获取对应得值  重新存储到parameters
+         */
         appendParameters(map, this);
         if (!StringUtils.isEmpty(address)) {
             URL url = URL.valueOf(address);

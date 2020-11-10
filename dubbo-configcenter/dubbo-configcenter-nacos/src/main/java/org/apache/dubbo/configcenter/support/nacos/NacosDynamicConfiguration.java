@@ -206,6 +206,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
+    /**
+     * 向nacos请求数据
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param timeout timeout value for fetching the target config
+     * @return
+     * @throws IllegalStateException
+     */
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
         String resolvedGroup = resolveGroup(group);
@@ -214,6 +222,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             if (StringUtils.isEmpty(resolvedGroup)) {
                 resolvedGroup = DEFAULT_GROUP;
             }
+            /**
+             * 向nacos请求数据
+             */
             return configService.getConfig(key, resolvedGroup, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
@@ -231,11 +242,22 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return null;
     }
 
+    /**
+     * 配置中心 存储元数据
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param content the content of configuration
+     * @return
+     */
     @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
+        //将/替换为-
         String resolvedGroup = resolveGroup(group);
         try {
+            /**
+             * 保存元数据
+             */
             published = configService.publishConfig(key, resolvedGroup, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg(), e);

@@ -39,9 +39,21 @@ public final class FailedSubscribedTask extends AbstractRetryTask {
         this.listener = listener;
     }
 
+    /**
+     * 重试
+     * @param url
+     * @param registry
+     * @param timeout
+     */
     @Override
     protected void doRetry(URL url, FailbackRegistry registry, Timeout timeout) {
+        /**
+         * 再次订阅
+         */
         registry.doSubscribe(url, listener);
+        /**
+         * 移除重试记录
+         */
         registry.removeFailedSubscribedTask(url, listener);
     }
 }

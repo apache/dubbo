@@ -51,6 +51,9 @@ public interface MethodUtils {
      * @return whether the given method is setter method
      */
     public static boolean isSetter(Method method) {
+        /**
+         * 以set开始 && 方法名不是set && public方法 && 仅一个参数 && 返回原始类型或简单类型
+         */
         return method.getName().startsWith("set")
                 && !"set".equals(method.getName())
                 && Modifier.isPublic(method.getModifiers())
@@ -84,21 +87,39 @@ public interface MethodUtils {
      */
     public static boolean isMetaMethod(Method method) {
         String name = method.getName();
+        /**
+         * 方法不是以 get和is 开始
+         */
         if (!(name.startsWith("get") || name.startsWith("is"))) {
             return false;
         }
+        /**
+         * 方法名为get
+         */
         if ("get".equals(name)) {
             return false;
         }
+        /**
+         * 方法名为getClass
+         */
         if ("getClass".equals(name)) {
             return false;
         }
+        /**
+         * 方法非public
+         */
         if (!Modifier.isPublic(method.getModifiers())) {
             return false;
         }
+        /**
+         * 方法需要输入参数
+         */
         if (method.getParameterTypes().length != 0) {
             return false;
         }
+        /**
+         * 方法返回值 非原始类型或非简单类型
+         */
         if (!ClassUtils.isPrimitive(method.getReturnType())) {
             return false;
         }

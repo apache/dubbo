@@ -164,6 +164,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         this.reportURL = url;
     }
 
+    /**
+     * 本地文件记录
+     * @param version
+     */
     private void doSaveProperties(long version) {
         if (version < lastCacheChanged.get()) {
             return;
@@ -218,18 +222,31 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 本地文件保存属性
+     * @param metadataIdentifier
+     * @param value
+     * @param add
+     * @param sync
+     */
     private void saveProperties(MetadataIdentifier metadataIdentifier, String value, boolean add, boolean sync) {
         if (localCacheFile == null) {
             return;
         }
 
         try {
+            /**
+             * 向properties添加或删除属性
+             */
             if (add) {
                 properties.setProperty(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), value);
             } else {
                 properties.remove(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
+            /**
+             * 同步或异步
+             */
             if (sync) {
                 new SaveProperties(version).run();
             } else {
@@ -255,19 +272,34 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         @Override
         public void run() {
+            /**
+             * 本地文件保存
+             */
             doSaveProperties(version);
         }
     }
 
+    /**
+     * 存储元数据
+     * @param providerMetadataIdentifier
+     * @param serviceDefinition
+     */
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         if (syncReport) {
+            //同步
             storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition);
         } else {
+            //异步
             reportCacheExecutor.execute(() -> storeProviderMetadataTask(providerMetadataIdentifier, serviceDefinition));
         }
     }
 
+    /**
+     * 注册元数据
+     * @param providerMetadataIdentifier
+     * @param serviceDefinition
+     */
     private void storeProviderMetadataTask(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
         try {
             if (logger.isInfoEnabled()) {
@@ -277,16 +309,30 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.remove(providerMetadataIdentifier);
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
+            /**
+             * 注册元数据  ConfigCenterBasedMetadataReport
+             */
             doStoreProviderMetadata(providerMetadataIdentifier, data);
+            /**
+             * 本地文件保存属性
+             */
             saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
             failedReports.put(providerMetadataIdentifier, serviceDefinition);
+            /**
+             * 重试
+             */
             metadataReportRetry.startRetryTask();
             logger.error("Failed to put provider metadata " + providerMetadataIdentifier + " in  " + serviceDefinition + ", cause: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * 存储服务消费者配置
+     * @param consumerMetadataIdentifier
+     * @param serviceParameterMap
+     */
     @Override
     public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         if (syncReport) {
@@ -296,6 +342,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
+    /**
+     * 存储服务消费者配置
+     * @param consumerMetadataIdentifier
+     * @param serviceParameterMap
+     */
     public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
@@ -306,7 +357,13 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
             Gson gson = new Gson();
             String data = gson.toJson(serviceParameterMap);
+            /**
+             * 存储元数据  ConfigCenterBasedMetadataReport
+             */
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
+            /**
+             * 本地文件保存属性
+             */
             saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
             // retry again. If failed again, throw exception.
@@ -368,13 +425,22 @@ public abstract class AbstractMetadataReport implements MetadataReport {
      * @return if need to continue
      */
     public boolean retry() {
+        //重试
         return doHandleMetadataCollection(failedReports);
     }
 
+    /**
+     * 重新注册元数据信息
+     * @param metadataMap
+     * @return
+     */
     private boolean doHandleMetadataCollection(Map<MetadataIdentifier, Object> metadataMap) {
         if (metadataMap.isEmpty()) {
             return true;
         }
+        /**
+         * 遍历metadataMap   依照side来重新注册元数据
+         */
         Iterator<Map.Entry<MetadataIdentifier, Object>> iterable = metadataMap.entrySet().iterator();
         while (iterable.hasNext()) {
             Map.Entry<MetadataIdentifier, Object> item = iterable.next();
@@ -439,8 +505,10 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                             public void run() {
                                 // Check and connect to the metadata
                                 try {
+                                    //记录重试次数
                                     int times = retryCounter.incrementAndGet();
                                     logger.info("start to retry task for metadata report. retry times:" + times);
+                                    //重试且计算次数
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }

@@ -97,6 +97,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    /**
+     * 根据url获取对应的Registry
+     * @param url Registry address, is not allowed to be empty
+     * @return
+     */
     @Override
     public Registry getRegistry(URL url) {
         if (destroyed.get()) {
@@ -104,7 +109,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                     "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
         }
-
+        //url重新设置path  在parameter中新增interface属性并删除export属性
         url = URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
@@ -114,15 +119,26 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
+            // 取缓存
             Registry registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;
             }
             //create registry by spi/ioc
+            /**
+             * 创建url对应的Registry  服务自省【ServiceDiscoveryRegistryFactory】或依赖注册中心【nacos】
+             * 创建url对应的Registry  服务自省【ServiceDiscoveryRegistryFactory】或依赖注册中心【nacos】
+             * 创建url对应的Registry  服务自省【ServiceDiscoveryRegistryFactory】或依赖注册中心【nacos】
+             * 服务自省：service-discovery-registry://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-nacos-provider-demo&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&metadata-type=remote&password=nacos&pid=12916&registry=nacos&registry-type=service&registry.type=service&timestamp=1604897547641&username=nacos
+             * 注册中心：nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-provider&dubbo=2.0.2&interface=org.apache.dubbo.registry.RegistryService&metadata-type=remote&pid=2460&timestamp=1604897600623
+             */
             registry = createRegistry(url);
             if (registry == null) {
                 throw new IllegalStateException("Can not create registry " + url);
             }
+            /**
+             * 缓存
+             */
             REGISTRIES.put(key, registry);
             return registry;
         } finally {

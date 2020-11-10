@@ -37,14 +37,14 @@ public class NacosDubboServiceProviderBootstrap {
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?username=nacos&password=nacos")
+                .registry("nacos", builder -> builder.address("nacos://113.96.131.199:8848?username=nacos&password=nacos")
                         .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE))
                 // Nacos in traditional registry type
 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .protocol("dubbo", builder -> builder.port(20885).name("dubbo"))
-                .protocol("rest", builder -> builder.port(9090).name("rest"))
-                .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo"))
-                .service(builder -> builder.id("user").interfaceClass(UserService.class).ref(new UserServiceImpl()).protocolIds("rest"))
+//                .protocol("rest", builder -> builder.port(9090).name("rest"))
+                .service(builder -> builder.id("echo").interfaceClass(EchoService.class).ref(new EchoServiceImpl()).protocolIds("dubbo").version("1.0.1").group("test"))
+//                .service(builder -> builder.id("user").interfaceClass(UserService.class).ref(new UserServiceImpl()).protocolIds("rest"))
                 .start()
                 .await();
     }

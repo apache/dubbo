@@ -219,14 +219,26 @@ public class DubboBootstrap extends GenericEventListener {
         DubboShutdownHook.getDubboShutdownHook().unregister();
     }
 
+    /**
+     * 判断application标签上得registerConsumer属性
+     * @return
+     */
     private boolean isOnlyRegisterProvider() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
         return registerConsumer == null || !registerConsumer;
     }
 
+    /**
+     * 获取metadataType
+     * @return
+     */
     private String getMetadataType() {
+        /**
+         * 获取application标签中的metadataType
+         */
         String type = getApplication().getMetadataType();
         if (StringUtils.isEmpty(type)) {
+            //local
             type = DEFAULT_METADATA_STORAGE_TYPE;
         }
         return type;
@@ -275,6 +287,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Set the {@link ApplicationConfig}
+     * 添加ApplicationConfig
      *
      * @param applicationConfig the {@link ApplicationConfig}
      * @return current {@link DubboBootstrap} instance
@@ -524,21 +537,43 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
+        /**
+         *
+         */
         ApplicationModel.initFrameworkExts();
 
+        /**
+         * 启动配置中心
+         */
         startConfigCenter();
 
+        /**
+         * 从配置中心中读取注册中心和protocol相关信息  并加载
+         */
         loadRemoteConfigs();
 
         checkGlobalConfigs();
 
         // @since 2.7.8
+        /**
+         * 开启元数据中心
+         * 若没有指定元数据中心  则以注册中心代替  并初始化元数据中心
+         */
         startMetadataCenter();
 
+        /**
+         * 获取metadataType对应得WritableMetadataService实现
+         */
         initMetadataService();
 
+        /**
+         * 初始化MetadataServiceExporter对应得实现
+         */
         initMetadataServiceExports();
 
+        /**
+         * init监听
+         */
         initEventListener();
 
         if (logger.isInfoEnabled()) {
@@ -555,6 +590,9 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isEmpty(metadatas)) {
             MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
             metadataReportConfig.refresh();
+            /**
+             * metadataReportConfig对应的address不为空
+             */
             if (metadataReportConfig.isValid()) {
                 configManager.addMetadataReport(metadataReportConfig);
                 metadatas = configManager.getMetadataConfigs();
@@ -604,10 +642,20 @@ public class DubboBootstrap extends GenericEventListener {
         ConfigValidationUtils.validateSslConfig(getSsl());
     }
 
+    /**
+     * 启动配置中心
+     */
     private void startConfigCenter() {
 
+        /**
+         * 没有显示指定配置中心时   是否可以将注册中心作为默认得配置中心
+         * 过滤出允许的注册中心  将对应的配置信息缓存到configManager
+         */
         useRegistryAsConfigCenterIfNecessary();
 
+        /**
+         * 获取配置中心信息
+         */
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
         // check Config Center
@@ -620,7 +668,13 @@ public class DubboBootstrap extends GenericEventListener {
             }
         } else {
             for (ConfigCenterConfig configCenterConfig : configCenters) {
+                /**
+                 * 刷新configCenterConfig
+                 */
                 configCenterConfig.refresh();
+                /**
+                 * 校验configCenterConfig
+                 */
                 ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             }
         }
@@ -628,34 +682,67 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isNotEmpty(configCenters)) {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
+                /**
+                 * 从配置中心读取数据  封装到DynamicConfiguration  并存入configurations
+                 */
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
+        /**
+         * 对所有的配置执行刷新操作
+         */
         configManager.refreshAll();
     }
 
+    /**
+     * 开启元数据中心
+     */
     private void startMetadataCenter() {
 
+        /**
+         * 没有显示指定元数据中心时   是否可以将注册中心作为默认得元数据中心
+         */
         useRegistryAsMetadataCenterIfNecessary();
 
+        /**
+         * 获取application配置
+         */
         ApplicationConfig applicationConfig = getApplication();
 
+        /**
+         * 获取applicationConfig对应得metadata-type属性
+         */
         String metadataType = applicationConfig.getMetadataType();
         // FIXME, multiple metadata config support.
+        /**
+         * 获取元数据中心
+         */
         Collection<MetadataReportConfig> metadataReportConfigs = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadataReportConfigs)) {
+            /**
+             * metadataType不能为remote
+             */
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 throw new IllegalStateException("No MetadataConfig found, you must specify the remote Metadata Center address when 'metadata=remote' is enabled.");
             }
             return;
         }
+        /**
+         * 获取集合中得第一个metadataReportConfig
+         */
         MetadataReportConfig metadataReportConfig = metadataReportConfigs.iterator().next();
+        /**
+         * 校验metadataReportConfig
+         */
         ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
         if (!metadataReportConfig.isValid()) {
             return;
         }
 
+        /**
+         * init  初始化元数据中心
+         */
         MetadataReportInstance.init(metadataReportConfig.toUrl());
     }
 
@@ -663,6 +750,9 @@ public class DubboBootstrap extends GenericEventListener {
      * For compatibility purpose, use registry as the default config center when
      * there's no config center specified explicitly and
      * useAsConfigCenter of registryConfig is null or true
+     *
+     * 没有显示指定配置中心时   是否可以将注册中心作为默认得配置中心
+     * registryConfig中对应得useAsConfigCenter设置为null或者为true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
@@ -674,6 +764,13 @@ public class DubboBootstrap extends GenericEventListener {
             return;
         }
 
+        /**
+         * 过滤所有的注册中心  获取对应的isDefault属性为null或者true的注册中心
+         * stream
+         * 再次过滤  是否允许当前注册中心做配置中心
+         * 将registryConfig转换为ConfigCenterConfig
+         * 缓存config配置信息
+         */
         configManager
                 .getDefaultRegistries()
                 .stream()
@@ -682,11 +779,26 @@ public class DubboBootstrap extends GenericEventListener {
                 .forEach(configManager::addConfigCenter);
     }
 
+    /**
+     * 是否使用注册中心为默认配置中心
+     * @param registryConfig
+     * @return
+     */
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
+        /**
+         * 查看注册中心得usedRegistryAsCenter属性
+         * 如果没有则验证注册中心对应得protocol  是否有对于DynamicConfigurationFactory得扩展
+         * 举例：注册中心为nacos  则验证是否有DynamicConfigurationFactory对应得nacos实现
+         */
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
                 DynamicConfigurationFactory.class);
     }
 
+    /**
+     * 将RegistryConfig转换为ConfigCenterConfig
+     * @param registryConfig
+     * @return
+     */
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
@@ -714,14 +826,27 @@ public class DubboBootstrap extends GenericEventListener {
         return cc;
     }
 
+    /**
+     * 没有显示指定元数据中心时   是否可以将注册中心作为默认得元数据中心
+     */
     private void useRegistryAsMetadataCenterIfNecessary() {
 
+        /**
+         * 获取MetadataReportConfig相关得配置
+         */
         Collection<MetadataReportConfig> metadataConfigs = configManager.getMetadataConfigs();
 
         if (CollectionUtils.isNotEmpty(metadataConfigs)) {
             return;
         }
 
+        /**
+         * 过滤所有的注册中心  获取对应的isDefault属性为null或者true的注册中心
+         * stream
+         * 再次过滤  是否允许当前注册中心做配置中心
+         * 将registryConfig转换为MetadataReportConfig
+         * 缓存MetadataReportConfig配置信息
+         */
         configManager
                 .getDefaultRegistries()
                 .stream()
@@ -731,6 +856,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     }
 
+    /**
+     * 是否使用注册中心为元数据中心
+     * @param registryConfig
+     * @return
+     */
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
                 MetadataReportFactory.class);
@@ -751,10 +881,19 @@ public class DubboBootstrap extends GenericEventListener {
                                            Class<?> extensionClass) {
         final boolean supported;
 
+        /**
+         * 获取注册中心中 usedRegistryAsCenter对应的值
+         */
         Boolean configuredValue = usedRegistryAsCenter.get();
         if (configuredValue != null) { // If configured, take its value.
+            /**
+             * 不为null  则获取对应的value
+             */
             supported = configuredValue.booleanValue();
         } else {                       // Or check the extension existence
+            /**
+             * 否则检测extensionClass对应得拓展中  是否含有protocol对应得实现
+             */
             String protocol = registryConfig.getProtocol();
             supported = supportsExtension(extensionClass, protocol);
             if (logger.isInfoEnabled()) {
@@ -772,6 +911,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Supports the extension with the specified class and name
+     * 指定的class和name是否有对应的扩展
      *
      * @param extensionClass the {@link Class} of extension
      * @param name           the name of extension
@@ -780,12 +920,20 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private boolean supportsExtension(Class<?> extensionClass, String name) {
         if (isNotEmpty(name)) {
+            /**
+             * 获取extensionClass对应得扩展 以及扩展是否含有name对应得实现
+             */
             ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
             return extensionLoader.hasExtension(name);
         }
         return false;
     }
 
+    /**
+     * 将RegistryConfig转化为MetadataReportConfig
+     * @param registryConfig
+     * @return
+     */
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
@@ -815,9 +963,15 @@ public class DubboBootstrap extends GenericEventListener {
         return addresses[0];
     }
 
+    /**
+     * 加载配置中心属性
+     */
     private void loadRemoteConfigs() {
         // registry ids to registry configs
         List<RegistryConfig> tmpRegistries = new ArrayList<>();
+        /**
+         * 获取配置中心  包含【dubbo.registries.】的属性key
+         */
         Set<String> registryIds = configManager.getRegistryIds();
         registryIds.forEach(id -> {
             if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
@@ -834,6 +988,9 @@ public class DubboBootstrap extends GenericEventListener {
 
         // protocol ids to protocol configs
         List<ProtocolConfig> tmpProtocols = new ArrayList<>();
+        /**
+         * 获取配置中心  包含【dubbo.protocols.】的属性key
+         */
         Set<String> protocolIds = configManager.getProtocolIds();
         protocolIds.forEach(id -> {
             if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
@@ -854,11 +1011,15 @@ public class DubboBootstrap extends GenericEventListener {
      * Initialize {@link #metadataService WritableMetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
+        /**
+         * 获取metadataType对应得WritableMetadataService实现
+         */
         this.metadataService = WritableMetadataService.getExtension(getMetadataType());
     }
 
     /**
      * Initialize {@link #metadataServiceExporters MetadataServiceExporter}
+     * 初始化MetadataServiceExporter对应得实现
      */
     private void initMetadataServiceExports() {
         this.metadataServiceExporters = getExtensionLoader(MetadataServiceExporter.class).getSupportedExtensionInstances();
@@ -887,21 +1048,38 @@ public class DubboBootstrap extends GenericEventListener {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             ready.set(false);
+            /**
+             * 初始化
+             */
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
             }
             // 1. export Dubbo Services
+            /**
+             * 导出服务
+             * 1、将导出的服务启动，供消费者访问
+             * 2、非服务自省：将服务注册到注册中心  服务自省：将服务信息缓存到本地
+             * 3、将导出服务信息配置写到配置中心
+             */
             exportServices();
 
             // Not only provider register
+            /**
+             * 服务自省   serviceInstance注册
+             */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
+                //启动元数据服务，导出元数据服务到本地缓存
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
+                //注册本地服务实例
                 registerServiceInstance();
             }
 
+            /**
+             * 服务引入
+             */
             referServices();
             if (asyncExportingFutures.size() > 0) {
                 new Thread(() -> {
@@ -928,6 +1106,10 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
+    /**
+     * ExportedURLs不为空
+     * @return
+     */
     private boolean hasExportedServices() {
         return !metadataService.getExportedURLs().isEmpty();
     }
@@ -1020,17 +1202,31 @@ public class DubboBootstrap extends GenericEventListener {
     }
     /* serve for builder apis, end */
 
+    /**
+     * 准备环境  从配置中心读取数据填充到environment
+     * @param configCenter
+     * @return
+     */
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
+        /**
+         * 配置中心数据有效
+         */
         if (configCenter.isValid()) {
             if (!configCenter.checkOrUpdateInited()) {
                 return null;
             }
             DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            /**
+             * 从配置中心中获取数据
+             */
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = getApplication().getName();
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
+                /**
+                 * 从配置中心中获取数据
+                 */
                 appConfigContent = dynamicConfiguration.getProperties
                         (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
                                 appGroup
@@ -1038,7 +1234,13 @@ public class DubboBootstrap extends GenericEventListener {
             }
             try {
                 environment.setConfigCenterFirst(configCenter.isHighestPriority());
+                /**
+                 * 将configContent转为map存入environment
+                 */
                 environment.updateExternalConfigurationMap(parseProperties(configContent));
+                /**
+                 * 将appConfigContent转为map存入environment
+                 */
                 environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
@@ -1080,20 +1282,35 @@ public class DubboBootstrap extends GenericEventListener {
         return exporter.supports(getMetadataType());
     }
 
+    /**
+     * 导出服务
+     */
     private void exportServices() {
+        /**
+         * 遍历所有得服务
+         */
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
             serviceConfig.setBootstrap(this);
 
+            /**
+             * 同步或异步
+             */
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
+                    /**
+                     * 导出服务
+                     */
                     sc.export();
                     exportedServices.add(sc);
                 });
                 asyncExportingFutures.add(future);
             } else {
+                /**
+                 * 导出服务
+                 */
                 sc.export();
                 exportedServices.add(sc);
             }
@@ -1115,24 +1332,39 @@ public class DubboBootstrap extends GenericEventListener {
         exportedServices.clear();
     }
 
+    /**
+     * 服务消费者
+     */
     private void referServices() {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
         }
 
+        /**
+         * 遍历所有得References
+         */
         configManager.getReferences().forEach(rc -> {
             // TODO, compatible with  ReferenceConfig.refer()
             ReferenceConfig referenceConfig = (ReferenceConfig) rc;
             referenceConfig.setBootstrap(this);
 
             if (rc.shouldInit()) {
+                /**
+                 * 同步或异步
+                 */
                 if (referAsync) {
                     CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
                             executorRepository.getServiceExporterExecutor(),
+                            /**
+                             * get
+                             */
                             () -> cache.get(rc)
                     );
                     asyncReferringFutures.add(future);
                 } else {
+                    /**
+                     * get
+                     */
                     cache.get(rc);
                 }
             }
@@ -1153,6 +1385,9 @@ public class DubboBootstrap extends GenericEventListener {
         cache.destroyAll();
     }
 
+    /**
+     * 服务自省   注册ServiceInstance
+     */
     private void registerServiceInstance() {
         if (CollectionUtils.isEmpty(getServiceDiscoveries())) {
             return;
@@ -1162,12 +1397,18 @@ public class DubboBootstrap extends GenericEventListener {
 
         String serviceName = application.getName();
 
+        /**
+         * 获取本地元数据中心中缓存的一个url（rest协议优先，没有则选取最后一个）
+         */
         URL exportedURL = selectMetadataServiceExportedURL();
 
         String host = exportedURL.getHost();
 
         int port = exportedURL.getPort();
 
+        /**
+         * 实例化
+         */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
         preRegisterServiceInstance(serviceInstance);
@@ -1195,27 +1436,43 @@ public class DubboBootstrap extends GenericEventListener {
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
+        /**
+         * 获取ServiceInstanceCustomizer对应的所有实现
+         */
         loader.getSupportedExtensionInstances().forEach(customizer -> {
             // customizes
             customizer.customize(serviceInstance);
         });
     }
 
+    /**
+     * 获取本地缓存中服务的url
+     * @return
+     */
     private URL selectMetadataServiceExportedURL() {
 
         URL selectedURL = null;
 
+        /**
+         * 获取本地元数据中心缓存的服务   过滤掉MetadataService
+         */
         SortedSet<String> urlValues = metadataService.getExportedURLs();
 
+        /**
+         * 遍历urlValues
+         */
         for (String urlValue : urlValues) {
             URL url = URL.valueOf(urlValue);
+            // 如果是MetadataService则跳过
             if (MetadataService.class.getName().equals(url.getServiceInterface())) {
                 continue;
             }
+            // rest协议则命中且退出玄幻
             if ("rest".equals(url.getProtocol())) { // REST first
                 selectedURL = url;
                 break;
             } else {
+                // 其他则选取最后一个
                 selectedURL = url; // If not found, take any one
             }
         }
@@ -1324,6 +1581,10 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    /**
+     * 获取ApplicationConfig  并刷新
+     * @return
+     */
     public ApplicationConfig getApplication() {
         ApplicationConfig application = configManager
                 .getApplication()

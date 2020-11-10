@@ -65,10 +65,22 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         return iterateConfigOperation(configuration -> configuration.getInternalProperty(key));
     }
 
+    /**
+     * 新增配置
+     * @param key     the key to represent a configuration
+     * @param group   the group where the key belongs to
+     * @param content the content of configuration
+     * @return
+     * @throws UnsupportedOperationException
+     */
     @Override
     public boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
         boolean publishedAll = true;
+        /**
+         * 遍历所有的配置中心  并新增配置
+         */
         for (DynamicConfiguration configuration : configurations) {
+            //新增
             if (!configuration.publishConfig(key, group, content)) {
                 publishedAll = false;
             }

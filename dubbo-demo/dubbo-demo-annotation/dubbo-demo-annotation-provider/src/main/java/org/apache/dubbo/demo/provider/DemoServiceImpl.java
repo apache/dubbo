@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.RpcContext;
 

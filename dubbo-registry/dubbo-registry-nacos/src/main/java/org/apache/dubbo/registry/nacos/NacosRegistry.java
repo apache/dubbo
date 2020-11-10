@@ -147,15 +147,27 @@ public class NacosRegistry extends FailbackRegistry {
         return urls;
     }
 
+    /**
+     * 将服务注册到注册中心
+     * @param url
+     */
     @Override
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
+        /**
+         * instance
+         */
         final Instance instance = createInstance(url);
         /**
          *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
          *  default {@link DEFAULT_GROUP}
          *
          * in https://github.com/apache/dubbo/issues/5978
+         */
+        /**
+         * 将服务注册到注册中心
+         * 将服务注册到注册中心
+         * 将服务注册到注册中心
          */
         execute(namingService -> namingService.registerInstance(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP), instance));
@@ -173,20 +185,41 @@ public class NacosRegistry extends FailbackRegistry {
         });
     }
 
+    /**
+     * 订阅
+     * @param url consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=3404&side=consumer&sticky=false&timestamp=1603872721516&version=2.0.0
+     * @param listener
+     */
     @Override
     public void doSubscribe(final URL url, final NotifyListener listener) {
+        /**
+         * 获取要订阅得服务名列表 即服务提供者对应得serviceNames
+         *  0 -> providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
+         */
         Set<String> serviceNames = getServiceNames(url, listener);
 
         //Set corresponding serviceNames for easy search later
         if (isServiceNamesWithCompatibleMode(url)) {
             for (String serviceName : serviceNames) {
+                /**
+                 * 加入CORRESPONDING_SERVICE_NAMES_MAP
+                 */
                 NacosInstanceManageUtil.setCorrespondingServiceNames(serviceName, serviceNames);
             }
         }
 
+        /**
+         * 创建消费者实例  并订阅
+         */
         doSubscribe(url, listener, serviceNames);
     }
 
+    /**
+     *
+     * @param url consumer://192.168.50.39/org.apache.dubbo.demo.DemoService?application=dubbo-demo-annotation-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=4080&side=consumer&sticky=false&timestamp=1604043398125
+     * @param listener
+     * @param serviceNames
+     */
     private void doSubscribe(final URL url, final NotifyListener listener, final Set<String> serviceNames) {
         execute(namingService -> {
             if (isServiceNamesWithCompatibleMode(url)) {
@@ -202,13 +235,24 @@ public class NacosRegistry extends FailbackRegistry {
                  * in https://github.com/apache/dubbo/issues/5978
                  */
                 for (String serviceName : serviceNames) {
+                    /**
+                     * 获取注册中心中对应的服务提供者信息
+                     */
                     List<Instance> instances = namingService.getAllInstances(serviceName,
                             getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP));
+                    // 缓存
                     NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     allCorrespondingInstanceList.addAll(instances);
                 }
+
+                /**
+                 * 创建invoker（启动服务消费者）
+                 */
                 notifySubscriber(url, listener, allCorrespondingInstanceList);
                 for (String serviceName : serviceNames) {
+                    /**
+                     * 订阅serviceName   关注对应的服务提供者实例
+                     */
                     subscribeEventListener(serviceName, url, listener);
                 }
             } else {
@@ -254,21 +298,34 @@ public class NacosRegistry extends FailbackRegistry {
 
     /**
      * Get the service names from the specified {@link URL url}
-     *
+     * 获取服务名列表
      * @param url      {@link URL}
      * @param listener {@link NotifyListener}
      * @return non-null
      */
     private Set<String> getServiceNames(URL url, NotifyListener listener) {
+        // admin
         if (isAdminProtocol(url)) {
             scheduleServiceNamesLookup(url, listener);
             return getServiceNamesForOps(url);
         } else {
+            /**
+             * 获取url对应得serviceName
+             */
             return getServiceNames0(url);
         }
     }
 
+    /**
+     * 获取serviceName列表
+     * @param url
+     * @return
+     */
     private Set<String> getServiceNames0(URL url) {
+        /**
+         * 获取serviceName
+         * providers:org.apache.dubbo.demo.DemoService:2.0.0:test11
+         */
         NacosServiceName serviceName = createServiceName(url);
 
         final Set<String> serviceNames;
@@ -277,6 +334,7 @@ public class NacosRegistry extends FailbackRegistry {
             serviceNames = new LinkedHashSet<>();
             serviceNames.add(serviceName.toString());
             // Add the legacy service name since 2.7.6
+            //获取与Dubbo 2.7.3及更低版本兼容的旧版订阅服务名称
             String legacySubscribedServiceName = getLegacySubscribedServiceName(url);
             if (!serviceName.toString().equals(legacySubscribedServiceName)) {
                 //avoid duplicated service names
@@ -309,7 +367,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     /**
      * Get the legacy subscribed service name for compatible with Dubbo 2.7.3 and below
-     *
+     * 获取与Dubbo 2.7.3及更低版本兼容的旧版订阅服务名称
      * @param url {@link URL}
      * @return non-null
      * @since 2.7.6
@@ -462,7 +520,16 @@ public class NacosRegistry extends FailbackRegistry {
         return serviceNames;
     }
 
+    /**
+     * 将instances转换为url
+     * @param consumerURL
+     * @param instances
+     * @return
+     */
     private List<URL> toUrlWithEmpty(URL consumerURL, Collection<Instance> instances) {
+        /**
+         * 转换并匹配
+         */
         List<URL> urls = buildURLs(consumerURL, instances);
         if (urls.size() == 0) {
             URL empty = URLBuilder.from(consumerURL)
@@ -478,7 +545,13 @@ public class NacosRegistry extends FailbackRegistry {
         List<URL> urls = new LinkedList<>();
         if (instances != null && !instances.isEmpty()) {
             for (Instance instance : instances) {
+                /**
+                 * instance转url
+                 */
                 URL url = buildURL(instance);
+                /**
+                 * 匹配成功
+                 */
                 if (UrlUtils.isMatch(consumerURL, url)) {
                     urls.add(url);
                 }
@@ -487,26 +560,44 @@ public class NacosRegistry extends FailbackRegistry {
         return urls;
     }
 
+    /**
+     * 订阅服务  监控服务下实例是否发生变化
+     * @param serviceName
+     * @param url
+     * @param listener
+     * @throws NacosException
+     */
     private void subscribeEventListener(String serviceName, final URL url, final NotifyListener listener)
             throws NacosException {
+        /**
+         * 服务下实例变化回调通知
+         */
         EventListener eventListener = event -> {
             if (event instanceof NamingEvent) {
                 NamingEvent e = (NamingEvent) event;
                 List<Instance> instances = e.getInstances();
-
 
                 if (isServiceNamesWithCompatibleMode(url)) {
                     /**
                      * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
                      * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
                      */
+                    /**
+                     * 获取具有相应服务名称的所有实例，以避免实例覆盖但提到的实例为空
+                     */
                     NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
                 }
 
+                /**
+                 * 通知  服务提供者发生变化  更新缓存中的invoker并销毁失效的invoker
+                 */
                 notifySubscriber(url, listener, instances);
             }
         };
+        /**
+         * nacos订阅服务
+         */
         namingService.subscribe(serviceName,
                 getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
                 eventListener);
@@ -523,9 +614,16 @@ public class NacosRegistry extends FailbackRegistry {
         List<Instance> healthyInstances = new LinkedList<>(instances);
         if (healthyInstances.size() > 0) {
             // Healthy Instances
+            /**
+             * 过滤健康的服务提供者节点
+             */
             filterHealthyInstances(healthyInstances);
         }
+        /**
+         * 将健康的节点转换为url
+         */
         List<URL> urls = toUrlWithEmpty(url, healthyInstances);
+        // FailbackRegistry
         NacosRegistry.this.notify(url, listener, urls);
     }
 
@@ -541,6 +639,9 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private URL buildURL(Instance instance) {
+        /**
+         * 元数据
+         */
         Map<String, String> metadata = instance.getMetadata();
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);
@@ -551,6 +652,11 @@ public class NacosRegistry extends FailbackRegistry {
                 instance.getMetadata());
     }
 
+    /**
+     *
+     * @param url
+     * @return
+     */
     private Instance createInstance(URL url) {
         // Append default category if absent
         String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
@@ -562,6 +668,7 @@ public class NacosRegistry extends FailbackRegistry {
         Instance instance = new Instance();
         instance.setIp(ip);
         instance.setPort(port);
+        // 元数据
         instance.setMetadata(new HashMap<>(newURL.getParameters()));
         return instance;
     }

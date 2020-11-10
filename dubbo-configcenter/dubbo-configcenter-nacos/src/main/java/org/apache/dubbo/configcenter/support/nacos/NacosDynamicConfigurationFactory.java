@@ -32,10 +32,16 @@ public class NacosDynamicConfigurationFactory extends AbstractDynamicConfigurati
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
         URL nacosURL = url;
+        /**
+         * nacos使用空字符串作为默认的namespace   所以如果当前为namespace为dubbo   需要转为空字符串
+         */
         if (CommonConstants.DUBBO.equals(url.getParameter(PropertyKeyConst.NAMESPACE))) {
             // Nacos use empty string as default name space, replace default namespace "dubbo" to ""
             nacosURL = url.removeParameter(PropertyKeyConst.NAMESPACE);
         }
+        /**
+         * 初始化
+         */
         return new NacosDynamicConfiguration(nacosURL);
     }
 }

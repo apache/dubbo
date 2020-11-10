@@ -1228,6 +1228,11 @@ class URL implements Serializable {
         return new URL(protocol, username, password, host, port, path, map);
     }
 
+    /**
+     * 增加参数
+     * @param pairs  成对出现
+     * @return
+     */
     public URL addParameters(String... pairs) {
         if (pairs == null || pairs.length == 0) {
             return this;
@@ -1495,6 +1500,9 @@ class URL implements Serializable {
         if (inf == null) {
             return null;
         }
+        /**
+         * group/path:version
+         */
         serviceKey = buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
         return serviceKey;
     }
@@ -1512,6 +1520,13 @@ class URL implements Serializable {
         return buildKey(inf, getParameter(GROUP_KEY), getParameter(VERSION_KEY));
     }
 
+    /**
+     * group/path:version
+     * @param path
+     * @param group
+     * @param version
+     * @return
+     */
     public static String buildKey(String path, String group, String version) {
         return BaseServiceMetadata.buildServiceKey(path, group, version);
     }
@@ -1520,6 +1535,10 @@ class URL implements Serializable {
         return buildString(true, false, false, true);
     }
 
+    /**
+     * nacos://113.96.131.199:8848/ConfigCenterConfig
+     * @return
+     */
     public String toServiceString() {
         return buildString(true, false, true, true);
     }

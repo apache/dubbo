@@ -181,6 +181,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         convertRegistryIdsToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
+            // 是否有效
             if (!registryConfig.isValid()) {
                 throw new IllegalStateException("No registry config found or it's not a valid config! " +
                         "The registry config is: " + registryConfig);
@@ -238,9 +239,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     /**
      * Legitimacy check of stub, note that: the local will deprecated, and replace with <code>stub</code>
+     * 存根合法性检查，注意：local将被弃用，并替换为stub
      *
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface
+     *                       对于提供者端，它是将要导出的服务的{@link Class}；
+     *                       对于使用者端，它是远程服务接口的{@link Class}
      */
     public void checkStubAndLocal(Class<?> interfaceClass) {
         verifyStubAndLocal(local, "Local", interfaceClass);
@@ -273,6 +277,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     private void convertRegistryIdsToRegistries() {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
+            // 从扩展中获取注册中心  没有则新建
             if (CollectionUtils.isEmpty(registries)) {
                 List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
                 if (registryConfigs.isEmpty()) {
@@ -284,6 +289,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 setRegistries(registryConfigs);
             }
         } else {
+
             String[] ids = COMMA_SPLIT_PATTERN.split(registryIds);
             List<RegistryConfig> tmpRegistries = new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
@@ -310,6 +316,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
+    /**
+     * 配置项为null   则从interfaceConfig获取
+     * @param interfaceConfig
+     */
     public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
         if (interfaceConfig != null) {
             if (application == null) {

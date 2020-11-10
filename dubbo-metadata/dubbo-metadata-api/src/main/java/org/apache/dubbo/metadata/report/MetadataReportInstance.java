@@ -34,18 +34,35 @@ public class MetadataReportInstance {
 
     private static MetadataReport metadataReport;
 
+    /**
+     * 初始化
+     * @param metadataReportURL
+     */
     public static void init(URL metadataReportURL) {
         if (init.get()) {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        /**
+         * metadataReportURL对应得protocol属性为metadata
+         */
         if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
+            /**
+             * metadataReportURL对应得metadata属性
+             */
             String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+            /**
+             * 重置protocol属性  移除metadata属性
+             */
             metadataReportURL = URLBuilder.from(metadataReportURL)
                     .setProtocol(protocol)
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
+
+        /**
+         * 根据metadataReportURL  获取对应得实现
+         */
         metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
         init.set(true);
     }

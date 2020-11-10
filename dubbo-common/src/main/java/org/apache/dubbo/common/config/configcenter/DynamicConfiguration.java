@@ -220,6 +220,9 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      */
     static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
         String protocol = connectionURL.getProtocol();
+        /**
+         * 获取protocol对应的DynamicConfigurationFactory实现类
+         */
         DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
         return factory.getDynamicConfiguration(connectionURL);
     }
