@@ -57,13 +57,13 @@ public class MigrationRuleHandler<T> {
             try {
                 rule = MigrationRule.parse(rawRule);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (rule.getTargetIps() == null || !rule.getTargetIps().contains(consumerURL.getHost())) {
+                if (rule.getTargetIps() != null && rule.getTargetIps().contains(consumerURL.getHost())) {
+                    setMigrationRule(rule);
+                    step = rule.getStep(consumerURL.getServiceKey());
+                    threshold = rule.getThreshold(consumerURL.getServiceKey());
+                } else {
                     logger.info("Migration rule ignored, rule target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
-                    return;
                 }
-                setMigrationRule(rule);
-                step = rule.getStep(consumerURL.getServiceKey());
-                threshold = rule.getThreshold(consumerURL.getServiceKey());
             } catch (Exception e) {
                 logger.error("Parse migration rule error, will use default step " + step, e);
             }
