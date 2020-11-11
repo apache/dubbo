@@ -580,7 +580,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
             // export to local if the config is not remote (export to remote only when config is remote)
             /**
-             * 配置非remote 则导出到本地
+             * 配置非remote 则导出到本地    InjvmProtocol
              */
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
@@ -684,6 +684,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
+        // InjvmProtocol
         Exporter<?> exporter = PROTOCOL.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);
