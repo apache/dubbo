@@ -36,7 +36,6 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Configurator;
 import org.apache.dubbo.rpc.cluster.Router;
-import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -548,10 +547,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             }
         }
         return false;
-    }
-
-    public void buildRouterChain(URL url) {
-        this.setRouterChain(RouterChain.buildChain(url));
     }
 
     /**

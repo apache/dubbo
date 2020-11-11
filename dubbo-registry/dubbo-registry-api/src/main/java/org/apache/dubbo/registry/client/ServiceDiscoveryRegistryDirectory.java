@@ -30,6 +30,7 @@ import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,6 +42,8 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 
 public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
@@ -52,6 +55,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
+    }
+
+    @Override
+    public void buildRouterChain(URL url) {
+        this.setRouterChain(RouterChain.buildChain(url.addParameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE)));
     }
 
     @Override
