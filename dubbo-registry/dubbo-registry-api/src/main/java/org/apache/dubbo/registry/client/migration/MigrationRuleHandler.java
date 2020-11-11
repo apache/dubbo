@@ -48,7 +48,7 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
                 ? MigrationStep.FORCE_APPLICATION
                 : MigrationStep.INTERFACE_FIRST;
-        Float threshold = 0f;
+        Float threshold = -1f;
         if (StringUtils.isEmpty(rawRule)) {
             logger.error("Find empty migration rule, will ignore.");
             return;
@@ -58,12 +58,19 @@ public class MigrationRuleHandler<T> {
             try {
                 rule = MigrationRule.parse(rawRule);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isEmpty(rule.getTargetIps()) || rule.getTargetIps().contains(consumerURL.getHost())) {
+                if (CollectionUtils.isEmpty(rule.getTargetIps())) {
                     setMigrationRule(rule);
                     step = rule.getStep(consumerURL.getServiceKey());
                     threshold = rule.getThreshold(consumerURL.getServiceKey());
                 } else {
-                    logger.info("Migration rule ignored, rule target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+                    if (rule.getTargetIps().contains(consumerURL.getHost())) {
+                        setMigrationRule(rule);
+                        step = rule.getStep(consumerURL.getServiceKey());
+                        threshold = rule.getThreshold(consumerURL.getServiceKey());
+                    } else {
+                        setMigrationRule(null); // clear previous rule
+                        logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+                    }
                 }
             } catch (Exception e) {
                 logger.error("Parse migration rule error, will use default step " + step, e);
@@ -89,10 +96,10 @@ public class MigrationRuleHandler<T> {
     public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
         this.currentStep = currentStep;
         this.currentThreshold = currentThreshold;
+        this.migrationInvoker.setMigrationStep(currentStep);
     }
 
     public void setMigrationRule(MigrationRule rule) {
-        this.migrationInvoker.setMigrationStep(currentStep);
         this.migrationInvoker.setMigrationRule(rule);
     }
 }
