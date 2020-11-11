@@ -134,6 +134,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             }
         }
 
+        logger.info(newRevisionToMetadata.size() + " unique revisions. ");
+
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
                 scheduler.submit(new AddressRefreshRetryTask(retryPermission));
@@ -304,7 +306,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
+            List<URL> urls = toUrlsWithEmpty(serviceUrls.get(key));
+            logger.info("Notify service " + key + " with services " + urls.size());
+            notifyListener.notify(urls);
         });
     }
 

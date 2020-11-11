@@ -101,6 +101,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
 
         if (invokerUrls.size() == 0) {
+            logger.info("Received empty url list...");
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
@@ -115,6 +116,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+        logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
 
         if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
             logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
@@ -253,6 +255,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         if (deleted != null) {
+            logger.info(deleted.size() + " unused invokers deleted.");
             for (String addressKey : deleted) {
                 if (addressKey != null) {
                     Invoker<T> invoker = oldUrlInvokerMap.remove(addressKey);
