@@ -40,11 +40,11 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-
+        // 获取dubbo.metadata.storage-type   默认local
         String metadataStoredType = getMetadataStorageType(serviceInstance);
-
+        // 获取WritableMetadataService对应实现
         WritableMetadataService writableMetadataService = getExtension(metadataStoredType);
-
+        // 获取本地元数据中心中对外暴露服务的协议以及端口号
         Map<String, Integer> protocols = new HashMap<>();
         writableMetadataService.getExportedURLs()
                 .stream()
@@ -54,7 +54,7 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
                     // TODO, same protocol listen on different ports will override with each other.
                     protocols.put(url.getProtocol(), url.getPort());
                 });
-
+        // 向serviceInstance中缓存dubbo.endpoints
         setEndpoints(serviceInstance, protocols);
     }
 }

@@ -43,15 +43,15 @@ public class ExportedServicesRevisionMetadataCustomizer extends ServiceInstanceM
 
     @Override
     protected String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
-
+        // 获取dubbo.metadata.storage-type   默认local
         String metadataStorageType = getMetadataStorageType(serviceInstance);
-
+        // 获取WritableMetadataService对应实现
         WritableMetadataService writableMetadataService = getExtension(metadataStorageType);
-
+        // 获取本地元数据中心缓存的对外服务（过滤元数据服务）
         SortedSet<String> exportedURLs = writableMetadataService.getExportedURLs();
 
         URLRevisionResolver resolver = new URLRevisionResolver();
-
+        // 计算hashcode
         return resolver.resolve(exportedURLs);
     }
 }

@@ -1265,6 +1265,10 @@ public class DubboBootstrap extends GenericEventListener {
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
+        /**
+         * ConfigurableMetadataServiceExporter
+         * RemoteMetadataServiceExporter
+         */
         metadataServiceExporters
                 .stream()
                 .filter(this::supports)
@@ -1411,8 +1415,25 @@ public class DubboBootstrap extends GenericEventListener {
          */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
+        /**
+         * 计算serviceInstance中的metadata
+         *
+         * 元数据服务对应的参数
+         *      dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+         * 订阅服务对应的hashcode
+         *      dubbo.subscribed-services.revision=X
+         * 导出服务对应的协议以及端口号
+         *      dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
+         * 存储对应的实现（SPI）
+         *      dubbo.metadata.storage-type=remote
+         * 导出服务对应的hashcode
+         *      dubbo.exported-services.revision=3b46c4664c6d5a
+         */
         preRegisterServiceInstance(serviceInstance);
 
+        /**
+         * 向注册中心注册serviceInstance
+         */
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 

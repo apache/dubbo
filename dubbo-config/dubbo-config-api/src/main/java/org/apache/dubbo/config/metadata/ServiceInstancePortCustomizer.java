@@ -35,7 +35,7 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-
+        // port不为空则跳出
         if (serviceInstance.getPort() != null) {
             return;
         }

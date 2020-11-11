@@ -118,7 +118,9 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
 
     @Override
     public boolean saveExportedURLs(String serviceName, String exportedServicesRevision, String exportedURLsContent) {
+        // exported-urls:dubbo-demo-annotation-provider:3b46c4664c6d5a
         String key = buildExportedURLsMetadataKey(serviceName, exportedServicesRevision);
+        // 保存配置中心
         return dynamicConfiguration.publishConfig(key, group, exportedURLsContent);
     }
 
@@ -133,6 +135,7 @@ public class ConfigCenterBasedMetadataReport extends AbstractMetadataReport {
     }
 
     protected void saveMetadata(BaseMetadataIdentifier metadataIdentifier, String value) {
+        // dubbo-demo-annotation-provider:X
         String key = getKey(metadataIdentifier);
         dynamicConfiguration.publishConfig(key, group, value);
     }

@@ -109,6 +109,11 @@ public class ServiceInstanceMetadataUtils {
         return params.getOrDefault(protocol, emptyMap());
     }
 
+    /**
+     * 获取url对应的元数据服务部分参数
+     * @param urls
+     * @return
+     */
     public static String getMetadataServiceParameter(List<URL> urls) {
 
         Map<String, Map<String, String>> params = new HashMap<>();
@@ -124,6 +129,7 @@ public class ServiceInstanceMetadataUtils {
                 .map(url -> url.removeParameter(TIMESTAMP_KEY))
                 .forEach(url -> {
                     String protocol = url.getProtocol();
+                    //缓存协议 以及对应的参数
                     params.put(protocol, getParams(url));
                 });
 
@@ -137,6 +143,7 @@ public class ServiceInstanceMetadataUtils {
     private static Map<String, String> getParams(URL providerURL) {
         Map<String, String> params = new LinkedHashMap<>();
         setDefaultParams(params, providerURL);
+        // 缓存port
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
         return params;
     }
@@ -207,6 +214,11 @@ public class ServiceInstanceMetadataUtils {
                 || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }
 
+    /**
+     * 缓存协议以及端口号
+     * @param serviceInstance
+     * @param protocolPorts
+     */
     public static void setEndpoints(ServiceInstance serviceInstance, Map<String, Integer> protocolPorts) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         List<Endpoint> endpoints = new ArrayList<>();
@@ -214,7 +226,7 @@ public class ServiceInstanceMetadataUtils {
             Endpoint endpoint = new Endpoint(v, k);
             endpoints.add(endpoint);
         });
-
+        // dubbo.endpoints
         metadata.put(ENDPOINTS, JSON.toJSONString(endpoints));
     }
 
@@ -247,8 +259,10 @@ public class ServiceInstanceMetadataUtils {
      * @param providerURL the provider's {@link URL}
      */
     private static void setDefaultParams(Map<String, String> params, URL providerURL) {
+        // 遍历DEFAULT_REGISTER_PROVIDER_KEYS  获取providerURL中的参数
         for (String parameterName : DEFAULT_REGISTER_PROVIDER_KEYS) {
             String parameterValue = providerURL.getParameter(parameterName);
+            // 参数值不为空则缓存
             if (!isBlank(parameterValue)) {
                 params.put(parameterName, parameterValue);
             }
