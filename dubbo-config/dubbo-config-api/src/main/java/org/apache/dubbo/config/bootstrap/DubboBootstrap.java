@@ -1070,7 +1070,7 @@ public class DubboBootstrap extends GenericEventListener {
              */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
-                //启动元数据服务，导出元数据服务到本地缓存
+                //启动元数据服务，启动元数据服务并向配置中心写入信息
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
                 //注册本地服务实例
@@ -1267,7 +1267,9 @@ public class DubboBootstrap extends GenericEventListener {
     private void exportMetadataService() {
         /**
          * ConfigurableMetadataServiceExporter
+         *      启动元数据服务以供服务消费者调用  但不向注册中心和配置中心写入信息
          * RemoteMetadataServiceExporter
+         *      向配置中心写入导出的服务以及订阅的服务配置信息
          */
         metadataServiceExporters
                 .stream()
@@ -1291,7 +1293,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private void exportServices() {
         /**
-         * 遍历所有得服务
+         * 遍历所有得待导出服务
          */
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()

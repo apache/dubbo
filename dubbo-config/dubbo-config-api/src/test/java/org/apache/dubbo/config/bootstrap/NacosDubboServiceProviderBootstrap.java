@@ -37,7 +37,7 @@ public class NacosDubboServiceProviderBootstrap {
         DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://113.96.131.199:8848?username=nacos&password=nacos")
+                .registry("nacos", builder -> builder.address("nacos://113.96.131.199:8849?username=nacos&password=nacos")
                         .parameter(REGISTRY_TYPE_KEY, SERVICE_REGISTRY_TYPE))
                 // Nacos in traditional registry type
 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
