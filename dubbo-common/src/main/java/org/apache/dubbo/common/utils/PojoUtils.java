@@ -610,6 +610,12 @@ public class PojoUtils {
         if ("boolean".equals(parameterType.getName())) {
             return false;
         }
+        if ("byte".equals(parameterType.getName())) {
+            return (byte) 0;
+        }
+        if ("short".equals(parameterType.getName())) {
+            return (short) 0;
+        }
         return parameterType.isPrimitive() ? 0 : null;
     }
 
