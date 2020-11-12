@@ -376,9 +376,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // Sending a subscription request to the server side
             /**
-             * 订阅
-             * 订阅
-             * 订阅
+             * 订阅   非服务自省则按注册中心实现  服务自省则ServiceDiscoveryRegistry
+             * 订阅   非服务自省则按注册中心实现  服务自省则ServiceDiscoveryRegistry
+             * 订阅   非服务自省则按注册中心实现  服务自省则ServiceDiscoveryRegistry
              */
             doSubscribe(url, listener);
         } catch (Exception e) {

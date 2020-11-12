@@ -59,8 +59,8 @@ public class ListenerRegistryWrapper implements Registry {
     public void register(URL url) {
         try {
             /**
-             * 注册  FailbackRegistry
-             * 是否服务自省
+             * 非服务自省  FailbackRegistry
+             * 服务自省    ServiceDiscoveryRegistry
              */
             registry.register(url);
         } finally {
@@ -116,7 +116,8 @@ public class ListenerRegistryWrapper implements Registry {
     public void subscribe(URL url, NotifyListener listener) {
         try {
             /**
-             * FailbackRegistry  启动服务消费者并开启提供者服务实例订阅
+             * 非服务自省   FailbackRegistry  启动服务消费者并开启提供者服务实例订阅
+             * 服务自省     ServiceDiscoveryRegistry
              */
             registry.subscribe(url, listener);
         } finally {
