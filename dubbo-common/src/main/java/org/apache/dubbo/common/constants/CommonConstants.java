@@ -193,6 +193,8 @@ public interface CommonConstants {
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
+    String GENERIC_KEY = "generic";
+
     /**
      * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
      * {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}.
