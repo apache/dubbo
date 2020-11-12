@@ -51,6 +51,7 @@ public class RpcInvocation implements Invocation, Serializable {
     private static final long serialVersionUID = -4355285085441097045L;
 
     private String targetServiceUniqueName;
+    private String protocolServiceKey;
 
     private String methodName;
     private String serviceName;
@@ -69,7 +70,7 @@ public class RpcInvocation implements Invocation, Serializable {
     /**
      * Only used on the caller side, will not appear on the wire.
      */
-    private Map<Object, Object> attributes = new HashMap<Object, Object>();
+    private Map<Object, Object> attributes = new HashMap<>();
 
     private transient Invoker<?> invoker;
 
@@ -83,8 +84,8 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     public RpcInvocation(Invocation invocation, Invoker<?> invoker) {
-        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
-                invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
+        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(),
+                invocation.getParameterTypes(), invocation.getArguments(), new HashMap<>(invocation.getObjectAttachments()),
                 invocation.getInvoker(), invocation.getAttributes());
         if (invoker != null) {
             URL url = invoker.getUrl();
@@ -109,35 +110,37 @@ public class RpcInvocation implements Invocation, Serializable {
             }
         }
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
+        this.protocolServiceKey = invocation.getProtocolServiceKey();
     }
 
     public RpcInvocation(Invocation invocation) {
-        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getParameterTypes(),
+        this(invocation.getMethodName(), invocation.getServiceName(), invocation.getProtocolServiceKey(), invocation.getParameterTypes(),
                 invocation.getArguments(), invocation.getObjectAttachments(), invocation.getInvoker(), invocation.getAttributes());
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();
     }
 
-    public RpcInvocation(Method method, String serviceName, Object[] arguments) {
-        this(method, serviceName, arguments, null, null);
+    public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments) {
+        this(method, serviceName, protocolServiceKey, arguments, null, null);
     }
 
-    public RpcInvocation(Method method, String serviceName, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
-        this(method.getName(), serviceName, method.getParameterTypes(), arguments, attachment, null, attributes);
+    public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
+        this(method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
         this.returnType = method.getReturnType();
     }
 
-    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments) {
-        this(methodName, serviceName, parameterTypes, arguments, null, null, null);
+    public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
+        this(methodName, serviceName, protocolServiceKey, parameterTypes, arguments, null, null, null);
     }
 
-    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
-        this(methodName, serviceName, parameterTypes, arguments, attachments, null, null);
+    public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments, Map<String, Object> attachments) {
+        this(methodName, serviceName, protocolServiceKey, parameterTypes, arguments, attachments, null, null);
     }
 
-    public RpcInvocation(String methodName, String serviceName, Class<?>[] parameterTypes, Object[] arguments,
+    public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments,
                          Map<String, Object> attachments, Invoker<?> invoker, Map<Object, Object> attributes) {
         this.methodName = methodName;
         this.serviceName = serviceName;
+        this.protocolServiceKey = protocolServiceKey;
         this.parameterTypes = parameterTypes == null ? new Class<?>[0] : parameterTypes;
         this.arguments = arguments == null ? new Object[0] : arguments;
         this.attachments = attachments == null ? new HashMap<>() : attachments;
@@ -192,6 +195,11 @@ public class RpcInvocation implements Invocation, Serializable {
     @Override
     public String getTargetServiceUniqueName() {
         return targetServiceUniqueName;
+    }
+
+    @Override
+    public String getProtocolServiceKey() {
+        return protocolServiceKey;
     }
 
     public void setTargetServiceUniqueName(String targetServiceUniqueName) {

@@ -55,7 +55,7 @@ public class EtcdMetadataReportTest {
 
     private static final String TEST_SERVICE = "org.apache.dubbo.metadata.store.etcd.EtcdMetadata4TstService";
 
-    private EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 1, false, false);
+    private EtcdCluster etcdCluster = EtcdClusterFactory.buildCluster(getClass().getSimpleName(), 1, false);
     private Client etcdClientForTest;
     private EtcdMetadataReport etcdMetadataReport;
     private URL registryUrl;
