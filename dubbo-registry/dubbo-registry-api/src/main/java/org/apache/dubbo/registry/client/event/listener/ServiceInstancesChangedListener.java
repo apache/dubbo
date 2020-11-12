@@ -48,6 +48,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
@@ -138,7 +139,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
-                scheduler.submit(new AddressRefreshRetryTask(retryPermission));
+                scheduler.scheduleAtFixedRate(new AddressRefreshRetryTask(retryPermission), 10000, 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
             logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
