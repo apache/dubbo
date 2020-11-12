@@ -182,10 +182,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public synchronized void export() {
-        if (!shouldExport()) {
-            return;
-        }
-
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
@@ -200,6 +196,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());
+
+        if (!shouldExport()) {
+            return;
+        }
 
         if (shouldDelay()) {
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);

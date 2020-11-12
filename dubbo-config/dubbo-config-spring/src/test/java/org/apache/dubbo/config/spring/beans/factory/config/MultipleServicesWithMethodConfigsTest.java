@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = MultipleServicesWithMethodConfigsTest.class)
 @ImportResource(locations = "classpath:/META-INF/spring/multiple-services-with-methods.xml")
 public class MultipleServicesWithMethodConfigsTest {
