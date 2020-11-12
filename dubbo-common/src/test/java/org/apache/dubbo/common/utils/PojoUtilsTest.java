@@ -133,7 +133,7 @@ public class PojoUtilsTest {
     @Test
     public void test_pojo() throws Exception {
         assertObject(new Person());
-        assertObject(new SerializablePerson());
+        assertObject(new SerializablePerson(Character.MIN_VALUE, false));
     }
 
     @Test
@@ -147,7 +147,7 @@ public class PojoUtilsTest {
 
         List<Object> list = new ArrayList<Object>();
         list.add(new Person());
-        list.add(new SerializablePerson());
+        list.add(new SerializablePerson(Character.MIN_VALUE, false));
 
         map.put("k", list);
 
