@@ -70,6 +70,7 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
         ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setApplication(getApplicationConfig());
         serviceConfig.setRegistries(getRegistries());
+        // 设置元数据服务协议    端口设置为-1
         serviceConfig.setProtocol(generateMetadataProtocol());
         // 元数据
         serviceConfig.setInterface(MetadataService.class);

@@ -1070,7 +1070,7 @@ public class DubboBootstrap extends GenericEventListener {
              */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
-                //启动元数据服务，导出元数据服务到本地缓存
+                //启动元数据服务，启动元数据服务并向配置中心写入信息
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
                 //注册本地服务实例
@@ -1265,6 +1265,12 @@ public class DubboBootstrap extends GenericEventListener {
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
+        /**
+         * ConfigurableMetadataServiceExporter
+         *      启动元数据服务以供服务消费者调用  但不向注册中心和配置中心写入信息
+         * RemoteMetadataServiceExporter
+         *      向配置中心写入导出的服务以及订阅的服务配置信息
+         */
         metadataServiceExporters
                 .stream()
                 .filter(this::supports)
@@ -1287,7 +1293,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     private void exportServices() {
         /**
-         * 遍历所有得服务
+         * 遍历所有得待导出服务
          */
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
@@ -1411,8 +1417,25 @@ public class DubboBootstrap extends GenericEventListener {
          */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
+        /**
+         * 计算serviceInstance中的metadata
+         *
+         * 元数据服务对应的参数
+         *      dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+         * 订阅服务对应的hashcode
+         *      dubbo.subscribed-services.revision=X
+         * 导出服务对应的协议以及端口号
+         *      dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
+         * 存储对应的实现（SPI）
+         *      dubbo.metadata.storage-type=remote
+         * 导出服务对应的hashcode
+         *      dubbo.exported-services.revision=3b46c4664c6d5a
+         */
         preRegisterServiceInstance(serviceInstance);
 
+        /**
+         * 向注册中心注册serviceInstance
+         */
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 

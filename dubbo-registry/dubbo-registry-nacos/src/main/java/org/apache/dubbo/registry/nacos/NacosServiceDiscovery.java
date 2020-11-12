@@ -66,10 +66,17 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
         this.namingService = null;
     }
 
+    /**
+     * 服务自省 注册
+     * @param serviceInstance an instance of {@link ServiceInstance} to be registered
+     * @throws RuntimeException
+     */
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         execute(namingService, service -> {
+            // 转换
             Instance instance = toInstance(serviceInstance);
+            // 注册
             service.registerInstance(instance.getServiceName(), group, instance);
         });
     }

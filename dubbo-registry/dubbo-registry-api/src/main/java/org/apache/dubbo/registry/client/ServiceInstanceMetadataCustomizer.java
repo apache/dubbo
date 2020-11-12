@@ -34,11 +34,21 @@ public abstract class ServiceInstanceMetadataCustomizer implements ServiceInstan
 
         Map<String, String> metadata = serviceInstance.getMetadata();
 
+        /**
+         * 1、ExportedServicesRevisionMetadataCustomizer
+         *      计算dubbo.exported-services.revision  对应的值为本地元数据中心缓存的对外服务的hashcode
+         * 2、MetadataServiceURLParamsMetadataCustomizer
+         *      计算dubbo.metadata-service.url-params    {"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+         * 3、SubscribedServicesRevisionMetadataCustomizer
+         *      计算dubbo.subscribed-services.revision  对应的值为本地元数据中心缓存的订阅服务的hashcode
+         */
         String propertyName = resolveMetadataPropertyName(serviceInstance);
         String propertyValue = resolveMetadataPropertyValue(serviceInstance);
 
+
         if (!isBlank(propertyName) && !isBlank(propertyValue)) {
             String existedValue = metadata.get(propertyName);
+            // existedValue不存在或者允许覆盖   则覆盖
             boolean put = existedValue == null || isOverride();
             if (put) {
                 metadata.put(propertyName, propertyValue);

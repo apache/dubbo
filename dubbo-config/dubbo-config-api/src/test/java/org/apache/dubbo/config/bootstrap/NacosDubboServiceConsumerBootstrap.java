@@ -35,22 +35,22 @@ public class NacosDubboServiceConsumerBootstrap {
         DubboBootstrap bootstrap = DubboBootstrap.getInstance()
                 .application(applicationConfig)
                 // Nacos in service registry type
-                .registry("nacos", builder -> builder.address("nacos://127.0.0.1:8848?registry-type=service")
+                .registry("nacos", builder -> builder.address("nacos://113.96.131.199:8849?registry-type=service")
                         .useAsConfigCenter(true)
                         .useAsMetadataCenter(true))
                 // Nacos in traditional registry type
 //                .registry("nacos-traditional", builder -> builder.address("nacos://127.0.0.1:8848"))
                 .reference("echo", builder -> builder.interfaceClass(EchoService.class).protocol("dubbo"))
-                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
+//                .reference("user", builder -> builder.interfaceClass(UserService.class).protocol("rest"))
                 .start();
 
         EchoService echoService = bootstrap.getCache().get(EchoService.class);
-        UserService userService = bootstrap.getCache().get(UserService.class);
+//        UserService userService = bootstrap.getCache().get(UserService.class);
 
         for (int i = 0; i < 5; i++) {
             Thread.sleep(2000L);
             System.out.println(echoService.echo("Hello,World"));
-            System.out.println(userService.getUser(i * 1L));
+//            System.out.println(userService.getUser(i * 1L));
         }
     }
 }

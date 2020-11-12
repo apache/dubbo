@@ -109,10 +109,16 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
      */
     @Override
     public SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol) {
+        /**
+         * 返回本地元数据中心中   全部对外暴露的服务
+         */
         if (ALL_SERVICE_INTERFACES.equals(serviceInterface)) {
             return getAllUnmodifiableServiceURLs(exportedServiceURLs);
         }
         String serviceKey = buildKey(serviceInterface, group, version);
+        /**
+         * 通过serviceKey, protocol    获取本地元数据中心中的服务
+         */
         return unmodifiableSortedSet(getServiceURLs(exportedServiceURLs, serviceKey, protocol));
     }
 
@@ -214,15 +220,28 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
         return success;
     }
 
+    /**
+     *
+     * @param exportedServiceURLs
+     * @param serviceKey
+     * @param protocol
+     * @return
+     */
     private SortedSet<String> getServiceURLs(Map<String, SortedSet<URL>> exportedServiceURLs, String serviceKey,
                                              String protocol) {
 
+        /**
+         * 获取serviceKey对应的url
+         */
         SortedSet<URL> serviceURLs = exportedServiceURLs.get(serviceKey);
 
         if (isEmpty(serviceURLs)) {
             return emptySortedSet();
         }
 
+        /**
+         * protocol是否相符合
+         */
         return MetadataService.toSortedStrings(serviceURLs.stream().filter(url -> isAcceptableProtocol(protocol, url)));
     }
 

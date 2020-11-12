@@ -38,7 +38,7 @@ public class Application {
         @Bean
         public RegistryConfig registryConfig() {
             RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setAddress("nacos://113.96.131.199:8848?registry-type=service");
+            registryConfig.setAddress("nacos://113.96.131.199:8849?registry-type=service");
             return registryConfig;
         }
     }

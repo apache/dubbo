@@ -47,23 +47,52 @@ public class RemoteMetadataServiceExporter extends AbstractMetadataServiceExport
 
     @Override
     protected void doExport() throws Exception {
+        // WritableMetadataService的默认实现  local   InMemoryWritableMetadataService
         WritableMetadataService metadataServiceDelegate = WritableMetadataService.getDefaultExtension();
+
+        /**
+         * 向配置中心写入本地元数据中心中  对外暴露的服务hashcode
+         */
         if (publishServiceMetadata(metadataServiceDelegate)) {
+            /**
+             * 向配置中心写入本地元数据中心中  订阅的服务hashcode
+             */
             publicConsumerMetadata(metadataServiceDelegate);
         }
     }
 
+    /**
+     * 向配置中心写入本地元数据中心中  对外暴露的服务hashcode
+     * @param metadataServiceDelegate
+     * @return
+     */
     private boolean publishServiceMetadata(WritableMetadataService metadataServiceDelegate) {
         String serviceName = metadataServiceDelegate.serviceName();
+        /**
+         * 本地元数据中心   对外暴露的服务
+         */
         SortedSet<String> exportedURLs = metadataServiceDelegate.getExportedURLs();
+        // 计算hashcode
         String revision = urlRevisionResolver.resolve(exportedURLs);
+        // 写入配置中心
         return getMetadataReport().saveExportedURLs(serviceName, revision, exportedURLs);
     }
 
+    /**
+     * 向配置中心写入本地元数据中心中  订阅的服务hashcode
+     * @param metadataServiceDelegate
+     * @return
+     */
     private boolean publicConsumerMetadata(WritableMetadataService metadataServiceDelegate) {
         String serviceName = metadataServiceDelegate.serviceName();
+        /**
+         * 向配置中心写入本地元数据中心中  订阅的服务
+         */
         SortedSet<String> subscribedURLs = metadataServiceDelegate.getSubscribedURLs();
+
+        // 计算hashcode
         String revision = urlRevisionResolver.resolve(subscribedURLs);
+        // 写入配置中心
         getMetadataReport().saveSubscribedData(new SubscriberMetadataIdentifier(serviceName, revision), subscribedURLs);
         return true;
     }
