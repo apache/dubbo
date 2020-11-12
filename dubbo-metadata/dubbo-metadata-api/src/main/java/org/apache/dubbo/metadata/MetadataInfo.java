@@ -161,6 +161,18 @@ public class MetadataInfo implements Serializable {
         return serviceInfo.getAllParams();
     }
 
+    public String getServiceString(String protocolServiceKey) {
+        if (protocolServiceKey == null) {
+            return null;
+        }
+
+        ServiceInfo serviceInfo = services.get(protocolServiceKey);
+        if (serviceInfo == null) {
+            return null;
+        }
+        return serviceInfo.toString();
+    }
+
     @Override
     public String toString() {
         return "metadata{" +

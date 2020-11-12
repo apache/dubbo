@@ -95,6 +95,9 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getPath() {
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
+        if (serviceInfo == null) {
+            return getServiceInterface();
+        }
         return serviceInfo.getPath();
     }
 
@@ -358,14 +361,6 @@ public class InstanceAddressURL extends URL {
         return getInstance().hashCode();
     }
 
-    public String getServiceString(String service) {
-        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(service);
-        if (serviceInfo == null) {
-            return instance.toString();
-        }
-        return instance.toString() + serviceInfo.toString();
-    }
-
     @Override
     public String toString() {
         if (instance == null) {
@@ -374,6 +369,12 @@ public class InstanceAddressURL extends URL {
         if (metadataInfo == null) {
             return instance.toString();
         }
-        return instance.toString() + metadataInfo.toString();
+
+        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        if (StringUtils.isNotEmpty(protocolServiceKey)) {
+            return instance.toString() + ", " + metadataInfo.getServiceString(protocolServiceKey);
+        }
+
+        return instance.toString();
     }
 }
