@@ -27,6 +27,9 @@ public class PojoUtilsForNonPublicStaticTest {
         PojoUtils.generalize(nonPublicStaticData);
     }
 
+    /**
+     * the static class need is not same package with PojoUtils, so define it here.
+     */
     static class NonPublicStaticData {
 
         private String name;
