@@ -73,8 +73,16 @@ public class PropertiesFileServiceNameMapping extends ReadOnlyServiceNameMapping
         this.propertiesList = loadPropertiesList();
     }
 
+    /**
+     * 在propertiesList中获取subscribedURL对应的值
+     * @param subscribedURL the {@link URL} that the Dubbo consumer subscribed
+     * @return
+     */
     @Override
     public Set<String> get(URL subscribedURL) {
+        /**
+         * protocol:serviceInterface:group:version
+         */
         String propertyKey = getPropertyKey(subscribedURL);
         String propertyValue = null;
 
@@ -88,6 +96,11 @@ public class PropertiesFileServiceNameMapping extends ReadOnlyServiceNameMapping
         return getValue(propertyValue);
     }
 
+    /**
+     * protocol:serviceInterface:group:version
+     * @param url
+     * @return
+     */
     private String getPropertyKey(URL url) {
         String protocol = url.getProtocol();
         String serviceInterface = url.getServiceInterface();

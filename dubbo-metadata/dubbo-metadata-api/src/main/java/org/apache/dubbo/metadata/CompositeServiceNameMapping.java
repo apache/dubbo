@@ -102,9 +102,20 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
 
     @Override
     public Set<String> get(URL subscribedURL) {
+        /**
+         * 获取除当前类外的所有ServiceNameMapping实现（spi）
+         */
         List<ServiceNameMapping> serviceNameMappings = getServiceNameMappings();
         Set<String> serviceNames = null;
         for (ServiceNameMapping serviceNameMapping : serviceNameMappings) {
+            /**
+             * ParameterizedServiceNameMapping
+             *      获取subscribedURL中subscribed-services对应的参数
+             * PropertiesFileServiceNameMapping
+             *      在propertiesList中获取subscribedURL对应的值
+             * DynamicConfigurationServiceNameMapping
+             *      在配置中心中  获取subscribedURL中group对应的dataId
+             */
             serviceNames = serviceNameMapping.get(subscribedURL);
             if (isNotEmpty(serviceNames)) {
                 break;

@@ -31,6 +31,12 @@ import java.util.concurrent.ThreadLocalRandom;
  */
 public class RandomServiceInstanceSelector implements ServiceInstanceSelector {
 
+    /**
+     * 随机选取一个ServiceInstance
+     * @param registryURL      The {@link URL url} of registry
+     * @param serviceInstances the specified {@link ServiceInstance service instances}
+     * @return
+     */
     @Override
     public ServiceInstance select(URL registryURL, List<ServiceInstance> serviceInstances) {
         int size = serviceInstances.size();

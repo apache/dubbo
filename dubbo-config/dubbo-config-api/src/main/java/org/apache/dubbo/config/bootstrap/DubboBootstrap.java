@@ -1070,7 +1070,7 @@ public class DubboBootstrap extends GenericEventListener {
              */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
-                //启动元数据服务，启动元数据服务并向配置中心写入信息
+                //启动元数据服务并向配置中心写入信息
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
                 //注册本地服务实例

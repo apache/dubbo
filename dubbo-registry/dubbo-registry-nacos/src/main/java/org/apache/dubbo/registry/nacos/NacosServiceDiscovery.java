@@ -104,6 +104,12 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
         });
     }
 
+    /**
+     * 在nacos（注册中心）中获取serviceName对应的服务实例
+     * @param serviceName the service name
+     * @return
+     * @throws NullPointerException
+     */
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
