@@ -68,9 +68,11 @@ public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxy
         if (StringUtils.isNotEmpty(dubboURLsJSON)) {
             builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
         } else {
+            // 元数据服务
             builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
         }
 
+        // 根据serviceInstance生成url
         List<URL> urls = builder.build(serviceInstance);
         if (CollectionUtils.isEmpty(urls)) {
             throw new IllegalStateException("You have enabled introspection service discovery mode for instance "
@@ -78,6 +80,9 @@ public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxy
         }
 
         // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+        /**
+         * 根据元数据服务的url  生成对应的invoker   DubboProtocol
+         */
         Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
 
         return proxyFactory.getProxy(invoker);

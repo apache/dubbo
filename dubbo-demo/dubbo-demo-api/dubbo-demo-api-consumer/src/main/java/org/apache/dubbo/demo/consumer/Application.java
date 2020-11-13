@@ -41,19 +41,17 @@ public class Application {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
         reference.setInterface(DemoService.class);
         reference.setGeneric("true");
-        reference.setVersion("2.0.0");
-        reference.setGroup("test11");
         reference.setCheck(false);
 
         DubboBootstrap bootstrap = DubboBootstrap.getInstance();
         bootstrap.application(new ApplicationConfig("dubbo-demo-api-consumer"))
-                .registry(new RegistryConfig("nacos://113.96.131.199:8848"))
+                .registry(new RegistryConfig("nacos://113.96.131.199:8849?registry-type=service"))
                 .reference(reference)
                 .start();
 
         DemoService demoService = ReferenceConfigCache.getCache().get(reference);
         String message = demoService.sayHello("dubbo");
-        System.out.println(message);
+        System.out.println("-----------------------"+message);
 
         // generic invoke
         GenericService genericService = (GenericService) demoService;

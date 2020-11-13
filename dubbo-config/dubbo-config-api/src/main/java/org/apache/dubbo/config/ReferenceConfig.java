@@ -391,7 +391,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
                     // 检查注册中心
                     checkRegistry();
-                    // 将注册中心配置  修改为url
+                    /**
+                     * 将注册中心配置  修改为url
+                     * 判断是否服务自省
+                     */
                     List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
                     if (CollectionUtils.isNotEmpty(us)) {
                         for (URL u : us) {

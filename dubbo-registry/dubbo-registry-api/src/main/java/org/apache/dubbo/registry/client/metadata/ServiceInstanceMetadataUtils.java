@@ -156,6 +156,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static String getExportedServicesRevision(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
+        // serviceInstance中的dubbo.exported-services.revision
         return metadata.get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
     }
 
@@ -210,6 +211,7 @@ public class ServiceInstanceMetadataUtils {
      */
     public static boolean isDubboServiceInstance(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
+        // 是否是元数据参数
         return metadata.containsKey(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME)
                 || metadata.containsKey(METADATA_SERVICE_URLS_PROPERTY_NAME);
     }

@@ -268,9 +268,9 @@ public class RegistryProtocol implements Protocol {
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
             /**
-             * 将导出的服务注册到注册中心   是否服务自省
-             * 将导出的服务注册到注册中心   是否服务自省
-             * 将导出的服务注册到注册中心   是否服务自省
+             * 非服务自省将导出的服务注册到注册中心   服务自省将导出的服务与元数据服务缓存到本地
+             * 非服务自省将导出的服务注册到注册中心   服务自省将导出的服务与元数据服务缓存到本地
+             * 非服务自省将导出的服务注册到注册中心   服务自省将导出的服务与元数据服务缓存到本地
              */
             register(registryUrl, registeredProviderUrl);
         }
@@ -542,6 +542,7 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         // nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-consumer&dubbo=2.0.2&pid=3900&refer=application%3Ddubbo-demo-annotation-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26init%3Dfalse%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D3900%26register.ip%3D192.168.50.39%26side%3Dconsumer%26sticky%3Dfalse%26timestamp%3D1603862513141&timestamp=1603862513208
+        // service-discovery-registry://113.96.131.199:8849/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-api-consumer&dubbo=2.0.2&pid=11316&refer=application%3Ddubbo-demo-api-consumer%26check%3Dfalse%26dubbo%3D2.0.2%26generic%3Dtrue%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26pid%3D11316%26register.ip%3D192.168.50.39%26side%3Dconsumer%26sticky%3Dfalse%26timestamp%3D1605168955823&registry=nacos&registry-type=service&timestamp=1605169008010
         url = getRegistryUrl(url);
         /**
          * 获取url对应得Registry
@@ -593,18 +594,19 @@ public class RegistryProtocol implements Protocol {
             directory.setRegisteredConsumerUrl(subscribeUrl);
             /**
              * ListenerRegistryWrapper
-             * 向注册中心写入服务消费者url
-             * 向注册中心写入服务消费者url
-             * 向注册中心写入服务消费者url
+             * 向注册中心写入服务消费者url   服务自省则不写入
+             * 向注册中心写入服务消费者url   服务自省则不写入
+             * 向注册中心写入服务消费者url   服务自省则不写入
              * consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&group=test11&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=9552&side=consumer&sticky=false&timestamp=1603868897635&version=2.0.0
              */
             registry.register(directory.getRegisteredConsumerUrl());
         }
         directory.buildRouterChain(subscribeUrl);
         /**
-         * 启动服务消费者
-         * 从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
-         * 订阅服务生产者实例  随时更新invoker列表
+         * 非服务自省
+         * 1、启动服务消费者
+         * 2、从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
+         * 3、订阅服务生产者实例  随时更新invoker列表
          */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 

@@ -292,11 +292,20 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
     }
 
+    /**
+     * 服务自省  订阅
+     * @param url
+     * @param listener
+     */
     @Override
     public final void subscribe(URL url, NotifyListener listener) {
+        // 过滤
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
+        /**
+         * 订阅
+         */
         super.subscribe(url, listener);
     }
 
@@ -333,15 +342,20 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     }
 
     protected void subscribeURLs(URL url, NotifyListener listener) {
-
+        // 本地元数据中心缓存订阅的url
         writableMetadataService.subscribeURL(url);
 
+        /**
+         * 获取url对应的服务提供者对应的serviceNames
+         */
         Set<String> serviceNames = getServices(url);
 
         List<URL> subscribedURLs = new LinkedList<>();
 
         serviceNames.forEach(serviceName -> {
-
+            /**
+             *
+             */
             subscribeURLs(url, subscribedURLs, serviceName);
 
             // register ServiceInstancesChangedListener
@@ -402,6 +416,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
 
     protected void subscribeURLs(URL url, List<URL> subscribedURLs, String serviceName) {
+        /**
+         * EventPublishingServiceDiscovery
+         * 获取serviceName对应的服务实例
+         */
         List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
         subscribeURLs(url, subscribedURLs, serviceName, serviceInstances);
     }
@@ -438,7 +456,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected void subscribeURLs(URL subscribedURL, List<URL> subscribedURLs, String serviceName,
                                  Collection<ServiceInstance> serviceInstances) {
-
+        //非空
         if (isEmpty(serviceInstances)) {
             logger.warn(format("There is no instance in service[name : %s]", serviceName));
             return;
@@ -468,6 +486,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private List<URL> getExportedURLs(URL subscribedURL, Collection<ServiceInstance> instances) {
 
         // local service instances could be mutable
+        /**
+         * 过滤   可用的&&健康的&&dubbo元数据实例
+         */
         List<ServiceInstance> serviceInstances = instances.stream()
                 .filter(ServiceInstance::isEnabled)
                 .filter(ServiceInstance::isHealthy)
@@ -502,8 +523,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private void prepareServiceRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
         executeExclusively(() -> {
             // 1. expunge stale
+            /**
+             * 更新缓存中的Revisions列表
+             */
             expungeStaleRevisionExportedURLs(serviceInstances);
             // 2. Initialize
+            /**
+             *
+             */
             initializeRevisionExportedURLs(serviceInstances);
         });
     }
@@ -528,8 +555,14 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     private void initializeRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
         // initialize the revision exported URLs that the selected service instance exported
+        /**
+         *
+         */
         initializeSelectedRevisionExportedURLs(serviceInstances);
         // initialize the revision exported URLs that other service instances exported
+        /**
+         *
+         */
         serviceInstances.forEach(this::initializeRevisionExportedURLs);
     }
 
@@ -543,6 +576,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         // Try to initialize revision exported URLs until success
         for (int i = 0; i < serviceInstances.size(); i++) {
             // select a instance of {@link ServiceInstance}
+            /**
+             * 在serviceInstances列表中选取一个ServiceInstance
+             */
             ServiceInstance selectedInstance = selectServiceInstance(serviceInstances);
             List<URL> revisionExportedURLs = initializeRevisionExportedURLs(selectedInstance);
             if (isNotEmpty(revisionExportedURLs)) {    // If the result is valid
@@ -558,23 +594,31 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @param serviceInstances {@link ServiceInstance service instances}
      */
     private void expungeStaleRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
-
+        // 获取第一个serviceName
         String serviceName = serviceInstances.get(0).getServiceName();
         // revisionExportedURLsMap is mutable
+        // 在serviceRevisionExportedURLsCache中缓存serviceName  并获取之前的值
         Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
 
         if (revisionExportedURLsMap.isEmpty()) { // if empty, return immediately
             return;
         }
 
+        //缓存中的rversion集合
         Set<String> existedRevisions = revisionExportedURLsMap.keySet(); // read-only
+        /**
+         * 获取serviceInstances中服务实例对应的rversion
+         */
         Set<String> currentRevisions = serviceInstances.stream()
+                // 获取rversion
                 .map(ServiceInstanceMetadataUtils::getExportedServicesRevision)
                 .collect(Collectors.toSet());
         // staleRevisions = existedRevisions(copy) - currentRevisions
         Set<String> staleRevisions = new HashSet<>(existedRevisions);
+        // 移除现有的Revisions  即剩下的都是过期的或已失效的Revisions
         staleRevisions.removeAll(currentRevisions);
         // remove exported URLs if staled
+        // 在缓存中移除对应的Revisions
         staleRevisions.forEach(revisionExportedURLsMap::remove);
     }
 
@@ -637,6 +681,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         } else if (size == 1) {
             return serviceInstances.get(0);
         }
+        /**
+         * 如果有多个服务实例，请通过linkserviceInstanceSelector策略选择一个服务实例，以避免热点出现某个实例
+         * 默认随机
+         */
         ServiceInstanceSelector selector = getExtensionLoader(ServiceInstanceSelector.class).getAdaptiveExtension();
         return selector.select(getUrl(), serviceInstances);
     }
@@ -863,15 +911,24 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         Set<String> subscribedServices = null;
 
+        /**
+         * subscribedURL显式指定此接口所属的应用程序名称
+         */
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
             subscribedServices = parseServices(serviceNames);
         }
 
+        /**
+         * 从配置中心中检查url对应的应用程序名称
+         */
         if (isEmpty(subscribedServices)) {
             subscribedServices = findMappedServices(subscribedURL);
         }
 
+        /**
+         * 从配置中心中检查注册中心url对应的应用程序名称
+         */
         if (isEmpty(subscribedServices)) {
             subscribedServices = getSubscribedServices();
         }
@@ -906,6 +963,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @return empty {@link Set} if not found
      */
     protected Set<String> findMappedServices(URL url) {
+        /**
+         * 获取url对应的serviceName
+         */
         return serviceNameMapping.get(url);
     }
 

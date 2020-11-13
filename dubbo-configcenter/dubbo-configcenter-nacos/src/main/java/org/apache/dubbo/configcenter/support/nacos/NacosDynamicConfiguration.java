@@ -273,7 +273,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * TODO Nacos does not support atomic update of the value mapped to a key.
      *
-     * @param group the specified group
+     * @param group the specified group   mapping/org.apache.dubbo.demo.DemoService
      * @return
      */
     @Override
@@ -289,7 +289,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
                     "pageSize", String.valueOf(Integer.MAX_VALUE)
             );
             String encoding = getProperty(ENCODE, "UTF-8");
+            /**
+             * nacos：分页获取group对应的配置信息
+             */
             HttpSimpleClient.HttpResult result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyList(), paramsValues, encoding, 5 * 1000);
+            // 获取返回值中dataId对应的内容
             Stream<String> keysStream = toKeysStream(result.content);
             keysStream.forEach(keys::add);
         } catch (IOException e) {
@@ -313,11 +317,32 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return removed;
     }
 
+    /**
+     * {
+     * 	"totalCount": 1,
+     * 	"pageNumber": 1,
+     * 	"pagesAvailable": 1,
+     * 	"pageItems": [{
+     * 		"id": "75",
+     * 		"dataId": "dubbo-demo-api-provider",
+     * 		"group": "mapping-org.apache.dubbo.demo.DemoService",
+     * 		"content": "1605250745600",
+     * 		"md5": null,
+     * 		"tenant": "",
+     * 		"appName": "",
+     * 		"type": null
+     *        }]
+     * }
+     * @param content
+     * @return
+     */
     private Stream<String> toKeysStream(String content) {
         JSONObject jsonObject = JSON.parseObject(content);
+        // 获取pageItems对应的属性
         JSONArray pageItems = jsonObject.getJSONArray("pageItems");
         return pageItems.stream()
                 .map(object -> (JSONObject) object)
+                // 获取dataId对应的值
                 .map(json -> json.getString("dataId"));
     }
 

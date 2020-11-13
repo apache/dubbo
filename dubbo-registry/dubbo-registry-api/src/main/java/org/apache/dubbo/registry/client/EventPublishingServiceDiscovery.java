@@ -194,6 +194,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
+        // nacos
         return serviceDiscovery.getInstances(serviceName);
     }
 

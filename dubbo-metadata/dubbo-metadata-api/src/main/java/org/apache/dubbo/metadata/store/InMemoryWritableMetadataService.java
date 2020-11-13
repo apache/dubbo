@@ -139,6 +139,9 @@ public class InMemoryWritableMetadataService extends AbstractAbstractWritableMet
 
     @Override
     public boolean subscribeURL(URL url) {
+        /**
+         * 缓存订阅的url
+         */
         return addURL(subscribedServiceURLs, url);
     }
 

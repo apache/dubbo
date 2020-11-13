@@ -65,7 +65,7 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.export(invoker);
         }
         /**
-         * InjvmProtocol或dubboProtocol   【spi】
+         * spi
          */
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
                 Collections.unmodifiableList(ExtensionLoader.getExtensionLoader(ExporterListener.class)

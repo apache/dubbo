@@ -90,6 +90,11 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         });
     }
 
+    /**
+     * 在配置中心中  获取subscribedURL中group对应的dataId
+     * @param subscribedURL the {@link URL} that the Dubbo consumer subscribed
+     * @return
+     */
     @Override
     public Set<String> get(URL subscribedURL) {
 
@@ -100,6 +105,25 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
+            /**
+             * nacos：从配置中心中按group分页检索  并获取对应配置的dataId
+             *
+             * {
+             * 	"totalCount": 1,
+             * 	"pageNumber": 1,
+             * 	"pagesAvailable": 1,
+             * 	"pageItems": [{
+             * 		"id": "75",
+             * 		"dataId": "dubbo-demo-api-provider",
+             * 		"group": "mapping-org.apache.dubbo.demo.DemoService",
+             * 		"content": "1605250745600",
+             * 		"md5": null,
+             * 		"tenant": "",
+             * 		"appName": "",
+             * 		"type": null
+             *        }]
+             * }
+             */
             Set<String> keys = getDynamicConfiguration().getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
             if (isNotEmpty(keys)) {
                 serviceNames.addAll(keys);
