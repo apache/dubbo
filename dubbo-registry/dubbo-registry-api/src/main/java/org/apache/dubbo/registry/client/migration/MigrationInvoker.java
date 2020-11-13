@@ -33,6 +33,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.List;
 import java.util.Set;
@@ -286,6 +288,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void destroyServiceDiscoveryInvoker(ClusterInvoker<?> serviceDiscoveryInvoker) {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
+            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
         if (serviceDiscoveryInvoker != null) {
             if (logger.isDebugEnabled()) {
@@ -298,6 +301,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
+            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
         if (serviceDiscoveryInvoker != null) {
             if (logger.isDebugEnabled()) {
@@ -337,6 +341,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void destroyInterfaceInvoker(ClusterInvoker<T> invoker) {
         if (checkInvokerAvailable(this.serviceDiscoveryInvoker)) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
+            updateConsumerModel(currentAvailableInvoker, invoker);
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
@@ -349,6 +354,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
+            updateConsumerModel(currentAvailableInvoker, invoker);
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
@@ -377,5 +383,17 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     public boolean checkInvokerAvailable(ClusterInvoker<T> invoker) {
         return invoker != null && !invoker.isDestroyed() && invoker.isAvailable();
+    }
+
+    private void updateConsumerModel(ClusterInvoker<?> workingInvoker, ClusterInvoker<?> backInvoker) {
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
+        if (consumerModel != null) {
+            if (workingInvoker != null) {
+                consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", workingInvoker);
+            }
+            if (backInvoker != null) {
+                consumerModel.getServiceMetadata().addAttribute("backupClusterInvoker", backInvoker);
+            }
+        }
     }
 }

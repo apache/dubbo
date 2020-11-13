@@ -55,4 +55,5 @@ public interface Directory<T> extends Node {
 
     void discordAddresses();
 
+    RouterChain<T> getRouterChain();
 }

@@ -94,9 +94,13 @@ public class MigrationRuleHandler<T> {
     }
 
     public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
-        this.currentStep = currentStep;
-        this.currentThreshold = currentThreshold;
-        this.migrationInvoker.setMigrationStep(currentStep);
+        if (currentThreshold != null) {
+            this.currentThreshold = currentThreshold;
+        }
+        if (currentStep != null) {
+            this.currentStep = currentStep;
+            this.migrationInvoker.setMigrationStep(currentStep);
+        }
     }
 
     public void setMigrationRule(MigrationRule rule) {

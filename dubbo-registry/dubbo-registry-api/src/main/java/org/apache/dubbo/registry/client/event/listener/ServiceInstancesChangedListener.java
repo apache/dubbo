@@ -308,7 +308,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
             List<URL> urls = toUrlsWithEmpty(serviceUrls.get(key));
-            logger.info("Notify service " + key + " with services " + urls.size());
+            logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });
     }

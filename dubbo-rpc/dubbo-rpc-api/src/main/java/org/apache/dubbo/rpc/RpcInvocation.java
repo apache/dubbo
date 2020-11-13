@@ -70,7 +70,7 @@ public class RpcInvocation implements Invocation, Serializable {
     /**
      * Only used on the caller side, will not appear on the wire.
      */
-    private Map<Object, Object> attributes = new HashMap<Object, Object>();
+    private transient Map<Object, Object> attributes = new HashMap<Object, Object>();
 
     private transient Invoker<?> invoker;
 
