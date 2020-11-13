@@ -607,6 +607,8 @@ public class RegistryProtocol implements Protocol {
          * 1、启动服务消费者
          * 2、从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
          * 3、订阅服务生产者实例  随时更新invoker列表
+         * 服务自省
+         *
          */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
