@@ -173,6 +173,7 @@ public class PojoUtils {
         }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
+                ReflectUtils.makeAccessible(method);
                 try {
                     map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history));
                 } catch (Exception e) {
