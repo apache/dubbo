@@ -64,7 +64,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             threshold = DEFAULT_THREAD;
         }
 
-        logger.info("Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
+        logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
 
         if (newAddressSize != 0 && oldAddressSize == 0) {
             return true;
@@ -73,7 +73,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             return false;
         }
 
-        if (((float)newAddressSize / (float)oldAddressSize) >= threshold) {
+        if (((float) newAddressSize / (float) oldAddressSize) >= threshold) {
             return true;
         }
         return false;

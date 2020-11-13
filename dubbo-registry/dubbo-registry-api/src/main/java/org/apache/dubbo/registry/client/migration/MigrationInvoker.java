@@ -118,7 +118,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void doReSubscribe(ClusterInvoker<T> invoker, URL newSubscribeUrl) {
-        DynamicDirectory<T> directory = (DynamicDirectory<T>)invoker.getDirectory();
+        DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
@@ -275,8 +275,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
+            logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
             discardInterfaceInvokerAddress(invoker);
         } else {
+            logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
             discardServiceDiscoveryInvokerAddress(serviceDiscoveryInvoker);
         }
     }
@@ -299,7 +301,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (serviceDiscoveryInvoker != null) {
             if (logger.isDebugEnabled()) {
-                List<Invoker<T>>  invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
+                List<Invoker<T>> invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
                 logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
             }
 //            serviceDiscoveryInvoker.getDirectory().discordAddresses();
@@ -314,7 +316,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
         } else {
-            ((DynamicDirectory)serviceDiscoveryInvoker.getDirectory()).markInvokersChanged();
+            ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).markInvokersChanged();
         }
     }
 
@@ -328,7 +330,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
         } else {
-            ((DynamicDirectory)invoker.getDirectory()).markInvokersChanged();
+            ((DynamicDirectory) invoker.getDirectory()).markInvokersChanged();
         }
     }
 
