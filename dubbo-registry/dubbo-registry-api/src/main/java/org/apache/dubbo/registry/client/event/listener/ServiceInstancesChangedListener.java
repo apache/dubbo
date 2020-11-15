@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -169,8 +170,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.notifyAddressChanged();
     }
 
-    public void addListener(String serviceKey, NotifyListener listener) {
+    public synchronized void addListener(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
+        List<URL> urls = this.serviceUrls.get(serviceKey);
+        if (CollectionUtils.isNotEmpty(urls)) {
+            listener.notify(urls);
+        }
     }
 
     public void removeListener(String serviceKey) {
