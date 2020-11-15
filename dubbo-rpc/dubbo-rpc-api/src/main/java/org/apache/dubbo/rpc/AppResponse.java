@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
+
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -78,7 +80,7 @@ public class AppResponse implements Result {
                 }
                 // get stackTrace value
                 Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
+                ReflectUtils.makeAccessible(stackTraceField);
                 Object stackTrace = stackTraceField.get(exception);
                 if (stackTrace == null) {
                     exception.setStackTrace(new StackTraceElement[0]);

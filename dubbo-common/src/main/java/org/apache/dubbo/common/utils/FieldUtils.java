@@ -95,16 +95,13 @@ public interface FieldUtils {
      * @return the value of  the specified {@link Field}
      */
     static <T> T getFieldValue(Object object, Field field) {
-        boolean accessible = field.isAccessible();
         Object value = null;
         try {
-            if (!accessible) {
-                field.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(field);
             value = field.get(object);
         } catch (IllegalAccessException ignored) {
         } finally {
-            field.setAccessible(accessible);
+            ReflectUtils.makeAccessible(field);
         }
         return (T) value;
     }
@@ -130,17 +127,14 @@ public interface FieldUtils {
      * @return the previous value of the specified {@link Field}
      */
     static <T> T setFieldValue(Object object, Field field, T value) {
-        boolean accessible = field.isAccessible();
         Object previousValue = null;
         try {
-            if (!accessible) {
-                field.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(field);
             previousValue = field.get(object);
             field.set(object, value);
         } catch (IllegalAccessException ignored) {
         } finally {
-            field.setAccessible(accessible);
+            ReflectUtils.makeAccessible(field);
         }
         return (T) previousValue;
     }

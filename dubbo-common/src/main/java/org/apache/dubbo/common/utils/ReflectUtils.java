@@ -1076,9 +1076,7 @@ public final class ReflectUtils {
                     Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
                     if (property != null) {
                         try {
-                            if (!field.isAccessible()) {
-                                field.setAccessible(true);
-                            }
+                            ReflectUtils.makeAccessible(field);
                             field.set(value, property);
                         } catch (Throwable ignored) {
                         }
@@ -1167,8 +1165,7 @@ public final class ReflectUtils {
                         || Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-
-                field.setAccessible(true);
+                ReflectUtils.makeAccessible(field);
 
                 properties.put(field.getName(), field);
             }
@@ -1183,7 +1180,7 @@ public final class ReflectUtils {
             Method[] methods = cl.getDeclaredMethods();
             for (Method method : methods) {
                 if (isBeanPropertyReadMethod(method)) {
-                    method.setAccessible(true);
+                    ReflectUtils.makeAccessible(method);
                     String property = getPropertyNameFromBeanReadMethod(method);
                     properties.put(property, method);
                 }
@@ -1327,5 +1324,57 @@ public final class ReflectUtils {
         }
 
         return types;
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given method accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param method the method to make accessible
+     * @see java.lang.reflect.Method#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Method method) {
+        if ((!Modifier.isPublic(method.getModifiers()) ||
+                !Modifier.isPublic(method.getDeclaringClass().getModifiers())) && !method.isAccessible()) {
+            method.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given field accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param field the field to make accessible
+     * @see java.lang.reflect.Field#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Field field) {
+        if ((!Modifier.isPublic(field.getModifiers()) ||
+                !Modifier.isPublic(field.getDeclaringClass().getModifiers()) ||
+                Modifier.isFinal(field.getModifiers())) && !field.isAccessible()) {
+            field.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given constructor accessible, explicitly setting it accessible
+     * if necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param ctor the constructor to make accessible
+     * @see java.lang.reflect.Constructor#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Constructor<?> ctor) {
+        if ((!Modifier.isPublic(ctor.getModifiers()) ||
+                !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) && !ctor.isAccessible()) {
+            ctor.setAccessible(true);
+        }
     }
 }
