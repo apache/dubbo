@@ -28,6 +28,7 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.mock.env.MockEnvironment;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.DataBinder;
 
@@ -42,6 +43,7 @@ import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
  *
  * @since 2.5.11
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class AnnotationPropertyValuesAdapterTest {
 
     @Test
