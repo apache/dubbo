@@ -118,8 +118,7 @@ public abstract class AbstractConfigurator implements Configurator {
             // TODO, to support wildcards
             String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
             if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
-                String configApplication = configuratorUrl.getParameter(APPLICATION_KEY,
-                        configuratorUrl.getUsername());
+                String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
                 String currentApplication = url.getApplication(url.getUsername());
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {

@@ -28,8 +28,6 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
@@ -46,9 +44,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     @Override
     public void map(URL url) {
         String serviceInterface = url.getServiceInterface();
-        String group = exportedURL.getGroup();
-        String version = exportedURL.getVersion();
-        String protocol = exportedURL.getProtocol();
+        String group = url.getGroup();
+        String version = url.getVersion();
+        String protocol = url.getProtocol();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;

@@ -48,7 +48,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -165,7 +164,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public void publishServiceDefinition(URL providerUrl) {
         try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
+            String interfaceName = providerUrl.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)
                     && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
                 Class interfaceClass = Class.forName(interfaceName);

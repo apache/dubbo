@@ -89,7 +89,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;

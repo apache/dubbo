@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -55,10 +56,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
@@ -77,7 +78,6 @@ import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 
@@ -351,7 +351,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
                 newUrlInvokerMap.put(url, invoker);
             }
         }
-        keys.clear();
         return newUrlInvokerMap;
     }
 
@@ -379,7 +378,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(INTERFACE_KEY);
+            String path = directoryUrl.getServiceInterface();
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {

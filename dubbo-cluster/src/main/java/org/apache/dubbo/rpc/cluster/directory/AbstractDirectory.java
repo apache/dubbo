@@ -54,10 +54,9 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     protected volatile URL consumerUrl;
 
-    protected final Map<String, String> queryMap; // Initialization at construction time, assertion not null
-    protected final String consumedProtocol;
-
     protected RouterChain<T> routerChain;
+
+    protected final Map<String, String> queryMap;
 
     public AbstractDirectory(URL url) {
         this(url, null);
@@ -72,9 +71,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         Object referParams = url.getAttribute(REFER_KEY);
         if (referParams != null) {
-            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, (Map<String, String>) referParams);
+            this.queryMap = (Map<String, String>) referParams;
+            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
         } else {
-            this.consumerUrl = url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
+            this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+            this.consumerUrl = url.addParameters(queryMap);
         }
 
         setRouterChain(routerChain);
@@ -82,10 +83,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
         return URLBuilder.from(url)
+                .setHost(queryMap.get("register.ip"))
+                .setPort(0)
                 .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
                 .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
                 .clearParameters()
                 .addParameters(queryMap)
+                .removeParameter(MONITOR_KEY)
                 .build();
     }
 

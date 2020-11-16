@@ -47,8 +47,6 @@ public class InstanceAddressURL extends URL {
     ) {
         this.instance = instance;
         this.metadataInfo = metadataInfo;
-        this.host = instance.getHost();
-        this.port = instance.getPort();
     }
 
     public ServiceInstance getInstance() {
@@ -90,6 +88,16 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getAddress() {
         return instance.getAddress();
+    }
+
+    @Override
+    public String getHost() {
+        return instance.getHost();
+    }
+
+    @Override
+    public int getPort() {
+        return instance.getPort();
     }
 
     @Override
