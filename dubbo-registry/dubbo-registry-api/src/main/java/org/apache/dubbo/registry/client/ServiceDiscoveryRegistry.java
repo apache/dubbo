@@ -142,6 +142,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * A cache for all URLs of services that the subscribed services exported
      * The key is the service name
      * The value is a nested {@link Map} whose key is the revision and value is all URLs of services
+     *
+     * Map<serviceName, Map<revision, List<暴露服务对应的URL>>>
      */
     private final Map<String, Map<String, List<URL>>> serviceRevisionExportedURLsCache = new LinkedHashMap<>();
 
@@ -502,6 +504,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
 
         // Prepare revision exported URLs
+        /**
+         * 访问serviceInstances对应的元数据服务   获取服务提供端暴露的服务   并缓存
+         * 缓存格式为：Map<serviceName, Map<revision, List<暴露服务对应的URL>>>
+         */
         prepareServiceRevisionExportedURLs(serviceInstances);
 
         // Clone the subscribed URLs from the template URLs
@@ -531,7 +537,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             expungeStaleRevisionExportedURLs(serviceInstances);
             // 2. Initialize
             /**
-             *
+             * 访问serviceInstances对应的元数据服务   获取服务提供端暴露的服务   并缓存
+             * 缓存格式为：Map<serviceName, Map<revision, List<暴露服务对应的URL>>>
              */
             initializeRevisionExportedURLs(serviceInstances);
         });
@@ -558,7 +565,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private void initializeRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
         // initialize the revision exported URLs that the selected service instance exported
         /**
-         * 访问服务端元数据服务  获取服务端暴露得接口url并缓存 【servicename:{rversion:url}】
+         * 访问列表中任意一个服务端元数据服务  获取服务端暴露得接口url并缓存 【servicename:{rversion:url}】
          */
         initializeSelectedRevisionExportedURLs(serviceInstances);
         // initialize the revision exported URLs that other service instances exported
