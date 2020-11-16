@@ -51,17 +51,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_TASK
 import static org.apache.dubbo.common.constants.CommonConstants.CACHE_CLEAR_WAITING_THRESHOLD;
 import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
-import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.url.component.DubboServiceAddressURL.PROVIDER_FIRST_KEYS;
 
 /**
  * Useful for registries who's sdk returns raw string as provider instance, for example, zookeeper and etcd.
@@ -85,7 +81,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
         cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
-        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 10 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 30 * 60 * 1000);
     }
 
     public CacheableFailbackRegistry(URL url) {
@@ -203,18 +199,10 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         String rawAddress = parts[0];
         String rawParams = parts[1];
         boolean isEncoded = encoded;
-        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> {
-            URLAddress newAddress = URLAddress.parse(k, getDefaultURLProtocol(), isEncoded);
-            stringAddress.put(k, newAddress);
-            return newAddress;
-        });
+        URLAddress address = stringAddress.computeIfAbsent(rawAddress, k -> URLAddress.parse(k, getDefaultURLProtocol(), isEncoded));
         address.setTimestamp(System.currentTimeMillis());
 
-        URLParam param = stringParam.computeIfAbsent(rawParams, k -> {
-            URLParam newParam = URLParam.parse(k, isEncoded, extraParameters);
-            stringParam.put(k, newParam);
-            return newParam;
-        });
+        URLParam param = stringParam.computeIfAbsent(rawParams, k -> URLParam.parse(k, isEncoded, extraParameters));
         param.setTimestamp(System.currentTimeMillis());
 
         ServiceAddressURL cachedURL = createServiceURL(address, param, consumerURL);
@@ -230,7 +218,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected URL removeParamsFromConsumer(URL consumer) {
-        return consumer.removeParameters(RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY);
+        return consumer.removeParameters(PROVIDER_FIRST_KEYS);
     }
 
     private String stripOffVariableKeys(String rawProvider) {
