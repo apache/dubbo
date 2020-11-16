@@ -524,7 +524,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         executeExclusively(() -> {
             // 1. expunge stale
             /**
-             * 更新缓存中的Revisions列表
+             * 根据注册中心上最新得ServiceInstance    更新本地缓存中的Revisions对应得服务端暴露url列表
+             * 根据注册中心上最新得ServiceInstance    更新本地缓存中的Revisions对应得服务端暴露url列表
+             * 根据注册中心上最新得ServiceInstance    更新本地缓存中的Revisions对应得服务端暴露url列表
              */
             expungeStaleRevisionExportedURLs(serviceInstances);
             // 2. Initialize
@@ -556,12 +558,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     private void initializeRevisionExportedURLs(List<ServiceInstance> serviceInstances) {
         // initialize the revision exported URLs that the selected service instance exported
         /**
-         *
+         * 访问服务端元数据服务  获取服务端暴露得接口url并缓存 【servicename:{rversion:url}】
          */
         initializeSelectedRevisionExportedURLs(serviceInstances);
         // initialize the revision exported URLs that other service instances exported
         /**
-         *
+         * 访问全部得serviceInstances对应得元数据中心   获取服务端暴露得接口url并缓存 【servicename:{rversion:url}】
          */
         serviceInstances.forEach(this::initializeRevisionExportedURLs);
     }
@@ -577,9 +579,12 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         for (int i = 0; i < serviceInstances.size(); i++) {
             // select a instance of {@link ServiceInstance}
             /**
-             * 在serviceInstances列表中选取一个ServiceInstance
+             * 在serviceInstances列表中随机选取一个ServiceInstance
              */
             ServiceInstance selectedInstance = selectServiceInstance(serviceInstances);
+            /**
+             * 访问服务提供端元数据服务  获取提供端暴露得接口url
+             */
             List<URL> revisionExportedURLs = initializeRevisionExportedURLs(selectedInstance);
             if (isNotEmpty(revisionExportedURLs)) {    // If the result is valid
                 break;
@@ -736,12 +741,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         // get the revision from the specified {@link ServiceInstance}
         String revision = getExportedServicesRevision(serviceInstance);
 
+        /**
+         * 缓存中获取serviceName对应得revision和url
+         */
         Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
 
+        /**
+         * 获取revision对应得url
+         */
         List<URL> revisionExportedURLs = revisionExportedURLsMap.get(revision);
 
         boolean firstGet = false;
-
+        // 缓存未命中
         if (revisionExportedURLs == null) { // The hit is missing in cache
 
             if (!revisionExportedURLsMap.isEmpty()) { // The case is that current ServiceInstance with the different revision
@@ -759,10 +770,17 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 firstGet = true;
             }
 
+            /**
+             * 访问服务提供端元数据服务  获取提供端暴露得接口url
+             * 访问服务提供端元数据服务  获取提供端暴露得接口url
+             * 访问服务提供端元数据服务  获取提供端暴露得接口url
+             */
             revisionExportedURLs = getExportedURLs(serviceInstance);
 
             if (revisionExportedURLs != null) { // just allow the valid result into exportedURLsMap
-
+                /**
+                 * 在缓存中  修改revision对应服务端暴露url列表
+                 */
                 revisionExportedURLsMap.put(revision, revisionExportedURLs);
 
                 if (logger.isDebugEnabled()) {
@@ -847,9 +865,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         String metadataStorageType = getMetadataStorageType(providerServiceInstance);
 
         try {
+            /**
+             * getProxy 生成服务提供端元数据服务得invoker
+             */
             MetadataService metadataService = MetadataServiceProxyFactory.getExtension(metadataStorageType)
                     .getProxy(providerServiceInstance);
             if (metadataService != null) {
+                /**
+                 * 访问服务提供端元数据服务   获取提供端暴露得服务url列表
+                 * 访问服务提供端元数据服务   获取提供端暴露得服务url列表
+                 * 访问服务提供端元数据服务   获取提供端暴露得服务url列表
+                 * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-api-provider&default=true&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=12896&release=&side=provider&timestamp=1605506790273
+                 */
                 SortedSet<String> urls = metadataService.getExportedURLs();
                 exportedURLs = toURLs(urls);
             }

@@ -72,7 +72,7 @@ public class DefaultMetadataServiceProxyFactory extends BaseMetadataServiceProxy
             builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
         }
 
-        // 根据serviceInstance生成url
+        // 根据serviceInstance  构建服务提供者端得元数据服务url列表
         List<URL> urls = builder.build(serviceInstance);
         if (CollectionUtils.isEmpty(urls)) {
             throw new IllegalStateException("You have enabled introspection service discovery mode for instance "

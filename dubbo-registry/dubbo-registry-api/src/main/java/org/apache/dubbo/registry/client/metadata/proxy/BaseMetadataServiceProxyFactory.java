@@ -34,12 +34,15 @@ abstract class BaseMetadataServiceProxyFactory implements MetadataServiceProxyFa
     private final ConcurrentMap<String, MetadataService> proxiesCache = new ConcurrentHashMap<>();
 
     /**
-     * 根据ServiceInstance生成代理invoker并缓存
+     * 根据ServiceInstance生成元数据服务代理invoker并缓存
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return
      */
     public final MetadataService getProxy(ServiceInstance serviceInstance) {
-        // createProxy  ->   DefaultMetadataServiceProxyFactory
+        /**
+         * createProxy  ->   DefaultMetadataServiceProxyFactory
+         * 生成元数据服务invoker
+         */
         return proxiesCache.computeIfAbsent(createProxyCacheKey(serviceInstance), id -> createProxy(serviceInstance));
     }
 

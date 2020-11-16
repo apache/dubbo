@@ -48,19 +48,25 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
      */
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
-
+        /**
+         * dubbo.metadata-service.url-params 对应得值
+         * 即服务提供者中元数据服务对应得参数（协议，版本号，访问端口）
+         */
         Map<String, Map<String, String>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
 
         List<URL> urls = new ArrayList<>(paramsMap.size());
-
+        // 服务名
         String serviceName = serviceInstance.getServiceName();
-
+        // ip
         String host = serviceInstance.getHost();
 
         for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
+            // 协议
             String protocol = entry.getKey();
             Map<String, String> params = entry.getValue();
+            // 端口
             int port = Integer.parseInt(params.get(PORT_KEY));
+            // 服务提供者  元数据服务rul
             URLBuilder urlBuilder = new URLBuilder()
                     .setHost(host)
                     .setPort(port)
