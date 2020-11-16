@@ -49,7 +49,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         Result result = null;
         for (Invoker<T> invoker : invokers) {
             try {
-                result = invoker.invoke(invocation);
+                result = invokeWithContext(invoker, invocation);
             } catch (RpcException e) {
                 exception = e;
                 logger.warn(e.getMessage(), e);

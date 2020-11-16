@@ -36,14 +36,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
@@ -150,15 +148,15 @@ public class MonitorFilter implements Filter, Filter.Listener {
         // ---- service statistics ----
         long elapsed = System.currentTimeMillis() - start; // invocation cost
         int concurrent = getConcurrent(invoker, invocation).get(); // current concurrent count
-        String application = invoker.getUrl().getParameter(APPLICATION_KEY);
+        String application = invoker.getUrl().getApplication();
         String service = invoker.getInterface().getName(); // service name
         String method = RpcUtils.getMethodName(invocation); // method name
-        String group = invoker.getUrl().getParameter(GROUP_KEY);
-        String version = invoker.getUrl().getParameter(VERSION_KEY);
+        String group = invoker.getUrl().getGroup();
+        String version = invoker.getUrl().getVersion();
 
         int localPort;
         String remoteKey, remoteValue;
-        if (CONSUMER_SIDE.equals(invoker.getUrl().getParameter(SIDE_KEY))) {
+        if (CONSUMER_SIDE.equals(invoker.getUrl().getSide())) {
             // ---- for service consumer ----
             localPort = 0;
             remoteKey = MonitorService.PROVIDER;

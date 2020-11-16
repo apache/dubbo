@@ -161,6 +161,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (sticky) {
             stickyInvoker = invoker;
         }
+
         return invoker;
     }
 
@@ -196,6 +197,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                 logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
             }
         }
+
         return invoker;
     }
 
@@ -290,6 +292,17 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         }
     }
 
+    protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation) {
+        setContext(invoker);
+        Result result;
+        try {
+            result = invoker.invoke(invocation);
+        } finally {
+            clearContext(invoker);
+        }
+        return result;
+    }
+
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
@@ -318,5 +331,19 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         } else {
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }
+    }
+
+
+    private void setContext(Invoker<T> invoker) {
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(invoker)
+                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
+    }
+
+    private void clearContext(Invoker<T> invoker) {
+        // do nothing
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(null);
     }
 }

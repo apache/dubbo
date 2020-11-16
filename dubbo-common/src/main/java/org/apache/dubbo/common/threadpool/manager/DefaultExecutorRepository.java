@@ -33,7 +33,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
@@ -50,6 +49,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService serviceExporterExecutor;
 
+    public ScheduledExecutorService registryNotificationExecutor;
+
     private ScheduledExecutorService reconnectScheduledExecutor;
 
     private ScheduledExecutorService serviceDiscveryAddressNotificationExecutor;
@@ -65,6 +66,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
         serviceDiscveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
+        registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
     }
 
     /**
@@ -75,7 +77,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getSide())) {
             componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
@@ -92,7 +94,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     public ExecutorService getExecutor(URL url) {
         String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+        if (CONSUMER_SIDE.equalsIgnoreCase(url.getSide())) {
             componentKey = CONSUMER_SIDE;
         }
         Map<Integer, ExecutorService> executors = data.get(componentKey);
@@ -155,6 +157,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public ScheduledExecutorService getServiceExporterExecutor() {
         return serviceExporterExecutor;
+    }
+
+    @Override
+    public ScheduledExecutorService getRegistryNotificationExecutor() {
+        return registryNotificationExecutor;
     }
 
     public ScheduledExecutorService getServiceDiscveryAddressNotificationExecutor() {

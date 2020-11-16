@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
 
@@ -63,17 +62,17 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
             for (final Invoker<T> invoker : invokers) {
                 if (invoker.isAvailable()) {
                     try {
-                        return invoker.invoke(invocation);
+                        return invokeWithContext(invoker, invocation);
                     } catch (RpcException e) {
                         if (e.isNoInvokerAvailableAfterFilter()) {
-                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invoker.getUrl().getParameter(GROUP_KEY) + ", will continue to try another group.");
+                            log.debug("No available provider for service" + getUrl().getServiceKey() + " on group " + invoker.getUrl().getGroup() + ", will continue to try another group.");
                         } else {
                             throw e;
                         }
                     }
                 }
             }
-            return invokers.iterator().next().invoke(invocation);
+            return invokeWithContext(invokers.iterator().next(), invocation);
         }
 
         Class<?> returnType;
@@ -88,7 +87,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (final Invoker<T> invoker : invokers) {
             RpcInvocation subInvocation = new RpcInvocation(invocation, invoker);
             subInvocation.setAttachment(ASYNC_KEY, "true");
-            results.put(invoker.getUrl().getServiceKey(), invoker.invoke(subInvocation));
+            results.put(invoker.getUrl().getServiceKey(), invokeWithContext(invoker, subInvocation));
         }
 
         Object result = null;
