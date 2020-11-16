@@ -77,17 +77,16 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.ALL_CATEGORIES;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
@@ -123,7 +122,7 @@ public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
             APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
+            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -177,8 +176,7 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
-    private void register(URL registryUrl, URL registeredProviderUrl) {
-        Registry registry = registryFactory.getRegistry(registryUrl);
+    private void register(Registry registry, URL registeredProviderUrl) {
         registry.register(registeredProviderUrl);
     }
 
@@ -209,13 +207,13 @@ public class RegistryProtocol implements Protocol {
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
-        final Registry registry = getRegistry(originInvoker);
+        final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
-            register(registryUrl, registeredProviderUrl);
+            register(registry, registeredProviderUrl);
         }
 
         // register stated url on provider model
@@ -316,7 +314,7 @@ public class RegistryProtocol implements Protocol {
         if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
             Registry registry = null;
             try {
-                registry = getRegistry(originInvoker);
+                registry = getRegistry(getRegistryUrl(originInvoker));
             } catch (Exception e) {
                 throw new SkipFailbackWrapperException(e);
             }
@@ -350,11 +348,10 @@ public class RegistryProtocol implements Protocol {
     /**
      * Get an instance of registry based on the address of invoker
      *
-     * @param originInvoker
+     * @param registryUrl
      * @return
      */
-    protected Registry getRegistry(final Invoker<?> originInvoker) {
-        URL registryUrl = getRegistryUrl(originInvoker);
+    protected Registry getRegistry(final URL registryUrl) {
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -411,11 +408,11 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> originInvoker) {
-        String export = originInvoker.getUrl().getParameterAndDecoded(EXPORT_KEY);
-        if (export == null || export.length() == 0) {
-            throw new IllegalArgumentException("The registry export url is null! registry: " + originInvoker.getUrl());
+        Object providerURL = originInvoker.getUrl().getAttribute(EXPORT_KEY);
+        if (!(providerURL instanceof URL)) {
+            throw new IllegalArgumentException("The registry export url is null! registry: " + originInvoker.getUrl().getAddress());
         }
-        return URL.valueOf(export);
+        return (URL)providerURL;
     }
 
     /**
@@ -440,7 +437,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         // group="a,b" or group="*"
-        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        Map<String, String> qs = (Map<String, String>)url.getAttribute(REFER_KEY);
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
@@ -512,7 +509,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     public static URL toSubscribeUrl(URL url) {
-        return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
+        return url.addParameter(CATEGORY_KEY, ALL_CATEGORIES);
     }
 
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
@@ -679,7 +676,7 @@ public class RegistryProtocol implements Protocol {
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
-                if (url.getParameter(CATEGORY_KEY) == null && OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                if (url.getCategory() == null && OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     overrideUrl = url.addParameter(CATEGORY_KEY, CONFIGURATORS_CATEGORY);
                 }
 
@@ -773,7 +770,7 @@ public class RegistryProtocol implements Protocol {
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
 
-            Registry registry = RegistryProtocol.this.getRegistry(originInvoker);
+            Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
             try {
                 registry.unregister(registerUrl);
             } catch (Throwable t) {

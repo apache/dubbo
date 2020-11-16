@@ -45,6 +45,8 @@ public interface RegistryConstants {
 
     String CONFIGURATORS_CATEGORY = "configurators";
 
+    String ALL_CATEGORIES = "providers,configurators,routers";
+
     String DYNAMIC_CONFIGURATORS_CATEGORY = "dynamicconfigurators";
 
     String APP_DYNAMIC_CONFIGURATORS_CATEGORY = "appdynamicconfigurators";

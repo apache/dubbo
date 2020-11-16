@@ -306,6 +306,12 @@ public interface CommonConstants {
     String GENERIC_WITH_CLZ_KEY = "generic.include.class";
 
     /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file.cache";
+
+
+    /**
      * The limit of callback service instances for one interface on every client
      */
     String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
@@ -354,5 +360,12 @@ public interface CommonConstants {
      * @since 2.7.8
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
+
+    String FILTER_BUILDER_KEY = "filter-builder";
+
+    String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
+    String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
 
 }

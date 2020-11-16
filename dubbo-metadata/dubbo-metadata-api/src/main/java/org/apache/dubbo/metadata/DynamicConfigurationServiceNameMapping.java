@@ -46,9 +46,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     @Override
     public void map(URL url) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
-        String protocol = url.getProtocol();
+        String group = exportedURL.getGroup();
+        String version = exportedURL.getVersion();
+        String protocol = exportedURL.getProtocol();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
@@ -74,8 +74,8 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
+        String group = url.getGroup();
+        String version = url.getVersion();
         String protocol = url.getProtocol();
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 

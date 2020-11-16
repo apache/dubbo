@@ -54,16 +54,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.RegistryConstants.ACCEPTS_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTRY_FILESAVE_SYNC_KEY;
-import static org.apache.dubbo.registry.Constants.REGISTRY__LOCAL_FILE_CACHE_ENABLED;
 
 /**
  * AbstractRegistry. (SPI, Prototype, ThreadSafe)
@@ -92,13 +90,15 @@ public abstract class AbstractRegistry implements Registry {
     private URL registryUrl;
     // Local disk cache file
     private File file;
+    private boolean localCacheEnabled;
 
     public AbstractRegistry(URL url) {
         setUrl(url);
-        if (url.getParameter(REGISTRY__LOCAL_FILE_CACHE_ENABLED, true)) {
+        localCacheEnabled = url.getParameter(REGISTRY_LOCAL_FILE_CACHE_ENABLED, true);
+        if (localCacheEnabled) {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
-            String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress().replaceAll(":", "-") + ".cache";
+            String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-registry-" + url.getApplication() + "-" + url.getAddress().replaceAll(":", "-") + ".cache";
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;
             if (ConfigUtils.isNotEmpty(filename)) {
@@ -404,13 +404,13 @@ public abstract class AbstractRegistry implements Registry {
             return;
         }
         if (logger.isInfoEnabled()) {
-            logger.info("Notify urls for subscribe url " + url + ", urls: " + urls);
+            logger.info("Notify urls for subscribe url " + url + ", url size: " + urls.size());
         }
         // keep every provider's category.
         Map<String, List<URL>> result = new HashMap<>();
         for (URL u : urls) {
             if (UrlUtils.isMatch(url, u)) {
-                String category = u.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+                String category = u.getCategory(DEFAULT_CATEGORY);
                 List<URL> categoryList = result.computeIfAbsent(category, k -> new ArrayList<>());
                 categoryList.add(u);
             }
@@ -426,7 +426,9 @@ public abstract class AbstractRegistry implements Registry {
             listener.notify(categoryList);
             // We will update our cache file after each notification.
             // When our Registry has a subscribe failure due to network jitter, we can return at least the existing cache URL.
-            saveProperties(url);
+            if (localCacheEnabled) {
+                saveProperties(url);
+            }
         }
     }
 

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -51,7 +52,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
     private volatile boolean destroyed = false;
 
-    private volatile URL consumerUrl;
+    protected volatile URL consumerUrl;
 
     protected final Map<String, String> queryMap; // Initialization at construction time, assertion not null
     protected final String consumedProtocol;
@@ -67,15 +68,25 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new IllegalArgumentException("url == null");
         }
 
-        queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        String path = queryMap.get(PATH_KEY);
-        this.consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
-        this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
+        this.url = url.removeAttribute(REFER_KEY).removeParameter(MONITOR_KEY);
 
-        this.consumerUrl = this.url.setProtocol(consumedProtocol).setPath(path == null ? queryMap.get(INTERFACE_KEY) : path).addParameters(queryMap)
-                .removeParameter(MONITOR_KEY);
+        Object referParams = url.getAttribute(REFER_KEY);
+        if (referParams != null) {
+            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, (Map<String, String>) referParams);
+        } else {
+            this.consumerUrl = url.addParameters(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
+        }
 
         setRouterChain(routerChain);
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
+        return URLBuilder.from(url)
+                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
+                .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
+                .clearParameters()
+                .addParameters(queryMap)
+                .build();
     }
 
     @Override

@@ -337,7 +337,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             url = url.setPath(interfaceName);
                         }
                         if (UrlUtils.isRegistry(url)) {
-                            urls.add(url.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
+                            urls.add(url.putAttribute(REFER_KEY, map));
                         } else {
                             urls.add(ClusterUtils.mergeUrl(url, map));
                         }
@@ -354,7 +354,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             if (monitorUrl != null) {
                                 map.put(MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                             }
-                            urls.add(u.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
+                            urls.add(u.putAttribute(REFER_KEY, map));
                         }
                     }
                     if (urls.isEmpty()) {

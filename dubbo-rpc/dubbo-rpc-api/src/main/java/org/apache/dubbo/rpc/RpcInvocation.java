@@ -94,10 +94,10 @@ public class RpcInvocation implements Invocation, Serializable {
                 setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
             }
             if (url.hasParameter(GROUP_KEY)) {
-                setAttachment(GROUP_KEY, url.getParameter(GROUP_KEY));
+                setAttachment(GROUP_KEY, url.getGroup());
             }
             if (url.hasParameter(VERSION_KEY)) {
-                setAttachment(VERSION_KEY, url.getParameter(VERSION_KEY, "0.0.0"));
+                setAttachment(VERSION_KEY, url.getVersion("0.0.0"));
             }
             if (url.hasParameter(TIMEOUT_KEY)) {
                 setAttachment(TIMEOUT_KEY, url.getParameter(TIMEOUT_KEY));
@@ -106,7 +106,7 @@ public class RpcInvocation implements Invocation, Serializable {
                 setAttachment(TOKEN_KEY, url.getParameter(TOKEN_KEY));
             }
             if (url.hasParameter(APPLICATION_KEY)) {
-                setAttachment(APPLICATION_KEY, url.getParameter(APPLICATION_KEY));
+                setAttachment(APPLICATION_KEY, url.getApplication());
             }
         }
         this.targetServiceUniqueName = invocation.getTargetServiceUniqueName();

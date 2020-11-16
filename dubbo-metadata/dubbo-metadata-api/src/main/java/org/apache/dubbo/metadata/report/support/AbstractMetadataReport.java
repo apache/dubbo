@@ -103,7 +103,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(APPLICATION_KEY) + "-" + reportServerURL.getAddress().replaceAll(":", "-") + ".cache";
+        String defaultFilename = System.getProperty("user.home") +
+                "/.dubbo/dubbo-metadata-" +
+                reportServerURL.getApplication() + "-" +
+                replace(reportServerURL.getAddress(), ":", "-") +
+                ".cache";
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
