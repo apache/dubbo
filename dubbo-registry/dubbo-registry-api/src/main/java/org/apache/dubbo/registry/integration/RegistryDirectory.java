@@ -45,7 +45,6 @@ import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -329,7 +328,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
             Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
-            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(url);
+            Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.remove(url);
             if (invoker == null) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -459,49 +458,31 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         cachedInvokerUrls = null;
     }
 
-    /**
-     * Check whether the invoker in the cache needs to be destroyed
-     * If set attribute of url: refer.autodestroy=false, the invokers will only increase without decreasing,there may be a refer leak
-     *
-     * @param oldUrlInvokerMap
-     * @param newUrlInvokerMap
-     */
     private void destroyUnusedInvokers(Map<URL, Invoker<T>> oldUrlInvokerMap, Map<URL, Invoker<T>> newUrlInvokerMap) {
         if (newUrlInvokerMap == null || newUrlInvokerMap.size() == 0) {
             destroyAllInvokers();
             return;
         }
-        // check deleted invoker
-        List<URL> deleted = null;
-        if (oldUrlInvokerMap != null) {
-            Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
-            for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newInvokers.contains(entry.getValue())) {
-                    if (deleted == null) {
-                        deleted = new ArrayList<>();
+
+        if (oldUrlInvokerMap == null || oldUrlInvokerMap.size() == 0) {
+            return;
+        }
+
+        for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+            Invoker<T> invoker = entry.getValue();
+            if (invoker != null) {
+                try {
+                    invoker.destroy();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
-                    deleted.add(entry.getKey());
+                } catch (Exception e) {
+                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                 }
             }
         }
 
-        if (deleted != null) {
-            for (URL url : deleted) {
-                if (url != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(url);
-                    if (invoker != null) {
-                        try {
-                            invoker.destroy();
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
-                            }
-                        } catch (Exception e) {
-                            logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
-                        }
-                    }
-                }
-            }
-        }
+        logger.info("New url total size, " + newUrlInvokerMap.size() + ", destroyed total size " + oldUrlInvokerMap.size());
     }
 
     @Override
