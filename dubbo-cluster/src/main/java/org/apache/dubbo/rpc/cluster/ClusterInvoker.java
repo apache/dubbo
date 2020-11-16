@@ -38,4 +38,12 @@ public interface ClusterInvoker<T> extends Invoker<T> {
     Directory<T> getDirectory();
 
     boolean isDestroyed();
+
+    default boolean hasProxyInvokers() {
+        Directory<T> directory = getDirectory();
+        if (directory == null) {
+            return false;
+        }
+        return directory.hasInvokers();
+    }
 }

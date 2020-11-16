@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.FilterChainBuilder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -30,12 +32,16 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
 
 public abstract class AbstractCluster implements Cluster {
 
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
-        AbstractClusterInvoker<T> last = clusterInvoker;
+//        AbstractClusterInvoker<T> last = clusterInvoker;
+        AbstractClusterInvoker<T> last = new FilterInvoker<>(clusterInvoker);
         List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(clusterInvoker.getUrl(), key);
 
         if (!interceptors.isEmpty()) {
@@ -129,4 +135,30 @@ public abstract class AbstractCluster implements Cluster {
             return null;
         }
     }
+
+    static class FilterInvoker<T> extends AbstractClusterInvoker<T> {
+        private Invoker<T> filterInvoker;
+
+        public FilterInvoker(AbstractClusterInvoker<T> invoker) {
+            filterInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class)
+                    .getExtension(invoker.getUrl().getParameter(FILTER_BUILDER_KEY, DEFAULT_KEY))
+                    .buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            return filterInvoker.invoke(invocation);
+        }
+
+        /**
+         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
+         */
+        @Override
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+           return null;
+        }
+    }
+
+
 }

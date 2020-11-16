@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -24,7 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public final class URLBuilder {
+public final class URLBuilder extends ServiceConfigURL {
     private String protocol;
 
     private String username;
@@ -41,6 +42,8 @@ public final class URLBuilder {
 
     private Map<String, String> parameters;
 
+    private Map<String, Object> attributes;
+
     private Map<String, Map<String, String>> methodParameters;
 
     public URLBuilder() {
@@ -51,6 +54,7 @@ public final class URLBuilder {
         port = 0;
         path = null;
         parameters = new HashMap<>();
+        attributes = new HashMap<>();
         methodParameters = new HashMap<>();
     }
 
@@ -83,8 +87,9 @@ public final class URLBuilder {
                       String password,
                       String host,
                       int port,
-                      String path, Map<String, String> parameters) {
-        this(protocol, username, password, host, port, path, parameters, URL.toMethodParameters(parameters));
+                      String path,
+                      Map<String, String> parameters) {
+        this(protocol, username, password, host, port, path, parameters, null);
     }
 
     public URLBuilder(String protocol,
@@ -92,8 +97,9 @@ public final class URLBuilder {
                       String password,
                       String host,
                       int port,
-                      String path, Map<String, String> parameters,
-                      Map<String, Map<String, String>> methodParameters) {
+                      String path,
+                      Map<String, String> parameters,
+                      Map<String, Object> attributes) {
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -101,7 +107,7 @@ public final class URLBuilder {
         this.port = port;
         this.path = path;
         this.parameters = parameters != null ? parameters : new HashMap<>();
-        this.methodParameters = (methodParameters != null ? methodParameters : new HashMap<>());
+        this.attributes = attributes != null ? attributes : new HashMap<>();
     }
 
     public static URLBuilder from(URL url) {
@@ -112,7 +118,7 @@ public final class URLBuilder {
         int port = url.getPort();
         String path = url.getPath();
         Map<String, String> parameters = new HashMap<>(url.getParameters());
-        Map<String, Map<String, String>> methodParameters = new HashMap<>(url.getMethodParameters());
+        Map<String, Object> attributes = new HashMap<>(url.getAttributes());
         return new URLBuilder(
                 protocol,
                 username,
@@ -121,14 +127,14 @@ public final class URLBuilder {
                 port,
                 path,
                 parameters,
-                methodParameters);
+                attributes);
     }
 
-    public URL build() {
+    public ServiceConfigURL build() {
         if (StringUtils.isEmpty(username) && StringUtils.isNotEmpty(password)) {
             throw new IllegalArgumentException("Invalid url, password without username!");
         }
-        port = port < 0 ? 0 : port;
+        port = Math.max(port, 0);
         // trim the leading "/"
         int firstNonSlash = 0;
         if (path != null) {
@@ -141,13 +147,14 @@ public final class URLBuilder {
                 path = path.substring(firstNonSlash);
             }
         }
-        if (CollectionUtils.isEmptyMap(methodParameters)) {
-            return new URL(protocol, username, password, host, port, path, parameters);
-        } else {
-            return new URL(protocol, username, password, host, port, path, parameters, methodParameters);
-        }
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters, attributes);
     }
 
+    @Override
+    public URLBuilder putAttribute(String key, Object obj) {
+        attributes.put(key, obj);
+        return this;
+    }
 
     public URLBuilder setProtocol(String protocol) {
         this.protocol = protocol;

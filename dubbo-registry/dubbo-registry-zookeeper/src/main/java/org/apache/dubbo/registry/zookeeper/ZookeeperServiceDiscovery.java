@@ -24,7 +24,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -52,7 +51,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.bui
  * Zookeeper {@link ServiceDiscovery} implementation based on
  * <a href="https://curator.apache.org/curator-x-discovery/index.html">Apache Curator X Discovery</a>
  */
-public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
+public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -65,6 +64,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     private String rootPath;
 
     private org.apache.curator.x.discovery.ServiceDiscovery<ZookeeperInstance> serviceDiscovery;
+
+    private ServiceInstance serviceInstance;
 
     /**
      * The Key is watched Zookeeper path, the value is an instance of {@link CuratorWatcher}
@@ -87,6 +88,11 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     public void destroy() throws Exception {
         serviceDiscovery.close();
+    }
+
+    @Override
+    public ServiceInstance getLocalInstance() {
+        return serviceInstance;
     }
 
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
@@ -129,25 +135,30 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
             List<ServiceInstance> serviceInstances = new LinkedList<>();
 
-            List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
+            int totalSize = 0;
+            try {
+                List<String> serviceIds = new LinkedList<>(curatorFramework.getChildren().forPath(p));
 
-            int totalSize = serviceIds.size();
+                totalSize = serviceIds.size();
 
-            Iterator<String> iterator = serviceIds.iterator();
+                Iterator<String> iterator = serviceIds.iterator();
 
-            for (int i = 0; i < offset; i++) {
-                if (iterator.hasNext()) { // remove the elements from 0 to offset
-                    iterator.next();
-                    iterator.remove();
+                for (int i = 0; i < offset; i++) {
+                    if (iterator.hasNext()) { // remove the elements from 0 to offset
+                        iterator.next();
+                        iterator.remove();
+                    }
                 }
-            }
 
-            for (int i = 0; i < pageSize; i++) {
-                if (iterator.hasNext()) {
-                    String serviceId = iterator.next();
-                    ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
-                    serviceInstances.add(serviceInstance);
+                for (int i = 0; i < pageSize; i++) {
+                    if (iterator.hasNext()) {
+                        String serviceId = iterator.next();
+                        ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
+                        serviceInstances.add(serviceInstance);
+                    }
                 }
+            } catch (KeeperException.NoNodeException e) {
+                logger.warn(p + " path not exist.", e);
             }
 
             return new DefaultPage<>(offset, pageSize, serviceInstances, totalSize);
@@ -180,6 +191,17 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
+        try {
+            curatorFramework.create().forPath(path);
+        } catch (KeeperException.NodeExistsException e) {
+            // ignored
+            if (logger.isDebugEnabled()) {
+                logger.debug(e);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.", e);
+        }
+
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
                 new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
         try {

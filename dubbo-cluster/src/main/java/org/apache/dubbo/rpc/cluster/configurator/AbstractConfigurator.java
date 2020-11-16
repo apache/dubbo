@@ -72,8 +72,8 @@ public abstract class AbstractConfigurator implements Configurator {
          */
         String apiVersion = configuratorUrl.getParameter(CONFIG_VERSION_KEY);
         if (StringUtils.isNotEmpty(apiVersion)) {
-            String currentSide = url.getParameter(SIDE_KEY);
-            String configuratorSide = configuratorUrl.getParameter(SIDE_KEY);
+            String currentSide = url.getSide();
+            String configuratorSide = configuratorUrl.getSide();
             if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
                 url = configureIfMatch(NetUtils.getLocalHost(), url);
             } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) && url.getPort() == configuratorUrl.getPort()) {
@@ -102,10 +102,10 @@ public abstract class AbstractConfigurator implements Configurator {
              *  1.If it is a consumer ip address, the intention is to control a specific consumer instance, it must takes effect at the consumer side, any provider received this override url should ignore.
              *  2.If the ip is 0.0.0.0, this override url can be used on consumer, and also can be used on provider.
              */
-            if (url.getParameter(SIDE_KEY, PROVIDER).equals(CONSUMER)) {
+            if (url.getSide(PROVIDER).equals(CONSUMER)) {
                 // NetUtils.getLocalHost is the ip address consumer registered to registry.
                 return configureIfMatch(NetUtils.getLocalHost(), url);
-            } else if (url.getParameter(SIDE_KEY, CONSUMER).equals(PROVIDER)) {
+            } else if (url.getSide(CONSUMER).equals(PROVIDER)) {
                 // take effect on all providers, so address must be 0.0.0.0, otherwise it won't flow to this if branch
                 return configureIfMatch(ANYHOST_VALUE, url);
             }
@@ -118,9 +118,8 @@ public abstract class AbstractConfigurator implements Configurator {
             // TODO, to support wildcards
             String providers = configuratorUrl.getParameter(OVERRIDE_PROVIDERS_KEY);
             if (StringUtils.isEmpty(providers) || providers.contains(url.getAddress()) || providers.contains(ANYHOST_VALUE)) {
-                String configApplication = configuratorUrl.getParameter(APPLICATION_KEY,
-                        configuratorUrl.getUsername());
-                String currentApplication = url.getParameter(APPLICATION_KEY, url.getUsername());
+                String configApplication = configuratorUrl.getApplication(configuratorUrl.getUsername());
+                String currentApplication = url.getApplication(url.getUsername());
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
                     Set<String> conditionKeys = new HashSet<String>();

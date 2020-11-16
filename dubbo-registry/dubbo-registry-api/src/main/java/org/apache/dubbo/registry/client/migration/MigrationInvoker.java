@@ -167,6 +167,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         switch (step) {
             case APPLICATION_FIRST:
+                // FIXME, check ClusterInvoker.hasProxyInvokers() or ClusterInvoker.isAvailable()
                 if (checkInvokerAvailable(serviceDiscoveryInvoker)) {
                     currentAvailableInvoker = serviceDiscoveryInvoker;
                 } else {
@@ -186,8 +187,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public boolean isAvailable() {
-        return (invoker != null && invoker.isAvailable())
-                || (serviceDiscoveryInvoker != null && serviceDiscoveryInvoker.isAvailable());
+        return currentAvailableInvoker != null
+                ? currentAvailableInvoker.isAvailable()
+                : (invoker != null && invoker.isAvailable()) || (serviceDiscoveryInvoker != null && serviceDiscoveryInvoker.isAvailable());
     }
 
     @Override
@@ -202,7 +204,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public URL getUrl() {
-        if (invoker != null) {
+        if (currentAvailableInvoker != null) {
+            return currentAvailableInvoker.getUrl();
+        } else if (invoker != null) {
             return invoker.getUrl();
         } else if (serviceDiscoveryInvoker != null) {
             return serviceDiscoveryInvoker.getUrl();
@@ -213,17 +217,21 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public URL getRegistryUrl() {
-        if (invoker != null) {
+        if (currentAvailableInvoker != null) {
+            return currentAvailableInvoker.getRegistryUrl();
+        } else if (invoker != null) {
             return invoker.getRegistryUrl();
         } else if (serviceDiscoveryInvoker != null) {
-            serviceDiscoveryInvoker.getRegistryUrl();
+            return serviceDiscoveryInvoker.getRegistryUrl();
         }
         return url;
     }
 
     @Override
     public Directory<T> getDirectory() {
-        if (invoker != null) {
+        if (currentAvailableInvoker != null) {
+            return currentAvailableInvoker.getDirectory();
+        } else if (invoker != null) {
             return invoker.getDirectory();
         } else if (serviceDiscoveryInvoker != null) {
             return serviceDiscoveryInvoker.getDirectory();
@@ -233,8 +241,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public boolean isDestroyed() {
-        return (invoker == null || invoker.isDestroyed())
-                && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
+        return currentAvailableInvoker != null
+                ? currentAvailableInvoker.isDestroyed()
+                : (invoker == null || invoker.isDestroyed()) && (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed());
     }
 
     @Override
@@ -339,7 +348,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     protected synchronized void destroyInterfaceInvoker(ClusterInvoker<T> invoker) {
-        if (checkInvokerAvailable(this.serviceDiscoveryInvoker)) {
+        if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
             updateConsumerModel(currentAvailableInvoker, invoker);
         }

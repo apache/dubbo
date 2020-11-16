@@ -197,9 +197,9 @@ public class DubboProtocol extends AbstractProtocol {
 
             RpcInvocation invocation = new RpcInvocation(method, url.getParameter(INTERFACE_KEY), "", new Class<?>[0], new Object[0]);
             invocation.setAttachment(PATH_KEY, url.getPath());
-            invocation.setAttachment(GROUP_KEY, url.getParameter(GROUP_KEY));
+            invocation.setAttachment(GROUP_KEY, url.getGroup());
             invocation.setAttachment(INTERFACE_KEY, url.getParameter(INTERFACE_KEY));
-            invocation.setAttachment(VERSION_KEY, url.getParameter(VERSION_KEY));
+            invocation.setAttachment(VERSION_KEY, url.getVersion());
             if (url.getParameter(STUB_EVENT_KEY, false)) {
                 invocation.setAttachment(STUB_EVENT_KEY, Boolean.TRUE.toString());
             }

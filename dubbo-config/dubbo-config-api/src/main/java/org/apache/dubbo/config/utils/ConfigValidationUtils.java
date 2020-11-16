@@ -275,7 +275,7 @@ public class ConfigValidationUtils {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                    .putAttribute(REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }
         return null;
@@ -529,7 +529,12 @@ public class ConfigValidationUtils {
     }
 
     private static String extractRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
+        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : getRegistryProtocolType(url);
+    }
+
+    private static String getRegistryProtocolType(URL url) {
+        String registryProtocol = url.getParameter("registry-protocol-type");
+        return StringUtils.isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
     public static void checkExtension(Class<?> type, String property, String value) {

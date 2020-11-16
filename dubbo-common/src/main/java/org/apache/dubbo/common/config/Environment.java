@@ -20,6 +20,8 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
@@ -32,6 +34,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class Environment extends LifecycleAdapter implements FrameworkExt {
+    private static final Logger logger = LoggerFactory.getLogger(Environment.class);
+
     public static final String NAME = "environment";
 
     private final PropertiesConfiguration propertiesConfiguration;
@@ -160,7 +164,10 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public Configuration getDynamicGlobalConfiguration() {
         if (dynamicGlobalConfiguration == null) {
             if (dynamicConfiguration == null) {
-                throw new IllegalStateException("Init dynamic configuration before use.");
+                if (logger.isWarnEnabled()) {
+                    logger.warn("dynamicConfiguration is null , return globalConfiguration.");
+                }
+                return globalConfiguration;
             }
             dynamicGlobalConfiguration = new CompositeConfiguration();
             dynamicGlobalConfiguration.addConfiguration(dynamicConfiguration);

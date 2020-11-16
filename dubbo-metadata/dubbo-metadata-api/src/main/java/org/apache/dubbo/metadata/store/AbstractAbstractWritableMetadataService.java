@@ -25,10 +25,8 @@ import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 
 import com.google.gson.Gson;
 
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.ClassUtils.forName;
 import static org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder.buildFullDefinition;
@@ -56,7 +54,7 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
         // Remove the useless parameters
         url = url.removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY, TIMESTAMP_KEY);
 
-        String side = url.getParameter(SIDE_KEY);
+        String side = url.getSide();
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             publishProviderServiceDefinition(url);
         } else {
@@ -72,7 +70,7 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
     }
 
     protected String getServiceDefinition(URL exportedURL) {
-        String interfaceName = exportedURL.getParameter(INTERFACE_KEY);
+        String interfaceName = exportedURL.getServiceInterface();
         String json = null;
         try {
             if (StringUtils.isNotEmpty(interfaceName) && !isGeneric(exportedURL.getParameter(GENERIC_KEY))) {

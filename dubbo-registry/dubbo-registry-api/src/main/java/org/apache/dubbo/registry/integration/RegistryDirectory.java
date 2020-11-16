@@ -17,11 +17,15 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -39,7 +43,6 @@ import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,12 +56,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.COMPATIBLE_CONFIG_KEY;
@@ -73,6 +77,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
 import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 
@@ -232,7 +237,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
         Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
         for (Invoker<T> invoker : invokers) {
-            String group = invoker.getUrl().getParameter(GROUP_KEY, "");
+            String group = invoker.getUrl().getGroup("");
             groupMap.computeIfAbsent(group, k -> new ArrayList<>());
             groupMap.get(group).add(invoker);
         }
@@ -294,7 +299,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
-        Set<URL> keys = new HashSet<>();
         String queryProtocols = this.queryMap.get(PROTOCOL_KEY);
         for (URL providerUrl : urls) {
             // If protocol is configured at the reference side, only the matching protocol is selected
@@ -323,10 +327,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             }
             URL url = mergeUrl(providerUrl);
 
-            if (keys.contains(url)) { // Repeated url
-                continue;
-            }
-            keys.add(url);
             // Cache key is url that does not merge with consumer side parameters, regardless of how the consumer combines parameters, if the server url changes, then refer again
             Map<URL, Invoker<T>> localUrlInvokerMap = this.urlInvokerMap; // local reference
             Invoker<T> invoker = localUrlInvokerMap == null ? null : localUrlInvokerMap.get(url);
@@ -339,7 +339,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
                         enabled = url.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
-                        invoker = new InvokerDelegate<>(protocol.refer(serviceType, url), url, providerUrl);
+                        invoker = protocol.refer(serviceType, url);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + url + ")" + t.getMessage(), t);
@@ -351,7 +351,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
                 newUrlInvokerMap.put(url, invoker);
             }
         }
-        keys.clear();
         return newUrlInvokerMap;
     }
 
@@ -362,19 +361,24 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      * @return
      */
     private URL mergeUrl(URL providerUrl) {
-        providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
+        if (providerUrl instanceof ServiceAddressURL) {
+            providerUrl = overrideWithConfigurator(providerUrl);
+        } else {
+            providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = overrideWithConfigurator(providerUrl);
+            providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
+        }
 
-        providerUrl = overrideWithConfigurator(providerUrl);
-
-        providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
-
-        // The combination of directoryUrl and override is at the end of notify, which can't be handled here
-//        this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters()); // Merge the provider side parameters
+        // FIXME, kept for mock
+        if (providerUrl.hasParameter(MOCK_KEY) || providerUrl.getAnyMethodParameter(MOCK_KEY) != null) {
+            providerUrl = providerUrl.removeParameter(TAG_KEY);
+            this.overrideDirectoryUrl = this.overrideDirectoryUrl.addParametersIfAbsent(providerUrl.getParameters());
+        }
 
         if ((providerUrl.getPath() == null || providerUrl.getPath()
                 .length() == 0) && DUBBO_PROTOCOL.equals(providerUrl.getProtocol())) { // Compatible version 1.0
             //fix by tony.chenl DUBBO-44
-            String path = directoryUrl.getParameter(INTERFACE_KEY);
+            String path = directoryUrl.getServiceInterface();
             if (path != null) {
                 int i = path.indexOf('/');
                 if (i >= 0) {
@@ -407,8 +411,29 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     private URL overrideWithConfigurators(List<Configurator> configurators, URL url) {
         if (CollectionUtils.isNotEmpty(configurators)) {
-            for (Configurator configurator : configurators) {
-                url = configurator.configure(url);
+            if (url instanceof DubboServiceAddressURL) {
+                DubboServiceAddressURL interfaceAddressURL = (DubboServiceAddressURL) url;
+                URL overriddenURL = interfaceAddressURL.getOverrideURL();
+                if (overriddenURL == null) {
+                    String appName = interfaceAddressURL.getApplication();
+                    String side = interfaceAddressURL.getSide();
+                    overriddenURL = URLBuilder.from(interfaceAddressURL)
+                            .clearParameters()
+                            .addParameter(APPLICATION_KEY, appName)
+                            .addParameter(SIDE_KEY, side).build();
+                }
+                for (Configurator configurator : configurators) {
+                    overriddenURL = configurator.configure(overriddenURL);
+                }
+                url = new DubboServiceAddressURL(
+                        interfaceAddressURL.getUrlAddress(),
+                        interfaceAddressURL.getUrlParam(),
+                        interfaceAddressURL.getConsumerURL(),
+                        (ServiceConfigURL) overriddenURL);
+            } else {
+                for (Configurator configurator : configurators) {
+                    url = configurator.configure(url);
+                }
             }
         }
         return url;
@@ -561,7 +586,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
     }
 
     private boolean isValidCategory(URL url) {
-        String category = url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY);
+        String category = url.getCategory(DEFAULT_CATEGORY);
         if ((ROUTERS_CATEGORY.equals(category) || ROUTE_PROTOCOL.equals(url.getProtocol())) ||
                 PROVIDERS_CATEGORY.equals(category) ||
                 CONFIGURATORS_CATEGORY.equals(category) || DYNAMIC_CONFIGURATORS_CATEGORY.equals(category) ||
@@ -595,24 +620,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             for (Configurator configurator : configurators) {
                 this.overrideDirectoryUrl = configurator.configure(overrideDirectoryUrl);
             }
-        }
-    }
-
-    /**
-     * The delegate class, which is mainly used to store the URL address sent by the registry,and can be reassembled on the basis of providerURL queryMap overrideMap for re-refer.
-     *
-     * @param <T>
-     */
-    private static class InvokerDelegate<T> extends InvokerWrapper<T> {
-        private URL providerUrl;
-
-        public InvokerDelegate(Invoker<T> invoker, URL url, URL providerUrl) {
-            super(invoker, url);
-            this.providerUrl = providerUrl;
-        }
-
-        public URL getProviderUrl() {
-            return providerUrl;
         }
     }
 

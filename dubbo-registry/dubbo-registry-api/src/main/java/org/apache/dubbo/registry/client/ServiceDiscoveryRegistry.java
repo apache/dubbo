@@ -60,7 +60,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -180,7 +179,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     protected boolean shouldRegister(URL providerURL) {
 
-        String side = providerURL.getParameter(SIDE_KEY);
+        String side = providerURL.getSide();
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
