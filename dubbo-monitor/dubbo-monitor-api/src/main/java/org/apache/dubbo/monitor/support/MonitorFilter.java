@@ -42,7 +42,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.monitor.Constants.COUNT_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.INPUT_KEY;
@@ -157,7 +156,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
         int localPort;
         String remoteKey, remoteValue;
-        if (CONSUMER_SIDE.equals(invoker.getUrl().getParameter(SIDE_KEY))) {
+        if (CONSUMER_SIDE.equals(invoker.getUrl().getSide())) {
             // ---- for service consumer ----
             localPort = 0;
             remoteKey = MonitorService.PROVIDER;

@@ -64,7 +64,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
@@ -340,7 +339,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     String getProtocol(URL url) {
-        String protocol = url.getParameter(SIDE_KEY);
+        String protocol = url.getSide();
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }

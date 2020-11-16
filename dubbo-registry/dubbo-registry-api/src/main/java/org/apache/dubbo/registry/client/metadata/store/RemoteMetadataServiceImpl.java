@@ -38,7 +38,6 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 
@@ -89,7 +88,7 @@ public class RemoteMetadataServiceImpl {
     }
 
     public void publishServiceDefinition(URL url) {
-        String side = url.getParameter(SIDE_KEY);
+        String side = url.getSide();
         if (PROVIDER_SIDE.equalsIgnoreCase(side)) {
             //TODO, the params part is duplicate with that stored by exportURL(url), can be further optimized in the future.
             publishProvider(url);

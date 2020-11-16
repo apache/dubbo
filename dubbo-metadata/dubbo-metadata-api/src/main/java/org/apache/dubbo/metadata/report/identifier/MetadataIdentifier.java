@@ -18,8 +18,6 @@ package org.apache.dubbo.metadata.report.identifier;
 
 import org.apache.dubbo.common.URL;
 
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
-
 /**
  * The MetadataIdentifier is used to store method descriptor.
  * <p>
@@ -47,7 +45,7 @@ public class MetadataIdentifier extends BaseServiceMetadataIdentifier implements
         this.serviceInterface = url.getServiceInterface();
         this.version = url.getVersion();
         this.group = url.getGroup();
-        this.side = url.getParameter(SIDE_KEY);
+        this.side = url.getSide();
         setApplication(url.getApplication());
     }
 

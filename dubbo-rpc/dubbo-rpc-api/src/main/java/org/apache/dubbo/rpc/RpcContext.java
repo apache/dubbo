@@ -37,7 +37,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
@@ -235,7 +234,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        return getUrl().getParameter(SIDE_KEY, PROVIDER_SIDE).equals(CONSUMER_SIDE);
+        return getUrl().getSide(PROVIDER_SIDE).equals(CONSUMER_SIDE);
     }
 
     /**
