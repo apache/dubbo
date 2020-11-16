@@ -1,0 +1,67 @@
+name: Unit Test
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu-jdk8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Test with Maven
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 40
+          max_attempts: 3
+          command: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+
+  ubuntu-jdk11:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Test with Maven
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 40
+          max_attempts: 3
+          command: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+
+  windows-jdk11:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Test with Maven
+        uses: nick-invision/retry@v1
+        with:
+          timeout_minutes: 40
+          max_attempts: 3
+          command: mvn --batch-mode --no-transfer-progress clean install
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
