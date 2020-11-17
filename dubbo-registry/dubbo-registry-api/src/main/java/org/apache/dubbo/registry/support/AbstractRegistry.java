@@ -284,8 +284,10 @@ public abstract class AbstractRegistry implements Registry {
         if (url == null) {
             throw new IllegalArgumentException("register url == null");
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Register: " + url);
+        if (url.getPort() != 0) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Register: " + url);
+            }
         }
         registered.add(url);
     }
@@ -295,8 +297,10 @@ public abstract class AbstractRegistry implements Registry {
         if (url == null) {
             throw new IllegalArgumentException("unregister url == null");
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Unregister: " + url);
+        if (url.getPort() != 0) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Unregister: " + url);
+            }
         }
         registered.remove(url);
     }

@@ -37,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
@@ -72,10 +73,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         Object referParams = url.getAttribute(REFER_KEY);
         if (referParams != null) {
             this.queryMap = (Map<String, String>) referParams;
-            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
+            this.consumerUrl = (URL)url.getAttribute(CONSUMER_URL_KEY);
         } else {
             this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-            this.consumerUrl = url.addParameters(queryMap);
+        }
+
+        if (consumerUrl == null && queryMap != null) {
+            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
         }
 
         setRouterChain(routerChain);
