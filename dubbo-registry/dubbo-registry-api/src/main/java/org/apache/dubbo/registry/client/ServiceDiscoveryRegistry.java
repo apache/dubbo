@@ -356,7 +356,8 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         serviceNames.forEach(serviceName -> {
             /**
-             *
+             * 获取服务消费端对应得服务提供端服务得url列表  填充到subscribedURLs
+             * 需要访问服务提供端得元数据服务
              */
             subscribeURLs(url, subscribedURLs, serviceName);
 
@@ -423,6 +424,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
          * 获取serviceName对应的服务实例
          */
         List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+        /**
+         * 获取服务消费端对应得服务提供端服务得url列表  填充到subscribedURLs
+         */
         subscribeURLs(url, subscribedURLs, serviceName, serviceInstances);
     }
 
@@ -466,6 +470,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
         /**
          * Add the exported URLs from {@link MetadataService}
+         *
+         * getExportedURLs
+         * 获取服务消费端对应得服务提供端服务得url列表
+         * 从注册中心中获取服务消费端得元数据服务   获取对应得服务提供端暴露服务得url列表
          */
         subscribedURLs.addAll(getExportedURLs(subscribedURL, serviceInstances));
 
@@ -511,6 +519,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         prepareServiceRevisionExportedURLs(serviceInstances);
 
         // Clone the subscribed URLs from the template URLs
+        /**
+         * 获取服务消费端对应得服务提供端服务得url列表
+         */
         List<URL> subscribedURLs = cloneExportedURLs(subscribedURL, serviceInstances);
 
         // clear local service instances
@@ -654,18 +665,24 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
 
             String host = serviceInstance.getHost();
 
+            /**
+             * getTemplateExportedURLs   当前服务消费者可以消费得服务url列表
+             */
             getTemplateExportedURLs(subscribedURL, serviceInstance)
                     .stream()
                     .map(templateURL -> templateURL.removeParameter(TIMESTAMP_KEY))
                     .map(templateURL -> templateURL.removeParameter(PID_KEY))
                     .map(templateURL -> {
+                        // 获取url对应得protocol
                         String protocol = templateURL.getProtocol();
+                        // 获取protocol对应得port
                         int port = getProtocolPort(serviceInstance, protocol);
                         if (Objects.equals(templateURL.getHost(), host)
                                 && Objects.equals(templateURL.getPort(), port)) { // use templateURL if equals
                             return templateURL;
                         }
 
+                        // 重组url
                         URLBuilder clonedURLBuilder = from(templateURL) // remove the parameters from the template URL
                                 .setHost(host)  // reset the host
                                 .setPort(port); // reset the port
@@ -721,12 +738,18 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     private List<URL> getTemplateExportedURLs(URL subscribedURL, ServiceInstance selectedInstance) {
 
+        /**
+         * 获取selectedInstance对应得服务提供端暴露得服务
+         */
         List<URL> exportedURLs = getRevisionExportedURLs(selectedInstance);
 
         if (isEmpty(exportedURLs)) {
             return emptyList();
         }
 
+        /**
+         * 当前服务消费者可以消费得服务列表
+         */
         return filterSubscribedURLs(subscribedURL, exportedURLs);
     }
 
@@ -835,15 +858,30 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             return emptyList();
         }
 
+        /**
+         * 获取serviceInstance对应得serviceName和revision
+         */
         String serviceName = serviceInstance.getServiceName();
         // get the revision from the specified {@link ServiceInstance}
         String revision = getExportedServicesRevision(serviceInstance);
 
+        /**
+         * 获取缓存中  serviceName和revision对应得服务提供端暴露得服务
+         */
         return getRevisionExportedURLs(serviceName, revision);
     }
 
+    /**
+     * 获取缓存中  serviceName和revision对应得服务提供端暴露得服务
+     * @param serviceName
+     * @param revision
+     * @return
+     */
     private List<URL> getRevisionExportedURLs(String serviceName, String revision) {
         return executeShared(() -> {
+            /**
+             * 获取缓存中  serviceName和revision对应得服务提供端暴露得服务
+             */
             Map<String, List<URL>> revisionExportedURLsMap = getRevisionExportedURLsMap(serviceName);
             List<URL> exportedURLs = revisionExportedURLsMap.get(revision);
             // Get a copy from source in order to prevent the caller trying to change the cached data
@@ -1023,6 +1061,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         return SERVICE_REGISTRY_TYPE.equalsIgnoreCase(registryURL.getParameter(REGISTRY_TYPE_KEY));
     }
 
+    /**
+     * 服务消费者可以消费得服务列表
+     * 比对  接口名称、version、group、protocol
+     * @param subscribedURL
+     * @param exportedURLs
+     * @return
+     */
     private static List<URL> filterSubscribedURLs(URL subscribedURL, List<URL> exportedURLs) {
         return exportedURLs.stream()
                 .filter(url -> isSameServiceInterface(subscribedURL, url))
