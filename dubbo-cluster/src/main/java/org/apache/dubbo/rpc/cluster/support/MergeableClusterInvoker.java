@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
