@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -169,7 +168,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             // FIXME, some keys may need to be removed.
             instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
 
-            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
+            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.remove(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -240,37 +239,24 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             destroyAllInvokers();
             return;
         }
-        // check deleted invoker
-        List<String> deleted = null;
-        if (oldUrlInvokerMap != null) {
-            Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
-            for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newInvokers.contains(entry.getValue())) {
-                    if (deleted == null) {
-                        deleted = new ArrayList<>();
-                    }
-                    deleted.add(entry.getKey());
-                }
-            }
+
+        if (oldUrlInvokerMap == null || oldUrlInvokerMap.size() == 0) {
+            return;
         }
 
-        if (deleted != null) {
-            logger.info(deleted.size() + " unused invokers deleted.");
-            for (String addressKey : deleted) {
-                if (addressKey != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(addressKey);
-                    if (invoker != null) {
-                        try {
-                            invoker.destroy();
-                            if (logger.isDebugEnabled()) {
-                                logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
-                            }
-                        } catch (Exception e) {
-                            logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
-                        }
+        for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+            Invoker<T> invoker = entry.getValue();
+            if (invoker != null) {
+                try {
+                    invoker.destroy();
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
                     }
+                } catch (Exception e) {
+                    logger.warn("destroy invoker[" + invoker.getUrl() + "] failed. " + e.getMessage(), e);
                 }
             }
         }
+        logger.info(oldUrlInvokerMap.size() + " deprecated invokers deleted.");
     }
 }
