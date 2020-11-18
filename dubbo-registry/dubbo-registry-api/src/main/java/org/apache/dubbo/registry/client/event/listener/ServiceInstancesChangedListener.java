@@ -93,8 +93,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension()
-                .getServiceDiscveryAddressNotificationExecutor();
+        this.scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**

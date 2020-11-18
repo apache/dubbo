@@ -293,10 +293,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
         public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
-            notifier = new RegistryNotifier(ZookeeperRegistry.this) {
+            notifier = new RegistryNotifier(ZookeeperRegistry.this.getDelay()) {
                 @Override
                 public void notify(Object rawAddresses) {
-                    int delayTime = getRegistry().getDelay();
+                    long delayTime = getDelayTime();
                     if (delayTime <= 0) {
                         this.doNotify(rawAddresses);
                     } else {

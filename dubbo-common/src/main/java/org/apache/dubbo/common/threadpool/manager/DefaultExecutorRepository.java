@@ -55,6 +55,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService serviceDiscveryAddressNotificationExecutor;
 
+    private ScheduledExecutorService metadataRetryExecutor;
+
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
@@ -67,6 +69,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
         serviceDiscveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
+        metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
     }
 
     /**
@@ -164,8 +167,13 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         return registryNotificationExecutor;
     }
 
-    public ScheduledExecutorService getServiceDiscveryAddressNotificationExecutor() {
+    public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
         return serviceDiscveryAddressNotificationExecutor;
+    }
+
+    @Override
+    public ScheduledExecutorService getMetadataRetryExecutor() {
+        return null;
     }
 
     @Override

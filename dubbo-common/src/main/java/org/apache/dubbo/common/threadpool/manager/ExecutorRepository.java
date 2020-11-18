@@ -57,7 +57,9 @@ public interface ExecutorRepository {
 
     ScheduledExecutorService getServiceExporterExecutor();
 
-    ScheduledExecutorService getServiceDiscveryAddressNotificationExecutor();
+    ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
+
+    ScheduledExecutorService getMetadataRetryExecutor();
 
     /**
      * Scheduled executor handle registry notification.

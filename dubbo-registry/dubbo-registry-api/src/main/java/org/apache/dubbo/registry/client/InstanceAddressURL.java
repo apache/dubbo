@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.URLAddress;
+import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.rpc.RpcContext;
@@ -38,8 +40,7 @@ public class InstanceAddressURL extends URL {
     private volatile transient Map<String, Number> numbers;
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
 
-    public InstanceAddressURL() {
-    }
+    public InstanceAddressURL() {}
 
     public InstanceAddressURL(
             ServiceInstance instance,
@@ -297,6 +298,35 @@ public class InstanceAddressURL extends URL {
     public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
         getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
         return this;
+    }
+
+    @Override
+    public String getAnyMethodParameter(String key) {
+        String suffix = "." + key;
+        for (String fullKey : instance.getMetadata().keySet()) {
+            if (fullKey.endsWith(suffix)) {
+                return getParameter(fullKey);
+            }
+        }
+        String protocolServiceKey = getProtocolServiceKey();
+        if (StringUtils.isNotEmpty(protocolServiceKey)) {
+            for (String fullKey : metadataInfo.getParameters(protocolServiceKey).keySet()) {
+                if (fullKey.endsWith(suffix)) {
+                    return getParameter(fullKey);
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public URLParam getUrlParam() {
+        throw new UnsupportedOperationException("URLParam is replaced with MetadataInfo in instance url");
+    }
+
+    @Override
+    public URLAddress getUrlAddress() {
+        throw new UnsupportedOperationException("URLAddress is replaced with ServiceInstance in instance url");
     }
 
     @Override

@@ -936,9 +936,9 @@ class URL implements Serializable {
 
     public String getAnyMethodParameter(String key) {
         String suffix = "." + key;
-        for (String fullKey : getUrlParam().getParameters().keySet()) {
+        for (String fullKey : getParameters().keySet()) {
             if (fullKey.endsWith(suffix)) {
-                return getUrlParam().getParameters().get(fullKey);
+                return getParameter(fullKey);
             }
         }
         return null;

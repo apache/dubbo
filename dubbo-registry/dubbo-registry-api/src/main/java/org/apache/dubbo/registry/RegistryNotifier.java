@@ -28,17 +28,22 @@ public abstract class RegistryNotifier {
     private volatile long lastEventTime;
 
     private Object rawAddresses;
-    private Registry registry;
+    private long delayTime;
 
-    private ScheduledExecutorService scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-            .getDefaultExtension().getRegistryNotificationExecutor();
+    private ScheduledExecutorService scheduler;
 
-    public Registry getRegistry() {
-        return registry;
+    public RegistryNotifier(long delayTime) {
+        this(delayTime, null);
     }
 
-    public RegistryNotifier(Registry registry) {
-        this.registry = registry;
+    public RegistryNotifier(long delayTime, ScheduledExecutorService scheduler) {
+        this.delayTime = delayTime;
+        if (scheduler == null) {
+            this.scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+                    .getDefaultExtension().getRegistryNotificationExecutor();
+        } else {
+            this.scheduler = scheduler;
+        }
     }
 
     public synchronized void notify(Object rawAddresses) {
@@ -46,13 +51,16 @@ public abstract class RegistryNotifier {
         long notifyTime = System.currentTimeMillis();
         this.lastEventTime = notifyTime;
 
-        int delayTime = getRegistry().getDelay();
         long delta = (System.currentTimeMillis() - lastExecuteTime) - delayTime;
         if (delta >= 0) {
             scheduler.submit(new NotificationTask(this, notifyTime));
         } else {
             scheduler.schedule(new NotificationTask(this, notifyTime), -delta, TimeUnit.MILLISECONDS);
         }
+    }
+
+    public long getDelayTime() {
+        return delayTime;
     }
 
     protected abstract void doNotify(Object rawAddresses);

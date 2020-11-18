@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
 import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
 
 /**
@@ -277,6 +278,10 @@ public interface ServiceDiscovery extends Prioritized {
     }
 
     ServiceInstance getLocalInstance();
+
+    default long getDelay() {
+        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
+    }
 
     /**
      * A human-readable description of the implementation

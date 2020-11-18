@@ -23,7 +23,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -56,8 +55,6 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private URL registryURL;
-
-    private EventDispatcher dispatcher;
 
     private CuratorFramework curatorFramework;
 

@@ -29,7 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_N
  */
 public interface Registry extends Node, RegistryService {
     default int getDelay() {
-        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, -1);
+        return getUrl().getParameter(REGISTRY_DELAY_NOTIFICATION_KEY, 5000);
     }
 
     default void reExportRegister(URL url) {
