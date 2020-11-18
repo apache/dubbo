@@ -127,6 +127,9 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
                             }
                         }
                         // Handle the event
+                        /**
+                         * 回调listener
+                         */
                         listener.onEvent(event);
                     });
         });

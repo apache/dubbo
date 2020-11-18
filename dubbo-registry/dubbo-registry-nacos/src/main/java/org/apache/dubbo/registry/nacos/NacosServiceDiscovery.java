@@ -123,9 +123,11 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
+            // 注册中心监听
             service.subscribe(listener.getServiceName(), e -> { // Register Nacos EventListener
                 if (e instanceof NamingEvent) {
                     NamingEvent event = (NamingEvent) e;
+                    // 回调
                     handleEvent(event, listener);
                 }
             });
@@ -134,10 +136,15 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
         String serviceName = event.getServiceName();
+        /**
+         * Instance列表 转换ServiceInstance列表
+         */
         Collection<ServiceInstance> serviceInstances = event.getInstances()
                 .stream()
+                // 转换
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
+        //
         dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
     }
 }

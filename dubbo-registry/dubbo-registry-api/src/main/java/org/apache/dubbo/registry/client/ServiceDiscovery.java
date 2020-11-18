@@ -248,6 +248,9 @@ public interface ServiceDiscovery extends Prioritized {
      * @param serviceInstances the service instances have been changed
      */
     default void dispatchServiceInstancesChangedEvent(String serviceName, Collection<ServiceInstance> serviceInstances) {
+        /**
+         *
+         */
         dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 
@@ -257,6 +260,9 @@ public interface ServiceDiscovery extends Prioritized {
      * @param event the {@link ServiceInstancesChangedEvent}
      */
     default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
+        /**
+         *
+         */
         getDefaultExtension().dispatch(event);
     }
 

@@ -382,10 +382,19 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         });
 
         // Notify all
+        /**
+         * 同非服务自省  启动消费端invoker  并更新内部invoker缓存
+         */
         notifyAllSubscribedURLs(url, subscribedURLs, listener);
 
     }
 
+    /**
+     *
+     * @param url 本地订阅的url  consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService?application=dubbo-demo-api-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&generic=true&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&pid=13208&side=consumer&sticky=false&timestamp=1605687787066
+     * @param subscribedURLs  服务提供端暴露服务的url  dubbo://2.0.1.2:20880/org.apache.dubbo.demo.DemoService?anyhost=true&application=dubbo-demo-api-provider&default=true&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&release=&side=provider
+     * @param listener 监听
+     */
     private void notifyAllSubscribedURLs(URL url, List<URL> subscribedURLs, NotifyListener listener) {
 
         if (subscribedURLs.isEmpty()) {
@@ -394,6 +403,10 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         }
 
         // Notify all
+        /**
+         * RegistryDirectory
+         * 同非服务自省  启动消费端invoker  并更新内部invoker缓存
+         */
         listener.notify(subscribedURLs);
     }
 
@@ -437,8 +450,13 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      * @param listener the {@link ServiceInstancesChangedListener}
      */
     private void registerServiceInstancesChangedListener(URL url, ServiceInstancesChangedListener listener) {
+        // dubbo-demo-api-provider:consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService
         String listenerId = createListenerId(url, listener);
         if (registeredListeners.add(listenerId)) {
+            /**
+             * EventPublishingServiceDiscovery
+             * 添加注册中心监听
+             */
             serviceDiscovery.addServiceInstancesChangedListener(listener);
         }
     }

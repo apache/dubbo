@@ -220,6 +220,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        // 依据注册中心   添加监听   nacos
         serviceDiscovery.addServiceInstancesChangedListener(listener);
         eventDispatcher.addEventListener(listener);
     }
