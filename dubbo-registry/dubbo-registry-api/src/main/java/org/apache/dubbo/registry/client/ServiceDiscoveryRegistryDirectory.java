@@ -246,7 +246,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
         for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
             Invoker<T> invoker = entry.getValue();
-            if (invoker != null) {
+            if (invoker != null && !newUrlInvokerMap.containsKey(entry.getKey())) {
                 try {
                     invoker.destroy();
                     if (logger.isDebugEnabled()) {
