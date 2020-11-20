@@ -1054,7 +1054,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
      */
     protected Set<String> findMappedServices(URL url) {
         /**
-         * 获取url对应的serviceName
+         * 获取url对应的serviceName  CompositeServiceNameMapping
          */
         return serviceNameMapping.get(url);
     }

@@ -110,9 +110,9 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
         for (ServiceNameMapping serviceNameMapping : serviceNameMappings) {
             /**
              * ParameterizedServiceNameMapping
-             *      获取subscribedURL中subscribed-services对应的参数
+             *      获取subscribedURL中subscribed-services参数对应的值
              * PropertiesFileServiceNameMapping
-             *      在propertiesList中获取subscribedURL对应的值
+             *      在本地propertiesList中获取subscribedURL对应的值
              * DynamicConfigurationServiceNameMapping
              *      在配置中心中  获取subscribedURL中group对应的dataId
              */
