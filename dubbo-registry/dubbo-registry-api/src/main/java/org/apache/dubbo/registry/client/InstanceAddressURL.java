@@ -310,7 +310,7 @@ public class InstanceAddressURL extends URL {
         }
         String protocolServiceKey = getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
-            for (String fullKey : metadataInfo.getParameters(protocolServiceKey).keySet()) {
+            for (String fullKey : metadataInfo.getServiceInfo(protocolServiceKey).getParams().keySet()) {
                 if (fullKey.endsWith(suffix)) {
                     return getParameter(fullKey);
                 }
