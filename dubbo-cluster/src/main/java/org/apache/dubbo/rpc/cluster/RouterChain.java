@@ -83,6 +83,10 @@ public class RouterChain<T> {
         return new RouterChain<>(url);
     }
 
+    public RouterChain(List<Invoker<T>> invokers) {
+        this.invokers = invokers;
+    }
+
     private RouterChain(URL url) {
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
                 .getActivateExtension(url, "router");
@@ -146,8 +150,17 @@ public class RouterChain<T> {
         this.routers = newRouters;
     }
 
+
     public List<Router> getRouters() {
         return routers;
+    }
+
+    public void addStateRouters(List<StateRouter> stateRouters) {
+        List<StateRouter> newStateRouters = new ArrayList<>();
+        newStateRouters.addAll(builtinStateRouters);
+        newStateRouters.addAll(stateRouters);
+        CollectionUtils.sort(newStateRouters);
+        this.stateRouters = newStateRouters;
     }
 
     private void sort() {
