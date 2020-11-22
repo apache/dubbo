@@ -444,7 +444,7 @@ public class RegistryProtocol implements Protocol {
          */
         if (REGISTRY_PROTOCOL.equals(registryUrl.getProtocol())) {
             /**
-             * 获取registry对应的值
+             * 获取registry对应的值  即真正的注册中心协议
              */
             String protocol = registryUrl.getParameter(REGISTRY_KEY, DEFAULT_REGISTRY);
             /**

@@ -514,7 +514,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
 
             /**
-             * 获取待注册服务下的方法
+             * 获取待导出服务下的方法
              */
             String[] methods = Wrapper.getWrapper(interfaceClass).getMethodNames();
             if (methods.length == 0) {
