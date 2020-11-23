@@ -64,6 +64,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -73,26 +74,24 @@ import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.ALL_CATEGORIES;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
-import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
 import static org.apache.dubbo.registry.Constants.PROVIDER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -110,6 +109,7 @@ import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CONSUMER_URL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WARMUP_KEY;
@@ -122,7 +122,7 @@ public class RegistryProtocol implements Protocol {
     public static final String[] DEFAULT_REGISTER_PROVIDER_KEYS = {
             APPLICATION_KEY, CODEC_KEY, EXCHANGER_KEY, SERIALIZATION_KEY, CLUSTER_KEY, CONNECTIONS_KEY, DEPRECATED_KEY,
             GROUP_KEY, LOADBALANCE_KEY, MOCK_KEY, PATH_KEY, TIMEOUT_KEY, TOKEN_KEY, VERSION_KEY, WARMUP_KEY,
-            WEIGHT_KEY, TIMESTAMP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
+            WEIGHT_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
     };
 
     public static final String[] DEFAULT_REGISTER_CONSUMER_KEYS = {
@@ -176,8 +176,7 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
-    private void register(URL registryUrl, URL registeredProviderUrl) {
-        Registry registry = registryFactory.getRegistry(registryUrl);
+    private void register(Registry registry, URL registeredProviderUrl) {
         registry.register(registeredProviderUrl);
     }
 
@@ -208,13 +207,13 @@ public class RegistryProtocol implements Protocol {
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
-        final Registry registry = getRegistry(originInvoker);
+        final Registry registry = getRegistry(registryUrl);
         final URL registeredProviderUrl = getUrlToRegistry(providerUrl, registryUrl);
 
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
-            register(registryUrl, registeredProviderUrl);
+            register(registry, registeredProviderUrl);
         }
 
         // register stated url on provider model
@@ -315,7 +314,7 @@ public class RegistryProtocol implements Protocol {
         if (getProviderUrl(originInvoker).getParameter(REGISTER_KEY, true)) {
             Registry registry = null;
             try {
-                registry = getRegistry(originInvoker);
+                registry = getRegistry(getRegistryUrl(originInvoker));
             } catch (Exception e) {
                 throw new SkipFailbackWrapperException(e);
             }
@@ -349,11 +348,10 @@ public class RegistryProtocol implements Protocol {
     /**
      * Get an instance of registry based on the address of invoker
      *
-     * @param originInvoker
+     * @param registryUrl
      * @return
      */
-    protected Registry getRegistry(final Invoker<?> originInvoker) {
-        URL registryUrl = getRegistryUrl(originInvoker);
+    protected Registry getRegistry(final URL registryUrl) {
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -410,11 +408,11 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     private URL getProviderUrl(final Invoker<?> originInvoker) {
-        String export = originInvoker.getUrl().getParameterAndDecoded(EXPORT_KEY);
-        if (export == null || export.length() == 0) {
-            throw new IllegalArgumentException("The registry export url is null! registry: " + originInvoker.getUrl());
+        Object providerURL = originInvoker.getUrl().getAttribute(EXPORT_KEY);
+        if (!(providerURL instanceof URL)) {
+            throw new IllegalArgumentException("The registry export url is null! registry: " + originInvoker.getUrl().getAddress());
         }
-        return URL.valueOf(export);
+        return (URL)providerURL;
     }
 
     /**
@@ -439,7 +437,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         // group="a,b" or group="*"
-        Map<String, String> qs = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        Map<String, String> qs = (Map<String, String>)url.getAttribute(REFER_KEY);
         String group = qs.get(GROUP_KEY);
         if (group != null && group.length() > 0) {
             if ((COMMA_SPLIT_PATTERN.split(group)).length > 1 || "*".equals(group)) {
@@ -452,7 +450,8 @@ public class RegistryProtocol implements Protocol {
     }
 
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {
-        URL consumerUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        URL consumerUrl = new URL(parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY), parameters.get(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        url = url.putAttribute(CONSUMER_URL_KEY, consumerUrl);
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
         return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
@@ -489,7 +488,8 @@ public class RegistryProtocol implements Protocol {
         directory.setProtocol(protocol);
         // all attributes of REFER_KEY
         Map<String, String> parameters = new HashMap<String, String>(directory.getConsumerUrl().getParameters());
-        URL urlToRegistry = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        URL urlToRegistry = new URL(parameters.get(PROTOCOL_KEY) == null ? DUBBO : parameters.get(PROTOCOL_KEY), parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
+        URL consumerURL = directory.getConsumerUrl();
         if (directory.isShouldRegister()) {
             directory.setRegisteredConsumerUrl(urlToRegistry);
             registry.register(directory.getRegisteredConsumerUrl());
@@ -511,7 +511,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     public static URL toSubscribeUrl(URL url) {
-        return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
+        return url.addParameter(CATEGORY_KEY, ALL_CATEGORIES);
     }
 
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
@@ -678,7 +678,7 @@ public class RegistryProtocol implements Protocol {
             for (URL url : configuratorUrls) {
                 URL overrideUrl = url;
                 // Compatible with the old version
-                if (url.getParameter(CATEGORY_KEY) == null && OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
+                if (url.getCategory() == null && OVERRIDE_PROTOCOL.equals(url.getProtocol())) {
                     overrideUrl = url.addParameter(CATEGORY_KEY, CONFIGURATORS_CATEGORY);
                 }
 
@@ -772,7 +772,7 @@ public class RegistryProtocol implements Protocol {
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
 
-            Registry registry = RegistryProtocol.this.getRegistry(originInvoker);
+            Registry registry = RegistryProtocol.this.getRegistry(getRegistryUrl(originInvoker));
             try {
                 registry.unregister(registerUrl);
             } catch (Throwable t) {

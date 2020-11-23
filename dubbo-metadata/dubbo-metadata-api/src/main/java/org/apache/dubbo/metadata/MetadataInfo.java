@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -31,15 +32,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class MetadataInfo implements Serializable {
     public static String DEFAULT_REVISION = "0";
@@ -97,7 +97,7 @@ public class MetadataInfo implements Serializable {
 
         StringBuilder sb = new StringBuilder();
         sb.append(app);
-        for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {
+        for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
             sb.append(entry.getValue().toDescString());
         }
         this.revision = RevisionResolver.calRevision(sb.toString());
@@ -160,6 +160,18 @@ public class MetadataInfo implements Serializable {
         return serviceInfo.getAllParams();
     }
 
+    public String getServiceString(String protocolServiceKey) {
+        if (protocolServiceKey == null) {
+            return null;
+        }
+
+        ServiceInfo serviceInfo = services.get(protocolServiceKey);
+        if (serviceInfo == null) {
+            return null;
+        }
+        return serviceInfo.toString();
+    }
+
     @Override
     public String toString() {
         return "metadata{" +
@@ -197,7 +209,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public ServiceInfo(URL url) {
-            this(url.getServiceInterface(), url.getParameter(GROUP_KEY), url.getParameter(VERSION_KEY), url.getProtocol(), url.getPath(), null);
+            this(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getProtocol(), url.getPath(), null);
 
             this.url = url;
             Map<String, String> params = new HashMap<>();
@@ -326,8 +338,8 @@ public class MetadataInfo implements Serializable {
 
         public String getMethodParameter(String method, String key, String defaultValue) {
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
-                consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URLParam.initMethodParameters(params);
+                consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
 
             String value = getMethodParameter(method, key, consumerMethodParams);
@@ -339,13 +351,15 @@ public class MetadataInfo implements Serializable {
         }
 
         private String getMethodParameter(String method, String key, Map<String, Map<String, String>> map) {
-            Map<String, String> keyMap = map.get(method);
             String value = null;
-            if (keyMap != null) {
-                value = keyMap.get(key);
-            }
-            if (StringUtils.isEmpty(value)) {
-                value = getParameter(key);
+            if (map != null) {
+                Map<String, String> keyMap = map.get(method);
+                if (keyMap != null) {
+                    value = keyMap.get(key);
+                }
+                if (StringUtils.isEmpty(value)) {
+                    value = getParameter(key);
+                }
             }
             return value;
         }
@@ -357,15 +371,15 @@ public class MetadataInfo implements Serializable {
 
         public boolean hasMethodParameter(String method) {
             if (methodParams == null) {
-                methodParams = URL.toMethodParameters(params);
-                consumerMethodParams = URL.toMethodParameters(consumerParams);
+                methodParams = URLParam.initMethodParameters(params);
+                consumerMethodParams = URLParam.initMethodParameters(consumerParams);
             }
 
             return consumerMethodParams.containsKey(method) || methodParams.containsKey(method);
         }
 
         public String toDescString() {
-            return this.getMatchKey() + getMethodSignaturesString() + getParams();
+            return this.getMatchKey() + getMethodSignaturesString() + new TreeMap<>(getParams());
         }
 
         private String getMethodSignaturesString() {

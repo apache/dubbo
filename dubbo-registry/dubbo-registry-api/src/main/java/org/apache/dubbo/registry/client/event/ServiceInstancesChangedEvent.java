@@ -20,6 +20,7 @@ import org.apache.dubbo.event.Event;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
@@ -45,6 +46,12 @@ public class ServiceInstancesChangedEvent extends Event {
         super(serviceName);
         this.serviceName = serviceName;
         this.serviceInstances = unmodifiableList(serviceInstances);
+    }
+
+    protected ServiceInstancesChangedEvent() {
+        super("");
+        this.serviceInstances = Collections.emptyList();
+        this.serviceName = "";
     }
 
     /**

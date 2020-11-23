@@ -20,6 +20,8 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
@@ -32,12 +34,12 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     private static final float DEFAULT_THREAD = 0.8f;
 
     @Override
-    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
-        if (!serviceDiscoveryInvoker.isAvailable()) {
+    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
+        if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
             logger.info("No instance address available, will not migrate.");
             return false;
         }
-        if (!invoker.isAvailable()) {
+        if (!invoker.hasProxyInvokers()) {
             logger.info("No interface address available, will migrate.");
             return true;
         }
@@ -48,7 +50,12 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
         int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
 
-        String rawThreshold = ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
+        String rawThreshold = null;
+        Float configedThreshold = rule == null ? null : rule.getThreshold(invoker.getUrl().getServiceKey());
+        if (configedThreshold != null && configedThreshold >= 0) {
+            rawThreshold = String.valueOf(configedThreshold);
+        }
+        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
         try {
             threshold = Float.parseFloat(rawThreshold);
@@ -57,7 +64,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             threshold = DEFAULT_THREAD;
         }
 
-        logger.info("Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
+        logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
 
         if (newAddressSize != 0 && oldAddressSize == 0) {
             return true;
@@ -66,7 +73,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             return false;
         }
 
-        if (((float)newAddressSize / (float)oldAddressSize) >= threshold) {
+        if (((float) newAddressSize / (float) oldAddressSize) >= threshold) {
             return true;
         }
         return false;

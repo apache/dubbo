@@ -17,9 +17,9 @@
 package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -42,12 +42,17 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -87,6 +92,10 @@ public class AbstractClusterInvokerTest {
     @SuppressWarnings({"unchecked"})
     @BeforeEach
     public void setUp() throws Exception {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("application", "abstractClusterInvokerTest");
+        url = url.putAttribute(REFER_KEY, attributes);
+
         invocation.setMethodName("sayHello");
 
         invoker1 = mock(Invoker.class);
@@ -226,8 +235,8 @@ public class AbstractClusterInvokerTest {
     @Test
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
-        Map<String, String> queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
-        URL tmpUrl = url.addParameters(queryMap).removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
+        Map<String, String> queryMap = (Map<String, String> )url.getAttribute(REFER_KEY);
+        URL tmpUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
         given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
         initlistsize5();
 
@@ -235,6 +244,16 @@ public class AbstractClusterInvokerTest {
         Assertions.assertFalse(sinvoker.isAvailable());
         Assertions.assertEquals(invoker1, sinvoker);
 
+    }
+
+    private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
+        return URLBuilder.from(url)
+                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
+                .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
+                .clearParameters()
+                .addParameters(queryMap)
+                .removeParameter(MONITOR_KEY)
+                .build();
     }
 
     @Test

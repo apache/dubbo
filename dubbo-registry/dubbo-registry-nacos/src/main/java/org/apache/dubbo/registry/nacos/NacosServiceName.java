@@ -22,10 +22,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
@@ -67,9 +64,9 @@ public class NacosServiceName {
 
     public NacosServiceName(URL url) {
         serviceInterface = url.getParameter(INTERFACE_KEY);
-        category = isConcrete(serviceInterface) ? DEFAULT_CATEGORY : url.getParameter(CATEGORY_KEY);
-        version = url.getParameter(VERSION_KEY, DEFAULT_PARAM_VALUE);
-        group = url.getParameter(GROUP_KEY, DEFAULT_PARAM_VALUE);
+        category = isConcrete(serviceInterface) ? DEFAULT_CATEGORY : url.getCategory();
+        version = url.getVersion(DEFAULT_PARAM_VALUE);
+        group = url.getGroup(DEFAULT_PARAM_VALUE);
         value = toValue();
     }
 

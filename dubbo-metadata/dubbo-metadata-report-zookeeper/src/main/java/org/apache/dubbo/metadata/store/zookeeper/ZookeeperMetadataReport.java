@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.store.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
@@ -68,7 +68,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         if (url.isAnyHost()) {
             throw new IllegalStateException("registry address == null");
         }
-        String group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
+        String group = url.getGroup(DEFAULT_ROOT);
         if (!group.startsWith(PATH_SEPARATOR)) {
             group = PATH_SEPARATOR + group;
         }
@@ -161,24 +161,32 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        Set<String>  appNameSet = new HashSet<>();
+        Set<String> appNameSet = new HashSet<>();
         String path = toRootDir() + serviceKey;
-        appNameSet.addAll(zkClient.getChildren(path));
+        List<String> appNameList = zkClient.getChildren(path);
+        if (!CollectionUtils.isEmpty(appNameList)) {
+            appNameSet.addAll(appNameList);
+        }
 
         if (null == listenerMap.get(path)) {
-            ChildListener zkListener = new ChildListener() {
-                @Override
-                public void childChanged(String path, List<String> children) {
-                    MappingChangedEvent event = new MappingChangedEvent();
-                    event.setServiceKey(serviceKey);
-                    event.setApps(null != children ? new HashSet<>(children): null);
-                    listener.onEvent(event);
-                }
-            };
-            zkClient.addChildListener(path, zkListener);
-            listenerMap.put(path, zkListener);
+            zkClient.create(path, false);
+            addServiceMappingListener(path, serviceKey, listener);
         }
 
         return appNameSet;
+    }
+
+    private void addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
+        ChildListener zkListener = new ChildListener() {
+            @Override
+            public void childChanged(String path, List<String> children) {
+                MappingChangedEvent event = new MappingChangedEvent();
+                event.setServiceKey(serviceKey);
+                event.setApps(null != children ? new HashSet<>(children) : null);
+                listener.onEvent(event);
+            }
+        };
+        zkClient.addChildListener(path, zkListener);
+        listenerMap.put(path, zkListener);
     }
 }

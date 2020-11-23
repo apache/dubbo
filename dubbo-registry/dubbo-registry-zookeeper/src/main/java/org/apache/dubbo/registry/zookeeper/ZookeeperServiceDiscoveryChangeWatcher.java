@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -24,6 +25,7 @@ import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
+import static org.apache.dubbo.rpc.model.ApplicationModel.getExecutorRepository;
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
 
@@ -39,6 +41,8 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
+    private final RegistryNotifier notifier;
+
     private boolean keepWatching;
 
     private final String serviceName;
@@ -49,6 +53,12 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.serviceName = serviceName;
         this.listener = listener;
+        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(), getExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
+            @Override
+            protected void doNotify(Object rawAddresses) {
+                listener.onEvent((ServiceInstancesChangedEvent)rawAddresses);
+            }
+        };
     }
 
     @Override
@@ -58,7 +68,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
             if (shouldKeepWatching()) {
-                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
+                notifier.notify(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
                 zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
                 zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
             }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -41,14 +40,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
-import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
 import static org.apache.dubbo.registry.Constants.SIMPLIFIED_KEY;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_CONSUMER_KEYS;
@@ -108,26 +101,14 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
-        this.overrideDirectoryUrl = this.directoryUrl = turnRegistryUrlToConsumerUrl(url);
-        String group = directoryUrl.getParameter(GROUP_KEY, "");
+        this.overrideDirectoryUrl = this.directoryUrl = consumerUrl;
+        String group = directoryUrl.getGroup("");
         this.multiGroup = group != null && (ANY_VALUE.equals(group) || group.contains(","));
     }
 
     @Override
     public void addServiceListener(ServiceInstancesChangedListener instanceListener) {
         this.serviceListener = instanceListener;
-    }
-
-    private URL turnRegistryUrlToConsumerUrl(URL url) {
-        return URLBuilder.from(url)
-                .setHost(queryMap.get(REGISTER_IP_KEY))
-                .setPort(0)
-                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
-                .setPath(queryMap.get(INTERFACE_KEY))
-                .clearParameters()
-                .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
-                .build();
     }
 
     public void setProtocol(Protocol protocol) {

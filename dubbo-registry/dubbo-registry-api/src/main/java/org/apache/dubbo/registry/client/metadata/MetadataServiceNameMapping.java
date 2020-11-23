@@ -31,8 +31,6 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 public class MetadataServiceNameMapping implements ServiceNameMapping {
@@ -41,8 +39,8 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
     @Override
     public void map(URL url) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
+        String group = url.getGroup();
+        String version = url.getVersion();
         String protocol = url.getProtocol();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
@@ -56,8 +54,8 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getParameter(GROUP_KEY);
-        String version = url.getParameter(VERSION_KEY);
+        String group = url.getGroup();
+        String version = url.getVersion();
         String protocol = url.getProtocol();
 
         String mappingKey = ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol);

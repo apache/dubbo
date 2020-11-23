@@ -1,0 +1,134 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.common.url.component;
+
+import org.apache.dubbo.common.URL;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class ServiceConfigURL extends URL {
+    private final Map<String, Object> attributes;
+
+    private volatile transient String full;
+    private volatile transient String string;
+    private volatile transient String identity;
+    private volatile transient String parameter;
+
+    public ServiceConfigURL() {
+        this.attributes = null;
+    }
+
+    public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
+        super(urlAddress, urlParam);
+        this.attributes = (attributes != null ? attributes : new HashMap<>());
+    }
+
+    public ServiceConfigURL(String protocol,
+               String username,
+               String password,
+               String host,
+               int port,
+               String path,
+               Map<String, String> parameters) {
+        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), null);
+    }
+
+    public ServiceConfigURL(String protocol,
+                            String username,
+                            String password,
+                            String host,
+                            int port,
+                            String path,
+                            Map<String, String> parameters,
+                            Map<String, Object> attributes) {
+        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), attributes);
+    }
+
+    protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
+        return (T) new ServiceConfigURL(urlAddress, urlParam, attributes);
+    }
+
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    @Override
+    public URL addAttributes(Map<String, Object> attributes) {
+        Map<String, Object> newAttributes = new HashMap<>();
+        newAttributes.putAll(this.attributes);
+        newAttributes.putAll(attributes);
+
+        return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
+    }
+
+    public ServiceConfigURL putAttribute(String key, Object obj) {
+        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        newAttributes.put(key, obj);
+
+        return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
+    }
+
+    @Override
+    public URL removeAttribute(String key) {
+        Map<String, Object> newAttributes = new HashMap<>(attributes);
+        newAttributes.remove(key);
+
+        return new ServiceConfigURL(getUrlAddress(), getUrlParam(), newAttributes);
+    }
+
+    @Override
+    public boolean hasAttribute(String key) {
+        return getAttribute(key) != null;
+    }
+
+    @Override
+    public String toString() {
+        if (string != null) {
+            return string;
+        }
+        return string = super.toString();
+    }
+
+    @Override
+    public String toFullString() {
+        if (full != null) {
+            return full;
+        }
+        return full = super.toFullString();
+    }
+
+    @Override
+    public String toIdentityString() {
+        if (identity != null) {
+            return identity;
+        }
+        return identity = super.toIdentityString();
+    }
+
+    @Override
+    public String toParameterString() {
+        if (parameter != null) {
+            return parameter;
+        }
+        return parameter = super.toParameterString();
+    }
+}

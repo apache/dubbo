@@ -19,16 +19,33 @@ package org.apache.dubbo.registry.client.migration.model;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * # key = demo-consumer.migration
  * # group = DUBBO_SERVICEDISCOVERY_MIGRATION
  * # content
  * key: demo-consumer
  * step: APPLICATION_FIRST
+ * threshold: 1.0
+ * interfaces:
+ * - serviceKey: DemoService:1.0.0
+ * threshold: 1.0
+ * step: APPLICATION_FIRST
+ * - serviceKey: GreetingService:1.0.0
+ * step: FORCE_APPLICATION
  */
 public class MigrationRule {
     private String key;
     private MigrationStep step;
+    private Float threshold;
+    // FIXME
+    private List<String> targetIps;
+    private List<InterfaceMigrationRule> interfaces;
+
+    private transient Map<String, InterfaceMigrationRule> interfaceRules;
 
     public String getKey() {
         return key;
@@ -38,12 +55,69 @@ public class MigrationRule {
         this.key = key;
     }
 
+    public MigrationStep getStep(String serviceKey) {
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getStep() == null ? step : rule.getStep();
+            }
+        }
+        return step;
+    }
+
+    public InterfaceMigrationRule getInterfaceRule(String serviceKey) {
+        if (interfaceRules == null) {
+            return null;
+        }
+        return interfaceRules.get(serviceKey);
+    }
+
     public MigrationStep getStep() {
         return step;
     }
 
+    public Float getThreshold(String serviceKey) {
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getThreshold() == null ? threshold : rule.getThreshold();
+            }
+        }
+        return threshold;
+    }
+
+    public Float getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(Float threshold) {
+        this.threshold = threshold;
+    }
+
     public void setStep(MigrationStep step) {
         this.step = step;
+    }
+
+    public List<InterfaceMigrationRule> getInterfaces() {
+        return interfaces;
+    }
+
+    public List<String> getTargetIps() {
+        return targetIps;
+    }
+
+    public void setTargetIps(List<String> targetIps) {
+        this.targetIps = targetIps;
+    }
+
+    public void setInterfaces(List<InterfaceMigrationRule> interfaces) {
+        this.interfaces = interfaces;
+        if (interfaces != null) {
+            this.interfaceRules = new HashMap<>();
+            interfaces.forEach(rule -> {
+                interfaceRules.put(rule.getServiceKey(), rule);
+            });
+        }
     }
 
     public static MigrationRule parse(String rawRule) {

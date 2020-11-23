@@ -99,7 +99,7 @@ class CallbackServiceCodec {
         params.put(IS_SERVER_KEY, Boolean.FALSE.toString());
         // mark it's a callback, for troubleshooting
         params.put(IS_CALLBACK_SERVICE, Boolean.TRUE.toString());
-        String group = (url == null ? null : url.getParameter(GROUP_KEY));
+        String group = (url == null ? null : url.getGroup());
         if (group != null && group.length() > 0) {
             params.put(GROUP_KEY, group);
         }

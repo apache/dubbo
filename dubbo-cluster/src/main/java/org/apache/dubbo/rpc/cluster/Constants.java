@@ -99,4 +99,6 @@ public interface Constants {
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+
+    String CONSUMER_URL_KEY = "CONSUMER_URL";
 }

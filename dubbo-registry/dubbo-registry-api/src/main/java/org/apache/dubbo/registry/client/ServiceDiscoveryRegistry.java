@@ -60,7 +60,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
@@ -180,7 +179,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     protected boolean shouldRegister(URL providerURL) {
 
-        String side = providerURL.getParameter(SIDE_KEY);
+        String side = providerURL.getSide();
 
         boolean should = PROVIDER_SIDE.equals(side); // Only register the Provider.
 
@@ -379,10 +378,10 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         if (isEmpty(subscribedServices)) {
             Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener));
-            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by remote metadata center.");
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + mappedServices + " instructed by remote metadata center.");
             subscribedServices.addAll(mappedServices);
             if (isEmpty(subscribedServices)) {
-                logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " by default.");
+                logger.info(subscribedURL.getServiceInterface() + " mapping to " + getSubscribedServices() + " by default.");
                 subscribedServices.addAll(getSubscribedServices());
             }
         }
@@ -500,6 +499,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     private class DefaultMappingListener implements MappingListener {
+        private final Logger logger = LoggerFactory.getLogger(DefaultMappingListener.class);
         private URL url;
         private Set<String> oldApps;
         private NotifyListener listener;
@@ -512,6 +512,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         @Override
         public void onEvent(MappingChangedEvent event) {
+            logger.info("Received mapping notification from meta server, " +  event);
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
             oldApps = newApps;

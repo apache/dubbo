@@ -37,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
@@ -159,6 +160,8 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean registerConsumer;
 
     private String repository;
+
+    private Boolean enableFileCache;
 
     private Boolean publishInterface;
 
@@ -446,6 +449,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setRepository(String repository) {
         this.repository = repository;
+    }
+
+    @Parameter(key = REGISTRY_LOCAL_FILE_CACHE_ENABLED)
+    public Boolean getEnableFileCache() {
+        return enableFileCache;
+    }
+
+    public void setEnableFileCache(Boolean enableFileCache) {
+        this.enableFileCache = enableFileCache;
     }
 
     @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)

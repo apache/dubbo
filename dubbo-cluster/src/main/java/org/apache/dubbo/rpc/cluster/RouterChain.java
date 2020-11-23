@@ -83,6 +83,10 @@ public class RouterChain<T> {
         this.routers = newRouters;
     }
 
+    public List<Router> getRouters() {
+        return routers;
+    }
+
     private void sort() {
         Collections.sort(routers);
     }

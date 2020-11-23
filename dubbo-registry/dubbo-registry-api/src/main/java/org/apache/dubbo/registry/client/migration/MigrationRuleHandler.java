@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
@@ -33,27 +35,50 @@ public class MigrationRuleHandler<T> {
 
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
+    private Float currentThreshold = 0f;
+    private MigrationRule rule;
+    private URL consumerURL;
 
-    public MigrationRuleHandler(MigrationClusterInvoker<T> invoker) {
+    public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
+        this.consumerURL = url;
     }
 
     public void doMigrate(String rawRule) {
         MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
                 ? MigrationStep.FORCE_APPLICATION
                 : MigrationStep.INTERFACE_FIRST;
+        Float threshold = -1f;
         if (StringUtils.isEmpty(rawRule)) {
             logger.error("Find empty migration rule, will ignore.");
             return;
         } else if (INIT.equals(rawRule)) {
             step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
-            MigrationRule rule = MigrationRule.parse(rawRule);
-            step = rule.getStep();
+            try {
+                rule = MigrationRule.parse(rawRule);
+                // FIXME, consumerURL.getHost() might not exactly the ip expected.
+                if (CollectionUtils.isEmpty(rule.getTargetIps())) {
+                    setMigrationRule(rule);
+                    step = rule.getStep(consumerURL.getServiceKey());
+                    threshold = rule.getThreshold(consumerURL.getServiceKey());
+                } else {
+                    if (rule.getTargetIps().contains(consumerURL.getHost())) {
+                        setMigrationRule(rule);
+                        step = rule.getStep(consumerURL.getServiceKey());
+                        threshold = rule.getThreshold(consumerURL.getServiceKey());
+                    } else {
+                        setMigrationRule(null); // clear previous rule
+                        logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Parse migration rule error, will use default step " + step, e);
+            }
         }
 
-        if (currentStep == null || currentStep != step) {
-            setCurrentStep(step);
+        if ((currentStep == null || currentStep != step) || (!currentThreshold.equals(threshold))) {
+            setCurrentStepAndThreshold(step, threshold);
             switch (step) {
                 case APPLICATION_FIRST:
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
@@ -68,8 +93,17 @@ public class MigrationRuleHandler<T> {
         }
     }
 
-    public void setCurrentStep(MigrationStep currentStep) {
-        this.currentStep = currentStep;
-        this.migrationInvoker.setMigrationStep(currentStep);
+    public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
+        if (currentThreshold != null) {
+            this.currentThreshold = currentThreshold;
+        }
+        if (currentStep != null) {
+            this.currentStep = currentStep;
+            this.migrationInvoker.setMigrationStep(currentStep);
+        }
+    }
+
+    public void setMigrationRule(MigrationRule rule) {
+        this.migrationInvoker.setMigrationRule(rule);
     }
 }

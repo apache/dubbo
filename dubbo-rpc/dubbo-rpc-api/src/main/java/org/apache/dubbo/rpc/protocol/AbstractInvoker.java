@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This Invoker works on Consumer side.
@@ -59,7 +58,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     private volatile boolean available = true;
 
-    private AtomicBoolean destroyed = new AtomicBoolean(false);
+    private boolean destroyed = false;
 
     public AbstractInvoker(Class<T> type, URL url) {
         this(type, url, (Map<String, Object>) null);
@@ -116,14 +115,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
     @Override
     public void destroy() {
-        if (!destroyed.compareAndSet(false, true)) {
-            return;
-        }
+        this.destroyed = true;
         setAvailable(false);
     }
 
     public boolean isDestroyed() {
-        return destroyed.get();
+        return destroyed;
     }
 
     @Override
@@ -134,7 +131,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
     @Override
     public Result invoke(Invocation inv) throws RpcException {
         // if invoker is destroyed due to address refresh from registry, let's allow the current invoke to proceed
-        if (destroyed.get()) {
+        if (isDestroyed()) {
             logger.warn("Invoker for service " + this + " on consumer " + NetUtils.getLocalHost() + " is destroyed, "
                     + ", dubbo version is " + Version.getVersion() + ", this invoker should not be used any longer");
         }
