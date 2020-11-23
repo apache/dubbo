@@ -1059,7 +1059,7 @@ public class DubboBootstrap extends GenericEventListener {
             /**
              * 导出服务
              * 1、将导出的服务启动，供消费者访问
-             * 2、非服务自省：将服务注册到注册中心  服务自省：将服务信息缓存到本地
+             * 2、非服务自省：将服务注册到注册中心  服务自省：将服务信息缓存到本地（本地元数据中心）
              * 3、将导出服务信息配置写到配置中心
              */
             exportServices();
@@ -1070,10 +1070,16 @@ public class DubboBootstrap extends GenericEventListener {
              */
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
-                //启动元数据服务并向配置中心写入信息
+                /**
+                 * 启动元数据服务
+                 * 向本地元数据中心注册元数据服务
+                 * 不写入配置中心
+                 */
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
-                //注册本地服务实例
+                /**
+                 * 注册本地服务实例
+                 */
                 registerServiceInstance();
             }
 

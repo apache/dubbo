@@ -58,7 +58,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     public void map(URL exportedURL) {
         //org.apache.dubbo.demo.GreetingService
         String serviceInterface = exportedURL.getServiceInterface();
-
+        // 过滤MetadataService
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }

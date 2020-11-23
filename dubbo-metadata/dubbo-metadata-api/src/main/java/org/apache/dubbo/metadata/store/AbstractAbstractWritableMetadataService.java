@@ -53,7 +53,9 @@ public abstract class AbstractAbstractWritableMetadataService implements Writabl
      */
     @Override
     public void publishServiceDefinition(URL url) {
-        // 过滤MetadataService
+        /**
+         * 过滤MetadataService
+         */
         if (SERVICE_INTERFACE_NAME.equals(url.getServiceInterface())) { // Ignore the interface "MetadataService"
             return;
         }

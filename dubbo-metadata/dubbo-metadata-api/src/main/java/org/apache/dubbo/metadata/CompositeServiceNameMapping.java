@@ -95,7 +95,7 @@ public class CompositeServiceNameMapping implements ServiceNameMapping {
          */
         List<ServiceNameMapping> serviceNameMappings = getServiceNameMappings();
         /**
-         * 向nacos写入配置   DynamicConfigurationServiceNameMapping
+         * 向nacos写入配置   DynamicConfigurationServiceNameMapping   其他没有继承ReadOnlyServiceNameMapping   map方法没有内容
          */
         serviceNameMappings.forEach(serviceNameMapping -> serviceNameMapping.map(exportedURL));
     }
