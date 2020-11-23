@@ -48,7 +48,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private volatile String rawRule;
 
     public MigrationRuleListener() {
-        this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElseGet(null);
+        this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
 
         logger.info("Listening for migration rules on dataId-" + RULE_KEY + " group-" + DUBBO_SERVICEDISCOVERY_MIGRATION);
         configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
