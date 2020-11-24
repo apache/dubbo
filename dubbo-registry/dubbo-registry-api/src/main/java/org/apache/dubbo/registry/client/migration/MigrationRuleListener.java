@@ -57,6 +57,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             if (StringUtils.isEmpty(rawRule)) {
                 rawRule = INIT;
             }
+            this.rawRule = rawRule;
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("Using default configuration rule because config center is not configured!");
