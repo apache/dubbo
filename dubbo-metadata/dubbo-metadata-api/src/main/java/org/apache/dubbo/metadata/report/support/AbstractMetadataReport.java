@@ -402,6 +402,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         if (syncReport) {
             doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls));
         } else {
+            // ConfigCenterBasedMetadataReport
             reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls)));
         }
     }

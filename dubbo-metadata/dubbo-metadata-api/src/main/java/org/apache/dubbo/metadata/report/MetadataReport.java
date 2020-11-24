@@ -113,7 +113,7 @@ public interface MetadataReport extends AutoCloseable {
         Gson gson = new Gson();
         String content = gson.toJson(exportedURLs);
         /**
-         *
+         * ConfigCenterBasedMetadataReport
          */
         return saveExportedURLs(serviceName, exportedServicesRevision, content);
     }

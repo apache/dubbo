@@ -51,11 +51,17 @@ public class RemoteMetadataServiceExporter extends AbstractMetadataServiceExport
         WritableMetadataService metadataServiceDelegate = WritableMetadataService.getDefaultExtension();
 
         /**
-         * 向配置中心写入本地元数据中心中  对外暴露的服务hashcode
+         * 向配置中心写入本地元数据中心中  对外暴露的服务url集合
+         * exported-urls:dubbo-demo-annotation-provider:3b46c4664c6d5a
+         * 其中3b46c4664c6d5a为导出服务url得hashcode
+         * 对应配置中心得内容为导出服务的url列表
          */
         if (publishServiceMetadata(metadataServiceDelegate)) {
             /**
-             * 向配置中心写入本地元数据中心中  订阅的服务hashcode
+             * 向配置中心写入本地元数据中心中  订阅的服务url集合
+             * dubbo-nacos-provider-demo:X
+             * 其中X为订阅服务url对应的hashcode【当前没有订阅服务所以为X】
+             * 对应配置中心得内容为订阅服务的url列表
              */
             publicConsumerMetadata(metadataServiceDelegate);
         }
@@ -69,7 +75,7 @@ public class RemoteMetadataServiceExporter extends AbstractMetadataServiceExport
     private boolean publishServiceMetadata(WritableMetadataService metadataServiceDelegate) {
         String serviceName = metadataServiceDelegate.serviceName();
         /**
-         * 本地元数据中心   对外暴露的服务
+         * 本地元数据中心   对外暴露的服务  不包含元数据服务
          */
         SortedSet<String> exportedURLs = metadataServiceDelegate.getExportedURLs();
         // 计算hashcode
@@ -92,7 +98,7 @@ public class RemoteMetadataServiceExporter extends AbstractMetadataServiceExport
 
         // 计算hashcode
         String revision = urlRevisionResolver.resolve(subscribedURLs);
-        // 写入配置中心
+        // 写入配置中心  AbstractMetadataReport
         getMetadataReport().saveSubscribedData(new SubscriberMetadataIdentifier(serviceName, revision), subscribedURLs);
         return true;
     }

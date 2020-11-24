@@ -1073,7 +1073,7 @@ public class DubboBootstrap extends GenericEventListener {
                 /**
                  * 启动元数据服务
                  * 向本地元数据中心注册元数据服务
-                 * 不写入配置中心
+                 * 向配置中心写入导出服务url集合与订阅服务url集合[X为url列表为空]
                  */
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
@@ -1276,9 +1276,12 @@ public class DubboBootstrap extends GenericEventListener {
          *      启动元数据服务以供服务消费者调用  但不向注册中心和配置中心写入信息
          * RemoteMetadataServiceExporter
          *      向配置中心写入导出的服务以及订阅的服务配置信息
+         *      导出服务url集合：exported-urls:dubbo-nacos-provider-demo:1c4d10cf00f5e9dc
+         *      订阅服务url集合：dubbo-nacos-provider-demo:X【x为当前没有订阅服务】
          */
         metadataServiceExporters
                 .stream()
+                // 过滤
                 .filter(this::supports)
                 .forEach(MetadataServiceExporter::export);
     }
@@ -1410,7 +1413,7 @@ public class DubboBootstrap extends GenericEventListener {
         String serviceName = application.getName();
 
         /**
-         * 获取本地元数据中心中缓存的一个url（rest协议优先，没有则选取最后一个）
+         * 获取本地元数据中心中缓存的一个待导出服务得url（rest协议优先，没有则选取最后一个）
          */
         URL exportedURL = selectMetadataServiceExportedURL();
 
@@ -1440,7 +1443,7 @@ public class DubboBootstrap extends GenericEventListener {
         preRegisterServiceInstance(serviceInstance);
 
         /**
-         * 向注册中心注册serviceInstance
+         * 向注册中心注册serviceInstance   EventPublishingServiceDiscovery
          */
         getServiceDiscoveries().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
@@ -1496,7 +1499,7 @@ public class DubboBootstrap extends GenericEventListener {
             if (MetadataService.class.getName().equals(url.getServiceInterface())) {
                 continue;
             }
-            // rest协议则命中且退出玄幻
+            // rest协议则命中且退出
             if ("rest".equals(url.getProtocol())) { // REST first
                 selectedURL = url;
                 break;
