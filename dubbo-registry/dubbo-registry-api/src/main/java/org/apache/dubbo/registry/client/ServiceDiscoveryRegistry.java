@@ -348,7 +348,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
         writableMetadataService.subscribeURL(url);
 
         /**
-         * 获取url对应的服务提供者对应的serviceNames
+         * 获取服务消费者url对应的服务提供者所在的serviceNames
          */
         Set<String> serviceNames = getServices(url);
 
@@ -434,7 +434,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
     protected void subscribeURLs(URL url, List<URL> subscribedURLs, String serviceName) {
         /**
          * EventPublishingServiceDiscovery
-         * 获取serviceName对应的服务实例
+         * 在注册中心获取serviceName对应的服务实例
          */
         List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
         /**
@@ -656,7 +656,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
                 .collect(Collectors.toSet());
         // staleRevisions = existedRevisions(copy) - currentRevisions
         Set<String> staleRevisions = new HashSet<>(existedRevisions);
-        // 移除现有的Revisions  即剩下的都是过期的或已失效的Revisions
+        // 移除现有（注册中心获取）的Revisions  即剩下的都是过期的或已失效的Revisions
         staleRevisions.removeAll(currentRevisions);
         // remove exported URLs if staled
         // 在缓存中移除对应的Revisions
