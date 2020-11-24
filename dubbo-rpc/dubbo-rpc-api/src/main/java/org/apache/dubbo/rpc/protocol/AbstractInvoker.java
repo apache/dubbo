@@ -26,6 +26,8 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
@@ -41,7 +43,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This Invoker works on Consumer side.
@@ -178,7 +182,39 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
         RpcContext.getContext().setFuture(new FutureAdapter(asyncResult.getResponseFuture()));
+
+        waitForResultIfSync(asyncResult, invocation);
         return asyncResult;
+    }
+
+    private void waitForResultIfSync(AsyncRpcResult asyncResult, RpcInvocation invocation) {
+        try {
+            if (InvokeMode.SYNC == invocation.getInvokeMode()) {
+                /**
+                 * NOTICE!
+                 * must call {@link java.util.concurrent.CompletableFuture#get(long, TimeUnit)} because
+                 * {@link java.util.concurrent.CompletableFuture#get()} was proved to have serious performance drop.
+                 */
+                asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
+            }
+        } catch (InterruptedException e) {
+            throw new RpcException("Interrupted unexpectedly while waiting for remote result to return!  method: " +
+                    invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            if (t instanceof TimeoutException) {
+                throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else if (t instanceof RemotingException) {
+                throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            } else {
+                throw new RpcException(RpcException.UNKNOWN_EXCEPTION, "Fail to invoke remote method: " +
+                        invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            }
+        } catch (Throwable e) {
+            throw new RpcException(e.getMessage(), e);
+        }
     }
 
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
