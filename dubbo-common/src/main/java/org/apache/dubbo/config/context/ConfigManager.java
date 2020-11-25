@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.Logger;
@@ -78,7 +77,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public ConfigManager() {
         try {
-            String rawWarn = ConfigurationUtils.getProperty("dubbo.application.config.warn", null);
+            String rawWarn = System.getProperty("dubbo.application.config.warn");
             if (rawWarn != null) {
                 configWarnLogEnabled = Boolean.parseBoolean(rawWarn);
             }
