@@ -362,6 +362,9 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
             subscribeURLs(url, subscribedURLs, serviceName);
 
             // register ServiceInstancesChangedListener
+            /**
+             * 添加监听
+             */
             registerServiceInstancesChangedListener(url, new ServiceInstancesChangedListener(serviceName) {
 
                 @Override
@@ -490,8 +493,7 @@ public class ServiceDiscoveryRegistry extends FailbackRegistry {
          * Add the exported URLs from {@link MetadataService}
          *
          * getExportedURLs
-         * 获取服务消费端对应得服务提供端服务得url列表
-         * 从注册中心中获取服务消费端得元数据服务   获取对应得服务提供端暴露服务得url列表
+         * 从注册中心中获取服务消费端得元数据服务   访问元数据服务    获取服务提供端真正暴露服务得url列表
          */
         subscribedURLs.addAll(getExportedURLs(subscribedURL, serviceInstances));
 

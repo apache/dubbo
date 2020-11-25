@@ -604,11 +604,14 @@ public class RegistryProtocol implements Protocol {
         directory.buildRouterChain(subscribeUrl);
         /**
          * 非服务自省
-         * 1、启动服务消费者
-         * 2、从注册中心获取对应服务生产者实例  并创建对应的invoker（一个invoker=一个连接client=一个url）
-         * 3、订阅服务生产者实例  随时更新invoker列表
+         * 1、从注册中心获取对应服务生产者实例
+         * 2、创建对应的invoker并缓存（一个invoker=一个连接client=一个url）
+         * 3、订阅注册中心服务提供者实例  如有变动则重复1-2操作
          * 服务自省
-         *
+         * 1、访问注册中心获取服务提供端的元数据服务url
+         * 2、访问元数据服务获取服务提供端真正对外暴露的服务
+         * 3、创建对应的invoker并缓存
+         * 4、订阅注册中心服务提供者实例（实为元数据服务）   如有变动则重复1-3操作
          */
         directory.subscribe(toSubscribeUrl(subscribeUrl));
 
