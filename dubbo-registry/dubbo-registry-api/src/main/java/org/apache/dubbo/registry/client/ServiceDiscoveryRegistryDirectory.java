@@ -105,35 +105,34 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             this.invokers = Collections.emptyList();
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
-            return;
-        }
+        } else {
+            this.forbidden = false; // Allow to access
+            Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
+            if (CollectionUtils.isEmpty(invokerUrls)) {
+                return;
+            }
 
-        this.forbidden = false; // Allow to access
-        Map<String, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
-        if (CollectionUtils.isEmpty(invokerUrls)) {
-            return;
-        }
+            Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
+            logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
 
-        Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
-        logger.info("Refreshed invoker size " + newUrlInvokerMap.size());
+            if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
+                logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
+                return;
+            }
 
-        if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
-            logger.error(new IllegalStateException("Cannot create invokers from url address list (total " + invokerUrls.size() + ")"));
-            return;
-        }
+            List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
+            // pre-route and build cache, notice that route cache should build on original Invoker list.
+            // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
+            routerChain.setInvokers(newInvokers);
+            this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+            this.urlInvokerMap = newUrlInvokerMap;
 
-        List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
-        // pre-route and build cache, notice that route cache should build on original Invoker list.
-        // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
-        routerChain.setInvokers(newInvokers);
-        this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
-        this.urlInvokerMap = newUrlInvokerMap;
-
-        if (oldUrlInvokerMap != null) {
-            try {
-                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-            } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
+            if (oldUrlInvokerMap != null) {
+                try {
+                    destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
+                } catch (Exception e) {
+                    logger.warn("destroyUnusedInvokers error. ", e);
+                }
             }
         }
 
