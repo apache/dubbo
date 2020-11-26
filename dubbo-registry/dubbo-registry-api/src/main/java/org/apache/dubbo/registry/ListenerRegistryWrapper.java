@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.UrlUtils;
 
 import java.util.List;
 
@@ -56,7 +57,7 @@ public class ListenerRegistryWrapper implements Registry {
         try {
             registry.register(url);
         } finally {
-            if (CollectionUtils.isNotEmpty(listeners)) {
+            if (CollectionUtils.isNotEmpty(listeners) && !UrlUtils.isConsumer(url)) {
                 RuntimeException exception = null;
                 for (RegistryServiceListener listener : listeners) {
                     if (listener != null) {
@@ -80,7 +81,7 @@ public class ListenerRegistryWrapper implements Registry {
         try {
             registry.unregister(url);
         } finally {
-            if (CollectionUtils.isNotEmpty(listeners)) {
+            if (CollectionUtils.isNotEmpty(listeners) && !UrlUtils.isConsumer(url)) {
                 RuntimeException exception = null;
                 for (RegistryServiceListener listener : listeners) {
                     if (listener != null) {

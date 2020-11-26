@@ -288,8 +288,10 @@ public class ServiceDiscoveryRegistry implements Registry {
         writableMetadataService.unsubscribeURL(url);
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
         String serviceNamesKey = serviceToAppsMapping.remove(protocolServiceKey);
-        ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
-        instancesChangedListener.removeListener(protocolServiceKey);
+        if (serviceNamesKey != null) {
+            ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+            instancesChangedListener.removeListener(protocolServiceKey);
+        }
     }
 
     @Override

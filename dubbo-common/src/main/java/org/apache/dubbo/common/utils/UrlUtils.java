@@ -654,4 +654,8 @@ public class UrlUtils {
         return new URL(protocol, username, password, host, port, path, parameters);
     }
 
+    public static boolean isConsumer(URL url) {
+        return url.getProtocol().equalsIgnoreCase("consumer") || url.getPort() == 0;
+    }
+
 }
