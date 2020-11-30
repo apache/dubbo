@@ -35,8 +35,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.*;
 
 /**
  * dubbo protocol support class.
@@ -57,7 +56,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     /**
      * lazy connect, initial state for connection
      */
-    private final boolean initialState;
+    private final boolean initialConnectState;
+    private final boolean initialCloseState;
     private volatile ExchangeClient client;
     private AtomicLong warningcount = new AtomicLong(0);
 
@@ -65,7 +65,8 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         // lazy connect, need set send.reconnect = true, to avoid channel bad status.
         this.url = url.addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
-        this.initialState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
+        this.initialConnectState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
+        this.initialCloseState = url.getParameter(LAZY_CLOSE_INITIAL_STATE_KEY, DEFAULT_LAZY_CLOSE_INITIAL_STATE);
         this.requestWithWarning = url.getParameter(REQUEST_WITH_WARNING_KEY, false);
     }
 
@@ -150,7 +151,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     @Override
     public boolean isConnected() {
         if (client == null) {
-            return initialState;
+            return initialConnectState;
         } else {
             return client.isConnected();
         }
@@ -184,10 +185,10 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public boolean isClosed() {
-        if (client != null) {
-            return client.isClosed();
+        if (client == null) {
+            return initialCloseState;
         } else {
-            return false;
+            return client.isClosed();
         }
     }
 
