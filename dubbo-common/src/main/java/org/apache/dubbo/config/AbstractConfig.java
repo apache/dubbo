@@ -519,7 +519,7 @@ public abstract class AbstractConfig implements Serializable {
                             buf.append(" ");
                             buf.append(key);
                             buf.append("=\"");
-                            buf.append(key == "password" ? "******" : value);
+                            buf.append(key.equals("password") ? "******" : value);
                             buf.append("\"");
                         }
                     }
