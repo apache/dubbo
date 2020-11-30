@@ -571,7 +571,7 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     private String getServiceName(URL url) {
-        return getServiceName(url, url.getParameter(CATEGORY_KEY, DEFAULT_CATEGORY));
+        return createServiceName(url).toString();
     }
 
     private String getServiceName(URL url, String category) {
