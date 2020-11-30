@@ -20,19 +20,15 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.protocol.dubbo.FutureAdapter;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
 import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
@@ -53,64 +49,196 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     @Override
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public Result doInvoke(Invocation invocation, final List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-        List<Invoker<T>> copyInvokers = invokers;
-        checkInvokers(copyInvokers, invocation);
         String methodName = RpcUtils.getMethodName(invocation);
-        int len = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;
-        if (len <= 0) {
-            len = 1;
+        int maxInvokeCount = getUrl().getMethodParameter(methodName, RETRIES_KEY, DEFAULT_RETRIES) + 1;
+        if (maxInvokeCount <= 0) {
+            maxInvokeCount = 1;
         }
-        // retry loop.
-        RpcException le = null; // last exception.
-        List<Invoker<T>> invoked = new ArrayList<Invoker<T>>(copyInvokers.size()); // invoked invokers.
-        Set<String> providers = new HashSet<String>(len);
-        for (int i = 0; i < len; i++) {
-            //Reselect before retry to avoid a change of candidate `invokers`.
-            //NOTE: if `invokers` changed, then `invoked` also lose accuracy.
-            if (i > 0) {
-                checkWhetherDestroyed();
-                copyInvokers = list(invocation);
-                // check again
-                checkInvokers(copyInvokers, invocation);
+
+        FailoverInvoker failoverInvoker = new FailoverInvoker(invocation, loadbalance, maxInvokeCount);
+        AsyncRpcResult result = failoverInvoker.invoke(invokers);
+        FutureContext.getContext().setCompatibleFuture(result.getResponseFuture());
+        RpcContext.getContext().setFuture(new FutureAdapter(result.getResponseFuture()));
+        if (isSyncInvocation(invocation)) {
+            RpcException rpcException = getRpcException(result, null);
+            if (rpcException != null) {
+                throw rpcException;
             }
-            Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
+        }
+        return result;
+    }
+
+    private class FailoverInvoker {
+
+        private final Invocation invocation;
+
+        private final LoadBalance loadbalance;
+
+        private final int maxInvokeCount;
+
+        private final Set<String> providers;
+
+        private final AsyncRpcResult returnResult;
+
+        private final CompletableFuture<AppResponse> responseFuture;
+
+        private final List<Invoker<T>> invoked = new ArrayList<>();
+
+        private RpcException lastException = null;
+
+        private Map<String, Object> objectAttachments = null;
+
+        public FailoverInvoker(Invocation invocation, LoadBalance loadbalance, int maxInvokeCount) {
+            this.invocation = invocation;
+            this.loadbalance = loadbalance;
+            this.maxInvokeCount = maxInvokeCount;
+            this.providers = new HashSet<>(maxInvokeCount);
+            this.responseFuture = new CompletableFuture<>();
+            this.returnResult = new AsyncRpcResult(responseFuture, invocation);
+        }
+
+        public AsyncRpcResult invoke(List<Invoker<T>> invokers) {
+            doInvoke(invokers, maxInvokeCount);
+            return returnResult;
+        }
+
+        private void resumeContext(AsyncRpcResult result) {
+            result.setStoredContext(RpcContext.getContext());
+            result.setStoredServerContext(RpcContext.getServerContext());
+            if (objectAttachments != null) {
+                result.setObjectAttachments(objectAttachments);
+            }
+        }
+
+        private void setResultValue(Object value) {
+            resumeContext(returnResult);
+            AppResponse appResponse = new AppResponse();
+            appResponse.setValue(value);
+            responseFuture.complete(appResponse);
+        }
+
+        private void setResultException(RpcException e) {
+            resumeContext(returnResult);
+            AppResponse appResponse = new AppResponse();
+            appResponse.setException(e);
+            responseFuture.complete(appResponse);
+        }
+
+        @SuppressWarnings({"unchecked"})
+        private void doInvoke(List<Invoker<T>> invokers, int remainingCount) {
+            Invoker<T> invoker;
+            try {
+                checkInvokers(invokers, invocation);
+                invoker = select(loadbalance, invocation, invokers, invoked);
+            } catch (RpcException e) {
+                setResultException(e);
+                return;
+            } catch (Throwable t) {
+                setResultException(new RpcException(t.getMessage(), t));
+                return;
+            }
+
             invoked.add(invoker);
             RpcContext.getContext().setInvokers((List) invoked);
+
+            Result result = realInvoke(invoker, invocation);
+            result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
+                @Override
+                public void accept(Result result, Throwable throwable) {
+                    objectAttachments = result == null ? null : result.getObjectAttachments();
+                    RpcException exception = getRpcException(result, throwable);
+
+                    if (exception == null) {
+                        setResultValue(result.getValue());
+                        recordFailover(invoker, invokers);
+                        return;
+                    }
+
+                    if (exception.isBiz()) {
+                        setResultException(exception);
+                        return;
+                    }
+
+                    lastException = exception;
+
+                    if (remainingCount > 1) {
+                        List<Invoker<T>> nextInvokers;
+                        try {
+                            checkWhetherDestroyed();
+                            nextInvokers = list(invocation);
+                        } catch (RpcException e) {
+                            setResultException(e);
+                            return;
+                        } catch (Throwable t) {
+                            setResultException(new RpcException(t.getMessage(), t));
+                            return;
+                        }
+
+                        doInvoke(nextInvokers, remainingCount - 1);
+                    } else {
+                        setResultException(generateFailException(invokers));
+                    }
+                }
+            });
+        }
+
+        private RpcException generateFailException(List<Invoker<T>> invokers) {
+            return new RpcException(lastException.getCode(), "Failed to invoke the method "
+                    + RpcUtils.getMethodName(invocation) + " in the service " + getInterface().getName()
+                    + ". Tried " + maxInvokeCount + " times of the providers " + providers
+                    + " (" + providers.size() + "/" + invokers.size()
+                    + ") from the registry " + directory.getUrl().getAddress()
+                    + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
+                    + Version.getVersion() + ". Last error is: "
+                    + lastException.getMessage(), lastException.getCause() != null ? lastException.getCause() : lastException);
+        }
+
+        private void recordFailover(Invoker<T> invoker, List<Invoker<T>> invokers) {
+            if (lastException != null && logger.isWarnEnabled()) {
+                logger.warn("Although retry the method " + RpcUtils.getMethodName(invocation)
+                        + " in the service " + getInterface().getName()
+                        + " was successful by the provider " + invoker.getUrl().getAddress()
+                        + ", but there have been failed providers " + providers
+                        + " (" + providers.size() + "/" + invokers.size()
+                        + ") from the registry " + directory.getUrl().getAddress()
+                        + " on the consumer " + NetUtils.getLocalHost()
+                        + " using the dubbo version " + Version.getVersion() + ". Last error is: "
+                        + lastException.getMessage(), lastException);
+            }
+        }
+
+        private Result realInvoke(Invoker<T> invoker, Invocation invocation) {
             try {
-                Result result = invoker.invoke(invocation);
-                if (le != null && logger.isWarnEnabled()) {
-                    logger.warn("Although retry the method " + methodName
-                            + " in the service " + getInterface().getName()
-                            + " was successful by the provider " + invoker.getUrl().getAddress()
-                            + ", but there have been failed providers " + providers
-                            + " (" + providers.size() + "/" + copyInvokers.size()
-                            + ") from the registry " + directory.getUrl().getAddress()
-                            + " on the consumer " + NetUtils.getLocalHost()
-                            + " using the dubbo version " + Version.getVersion() + ". Last error is: "
-                            + le.getMessage(), le);
-                }
-                return result;
-            } catch (RpcException e) {
-                if (e.isBiz()) { // biz exception.
-                    throw e;
-                }
-                le = e;
+                return invoker.invoke(invocation);
             } catch (Throwable e) {
-                le = new RpcException(e.getMessage(), e);
+                AsyncRpcResult result = new AsyncRpcResult(new CompletableFuture<>(), invocation);
+                result.setException(e);
+                return result;
             } finally {
                 providers.add(invoker.getUrl().getAddress());
             }
         }
-        throw new RpcException(le.getCode(), "Failed to invoke the method "
-                + methodName + " in the service " + getInterface().getName()
-                + ". Tried " + len + " times of the providers " + providers
-                + " (" + providers.size() + "/" + copyInvokers.size()
-                + ") from the registry " + directory.getUrl().getAddress()
-                + " on the consumer " + NetUtils.getLocalHost() + " using the dubbo version "
-                + Version.getVersion() + ". Last error is: "
-                + le.getMessage(), le.getCause() != null ? le.getCause() : le);
     }
 
+    private boolean isSyncInvocation(Invocation invocation) {
+        return InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode();
+    }
+
+    private RpcException getRpcException(Result result, Throwable throwable) {
+        Throwable exception = null;
+        if (throwable != null) {
+            exception = throwable;
+        } else if (result.hasException()) {
+            exception = result.getException();
+        }
+
+        if (exception == null) {
+            return null;
+        } else if (exception instanceof RpcException) {
+            return (RpcException) exception;
+        } else {
+            return new RpcException(exception.getMessage(), exception);
+        }
+    }
 }

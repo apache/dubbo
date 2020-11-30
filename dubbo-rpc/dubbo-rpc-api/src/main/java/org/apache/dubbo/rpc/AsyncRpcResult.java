@@ -280,6 +280,14 @@ public class AsyncRpcResult implements Result {
         this.executor = executor;
     }
 
+    public void setStoredContext(RpcContext context) {
+        this.storedContext = context;
+    }
+
+    public void setStoredServerContext(RpcContext serverContext) {
+        this.storedServerContext = serverContext;
+    }
+
     /**
      * tmp context to use when the thread switch to Dubbo thread.
      */
