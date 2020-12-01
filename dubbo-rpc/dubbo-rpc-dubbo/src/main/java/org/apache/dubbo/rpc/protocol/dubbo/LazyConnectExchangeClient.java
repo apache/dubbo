@@ -57,7 +57,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      * lazy connect, initial state for connection
      */
     private final boolean initialConnectState;
-    private final boolean initialCloseState;
+    private final Boolean closeState;
     private volatile ExchangeClient client;
     private AtomicLong warningcount = new AtomicLong(0);
 
@@ -66,7 +66,11 @@ final class LazyConnectExchangeClient implements ExchangeClient {
         this.url = url.addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         this.requestHandler = requestHandler;
         this.initialConnectState = url.getParameter(LAZY_CONNECT_INITIAL_STATE_KEY, DEFAULT_LAZY_CONNECT_INITIAL_STATE);
-        this.initialCloseState = url.getParameter(LAZY_CLOSE_INITIAL_STATE_KEY, DEFAULT_LAZY_CLOSE_INITIAL_STATE);
+        if (url.hasParameter(LAZY_CLOSE_STATE_KEY)) {
+            this.closeState = Boolean.parseBoolean(url.getParameter(LAZY_CLOSE_STATE_KEY));
+        } else {
+            this.closeState = null;
+        }
         this.requestWithWarning = url.getParameter(REQUEST_WITH_WARNING_KEY, false);
     }
 
@@ -185,8 +189,12 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public boolean isClosed() {
+        if (closeState != null) {
+            return closeState;
+        }
+
         if (client == null) {
-            return initialCloseState;
+            return false;
         } else {
             return client.isClosed();
         }

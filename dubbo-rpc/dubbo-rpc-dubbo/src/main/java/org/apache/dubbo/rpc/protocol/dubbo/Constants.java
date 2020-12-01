@@ -61,16 +61,9 @@ public interface Constants {
     boolean DEFAULT_LAZY_CONNECT_INITIAL_STATE = true;
 
     /**
-     * The initial close state for lazy connection
+     * The close state for lazy connection
      */
-    String LAZY_CLOSE_INITIAL_STATE_KEY = "close.lazy.initial.state";
-
-    /**
-     * The default value of lazy connection's initial close state: false
-     *
-     * @see #LAZY_CLOSE_INITIAL_STATE_KEY
-     */
-    boolean DEFAULT_LAZY_CLOSE_INITIAL_STATE = false;
+    String LAZY_CLOSE_STATE_KEY = "close.lazy.state";
 
     String OPTIMIZER_KEY = "optimizer";
 
