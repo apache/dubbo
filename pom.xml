@@ -196,6 +196,11 @@
             <version>${cglib_version}</version>
             <scope>test</scope>
         </dependency>
+<dependency>
+    <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+    <artifactId>concurrentlinkedhashmap-lru</artifactId>
+    <version>1.4.2</version>
+</dependency>
     </dependencies>
 
     <profiles>
@@ -691,3 +696,4 @@
         </pluginManagement>
     </build>
 </project>
+

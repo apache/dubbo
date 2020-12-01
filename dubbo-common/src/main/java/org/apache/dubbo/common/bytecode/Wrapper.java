@@ -31,12 +31,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 
 /**
  * Wrapper.
  */
 public abstract class Wrapper {
-    private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentHashMap<Class<?>, Wrapper>(); //class wrapper map
+    private static final Map<Class<?>, Wrapper> WRAPPER_MAP = new ConcurrentLinkedHashMap.Builder<Class<?>, Wrapper>().maximumWeightedCapacity(1000).build(); //class wrapper map
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final String[] OBJECT_METHODS = new String[]{"getClass", "hashCode", "toString", "equals"};
     private static final Wrapper OBJECT_WRAPPER = new Wrapper() {

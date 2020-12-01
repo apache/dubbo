@@ -72,6 +72,11 @@
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
         </dependency>
+<dependency>
+    <groupId>com.googlecode.concurrentlinkedhashmap</groupId>
+    <artifactId>concurrentlinkedhashmap-lru</artifactId>
+    <version>1.4.2</version>
+</dependency>
     </dependencies>
-
 </project>
+
