@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
+import org.apache.dubbo.metadata.definition.util.ClassUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +28,25 @@ import java.util.Objects;
  */
 public class ServiceDefinition implements Serializable {
 
+    /**
+     * the canonical name of interface
+     *
+     * @see Class#getCanonicalName()
+     */
     private String canonicalName;
+
+    /**
+     * the location of class file
+     *
+     * @see ClassUtils#getCodeSource(Class)
+     */
     private String codeSource;
+
     private List<MethodDefinition> methods;
+
+    /**
+     * the definitions of type
+     */
     private List<TypeDefinition> types;
 
     public String getCanonicalName() {

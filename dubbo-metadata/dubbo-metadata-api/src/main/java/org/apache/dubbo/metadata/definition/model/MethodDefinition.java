@@ -30,6 +30,12 @@ public class MethodDefinition implements Serializable {
     private String name;
     private String[] parameterTypes;
     private String returnType;
+
+    /**
+     * @deprecated please use parameterTypes,
+     * and find TypeDefinition in org.apache.dubbo.metadata.definition.model.ServiceDefinition#types
+     */
+    @Deprecated
     private List<TypeDefinition> parameters;
 
     public String getName() {
@@ -84,14 +90,11 @@ public class MethodDefinition implements Serializable {
         MethodDefinition that = (MethodDefinition) o;
         return Objects.equals(getName(), that.getName()) &&
                 Arrays.equals(getParameterTypes(), that.getParameterTypes()) &&
-                Objects.equals(getReturnType(), that.getReturnType()) &&
-                Objects.equals(getParameters(), that.getParameters());
+                Objects.equals(getReturnType(), that.getReturnType());
     }
 
     @Override
     public int hashCode() {
-        int result = Objects.hash(getName(), getReturnType(), getParameters());
-        result = 31 * result + Arrays.hashCode(getParameterTypes());
-        return result;
+        return Objects.hash(getName(), getReturnType(), getParameterTypes());
     }
 }

@@ -106,7 +106,7 @@ public class GenericServiceTest {
 
         FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(DemoService.class);
         MethodDefinition methodDefinition = getMethod("complexCompute", fullServiceDefinition.getMethods());
-        Map mapObject = createComplexObject(fullServiceDefinition,var1, var2, l, var3, var4, testEnum);
+        Map mapObject = createComplexObject(fullServiceDefinition, var1, var2, l, var3, var4, testEnum);
         ComplexObject complexObject = map2bean(mapObject);
 
         Invoker<GenericService> invoker = protocol.refer(GenericService.class, url);
@@ -172,32 +172,32 @@ public class GenericServiceTest {
         TypeDefinition inner2TypeDefinition = null;
         TypeDefinition inner3TypeDefinition = null;
         for (TypeDefinition typeDefinition : typeDefinitions) {
-            if (typeDefinition.getType().equals(ComplexObject.class.getName())) {
+            if (typeDefinition.getType().equals(ComplexObject.class.getCanonicalName())) {
                 topTypeDefinition = typeDefinition;
-            } else if (typeDefinition.getType().equals(ComplexObject.InnerObject.class.getName())) {
+            } else if (typeDefinition.getType().equals(ComplexObject.InnerObject.class.getCanonicalName())) {
                 innerTypeDefinition = typeDefinition;
-            } else if (typeDefinition.getType().contains(ComplexObject.InnerObject2.class.getName())) {
+            } else if (typeDefinition.getType().equals(ComplexObject.InnerObject2.class.getCanonicalName())) {
                 inner2TypeDefinition = typeDefinition;
-            } else if (typeDefinition.getType().equals(ComplexObject.InnerObject3.class.getName())) {
+            } else if (typeDefinition.getType().equals(ComplexObject.InnerObject3.class.getCanonicalName())) {
                 inner3TypeDefinition = typeDefinition;
             }
         }
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("v").getType(), "long");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("maps").getType(), "java.util.Map<java.lang.String,java.lang.String>");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject").getType(), "org.apache.dubbo.service.ComplexObject$InnerObject");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("intList").getType(), "java.util.List<java.lang.Integer>");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("strArrays").getType(), "java.lang.String[]");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject3").getType(), "org.apache.dubbo.service.ComplexObject.InnerObject3[]");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("testEnum").getType(), "org.apache.dubbo.service.ComplexObject.TestEnum");
-        Assertions.assertEquals(topTypeDefinition.getProperties().get("innerObject2").getType(), "java.util.List<org.apache.dubbo.service.ComplexObject$InnerObject2>");
+        Assertions.assertEquals("long", topTypeDefinition.getProperties().get("v"));
+        Assertions.assertEquals("java.util.Map<java.lang.String,java.lang.String>", topTypeDefinition.getProperties().get("maps"));
+        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.InnerObject", topTypeDefinition.getProperties().get("innerObject"));
+        Assertions.assertEquals("java.util.List<java.lang.Integer>", topTypeDefinition.getProperties().get("intList"));
+        Assertions.assertEquals("java.lang.String[]", topTypeDefinition.getProperties().get("strArrays"));
+        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.InnerObject3[]", topTypeDefinition.getProperties().get("innerObject3"));
+        Assertions.assertEquals("org.apache.dubbo.service.ComplexObject.TestEnum", topTypeDefinition.getProperties().get("testEnum"));
+        Assertions.assertEquals("java.util.List<org.apache.dubbo.service.ComplexObject.InnerObject2>", topTypeDefinition.getProperties().get("innerObject2"));
 
-        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerA").getType(), "java.lang.String");
-        Assertions.assertSame(innerTypeDefinition.getProperties().get("innerB").getType(), "int");
+        Assertions.assertSame("java.lang.String", innerTypeDefinition.getProperties().get("innerA"));
+        Assertions.assertSame("int", innerTypeDefinition.getProperties().get("innerB"));
 
-        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerA2").getType(), "java.lang.String");
-        Assertions.assertSame(inner2TypeDefinition.getProperties().get("innerB2").getType(), "int");
+        Assertions.assertSame("java.lang.String", inner2TypeDefinition.getProperties().get("innerA2"));
+        Assertions.assertSame("int", inner2TypeDefinition.getProperties().get("innerB2"));
 
-        Assertions.assertSame(inner3TypeDefinition.getProperties().get("innerA3").getType(), "java.lang.String");
+        Assertions.assertSame("java.lang.String", inner3TypeDefinition.getProperties().get("innerA3"));
 
         Map<String, Object> result = new HashMap<>();
         result.put("v", l);
