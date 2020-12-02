@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
@@ -218,8 +220,22 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     public final void setName(String name) {
+        if (!checkName(name)){
+            return;
+        }
         this.name = name;
         this.updateIdIfAbsent(name);
+    }
+
+    private boolean checkName(String name) {
+        try {
+            Set<String> se = ExtensionLoader.getExtensionLoader(Class.forName("org.apache.dubbo.rpc.Protocol")).getSupportedExtensions();
+            if (!se.contains(name)) {
+                return false;
+            }
+        } catch (ClassNotFoundException e) {
+        }
+        return true;
     }
 
     @Parameter(excluded = true)
