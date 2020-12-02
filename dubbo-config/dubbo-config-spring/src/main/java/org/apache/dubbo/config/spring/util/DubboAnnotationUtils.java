@@ -91,10 +91,16 @@ public class DubboAnnotationUtils {
             throws IllegalArgumentException {
 
         ClassLoader classLoader = defaultInterfaceClass != null ? defaultInterfaceClass.getClassLoader() : Thread.currentThread().getContextClassLoader();
+        Class<?> interfaceClass = null;
+        Object interfaceClassObj = getAttribute(attributes, "interfaceClass");
+        if (interfaceClassObj instanceof String) {
+            interfaceClass = ClassUtils.resolveClassName(interfaceClassObj.toString(), classLoader);
+        } else {
+            interfaceClass = getAttribute(attributes, "interfaceClass");
+        }
 
-        Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
-
-        if (void.class.equals(interfaceClass)) { // default or set void.class for purpose.
+        // default or set void.class for purpose.
+        if (void.class.equals(interfaceClass)) {
 
             interfaceClass = null;
 
