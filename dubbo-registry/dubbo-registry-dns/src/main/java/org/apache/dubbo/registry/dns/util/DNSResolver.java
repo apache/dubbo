@@ -36,6 +36,7 @@ import io.netty.util.concurrent.Future;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -56,34 +57,45 @@ public class DNSResolver {
     public ResolveResult resolve(String path) {
         ResolveResult recordList = new ResolveResult();
 
-        Future<List<InetAddress>> hostFuture = resolver.resolveAll(path);
-        Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> srvFuture =
-                resolver.query(new DefaultDnsQuestion(path, DnsRecordType.SRV));
-
         try {
-            recordList.getHostnameList()
-                    .addAll(hostFuture
-                            .sync().getNow()
-                            .stream()
-                            .map(InetAddress::getHostAddress)
-                            .collect(Collectors.toList()));
+            Future<List<InetAddress>> hostFuture = resolver.resolveAll(path);
+            Future<AddressedEnvelope<DnsResponse, InetSocketAddress>> srvFuture =
+                    resolver.query(new DefaultDnsQuestion(path, DnsRecordType.SRV));
 
-            DnsResponse srvResponse = srvFuture.sync().getNow().content();
-            for (int i = 0; i < srvResponse.count(DnsSection.ANSWER); i++) {
-                DnsRawRecord record = srvResponse.recordAt(DnsSection.ANSWER, i);
-                ByteBuf buf = record.content();
-                // Priority
-                buf.readUnsignedShort();
-                // Weight
-                buf.readUnsignedShort();
-                // Port
-                int port = buf.readUnsignedShort();
-                recordList.getPort().add(port);
+            try {
+                recordList.getHostnameList()
+                        .addAll(hostFuture
+                                .sync().getNow()
+                                .stream()
+                                .map(InetAddress::getHostAddress)
+                                .collect(Collectors.toList()));
+
+                DnsResponse srvResponse = srvFuture.sync().getNow().content();
+                for (int i = 0; i < srvResponse.count(DnsSection.ANSWER); i++) {
+                    DnsRawRecord record = srvResponse.recordAt(DnsSection.ANSWER, i);
+                    ByteBuf buf = record.content();
+                    // Priority
+                    buf.readUnsignedShort();
+                    // Weight
+                    buf.readUnsignedShort();
+                    // Port
+                    int port = buf.readUnsignedShort();
+                    recordList.getPort().add(port);
+                }
+
+            } catch (InterruptedException e) {
+                logger.warn("Waiting DNS resolve interrupted. " + e.getLocalizedMessage());
             }
-
-        } catch (InterruptedException e) {
-            logger.warn("Waiting DNS resolve interrupted. " + e.getLocalizedMessage());
+        } catch (Throwable t) {
+            if (t instanceof UnknownHostException) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(t.getLocalizedMessage());
+                }
+            } else {
+                logger.error(t.getLocalizedMessage());
+            }
         }
+
 
         return recordList;
     }

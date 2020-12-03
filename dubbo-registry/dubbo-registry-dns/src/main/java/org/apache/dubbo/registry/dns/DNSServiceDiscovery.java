@@ -43,6 +43,7 @@ import com.alibaba.fastjson.JSONObject;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,13 +61,13 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
 
     private URL registryURL;
 
-    // =================================== Provider side =================================== //
-
     /**
      * Echo check if consumer is still work
      * echo task may take a lot of time when consumer offline, create a new ScheduledThreadPool
      */
-    private final ScheduledExecutorService echoCheckExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
+    private final ScheduledExecutorService echoCheckExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-DNS-EchoCheck"));
+
+    // =================================== Provider side =================================== //
 
     private ServiceInstance serviceInstance;
 
@@ -93,6 +94,14 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
      * Value - Json processed metadata string
      */
     private final ConcurrentHashMap<String, String> metadataMap = new ConcurrentHashMap<>();
+
+    /**
+     * Local Cache of {@link ServiceInstance}
+     * <p>
+     * Key - Service Name
+     * Value - List {@link ServiceInstance}
+     */
+    private final ConcurrentHashMap<String, List<ServiceInstance>> cachedServiceInstances = new ConcurrentHashMap<>();
 
     /**
      * Local Cache of Service's {@link ServiceInstance} list revision,
@@ -220,6 +229,20 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
                         }
 
                         if (changed) {
+                            List<ServiceInstance> oldServiceInstances = cachedServiceInstances.getOrDefault(serviceName, new LinkedList<>());
+
+                            // remove expired invoker
+                            Set<ServiceInstance> allServiceInstances = new HashSet<>(oldServiceInstances.size() + instances.size());
+                            allServiceInstances.addAll(oldServiceInstances);
+                            allServiceInstances.addAll(instances);
+
+                            allServiceInstances.removeAll(oldServiceInstances);
+
+                            allServiceInstances.forEach(removedServiceInstance -> {
+                                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance, this);
+                            });
+
+                            cachedServiceInstances.put(serviceName, instances);
                             listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
                         }
 
@@ -246,6 +269,14 @@ public class DNSServiceDiscovery implements ServiceDiscovery {
     @Deprecated
     public void setDnsResolver(DNSResolver dnsResolver) {
         this.dnsResolver = dnsResolver;
+    }
+
+    /**
+     * UT used only
+     */
+    @Deprecated
+    public ConcurrentHashMap<String, List<ServiceInstance>> getCachedServiceInstances() {
+        return cachedServiceInstances;
     }
 
     @SuppressWarnings("unchecked")
