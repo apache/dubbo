@@ -368,4 +368,7 @@ public interface CommonConstants {
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
 
+
+    String DOCKER_DUBBO_IP_TO_BIND = "DOCKER_DUBBO_IP_TO_BIND";
+
 }
