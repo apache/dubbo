@@ -14,28 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.registry;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
-
-@SPI
-public interface RegistryServiceListener {
-    default void onRegister(URL url, Registry registry) {
-
-    }
+package org.apache.dubbo.qos.command.impl;
 
 
-    default void onUnregister(URL url, Registry registry) {
+import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
-    }
-
-    default void onSubscribe(URL url, Registry registry) {
-
-    }
-
-    default void onUnsubscribe(URL url, Registry registry) {
-
+public class OnlineApp extends BaseOnline {
+    @Override
+    protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
+        if (!UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
+            Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+            registry.register(statedURL.getProviderUrl());
+            statedURL.setRegistered(true);
+        }
     }
 }

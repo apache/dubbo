@@ -62,7 +62,7 @@ public class ListenerRegistryWrapper implements Registry {
                 for (RegistryServiceListener listener : listeners) {
                     if (listener != null) {
                         try {
-                            listener.onRegister(url);
+                            listener.onRegister(url, registry);
                         } catch (RuntimeException t) {
                             logger.error(t.getMessage(), t);
                             exception = t;
@@ -86,7 +86,7 @@ public class ListenerRegistryWrapper implements Registry {
                 for (RegistryServiceListener listener : listeners) {
                     if (listener != null) {
                         try {
-                            listener.onUnregister(url);
+                            listener.onUnregister(url, registry);
                         } catch (RuntimeException t) {
                             logger.error(t.getMessage(), t);
                             exception = t;
@@ -110,7 +110,7 @@ public class ListenerRegistryWrapper implements Registry {
                 for (RegistryServiceListener registryListener : listeners) {
                     if (registryListener != null) {
                         try {
-                            registryListener.onSubscribe(url);
+                            registryListener.onSubscribe(url, registry);
                         } catch (RuntimeException t) {
                             logger.error(t.getMessage(), t);
                             exception = t;
@@ -134,7 +134,7 @@ public class ListenerRegistryWrapper implements Registry {
                 for (RegistryServiceListener registryListener : listeners) {
                     if (registryListener != null) {
                         try {
-                            registryListener.onUnsubscribe(url);
+                            registryListener.onUnsubscribe(url, registry);
                         } catch (RuntimeException t) {
                             logger.error(t.getMessage(), t);
                             exception = t;

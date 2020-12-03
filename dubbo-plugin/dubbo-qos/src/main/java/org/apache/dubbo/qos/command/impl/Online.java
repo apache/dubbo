@@ -16,65 +16,23 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.qos.command.BaseCommand;
-import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.RegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 
-import java.util.Collection;
-import java.util.List;
-
-@Cmd(name = "online", summary = "online dubbo", example = {
-        "online dubbo",
-        "online xx.xx.xxx.service"
+@Cmd(name = "onlineAPp", summary = "offline app addresses", example = {
+        "offlineApp dubbo",
+        "offlineApp xx.xx.xxx.service"
 })
-public class Online implements BaseCommand {
+public class Online extends BaseOnline {
     private static final Logger logger = LoggerFactory.getLogger(Online.class);
-    private static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    private static ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+    private static final OnlineInterface onlineInteface = new OnlineInterface();
+    private static final OnlineApp onlineApp = new OnlineApp();
 
     @Override
-    public String execute(CommandContext commandContext, String[] args) {
-        logger.info("receive online command");
-        String servicePattern = ".*";
-        if (ArrayUtils.isNotEmpty(args)) {
-            servicePattern = "" + args[0];
-        }
-
-        boolean hasService = online(servicePattern);
-        if (hasService) {
-            return "OK";
-        } else {
-            return "service not found";
-        }
-    }
-
-    public static boolean online(String servicePattern) {
-        boolean hasService = false;
-
-        Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
-        for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceMetadata().getDisplayServiceKey().matches(servicePattern)) {
-                hasService = true;
-                List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
-                for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
-                    if (!statedURL.isRegistered()) {
-                        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-                        registry.register(statedURL.getProviderUrl());
-                        statedURL.setRegistered(true);
-                    }
-                }
-            }
-        }
-
-        return hasService;
+    protected boolean doExecute(String servicePattern) {
+        boolean r1 = onlineInteface.online(servicePattern);
+        boolean r2 = onlineApp.online(servicePattern);
+        return r1 && r2;
     }
 }
