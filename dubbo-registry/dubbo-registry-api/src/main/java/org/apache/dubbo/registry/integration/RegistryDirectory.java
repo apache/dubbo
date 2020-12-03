@@ -145,6 +145,11 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         refreshOverrideAndInvoker(providerURLs);
     }
 
+    @Override
+    public boolean isServiceDiscovery() {
+        return false;
+    }
+
     private String judgeCategory(URL url) {
         if (UrlUtils.isConfigurator(url)) {
             return CONFIGURATORS_CATEGORY;

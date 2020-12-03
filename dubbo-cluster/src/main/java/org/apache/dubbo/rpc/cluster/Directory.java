@@ -54,8 +54,12 @@ public interface Directory<T> extends Node {
 
     boolean isDestroyed();
 
-    default boolean hasInvokers() {
-        return CollectionUtils.isNotEmpty(getAllInvokers());
+    default boolean isEmpty() {
+        return CollectionUtils.isEmpty(getAllInvokers());
+    }
+
+    default boolean isServiceDiscovery() {
+        return false;
     }
 
     void discordAddresses();

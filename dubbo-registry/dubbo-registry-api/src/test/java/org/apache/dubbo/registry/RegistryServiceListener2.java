@@ -25,22 +25,22 @@ public class RegistryServiceListener2 implements RegistryServiceListener {
     static RegistryServiceListener delegate;
 
     @Override
-    public void onRegister(URL url) {
-        delegate.onRegister(url);
+    public void onRegister(URL url, Registry registry) {
+        delegate.onRegister(url, registry);
     }
 
     @Override
-    public void onUnregister(URL url) {
-        delegate.onUnregister(url);
+    public void onUnregister(URL url, Registry registry) {
+        delegate.onUnregister(url, registry);
     }
 
     @Override
-    public void onSubscribe(URL url) {
-        delegate.onSubscribe(url);
+    public void onSubscribe(URL url, Registry registry) {
+        delegate.onSubscribe(url, registry);
     }
 
     @Override
-    public void onUnsubscribe(URL url) {
-        delegate.onUnsubscribe(url);
+    public void onUnsubscribe(URL url, Registry registry) {
+        delegate.onUnsubscribe(url, registry);
     }
 }
