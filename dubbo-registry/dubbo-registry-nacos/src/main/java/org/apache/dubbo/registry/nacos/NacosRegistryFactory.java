@@ -23,6 +23,7 @@ import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 
 /**
@@ -39,7 +40,13 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
         if (StringUtils.isNotEmpty(namespace)) {
             url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
         }
-        return url.toFullString();
+        // only remove timestamp for cache key, avoid effect source url timestamp
+        URL cacheUrl = url;
+        if (StringUtils.isNotEmpty(url.getParameter(TIMESTAMP_KEY))) {
+            cacheUrl = URL.valueOf(url.toServiceStringWithoutResolving());
+            cacheUrl = cacheUrl.removeParameter(TIMESTAMP_KEY);
+        }
+        return cacheUrl.toFullString();
     }
 
     @Override
