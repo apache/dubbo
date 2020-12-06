@@ -63,12 +63,9 @@ public class MockInvokersSelector extends AbstractRouter {
     }
 
     private <T> List<Invoker<T>> getMockedInvokers(final List<Invoker<T>> invokers) {
-        if (!hasMockProviders(invokers)) {
-            return null;
-        }
         List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(1);
         for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
+            if (isMockProtocol(invoker)) {
                 sInvokers.add(invoker);
             }
         }
@@ -76,28 +73,21 @@ public class MockInvokersSelector extends AbstractRouter {
     }
 
     private <T> List<Invoker<T>> getNormalInvokers(final List<Invoker<T>> invokers) {
-        if (!hasMockProviders(invokers)) {
-            return invokers;
-        } else {
-            List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
-            for (Invoker<T> invoker : invokers) {
-                if (!invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
-                    sInvokers.add(invoker);
-                }
-            }
-            return sInvokers;
-        }
-    }
-
-    private <T> boolean hasMockProviders(final List<Invoker<T>> invokers) {
-        boolean hasMockProvider = false;
+        List<Invoker<T>> sInvokers = new ArrayList<Invoker<T>>(invokers.size());
         for (Invoker<T> invoker : invokers) {
-            if (invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL)) {
-                hasMockProvider = true;
-                break;
+            if (!isMockProtocol(invoker)) {
+                sInvokers.add(invoker);
             }
         }
-        return hasMockProvider;
+        return sInvokers;
     }
 
+    /**
+     * Checks if the invoker is mock protocol.
+     * @param invoker the invoker to check.
+     * @return {@code true} if the invoker is mock protocol, otherwise {@code false}.
+     */
+    private boolean isMockProtocol(final Invoker invoker){
+        return invoker.getUrl().getProtocol().equals(MOCK_PROTOCOL);
+    }
 }
