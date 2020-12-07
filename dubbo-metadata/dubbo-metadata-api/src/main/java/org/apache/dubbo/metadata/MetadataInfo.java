@@ -97,10 +97,14 @@ public class MetadataInfo implements Serializable {
 
         StringBuilder sb = new StringBuilder();
         sb.append(app);
-        for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
-            sb.append(entry.getValue().toDescString());
+        if (CollectionUtils.isEmptyMap(services)) {
+            this.revision = RevisionResolver.getEmptyRevision(app);
+        } else {
+            for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
+                sb.append(entry.getValue().toDescString());
+            }
+            this.revision = RevisionResolver.calRevision(sb.toString());
         }
-        this.revision = RevisionResolver.calRevision(sb.toString());
         return revision;
     }
 

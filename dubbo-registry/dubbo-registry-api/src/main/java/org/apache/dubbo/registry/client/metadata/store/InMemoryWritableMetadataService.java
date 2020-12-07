@@ -143,9 +143,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.get(cluster);
             metadataInfo.removeService(url.getProtocolServiceKey());
-            if (metadataInfo.getServices().isEmpty()) {
-                metadataInfos.remove(cluster);
-            }
+//            if (metadataInfo.getServices().isEmpty()) {
+//                metadataInfos.remove(cluster);
+//            }
         }
         metadataSemaphore.release();
         return removeURL(exportedServiceURLs, url);
