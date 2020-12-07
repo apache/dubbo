@@ -32,6 +32,8 @@ public interface Invocation {
 
     String getTargetServiceUniqueName();
 
+    String getProtocolServiceKey();
+
     /**
      * get method name.
      *

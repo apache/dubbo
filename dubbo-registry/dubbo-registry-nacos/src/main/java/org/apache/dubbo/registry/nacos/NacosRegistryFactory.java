@@ -17,10 +17,12 @@
 package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
 
 /**
@@ -32,6 +34,11 @@ public class NacosRegistryFactory extends AbstractRegistryFactory {
 
     @Override
     protected String createRegistryCacheKey(URL url) {
+        String namespace = url.getParameter(CONFIG_NAMESPACE_KEY);
+        url = URL.valueOf(url.toServiceStringWithoutResolving());
+        if (StringUtils.isNotEmpty(namespace)) {
+            url = url.addParameter(CONFIG_NAMESPACE_KEY, namespace);
+        }
         return url.toFullString();
     }
 

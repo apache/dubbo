@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,7 +28,8 @@ import java.util.Set;
 
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.utils.StringUtils.SLASH;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
@@ -42,7 +44,11 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void map(String serviceInterface, String group, String version, String protocol) {
+    public void map(URL url) {
+        String serviceInterface = url.getServiceInterface();
+        String group = url.getParameter(GROUP_KEY);
+        String version = url.getParameter(VERSION_KEY);
+        String protocol = url.getProtocol();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
@@ -55,8 +61,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         // It does matter whatever the content is, we just need a record
         String key = getName();
         String content = valueOf(System.currentTimeMillis());
+
         execute(() -> {
-            dynamicConfiguration.publishConfig(key, buildGroup(serviceInterface, group, version, protocol), content);
+            dynamicConfiguration.publishConfig(key, ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",
                         group, serviceInterface, group));
@@ -65,26 +72,20 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     }
 
     @Override
-    public Set<String> get(String serviceInterface, String group, String version, String protocol) {
-
+    public Set<String> getAndListen(URL url, MappingListener mappingListener) {
+        String serviceInterface = url.getServiceInterface();
+        String group = url.getParameter(GROUP_KEY);
+        String version = url.getParameter(VERSION_KEY);
+        String protocol = url.getProtocol();
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
-            Set<String> keys = dynamicConfiguration.getConfigKeys(buildGroup(serviceInterface, group, version, protocol));
+            Set<String> keys = dynamicConfiguration
+                    .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol));
             serviceNames.addAll(keys);
         });
         return Collections.unmodifiableSet(serviceNames);
-    }
-
-    protected static String buildGroup(String serviceInterface, String group, String version, String protocol) {
-        //        the issue : https://github.com/apache/dubbo/issues/4671
-        //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
-        //                .append(KEY_SEPARATOR).append(defaultString(group))
-        //                .append(KEY_SEPARATOR).append(defaultString(version))
-        //                .append(KEY_SEPARATOR).append(defaultString(protocol));
-        //        return groupBuilder.toString();
-        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 
     private void execute(Runnable runnable) {
