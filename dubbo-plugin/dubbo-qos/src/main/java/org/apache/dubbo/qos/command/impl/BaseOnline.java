@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
@@ -77,6 +78,8 @@ public class BaseOnline implements BaseCommand {
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.register(statedURL.getProviderUrl());
+        statedURL.setRegistered(true);
     }
 }
