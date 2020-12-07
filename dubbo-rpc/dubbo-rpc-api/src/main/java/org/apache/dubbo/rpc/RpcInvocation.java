@@ -40,6 +40,8 @@ import java.util.stream.Stream;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_TYPES;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -446,15 +448,13 @@ public class RpcInvocation implements Invocation, Serializable {
 
     /**
      * Mark this invocation as a generic impl call, this value will be removed automatically before passing on the wire.
-     * See {@link RpcUtils#sieveUnnecessaryAttachments(Invocation)}
      */
 	public void makeGeneric(Invocation invocation, String generic) {	
-	    final String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 		String methodName = getMethodName();
         String[] types = getTypes();
-        Object[] args = getArgs(generic);        
-        setMethodName(RpcUtils.isReturnTypeFuture(invocation)?$INVOKE_ASYNC:$INVOKE);
-        setParameterTypes(new Class<?>[]{String.class, String[].class, Object[].class});
+        Object[] args = getArgs(generic);
+        setMethodName(RpcUtils.isReturnTypeFuture(invocation) ? $INVOKE_ASYNC : $INVOKE);
+        setParameterTypes(GENERIC_PARAMETER_TYPES);
         setParameterTypesDesc(GENERIC_PARAMETER_DESC);
         setArguments(new Object[]{methodName, types, args});
 	}
