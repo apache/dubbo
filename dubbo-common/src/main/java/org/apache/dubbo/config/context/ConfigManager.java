@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import java.util.concurrent.locks.StampedLock;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.Logger;
@@ -45,9 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
@@ -67,7 +65,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public static final String NAME = "config";
 
-    private final ReadWriteLock lock = new ReentrantReadWriteLock();
+    private final StampedLock lock = new StampedLock();
 
     final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
@@ -437,16 +435,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private <V> V write(Callable<V> callable) {
         V value = null;
-        Lock writeLock = lock.writeLock();
+        long stamp = lock.writeLock();
         try {
-            writeLock.lock();
             value = callable.call();
         } catch (RuntimeException e) {
             throw e;
         } catch (Throwable e) {
             throw new RuntimeException(e.getCause());
         } finally {
-            writeLock.unlock();
+            lock.unlockWrite(stamp);
         }
         return value;
     }
@@ -459,15 +456,22 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     private <V> V read(Callable<V> callable) {
-        Lock readLock = lock.readLock();
         V value = null;
+        long stamp = lock.tryOptimisticRead();
         try {
-            readLock.lock();
             value = callable.call();
         } catch (Throwable e) {
             throw new RuntimeException(e);
-        } finally {
-            readLock.unlock();
+        }
+        if (!lock.validate(stamp)) {
+            stamp = lock.readLock();
+            try {
+                value = callable.call();
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }finally {
+                lock.unlockRead(stamp);
+            }
         }
         return value;
     }
