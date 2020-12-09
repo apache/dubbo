@@ -189,7 +189,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
         try {
-            curatorFramework.create().forPath(path);
+            curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
