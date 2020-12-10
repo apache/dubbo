@@ -93,6 +93,9 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         } else {
             currentClient = clients[index.getAndIncrement() % clients.length];
         }
+        if (!checkClientCanSend(currentClient)) {
+            throw new RpcException(RpcException.FORBIDDEN_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", the netty connection is not available.");
+        }
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = calculateTimeout(invocation, methodName);
@@ -124,12 +127,15 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
             return false;
         }
         for (ExchangeClient client : clients) {
-            if (client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY)) {
-                //cannot write == not Available ?
+            if (checkClientCanSend(client)) {
                 return true;
             }
         }
         return false;
+    }
+
+    private boolean checkClientCanSend(ExchangeClient client) {
+        return client.isConnected() && !client.hasAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY);
     }
 
     @Override
