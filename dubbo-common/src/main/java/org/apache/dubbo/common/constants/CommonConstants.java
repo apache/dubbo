@@ -185,6 +185,10 @@ public interface CommonConstants {
 
     String VERSION_KEY = "version";
 
+    String SEPARATOR_VERSION_KEY = "separator-version";
+
+    String DEFAULT_SEPARATOR_VERSION = "false";
+
     String REVISION_KEY = "revision";
 
     String METADATA_KEY = "metadata-type";
