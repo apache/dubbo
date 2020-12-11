@@ -58,13 +58,13 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         FailoverInvoker failoverInvoker = new FailoverInvoker(invocation, loadbalance, maxInvokeCount);
         AsyncRpcResult result = failoverInvoker.invoke(invokers);
-        FutureContext.getContext().setCompatibleFuture(result.getResponseFuture());
-        RpcContext.getContext().setFuture(new FutureAdapter(result.getResponseFuture()));
-        if (isSyncInvocation(invocation)) {
-            RpcException rpcException = getRpcException(result, null);
-            if (rpcException != null) {
-                throw rpcException;
-            }
+        CompletableFuture<AppResponse> responseFuture = result.getResponseFuture();
+        FutureContext.getContext().setCompatibleFuture(responseFuture);
+        RpcContext.getContext().setFuture(new FutureAdapter(responseFuture));
+        if (isSyncInvocation(invocation) && responseFuture.isCompletedExceptionally()) {
+            responseFuture.whenComplete((appResponse, throwable) -> {
+                throw getRpcException(throwable);
+            });
         }
         return result;
     }
@@ -87,8 +87,6 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         private RpcException lastException = null;
 
-        private Map<String, Object> objectAttachments = null;
-
         public FailoverInvoker(Invocation invocation, LoadBalance loadbalance, int maxInvokeCount) {
             this.invocation = invocation;
             this.loadbalance = loadbalance;
@@ -106,23 +104,27 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         private void resumeContext(AsyncRpcResult result) {
             result.setStoredContext(RpcContext.getContext());
             result.setStoredServerContext(RpcContext.getServerContext());
-            if (objectAttachments != null) {
-                result.setObjectAttachments(objectAttachments);
+        }
+
+        private void setResult(Result result) {
+            resumeContext(returnResult);
+            AppResponse appResponse;
+            if (result instanceof AppResponse) {
+                appResponse = (AppResponse) result;
+            } else {
+                appResponse = new AppResponse();
+                appResponse.setValue(result.getValue());
+                appResponse.setException(result.getException());
+                if (result.getObjectAttachments() != null) {
+                    appResponse.setObjectAttachments(result.getObjectAttachments());
+                }
             }
-        }
-
-        private void setResultValue(Object value) {
-            resumeContext(returnResult);
-            AppResponse appResponse = new AppResponse();
-            appResponse.setValue(value);
             responseFuture.complete(appResponse);
         }
 
-        private void setResultException(RpcException e) {
+        private void setException(RpcException e) {
             resumeContext(returnResult);
-            AppResponse appResponse = new AppResponse();
-            appResponse.setException(e);
-            responseFuture.complete(appResponse);
+            responseFuture.completeExceptionally(e);
         }
 
         @SuppressWarnings({"unchecked"})
@@ -132,10 +134,10 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 checkInvokers(invokers, invocation);
                 invoker = select(loadbalance, invocation, invokers, invoked);
             } catch (RpcException e) {
-                setResultException(e);
+                setException(e);
                 return;
             } catch (Throwable t) {
-                setResultException(new RpcException(t.getMessage(), t));
+                setException(new RpcException(t.getMessage(), t));
                 return;
             }
 
@@ -146,17 +148,15 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
                 @Override
                 public void accept(Result result, Throwable throwable) {
-                    objectAttachments = result == null ? null : result.getObjectAttachments();
-                    RpcException exception = getRpcException(result, throwable);
-
-                    if (exception == null) {
-                        setResultValue(result.getValue());
+                    if (throwable == null) {
+                        setResult(result);
                         recordFailover(invoker, invokers);
                         return;
                     }
 
+                    RpcException exception = getRpcException(throwable);
                     if (exception.isBiz()) {
-                        setResultException(exception);
+                        setException(exception);
                         return;
                     }
 
@@ -168,16 +168,16 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
                             checkWhetherDestroyed();
                             nextInvokers = list(invocation);
                         } catch (RpcException e) {
-                            setResultException(e);
+                            setException(e);
                             return;
                         } catch (Throwable t) {
-                            setResultException(new RpcException(t.getMessage(), t));
+                            setException(new RpcException(t.getMessage(), t));
                             return;
                         }
 
                         doInvoke(nextInvokers, remainingCount - 1);
                     } else {
-                        setResultException(generateFailException(invokers));
+                        setException(generateFailException(invokers));
                     }
                 }
             });
@@ -225,20 +225,11 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         return InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode();
     }
 
-    private RpcException getRpcException(Result result, Throwable throwable) {
-        Throwable exception = null;
-        if (throwable != null) {
-            exception = throwable;
-        } else if (result.hasException()) {
-            exception = result.getException();
-        }
-
-        if (exception == null) {
-            return null;
-        } else if (exception instanceof RpcException) {
-            return (RpcException) exception;
+    private RpcException getRpcException(Throwable throwable) {
+        if (throwable instanceof RpcException) {
+            return (RpcException) throwable;
         } else {
-            return new RpcException(exception.getMessage(), exception);
+            return new RpcException(throwable.getMessage(), throwable);
         }
     }
 }
