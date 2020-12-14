@@ -495,6 +495,7 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    @Parameter(excluded = true)
     public boolean isRefreshed() {
         return refreshed.get();
     }
