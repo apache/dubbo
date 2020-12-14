@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -164,6 +165,12 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean enableFileCache;
 
     private Boolean publishInterface;
+
+    /**
+     * The preferred protocol(name) of this application
+     * convenient for places where it's hard to determine which is the preferred protocol
+     */
+    private String protocol;
 
     public ApplicationConfig() {
     }
@@ -467,6 +474,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setPublishInterface(Boolean publishInterface) {
         this.publishInterface = publishInterface;
+    }
+
+    @Parameter(excluded = true, key="application-protocol")
+    public String getProtocol() {
+        return protocol == null ? DUBBO : protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     @Override

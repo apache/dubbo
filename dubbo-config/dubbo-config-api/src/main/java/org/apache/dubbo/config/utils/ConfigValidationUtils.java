@@ -212,18 +212,32 @@ public class ConfigValidationUtils {
     private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
-            result.add(registryURL);
             if (provider) {
+                boolean publishInterface = registryURL.getParameter(REGISTRY_PUBLISH_INTERFACE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY, true));
                 // for registries enabled service discovery, automatically register interface compatible addresses.
-                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())
-                        && registryURL.getParameter(REGISTRY_PUBLISH_INTERFACE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY, true))
-                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
-                    URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
-                            .setProtocol(REGISTRY_PROTOCOL)
-                            .removeParameter(REGISTRY_TYPE_KEY)
-                            .build();
-                    result.add(interfaceCompatibleRegistryURL);
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+                    result.add(registryURL);
+                    if (publishInterface && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                        URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+                                .setProtocol(REGISTRY_PROTOCOL)
+                                .removeParameter(REGISTRY_TYPE_KEY)
+                                .build();
+                        result.add(interfaceCompatibleRegistryURL);
+                    }
+                } else {
+                    if (registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)) {
+                        URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
+                                .setProtocol(SERVICE_REGISTRY_PROTOCOL)
+                                .removeParameter(REGISTRY_TYPE_KEY)
+                                .build();
+                        result.add(serviceDiscoveryRegistryURL);
+                    }
+                    if (publishInterface) {
+                        result.add(registryURL);
+                    }
                 }
+            } else {
+                result.add(registryURL);
             }
         });
         return result;

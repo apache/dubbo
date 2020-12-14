@@ -461,6 +461,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public void refresh() {
+        refreshed.set(true);
         Environment env = ApplicationModel.getEnvironment();
         try {
             CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(this);
@@ -492,6 +493,10 @@ public abstract class AbstractConfig implements Serializable {
         } catch (Exception e) {
             logger.error("Failed to override ", e);
         }
+    }
+
+    public boolean isRefreshed() {
+        return refreshed.get();
     }
 
     @Override

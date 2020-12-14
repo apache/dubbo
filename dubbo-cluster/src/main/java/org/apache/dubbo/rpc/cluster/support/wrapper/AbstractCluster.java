@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.FilterChainBuilder;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -27,6 +28,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
@@ -34,6 +36,8 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERCEPTOR_BUILDER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INVOCATION_INTERCEPTOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
 
@@ -41,7 +45,7 @@ public abstract class AbstractCluster implements Cluster {
 
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
 //        AbstractClusterInvoker<T> last = clusterInvoker;
-        AbstractClusterInvoker<T> last = new FilterInvoker<>(clusterInvoker);
+        AbstractClusterInvoker<T> last = buildInterceptorInvoker(new FilterInvoker<>(clusterInvoker));
         List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(clusterInvoker.getUrl(), key);
 
         if (!interceptors.isEmpty()) {
@@ -56,12 +60,23 @@ public abstract class AbstractCluster implements Cluster {
 
     @Override
     public <T> Invoker<T> join(Directory<T> directory) throws RpcException {
+        if (directory instanceof StaticDirectory) {
+            return doJoin(directory);
+        }
         return buildClusterInterceptors(doJoin(directory), directory.getUrl().getParameter(REFERENCE_INTERCEPTOR_KEY));
+    }
+
+    private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {
+        String interceptorBuilder = invoker.getUrl().getParameter(INTERCEPTOR_BUILDER_KEY);
+        if (StringUtils.isEmpty(interceptorBuilder)) {
+            return invoker;
+        }
+        return new InterceptorInvoker<>(invoker);
     }
 
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
 
-    protected class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
+    static class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
 
         private AbstractClusterInvoker<T> clusterInvoker;
         private ClusterInterceptor interceptor;
@@ -160,5 +175,27 @@ public abstract class AbstractCluster implements Cluster {
         }
     }
 
+    static class InterceptorInvoker<T> extends AbstractClusterInvoker<T> {
+        private Invoker<T> interceptorInvoker;
 
+        public InterceptorInvoker(AbstractClusterInvoker<T> invoker) {
+            interceptorInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class)
+                    .getExtension(invoker.getUrl().getParameter(INTERCEPTOR_BUILDER_KEY))
+                    .buildInvokerChain(invoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            return interceptorInvoker.invoke(invocation);
+        }
+
+        /**
+         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
+         */
+        @Override
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+            return null;
+        }
+    }
 }

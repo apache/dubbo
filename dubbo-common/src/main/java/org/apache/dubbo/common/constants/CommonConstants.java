@@ -263,6 +263,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
+
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
     String DUBBO_VERSION_KEY = "dubbo";
@@ -364,6 +366,7 @@ public interface CommonConstants {
     String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
     String FILTER_BUILDER_KEY = "filter-builder";
+    String INTERCEPTOR_BUILDER_KEY = "interceptor-builder";
 
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";

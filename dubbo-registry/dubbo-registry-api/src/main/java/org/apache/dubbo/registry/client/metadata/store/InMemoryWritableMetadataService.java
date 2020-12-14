@@ -33,7 +33,9 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import com.google.gson.Gson;
 
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -73,6 +75,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
     final Semaphore metadataSemaphore = new Semaphore(1);
 
@@ -123,7 +126,20 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
+    public Set<URL> getExportedServiceURLs() {
+        Set<URL> set = new HashSet<>();
+        for (Map.Entry<String, SortedSet<URL>> entry : exportedServiceURLs.entrySet()) {
+            set.addAll(entry.getValue());
+        }
+        return set;
+    }
+
+    @Override
     public boolean exportURL(URL url) {
+        if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+            this.metadataServiceURL = url;
+            return true;
+        }
         String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
         String[] clusters = registryCluster.split(",");
         for (String cluster : clusters) {
@@ -138,6 +154,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean unexportURL(URL url) {
+        if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+            // TODO, metadata service need to be unexported.
+            this.metadataServiceURL = null;
+            return true;
+        }
         String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
         String[] clusters = registryCluster.split(",");
         for (String cluster : clusters) {
@@ -215,6 +236,15 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     public Map<String, MetadataInfo> getMetadataInfos() {
         return metadataInfos;
+    }
+
+    void addMetaServiceURL(URL url) {
+        this.metadataServiceURL = url;
+    }
+
+    @Override
+    public URL getMetadataServiceURL() {
+        return this.metadataServiceURL;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {

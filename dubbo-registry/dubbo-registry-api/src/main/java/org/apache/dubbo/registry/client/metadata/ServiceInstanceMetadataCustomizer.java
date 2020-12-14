@@ -38,9 +38,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
  */
 public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomizer {
 
+    private volatile boolean customized = false;
+
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        Map<String, String> params = new HashMap<>();
+        if (customized) {
+            return;
+        }
+        customized = true;
 
         ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
         Set<MetadataParamsFilter> paramsFilters = loader.getSupportedExtensionInstances();

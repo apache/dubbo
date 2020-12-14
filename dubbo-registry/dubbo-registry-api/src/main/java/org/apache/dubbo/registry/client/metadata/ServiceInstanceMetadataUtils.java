@@ -17,12 +17,16 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -30,7 +34,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import com.alibaba.fastjson.JSON;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -114,23 +117,12 @@ public class ServiceInstanceMetadataUtils {
         return params.getOrDefault(protocol, emptyMap());
     }
 
-    public static String getMetadataServiceParameter(List<URL> urls) {
-
-        Map<String, Map<String, String>> params = new HashMap<>();
-
-        urls.stream()
-                // remove APPLICATION_KEY because service name must be present
-                .map(url -> url.removeParameter(APPLICATION_KEY))
-                // remove GROUP_KEY, always uses application name.
-                .map(url -> url.removeParameter(GROUP_KEY))
-                // remove DEPRECATED_KEY because it's always false
-                .map(url -> url.removeParameter(DEPRECATED_KEY))
-                // remove TIMESTAMP_KEY because it's nonsense
-                .map(url -> url.removeParameter(TIMESTAMP_KEY))
-                .forEach(url -> {
-                    String protocol = url.getProtocol();
-                    params.put(protocol, getParams(url));
-                });
+    public static String getMetadataServiceParameter(URL url) {
+        url = url.removeParameter(APPLICATION_KEY);
+        url = url.removeParameter(GROUP_KEY);
+        url = url.removeParameter(DEPRECATED_KEY);
+        url = url.removeParameter(TIMESTAMP_KEY);
+        Map<String, String> params = getParams(url);
 
         if (params.isEmpty()) {
             return null;
@@ -194,6 +186,10 @@ public class ServiceInstanceMetadataUtils {
         return metadata.get(METADATA_CLUSTER_PROPERTY_NAME);
     }
 
+    public static boolean hasEndpoints(ServiceInstance serviceInstance) {
+        return StringUtils.isNotEmpty(serviceInstance.getMetadata().get(ENDPOINTS));
+    }
+
     /**
      * Is Dubbo Service instance or not
      *
@@ -225,14 +221,12 @@ public class ServiceInstanceMetadataUtils {
      * @param protocol        the name of protocol, e.g, dubbo, rest, and so on
      * @return if not found, return <code>null</code>
      */
-    public static Integer getProtocolPort(ServiceInstance serviceInstance, String protocol) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        String rawEndpoints = metadata.get(ENDPOINTS);
-        if (StringUtils.isNotEmpty(rawEndpoints)) {
-            List<Endpoint> endpoints = JSON.parseArray(rawEndpoints, Endpoint.class);
+    public static Endpoint getEndpoint(ServiceInstance serviceInstance, String protocol) {
+        List<Endpoint> endpoints = ((DefaultServiceInstance)serviceInstance).getEndpoints();
+        if (endpoints != null) {
             for (Endpoint endpoint : endpoints) {
                 if (endpoint.getProtocol().equals(protocol)) {
-                    return endpoint.getPort();
+                    return endpoint;
                 }
             }
         }
@@ -266,8 +260,19 @@ public class ServiceInstanceMetadataUtils {
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
+            customizeInstance(serviceDiscovery.getLocalInstance());
             // update service instance revision
             serviceDiscovery.update(serviceDiscovery.getLocalInstance());
+        });
+    }
+
+    public static void customizeInstance(ServiceInstance instance) {
+        ExtensionLoader<ServiceInstanceCustomizer> loader =
+                ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
+        // FIXME, sort customizer before apply
+        loader.getSupportedExtensionInstances().forEach(customizer -> {
+            // customizes
+            customizer.customize(instance);
         });
     }
 
@@ -286,29 +291,4 @@ public class ServiceInstanceMetadataUtils {
         }
     }
 
-    public static class Endpoint {
-        Integer port;
-        String protocol;
-
-        public Endpoint(Integer port, String protocol) {
-            this.port = port;
-            this.protocol = protocol;
-        }
-
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
-
-        public String getProtocol() {
-            return protocol;
-        }
-
-        public void setProtocol(String protocol) {
-            this.protocol = protocol;
-        }
-    }
 }
