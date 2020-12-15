@@ -17,14 +17,20 @@
 package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.fixed.FixedThreadPool;
 import org.apache.dubbo.common.utils.BitList;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.router.state.AddrCache;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
@@ -75,9 +81,11 @@ public class RouterChain<T> {
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("dubbo-state-router-loop-",true), new ThreadPoolExecutor.AbortPolicy());
 
-    private final static ExecutorService poolRouterThreadPool = new ThreadPoolExecutor(1, 1,
+    private final static ExecutorService poolRouterThreadPool = new ThreadPoolExecutor(1, 10,
         0L, TimeUnit.MILLISECONDS,
         new LinkedBlockingQueue<Runnable>(1024), new NamedInternalThreadFactory("dubbo-state-router-pool-",true), new ThreadPoolExecutor.AbortPolicy());
+
+    private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
     public static <T> RouterChain<T> buildChain(URL url) {
         return new RouterChain<>(url);
@@ -171,9 +179,14 @@ public class RouterChain<T> {
     public List<Invoker<T>> route(URL url, Invocation invocation) {
 
         AddrCache cache = this.cache.get();
-        //if (cache == null) {
-        //    buildCache();
-        //}
+        if (cache == null) {
+            throw new RpcException(RpcException.ROUTER_CACHE_NOT_BUILD, "Failed to invoke the method "
+                + invocation.getMethodName() + " in the service " + url.getServiceInterface()
+                + ". address cache not build "
+                + " on the consumer " + NetUtils.getLocalHost()
+                + " using the dubbo version " + Version.getVersion()
+                + ".");
+        }
         BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
         for (StateRouter stateRouter : stateRouters) {
             if (stateRouter.isEnable()) {
@@ -220,11 +233,11 @@ public class RouterChain<T> {
                     public void run() {
                         RouterCache routerCache = null;
                         try {
-                            routerCache = poolRouter(stateRouter, origin, new ArrayList<>(copyInvokers));
+                            routerCache = poolRouter(stateRouter, origin, copyInvokers);
                             //file cache
                             newCache.getCache().put(stateRouter.getName(), routerCache);
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } catch (Throwable t) {
+                            logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
                         } finally {
                             cdl.countDown();
                         }
@@ -243,13 +256,16 @@ public class RouterChain<T> {
 
     private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers) {
         String routerName = router.getName();
-
+        RouterCache routerCache = null;
         if (isCacheMiss(orign, routerName) || router.shouldRePool()) {
             return router.pool(invokers);
-
         } else {
-            return orign.getCache().get(routerName);
+            routerCache = orign.getCache().get(routerName);
         }
+        if (routerCache == null) {
+            return new RouterCache();
+        }
+        return routerCache;
     }
 
     private boolean isCacheMiss(AddrCache cache, String routerName) {
