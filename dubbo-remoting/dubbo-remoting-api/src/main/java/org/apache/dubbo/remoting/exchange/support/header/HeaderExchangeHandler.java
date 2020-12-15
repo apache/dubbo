@@ -77,6 +77,7 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
 
     void handleRequest(final ExchangeChannel channel, Request req) throws RemotingException {
         Response res = new Response(req.getId(), req.getVersion());
+        res.setProto(req.getProto());
         if (req.isBroken()) {
             Object data = req.getData();
 

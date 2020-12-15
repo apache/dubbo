@@ -58,6 +58,18 @@ public abstract class AbstractCodec implements Codec2 {
         return CodecSupport.getSerialization(channel.getUrl());
     }
 
+    protected Serialization getSerialization(Channel channel, Byte id) {
+        if (-1 == id) {
+            return getSerialization(channel);
+        }
+        try {
+            return CodecSupport.getSerialization(channel.getUrl(), id);
+        } catch (IOException e) {
+            logger.error(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
     protected boolean isClientSide(Channel channel) {
         String side = (String)channel.getAttribute(SIDE_KEY);
         if (CLIENT_SIDE.equals(side)) {

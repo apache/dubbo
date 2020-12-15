@@ -90,6 +90,8 @@ public class Response {
 
     private Object mResult;
 
+    private byte proto = -1;
+
     public Response() {
     }
 
@@ -164,6 +166,14 @@ public class Response {
 
     public void setErrorMessage(String msg) {
         mErrorMsg = msg;
+    }
+
+    public byte getProto() {
+        return proto;
+    }
+
+    public void setProto(byte proto) {
+        this.proto = proto;
     }
 
     @Override

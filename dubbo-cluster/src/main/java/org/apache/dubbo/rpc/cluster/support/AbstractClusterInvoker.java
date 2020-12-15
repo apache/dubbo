@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -39,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
@@ -141,6 +143,21 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
             return null;
         }
         String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
+
+        String serializationKey = invocation.getInvoker().getUrl().getParameter(Constants.SERIALIZATION_KEY,StringUtils.EMPTY_STRING);
+        if (!serializationKey.equals(StringUtils.EMPTY_STRING)) {
+            invokers = invokers.stream().filter(it-> {
+                String param = it.getUrl().getUrlParam().getParameter(Constants.SERIALIZATION_KEY);
+                if (null != param && param.equals(serializationKey)) {
+                    return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+        }
+
+        if (CollectionUtils.isEmpty(invokers)) {
+            return null;
+        }
 
         boolean sticky = invokers.get(0).getUrl()
                 .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);

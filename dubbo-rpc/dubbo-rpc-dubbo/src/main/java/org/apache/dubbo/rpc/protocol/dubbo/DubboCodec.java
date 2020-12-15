@@ -112,6 +112,7 @@ public class DubboCodec extends ExchangeCodec {
             Request req = new Request(id);
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay((flag & FLAG_TWOWAY) != 0);
+            req.setProto(proto);
             if ((flag & FLAG_EVENT) != 0) {
                 req.setEvent(true);
             }

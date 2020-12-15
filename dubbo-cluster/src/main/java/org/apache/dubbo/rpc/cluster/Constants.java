@@ -101,4 +101,6 @@ public interface Constants {
     String EXPORT_KEY = "export";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
+
+    String SERIALIZATION_KEY = "serialization";
 }

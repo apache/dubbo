@@ -41,6 +41,8 @@ public class Request {
 
     private Object mData;
 
+    private byte proto;
+
     public Request() {
         mId = newId();
     }
@@ -125,6 +127,14 @@ public class Request {
         if (isHeartbeat) {
             setEvent(HEARTBEAT_EVENT);
         }
+    }
+
+    public byte getProto() {
+        return proto;
+    }
+
+    public void setProto(byte proto) {
+        this.proto = proto;
     }
 
     @Override
