@@ -33,5 +33,6 @@
         <module>dubbo-serialization-api</module>
         <module>dubbo-serialization-hessian2</module>
         <module>dubbo-serialization-jdk</module>
+        <module>dubbo-serialization-gson</module>
     </modules>
 </project>
