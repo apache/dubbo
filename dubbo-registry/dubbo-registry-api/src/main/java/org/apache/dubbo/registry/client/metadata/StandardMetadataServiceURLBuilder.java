@@ -26,10 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
@@ -54,36 +54,31 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
      */
     @Override
     public List<URL> build(ServiceInstance serviceInstance) {
-
-        Map<String, Map<String, String>> paramsMap = getMetadataServiceURLsParams(serviceInstance);
+        Map<String, String> paramsMap = getMetadataServiceURLsParams(serviceInstance);
 
         List<URL> urls = new ArrayList<>(paramsMap.size());
 
         String serviceName = serviceInstance.getServiceName();
 
         String host = serviceInstance.getHost();
-
-        for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
-            String protocol = entry.getKey();
-            Map<String, String> params = entry.getValue();
-            int port = Integer.parseInt(params.get(PORT_KEY));
-            URLBuilder urlBuilder = new URLBuilder()
-                    .setHost(host)
-                    .setPort(port)
-                    .setProtocol(protocol)
-                    .setPath(MetadataService.class.getName())
-                    .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
-                    .addParameter(SIDE_KEY, CONSUMER);
-
-            // add parameters
-            params.forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
-
-            // add the default parameters
-            urlBuilder.addParameter(GROUP_KEY, serviceName);
-
-            urls.add(urlBuilder.build());
+        URLBuilder urlBuilder = new URLBuilder();
+        for (Map.Entry<String, String> entry : paramsMap.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            if (key.equals(PORT_KEY)) {
+                urlBuilder.setPort(Integer.parseInt(value));
+            } else if (key.equals(PROTOCOL_KEY)) {
+                urlBuilder.setProtocol(value);
+            } else {
+                urlBuilder.addParameter(key, value);
+            }
         }
+        urlBuilder.setHost(host).setPath(MetadataService.class.getName())
+                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(SIDE_KEY, CONSUMER)
+                .addParameter(GROUP_KEY, serviceName);
 
+        urls.add(urlBuilder.build());
         return urls;
     }
 }

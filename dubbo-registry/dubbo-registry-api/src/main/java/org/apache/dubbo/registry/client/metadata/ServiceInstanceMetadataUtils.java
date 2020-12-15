@@ -43,6 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
@@ -98,23 +99,11 @@ public class ServiceInstanceMetadataUtils {
      *
      * @param serviceInstance the instance of {@link ServiceInstance}
      * @return non-null {@link Map}, the key is {@link URL#getProtocol() the protocol of URL}, the value is
-     * {@link #getMetadataServiceURLParams(ServiceInstance, String)}
      */
-    public static Map<String, Map<String, String>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
+    public static Map<String, String> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
         return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
-    }
-
-    /**
-     * Get the {@link URL url's} parameters of {@link MetadataService MetadataService's} Metadata
-     *
-     * @param serviceInstance the instance of {@link ServiceInstance}
-     * @return non-null {@link Map}
-     */
-    public static Map<String, String> getMetadataServiceURLParams(ServiceInstance serviceInstance, String protocol) {
-        Map<String, Map<String, String>> params = getMetadataServiceURLsParams(serviceInstance);
-        return params.getOrDefault(protocol, emptyMap());
     }
 
     public static String getMetadataServiceParameter(URL url) {
@@ -135,6 +124,7 @@ public class ServiceInstanceMetadataUtils {
         Map<String, String> params = new LinkedHashMap<>();
         setDefaultParams(params, providerURL);
         params.put(PORT_KEY, String.valueOf(providerURL.getPort()));
+        params.put(PROTOCOL_KEY, providerURL.getProtocol());
         return params;
     }
 

@@ -259,7 +259,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
         if (metadata == null) {
-            if (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 5000)) {
+            if (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)) {
                 metadata = getMetadataInfo(instance);
                 if (metadata != null) {
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
@@ -268,7 +268,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     parseMetadata(revision, metadata, localServiceToRevisions);
                 } else {
                     logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                            + ", async task added, wait for retry.");
+                            + ", wait for retry.");
                     lastFailureTime = System.currentTimeMillis();
                     failureCounter.incrementAndGet();
                 }

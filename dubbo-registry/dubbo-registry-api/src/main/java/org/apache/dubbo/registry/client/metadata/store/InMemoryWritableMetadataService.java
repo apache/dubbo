@@ -247,6 +247,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return this.metadataServiceURL;
     }
 
+    @Override
+    public void setMetadataServiceURL(URL url) {
+        this.metadataServiceURL = url;
+    }
+
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
         return executeMutually(() -> {
             SortedSet<URL> urls = serviceURLs.computeIfAbsent(url.getServiceKey(), this::newSortedURLs);

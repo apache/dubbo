@@ -165,6 +165,11 @@ public abstract class AbstractCluster implements Cluster {
             return filterInvoker.invoke(invocation);
         }
 
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
         /**
          * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
          * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.

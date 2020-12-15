@@ -75,6 +75,13 @@ public interface WritableMetadataService extends MetadataService {
 
     void publishServiceDefinition(URL providerUrl);
 
+    default void setMetadataServiceURL(URL url) {
+
+    }
+
+    default URL getMetadataServiceURL() {
+        return null;
+    }
 
     /**
      * Get {@link ExtensionLoader#getDefaultExtension() the defautl extension} of {@link WritableMetadataService}

@@ -28,7 +28,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
@@ -68,7 +67,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setApplication(getApplicationConfig());
-            serviceConfig.setRegistries(getRegistries());
+            serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
@@ -112,10 +111,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private ApplicationConfig getApplicationConfig() {
         return ApplicationModel.getConfigManager().getApplication().get();
-    }
-
-    private List<RegistryConfig> getRegistries() {
-        return new ArrayList<>(ApplicationModel.getConfigManager().getRegistries());
     }
 
     private ProtocolConfig generateMetadataProtocol() {

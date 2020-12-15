@@ -167,10 +167,6 @@ public interface MetadataService {
         return Collections.emptySet();
     }
 
-    default URL getMetadataServiceURL() {
-        return null;
-    }
-
     /**
      * Interface definition.
      *
