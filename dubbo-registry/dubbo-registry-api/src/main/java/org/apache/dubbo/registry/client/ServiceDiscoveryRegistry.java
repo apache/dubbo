@@ -205,10 +205,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     public void doRegister(URL url) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
-            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
-        }
+//        addRegistryClusterKey(url);
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));
@@ -229,10 +226,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     public void doUnregister(URL url) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
-            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
-        }
+//        addRegistryClusterKey(url);
         if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
@@ -249,10 +243,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
-            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
-        }
+//        addRegistryClusterKey(url);
         doSubscribe(url, listener);
     }
 
@@ -277,11 +268,16 @@ public class ServiceDiscoveryRegistry implements Registry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
+//        addRegistryClusterKey(url);
+        doUnsubscribe(url, listener);
+    }
+
+    private URL addRegistryClusterKey(URL url) {
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
         if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
             url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
-        doUnsubscribe(url, listener);
+        return url;
     }
 
     public void doUnsubscribe(URL url, NotifyListener listener) {

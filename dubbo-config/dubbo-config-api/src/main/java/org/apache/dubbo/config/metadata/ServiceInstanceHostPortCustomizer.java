@@ -66,6 +66,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
             DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
             instance.setHost(host);
             instance.setPort(port);
+            instance.setId(host + ":" + port);
         }
     }
 }
