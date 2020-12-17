@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util.protocol;
+package org.apache.dubbo.registry.xds.util.protocol.delta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.registry.xds.util.protocol.DeltaResource;
+import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DeltaRoute {
+public class DeltaRoute implements DeltaResource<RouteResult> {
     private final Map<String, Map<String, Set<String>>> data = new ConcurrentHashMap<>();
 
     public void addResource(String resourceName, Map<String, Set<String>> route) {
@@ -38,9 +38,10 @@ public class DeltaRoute {
         }
     }
 
-    public Map<String, Set<String>> getRoutes() {
+    @Override
+    public RouteResult getResource() {
         Map<String, Set<String>> result = new ConcurrentHashMap<>();
         data.values().forEach(result::putAll);
-        return Collections.unmodifiableMap(result);
+        return new RouteResult(result);
     }
 }

@@ -45,7 +45,13 @@
 
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-all</artifactId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.32.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
             <version>1.32.1</version>
         </dependency>
 

@@ -14,76 +14,67 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util.protocol;
+package org.apache.dubbo.registry.xds.util.protocol.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaRoute;
+import org.apache.dubbo.registry.xds.util.protocol.message.RouteResult;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.envoyproxy.envoy.config.core.v3.Node;
-import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class RdsProtocol {
+public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
-    private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
+    private static final Logger logger = LoggerFactory.getLogger(AbstractProtocol.class);
 
-    private final static String TYPE_URL = "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
-
-    public DiscoveryRequest buildDiscoveryRequest(Node node, Set<String> resourceNames) {
-        return DiscoveryRequest.newBuilder()
-                .setNode(node)
-                .setTypeUrl(TYPE_URL)
-                .addAllResourceNames(resourceNames)
-                .build();
+    public RdsProtocol(XdsChannel xdsChannel, Node node) {
+        super(xdsChannel, node);
     }
 
-    public DiscoveryRequest buildDiscoveryRequest(Node node, Set<String> resourceNames, DiscoveryResponse response) {
-        return DiscoveryRequest.newBuilder()
-                .setNode(node)
-                .setTypeUrl(TYPE_URL)
-                .addAllResourceNames(resourceNames)
-                .setVersionInfo(response.getVersionInfo())
-                .setResponseNonce(response.getNonce())
-                .build();
+    @Override
+    public String getTypeUrl() {
+        return "type.googleapis.com/envoy.config.route.v3.RouteConfiguration";
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, Set<String>> decodeDiscoveryResponse(DiscoveryResponse response) {
-        if (TYPE_URL.equals(response.getTypeUrl())) {
+    @Override
+    protected RouteResult decodeDiscoveryResponse(DiscoveryResponse response) {
+        if (getTypeUrl().equals(response.getTypeUrl())) {
             Map<String, Set<String>> map = response.getResourcesList().stream()
                     .map(RdsProtocol::unpackRouteConfiguration)
                     .filter(Objects::nonNull)
                     .map(RdsProtocol::decodeResourceToListener)
-                    .reduce((a,b)->{
+                    .reduce((a, b) -> {
                         a.putAll(b);
                         return a;
                     }).orElse(new HashMap<>());
-            return Collections.unmodifiableMap(map);
+            return new RouteResult(map);
         }
-        return Collections.EMPTY_MAP;
+        return new RouteResult();
     }
 
-    public static DeltaRoute decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaRoute previous) {
+    @Override
+    protected DeltaRoute decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaRoute previous) {
         DeltaRoute deltaRoute = previous;
         if (deltaRoute == null) {
             deltaRoute = new DeltaRoute();
         }
-        if (TYPE_URL.equals(response.getTypeUrl())) {
+        if (getTypeUrl().equals(response.getTypeUrl())) {
             deltaRoute.removeResource(response.getRemovedResourcesList());
             for (Resource resource : response.getResourcesList()) {
                 RouteConfiguration unpackedResource = unpackRouteConfiguration(resource.getResource());
@@ -119,4 +110,6 @@ public class RdsProtocol {
             return null;
         }
     }
+
+
 }

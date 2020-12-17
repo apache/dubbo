@@ -14,18 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util.protocol;
+package org.apache.dubbo.registry.xds.util.protocol.delta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.registry.xds.util.protocol.DeltaResource;
+import org.apache.dubbo.registry.xds.util.protocol.message.ListenerResult;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class DeltaListener {
+public class DeltaListener implements DeltaResource<ListenerResult> {
     private final Map<String, Set<String>> data = new ConcurrentHashMap<>();
 
     public void addResource(String resourceName, Set<String> listeners) {
@@ -38,10 +39,11 @@ public class DeltaListener {
         }
     }
 
-    public org.apache.dubbo.registry.xds.util.protocol.Listener getListeners() {
+    @Override
+    public ListenerResult getResource() {
         Set<String> set = data.values().stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
-        return new Listener(set);
+        return new ListenerResult(set);
     }
 }

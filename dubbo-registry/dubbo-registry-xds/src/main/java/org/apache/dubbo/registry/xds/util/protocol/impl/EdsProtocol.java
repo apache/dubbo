@@ -14,10 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util.protocol;
+package org.apache.dubbo.registry.xds.util.protocol.impl;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.AbstractProtocol;
+import org.apache.dubbo.registry.xds.util.protocol.delta.DeltaEndpoint;
+import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 
 import com.google.protobuf.Any;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -27,58 +32,46 @@ import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class EdsProtocol{
+public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint> {
 
     private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
 
-    private final static String TYPE_URL = "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
-
-    public static DiscoveryRequest buildDiscoveryRequest(Node node, Set<String> resourceNames) {
-        return DiscoveryRequest.newBuilder()
-                .setNode(node)
-                .setTypeUrl(TYPE_URL)
-                .addAllResourceNames(resourceNames)
-                .build();
+    public EdsProtocol(XdsChannel xdsChannel, Node node) {
+        super(xdsChannel, node);
     }
 
-    public static DiscoveryRequest buildDiscoveryRequest(Node node, Set<String> resourceNames, DiscoveryResponse response) {
-        return DiscoveryRequest.newBuilder()
-                .setNode(node)
-                .setTypeUrl(TYPE_URL)
-                .addAllResourceNames(resourceNames)
-                .setVersionInfo(response.getVersionInfo())
-                .setResponseNonce(response.getNonce())
-                .build();
+    @Override
+    public String getTypeUrl() {
+        return "type.googleapis.com/envoy.config.endpoint.v3.ClusterLoadAssignment";
     }
 
-    @SuppressWarnings("unchecked")
-    public static Set<Endpoint> decodeDiscoveryResponse(DiscoveryResponse response) {
-        if (TYPE_URL.equals(response.getTypeUrl())) {
+    @Override
+    protected  EndpointResult decodeDiscoveryResponse(DiscoveryResponse response) {
+        if (getTypeUrl().equals(response.getTypeUrl())) {
             Set<Endpoint> set = response.getResourcesList().stream()
                     .map(EdsProtocol::unpackClusterLoadAssignment)
                     .filter(Objects::nonNull)
                     .flatMap((e) -> decodeResourceToEndpoint(e).stream())
                     .collect(Collectors.toSet());
-            return Collections.unmodifiableSet(set);
+            return new EndpointResult(set);
         }
-        return Collections.EMPTY_SET;
+        return new EndpointResult();
     }
 
-    public static DeltaEndpoint decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaEndpoint previous) {
+    @Override
+    protected  DeltaEndpoint decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaEndpoint previous) {
         DeltaEndpoint deltaEndpoint = previous;
         if (deltaEndpoint == null) {
             deltaEndpoint = new DeltaEndpoint();
         }
-        if (TYPE_URL.equals(response.getTypeUrl())) {
+        if (getTypeUrl().equals(response.getTypeUrl())) {
             deltaEndpoint.removeResource(response.getRemovedResourcesList());
             for (Resource resource : response.getResourcesList()) {
                 ClusterLoadAssignment unpackedResource = unpackClusterLoadAssignment(resource.getResource());
@@ -118,5 +111,4 @@ public class EdsProtocol{
             return null;
         }
     }
-
 }

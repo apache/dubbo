@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds.util.protocol;
+package org.apache.dubbo.registry.xds.util.protocol.delta;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.registry.xds.util.protocol.DeltaResource;
+import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
+import org.apache.dubbo.registry.xds.util.protocol.message.EndpointResult;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-public class DeltaEndpoint {
+public class DeltaEndpoint implements DeltaResource<EndpointResult> {
     private final Map<String, Set<Endpoint>> data = new ConcurrentHashMap<>();
 
     public void addResource(String resourceName, Set<Endpoint> endpoints) {
@@ -38,11 +40,12 @@ public class DeltaEndpoint {
         }
     }
 
-    public Set<Endpoint> getEndpoints() {
+    @Override
+    public EndpointResult getResource() {
         Set<Endpoint> set = data.values().stream()
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet());
-        return Collections.unmodifiableSet(set);
+        return new EndpointResult(set);
     }
 
 }

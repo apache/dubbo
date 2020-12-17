@@ -19,18 +19,30 @@ package org.apache.dubbo.registry.xds;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
-import org.apache.dubbo.registry.xds.util.XdsChannel;
+import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
 import java.util.List;
 import java.util.Set;
 
 public class XdsServiceDiscovery extends AbstractServiceDiscovery {
     private PilotExchanger exchanger;
+    private URL registryURL;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
+        exchanger = PilotExchanger.initialize(registryURL);
+    }
+
+    @Override
+    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+
+    }
+
+    @Override
+    public void update(ServiceInstance serviceInstance) throws RuntimeException {
 
     }
 
@@ -46,21 +58,26 @@ public class XdsServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public Set<String> getServices() {
-        return null;
+        return exchanger.getServices();
     }
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
+        Set<Endpoint> endpoints = exchanger.getEndpoints(serviceName);
         return null;
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-
+        listener.getServiceNames().forEach(serviceName -> {
+            exchanger.observeEndpoints(serviceName, (endpoints -> {
+                listener.accept(new ServiceInstancesChangedEvent(serviceName, null));
+            }));
+        });
     }
 
     @Override
     public URL getUrl() {
-        return null;
+        return registryURL;
     }
 }
