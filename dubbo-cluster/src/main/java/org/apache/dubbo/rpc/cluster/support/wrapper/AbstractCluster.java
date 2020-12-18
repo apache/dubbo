@@ -19,9 +19,10 @@ package org.apache.dubbo.rpc.cluster.support.wrapper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.FilterChainBuilder;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -33,10 +34,8 @@ import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
+import java.util.Set;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERCEPTOR_BUILDER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOCATION_INTERCEPTOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
@@ -67,11 +66,11 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {
-        String interceptorBuilder = invoker.getUrl().getParameter(INTERCEPTOR_BUILDER_KEY);
-        if (StringUtils.isEmpty(interceptorBuilder)) {
+        Set<InvocationInterceptorBuilder> builders = ExtensionLoader.getExtensionLoader(InvocationInterceptorBuilder.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isEmpty(builders)) {
             return invoker;
         }
-        return new InterceptorInvoker<>(invoker);
+        return new InterceptorInvoker<>(invoker, builders);
     }
 
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
@@ -155,9 +154,16 @@ public abstract class AbstractCluster implements Cluster {
         private Invoker<T> filterInvoker;
 
         public FilterInvoker(AbstractClusterInvoker<T> invoker) {
-            filterInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class)
-                    .getExtension(invoker.getUrl().getParameter(FILTER_BUILDER_KEY, DEFAULT_KEY))
-                    .buildInvokerChain(invoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+            Set<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getSupportedExtensionInstances();
+            if (CollectionUtils.isEmpty(builders)) {
+                filterInvoker = invoker;
+            } else {
+                Invoker<T> tmpInvoker = invoker;
+                for (FilterChainBuilder builder : builders) {
+                    tmpInvoker = builder.buildInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+                }
+                filterInvoker = tmpInvoker;
+            }
         }
 
         @Override
@@ -183,15 +189,22 @@ public abstract class AbstractCluster implements Cluster {
     static class InterceptorInvoker<T> extends AbstractClusterInvoker<T> {
         private Invoker<T> interceptorInvoker;
 
-        public InterceptorInvoker(AbstractClusterInvoker<T> invoker) {
-            interceptorInvoker = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class)
-                    .getExtension(invoker.getUrl().getParameter(INTERCEPTOR_BUILDER_KEY))
-                    .buildInvokerChain(invoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+        public InterceptorInvoker(AbstractClusterInvoker<T> invoker, Set<InvocationInterceptorBuilder> builders) {
+            Invoker<T> tmpInvoker = invoker;
+            for (InvocationInterceptorBuilder builder : builders) {
+                tmpInvoker = builder.buildInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+            }
+            interceptorInvoker = tmpInvoker;
         }
 
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return interceptorInvoker.invoke(invocation);
+        }
+
+        @Override
+        public URL getUrl() {
+            return interceptorInvoker.getUrl();
         }
 
         /**

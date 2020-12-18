@@ -16,9 +16,101 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
 @SPI("default")
 public interface FilterChainBuilder {
     <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group);
+
+    class FilterChainNode<T> implements Invoker<T> {
+        Invoker<T> invoker;
+        Invoker<T> next;
+        Filter filter;
+
+        public FilterChainNode(Invoker<T> invoker, Invoker<T> next, Filter filter) {
+            this.invoker = invoker;
+            this.next = next;
+            this.filter = filter;
+        }
+
+        public Invoker<T> getDelegateInvoker() {
+            return invoker;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return invoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return invoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return invoker.isAvailable();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            Result asyncResult;
+            try {
+                asyncResult = filter.invoke(next, invocation);
+            } catch (Exception e) {
+                if (filter instanceof ListenableFilter) {
+                    ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                    try {
+                        Filter.Listener listener = listenableFilter.listener(invocation);
+                        if (listener != null) {
+                            listener.onError(e, invoker, invocation);
+                        }
+                    } finally {
+                        listenableFilter.removeListener(invocation);
+                    }
+                } else if (filter instanceof Filter.Listener) {
+                    Filter.Listener listener = (Filter.Listener) filter;
+                    listener.onError(e, invoker, invocation);
+                }
+                throw e;
+            } finally {
+
+            }
+            return asyncResult.whenCompleteWithContext((r, t) -> {
+                if (filter instanceof ListenableFilter) {
+                    ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                    Filter.Listener listener = listenableFilter.listener(invocation);
+                    try {
+                        if (listener != null) {
+                            if (t == null) {
+                                listener.onResponse(r, invoker, invocation);
+                            } else {
+                                listener.onError(t, invoker, invocation);
+                            }
+                        }
+                    } finally {
+                        listenableFilter.removeListener(invocation);
+                    }
+                } else if (filter instanceof Filter.Listener) {
+                    Filter.Listener listener = (Filter.Listener) filter;
+                    if (t == null) {
+                        listener.onResponse(r, invoker, invocation);
+                    } else {
+                        listener.onError(t, invoker, invocation);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void destroy() {
+            invoker.destroy();
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+    }
 }
