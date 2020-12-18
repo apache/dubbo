@@ -118,7 +118,7 @@ public class RouterChain<T> {
         executorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                loop();
+                loop(false);
             }
         }, 5, 5, TimeUnit.SECONDS);
     }
@@ -219,10 +219,10 @@ public class RouterChain<T> {
         this.invokers = (invokers == null ? Collections.emptyList() : invokers);
         stateRouters.forEach(router -> router.notify(this.invokers));
         routers.forEach(router -> router.notify(this.invokers));
-        loop();
+        loop(true);
     }
 
-    private void buildCache() {
+    private void buildCache(boolean notify) {
         if (invokers == null || invokers.size() <= 0) {
             return;
         }
@@ -238,7 +238,7 @@ public class RouterChain<T> {
                     public void run() {
                         RouterCache routerCache = null;
                         try {
-                            routerCache = poolRouter(stateRouter, origin, copyInvokers);
+                            routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
                             //file cache
                             newCache.getCache().put(stateRouter.getName(), routerCache);
                         } catch (Throwable t) {
@@ -253,16 +253,16 @@ public class RouterChain<T> {
         try {
             cdl.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Thread.currentThread().interrupt();
         }
 
         this.cache.set(newCache);
     }
 
-    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers) {
+    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers, boolean notify) {
         String routerName = router.getName();
         RouterCache routerCache = null;
-        if (isCacheMiss(orign, routerName) || router.shouldRePool()) {
+        if (isCacheMiss(orign, routerName) || router.shouldRePool() || notify) {
             return router.pool(invokers);
         } else {
             routerCache = orign.getCache().get(routerName);
@@ -280,15 +280,30 @@ public class RouterChain<T> {
         return false;
     }
 
-    private void loop() {
-        if (loopPermit.tryAcquire()) {
-            loopThreadPool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    loopPermit.release();
-                    buildCache();
-                }
-            });
+    private void loop(boolean notify) {
+        if (notify) {
+            try {
+                loopPermit.acquire();
+                loopThreadPool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        loopPermit.release();
+                        buildCache(true);
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        } else {
+            if (loopPermit.tryAcquire()) {
+                loopThreadPool.submit(new Runnable() {
+                    @Override
+                    public void run() {
+                        loopPermit.release();
+                        buildCache(false);
+                    }
+                });
+            }
         }
     }
 
