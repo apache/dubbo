@@ -29,14 +29,14 @@ We are now collecting Dubbo user info to help us to improve Dubbo further. Kindl
 
 ## Getting started
 
-The following code snippet comes from [Dubbo Samples](https://github.com/apache/dubbo-samples/tree/master/java/dubbo-samples-api). You may clone the sample project and step into the `dubbo-samples-api` subdirectory before proceeding.
+The following code snippet comes from [Dubbo Samples](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api). You may clone the sample project and step into the `dubbo-samples-api` subdirectory before proceeding.
 
 ```bash
 # git clone https://github.com/apache/dubbo-samples.git
 # cd dubbo-samples/java/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/dubbo-samples/tree/master/java/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
+There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
 
 ### Maven dependency
 
@@ -168,9 +168,9 @@ The consumer will print out `hi, dubbo` on the screen.
 ### Next steps
 
 * [Your first Dubbo application](http://dubbo.apache.org/en-us/blog/dubbo-101.html) - A 101 tutorial to reveal more details, with the same code above.
-* [Dubbo user manual](http://dubbo.apache.org/en-us/docs/user/preface/background.html) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/en-us/docs/dev/build.html) - How to involve in Dubbo development.
-* [Dubbo admin manual](http://dubbo.apache.org/en-us/docs/admin/install/provider-demo.html) - How to admin and manage Dubbo services.
+* [Dubbo user manual](http://dubbo.apache.org/docs/v2.7/user/preface/background/) - How to use Dubbo and all its features.
+* [Dubbo developer guide](http://dubbo.apache.org/docs/v2.7/dev/build/) - How to involve in Dubbo development.
+* [Dubbo admin manual](http://dubbo.apache.org/docs/v2.7/admin/install/provider-demo/) - How to admin and manage Dubbo services.
 
 ## Building
 
