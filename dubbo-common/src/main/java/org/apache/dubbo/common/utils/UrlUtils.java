@@ -470,6 +470,16 @@ public class UrlUtils {
     }
 
     public static List<URL> classifyUrls(List<URL> urls, Predicate<URL> predicate) {
+        boolean filter = false;
+        for (URL url : urls) {
+            if (!predicate.test(url)) {
+                filter = true;
+                break;
+            }
+        }
+        if (!filter) {
+            return urls;
+        }
         return urls.stream().filter(predicate).collect(Collectors.toList());
     }
 
