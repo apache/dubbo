@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4;
+package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
@@ -43,8 +43,8 @@ import java.net.InetSocketAddress;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.eventLoopGroup;
-import static org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory.socketChannelClass;
+import static org.apache.dubbo.remoting.netty4.NettyEventLoopFactory.eventLoopGroup;
+import static org.apache.dubbo.remoting.netty4.NettyEventLoopFactory.socketChannelClass;
 
 /**
  * NettyClient.
@@ -109,7 +109,8 @@ public class NettyClient extends AbstractClient {
                     ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
                 }
 
-                NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyClient.this);
+                // todo add protocol
+                NettyCodecAdapter adapter = new NettyCodecAdapter(null, getUrl(), NettyClient.this);
                 ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())

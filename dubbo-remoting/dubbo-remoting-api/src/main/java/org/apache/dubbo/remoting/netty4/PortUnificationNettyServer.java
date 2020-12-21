@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.transport.netty4;
+package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
@@ -35,6 +35,7 @@ import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
@@ -51,7 +52,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 /**
  * NettyServer.
  */
-public class NettyServer extends AbstractServer implements RemotingServer {
+public class PortUnificationNettyServer extends AbstractServer implements RemotingServer {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
     /**
@@ -66,12 +67,12 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-	private io.netty.channel.Channel channel;
+    private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
 
-    public NettyServer(URL url, ChannelHandler handler) throws RemotingException {
+    public PortUnificationNettyServer(URL url, ChannelHandler handler) throws RemotingException {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
         super(ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME), ChannelHandlers.wrap(handler, url));
@@ -104,23 +105,18 @@ public class NettyServer extends AbstractServer implements RemotingServer {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                        NettyCodecAdapter adapter = new NettyCodecAdapter(getCodec(), getUrl(), NettyServer.this);
                         if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                            ch.pipeline().addLast("negotiation",
-                                    SslHandlerInitializer.sslServerHandler(getUrl(), nettyServerHandler));
+                            final ChannelPipeline p = ch.pipeline();
+                            p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
+                            p.addLast("negotiation",
+                                    new PortUnificationServerHandler(SslContexts.buildServerSslContext(getUrl())));
                         }
-                        ch.pipeline()
-                                .addLast("decoder", adapter.getDecoder())
-                                .addLast("encoder", adapter.getEncoder())
-                                .addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS))
-                                .addLast("handler", nettyServerHandler);
                     }
                 });
         // bind
         ChannelFuture channelFuture = bootstrap.bind(getBindAddress());
         channelFuture.syncUninterruptibly();
         channel = channelFuture.channel();
-
     }
 
     @Override
