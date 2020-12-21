@@ -14,11 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.registry.client.migration.model;
 
-import org.apache.dubbo.common.extension.SPI;
+public class ApplicationMigrationRule {
+    private String name;
+    private MigrationStep step;
+    private Float threshold;
 
-@SPI("default")
-public interface InvocationInterceptorBuilder {
-    <T> Invoker<T> buildInterceptorChain(final Invoker<T> invoker, String key, String group);
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public MigrationStep getStep() {
+        return step;
+    }
+
+    public void setStep(MigrationStep step) {
+        this.step = step;
+    }
+
+    public Float getThreshold() {
+        return threshold;
+    }
+
+    public void setThreshold(Float threshold) {
+        this.threshold = threshold;
+    }
 }

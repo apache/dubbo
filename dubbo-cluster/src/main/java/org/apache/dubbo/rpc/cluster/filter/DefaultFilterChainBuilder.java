@@ -14,27 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.support;
+package org.apache.dubbo.rpc.cluster.filter;
 
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.FilterChainBuilder;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import java.util.List;
 
+@Activate(order = 0)
 public class DefaultFilterChainBuilder implements FilterChainBuilder {
 
     @Override
-    public <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group) {
-        Invoker<T> last = invoker;
-        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
+    public <T> Invoker<T> buildInvokerChain(final Invoker<T> originalInvoker, String key, String group) {
+        Invoker<T> last = originalInvoker;
+        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
-                last = new FilterChainNode<>(last, next, filter);
+                last = new FilterChainNode<>(originalInvoker, next, filter);
+            }
+        }
+
+        return last;
+    }
+
+    @Override
+    public <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> originalInvoker, String key, String group) {
+        ClusterInvoker<T> last = originalInvoker;
+        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
+
+        if (!filters.isEmpty()) {
+            for (int i = filters.size() - 1; i >= 0; i--) {
+                final Filter filter = filters.get(i);
+                final Invoker<T> next = last;
+                last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
             }
         }
 

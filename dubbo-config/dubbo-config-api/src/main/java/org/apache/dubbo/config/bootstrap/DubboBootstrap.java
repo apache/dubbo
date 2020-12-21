@@ -1138,10 +1138,6 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private void registerServiceInstance() {
-        if (CollectionUtils.isEmpty(getServiceDiscoveries())) {
-            return;
-        }
-
         ApplicationConfig application = getApplication();
 
         String serviceName = application.getName();
@@ -1154,14 +1150,11 @@ public class DubboBootstrap extends GenericEventListener {
         executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
             InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
             localMetadataService.blockUntilUpdated();
-            ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MICROSECONDS);
+            ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
-        if (logger.isInfoEnabled()) {
-            logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
-        }
         // register instance only when at least one service is exported.
         if (serviceInstance.getPort() != null && serviceInstance.getPort() != -1) {
             publishMetadataToRemote(serviceInstance);
@@ -1181,6 +1174,9 @@ public class DubboBootstrap extends GenericEventListener {
     private void publishMetadataToRemote(ServiceInstance serviceInstance) {
 //        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
 //        localMetadataService.blockUntilUpdated();
+        if (logger.isInfoEnabled()) {
+            logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
+        }
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
     }

@@ -365,9 +365,6 @@ public interface CommonConstants {
 
     String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
-    String FILTER_BUILDER_KEY = "filter-builder";
-    String INTERCEPTOR_BUILDER_KEY = "interceptor-builder";
-
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
 

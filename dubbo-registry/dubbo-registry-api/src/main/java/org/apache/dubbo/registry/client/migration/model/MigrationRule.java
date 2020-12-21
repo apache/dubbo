@@ -44,8 +44,10 @@ public class MigrationRule {
     // FIXME
     private List<String> targetIps;
     private List<InterfaceMigrationRule> interfaces;
+    private List<ApplicationMigrationRule> applications;
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
+    private transient Map<String, ApplicationMigrationRule> applicationRules;
 
     public String getKey() {
         return key;
@@ -119,6 +121,8 @@ public class MigrationRule {
             });
         }
     }
+
+
 
     public static MigrationRule parse(String rawRule) {
         Constructor constructor = new Constructor(MigrationRule.class);

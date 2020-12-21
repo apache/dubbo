@@ -20,21 +20,21 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.rpc.FilterChainBuilder;
 import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
+import org.apache.dubbo.rpc.cluster.filter.InvocationInterceptorBuilder;
 import org.apache.dubbo.rpc.cluster.interceptor.ClusterInterceptor;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INVOCATION_INTERCEPTOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
@@ -45,7 +45,7 @@ public abstract class AbstractCluster implements Cluster {
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
 //        AbstractClusterInvoker<T> last = clusterInvoker;
         AbstractClusterInvoker<T> last = buildInterceptorInvoker(new FilterInvoker<>(clusterInvoker));
-        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtension(clusterInvoker.getUrl(), key);
+        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
 
         if (!interceptors.isEmpty()) {
             for (int i = interceptors.size() - 1; i >= 0; i--) {
@@ -66,7 +66,7 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {
-        Set<InvocationInterceptorBuilder> builders = ExtensionLoader.getExtensionLoader(InvocationInterceptorBuilder.class).getSupportedExtensionInstances();
+        List<InvocationInterceptorBuilder> builders = ExtensionLoader.getExtensionLoader(InvocationInterceptorBuilder.class).getActivateExtensions();
         if (CollectionUtils.isEmpty(builders)) {
             return invoker;
         }
@@ -151,16 +151,16 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     static class FilterInvoker<T> extends AbstractClusterInvoker<T> {
-        private Invoker<T> filterInvoker;
+        private ClusterInvoker<T> filterInvoker;
 
         public FilterInvoker(AbstractClusterInvoker<T> invoker) {
-            Set<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getSupportedExtensionInstances();
+            List<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
             if (CollectionUtils.isEmpty(builders)) {
                 filterInvoker = invoker;
             } else {
-                Invoker<T> tmpInvoker = invoker;
+                ClusterInvoker<T> tmpInvoker = invoker;
                 for (FilterChainBuilder builder : builders) {
-                    tmpInvoker = builder.buildInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+                    tmpInvoker = builder.buildClusterInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
                 }
                 filterInvoker = tmpInvoker;
             }
@@ -169,6 +169,23 @@ public abstract class AbstractCluster implements Cluster {
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return filterInvoker.invoke(invocation);
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return filterInvoker.getDirectory();
+        }
+
+
+
+        @Override
+        public URL getRegistryUrl() {
+            return filterInvoker.getRegistryUrl();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return filterInvoker.isDestroyed();
         }
 
         @Override
@@ -187,12 +204,12 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     static class InterceptorInvoker<T> extends AbstractClusterInvoker<T> {
-        private Invoker<T> interceptorInvoker;
+        private ClusterInvoker<T> interceptorInvoker;
 
-        public InterceptorInvoker(AbstractClusterInvoker<T> invoker, Set<InvocationInterceptorBuilder> builders) {
-            Invoker<T> tmpInvoker = invoker;
+        public InterceptorInvoker(AbstractClusterInvoker<T> invoker, List<InvocationInterceptorBuilder> builders) {
+            ClusterInvoker<T> tmpInvoker = invoker;
             for (InvocationInterceptorBuilder builder : builders) {
-                tmpInvoker = builder.buildInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+                tmpInvoker = builder.buildClusterInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
             }
             interceptorInvoker = tmpInvoker;
         }
@@ -200,6 +217,21 @@ public abstract class AbstractCluster implements Cluster {
         @Override
         public Result invoke(Invocation invocation) throws RpcException {
             return interceptorInvoker.invoke(invocation);
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return interceptorInvoker.getDirectory();
+        }
+
+        @Override
+        public URL getRegistryUrl() {
+            return interceptorInvoker.getRegistryUrl();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return interceptorInvoker.isDestroyed();
         }
 
         @Override

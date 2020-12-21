@@ -77,7 +77,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
     URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
-    final Semaphore metadataSemaphore = new Semaphore(1);
+    final Semaphore metadataSemaphore = new Semaphore(0);
 
     // ==================================================================================== //
 
@@ -229,6 +229,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     public void blockUntilUpdated() {
         try {
             metadataSemaphore.acquire();
+            metadataSemaphore.drainPermits();
         } catch (InterruptedException e) {
             logger.warn("metadata refresh thread has been interrupted unexpectedly while wating for update.", e);
         }

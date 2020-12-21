@@ -18,6 +18,8 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -60,6 +62,7 @@ import static org.apache.dubbo.rpc.Constants.ID_KEY;
  * @since 2.7.5
  */
 public class ServiceInstanceMetadataUtils {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceInstanceMetadataUtils.class);
 
     /**
      * The prefix of {@link MetadataService} : "dubbo.metadata-service."
@@ -244,15 +247,19 @@ public class ServiceInstanceMetadataUtils {
         return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
     }
 
-    public static void refreshMetadataAndInstance() {
+    public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         remoteMetadataService.publishMetadata(ApplicationModel.getName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
-            calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
-            customizeInstance(serviceDiscovery.getLocalInstance());
+            ServiceInstance instance = serviceDiscovery.getLocalInstance() == null ? serviceInstance : serviceDiscovery.getLocalInstance();
+            if (instance == null) {
+                LOGGER.error("Error refreshing service instance, instance not registered yet.");
+            }
+            calInstanceRevision(serviceDiscovery, instance);
+            customizeInstance(instance);
             // update service instance revision
-            serviceDiscovery.update(serviceDiscovery.getLocalInstance());
+            serviceDiscovery.update(instance);
         });
     }
 

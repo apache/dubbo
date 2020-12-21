@@ -205,7 +205,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     public void doRegister(URL url) {
-//        addRegistryClusterKey(url);
+        url = addRegistryClusterKey(url);
         if (writableMetadataService.exportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] registered successfully.", url.toString()));
@@ -226,7 +226,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     public void doUnregister(URL url) {
-//        addRegistryClusterKey(url);
+        url = addRegistryClusterKey(url);
         if (writableMetadataService.unexportURL(url)) {
             if (logger.isInfoEnabled()) {
                 logger.info(format("The URL[%s] deregistered successfully.", url.toString()));
@@ -243,7 +243,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-//        addRegistryClusterKey(url);
+        url = addRegistryClusterKey(url);
         doSubscribe(url, listener);
     }
 
@@ -268,7 +268,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-//        addRegistryClusterKey(url);
+        url = addRegistryClusterKey(url);
         doUnsubscribe(url, listener);
     }
 
