@@ -71,11 +71,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @return
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(findComponentKey(url), k -> new ConcurrentHashMap<>());
         Integer portKey = url.getPort();
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
         // If executor has been shut down, create a new one
@@ -87,12 +83,14 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         return executor;
     }
 
+    private String findComponentKey(URL url) {
+        return CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))
+                ? CONSUMER_SIDE
+                : EXECUTOR_SERVICE_COMPONENT_KEY;
+    }
+
     public ExecutorService getExecutor(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.get(componentKey);
+        Map<Integer, ExecutorService> executors = data.get(findComponentKey(url));
 
         /**
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already

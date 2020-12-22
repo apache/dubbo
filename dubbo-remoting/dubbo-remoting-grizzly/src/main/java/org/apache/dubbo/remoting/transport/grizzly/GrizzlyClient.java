@@ -34,6 +34,7 @@ import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 import java.util.concurrent.TimeUnit;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -62,7 +63,7 @@ public class GrizzlyClient extends AbstractClient {
         filterChainBuilder.add(new GrizzlyHandler(getUrl(), this));
         TCPNIOTransportBuilder builder = TCPNIOTransportBuilder.newInstance();
         ThreadPoolConfig config = builder.getWorkerThreadPoolConfig();
-        config.setPoolName(CLIENT_THREAD_POOL_NAME)
+        config.setPoolName(DEFAULT_CLIENT_THREAD_POOL_NAME)
                 .setQueueLimit(-1)
                 .setCorePoolSize(0)
                 .setMaxPoolSize(Integer.MAX_VALUE)

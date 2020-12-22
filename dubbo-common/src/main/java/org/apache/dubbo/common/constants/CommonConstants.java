@@ -108,6 +108,8 @@ public interface CommonConstants {
 
     String DEFAULT_CLIENT_THREADPOOL = "cached";
 
+    String DEFAULT_CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
+
     String IO_THREADS_KEY = "iothreads";
 
     int DEFAULT_QUEUES = 0;

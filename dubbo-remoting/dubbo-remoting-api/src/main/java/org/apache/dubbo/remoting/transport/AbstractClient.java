@@ -37,6 +37,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREAD_POOL_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
 /**
@@ -44,7 +45,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
  */
 public abstract class AbstractClient extends AbstractEndpoint implements Client {
 
-    protected static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
@@ -90,7 +90,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        url = ExecutorUtil.setThreadName(url, CLIENT_THREAD_POOL_NAME);
+        url = ExecutorUtil.setThreadName(url, DEFAULT_CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);
     }

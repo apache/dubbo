@@ -17,6 +17,8 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREAD_POOL_NAME;
 
 /**
  * The service consumer default configuration
@@ -39,8 +41,15 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     /**
      * Consumer thread pool type: cached, fixed, limit, eager
+     * default: cached.
      */
-    private String threadpool;
+    private String threadpool = DEFAULT_CLIENT_THREADPOOL;
+
+    /**
+     * Consumer thread pool name
+     * default: DubboClientHandler.
+     */
+    private String threadname = DEFAULT_CLIENT_THREAD_POOL_NAME;
 
     /**
      * Consumer threadpool core thread size
@@ -131,5 +140,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setShareconnections(Integer shareconnections) {
         this.shareconnections = shareconnections;
+    }
+
+    public String getThreadname() {
+        return threadname;
+    }
+
+    public void setThreadname(String threadname) {
+        this.threadname = threadname;
     }
 }
