@@ -30,9 +30,12 @@ public abstract class Http2WireProtocol implements WireProtocol {
                 .frameListener(frameListener())
                 .build();
         p.addLast(handler);
+        configServerPipeline0(ctx);
     }
 
-    abstract Http2FrameListener frameListener();
+    protected abstract Http2FrameListener frameListener();
+
+    protected abstract void configServerPipeline0(ChannelHandlerContext ctx);
 
     @Override
     public void configClientPipeline(ChannelHandlerContext ctx) {
