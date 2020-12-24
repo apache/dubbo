@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.netty4;
 
+import io.netty.handler.codec.http2.Http2Exception;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -110,6 +111,12 @@ public class PortUnificationNettyServer extends AbstractServer implements Remoti
                             p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                             p.addLast("negotiation",
                                     new PortUnificationServerHandler(SslContexts.buildServerSslContext(getUrl())));
+                        } else {
+                            final ChannelPipeline p = ch.pipeline();
+                            p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
+                            p.addLast("negotiation",
+                                new PortUnificationServerHandler(null, false));
+                            p.addLast("handler", nettyServerHandler);
                         }
                     }
                 });

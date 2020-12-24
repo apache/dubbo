@@ -6,7 +6,7 @@ public class StreamData extends BaseStreamState implements StreamState{
 
     private final ByteBuf data;
 
-    protected StreamData(boolean endOfStream, int id,ByteBuf data) {
+    public StreamData(boolean endOfStream, int id,ByteBuf data) {
         super(endOfStream, id);
         this.data=data;
     }

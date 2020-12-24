@@ -15,6 +15,7 @@
  */
 package org.apache.dubbo.remoting.netty4;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import io.netty.buffer.ByteBuf;
@@ -31,7 +32,7 @@ import java.util.List;
  * Manipulates the current pipeline dynamically to switch protocols or enable
  * SSL or GZIP.
  */
-@ChannelHandler.Sharable
+//@ChannelHandler.Sharable
 public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
@@ -42,10 +43,16 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
         this(sslCtx, true);
     }
 
-    private PortUnificationServerHandler(SslContext sslCtx, boolean detectSsl) {
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.exceptionCaught(ctx, cause);
+    }
+
+    public PortUnificationServerHandler(SslContext sslCtx, boolean detectSsl) {
         this.sslCtx = sslCtx;
         this.detectSsl = detectSsl;
-        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(null, "");
+        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(
+            URL.valueOf("dubbo://127.0.0.1:50051/org.apache.dubbo.rpc.protocol.dubbo.IDemoService"),"grpc");
     }
 
     @Override

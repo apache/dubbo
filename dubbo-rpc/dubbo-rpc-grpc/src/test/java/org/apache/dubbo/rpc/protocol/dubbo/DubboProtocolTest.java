@@ -67,10 +67,15 @@ public class DubboProtocolTest {
     public void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("grpc://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("grpc://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L)));
-        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        //service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("grpc://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
+        //        3000L)));
+        //assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        try {
+            Thread.sleep(1000000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test

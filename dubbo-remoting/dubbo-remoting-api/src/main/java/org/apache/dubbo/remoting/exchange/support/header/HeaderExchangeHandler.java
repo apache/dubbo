@@ -25,6 +25,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.ExecutionException;
+import org.apache.dubbo.remoting.Http2Packet;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
@@ -188,6 +189,30 @@ public class HeaderExchangeHandler implements ChannelHandlerDelegate {
                 if (echo != null && echo.length() > 0) {
                     channel.send(echo);
                 }
+            }
+        } else if (message instanceof Http2Packet) {
+            Http2Packet packet = (Http2Packet)message;
+            Object msg = packet.getInv();
+            try {
+                CompletionStage<Object> future = handler.reply(exchangeChannel, msg);
+                future.whenComplete((appResult, t) -> {
+                    try {
+                        if (t == null) {
+                            packet.setStatus(Response.OK);
+                            packet.setResult(appResult);
+                        } else {
+                            packet.setStatus(Response.SERVICE_ERROR);
+                            packet.setErrorMessage(StringUtils.toString(t));
+                        }
+                        channel.send(packet);
+                    } catch (RemotingException e) {
+                        logger.warn("Send result to consumer failed, channel is " + channel + ", msg is " + e);
+                    }
+                });
+            } catch (Throwable e) {
+                packet.setStatus(Response.SERVICE_ERROR);
+                packet.setErrorMessage(StringUtils.toString(e));
+                channel.send(packet);
             }
         } else {
             handler.received(exchangeChannel, message);
