@@ -47,6 +47,13 @@ public class GrpcHttp2ServerResponseHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         super.channelRead(ctx, msg);
+
+    }
+
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        super.write(ctx, msg, promise);
         if (msg instanceof Http2Packet) {
             Http2Packet packet = (Http2Packet)msg;
             int streamId = packet.getStreamId();
@@ -63,13 +70,6 @@ public class GrpcHttp2ServerResponseHandler extends ChannelDuplexHandler {
                 ctx.channel().write(streamData);
             }
         }
-    }
-
-
-    @Override
-    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        super.write(ctx, msg, promise);
-
 
     }
 
