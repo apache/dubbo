@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.dubbo.grpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;

@@ -1,12 +1,13 @@
-package org.apache.dubbo.rpc.protocol.dubbo.grpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.Http2FrameListener;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.netty4.Http2WireProtocol;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http2.Http2FrameListener;
+
 @Activate
-public class GrpcHttp2Protocol extends Http2WireProtocol {
+public class TripleHttp2Protocol extends Http2WireProtocol {
 
     @Override
     protected Http2FrameListener frameListener() {

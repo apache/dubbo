@@ -14,30 +14,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.netty4;
+package org.apache.dubbo.rpc.protocol.dubbo.support;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.ChannelHandler;
-import org.apache.dubbo.remoting.Client;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.remoting.Transporter;
+import java.io.Serializable;
 
-/**
- * Default extension of {@link Transporter} using netty4.x.
- */
-public class PortUnificationNettyTransporter implements Transporter {
 
-    public static final String NAME = "netty";
+@SuppressWarnings("serial")
+public class CustomArgument implements Serializable {
 
-    @Override
-    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
-        return new PortUnificationNettyServer(url, handler);
+    Type type;
+    String name;
+
+    public CustomArgument() {
+    }
+    public CustomArgument(Type type, String name) {
+        super();
+        this.type = type;
+        this.name = name;
     }
 
-    @Override
-    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
-        return new NettyClient(url, handler);
+    public Type getType() {
+        return type;
     }
 
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

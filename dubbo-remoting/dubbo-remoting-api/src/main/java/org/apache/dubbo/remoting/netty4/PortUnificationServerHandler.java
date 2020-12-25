@@ -15,11 +15,7 @@
  */
 package org.apache.dubbo.remoting.netty4;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -39,20 +35,23 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     private final boolean detectSsl;
     private final List<WireProtocol> protocols;
 
-    public PortUnificationServerHandler(SslContext sslCtx) {
-        this(sslCtx, true);
+    public PortUnificationServerHandler(List<WireProtocol> protocols) {
+        this(null, false, protocols);
+    }
+
+    public PortUnificationServerHandler(SslContext sslCtx, List<WireProtocol> protocols) {
+        this(sslCtx, true, protocols);
+    }
+
+    public PortUnificationServerHandler(SslContext sslCtx, boolean detectSsl, List<WireProtocol> protocols) {
+        this.sslCtx = sslCtx;
+        this.protocols = protocols;
+        this.detectSsl = detectSsl;
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         super.exceptionCaught(ctx, cause);
-    }
-
-    public PortUnificationServerHandler(SslContext sslCtx, boolean detectSsl) {
-        this.sslCtx = sslCtx;
-        this.detectSsl = detectSsl;
-        this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(
-            URL.valueOf("dubbo://127.0.0.1:50051/org.apache.dubbo.rpc.protocol.dubbo.IDemoService"),"grpc");
     }
 
     @Override
@@ -96,7 +95,7 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
         p.addLast("ssl", sslCtx.newHandler(ctx.alloc()));
-        p.addLast("unificationA", new PortUnificationServerHandler(sslCtx, false));
+        p.addLast("unificationA", new PortUnificationServerHandler(sslCtx, false,protocols));
         p.remove(this);
     }
 

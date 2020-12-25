@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo.grpc;
-
-import java.net.InetSocketAddress;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
@@ -31,7 +27,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Http2Packet;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.netty4.DubboHttp2ConnectionHandler;
 import org.apache.dubbo.remoting.netty4.StreamData;
 import org.apache.dubbo.remoting.netty4.StreamHeader;
 
@@ -43,13 +38,11 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class GrpcHttp2ServerResponseHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(GrpcHttp2ServerResponseHandler.class);
 
-
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         super.channelRead(ctx, msg);
 
     }
-
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -70,8 +63,5 @@ public class GrpcHttp2ServerResponseHandler extends ChannelDuplexHandler {
                 ctx.channel().write(streamData);
             }
         }
-
     }
-
-
 }

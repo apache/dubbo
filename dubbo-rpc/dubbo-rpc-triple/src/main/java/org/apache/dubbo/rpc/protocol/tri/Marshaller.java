@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.dubbo.grpc;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

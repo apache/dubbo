@@ -10,7 +10,7 @@ public class NettyServerTest {
         URL url = new URL("transport", "localhost", 8898,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
 
-        final PortUnificationNettyServer server = new PortUnificationNettyServer(url, null);
+        final PortUnificationServer server = new PortUnificationServer(url);
         System.out.println(server.isBound());
     }
 }
