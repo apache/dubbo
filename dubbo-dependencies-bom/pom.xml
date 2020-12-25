@@ -113,7 +113,7 @@
         <javax_annotation-api_version>1.3.2</javax_annotation-api_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.11.v20180605</jetty_version>
-        <validation_version>1.1.0.Final</validation_version>
+        <validation_version>2.0.1.Final</validation_version>
         <hibernate_validator_version>5.4.1.Final</hibernate_validator_version>
         <jel_version>3.0.1-b08</jel_version>
         <jcache_version>1.0.0</jcache_version>
