@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.dubbo.common.URL;
@@ -10,7 +11,7 @@ import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 public abstract class AbstractStateRouter implements StateRouter {
     protected int priority = DEFAULT_PRIORITY;
-    protected boolean force = false;
+    protected AtomicBoolean force = new AtomicBoolean(false);
     protected URL url;
     protected List<Invoker> invokers;
 
@@ -50,11 +51,11 @@ public abstract class AbstractStateRouter implements StateRouter {
 
     @Override
     public boolean isForce() {
-        return force;
+        return force.get();
     }
 
     public void setForce(boolean force) {
-        this.force = force;
+        this.force.set(force);
     }
 
     @Override

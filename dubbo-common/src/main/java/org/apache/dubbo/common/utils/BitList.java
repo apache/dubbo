@@ -12,11 +12,7 @@ public class BitList<E> implements BitListInterf<E> {
     BitListInterf<E> delegate;
 
     public BitList(List<E> unmodifiableList, boolean empty) {
-        if (Jvm.isJava8Plus()) {
-            delegate = new RoaringBitList<>(unmodifiableList, empty);
-        } else {
-            delegate = new NormalList<>(unmodifiableList, empty);
-        }
+        delegate = new RoaringBitList<>(unmodifiableList, empty);
     }
 
     private BitList(BitListInterf<E> delegate) {

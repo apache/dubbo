@@ -13,6 +13,7 @@ class RoaringBitList<E> implements BitListInterf<E> {
     private final RoaringBitmap rootMap;
     private final List<E> unmodifiableList;
 
+    // FIXME 看一下高版本的RoaringBitMap，是否有内置函数支持更高效的遍历
     RoaringBitList(List<E> unmodifiableList, boolean empty) {
         this.unmodifiableList = unmodifiableList;
         this.rootMap = new RoaringBitmap();

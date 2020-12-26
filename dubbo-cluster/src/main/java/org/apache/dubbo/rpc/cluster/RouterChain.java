@@ -49,6 +49,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -199,6 +200,7 @@ public class RouterChain<T> {
             }
         }
 
+        // FIXME 看一下高版本的RoaringBitMap，是否有内置函数支持更高效的遍历
         List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
         Iterator<Invoker<T>> iter = finalBitListInvokers.iterator();
         while (iter.hasNext()) {
@@ -231,6 +233,7 @@ public class RouterChain<T> {
         CountDownLatch cdl = new CountDownLatch(stateRouters.size());
         AddrCache newCache = new AddrCache();
         newCache.setInvokers((List)invokers);
+        final AtomicBoolean poolSuccess = new AtomicBoolean(true);
         for (StateRouter stateRouter : (List<StateRouter>)stateRouters) {
             if (stateRouter.isEnable()) {
                 poolRouterThreadPool.execute(new Runnable() {
@@ -242,6 +245,7 @@ public class RouterChain<T> {
                             //file cache
                             newCache.getCache().put(stateRouter.getName(), routerCache);
                         } catch (Throwable t) {
+                            poolSuccess.set(false);
                             logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
                         } finally {
                             cdl.countDown();
@@ -256,7 +260,9 @@ public class RouterChain<T> {
             Thread.currentThread().interrupt();
         }
 
-        this.cache.set(newCache);
+        if (poolSuccess.get()) {
+            this.cache.set(newCache);
+        }
     }
 
     private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers, boolean notify) {

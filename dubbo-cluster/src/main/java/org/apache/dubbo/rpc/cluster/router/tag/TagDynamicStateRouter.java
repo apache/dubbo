@@ -65,6 +65,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
+        setForce(true);
         if (logger.isDebugEnabled()) {
             logger.debug("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " +
                     event.getContent());
@@ -130,7 +131,6 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public boolean isForce() {
-        // FIXME
         return tagRouterRule != null && tagRouterRule.isForce();
     }
 
