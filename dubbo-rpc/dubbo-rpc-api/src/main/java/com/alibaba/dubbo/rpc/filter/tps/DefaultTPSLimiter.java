@@ -40,6 +40,12 @@ public class DefaultTPSLimiter implements TPSLimiter {
                 stats.putIfAbsent(serviceKey,
                         new StatItem(serviceKey, rate, interval));
                 statItem = stats.get(serviceKey);
+            } else {
+                //rate or interval has changed, rebuild
+                if (statItem.getRate() != rate || statItem.getInterval() != interval) {
+                    stats.put(serviceKey, new StatItem(serviceKey, rate, interval));
+                    statItem = stats.get(serviceKey);
+                }
             }
             return statItem.isAllowable();
         } else {
