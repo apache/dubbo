@@ -20,7 +20,6 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
 
     @Override
     protected void configServerPipeline0(ChannelHandlerContext ctx) {
-        // response -> stream headers/data
-        ctx.pipeline().addLast(new GrpcHttp2ServerResponseHandler());
+
     }
 }
