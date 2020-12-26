@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.PortUnificationExchanger;
@@ -31,6 +34,9 @@ import org.apache.dubbo.rpc.protocol.AbstractExporter;
  */
 public class TripleProtocol implements Protocol {
 
+    private static ConcurrentHashMap<String, Invoker> path2Invoker = new ConcurrentHashMap<>();
+    private static final String NAME = "triple";
+    private static TripleProtocol INSTANCE;
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
 
     @Override
@@ -46,6 +52,7 @@ public class TripleProtocol implements Protocol {
 
             }
         };
+        path2Invoker.put(invoker.getUrl().getServiceKey(), invoker);
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
     }
@@ -60,5 +67,22 @@ public class TripleProtocol implements Protocol {
     @Override
     public void destroy() {
 
+    }
+
+    public Invoker getInvoker(String path) {
+        return path2Invoker.get(path);
+    }
+
+    public TripleProtocol() {
+        INSTANCE = this;
+    }
+
+    public static TripleProtocol getTripleProtocol() {
+        if (INSTANCE == null) {
+            // load
+            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(TripleProtocol.NAME);
+        }
+
+        return INSTANCE;
     }
 }

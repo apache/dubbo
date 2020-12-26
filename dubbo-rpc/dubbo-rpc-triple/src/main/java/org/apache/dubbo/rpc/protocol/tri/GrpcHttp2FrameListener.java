@@ -1,25 +1,42 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
+
+import io.grpc.Status;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpUtil;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2FrameAdapter;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2Stream;
 import io.netty.util.AsciiString;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Http2Packet;
+import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.netty4.DubboHttp2ConnectionHandler;
+import org.apache.dubbo.remoting.netty4.StreamData;
+import org.apache.dubbo.remoting.netty4.StreamHeader;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
-public class GrpcHttp2FrameListener extends Http2FrameAdapter {
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+public class GrpcHttp2FrameListener extends Http2FrameAdapter {
+    private TripleProtocol TRIPLE_PROTOCOL = TripleProtocol.getTripleProtocol();
     protected Http2Connection.PropertyKey streamKey = null;
 
     @Override
@@ -41,28 +58,58 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
 
         int processed = data.readableBytes() + padding;
         if (endOfStream) {
-            Http2Packet packet = buildHttp2Packet(streamId, request.getHeaders(), request.getData());
-            ctx.pipeline().fireChannelRead(packet);
+            Invocation invocation = buildInvocation(request.getHeaders(), request.getData());
+
+            Invoker invoker = TRIPLE_PROTOCOL.getInvoker("io.grpc.examples.helloworld.IGreeter");
+            Result result = invoker.invoke(invocation);
+            CompletionStage<Object> future = result.thenApply(Function.identity());
+
+            future.whenComplete((appResult, t) -> {
+                try {
+                    if (t == null) {
+                        AppResponse response = (AppResponse) appResult;
+                        if (!response.hasException()) {
+                            Http2Headers http2Headers = new DefaultHttp2Headers()
+                                .status(OK.codeAsText())
+                                .set(HttpHeaderNames.CONTENT_TYPE, GrpcElf.GRPC_PROTO);
+                            StreamHeader streamHeader = new StreamHeader(streamId, http2Headers, false);
+                            ctx.channel().write(streamHeader);
+
+                            ByteBuf byteBuf = Marshaller.marshaller.marshaller(ctx.alloc(), response.getValue());
+                            StreamData streamData = new StreamData(true, streamId, byteBuf);
+                            ctx.channel().write(streamData);
+                            final Http2Headers trailers = new DefaultHttp2Headers()
+                                .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
+                            ctx.channel().write(new StreamHeader(streamId, trailers, true));
+                        }
+                    } else {
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
         }
         return processed;
     }
 
-    private Http2Packet buildHttp2Packet(int streamId, Http2Headers http2Headers, ByteBuf data) {
+    private Invocation buildInvocation(Http2Headers http2Headers, ByteBuf data) {
 
         RpcInvocation inv = new RpcInvocation();
         final String path = http2Headers.path().toString();
         String[] parts = path.split("/");
-        String serviceName = parts[1];
-        String methodName = parts[2];
+        String serviceName = "io.grpc.examples.helloworld.IGreeter";
+        String methodName = "sayHello";
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
-        inv.setParameterTypes(methodDescriptor.getParameterClasses());
-        inv.setTargetServiceUniqueName(serviceName);
         Object obj = Marshaller.marshaller.unmarshaller(methodDescriptor.getParameterClasses()[0], data);
+        inv.setMethodName(methodName);
+        inv.setServiceName(serviceName);
+        inv.setTargetServiceUniqueName(serviceName);
+        inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setArguments(new Object[]{obj});
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
-        Http2Packet packet = new Http2Packet(streamId, inv, null);
-        return packet;
+
+        return inv;
     }
 
     @Override
