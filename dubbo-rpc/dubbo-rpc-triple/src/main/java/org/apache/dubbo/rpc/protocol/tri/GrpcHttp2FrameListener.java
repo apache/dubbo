@@ -76,7 +76,7 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
                             ctx.channel().write(streamHeader);
 
                             ByteBuf byteBuf = Marshaller.marshaller.marshaller(ctx.alloc(), response.getValue());
-                            StreamData streamData = new StreamData(true, streamId, byteBuf);
+                            StreamData streamData = new StreamData(false, streamId, byteBuf);
                             ctx.channel().write(streamData);
                             final Http2Headers trailers = new DefaultHttp2Headers()
                                 .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
