@@ -5,18 +5,25 @@ import java.util.function.Function;
 
 import io.grpc.Status;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.Http2Connection;
+import io.netty.handler.codec.http2.Http2ConnectionEncoder;
 import io.netty.handler.codec.http2.Http2Exception;
 import io.netty.handler.codec.http2.Http2FrameAdapter;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2Stream;
 import io.netty.util.AsciiString;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Http2Packet;
 import org.apache.dubbo.remoting.RemotingException;
@@ -34,10 +41,21 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http2.Http2Error.NO_ERROR;
+import static io.netty.util.CharsetUtil.UTF_8;
 
 public class GrpcHttp2FrameListener extends Http2FrameAdapter {
     private TripleProtocol TRIPLE_PROTOCOL = TripleProtocol.getTripleProtocol();
     protected Http2Connection.PropertyKey streamKey = null;
+    static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
+
+    @Override
+    public void onPingAckRead(ChannelHandlerContext ctx, long data) throws Http2Exception {
+        System.out.println("on ping ack read data:" + data);
+        if (data == GRACEFUL_SHUTDOWN_PING) {
+            System.out.println("on ping ack read data shutdown");
+        }
+    }
 
     @Override
     public int onDataRead(ChannelHandlerContext ctx, int streamId, ByteBuf data, int padding, boolean endOfStream)
@@ -78,9 +96,9 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
                             ByteBuf byteBuf = Marshaller.marshaller.marshaller(ctx.alloc(), response.getValue());
                             StreamData streamData = new StreamData(false, streamId, byteBuf);
                             ctx.channel().write(streamData);
-                            final Http2Headers trailers = new DefaultHttp2Headers()
-                                .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
-                            ctx.channel().write(new StreamHeader(streamId, trailers, true));
+                            //final Http2Headers trailers = new DefaultHttp2Headers()
+                            //    .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
+                            //ctx.channel().write(new StreamHeader(streamId, trailers, true));
                         }
                     } else {
                     }

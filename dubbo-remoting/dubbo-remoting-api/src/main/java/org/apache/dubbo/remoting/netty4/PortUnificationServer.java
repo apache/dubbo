@@ -93,6 +93,12 @@ public class PortUnificationServer {
         }
     }
 
+    public void close() throws Throwable {
+        if (channel != null) {
+            doClose();
+        }
+    }
+
     /**
      * Init and start netty server
      *
@@ -147,24 +153,16 @@ public class PortUnificationServer {
             if (channel != null) {
                 // unbind.
                 channel.close();
+                channel = null;
             }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
-        try {
-            Collection<org.apache.dubbo.remoting.Channel> channels = getChannels();
-            if (channels != null && channels.size() > 0) {
-                for (org.apache.dubbo.remoting.Channel channel : channels) {
-                    try {
-                        channel.close();
-                    } catch (Throwable e) {
-                        logger.warn(e.getMessage(), e);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+
+        for (WireProtocol protocol: protocols) {
+            protocol.close();
         }
+
         try {
             if (bootstrap != null) {
                 bossGroup.shutdownGracefully().syncUninterruptibly();

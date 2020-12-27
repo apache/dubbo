@@ -20,4 +20,9 @@ public class CompatibleProtocol implements WireProtocol {
     public void configClientPipeline(ChannelHandlerContext ctx) {
 
     }
+
+    @Override
+    public void close() {
+
+    }
 }

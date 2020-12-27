@@ -11,4 +11,6 @@ public interface WireProtocol {
   void configServerPipeline(ChannelHandlerContext ctx);
 
   void configClientPipeline(ChannelHandlerContext ctx);
+
+  void close();
 }

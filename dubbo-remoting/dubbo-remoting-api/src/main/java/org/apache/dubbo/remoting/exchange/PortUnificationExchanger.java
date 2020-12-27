@@ -17,4 +17,14 @@ public class PortUnificationExchanger {
             return server;
         });
     }
+
+    public static void close() {
+        for (PortUnificationServer server : servers.values()) {
+            try {
+                server.close();
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+    }
 }
