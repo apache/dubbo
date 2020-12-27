@@ -41,8 +41,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static io.netty.handler.codec.http2.Http2Error.NO_ERROR;
-import static io.netty.util.CharsetUtil.UTF_8;
 
 public class GrpcHttp2FrameListener extends Http2FrameAdapter {
     private TripleProtocol TRIPLE_PROTOCOL = TripleProtocol.getTripleProtocol();
@@ -96,9 +94,9 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
                             ByteBuf byteBuf = Marshaller.marshaller.marshaller(ctx.alloc(), response.getValue());
                             StreamData streamData = new StreamData(false, streamId, byteBuf);
                             ctx.channel().write(streamData);
-                            //final Http2Headers trailers = new DefaultHttp2Headers()
-                            //    .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
-                            //ctx.channel().write(new StreamHeader(streamId, trailers, true));
+                            final Http2Headers trailers = new DefaultHttp2Headers()
+                                .setInt(GrpcElf.GRPC_STATUS, Status.Code.OK.value());
+                            ctx.channel().write(new StreamHeader(streamId, trailers, true));
                         }
                     } else {
                     }
@@ -115,6 +113,7 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
         RpcInvocation inv = new RpcInvocation();
         final String path = http2Headers.path().toString();
         String[] parts = path.split("/");
+        // todo
         String serviceName = "io.grpc.examples.helloworld.IGreeter";
         String methodName = "sayHello";
         ServiceRepository repo = ApplicationModel.getServiceRepository();
@@ -187,10 +186,6 @@ public class GrpcHttp2FrameListener extends Http2FrameAdapter {
         Http2Request request = new Http2Request(streamId, http2Stream, headers, streamKey, marshaller,
             ctx.alloc());
         http2Stream.setProperty(streamKey, request);
-
-        if (endStream) {
-
-        }
     }
 
 }

@@ -6,8 +6,6 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpServerUpgradeHandler;
-import io.netty.handler.codec.http2.CleartextHttp2ServerUpgradeHandler;
 import io.netty.handler.codec.http2.Http2Connection;
 import io.netty.handler.codec.http2.Http2ConnectionDecoder;
 import io.netty.handler.codec.http2.Http2ConnectionEncoder;
@@ -18,10 +16,13 @@ import static io.netty.handler.codec.http2.Http2Error.NO_ERROR;
 import static io.netty.util.CharsetUtil.UTF_8;
 
 public class DubboHttp2ConnectionHandler extends Http2ConnectionHandler {
-    private ChannelHandlerContext ctx;
+
+    static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
+    private final Http2ConnectionEncoder encoder;
 
     protected DubboHttp2ConnectionHandler(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder, Http2Settings initialSettings) {
         super(decoder, encoder, initialSettings);
+        this.encoder = encoder;
     }
 
     @Override
@@ -33,6 +34,7 @@ public class DubboHttp2ConnectionHandler extends Http2ConnectionHandler {
             ByteBufUtil.writeAscii(ctx.alloc(), "app_requested"),
             ctx.newPromise());
 
+        encoder.writePing(ctx, false /* isAck */, GRACEFUL_SHUTDOWN_PING, ctx.newPromise());
 
         super.close(ctx, promise);
     }
@@ -51,8 +53,6 @@ public class DubboHttp2ConnectionHandler extends Http2ConnectionHandler {
             return promise;
         }
 
-        // Need to retain before we write the buffer because if we do it after the refCnt could already be 0 and
-        // result in an IllegalRefCountException.
         debugData.retain();
         ChannelFuture future = encoder.frameWriter().writeGoAway(ctx, lastStreamId, errorCode, debugData, promise);
 
