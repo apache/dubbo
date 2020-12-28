@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TripleInvokerResolver implements InvokerResolver {
+    // path0: com.foo.Bar
+    // path1: com.foo.Bar2:version
     private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
     private final Set<String> ignoreSet = ConcurrentHashMap.newKeySet();
 
