@@ -65,9 +65,13 @@ public class TripleHttp2FrameListener extends Http2FrameAdapter {
         int processed = data.readableBytes() + padding;
         if (endOfStream) {
             Invocation invocation = buildInvocation(request.getHeaders(), request.getData());
+            final String path = request.getHeaders().path().toString();
+            String[] parts = path.split("/");
+            // todo parts illegal service not found
+            String serviceName = parts[1];
             // TODO add version/group support
             //TODO add method not found / service not found err
-            Result result = serviceContainer.resolve("io.grpc.examples.helloworld.IGreeter").invoke(invocation);
+            Result result = serviceContainer.resolve(serviceName).invoke(invocation);
             CompletionStage<Object> future = result.thenApply(Function.identity());
 
             future.whenComplete((appResult, t) -> {
@@ -103,9 +107,11 @@ public class TripleHttp2FrameListener extends Http2FrameAdapter {
         RpcInvocation inv = new RpcInvocation();
         final String path = http2Headers.path().toString();
         String[] parts = path.split("/");
-        // todo
-        String serviceName = "io.grpc.examples.helloworld.IGreeter";
-        String methodName = "sayHello";
+        // todo parts illegal service not found
+        String serviceName = parts[1];
+        String originalMethodName = parts[2];
+        String methodName = originalMethodName.substring(0,1).toLowerCase().concat(originalMethodName.substring(1));
+
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
         Object obj = Marshaller.marshaller.unmarshaller(methodDescriptor.getParameterClasses()[0], data);
