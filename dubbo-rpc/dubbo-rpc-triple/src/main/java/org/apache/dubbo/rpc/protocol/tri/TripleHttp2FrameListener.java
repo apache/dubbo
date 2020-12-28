@@ -52,8 +52,6 @@ public class TripleHttp2FrameListener extends Http2FrameAdapter {
     public int onDataRead(ChannelHandlerContext ctx, int streamId, ByteBuf data, int padding, boolean endOfStream)
             throws Http2Exception {
         System.out.println("onDataRead:" + streamId);
-        final TripleHttp2ConnectionHandler connectionHandler = ctx.pipeline().get(TripleHttp2ConnectionHandler.class);
-        Http2Connection connection = connectionHandler.encoder().connection();
         Http2Stream stream = connection.stream(streamId);
         Http2Request request = stream == null ? null : (Http2Request) stream.getProperty(streamKey);
 

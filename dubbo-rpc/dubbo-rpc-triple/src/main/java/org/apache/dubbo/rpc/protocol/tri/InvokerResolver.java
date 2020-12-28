@@ -6,7 +6,7 @@ import org.apache.dubbo.rpc.Invoker;
 @SPI("triple")
 public interface InvokerResolver {
 
-    void add(String path, Invoker<?> invoker);
+    void add(String path, String service, Invoker<?> invoker);
 
     Invoker<?> resolve(String path);
 }

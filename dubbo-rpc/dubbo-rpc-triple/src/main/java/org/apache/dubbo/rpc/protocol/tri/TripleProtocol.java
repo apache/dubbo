@@ -70,7 +70,9 @@ public class TripleProtocol implements Protocol {
         };
 
         exporterMap.put(key, exporter);
-        serviceContainer.add(invoker.getUrl().getServiceKey(), invoker);
+
+        String service = url.getServiceInterface();
+        serviceContainer.add(url.getServiceKey(), service, invoker);
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
     }
