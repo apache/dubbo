@@ -12,7 +12,7 @@ public class StreamData extends BaseStreamState implements StreamState{
     }
 
 
-    ByteBuf data(){
+    public ByteBuf data(){
         return data;
     }
 

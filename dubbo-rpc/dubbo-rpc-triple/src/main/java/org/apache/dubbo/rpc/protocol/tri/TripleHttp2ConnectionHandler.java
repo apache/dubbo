@@ -1,4 +1,7 @@
-package org.apache.dubbo.remoting.netty4;
+package org.apache.dubbo.rpc.protocol.tri;
+
+import org.apache.dubbo.remoting.netty4.StreamData;
+import org.apache.dubbo.remoting.netty4.StreamHeader;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -15,12 +18,12 @@ import io.netty.handler.codec.http2.Http2Settings;
 import static io.netty.handler.codec.http2.Http2Error.NO_ERROR;
 import static io.netty.util.CharsetUtil.UTF_8;
 
-public class DubboHttp2ConnectionHandler extends Http2ConnectionHandler {
+public class TripleHttp2ConnectionHandler extends Http2ConnectionHandler {
 
     static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
     private final Http2ConnectionEncoder encoder;
 
-    protected DubboHttp2ConnectionHandler(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder, Http2Settings initialSettings) {
+    protected TripleHttp2ConnectionHandler(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder, Http2Settings initialSettings) {
         super(decoder, encoder, initialSettings);
         this.encoder = encoder;
     }
@@ -41,7 +44,7 @@ public class DubboHttp2ConnectionHandler extends Http2ConnectionHandler {
 
     public ChannelFuture goAway(final ChannelHandlerContext ctx, final int lastStreamId, final long errorCode,
         final ByteBuf debugData, ChannelPromise promise) {
-        final DubboHttp2ConnectionHandler connectionHandler = ctx.pipeline().get(DubboHttp2ConnectionHandler.class);
+        final TripleHttp2ConnectionHandler connectionHandler = ctx.pipeline().get(TripleHttp2ConnectionHandler.class);
         final Http2ConnectionEncoder encoder = connectionHandler.encoder();
         Http2Connection connection = connectionHandler.encoder().connection();
         promise = promise.unvoid();

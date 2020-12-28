@@ -10,7 +10,7 @@ public class StreamHeader extends BaseStreamState implements StreamState {
         this.headers = headers;
     }
 
-    Http2Headers headers() {
+    public Http2Headers headers() {
         return headers;
     }
 

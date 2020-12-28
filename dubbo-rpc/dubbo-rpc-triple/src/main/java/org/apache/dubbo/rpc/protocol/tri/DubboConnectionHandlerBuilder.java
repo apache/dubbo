@@ -1,4 +1,4 @@
-package org.apache.dubbo.remoting.netty4;
+package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.handler.codec.http2.AbstractHttp2ConnectionHandlerBuilder;
 import io.netty.handler.codec.http2.Http2Connection;
@@ -9,7 +9,7 @@ import io.netty.handler.codec.http2.Http2FrameLogger;
 import io.netty.handler.codec.http2.Http2HeadersEncoder;
 import io.netty.handler.codec.http2.Http2Settings;
 
-public class DubboConnectionHandlerBuilder extends AbstractHttp2ConnectionHandlerBuilder<DubboHttp2ConnectionHandler, DubboConnectionHandlerBuilder> {
+public class DubboConnectionHandlerBuilder extends AbstractHttp2ConnectionHandlerBuilder<TripleHttp2ConnectionHandler, DubboConnectionHandlerBuilder> {
     @Override
     public DubboConnectionHandlerBuilder validateHeaders(boolean validateHeaders) {
         return super.validateHeaders(validateHeaders);
@@ -77,13 +77,13 @@ public class DubboConnectionHandlerBuilder extends AbstractHttp2ConnectionHandle
     }
 
     @Override
-    public DubboHttp2ConnectionHandler build() {
+    public TripleHttp2ConnectionHandler build() {
         return super.build();
     }
 
     @Override
-    protected DubboHttp2ConnectionHandler build(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder,
-                                                Http2Settings initialSettings) {
-        return new DubboHttp2ConnectionHandler(decoder, encoder, initialSettings);
+    protected TripleHttp2ConnectionHandler build(Http2ConnectionDecoder decoder, Http2ConnectionEncoder encoder,
+                                                 Http2Settings initialSettings) {
+        return new TripleHttp2ConnectionHandler(decoder, encoder, initialSettings);
     }
 }
