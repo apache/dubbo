@@ -1,9 +1,5 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
@@ -11,14 +7,15 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.ByteBufInputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Marshaller {
 
     public static Marshaller marshaller = new Marshaller();
 
     public Object unmarshaller(Class<?> requestClass, ByteBuf in) {
-        in.readByte();
-        final int len = in.readInt();
-        System.out.println(len);
         final Parser<?> parser = ProtoUtil.getParser(requestClass);
         Object result = null;
         try {
