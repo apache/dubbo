@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-            <version>0.8.12</version>
+            <version>0.9.0</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>

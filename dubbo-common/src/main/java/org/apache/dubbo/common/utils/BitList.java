@@ -14,7 +14,7 @@ public class BitList<E> implements List<E>{
     private final List<E> unmodifiableList;
 
     // FIXME 看一下高版本的RoaringBitMap，是否有内置函数支持更高效的遍历
-    BitList(List<E> unmodifiableList, boolean empty) {
+    public BitList(List<E> unmodifiableList, boolean empty) {
         this.unmodifiableList = unmodifiableList;
         this.rootMap = new RoaringBitmap();
         if (!empty) {
@@ -22,7 +22,7 @@ public class BitList<E> implements List<E>{
         }
     }
 
-    private BitList(List<E> unmodifiableList, RoaringBitmap rootMap) {
+    public BitList(List<E> unmodifiableList, RoaringBitmap rootMap) {
         this.unmodifiableList = unmodifiableList;
         this.rootMap = rootMap;
     }
