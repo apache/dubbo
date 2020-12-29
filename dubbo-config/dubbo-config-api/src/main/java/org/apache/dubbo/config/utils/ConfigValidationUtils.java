@@ -61,6 +61,8 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -166,6 +168,10 @@ public class ConfigValidationUtils {
      * The pattern matches a property key
      */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
+
+    public static final String IPV6_START_MARK = "[";
+
+    public static final String IPV6_END_MARK = "]";
 
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
@@ -462,7 +468,7 @@ public class ConfigValidationUtils {
         if (config != null) {
             String name = config.getName();
             checkName("name", name);
-            checkName(HOST_KEY, config.getHost());
+            checkHost(HOST_KEY, config.getHost());
             checkPathName("contextpath", config.getContextpath());
 
 
@@ -574,6 +580,22 @@ public class ConfigValidationUtils {
 
     public static void checkName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
+    }
+
+    public static void checkHost(String property, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return;
+        }
+        if (value.startsWith(IPV6_START_MARK) && value.endsWith(IPV6_END_MARK)) {
+            // if the value start with "[" and end with "]", check whether it is IPV6
+            try {
+                InetAddress.getByName(value);
+                return;
+            } catch (UnknownHostException e) {
+                // not a IPv6 string, do nothing, go on to checkName
+            }
+        }
+        checkName(property, value);
     }
 
     public static void checkNameHasSymbol(String property, String value) {
