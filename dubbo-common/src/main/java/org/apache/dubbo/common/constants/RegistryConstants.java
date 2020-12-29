@@ -61,7 +61,11 @@ public interface RegistryConstants {
 
     String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
 
+    String REGISTRY_PUBLISH_INSTANCE_KEY = "publish-instance";
+
     String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
+
+    String DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY = "dubbo.application.publish-instance";
     /**
      * The parameter key of Dubbo Registry type
      *

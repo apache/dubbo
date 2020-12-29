@@ -417,7 +417,7 @@
         </xsd:attribute>
         <xsd:attribute name="publish-interface" type="xsd:boolean">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Publish interface level url to registry, default false. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="protocol" type="xsd:string">
@@ -631,6 +631,16 @@
         <xsd:attribute name="weight" type="xsd:integer">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="publish-interface" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Publish interface level url to registry, default true. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="publish-instance" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Publish instance level url to registry, default true. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>

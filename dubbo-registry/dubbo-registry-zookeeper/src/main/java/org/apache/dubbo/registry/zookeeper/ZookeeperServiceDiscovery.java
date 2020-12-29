@@ -107,9 +107,8 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         if (this.serviceInstance == null) {
             this.register(serviceInstance);
         } else if (isInstanceUpdated(serviceInstance)) {
-            doInServiceRegistry(serviceDiscovery -> {
-                serviceDiscovery.updateService(build(serviceInstance));
-            });
+            this.unregister(this.serviceInstance);
+            this.register(serviceInstance);
             this.serviceInstance = serviceInstance;
         }
     }
@@ -199,6 +198,7 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
+
                 logger.debug(e);
             }
         } catch (Exception e) {

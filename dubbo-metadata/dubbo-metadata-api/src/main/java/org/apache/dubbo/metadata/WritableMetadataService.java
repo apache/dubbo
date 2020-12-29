@@ -21,6 +21,8 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.Set;
+
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
@@ -82,6 +84,12 @@ public interface WritableMetadataService extends MetadataService {
     default URL getMetadataServiceURL() {
         return null;
     }
+
+    void putCachedMapping(String serviceKey, Set<String> apps);
+
+    Set<String> getCachedMapping(URL consumerURL);
+
+    Set<String> removeCachedMapping(String serviceKey);
 
     /**
      * Get {@link ExtensionLoader#getDefaultExtension() the defautl extension} of {@link WritableMetadataService}

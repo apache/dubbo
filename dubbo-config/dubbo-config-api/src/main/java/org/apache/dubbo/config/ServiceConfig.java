@@ -212,8 +212,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
             doExport();
         }
-
-        exported();
     }
 
     public void exported() {
@@ -309,6 +307,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
         doExportUrls();
+        exported();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

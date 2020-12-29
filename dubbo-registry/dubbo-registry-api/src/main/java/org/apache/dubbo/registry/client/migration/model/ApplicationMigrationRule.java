@@ -21,6 +21,15 @@ public class ApplicationMigrationRule {
     private MigrationStep step;
     private Float threshold;
 
+    public ApplicationMigrationRule() {
+    }
+
+    public ApplicationMigrationRule(String name, MigrationStep step, Float threshold) {
+        this.name = name;
+        this.step = step;
+        this.threshold = threshold;
+    }
+
     public String getName() {
         return name;
     }

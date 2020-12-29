@@ -139,7 +139,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
-                scheduler.scheduleAtFixedRate(new AddressRefreshRetryTask(retryPermission), 10000, 10000, TimeUnit.MILLISECONDS);
+                scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
             logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
@@ -177,7 +177,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.notifyAddressChanged();
     }
 
-    public synchronized void addListener(String serviceKey, NotifyListener listener) {
+    public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
         List<URL> urls = this.serviceUrls.get(serviceKey);
         if (CollectionUtils.isNotEmpty(urls)) {

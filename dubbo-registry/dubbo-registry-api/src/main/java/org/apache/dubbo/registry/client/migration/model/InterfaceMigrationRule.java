@@ -21,6 +21,14 @@ public class InterfaceMigrationRule {
     private MigrationStep step;
     private Float threshold;
 
+    public InterfaceMigrationRule(){}
+
+    public InterfaceMigrationRule(String serviceKey, MigrationStep step, Float threshold) {
+        this.serviceKey = serviceKey;
+        this.step = step;
+        this.threshold = threshold;
+    }
+
     public String getServiceKey() {
         return serviceKey;
     }

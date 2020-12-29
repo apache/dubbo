@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -33,6 +34,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import com.google.gson.Gson;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +80,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
     final Semaphore metadataSemaphore = new Semaphore(0);
+
+    final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
 
     // ==================================================================================== //
 
@@ -246,6 +250,22 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public URL getMetadataServiceURL() {
         return this.metadataServiceURL;
+    }
+
+    @Override
+    public void putCachedMapping(String serviceKey, Set<String> apps) {
+        serviceToAppsMapping.put(serviceKey, apps);
+    }
+
+    @Override
+    public Set<String> getCachedMapping(URL consumerURL) {
+        String serviceKey = ServiceNameMapping.buildMappingKey(consumerURL);
+        return serviceToAppsMapping.get(serviceKey);
+    }
+
+    @Override
+    public Set<String> removeCachedMapping(String serviceKey) {
+        return serviceToAppsMapping.remove(serviceKey);
     }
 
     @Override
