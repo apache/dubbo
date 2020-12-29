@@ -369,9 +369,6 @@ public class MetadataInfo implements Serializable {
                 if (keyMap != null) {
                     value = keyMap.get(key);
                 }
-                if (StringUtils.isEmpty(value)) {
-                    value = getParameter(key);
-                }
             }
             return value;
         }
