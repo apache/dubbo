@@ -2,6 +2,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Parser;
@@ -12,7 +13,7 @@ import com.google.protobuf.Parser;
  * guohaoice@gmail.com
  */
 public class ProtoUtil {
-
+    //todo clean it when destroy
     private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     /**
      * parse proto from netty {@link ByteBuf}
@@ -29,16 +30,19 @@ public class ProtoUtil {
     //}
 
     public static Message defaultInst(Class<?> clz) {
-        Message defaultInst = instCache.get(clz);
-        if (defaultInst != null) {
-            return defaultInst;
-        }
-        try {
-            defaultInst = (Message) clz.getMethod("getDefaultInstance").invoke(null);
-        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException("Create default protobuf instance failed ", e);
-        }
-        instCache.put(clz, defaultInst);
+        Message defaultInst = instCache.computeIfAbsent(clz, new Function<Class<?>, Message>() {
+            @Override
+            public Message apply(Class<?> aClass) {
+                Message value= null;
+                try {
+                    value = (Message) clz.getMethod("getDefaultInstance").invoke(null);
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new RuntimeException("Create default protobuf instance failed ", e);
+                }
+                return value;
+            }
+        });
+
         return defaultInst;
     }
 
