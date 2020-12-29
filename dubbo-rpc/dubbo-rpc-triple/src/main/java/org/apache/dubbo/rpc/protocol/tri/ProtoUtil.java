@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.protobuf.Message;
 import com.google.protobuf.Parser;
@@ -11,6 +12,8 @@ import com.google.protobuf.Parser;
  * guohaoice@gmail.com
  */
 public class ProtoUtil {
+
+    private static ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     /**
      * parse proto from netty {@link ByteBuf}
      *
@@ -26,12 +29,16 @@ public class ProtoUtil {
     //}
 
     public static Message defaultInst(Class<?> clz) {
-        Message defaultInst;
+        Message defaultInst = instCache.get(clz);
+        if (defaultInst != null) {
+            return defaultInst;
+        }
         try {
             defaultInst = (Message) clz.getMethod("getDefaultInstance").invoke(null);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Create default protobuf instance failed ", e);
         }
+        instCache.put(clz, defaultInst);
         return defaultInst;
     }
 
