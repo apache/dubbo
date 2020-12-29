@@ -13,7 +13,7 @@ import com.google.protobuf.Parser;
  */
 public class ProtoUtil {
 
-    private static ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     /**
      * parse proto from netty {@link ByteBuf}
      *

@@ -5,7 +5,6 @@ public interface TripleConstant {
     String MESSAGE_KEY = "grpc-message";
     String CONTENT_TYPE_KEY = "content-type";
     String CONTENT_PROTO = "application/grpc+proto";
-
     String APPLICATION_GRPC = "application/grpc";
 
 }

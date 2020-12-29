@@ -1,6 +1,5 @@
 package org.apache.dubbo.remoting.netty4;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2FrameLogger;
 
 import java.util.Set;
@@ -18,16 +17,6 @@ public abstract class Http2WireProtocol implements WireProtocol {
     @Override
     public ProtocolDetector detector() {
         return detector;
-    }
-
-    @Override
-    public void configServerPipeline(ChannelHandlerContext ctx) {
-
-    }
-
-    @Override
-    public void configClientPipeline(ChannelHandlerContext ctx) {
-
     }
 
     @Override
