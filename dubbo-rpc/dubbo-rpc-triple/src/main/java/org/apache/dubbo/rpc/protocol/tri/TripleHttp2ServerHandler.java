@@ -1,10 +1,11 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.Serialization2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -40,7 +41,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
     private static final InvokerResolver invokerResolver = ExtensionLoader.getExtensionLoader(InvokerResolver.class).getDefaultExtension();
     private final GrpcDecoder decoder = new GrpcDecoder();
-    private final Serialization serialization=ExtensionLoader.getExtensionLoader(Serialization .class).getExtension("protobuf");
+    private final Serialization2 serialization = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
     private Http2Headers headers;
 
     @Override
@@ -61,14 +62,28 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         if (out.isEmpty()) {
             return;
         }
-        Invocation invocation = buildInvocation(headers, (ByteBuf) out.get(0));
         final String path = headers.path().toString();
         String[] parts = path.split("/");
-        // todo parts illegal service not found
         String serviceName = parts[1];
-        // TODO add version/group support
-        //TODO add method not found / service not found err
-        Result result = invokerResolver.resolve(serviceName).invoke(invocation);
+        String originalMethodName = parts[2];
+        String methodName = originalMethodName.substring(0, 1).toLowerCase().concat(originalMethodName.substring(1));
+
+        Invoker<?> invoker = getInvoker(serviceName);
+        if (invoker == null) {
+            responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Service not found:" + serviceName);
+            return;
+        }
+
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
+        if (methodDescriptor == null) {
+            responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Method not found:" + methodName + " of service:" + serviceName);
+            return;
+        }
+
+        Invocation invocation = buildInvocation(out, serviceName, methodName, methodDescriptor);
+
+        final Result result = invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
 
         future.whenComplete((appResult, t) -> {
@@ -84,11 +99,10 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
                             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                     final ByteBuf buf = ctx.alloc().buffer();
-                    final MessageLite proto= (MessageLite) response.getValue();
                     final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
                     bos.write(0);
-                    bos.writeInt(proto.getSerializedSize());
-                    proto.writeTo(bos);
+                    bos.writeInt(((MessageLite) (response.getValue())).getSerializedSize());
+                    serialization.serialize(response.getValue(), bos);
                     ctx.write(new DefaultHttp2DataFrame(buf));
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.OK.code);
@@ -99,6 +113,29 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
                 e.printStackTrace();
             }
         });
+    }
+
+    private Invocation buildInvocation(List<Object> out, String serviceName, String methodName, MethodDescriptor methodDescriptor) throws IOException {
+        RpcInvocation inv = new RpcInvocation();
+        final Object req = serialization.deserialize(new ByteBufInputStream((ByteBuf) out.get(0)), methodDescriptor.getParameterClasses()[0]);
+        inv.setMethodName(methodName);
+        inv.setServiceName(serviceName);
+        inv.setTargetServiceUniqueName(serviceName);
+        inv.setParameterTypes(methodDescriptor.getParameterClasses());
+        inv.setArguments(new Object[]{req});
+        inv.setReturnTypes(methodDescriptor.getReturnTypes());
+        return inv;
+    }
+
+    private Invoker<?> getInvoker(String serviceName) {
+        final String version = headers.contains(TripleConstant.VERSION_KEY) ? headers.get(TripleConstant.VERSION_KEY).toString() : null;
+        final String group = headers.contains(TripleConstant.GROUP_KEY) ? headers.get(TripleConstant.GROUP_KEY).toString() : null;
+        final String key = URL.buildKey(serviceName, group, version);
+        Invoker<?> invoker = invokerResolver.resolve(key);
+        if (invoker == null) {
+            invoker = invokerResolver.resolve(serviceName);
+        }
+        return invoker;
     }
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
@@ -139,6 +176,15 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         this.headers = headers;
     }
 
+    private void responseErr(ChannelHandlerContext ctx, GrpcStatus status, String message) {
+        Http2Headers trailers = new DefaultHttp2Headers()
+                .status(OK.codeAsText())
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .setInt(TripleConstant.STATUS_KEY, status.code)
+                .set(TripleConstant.MESSAGE_KEY, message);
+        ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
+    }
+
     private void responsePlainTextError(ChannelHandlerContext ctx, int code, int statusCode, String
             msg) {
         Http2Headers headers = new DefaultHttp2Headers(true)
@@ -150,30 +196,4 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), msg);
         ctx.write(new DefaultHttp2DataFrame(buf, true));
     }
-
-
-    private Invocation buildInvocation(Http2Headers http2Headers, ByteBuf data) throws IOException, ClassNotFoundException {
-
-        RpcInvocation inv = new RpcInvocation();
-        final String path = http2Headers.path().toString();
-        String[] parts = path.split("/");
-        // todo parts illegal service not found
-        String serviceName = parts[1];
-        String originalMethodName = parts[2];
-        String methodName = originalMethodName.substring(0, 1).toLowerCase().concat(originalMethodName.substring(1));
-
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
-        final ObjectInput deserialize = serialization.deserialize(null, new ByteBufInputStream(data));
-        final Object req = deserialize.readObject(methodDescriptor.getParameterClasses()[0]);
-        inv.setMethodName(methodName);
-        inv.setServiceName(serviceName);
-        inv.setTargetServiceUniqueName(serviceName);
-        inv.setParameterTypes(methodDescriptor.getParameterClasses());
-        inv.setArguments(new Object[]{req});
-        inv.setReturnTypes(methodDescriptor.getReturnTypes());
-
-        return inv;
-    }
-
 }

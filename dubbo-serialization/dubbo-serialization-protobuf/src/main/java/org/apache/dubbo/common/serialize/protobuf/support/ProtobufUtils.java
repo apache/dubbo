@@ -87,7 +87,7 @@ public class ProtobufUtils {
 
     /* Protobuf */
 
-    private static ConcurrentMap<Class<? extends MessageLite>, MessageMarshaller<?>> marshallers =
+    private static ConcurrentMap<Class<? extends MessageLite>, DelimitedMessageMarshaller<?>> marshallers =
             new ConcurrentHashMap<>();
 
     private static volatile ExtensionRegistryLite globalRegistry =
@@ -130,7 +130,7 @@ public class ProtobufUtils {
     }
 
     public static <T extends MessageLite> void marshaller(T defaultInstance) {
-        marshallers.put(defaultInstance.getClass(), new MessageMarshaller<>(defaultInstance));
+        marshallers.put(defaultInstance.getClass(), new DelimitedMessageMarshaller<>(defaultInstance));
     }
 
     static void serialize(Object value, OutputStream os) throws IOException {
@@ -140,13 +140,11 @@ public class ProtobufUtils {
 
     @SuppressWarnings("unchecked")
     static <T> T deserialize(InputStream is, Class<T> requestClass) throws InvalidProtocolBufferException {
-        MessageMarshaller<?> marshaller = marshallers.computeIfAbsent((Class<? extends MessageLite>) requestClass, k->
-            new MessageMarshaller<>(defaultInst(requestClass))
-        );
-//        if (marshaller == null) {
-//            throw new IllegalStateException(String.format("Protobuf classes should be registered in advance before " +
-//                    "do serialization, class name: %s", requestClass.getName()));
-//        }
+        DelimitedMessageMarshaller<?> marshaller = marshallers.get(requestClass);
+        if (marshaller == null) {
+            throw new IllegalStateException(String.format("Protobuf classes should be registered in advance before " +
+                    "do serialization, class name: %s", requestClass.getName()));
+        }
         return (T) marshaller.parse(is);
     }
 
@@ -189,12 +187,12 @@ public class ProtobufUtils {
         return builder.build();
     }
 
-    private static final class MessageMarshaller<T extends MessageLite> {
+    private static final class DelimitedMessageMarshaller<T extends MessageLite> {
         private final Parser<T> parser;
         private final T defaultInstance;
 
         @SuppressWarnings("unchecked")
-        MessageMarshaller(T defaultInstance) {
+        DelimitedMessageMarshaller(T defaultInstance) {
             this.defaultInstance = defaultInstance;
             parser = (Parser<T>) defaultInstance.getParserForType();
         }
@@ -216,6 +214,41 @@ public class ProtobufUtils {
 //            // when parsing.
 //            cis.setSizeLimit(Integer.MAX_VALUE);
 //            return parseFrom(cis);
+        }
+
+        private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {
+            T message = parser.parseFrom(stream, globalRegistry);
+            try {
+                stream.checkLastTagWas(0);
+                return message;
+            } catch (InvalidProtocolBufferException e) {
+                e.setUnfinishedMessage(message);
+                throw e;
+            }
+        }
+    }
+    public static final class SingleMessageMarshaller<T extends MessageLite> {
+        private final Parser<T> parser;
+        private final T defaultInstance;
+
+        @SuppressWarnings("unchecked")
+        SingleMessageMarshaller(Class<T> clz) {
+            this.defaultInstance = (T) defaultInst(clz);
+            this.parser = (Parser<T>) defaultInstance.getParserForType();
+        }
+
+        @SuppressWarnings("unchecked")
+        public Class<T> getMessageClass() {
+            // Precisely T since protobuf doesn't let messages extend other messages.
+            return (Class<T>) defaultInstance.getClass();
+        }
+
+        public T getMessagePrototype() {
+            return defaultInstance;
+        }
+
+        public T parse(InputStream stream) throws InvalidProtocolBufferException {
+            return parser.parseFrom(stream, globalRegistry);
         }
 
         private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {

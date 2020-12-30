@@ -7,21 +7,16 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TripleInvokerResolver implements InvokerResolver {
-    // path0: com.foo.Bar
-    // path1: com.foo.Bar2:version
     private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
     private final Set<String> ignoreSet = ConcurrentHashMap.newKeySet();
 
     @Override
-    public void add(String path, String service,Invoker<?> invoker) {
-        // todo path == service
-        Invoker<?> old = path2Invoker.putIfAbsent(service, invoker);
-        if (old != null || ignoreSet.contains(service)) {
-            path2Invoker.remove(service);
-            ignoreSet.add(service);
+    public void add(String path, Invoker<?> invoker) {
+        if (!ignoreSet.add(path)) {
+            path2Invoker.remove(path);
+        } else {
+            path2Invoker.put(path, invoker);
         }
-
-        path2Invoker.put(path, invoker);
     }
 
     @Override
