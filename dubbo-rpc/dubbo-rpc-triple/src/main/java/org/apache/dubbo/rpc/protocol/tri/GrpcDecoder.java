@@ -8,6 +8,7 @@ import java.util.List;
 
 public class GrpcDecoder extends ReplayingDecoder<GrpcDecoder.GrpcDecodeState> {
     private int len;
+    private ByteBuf buf;
 
     protected GrpcDecoder() {
         super(GrpcDecodeState.HEADER);
@@ -19,9 +20,10 @@ public class GrpcDecoder extends ReplayingDecoder<GrpcDecoder.GrpcDecodeState> {
             case HEADER:
                 in.readByte();
                 len = in.readInt();
+                in.readerIndex(in.readerIndex()-4);
                 state(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
-                ByteBuf buf = in.readSlice(len);
+                ByteBuf buf = in.readSlice(len + 4);
                 out.add(buf);
                 state(GrpcDecodeState.HEADER);
                 break;

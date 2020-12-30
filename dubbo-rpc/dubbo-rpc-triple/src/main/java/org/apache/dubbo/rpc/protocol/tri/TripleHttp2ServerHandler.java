@@ -1,6 +1,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -9,7 +11,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
+import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufInputStream;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -24,6 +29,7 @@ import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -31,9 +37,10 @@ import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class TripleHttp2Handler extends ChannelDuplexHandler {
+public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
     private static final InvokerResolver invokerResolver = ExtensionLoader.getExtensionLoader(InvokerResolver.class).getDefaultExtension();
     private final GrpcDecoder decoder = new GrpcDecoder();
+    private final Serialization serialization=ExtensionLoader.getExtensionLoader(Serialization .class).getExtension("protobuf");
     private Http2Headers headers;
 
     @Override
@@ -76,8 +83,13 @@ public class TripleHttp2Handler extends ChannelDuplexHandler {
                             .status(OK.codeAsText())
                             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                    ByteBuf byteBuf = Marshaller.marshaller.marshaller(ctx.alloc(), response.getValue());
-                    ctx.write(new DefaultHttp2DataFrame(byteBuf));
+                    final ByteBuf buf = ctx.alloc().buffer();
+                    final MessageLite proto= (MessageLite) response.getValue();
+                    final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
+                    bos.write(0);
+                    bos.writeInt(proto.getSerializedSize());
+                    proto.writeTo(bos);
+                    ctx.write(new DefaultHttp2DataFrame(buf));
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.OK.code);
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
@@ -88,19 +100,6 @@ public class TripleHttp2Handler extends ChannelDuplexHandler {
             }
         });
     }
-
-    private ByteBuf readMessage(ByteBuf content) {
-        ByteBuf data = null;
-        // TODO check reserved bit
-        content.readByte();
-        // TODO check len
-        final int len = content.readInt();
-        if (len <= content.readableBytes()) {
-            data = content.readSlice(len);
-        }
-        return data;
-    }
-
 
     public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
         final Http2Headers headers = msg.headers();
@@ -153,7 +152,7 @@ public class TripleHttp2Handler extends ChannelDuplexHandler {
     }
 
 
-    private Invocation buildInvocation(Http2Headers http2Headers, ByteBuf data) {
+    private Invocation buildInvocation(Http2Headers http2Headers, ByteBuf data) throws IOException, ClassNotFoundException {
 
         RpcInvocation inv = new RpcInvocation();
         final String path = http2Headers.path().toString();
@@ -165,12 +164,13 @@ public class TripleHttp2Handler extends ChannelDuplexHandler {
 
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
-        Object obj = Marshaller.marshaller.unmarshaller(methodDescriptor.getParameterClasses()[0], data);
+        final ObjectInput deserialize = serialization.deserialize(null, new ByteBufInputStream(data));
+        final Object req = deserialize.readObject(methodDescriptor.getParameterClasses()[0]);
         inv.setMethodName(methodName);
         inv.setServiceName(serviceName);
         inv.setTargetServiceUniqueName(serviceName);
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
-        inv.setArguments(new Object[]{obj});
+        inv.setArguments(new Object[]{req});
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
 
         return inv;
