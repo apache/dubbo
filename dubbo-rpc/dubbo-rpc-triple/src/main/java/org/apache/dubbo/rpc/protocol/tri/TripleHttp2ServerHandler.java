@@ -66,7 +66,8 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         String[] parts = path.split("/");
         String serviceName = parts[1];
         String originalMethodName = parts[2];
-        String methodName = originalMethodName.substring(0, 1).toLowerCase().concat(originalMethodName.substring(1));
+
+        String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
         Invoker<?> invoker = getInvoker(serviceName);
         if (invoker == null) {
