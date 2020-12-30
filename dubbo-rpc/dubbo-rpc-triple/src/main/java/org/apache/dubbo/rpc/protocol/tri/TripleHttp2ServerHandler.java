@@ -90,7 +90,7 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         future.whenComplete((appResult, t) -> {
             try {
                 if (t != null) {
-                    // TODO add exception response
+                    responseErr(ctx, GrpcStatus.UNKNOWN, t.getMessage());
                     return;
                 }
                 AppResponse response = (AppResponse) appResult;
@@ -110,8 +110,8 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
                 }
             } catch (Exception e) {
-                // TODO
-                e.printStackTrace();
+                // TODO add log here
+                responseErr(ctx, GrpcStatus.UNKNOWN, e.getMessage());
             }
         });
     }

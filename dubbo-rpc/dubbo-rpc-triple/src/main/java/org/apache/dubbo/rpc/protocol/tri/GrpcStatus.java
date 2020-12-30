@@ -5,6 +5,7 @@ package org.apache.dubbo.rpc.protocol.tri;
  */
 enum GrpcStatus {
     OK(0),
+    UNKNOWN(2),
     NOT_FOUND(5),
     UNIMPLEMENTED(12),
     INTERNAL(13);
