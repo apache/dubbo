@@ -1,0 +1,1 @@
+slf4j=org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter

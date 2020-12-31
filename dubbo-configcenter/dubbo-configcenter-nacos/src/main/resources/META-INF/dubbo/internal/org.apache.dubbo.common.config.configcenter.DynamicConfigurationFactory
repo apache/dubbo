@@ -1,0 +1,1 @@
+nacos=org.apache.dubbo.configcenter.support.nacos.NacosDynamicConfigurationFactory
