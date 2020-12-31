@@ -6,10 +6,10 @@ import io.netty.handler.codec.ReplayingDecoder;
 
 import java.util.List;
 
-public class GrpcDecoder extends ReplayingDecoder<GrpcDecoder.GrpcDecodeState> {
+public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecodeState> {
     private int len;
 
-    protected GrpcDecoder() {
+    protected GrpcDataDecoder() {
         super(GrpcDecodeState.HEADER);
     }
 
