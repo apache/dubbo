@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.bytecode.Wrapper;
+import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -31,10 +32,11 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
 import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
+import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
@@ -57,12 +59,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -73,7 +76,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
@@ -140,6 +145,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private DubboBootstrap bootstrap;
 
+    /**
+     * The service names that the Dubbo interface subscribed.
+     *
+     * @since 2.7.8
+     */
+    private String services;
+
     public ReferenceConfig() {
         super();
         this.repository = ApplicationModel.getServiceRepository();
@@ -148,6 +160,40 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     public ReferenceConfig(Reference reference) {
         super(reference);
         this.repository = ApplicationModel.getServiceRepository();
+    }
+
+    /**
+     * Get a string presenting the service names that the Dubbo interface subscribed.
+     * If it is a multiple-values, the content will be a comma-delimited String.
+     *
+     * @return non-null
+     * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
+     * @since 2.7.8
+     */
+    @Parameter(key = SUBSCRIBED_SERVICE_NAMES_KEY)
+    public String getServices() {
+        return services;
+    }
+
+    /**
+     * It's an alias method for {@link #getServices()}, but the more convenient.
+     *
+     * @return the String {@link List} presenting the Dubbo interface subscribed
+     * @since 2.7.8
+     */
+    @Parameter(excluded = true)
+    public Set<String> getSubscribedServices() {
+        return splitToSet(getServices(), COMMA_SEPARATOR_CHAR);
+    }
+
+    /**
+     * Set the service names that the Dubbo interface subscribed.
+     *
+     * @param services If it is a multiple-values, the content will be a comma-delimited String.
+     * @since 2.7.8
+     */
+    public void setServices(String services) {
+        this.services = services;
     }
 
     public synchronized T get() {
@@ -185,9 +231,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
+
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
+            bootstrap.initialize();
         }
 
         checkAndUpdateSubConfigs();
@@ -265,6 +312,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         initialized = true;
 
+        checkInvokerAvailable();
+
         // dispatch a ReferenceConfigInitializedEvent since 2.7.4
         dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
@@ -327,15 +376,30 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 }
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
-                    URL u = registryURL.addParameterIfAbsent(CLUSTER_KEY, ZoneAwareCluster.NAME);
-                    // The invoker wrap relation would be like: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
-                    invoker = CLUSTER.join(new StaticDirectory(u, invokers));
+                    String cluster = registryURL.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
+                    // The invoker wrap sequence would be: ZoneAwareClusterInvoker(StaticDirectory) -> FailoverClusterInvoker(RegistryDirectory, routing happens here) -> Invoker
+                    invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryURL, invokers));
                 } else { // not a registry url, must be direct invoke.
-                    invoker = CLUSTER.join(new StaticDirectory(invokers));
+                    String cluster = CollectionUtils.isNotEmpty(invokers)
+                            ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
+                            : Cluster.DEFAULT;
+                    invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }
             }
         }
 
+        if (logger.isInfoEnabled()) {
+            logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
+        }
+
+        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+        MetadataUtils.publishServiceDefinition(consumerURL);
+
+        // create service proxy
+        return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
+    }
+
+    private void checkInvokerAvailable() throws IllegalStateException {
         if (shouldCheck() && !invoker.isAvailable()) {
             invoker.destroy();
             throw new IllegalStateException("Failed to check the status of the service "
@@ -349,21 +413,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     + " to the consumer "
                     + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion());
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
-        }
-        /**
-         * @since 2.7.0
-         * ServiceData Store
-         */
-        String metadata = map.get(METADATA_KEY);
-        WritableMetadataService metadataService = WritableMetadataService.getExtension(metadata == null ? DEFAULT_METADATA_STORAGE_TYPE : metadata);
-        if (metadataService != null) {
-            URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-            metadataService.publishServiceDefinition(consumerURL);
-        }
-        // create service proxy
-        return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 
     /**
@@ -382,6 +431,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         // get consumer's global configuration
         checkDefault();
+
+        // init some null configuration.
+        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+        configInitializers.forEach(e -> e.initReferConfig(this));
+
         this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
@@ -466,7 +521,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }

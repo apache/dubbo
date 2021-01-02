@@ -168,8 +168,8 @@ public class NacosRegistry extends FailbackRegistry {
             Instance instance = createInstance(url);
             namingService.deregisterInstance(serviceName,
                     getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP),
-                    instance.getIp()
-                    , instance.getPort());
+                    instance.getIp(),
+                    instance.getPort());
         });
     }
 
@@ -513,19 +513,19 @@ public class NacosRegistry extends FailbackRegistry {
     }
 
     /**
-     * Notify the Healthy {@link Instance instances} to subscriber.
+     * Notify the Enabled {@link Instance instances} to subscriber.
      *
      * @param url       {@link URL}
      * @param listener  {@link NotifyListener}
      * @param instances all {@link Instance instances}
      */
     private void notifySubscriber(URL url, NotifyListener listener, Collection<Instance> instances) {
-        List<Instance> healthyInstances = new LinkedList<>(instances);
-        if (healthyInstances.size() > 0) {
-            // Healthy Instances
-            filterHealthyInstances(healthyInstances);
+        List<Instance> enabledInstances = new LinkedList<>(instances);
+        if (enabledInstances.size() > 0) {
+            //  Instances
+            filterEnabledInstances(enabledInstances);
         }
-        List<URL> urls = toUrlWithEmpty(url, healthyInstances);
+        List<URL> urls = toUrlWithEmpty(url, enabledInstances);
         NacosRegistry.this.notify(url, listener, urls);
     }
 
@@ -588,7 +588,7 @@ public class NacosRegistry extends FailbackRegistry {
         }
     }
 
-    private void filterHealthyInstances(Collection<Instance> instances) {
+    private void filterEnabledInstances(Collection<Instance> instances) {
         filterData(instances, Instance::isEnabled);
     }
 

@@ -34,13 +34,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
+import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
 import static org.apache.dubbo.rpc.Constants.ID_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
+
 /**
  * RpcUtils
  */
@@ -98,7 +101,7 @@ public class RpcUtils {
      */
     public static void attachInvocationIdIfAsync(URL url, Invocation inv) {
         if (isAttachInvocationId(url, inv) && getInvocationId(inv) == null && inv instanceof RpcInvocation) {
-            ((RpcInvocation) inv).setAttachment(ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
+            inv.setAttachment(ID_KEY, String.valueOf(INVOKE_ID.getAndIncrement()));
         }
     }
 
@@ -154,6 +157,14 @@ public class RpcUtils {
 
     public static boolean isAsync(URL url, Invocation inv) {
         boolean isAsync;
+
+        if (inv instanceof RpcInvocation) {
+            RpcInvocation rpcInvocation = (RpcInvocation) inv;
+            if (rpcInvocation.getInvokeMode() != null) {
+                return rpcInvocation.getInvokeMode() == InvokeMode.ASYNC;
+            }
+        }
+
         if (Boolean.TRUE.toString().equals(inv.getAttachment(ASYNC_KEY))) {
             isAsync = true;
         } else {
@@ -176,15 +187,24 @@ public class RpcUtils {
         return $INVOKE_ASYNC.equals(inv.getMethodName());
     }
 
-    public static boolean isGenericCall(String path, String method) {
-        return $INVOKE.equals(method) || $INVOKE_ASYNC.equals(method);
+    // check parameterTypesDesc to fix CVE-2020-1948
+    public static boolean isGenericCall(String parameterTypesDesc, String method) {
+        return ($INVOKE.equals(method) || $INVOKE_ASYNC.equals(method)) && GENERIC_PARAMETER_DESC.equals(parameterTypesDesc);
     }
 
-    public static boolean isEcho(String path, String method) {
-        return $ECHO.equals(method);
+    // check parameterTypesDesc to fix CVE-2020-1948
+    public static boolean isEcho(String parameterTypesDesc, String method) {
+        return $ECHO.equals(method) && $ECHO_PARAMETER_DESC.equals(parameterTypesDesc);
     }
 
     public static InvokeMode getInvokeMode(URL url, Invocation inv) {
+        if (inv instanceof RpcInvocation) {
+            RpcInvocation rpcInvocation = (RpcInvocation) inv;
+            if (rpcInvocation.getInvokeMode() != null) {
+                return rpcInvocation.getInvokeMode();
+            }
+        }
+
         if (isReturnTypeFuture(inv)) {
             return InvokeMode.FUTURE;
         } else if (isAsync(url, inv)) {
@@ -217,7 +237,7 @@ public class RpcUtils {
 
     public static long getTimeout(Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
-        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_ATTACHENT_KEY);
+        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_ATTACHMENT_KEY);
         if (genericTimeout != null) {
             timeout = convertToNumber(genericTimeout, defaultTimeout);
         }

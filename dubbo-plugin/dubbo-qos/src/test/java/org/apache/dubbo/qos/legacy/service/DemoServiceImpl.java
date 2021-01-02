@@ -126,4 +126,9 @@ public class DemoServiceImpl implements DemoService {
     public String getRemoteApplicationName() {
         return RpcContext.getContext().getRemoteApplicationName();
     }
+
+    @Override
+    public Map<Integer, Object> getMap(Map<Integer, Object> map) {
+        return map;
+    }
 }
