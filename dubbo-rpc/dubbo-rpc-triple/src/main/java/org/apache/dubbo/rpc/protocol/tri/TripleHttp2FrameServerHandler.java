@@ -2,6 +2,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -10,6 +12,7 @@ import org.apache.dubbo.rpc.model.ServiceRepository;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -24,25 +27,36 @@ import java.util.List;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextError;
 
-public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
+public class TripleServerHandler extends ChannelDuplexHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleServerHandler.class);
     private static final InvokerResolver invokerResolver = ExtensionLoader.getExtensionLoader(InvokerResolver.class).getDefaultExtension();
-    private final GrpcDataDecoder decoder = new GrpcDataDecoder();
-    private UnaryInvoker invoker;
+    // TODO constraint MAX DATA_SIZE
+    private final ByteToMessageDecoder decoder = new GrpcDataDecoder(Integer.MAX_VALUE);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
-        } else if (msg instanceof Http2DataFrame) {
-            onDataRead(ctx, (Http2DataFrame) msg);
+//        } else if (msg instanceof Http2DataFrame) {
+//            onDataRead(ctx, (Http2DataFrame) msg);
         } else {
             super.channelRead(ctx, msg);
         }
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        LOGGER.warn("Exception in processing triple message", cause);
+        if (cause instanceof TripleRpcException) {
+            TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus(), cause.getMessage());
+        } else {
+            TripleUtil.responseErr(ctx, GrpcStatus.INTERNAL, cause.getMessage());
+        }
+    }
+
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         List<Object> out = new ArrayList<>();
-        decoder.decode(ctx, msg.content(), out);
+        decoder.channelRead(ctx, msg.content());
         // todo support stream
         if (out.isEmpty()) {
             return;
@@ -54,13 +68,13 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
         if (msg.isEndStream()) {
             try {
                 this.invoker.halfClose();
-            }catch (Throwable t){
-                responseErr(ctx,GrpcStatus.UNKNOWN,t.getMessage());
+            } catch (Throwable t) {
+                responseErr(ctx, GrpcStatus.UNKNOWN, t.getMessage());
             }
         }
     }
 
-    private Invoker<?> getInvoker(Http2Headers headers,String serviceName) {
+    private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
         final String version = headers.contains(TripleConstant.VERSION_KEY) ? headers.get(TripleConstant.VERSION_KEY).toString() : null;
         final String group = headers.contains(TripleConstant.GROUP_KEY) ? headers.get(TripleConstant.GROUP_KEY).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
@@ -112,7 +126,7 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
 
         String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
-        final Invoker<?> delegateInvoker = getInvoker(headers,serviceName);
+        final Invoker<?> delegateInvoker = getInvoker(headers, serviceName);
         if (delegateInvoker == null) {
             responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Service not found:" + serviceName);
             return;
@@ -124,9 +138,10 @@ public class TripleHttp2ServerHandler extends ChannelDuplexHandler {
             responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Method not found:" + methodName + " of service:" + serviceName);
             return;
         }
-        this.invoker = new UnaryInvoker(delegateInvoker, methodDescriptor, ctx, headers, serviceName, methodName);
+        final UnaryInvoker invoker = new UnaryInvoker(delegateInvoker, methodDescriptor, ctx, headers, serviceName, methodName);
+        ctx.channel().attr(TripleUtil.INVOKER_KEY).set(invoker);
         if (msg.isEndStream()) {
-            this.invoker.halfClose();
+            invoker.halfClose();
         }
     }
 }
