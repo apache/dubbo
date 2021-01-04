@@ -232,11 +232,7 @@ public class NacosRegistry extends FailbackRegistry {
      * @return
      */
     private boolean isServiceNamesWithCompatibleMode(final URL url) {
-        if (!isAdminProtocol(url) && createServiceName(url).isConcrete()) {
-            return true;
-        } else {
-            return false;
-        }
+        return !isAdminProtocol(url) && createServiceName(url).isConcrete();
     }
 
     @Override
