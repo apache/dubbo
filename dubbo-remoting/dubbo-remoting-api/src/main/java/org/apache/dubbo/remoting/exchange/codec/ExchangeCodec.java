@@ -148,19 +148,20 @@ public class ExchangeCodec extends TelnetCodec {
             byte status = header[3];
             res.setStatus(status);
             try {
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, in);
+                        // heart beat response data is always null;
+                        is.skip(64);
+                        data = null;
                     } else if (res.isEvent()) {
-                        data = decodeEventData(channel, in);
+                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                     } else {
-                        data = decodeResponseData(channel, in, getRequestData(id));
+                        data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(id));
                     }
                     res.setResult(data);
                 } else {
-                    res.setErrorMessage(in.readUTF());
+                    res.setErrorMessage(CodecSupport.deserialize(channel.getUrl(), is, proto).readUTF());
                 }
             } catch (Throwable t) {
                 res.setStatus(Response.CLIENT_ERROR);
@@ -176,14 +177,15 @@ public class ExchangeCodec extends TelnetCodec {
                 req.setEvent(true);
             }
             try {
-                ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 Object data;
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, in);
+                    // heart beat request data is always null;
+                    is.skip(64);
+                    data = null;
                 } else if (req.isEvent()) {
-                    data = decodeEventData(channel, in);
+                    data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 } else {
-                    data = decodeRequestData(channel, in);
+                    data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 }
                 req.setData(data);
             } catch (Throwable t) {
@@ -231,16 +233,23 @@ public class ExchangeCodec extends TelnetCodec {
         int savedWriteIndex = buffer.writerIndex();
         buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
         ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
-        ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
-        if (req.isEvent()) {
-            encodeEventData(channel, out, req.getData());
+
+        if (req.isHeartbeat()) {
+            // heartbeat request data is always null
+            bos.write(CodecSupport.getNullBytes(serialization));
         } else {
-            encodeRequestData(channel, out, req.getData(), req.getVersion());
+            ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+            if (req.isEvent()) {
+                encodeEventData(channel, out, req.getData());
+            } else {
+                encodeRequestData(channel, out, req.getData(), req.getVersion());
+            }
+            out.flushBuffer();
+            if (out instanceof Cleanable) {
+                ((Cleanable) out).cleanup();
+            }
         }
-        out.flushBuffer();
-        if (out instanceof Cleanable) {
-            ((Cleanable) out).cleanup();
-        }
+
         bos.flush();
         bos.close();
         int len = bos.writtenBytes();
@@ -274,21 +283,33 @@ public class ExchangeCodec extends TelnetCodec {
 
             buffer.writerIndex(savedWriteIndex + HEADER_LENGTH);
             ChannelBufferOutputStream bos = new ChannelBufferOutputStream(buffer);
-            ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+
             // encode response data or error message.
             if (status == Response.OK) {
-                if (res.isHeartbeat()) {
-                    encodeEventData(channel, out, res.getResult());
-                } else {
-                    encodeResponseData(channel, out, res.getResult(), res.getVersion());
+                if(res.isHeartbeat()){
+                    // heartbeat response data is always null
+                    bos.write(CodecSupport.getNullBytes(serialization));
+                }else {
+                    ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
+                    if (res.isEvent()) {
+                        encodeEventData(channel, out, res.getResult());
+                    } else {
+                        encodeResponseData(channel, out, res.getResult(), res.getVersion());
+                    }
+                    out.flushBuffer();
+                    if (out instanceof Cleanable) {
+                        ((Cleanable) out).cleanup();
+                    }
                 }
             } else {
+                ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
                 out.writeUTF(res.getErrorMessage());
+                out.flushBuffer();
+                if (out instanceof Cleanable) {
+                    ((Cleanable) out).cleanup();
+                }
             }
-            out.flushBuffer();
-            if (out instanceof Cleanable) {
-                ((Cleanable) out).cleanup();
-            }
+
             bos.flush();
             bos.close();
 
