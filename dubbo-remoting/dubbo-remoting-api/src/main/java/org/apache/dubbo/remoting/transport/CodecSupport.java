@@ -102,7 +102,6 @@ public class CodecSupport {
      * if not, generate it first.
      *
      * @param s Serialization Instances
-     *
      * @return serialize result of null object
      */
     public static byte[] getNullBytesOf(Serialization s) {
