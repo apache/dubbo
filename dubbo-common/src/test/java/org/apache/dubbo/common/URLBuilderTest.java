@@ -40,7 +40,7 @@ public class URLBuilderTest {
                 .build();
         assertThat(url2.getParameter("newKey1"), equalTo("newValue1"));
         assertThat(url2.getParameter("newKey2"), equalTo("2"));
-        assertThat(url2.getParameter("version"), equalTo("1"));
+        assertThat(url2.getVersion(), equalTo("1"));
     }
 
     @Test
@@ -84,7 +84,7 @@ public class URLBuilderTest {
                 .removeParameters(Arrays.asList("key2", "application"))
                 .build();
         assertThat(url2.getParameters().size(), equalTo(1));
-        assertThat(url2.getParameter("version"), equalTo("1.0.0"));
+        assertThat(url2.getVersion(), equalTo("1.0.0"));
     }
 
     @Test
@@ -94,7 +94,7 @@ public class URLBuilderTest {
                 .addParameterIfAbsent("absentKey", "absentValue")
                 .addParameterIfAbsent("version", "2.0.0") // should not override
                 .build();
-        assertThat(url2.getParameter("version"), equalTo("1.0.0"));
+        assertThat(url2.getVersion(), equalTo("1.0.0"));
         assertThat(url2.getParameter("absentKey"), equalTo("absentValue"));
     }
 }

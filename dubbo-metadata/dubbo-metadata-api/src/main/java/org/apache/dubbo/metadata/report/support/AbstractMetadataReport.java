@@ -61,11 +61,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.metadata.report.support.Constants.CYCLE_REPORT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_CYCLE_REPORT;
 import static org.apache.dubbo.metadata.report.support.Constants.DEFAULT_METADATA_REPORT_RETRY_PERIOD;
@@ -103,7 +102,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     public AbstractMetadataReport(URL reportServerURL) {
         setUrl(reportServerURL);
         // Start file save timer
-        String defaultFilename = System.getProperty("user.home") + "/.dubbo/dubbo-metadata-" + reportServerURL.getParameter(APPLICATION_KEY) + "-" + reportServerURL.getAddress().replaceAll(":", "-") + ".cache";
+        String defaultFilename = System.getProperty("user.home") +
+                "/.dubbo/dubbo-metadata-" +
+                reportServerURL.getApplication() + "-" +
+                replace(reportServerURL.getAddress(), ":", "-") +
+                ".cache";
         String filename = reportServerURL.getParameter(FILE_KEY, defaultFilename);
         File file = null;
         if (ConfigUtils.isNotEmpty(filename)) {
@@ -336,7 +339,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     String getProtocol(URL url) {
-        String protocol = url.getParameter(SIDE_KEY);
+        String protocol = url.getSide();
         protocol = protocol == null ? url.getProtocol() : protocol;
         return protocol;
     }

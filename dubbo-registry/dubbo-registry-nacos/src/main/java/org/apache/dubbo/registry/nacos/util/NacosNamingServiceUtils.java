@@ -61,7 +61,7 @@ public class NacosNamingServiceUtils {
         instance.setServiceName(serviceInstance.getServiceName());
         instance.setIp(serviceInstance.getHost());
         instance.setPort(serviceInstance.getPort());
-        instance.setMetadata(serviceInstance.getMetadata());
+        instance.setMetadata(serviceInstance.getSortedMetadata());
         instance.setEnabled(serviceInstance.isEnabled());
         instance.setHealthy(serviceInstance.isHealthy());
         return instance;

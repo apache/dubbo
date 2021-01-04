@@ -85,7 +85,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             for (final Invoker<T> invoker : selected) {
                 executor.execute(() -> {
                     try {
-                        Result result = invoker.invoke(invocation);
+                        Result result = invokeWithContext(invoker, invocation);
                         ref.offer(result);
                     } catch (Throwable e) {
                         int value = count.incrementAndGet();

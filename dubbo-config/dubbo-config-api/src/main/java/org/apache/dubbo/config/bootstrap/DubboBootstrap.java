@@ -513,11 +513,6 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
-    @Deprecated
-    public void init() {
-        initialize();
-    }
-
     /**
      * Initialize
      */
@@ -930,7 +925,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     private boolean hasExportedServices() {
-        return !metadataService.getExportedURLs().isEmpty();
+        return CollectionUtils.isNotEmpty(configManager.getServices());
     }
 
     /**
@@ -1179,11 +1174,18 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         //FIXME
+        if (logger.isInfoEnabled()) {
+            logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
+        }
         publishMetadataToRemote(serviceInstance);
 
+        logger.info("Start registering instance address to registry.");
         getServiceDiscoveries().forEach(serviceDiscovery ->
         {
             calInstanceRevision(serviceDiscovery, serviceInstance);
+            if (logger.isDebugEnabled()) {
+                logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+            }
             // register metadata
             serviceDiscovery.register(serviceInstance);
         });

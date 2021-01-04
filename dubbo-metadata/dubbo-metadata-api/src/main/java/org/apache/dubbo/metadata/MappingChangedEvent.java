@@ -21,7 +21,6 @@ import java.util.Set;
 public class MappingChangedEvent {
     private String serviceKey;
     private Set<String> apps;
-    private Set<String> oldApps;
 
     public String getServiceKey() {
         return serviceKey;
@@ -39,11 +38,4 @@ public class MappingChangedEvent {
         this.apps = apps;
     }
 
-    public Set<String> getOldApps() {
-        return oldApps;
-    }
-
-    public void setOldApps(Set<String> oldApps) {
-        this.oldApps = oldApps;
-    }
 }

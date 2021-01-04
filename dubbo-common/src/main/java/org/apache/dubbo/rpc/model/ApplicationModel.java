@@ -21,6 +21,7 @@ import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
@@ -94,6 +95,10 @@ public class ApplicationModel {
 
     public static ServiceRepository getServiceRepository() {
         return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+    }
+
+    public static ExecutorRepository getExecutorRepository() {
+        return ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     }
 
     public static ApplicationConfig getApplicationConfig() {

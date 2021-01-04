@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -47,7 +48,7 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-public class NacosServiceDiscovery implements ServiceDiscovery {
+public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -56,8 +57,6 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     private NamingService namingService;
 
     private URL registryURL;
-
-    private ServiceInstance instance;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -73,7 +72,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.instance = serviceInstance;
+        this.serviceInstance = serviceInstance;
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.registerInstance(instance.getServiceName(), group, instance);
@@ -82,7 +81,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.instance = serviceInstance;
+        this.serviceInstance = serviceInstance;
         // TODO: Nacos should support
         unregister(serviceInstance);
         register(serviceInstance);
@@ -135,11 +134,6 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     @Override
     public URL getUrl() {
         return registryURL;
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return instance;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {

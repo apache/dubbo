@@ -233,7 +233,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
+            bootstrap.initialize();
+            bootstrap.reference(this);
         }
 
         checkAndUpdateSubConfigs();
@@ -336,7 +337,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             url = url.setPath(interfaceName);
                         }
                         if (UrlUtils.isRegistry(url)) {
-                            urls.add(url.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
+                            urls.add(url.putAttribute(REFER_KEY, map));
                         } else {
                             urls.add(ClusterUtils.mergeUrl(url, map));
                         }
@@ -353,7 +354,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                             if (monitorUrl != null) {
                                 map.put(MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
                             }
-                            urls.add(u.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));
+                            urls.add(u.putAttribute(REFER_KEY, map));
                         }
                     }
                     if (urls.isEmpty()) {
@@ -388,10 +389,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
+            logger.info("Referred dubbo service " + interfaceClass.getName());
         }
 
-        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.get(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
         MetadataUtils.publishServiceDefinition(consumerURL);
 
         // create service proxy

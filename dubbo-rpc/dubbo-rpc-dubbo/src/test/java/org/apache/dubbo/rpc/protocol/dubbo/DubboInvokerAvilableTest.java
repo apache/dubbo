@@ -23,8 +23,8 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.protocol.AsyncToSyncInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterAll;
@@ -133,10 +133,10 @@ public class DubboInvokerAvilableTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?lazy=true&connections=1&timeout=10000");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        AsyncToSyncInvoker<?> invoker = (AsyncToSyncInvoker) protocol.refer(IDemoService.class, url);
+        Invoker<?> invoker = protocol.refer(IDemoService.class, url);
         Assertions.assertTrue(invoker.isAvailable());
 
-        ExchangeClient exchangeClient = getClients((DubboInvoker<?>) invoker.getInvoker())[0];
+        ExchangeClient exchangeClient = getClients((DubboInvoker<?>) invoker)[0];
         Assertions.assertFalse(exchangeClient.isClosed());
         try {
             exchangeClient.setAttribute(Constants.CHANNEL_ATTRIBUTE_READONLY_KEY, Boolean.TRUE);

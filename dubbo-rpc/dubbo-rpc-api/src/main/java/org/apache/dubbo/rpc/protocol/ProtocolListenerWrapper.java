@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -34,6 +35,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 
 /**
@@ -71,10 +73,15 @@ public class ProtocolListenerWrapper implements Protocol {
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
-        return new ListenerInvokerWrapper<T>(protocol.refer(type, url),
-                Collections.unmodifiableList(
-                        ExtensionLoader.getExtensionLoader(InvokerListener.class)
-                                .getActivateExtension(url, INVOKER_LISTENER_KEY)));
+
+        Invoker<T> invoker = protocol.refer(type, url);
+        if (StringUtils.isEmpty(url.getParameter(FILTER_BUILDER_KEY))) {
+            invoker = new ListenerInvokerWrapper<>(invoker,
+                    Collections.unmodifiableList(
+                            ExtensionLoader.getExtensionLoader(InvokerListener.class)
+                                    .getActivateExtension(url, INVOKER_LISTENER_KEY)));
+        }
+        return invoker;
     }
 
     @Override

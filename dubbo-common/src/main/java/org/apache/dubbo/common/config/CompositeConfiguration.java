@@ -38,6 +38,9 @@ public class CompositeConfiguration implements Configuration {
      */
     private List<Configuration> configList = new LinkedList<Configuration>();
 
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    private boolean dynamicIncluded;
+
     public CompositeConfiguration() {
         this(null, null);
     }
@@ -56,6 +59,15 @@ public class CompositeConfiguration implements Configuration {
         if (configurations != null && configurations.length > 0) {
             Arrays.stream(configurations).filter(config -> !configList.contains(config)).forEach(configList::add);
         }
+    }
+
+    public void setDynamicIncluded(boolean dynamicIncluded) {
+        this.dynamicIncluded = dynamicIncluded;
+    }
+
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    public boolean isDynamicIncluded() {
+        return dynamicIncluded;
     }
 
     public void addConfiguration(Configuration configuration) {
