@@ -105,7 +105,7 @@ public class CodecSupport {
      *
      * @return serialize result of null object
      */
-    public static byte[] getNullBytes(Serialization s) {
+    public static byte[] getNullBytesOf(Serialization s) {
         return ID_NULLBYTES_MAP.computeIfAbsent(s.getContentTypeId(), k -> {
             //Pre-generated Null object bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();

@@ -236,7 +236,7 @@ public class ExchangeCodec extends TelnetCodec {
 
         if (req.isHeartbeat()) {
             // heartbeat request data is always null
-            bos.write(CodecSupport.getNullBytes(serialization));
+            bos.write(CodecSupport.getNullBytesOf(serialization));
         } else {
             ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
             if (req.isEvent()) {
@@ -288,7 +288,7 @@ public class ExchangeCodec extends TelnetCodec {
             if (status == Response.OK) {
                 if(res.isHeartbeat()){
                     // heartbeat response data is always null
-                    bos.write(CodecSupport.getNullBytes(serialization));
+                    bos.write(CodecSupport.getNullBytesOf(serialization));
                 }else {
                     ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
                     if (res.isEvent()) {
