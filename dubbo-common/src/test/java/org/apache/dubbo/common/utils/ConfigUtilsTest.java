@@ -118,6 +118,15 @@ public class ConfigUtilsTest {
     }
 
     @Test
+    public void testReplacePropertyWithDefault() throws Exception {
+        String s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.ca:DEF}3", Collections.singletonMap("a" +
+                ".b.c", "ABC"));
+        assertEquals(s, "1ABC2DEF3");
+        s = ConfigUtils.replaceProperty("1${a.b.c:ABC}2${a.b.c:ABC}3", Collections.<String, String>emptyMap());
+        assertEquals(s, "1ABC2ABC3");
+    }
+
+    @Test
     public void testGetProperties1() throws Exception {
         try {
             System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, "properties.load");

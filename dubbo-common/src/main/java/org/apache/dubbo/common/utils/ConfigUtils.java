@@ -42,7 +42,8 @@ public class ConfigUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConfigUtils.class);
     private static Pattern VARIABLE_PATTERN = Pattern.compile(
-            "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z]+)\\s*\\}?");
+            "\\$\\s*\\{?\\s*([\\._0-9a-zA-Z:]+)\\s*\\}?");
+    private static Pattern DEFAULT_VALUE_PATTERN = Pattern.compile(":");
     private static volatile Properties PROPERTIES;
     private static int PID = -1;
 
@@ -131,12 +132,18 @@ public class ConfigUtils {
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String key = matcher.group(1);
+            String[] defVals = DEFAULT_VALUE_PATTERN.split(key);
+            String defaultVal = "";
+            if (defVals.length > 1){
+                key = defVals[0];
+                defaultVal = defVals[1];
+            }
             String value = System.getProperty(key);
             if (value == null && params != null) {
                 value = params.get(key);
             }
             if (value == null) {
-                value = "";
+                value = defaultVal;
             }
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
