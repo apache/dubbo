@@ -1,6 +1,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -28,6 +30,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class UnaryInvoker {
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnaryInvoker.class);
     private static final String TOO_MANY_REQ = "Too many requests";
     private static final String MISSING_REQ = "Missing request";
     private final Invoker<?> invoker;
@@ -52,7 +55,9 @@ public class UnaryInvoker {
 
     public void receiveData(ByteBuf buf) {
         if (pendingData != null) {
-            responseErr(ctx, GrpcStatus.INTERNAL, TOO_MANY_REQ);
+            if (buf.isReadable()) {
+                responseErr(ctx, GrpcStatus.INTERNAL, TOO_MANY_REQ);
+            }
             return;
         }
         this.pendingData = buf;
@@ -92,8 +97,12 @@ public class UnaryInvoker {
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
                 }
             } catch (Exception e) {
-                // TODO add log here
-                responseErr(ctx, GrpcStatus.UNKNOWN, e.getMessage());
+                LOGGER.warn("Exception processing triple message", e);
+                if (e instanceof TripleRpcException) {
+                    responseErr(ctx, ((TripleRpcException) e).getStatus(), e.getMessage());
+                } else {
+                    responseErr(ctx, GrpcStatus.UNKNOWN, e.getMessage());
+                }
             }
         });
 

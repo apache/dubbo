@@ -9,10 +9,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -21,24 +19,19 @@ import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextError;
 
-public class TripleServerHandler extends ChannelDuplexHandler {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleServerHandler.class);
+public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
     private static final InvokerResolver invokerResolver = ExtensionLoader.getExtensionLoader(InvokerResolver.class).getDefaultExtension();
-    // TODO constraint MAX DATA_SIZE
-    private final ByteToMessageDecoder decoder = new GrpcDataDecoder(Integer.MAX_VALUE);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
             onHeadersRead(ctx, (Http2HeadersFrame) msg);
-//        } else if (msg instanceof Http2DataFrame) {
-//            onDataRead(ctx, (Http2DataFrame) msg);
+        } else if (msg instanceof Http2DataFrame) {
+            onDataRead(ctx, (Http2DataFrame) msg);
         } else {
             super.channelRead(ctx, msg);
         }
@@ -55,22 +48,9 @@ public class TripleServerHandler extends ChannelDuplexHandler {
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        List<Object> out = new ArrayList<>();
-        decoder.channelRead(ctx, msg.content());
-        // todo support stream
-        if (out.isEmpty()) {
-            return;
-        } else {
-            for (Object o : out) {
-                invoker.receiveData((ByteBuf) o);
-            }
-        }
+        super.channelRead(ctx, msg.content());
         if (msg.isEndStream()) {
-            try {
-                this.invoker.halfClose();
-            } catch (Throwable t) {
-                responseErr(ctx, GrpcStatus.UNKNOWN, t.getMessage());
-            }
+            TripleUtil.getInvoker(ctx).halfClose();
         }
     }
 

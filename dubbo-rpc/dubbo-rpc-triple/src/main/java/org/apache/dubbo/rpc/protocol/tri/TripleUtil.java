@@ -8,11 +8,17 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.AttributeKey;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
+    public static final AttributeKey<UnaryInvoker> INVOKER_KEY=AttributeKey.newInstance("tri_invoker");
+
+    public static UnaryInvoker getInvoker(ChannelHandlerContext ctx){
+        return ctx.channel().attr(TripleUtil.INVOKER_KEY).get();
+    }
     /**
      * must starts from application/grpc
      */

@@ -25,7 +25,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
                 .frameLogger(SERVER_LOGGER)
                 .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleHttp2ServerHandler());
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
         p.addLast(codec, handler);
     }
 
