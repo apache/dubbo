@@ -50,7 +50,11 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         super.channelRead(ctx, msg.content());
         if (msg.isEndStream()) {
-            TripleUtil.getInvoker(ctx).halfClose();
+            final UnaryInvoker invoker = TripleUtil.getInvoker(ctx);
+            // stream already closed;
+            if (invoker != null) {
+                invoker.halfClose();
+            }
         }
     }
 

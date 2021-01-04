@@ -95,6 +95,13 @@ public class UnaryInvoker {
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.OK.code);
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
+                }else{
+                    final Throwable exception = response.getException();
+                    if(exception instanceof TripleRpcException){
+                        responseErr(ctx,((TripleRpcException) exception).getStatus(),exception.getMessage());
+                    }else{
+                        responseErr(ctx, GrpcStatus.UNKNOWN, exception.getMessage());
+                    }
                 }
             } catch (Exception e) {
                 LOGGER.warn("Exception processing triple message", e);

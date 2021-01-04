@@ -7,7 +7,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class TripleInvokeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        final UnaryInvoker invoker = ctx.channel().attr(TripleUtil.INVOKER_KEY).get();
-        invoker.receiveData(msg.retainedDuplicate());
+        final UnaryInvoker invoker = TripleUtil.getInvoker(ctx);
+        if (invoker != null) {
+            invoker.receiveData(msg.retainedDuplicate());
+        }
     }
 }
