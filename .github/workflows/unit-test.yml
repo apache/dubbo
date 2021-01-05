@@ -21,6 +21,8 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+      - name: Download Dependencies
+        run: mvn dependency:go-offline -Dmaven.wagon.http.retryHandler.count=5
       - name: Test with Maven with Integration Tests
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
         run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
