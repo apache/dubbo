@@ -21,10 +21,10 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-      - name: Test with Maven With Integration Tests
-        if: ${{ startsWith( matrix.os, 'windows') }}
+      - name: Test with Maven with Integration Tests
+        if: ${{ startsWith( matrix.os, 'ubuntu') }}
         run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
-      - name: Test with Maven Without Integration Tests
+      - name: Test with Maven without Integration Tests
         if: ${{ startsWith( matrix.os, 'windows') }}
         run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: Upload coverage to Codecov
