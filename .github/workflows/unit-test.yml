@@ -21,13 +21,11 @@ jobs:
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-      - name: Download Dependencies
-        run: ./mvnw -D"maven.wagon.http.retryHandler.count=5" dependency:go-offline
       - name: Test with Maven with Integration Tests
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
-        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+        run: ./mvnw --batch-mode --no-transfer-progress clean install -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: Test with Maven without Integration Tests
         if: ${{ startsWith( matrix.os, 'windows') }}
-        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -D"checkstyle.skip=false" -D"rat.skip=false" -D"maven.javadoc.skip=true"
+        run: ./mvnw --batch-mode --no-transfer-progress clean install -D"maven.wagon.http.retryHandler.count=5" -DskipTests=false -DskipIntegrationTests=true -D"checkstyle.skip=false" -D"rat.skip=false" -D"maven.javadoc.skip=true"
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
