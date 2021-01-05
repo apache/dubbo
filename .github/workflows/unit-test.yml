@@ -26,6 +26,6 @@ jobs:
         run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: Test with Maven without Integration Tests
         if: ${{ startsWith( matrix.os, 'windows') }}
-        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
+        run: ./mvnw --batch-mode --no-transfer-progress clean install -DskipTests=false -DskipIntegrationTests=true
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
