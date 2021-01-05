@@ -4,21 +4,27 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
 
+import java.util.List;
+import java.util.Map;
+
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-    public static final AttributeKey<UnaryInvoker> INVOKER_KEY=AttributeKey.newInstance("tri_invoker");
+    public static final AttributeKey<UnaryInvoker> INVOKER_KEY = AttributeKey.newInstance("tri_invoker");
 
-    public static UnaryInvoker getInvoker(ChannelHandlerContext ctx){
+    public static UnaryInvoker getInvoker(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.INVOKER_KEY).get();
     }
+
     /**
      * must starts from application/grpc
      */
@@ -34,8 +40,23 @@ public class TripleUtil {
                 .status(OK.codeAsText())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .setInt(TripleConstant.STATUS_KEY, status.code)
-                .set(TripleConstant.MESSAGE_KEY, message);
+                .set(TripleConstant.MESSAGE_KEY, percentEncode(message));
         ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
+    }
+
+    public static String percentDecode(String corpus) {
+        QueryStringDecoder decoder = new QueryStringDecoder("?=" + corpus);
+        for (Map.Entry<String, List<String>> e : decoder.parameters().entrySet()) {
+            return e.getKey();
+        }
+        return "";
+    }
+
+    public static String percentEncode(String corpus) {
+        QueryStringEncoder encoder = new QueryStringEncoder("");
+        encoder.addParam("", corpus);
+        // ?=
+        return encoder.toString().substring(2);
     }
 
     public static void responsePlainTextError(ChannelHandlerContext ctx, int code, int statusCode, String
