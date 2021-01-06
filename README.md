@@ -36,7 +36,7 @@ The following code snippet comes from [Dubbo Samples](https://github.com/apache/
 # cd dubbo-samples/java/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
+There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions:
 
 ### Maven dependency
 
@@ -44,7 +44,7 @@ There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-sam
 <properties>
     <dubbo.version>2.7.8</dubbo.version>
 </properties>
-    
+
 <dependencies>
     <dependency>
         <groupId>org.apache.dubbo</groupId>
@@ -182,11 +182,11 @@ If you want to try out the cutting-edge features, you can build with the followi
 
 ## Contact
 
-* Mailing list: 
+* Mailing list:
   * dev list: for dev/user discussion. [subscribe](mailto:dev-subscribe@dubbo.apache.org), [unsubscribe](mailto:dev-unsubscribe@dubbo.apache.org), [archive](https://lists.apache.org/list.html?dev@dubbo.apache.org),  [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide)
-  
+
 * Bugs: [Issues](https://github.com/apache/dubbo/issues/new?template=dubbo-issue-report-template.md)
-* Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo) 
+* Gitter: [Gitter channel](https://gitter.im/alibaba/dubbo)
 * Twitter: [@ApacheDubbo](https://twitter.com/ApacheDubbo)
 
 ## Contributing
@@ -228,10 +228,10 @@ Please report security vulnerabilities to [us](mailto:security@dubbo.apache.org)
 
 #### Language
 
+* [Go](https://github.com/dubbo/dubbo-go) (recommended)
 * [Node.js](https://github.com/apache/dubbo-js)
 * [Python](https://github.com/dubbo/py-client-for-apache-dubbo)
 * [PHP](https://github.com/apache/dubbo-php-framework)
-* [Go](https://github.com/dubbo/dubbo-go)
 * [Erlang](https://github.com/apache/dubbo-erlang)
 
 ## License
