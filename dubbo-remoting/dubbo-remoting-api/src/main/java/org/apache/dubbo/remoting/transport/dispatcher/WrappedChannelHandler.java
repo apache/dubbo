@@ -140,10 +140,13 @@ public class WrappedChannelHandler implements ChannelHandlerDelegate {
         return executor;
     }
 
-    @Deprecated
+    /**
+     * get Shared Executor for Connection event: CONNECTED\DISCONNECTED\CAUGHT
+     *
+     * @return DubboSharedHandler Executor
+     */
     public ExecutorService getExecutorService() {
-        return getSharedExecutorService();
+        // issue #7054
+        return ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getSharedExecutor();
     }
-
-
 }
