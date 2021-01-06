@@ -198,7 +198,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      *
      * @param invokerUrls this parameter can't be null
      */
-    private void refreshInvoker(List<URL> invokerUrls) {
+    private synchronized void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
         if (invokerUrls.size() == 1
