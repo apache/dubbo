@@ -19,6 +19,7 @@ package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -36,20 +37,20 @@ public class RegistryFactoryWrapperTest {
         URL url = URL.valueOf("dubbo://localhost:8081/simple.service");
         registry.register(url);
 
-        Mockito.verify(listener1, Mockito.times(1)).onRegister(url);
-        Mockito.verify(listener2, Mockito.times(1)).onRegister(url);
+        Mockito.verify(listener1, Mockito.times(1)).onRegister(url, null);
+        Mockito.verify(listener2, Mockito.times(1)).onRegister(url, null);
 
         registry.unregister(url);
-        Mockito.verify(listener1, Mockito.times(1)).onUnregister(url);
-        Mockito.verify(listener2, Mockito.times(1)).onUnregister(url);
+        Mockito.verify(listener1, Mockito.times(1)).onUnregister(url, null);
+        Mockito.verify(listener2, Mockito.times(1)).onUnregister(url, null);
 
         registry.subscribe(url, Mockito.mock(NotifyListener.class));
-        Mockito.verify(listener1, Mockito.times(1)).onSubscribe(url);
-        Mockito.verify(listener2, Mockito.times(1)).onSubscribe(url);
+        Mockito.verify(listener1, Mockito.times(1)).onSubscribe(url, null);
+        Mockito.verify(listener2, Mockito.times(1)).onSubscribe(url, null);
 
         registry.unsubscribe(url, Mockito.mock(NotifyListener.class));
-        Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url);
-        Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url);
+        Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url, null);
+        Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url, null);
     }
 
 }

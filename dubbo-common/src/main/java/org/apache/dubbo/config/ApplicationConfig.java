@@ -34,14 +34,17 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_LOCAL_FILE_CACHE_ENABLED;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -158,6 +161,16 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean registerConsumer;
 
     private String repository;
+
+    private Boolean enableFileCache;
+
+    private Boolean publishInterface;
+
+    /**
+     * The preferred protocol(name) of this application
+     * convenient for places where it's hard to determine which is the preferred protocol
+     */
+    private String protocol;
 
     /**
      * Metadata Service, used in Service Discovery
@@ -457,6 +470,33 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setRepository(String repository) {
         this.repository = repository;
+    }
+
+    @Parameter(key = REGISTRY_LOCAL_FILE_CACHE_ENABLED)
+    public Boolean getEnableFileCache() {
+        return enableFileCache;
+    }
+
+    public void setEnableFileCache(Boolean enableFileCache) {
+        this.enableFileCache = enableFileCache;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
+    public Boolean getPublishInterface() {
+        return publishInterface;
+    }
+
+    public void setPublishInterface(Boolean publishInterface) {
+        this.publishInterface = publishInterface;
+    }
+
+    @Parameter(excluded = true, key="application-protocol")
+    public String getProtocol() {
+        return protocol == null ? DUBBO : protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
     }
 
     @Parameter(key = "metadata-service-port")

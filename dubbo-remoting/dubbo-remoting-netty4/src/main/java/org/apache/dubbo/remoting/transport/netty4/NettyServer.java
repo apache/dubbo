@@ -40,8 +40,8 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
@@ -166,14 +166,16 @@ public class NettyServer extends AbstractServer implements RemotingServer {
 
     @Override
     public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new HashSet<Channel>();
-        for (Channel channel : this.channels.values()) {
-            if (channel.isConnected()) {
-                chs.add(channel);
-            } else {
-                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
-            }
-        }
+        Collection<Channel> chs = new ArrayList<>(this.channels.size());
+        chs.addAll(this.channels.values());
+        //复用 NettyServerHandler 里面的 channels，所以不再需要检查是否可连
+//        for (Channel channel : this.channels.values()) {
+//            if (channel.isConnected()) {
+//                chs.add(channel);
+//            } else {
+//                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
+//            }
+//        }
         return chs;
     }
 

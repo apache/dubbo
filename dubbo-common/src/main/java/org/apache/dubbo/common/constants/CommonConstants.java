@@ -263,6 +263,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
+
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
     String DUBBO_VERSION_KEY = "dubbo";
@@ -304,6 +306,12 @@ public interface CommonConstants {
     String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
 
     String GENERIC_WITH_CLZ_KEY = "generic.include.class";
+
+    /**
+     * Whether to cache locally, default is true
+     */
+    String REGISTRY_LOCAL_FILE_CACHE_ENABLED = "file.cache";
+
 
     /**
      * The limit of callback service instances for one interface on every client
@@ -360,5 +368,10 @@ public interface CommonConstants {
     String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
 
     String QOS_STARTUP_PROBE_EXTENSION = "dubbo.application.startup-probe";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
+
+    String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
+    String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
 
 }

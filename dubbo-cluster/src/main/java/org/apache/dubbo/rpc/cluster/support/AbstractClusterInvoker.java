@@ -81,16 +81,16 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public Class<T> getInterface() {
-        return directory.getInterface();
+        return getDirectory().getInterface();
     }
 
     @Override
     public URL getUrl() {
-        return directory.getConsumerUrl();
+        return getDirectory().getConsumerUrl();
     }
 
     public URL getRegistryUrl() {
-        return directory.getUrl();
+        return getDirectory().getUrl();
     }
 
     @Override
@@ -99,7 +99,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (invoker != null) {
             return invoker.isAvailable();
         }
-        return directory.isAvailable();
+        return getDirectory().isAvailable();
     }
 
     public Directory<T> getDirectory() {
@@ -109,7 +109,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
-            directory.destroy();
+            getDirectory().destroy();
         }
     }
 
@@ -161,6 +161,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (sticky) {
             stickyInvoker = invoker;
         }
+
         return invoker;
     }
 
@@ -196,6 +197,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                 logger.error("cluster reselect fail reason is :" + t.getMessage() + " if can not solve, you can set cluster.availablecheck=false in url", t);
             }
         }
+
         return invoker;
     }
 
@@ -282,19 +284,30 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getConsumerUrl().getServiceKey()
-                    + " from registry " + directory.getUrl().getAddress()
+                    + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
+                    + " from registry " + getDirectory().getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()
                     + ". Please check if the providers have been started and registered.");
         }
     }
 
+    protected Result invokeWithContext(Invoker<T> invoker, Invocation invocation) {
+        setContext(invoker);
+        Result result;
+        try {
+            result = invoker.invoke(invocation);
+        } finally {
+            clearContext(invoker);
+        }
+        return result;
+    }
+
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
-        return directory.list(invocation);
+        return getDirectory().list(invocation);
     }
 
     /**
@@ -310,10 +323,27 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
      */
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE));
+            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(
+                    invokers.get(0).getUrl().getMethodParameter(
+                            RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE
+                    )
+            );
         } else {
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }
+    }
+
+
+    private void setContext(Invoker<T> invoker) {
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(invoker)
+                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
+    }
+
+    private void clearContext(Invoker<T> invoker) {
+        // do nothing
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(null);
     }
 }

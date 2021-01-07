@@ -35,8 +35,8 @@ import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.StdErrLog;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 public class JettyHttpServer extends AbstractHttpServer {
 
@@ -89,7 +89,7 @@ public class JettyHttpServer extends AbstractHttpServer {
             server.start();
         } catch (Exception e) {
             throw new IllegalStateException("Failed to start jetty server on " + url.getParameter(Constants.BIND_IP_KEY) + ":" + url.getParameter(Constants.BIND_PORT_KEY) + ", cause: "
-                + e.getMessage(), e);
+                    + e.getMessage(), e);
         }
     }
 

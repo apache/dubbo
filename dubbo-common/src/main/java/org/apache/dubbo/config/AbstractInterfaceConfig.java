@@ -451,6 +451,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.layer = layer;
     }
 
+    /**
+     * Always use the global ApplicationConfig
+     */
     public ApplicationConfig getApplication() {
         if (application != null) {
             return application;

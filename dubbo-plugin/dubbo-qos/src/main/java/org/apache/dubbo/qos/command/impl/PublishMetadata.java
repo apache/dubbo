@@ -43,7 +43,7 @@ public class PublishMetadata implements BaseCommand {
         logger.info("received publishMetadata command.");
 
         if (ArrayUtils.isEmpty(args)) {
-            ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
+            ServiceInstanceMetadataUtils.refreshMetadataAndInstance(null);
             return "publish metadata succeeded.";
         }
 
@@ -51,7 +51,7 @@ public class PublishMetadata implements BaseCommand {
             int delay = Integer.parseInt(args[0]);
             if (future == null || future.isDone() || future.isCancelled()) {
                 future = executorRepository.nextScheduledExecutor()
-                        .scheduleWithFixedDelay(ServiceInstanceMetadataUtils::refreshMetadataAndInstance, 0, delay, TimeUnit.MILLISECONDS);
+                        .scheduleWithFixedDelay(() -> ServiceInstanceMetadataUtils.refreshMetadataAndInstance(null), 0, delay, TimeUnit.MILLISECONDS);
             }
         } catch (NumberFormatException e) {
             logger.error("Wrong delay param", e);

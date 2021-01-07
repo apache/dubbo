@@ -18,6 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -86,9 +87,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_DUPLICATE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
@@ -210,18 +214,34 @@ public class ConfigValidationUtils {
     private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
-            result.add(registryURL);
             if (provider) {
+                boolean publishInterface = registryURL.getParameter(REGISTRY_PUBLISH_INTERFACE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY, true));
                 // for registries enabled service discovery, automatically register interface compatible addresses.
-                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())
-                        && registryURL.getParameter(REGISTRY_DUPLICATE_KEY, true)
-                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
-                    URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
-                            .setProtocol(REGISTRY_PROTOCOL)
-                            .removeParameter(REGISTRY_TYPE_KEY)
-                            .build();
-                    result.add(interfaceCompatibleRegistryURL);
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+                    result.add(registryURL);
+                    if (publishInterface && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                        URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+                                .setProtocol(REGISTRY_PROTOCOL)
+                                .removeParameter(REGISTRY_TYPE_KEY)
+                                .build();
+                        result.add(interfaceCompatibleRegistryURL);
+                    }
+                } else {
+                    boolean publishInstance = registryURL.getParameter(REGISTRY_PUBLISH_INSTANCE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY, true));
+                    if (registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)
+                            && publishInstance) {
+                        URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
+                                .setProtocol(SERVICE_REGISTRY_PROTOCOL)
+                                .removeParameter(REGISTRY_TYPE_KEY)
+                                .build();
+                        result.add(serviceDiscoveryRegistryURL);
+                    }
+                    if (publishInterface) {
+                        result.add(registryURL);
+                    }
                 }
+            } else {
+                result.add(registryURL);
             }
         });
         return result;
@@ -273,7 +293,7 @@ public class ConfigValidationUtils {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                    .putAttribute(REFER_KEY, StringUtils.toQueryString(map))
                     .build();
         }
         return null;
@@ -527,7 +547,12 @@ public class ConfigValidationUtils {
     }
 
     private static String extractRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : REGISTRY_PROTOCOL;
+        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : getRegistryProtocolType(url);
+    }
+
+    private static String getRegistryProtocolType(URL url) {
+        String registryProtocol = url.getParameter("registry-protocol-type");
+        return StringUtils.isNotEmpty(registryProtocol) ? registryProtocol : REGISTRY_PROTOCOL;
     }
 
     public static void checkExtension(Class<?> type, String property, String value) {

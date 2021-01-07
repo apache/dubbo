@@ -37,6 +37,7 @@ public /**final**/ class RpcException extends RuntimeException {
     public static final int NO_INVOKER_AVAILABLE_AFTER_FILTER = 6;
     public static final int LIMIT_EXCEEDED_EXCEPTION = 7;
     public static final int TIMEOUT_TERMINATE = 8;
+    public static final int REGISTRY_EXCEPTION = 9;
     private static final long serialVersionUID = 7815426752583648734L;
     /**
      * RpcException cannot be extended, use error code for exception type to keep compatibility
