@@ -18,13 +18,17 @@ package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.metadata.MetadataInfo;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 
 /**
  * The default implementation of {@link ServiceInstance}.
@@ -53,8 +57,22 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient MetadataInfo serviceMetadata;
     // used at runtime
     private transient Map<String, String> extendParams = new HashMap<>();
+    private transient List<Endpoint> endpoints;
 
     public DefaultServiceInstance() {
+    }
+
+    public DefaultServiceInstance(DefaultServiceInstance other) {
+        this.id = other.id;
+        this.serviceName = other.serviceName;
+        this.host = other.host;
+        this.port = other.port;
+        this.enabled = other.enabled;
+        this.healthy = other.healthy;
+        this.metadata = other.metadata;
+        this.serviceMetadata = other.serviceMetadata;
+        this.extendParams = other.extendParams;
+        this.endpoints = other.endpoints;
     }
 
     public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
@@ -71,6 +89,10 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
         this(host + ":" + port, serviceName, host, port);
+    }
+
+    public DefaultServiceInstance(String serviceName) {
+        this.serviceName = serviceName;
     }
 
     public void setId(String id) {
@@ -154,6 +176,20 @@ public class DefaultServiceInstance implements ServiceInstance {
         return extendParams;
     }
 
+    public List<Endpoint> getEndpoints() {
+        if (endpoints != null) {
+            return endpoints;
+        }
+        return JSON.parseArray(metadata.get(ENDPOINTS), Endpoint.class);
+    }
+
+    public DefaultServiceInstance copy(Endpoint endpoint) {
+        DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
+        copyOfInstance.setPort(endpoint.getPort());
+//        copyOfInstance.setId(copyOfInstance.getAddress());
+        return copyOfInstance;
+    }
+
     @Override
     public Map<String, String> getAllParams() {
         Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
@@ -220,5 +256,31 @@ public class DefaultServiceInstance implements ServiceInstance {
                 ", healthy=" + healthy +
                 ", metadata=" + metadata +
                 '}';
+    }
+
+    public static class Endpoint {
+        Integer port;
+        String protocol;
+
+        public Endpoint(Integer port, String protocol) {
+            this.port = port;
+            this.protocol = protocol;
+        }
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
+
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
     }
 }

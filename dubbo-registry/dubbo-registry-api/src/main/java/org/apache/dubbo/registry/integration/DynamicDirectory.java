@@ -177,6 +177,10 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         return this.overrideDirectoryUrl;
     }
 
+    public URL getOriginalConsumerUrl() {
+        return this.consumerUrl;
+    }
+
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
     }

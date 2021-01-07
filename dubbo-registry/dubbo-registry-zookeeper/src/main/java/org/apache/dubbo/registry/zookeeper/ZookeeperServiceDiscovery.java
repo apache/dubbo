@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.rpc.RpcException;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.api.CuratorWatcher;
@@ -45,6 +46,7 @@ import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.RO
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildServiceDiscovery;
+import static org.apache.dubbo.rpc.RpcException.REGISTRY_EXCEPTION;
 
 /**
  * Zookeeper {@link ServiceDiscovery} implementation based on
@@ -94,17 +96,20 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
 
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
-        doInServiceRegistry(serviceDiscovery -> {
+        try {
             serviceDiscovery.registerService(build(serviceInstance));
-        });
+        } catch (Exception e) {
+            throw new RpcException(REGISTRY_EXCEPTION, "Failed register instance " + serviceInstance.toString(), e);
+        }
     }
 
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
-        if (isInstanceUpdated(serviceInstance)) {
-            doInServiceRegistry(serviceDiscovery -> {
-                serviceDiscovery.updateService(build(serviceInstance));
-            });
+        if (this.serviceInstance == null) {
+            this.register(serviceInstance);
+        } else if (isInstanceUpdated(serviceInstance)) {
+            this.unregister(this.serviceInstance);
+            this.register(serviceInstance);
+            this.serviceInstance = serviceInstance;
         }
     }
 
@@ -189,10 +194,11 @@ public class ZookeeperServiceDiscovery implements ServiceDiscovery {
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
         try {
-            curatorFramework.create().forPath(path);
+            curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
+
                 logger.debug(e);
             }
         } catch (Exception e) {

@@ -22,9 +22,11 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.util.Collection;
@@ -56,7 +58,8 @@ public class BaseOnline implements BaseCommand {
 
         Collection<ProviderModel> providerModelList = serviceRepository.getExportedServices();
         for (ProviderModel providerModel : providerModelList) {
-            if (providerModel.getServiceMetadata().getServiceKey().matches(servicePattern)) {
+            ServiceMetadata metadata = providerModel.getServiceMetadata();
+            if (metadata.getServiceKey().matches(servicePattern) || metadata.getDisplayServiceKey().matches(servicePattern)) {
                 hasService = true;
                 List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
                 for (ProviderModel.RegisterStatedURL statedURL : statedUrls) {
@@ -75,6 +78,8 @@ public class BaseOnline implements BaseCommand {
     }
 
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-
+        Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
+        registry.register(statedURL.getProviderUrl());
+        statedURL.setRegistered(true);
     }
 }

@@ -42,7 +42,7 @@ public class Application {
 
                     Thread.sleep(100);
                 } catch (Exception e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
             }
         }).start();
@@ -55,7 +55,7 @@ public class Application {
                 String greetings = greetingService.hello();
                 System.out.println("result: " + greetings);
             } catch (Exception e) {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
 
             Thread.sleep(500);

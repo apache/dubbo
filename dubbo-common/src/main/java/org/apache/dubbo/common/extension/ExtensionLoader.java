@@ -307,6 +307,21 @@ public class ExtensionLoader<T> {
         return activateExtensions;
     }
 
+    public List<T> getActivateExtensions() {
+        List<T> activateExtensions = new ArrayList<>();
+        getExtensionClasses();
+        for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
+            String name = entry.getKey();
+            Object activate = entry.getValue();
+            if (!(activate instanceof Activate)) {
+                continue;
+            }
+            activateExtensions.add(getExtension(name));
+        }
+        activateExtensions.sort(ActivateComparator.COMPARATOR);
+        return activateExtensions;
+    }
+
     private boolean isMatchGroup(String group, String[] groups) {
         if (StringUtils.isEmpty(group)) {
             return true;

@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "offlineApp", summary = "offline app addresses", example = {
@@ -26,12 +27,12 @@ import org.apache.dubbo.rpc.model.ProviderModel;
         "offlineApp xx.xx.xxx.service"
 })
 public class OfflineApp extends BaseOffline {
+    private static final Logger logger = LoggerFactory.getLogger(OfflineApp.class);
+
     @Override
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
         if (UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
-            Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-            registry.unregister(statedURL.getProviderUrl());
-            statedURL.setRegistered(false);
+            super.doUnexport(statedURL);
         }
     }
 }

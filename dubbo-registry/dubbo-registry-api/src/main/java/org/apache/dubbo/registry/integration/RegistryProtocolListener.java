@@ -44,7 +44,7 @@ public interface RegistryProtocolListener {
      * @param url
      * @see RegistryProtocol#refer(Class, URL)
      */
-    void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url);
+    void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url, URL registryURL);
 
     /**
      * Notify RegistryProtocol's listeners when the protocol is destroyed

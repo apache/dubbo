@@ -22,6 +22,8 @@ import org.apache.dubbo.common.extension.SPI;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_MAPPING_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.DEFAULT_MAPPING_GROUP;
@@ -46,6 +48,14 @@ public interface ServiceNameMapping {
      */
     Set<String> getAndListen(URL url, MappingListener mappingListener);
 
+    default Set<String> get(URL url) {
+        return getAndListen(url, null);
+    }
+
+    static String toStringKeys(Set<String> serviceNames) {
+        return serviceNames.toString();
+    }
+
     /**
      * Get the default extension of {@link ServiceNameMapping}
      *
@@ -58,6 +68,10 @@ public interface ServiceNameMapping {
 
     static ServiceNameMapping getExtension(String name) {
         return getExtensionLoader(ServiceNameMapping.class).getExtension(name == null ? CONFIG_MAPPING_TYPE : name);
+    }
+
+    static String buildMappingKey(URL url) {
+        return buildGroup(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getParameter(PROTOCOL_KEY, DUBBO));
     }
 
     static String buildGroup(String serviceInterface, String group, String version, String protocol) {

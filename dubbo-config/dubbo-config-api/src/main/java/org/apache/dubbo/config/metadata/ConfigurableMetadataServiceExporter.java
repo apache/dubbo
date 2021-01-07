@@ -72,7 +72,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
             ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
             serviceConfig.setApplication(getApplicationConfig());
-            serviceConfig.setRegistries(getRegistries());
+            serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());
             serviceConfig.setInterface(MetadataService.class);
             serviceConfig.setRef(metadataService);
@@ -141,17 +141,6 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         return ApplicationModel.getConfigManager().getApplication().get();
     }
 
-    private List<RegistryConfig> getRegistries() {
-        return new ArrayList<>(ApplicationModel.getConfigManager().getRegistries());
-    }
-
-    /**
-     * MetadataService will always being exported as a Dubbo protocol service. Some protocols have requirements on service definitions,
-     * trying to export MetadataService on those protocols may cause exception.
-     * <p>
-     * For registries that can carry metadata information, such as Zookeeper, Nacos, users need not to care about which Port MetadataService will work on.
-     * For registries that have limited information, typically DNS, we strongly recommend users specify the MetadataService Port using 'dubbo.application.metadata-service-port=xxx'
-     */
     private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
         Integer port = getApplicationConfig().getMetadataServicePort();

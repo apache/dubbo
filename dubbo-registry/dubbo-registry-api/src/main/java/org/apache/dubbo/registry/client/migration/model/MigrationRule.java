@@ -16,12 +16,16 @@
  */
 package org.apache.dubbo.registry.client.migration.model;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * # key = demo-consumer.migration
@@ -38,14 +42,25 @@ import java.util.Map;
  * step: FORCE_APPLICATION
  */
 public class MigrationRule {
+    public static final MigrationRule INIT = new MigrationRule();
+
     private String key;
     private MigrationStep step;
     private Float threshold;
     // FIXME
     private List<String> targetIps;
     private List<InterfaceMigrationRule> interfaces;
+    private List<ApplicationMigrationRule> applications;
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
+    private transient Map<String, ApplicationMigrationRule> applicationRules;
+
+    public MigrationRule() {
+    }
+
+    public MigrationRule(String key) {
+        this.key = key;
+    }
 
     public String getKey() {
         return key;
@@ -55,11 +70,22 @@ public class MigrationRule {
         this.key = key;
     }
 
-    public MigrationStep getStep(String serviceKey) {
+    public MigrationStep getStep(String serviceKey, Set<String> apps) {
         if (interfaceRules != null) {
             InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
             if (rule != null) {
                 return rule.getStep() == null ? step : rule.getStep();
+            }
+        }
+
+        if (apps != null) {
+            for (String app : apps) {
+                if (applicationRules != null) {
+                    ApplicationMigrationRule rule = applicationRules.get(app);
+                    if (rule != null) {
+                        return rule.getStep() == null ? step : rule.getStep();
+                    }
+                }
             }
         }
         return step;
@@ -72,15 +98,33 @@ public class MigrationRule {
         return interfaceRules.get(serviceKey);
     }
 
+    public ApplicationMigrationRule getApplicationRule(String app) {
+        if (applicationRules == null) {
+            return null;
+        }
+        return applicationRules.get(app);
+    }
+
     public MigrationStep getStep() {
         return step;
     }
 
-    public Float getThreshold(String serviceKey) {
+    public Float getThreshold(String serviceKey, Set<String> apps) {
         if (interfaceRules != null) {
             InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
             if (rule != null) {
                 return rule.getThreshold() == null ? threshold : rule.getThreshold();
+            }
+        }
+
+        if (apps != null) {
+            for (String app : apps) {
+                if (applicationRules != null) {
+                    ApplicationMigrationRule rule = applicationRules.get(app);
+                    if (rule != null) {
+                        return rule.getThreshold() == null ? threshold : rule.getThreshold();
+                    }
+                }
             }
         }
         return threshold;
@@ -120,9 +164,83 @@ public class MigrationRule {
         }
     }
 
+    public List<ApplicationMigrationRule> getApplications() {
+        return applications;
+    }
+
+    public void setApplications(List<ApplicationMigrationRule> applications) {
+        this.applications = applications;
+        if (applications != null) {
+            this.applicationRules = new HashMap<>();
+            applications.forEach(rule -> {
+                applicationRules.put(rule.getName(), rule);
+            });
+        }
+    }
+
+    public boolean removeApplicationRule(String providerApp) {
+        if (CollectionUtils.isNotEmpty(this.applications)) {
+            boolean removed = this.applications.removeIf(applicationMigrationRule -> applicationMigrationRule.getName().equals(providerApp));
+            this.applicationRules.remove(providerApp);
+            return removed;
+        }
+        return false;
+    }
+
+    public boolean removeInterfaceRule(String serviceKey) {
+        if (CollectionUtils.isNotEmpty(this.interfaces)) {
+            boolean removed = this.interfaces.removeIf(interfaceMigrationRule -> interfaceMigrationRule.getServiceKey().equals(serviceKey));
+            this.interfaceRules.remove(serviceKey);
+            return removed;
+        }
+        return false;
+    }
+
+    public boolean addInterfaceRule(String providerApp, String serviceKey, MigrationStep step, Float threshold) {
+        if (getInterfaceRule(serviceKey) != null) {
+            return false;
+        }
+
+        if (this.interfaces == null) {
+            this.interfaces = new ArrayList<>();
+        }
+        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule(providerApp, serviceKey, step, threshold);
+        this.interfaces.add(interfaceMigrationRule);
+
+        if (interfaceRules == null) {
+            this.interfaceRules = new HashMap<>();
+        }
+        this.interfaceRules.put(serviceKey, interfaceMigrationRule);
+        return true;
+    }
+
+    public boolean addApplicationRule(String providerApp, MigrationStep step, Float threshold) {
+        if (getApplicationRule(providerApp) != null) {
+            return false;
+        }
+
+        if (this.applications == null) {
+            this.applications = new ArrayList<>();
+        }
+        ApplicationMigrationRule applicationMigrationRule = new ApplicationMigrationRule(providerApp, step, threshold);
+        this.applications.add(applicationMigrationRule);
+
+        if (applicationRules == null) {
+            this.applicationRules = new HashMap<>();
+        }
+        this.applicationRules.put(providerApp, applicationMigrationRule);
+        return true;
+    }
+
     public static MigrationRule parse(String rawRule) {
         Constructor constructor = new Constructor(MigrationRule.class);
         Yaml yaml = new Yaml(constructor);
         return yaml.load(rawRule);
+    }
+
+    public static String toYaml(MigrationRule rule) {
+        Constructor constructor = new Constructor(MigrationRule.class);
+        Yaml yaml = new Yaml(constructor);
+        return yaml.dump(rule);
     }
 }

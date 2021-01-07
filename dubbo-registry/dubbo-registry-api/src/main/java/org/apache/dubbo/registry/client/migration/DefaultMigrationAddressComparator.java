@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -32,6 +33,8 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     private static final String MIGRATION_THRESHOLD = "dubbo.application.migration.threshold";
     private static final String DEFAULT_THRESHOLD_STRING = "0.8";
     private static final float DEFAULT_THREAD = 0.8f;
+
+    private static final WritableMetadataService localMetadataService = WritableMetadataService.getDefaultExtension();
 
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
@@ -51,7 +54,8 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
 
         String rawThreshold = null;
-        Float configedThreshold = rule == null ? null : rule.getThreshold(invoker.getUrl().getServiceKey());
+        String serviceKey = invoker.getUrl().getDisplayServiceKey();
+        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey, localMetadataService.getCachedMapping(invoker.getUrl()));
         if (configedThreshold != null && configedThreshold >= 0) {
             rawThreshold = String.valueOf(configedThreshold);
         }

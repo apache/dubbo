@@ -14,11 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.demo;
 
-import org.apache.dubbo.common.extension.SPI;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 
-@SPI("default")
-public interface FilterChainBuilder {
-    <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group);
+
+@Path("/demoService")
+public interface RestDemoService {
+    @GET
+    @Path("/hello")
+    Integer hello(@QueryParam("a") Integer a, @QueryParam("b") Integer b);
+
+    @GET
+    @Path("/error")
+    String error();
+
+    @POST
+    @Path("/say")
+    @Consumes({MediaType.TEXT_PLAIN})
+    String sayHello(String name);
+
+    @GET
+    @Path("/getRemoteApplicationName")
+    String getRemoteApplicationName();
 }

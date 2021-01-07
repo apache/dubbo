@@ -455,14 +455,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * Always use the global ApplicationConfig
      */
     public ApplicationConfig getApplication() {
-        ApplicationConfig globalApplication = ApplicationModel.getConfigManager().getApplicationOrElseThrow();
-        if (globalApplication == null) {
+        if (application != null) {
             return application;
         }
-        if (application != null && !application.getName().equals(globalApplication.getName())) {
-            return application;
-        }
-        return globalApplication;
+        return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
     }
 
     @Deprecated
