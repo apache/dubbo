@@ -26,6 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RevisionResolver {
     private static final Logger logger = LoggerFactory.getLogger(RevisionResolver.class);
+    private static final String EMPTY_REVISION = "0";
     private static char hexDigits[] = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
@@ -55,5 +56,8 @@ public class RevisionResolver {
         return new String(str);
     }
 
+    public static String getEmptyRevision(String app) {
+        return EMPTY_REVISION;
+    }
 
 }

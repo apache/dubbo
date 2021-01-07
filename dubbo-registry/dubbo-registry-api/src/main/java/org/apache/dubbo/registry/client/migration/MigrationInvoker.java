@@ -160,6 +160,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     @Override
+    public void refreshServiceDiscoveryInvokerOnMappingCallback(boolean forceMigrate) {
+        if (this.serviceDiscoveryInvoker != null) {
+            DynamicDirectory dynamicDirectory = (DynamicDirectory) this.serviceDiscoveryInvoker.getDirectory();
+            dynamicDirectory.subscribe(dynamicDirectory.getOriginalConsumerUrl());
+        } else {
+            migrateToServiceDiscoveryInvoker(forceMigrate);
+        }
+    }
+
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         if (currentAvailableInvoker != null) {
             return currentAvailableInvoker.invoke(invocation);

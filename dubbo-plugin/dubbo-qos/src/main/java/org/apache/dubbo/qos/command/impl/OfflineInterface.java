@@ -18,7 +18,6 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.qos.command.annotation.Cmd;
-import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "offlineInterface", summary = "offline dubbo", example = {
@@ -28,9 +27,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 public class OfflineInterface extends BaseOffline {
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
         if (!UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
-            Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-            registry.unregister(statedURL.getProviderUrl());
-            statedURL.setRegistered(false);
+            super.doUnexport(statedURL);
         }
     }
 }

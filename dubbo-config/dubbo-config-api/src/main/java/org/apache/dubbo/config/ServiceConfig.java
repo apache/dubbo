@@ -37,6 +37,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -211,8 +212,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         } else {
             doExport();
         }
-
-        exported();
     }
 
     public void exported() {
@@ -308,6 +307,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
         doExportUrls();
+        exported();
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -505,6 +505,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 } else {
                     if (logger.isInfoEnabled()) {
                         logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+                    }
+                    if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+                        MetadataUtils.saveMetadataURL(url);
                     }
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
                     DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);

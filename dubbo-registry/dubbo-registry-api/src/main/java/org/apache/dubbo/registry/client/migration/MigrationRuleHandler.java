@@ -22,11 +22,11 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+import java.util.Set;
 
 @Activate
 public class MigrationRuleHandler<T> {
@@ -36,48 +36,68 @@ public class MigrationRuleHandler<T> {
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
     private Float currentThreshold = 0f;
-    private MigrationRule rule;
     private URL consumerURL;
+
+    private final WritableMetadataService writableMetadataService;
 
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
         this.consumerURL = url;
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
-    public void doMigrate(String rawRule) {
-        MigrationStep step = (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker)
-                ? MigrationStep.FORCE_APPLICATION
-                : MigrationStep.INTERFACE_FIRST;
-        Float threshold = -1f;
-        if (StringUtils.isEmpty(rawRule)) {
-            logger.error("Find empty migration rule, will ignore.");
+    public synchronized void doMigrate(MigrationRule rule, boolean isCallback) {
+        if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
+            if (!isCallback) {
+                initInvoker(MigrationStep.FORCE_APPLICATION, 1.0f);
+            } else {
+                migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
+            }
             return;
-        } else if (INIT.equals(rawRule)) {
+        }
+
+        MigrationStep step = MigrationStep.INTERFACE_FIRST;
+        Float threshold = -1f;
+        if (rule == MigrationRule.INIT) {
             step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             try {
-                rule = MigrationRule.parse(rawRule);
+                String serviceKey = consumerURL.getDisplayServiceKey();
+                Set<String> apps = writableMetadataService.getCachedMapping(consumerURL);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isEmpty(rule.getTargetIps())) {
-                    setMigrationRule(rule);
-                    step = rule.getStep(consumerURL.getServiceKey());
-                    threshold = rule.getThreshold(consumerURL.getServiceKey());
-                } else {
-                    if (rule.getTargetIps().contains(consumerURL.getHost())) {
+                if (CollectionUtils.isNotEmpty(apps)) { //empty only happens when meta server does not work properly
+                    if (CollectionUtils.isEmpty(rule.getTargetIps())) {
                         setMigrationRule(rule);
-                        step = rule.getStep(consumerURL.getServiceKey());
-                        threshold = rule.getThreshold(consumerURL.getServiceKey());
+                        step = getMigrationStep(rule, step, serviceKey, apps);
+                        threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
                     } else {
-                        setMigrationRule(null); // clear previous rule
-                        logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+                        if (rule.getTargetIps().contains(consumerURL.getHost())) {
+                            setMigrationRule(rule);
+                            step = getMigrationStep(rule, step, serviceKey, apps);
+                            threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
+                        } else {
+                            setMigrationRule(null); // clear previous rule
+                            logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+                        }
                     }
                 }
             } catch (Exception e) {
-                logger.error("Parse migration rule error, will use default step " + step, e);
+                logger.error("Failed to get step and threshold info from rule: " + rule, e);
             }
         }
 
-        if ((currentStep == null || currentStep != step) || (!currentThreshold.equals(threshold))) {
+        if (!isCallback) {
+            initInvoker(step, threshold);
+        } else {
+            refreshInvoker(step, threshold);
+        }
+    }
+
+    private void initInvoker(MigrationStep step, Float threshold) {
+        if (step == null || threshold == null) {
+            throw new IllegalStateException("Step or threshold of migration rule cannot be null");
+        }
+        if ((currentStep == null || currentStep != step) || !currentThreshold.equals(threshold)) {
             setCurrentStepAndThreshold(step, threshold);
             switch (step) {
                 case APPLICATION_FIRST:
@@ -93,6 +113,34 @@ public class MigrationRuleHandler<T> {
         }
     }
 
+    private void refreshInvoker(MigrationStep step, Float threshold) {
+        if (step == null || threshold == null) {
+            throw new IllegalStateException("Step or threshold of migration rule cannot be null");
+        }
+
+        if (step == MigrationStep.APPLICATION_FIRST) {
+            migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(false);
+        } else if (step == MigrationStep.FORCE_APPLICATION) {
+            migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
+        }
+    }
+
+    public void setMigrationRule(MigrationRule rule) {
+        this.migrationInvoker.setMigrationRule(rule);
+    }
+
+    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step, String serviceKey, Set<String> apps) {
+        MigrationStep configuredStep = rule.getStep(serviceKey, apps);
+        step = configuredStep == null ? step : configuredStep;
+        return step;
+    }
+
+    private Float getMigrationThreshold(MigrationRule rule, Float threshold, String serviceKey, Set<String> apps) {
+        Float configuredThreshold = rule.getThreshold(serviceKey, apps);
+        threshold = configuredThreshold == null ? threshold : configuredThreshold;
+        return threshold;
+    }
+
     public void setCurrentStepAndThreshold(MigrationStep currentStep, Float currentThreshold) {
         if (currentThreshold != null) {
             this.currentThreshold = currentThreshold;
@@ -101,9 +149,5 @@ public class MigrationRuleHandler<T> {
             this.currentStep = currentStep;
             this.migrationInvoker.setMigrationStep(currentStep);
         }
-    }
-
-    public void setMigrationRule(MigrationRule rule) {
-        this.migrationInvoker.setMigrationRule(rule);
     }
 }

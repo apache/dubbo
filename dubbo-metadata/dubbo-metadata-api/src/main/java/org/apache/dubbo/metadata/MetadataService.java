@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -161,6 +162,10 @@ public interface MetadataService {
      * @see URL#toFullString()
      */
     SortedSet<String> getExportedURLs(String serviceInterface, String group, String version, String protocol);
+
+    default Set<URL> getExportedServiceURLs() {
+        return Collections.emptySet();
+    }
 
     /**
      * Interface definition.

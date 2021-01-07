@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.FILTER_BUILDER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_TYPE_KEY;
 
 /**
  * ListenerProtocol
@@ -75,7 +75,7 @@ public class ProtocolListenerWrapper implements Protocol {
         }
 
         Invoker<T> invoker = protocol.refer(type, url);
-        if (StringUtils.isEmpty(url.getParameter(FILTER_BUILDER_KEY))) {
+        if (StringUtils.isEmpty(url.getParameter(REGISTRY_CLUSTER_TYPE_KEY))) {
             invoker = new ListenerInvokerWrapper<>(invoker,
                     Collections.unmodifiableList(
                             ExtensionLoader.getExtensionLoader(InvokerListener.class)

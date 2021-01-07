@@ -50,11 +50,18 @@ public class MetadataUtils {
 
     public static WritableMetadataService localMetadataService;
 
+    public static WritableMetadataService getLocalMetadataService() {
+        if (localMetadataService == null) {
+            localMetadataService = WritableMetadataService.getDefaultExtension();
+        }
+        return localMetadataService;
+    }
+
     public static RemoteMetadataServiceImpl getRemoteMetadataService() {
         if (remoteMetadataService == null) {
             synchronized (REMOTE_LOCK) {
                 if (remoteMetadataService == null) {
-                    remoteMetadataService = new RemoteMetadataServiceImpl(WritableMetadataService.getDefaultExtension());
+                    remoteMetadataService = new RemoteMetadataServiceImpl(getLocalMetadataService());
                 }
             }
         }
@@ -98,5 +105,10 @@ public class MetadataUtils {
 
             return proxyFactory.getProxy(invoker);
         });
+    }
+
+    public static void saveMetadataURL(URL url) {
+        // store in local
+        getLocalMetadataService().setMetadataServiceURL(url);
     }
 }

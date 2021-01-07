@@ -38,9 +38,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
  */
 public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomizer {
 
+    private volatile boolean customized = false;
+
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        Map<String, String> params = new HashMap<>();
+        if (customized) {
+            return;
+        }
+        customized = true;
 
         ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
         Set<MetadataParamsFilter> paramsFilters = loader.getSupportedExtensionInstances();
@@ -49,7 +54,14 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
                 = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
         // pick the first interface metadata available.
         // FIXME, check the same key in different urls has the same value
-        MetadataInfo metadataInfo = localMetadataService.getMetadataInfos().values().iterator().next();
+        Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
+        if (CollectionUtils.isEmptyMap(metadataInfos)) {
+            return;
+        }
+        MetadataInfo metadataInfo = metadataInfos.values().iterator().next();
+        if (metadataInfo == null || CollectionUtils.isEmptyMap(metadataInfo.getServices())) {
+            return;
+        }
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServices().values().iterator().next();
         Map<String, String> allParams = new HashMap<>(serviceInfo.getUrl().getParameters());
 

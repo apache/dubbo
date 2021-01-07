@@ -27,7 +27,7 @@
 
     <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
 
-    <dubbo:registry address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:reference id="demoService" check="false"
                      interface="org.apache.dubbo.demo.DemoService"/>

@@ -48,6 +48,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
+import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPERATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -1294,6 +1295,19 @@ class URL implements Serializable {
         }
         serviceKey = buildKey(inf, getGroup(), getVersion());
         return serviceKey;
+    }
+
+    /**
+     * Format : interface:version
+     *
+     * @return
+     */
+    public String getDisplayServiceKey() {
+        if (StringUtils.isEmpty(getVersion())) {
+            return getServiceInterface();
+        }
+        return getServiceInterface() +
+                COLON_SEPERATOR + getVersion();
     }
 
     /**

@@ -16,23 +16,16 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.rpc.model.ProviderModel;
 
 @Cmd(name = "onlineAPp", summary = "offline app addresses", example = {
         "offlineApp dubbo",
         "offlineApp xx.xx.xxx.service"
 })
 public class Online extends BaseOnline {
-    private static final Logger logger = LoggerFactory.getLogger(Online.class);
-    private static final OnlineInterface onlineInteface = new OnlineInterface();
-    private static final OnlineApp onlineApp = new OnlineApp();
-
     @Override
-    protected boolean doExecute(String servicePattern) {
-        boolean r1 = onlineInteface.online(servicePattern);
-        boolean r2 = onlineApp.online(servicePattern);
-        return r1 && r2;
+    protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
+        super.doExport(statedURL);
     }
 }
