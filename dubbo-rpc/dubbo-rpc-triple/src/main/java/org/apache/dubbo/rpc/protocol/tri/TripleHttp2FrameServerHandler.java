@@ -8,6 +8,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -41,9 +42,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         LOGGER.warn("Exception in processing triple message", cause);
         if (cause instanceof TripleRpcException) {
-            TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus(), cause.getMessage());
+            TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus());
         } else {
-            TripleUtil.responseErr(ctx, GrpcStatus.INTERNAL, cause.getMessage());
+            TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withCause(cause));
         }
     }
 
@@ -73,34 +74,34 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final Http2Headers headers = msg.headers();
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
-            responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(), GrpcStatus.INTERNAL.code,
-                    String.format("Method '%s' is not supported", headers.method()));
+            responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(), GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription(String.format("Method '%s' is not supported", headers.method())));
             return;
         }
 
         if (headers.path() == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.UNIMPLEMENTED.code, "Expected path but is missing");
+            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
             return;
         }
 
         final String path = headers.path().toString();
         if (path.charAt(0) != '/') {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.UNIMPLEMENTED.code,
-                    String.format("Expected path to start with /: %s", path));
+            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
+                    .withDescription(String.format("Expected path to start with /: %s", path)));
             return;
         }
 
         final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
         if (contentType == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.INTERNAL.code,
-                    "Content-Type is missing from the request");
+            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+                    .withDescription("Content-Type is missing from the request"));
             return;
         }
 
         final String contentString = contentType.toString();
         if (!TripleUtil.supportContentType(contentString)) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.INTERNAL.code,
-                    String.format("Content-Type '%s' is not supported", contentString));
+            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.fromCode(Code.INTERNAL.code)
+                    .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
             return;
         }
 
@@ -112,20 +113,21 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         final Invoker<?> delegateInvoker = getInvoker(headers, serviceName);
         if (delegateInvoker == null) {
-            responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Service not found:" + serviceName);
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
 
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
         if (methodDescriptor == null) {
-            responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Method not found:" + methodName + " of service:" + serviceName);
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Method not found:" + methodName + " of service:" + serviceName));
             return;
         }
-        final ServerStream invoker = new ServerStream(delegateInvoker, methodDescriptor, ctx, headers, serviceName, methodName);
-        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(invoker);
+        final ServerStream serverStream = new ServerStream(delegateInvoker, methodDescriptor, ctx, serviceName, methodName);
+        serverStream.onHeaders(headers);
+        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
         if (msg.isEndStream()) {
-            invoker.halfClose();
+            serverStream.halfClose();
         }
     }
 }

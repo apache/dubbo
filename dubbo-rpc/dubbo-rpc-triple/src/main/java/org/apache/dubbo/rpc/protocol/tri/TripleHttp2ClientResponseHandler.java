@@ -12,7 +12,7 @@ import io.netty.handler.codec.http2.Http2StreamFrame;
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
 
-    public TripleHttp2ClientResponseHandler(){
+    public TripleHttp2ClientResponseHandler() {
         super(false);
     }
 
@@ -38,7 +38,10 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-        clientStream.onError(new TripleRpcException(GrpcStatus.INTERNAL, cause));
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withCause(cause);
+        clientStream.onError(status);
+        ctx.close();
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {

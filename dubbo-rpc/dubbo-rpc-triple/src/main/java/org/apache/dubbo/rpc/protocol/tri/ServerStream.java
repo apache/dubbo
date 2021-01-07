@@ -13,7 +13,6 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import com.google.protobuf.MessageLite;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
 import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -29,47 +28,41 @@ import java.util.function.Function;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
-public class ServerStream {
+public class ServerStream extends AbstractStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     private static final String TOO_MANY_REQ = "Too many requests";
     private static final String MISSING_REQ = "Missing request";
     private final Invoker<?> invoker;
     private final MethodDescriptor methodDescriptor;
     private final ChannelHandlerContext ctx;
-    private final Http2Headers headers;
     private final String serviceName;
     private final String methodName;
     private final Serialization2 serialization2;
-    private ByteBuf pendingData;
 
 
-    public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, Http2Headers headers, String serviceName, String methodName) {
+    public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, String serviceName, String methodName) {
+        super(ctx);
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
         this.ctx = ctx;
-        this.headers = headers;
         this.serviceName = serviceName;
         this.methodName = methodName;
         this.serialization2 = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
     }
 
-    public void receiveData(ByteBuf buf) {
-        if (pendingData != null) {
-            if (buf.isReadable()) {
-                responseErr(ctx, GrpcStatus.INTERNAL, TOO_MANY_REQ);
-            }
-            return;
-        }
-        this.pendingData = buf;
+
+    @Override
+    public void onError(GrpcStatus status) {
     }
 
     public void halfClose() {
-        if (pendingData == null) {
-            responseErr(ctx, GrpcStatus.INTERNAL, MISSING_REQ);
+        if (getData() == null) {
+            responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription(MISSING_REQ));
             return;
         }
 
-        Invocation invocation = buildInvocation(pendingData, serviceName, methodName, methodDescriptor);
+        Invocation invocation = buildInvocation(serviceName, methodName, methodDescriptor);
 
         final Result result = this.invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
@@ -77,7 +70,7 @@ public class ServerStream {
         future.whenComplete((appResult, t) -> {
             try {
                 if (t != null) {
-                    responseErr(ctx, GrpcStatus.UNKNOWN, t.getMessage());
+                    responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     return;
                 }
                 AppResponse response = (AppResponse) appResult;
@@ -93,32 +86,34 @@ public class ServerStream {
                     serialization2.serialize(response.getValue(), bos);
                     ctx.write(new DefaultHttp2DataFrame(buf));
                     final Http2Headers trailers = new DefaultHttp2Headers()
-                            .setInt(TripleConstant.STATUS_KEY, GrpcStatus.OK.code);
+                            .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
-                }else{
+                } else {
                     final Throwable exception = response.getException();
-                    if(exception instanceof TripleRpcException){
-                        responseErr(ctx,((TripleRpcException) exception).getStatus(),exception.getMessage());
-                    }else{
-                        responseErr(ctx, GrpcStatus.UNKNOWN, exception.getMessage());
+                    if (exception instanceof TripleRpcException) {
+                        responseErr(ctx, ((TripleRpcException) exception).getStatus());
+                    } else {
+                        responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
+                                .withCause(exception));
                     }
                 }
             } catch (Exception e) {
                 LOGGER.warn("Exception processing triple message", e);
                 if (e instanceof TripleRpcException) {
-                    responseErr(ctx, ((TripleRpcException) e).getStatus(), e.getMessage());
+                    responseErr(ctx, ((TripleRpcException) e).getStatus());
                 } else {
-                    responseErr(ctx, GrpcStatus.UNKNOWN, e.getMessage());
+                    responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(e));
                 }
             }
         });
 
     }
 
-    private Invocation buildInvocation(ByteBuf data, String serviceName, String methodName, MethodDescriptor methodDescriptor) {
+    private Invocation buildInvocation(String serviceName, String methodName, MethodDescriptor methodDescriptor) {
         RpcInvocation inv = new RpcInvocation();
         try {
-            final Object req = serialization2.deserialize(new ByteBufInputStream(data), methodDescriptor.getParameterClasses()[0]);
+            final Object req = serialization2.deserialize(getData(), methodDescriptor.getParameterClasses()[0]);
+            getData().close();
             inv.setArguments(new Object[]{req});
         } catch (IOException e) {
             throw new RuntimeException("Failed to deserialize request on server side", e);

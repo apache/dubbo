@@ -25,19 +25,25 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
             case HEADER:
                 int type = in.readByte();
                 if ((type & RESERVED_MASK) != 0) {
-                    throw new TripleRpcException(GrpcStatus.INTERNAL, "gRPC frame header malformed: reserved bits not zero");
+                    throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("gRPC frame header malformed: reserved bits not zero")
+                            .asException();
                 }
                 // compression is not supported yet
                 // TODO support it
                 compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
                 if (compressedFlag) {
-                    throw new TripleRpcException(GrpcStatus.INTERNAL, "Compression is not supported ");
+                    throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Compression is not supported ")
+                            .asException();
                 }
 
                 len = in.readInt();
                 if (len < 0 || len > maxDataSize) {
-                    throw new TripleRpcException(GrpcStatus.RESOURCE_EXHAUSTED, String.format("gRPC message exceeds maximum size %d: %d",
-                            maxDataSize, len));
+                    throw GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+                            .withDescription(String.format("gRPC message exceeds maximum size %d: %d",
+                                    maxDataSize, len))
+                            .asException();
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:

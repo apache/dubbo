@@ -47,12 +47,12 @@ public class TripleUtil {
         return contentType.startsWith(TripleConstant.APPLICATION_GRPC);
     }
 
-    public static void responseErr(ChannelHandlerContext ctx, GrpcStatus status, String message) {
+    public static void responseErr(ChannelHandlerContext ctx, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
                 .status(OK.codeAsText())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .setInt(TripleConstant.STATUS_KEY, status.code)
-                .set(TripleConstant.MESSAGE_KEY, percentEncode(message));
+                .setInt(TripleConstant.STATUS_KEY,status.code.code)
+                .set(TripleConstant.MESSAGE_KEY, percentEncode(status.description));
         ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
     }
 
@@ -74,15 +74,14 @@ public class TripleUtil {
         return encoder.toString().substring(2);
     }
 
-    public static void responsePlainTextError(ChannelHandlerContext ctx, int code, int statusCode, String
-            msg) {
+    public static void responsePlainTextError(ChannelHandlerContext ctx, int code, GrpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
                 .status("" + code)
-                .setInt(TripleConstant.STATUS_KEY, statusCode)
-                .set(TripleConstant.MESSAGE_KEY, msg)
+                .setInt(TripleConstant.STATUS_KEY,status.code.code)
+                .set(TripleConstant.MESSAGE_KEY,status.description)
                 .set(TripleConstant.CONTENT_TYPE_KEY, "text/plain; encoding=utf-8");
         ctx.write(new DefaultHttp2HeadersFrame(headers));
-        ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), msg);
+        ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(),status.description);
         ctx.write(new DefaultHttp2DataFrame(buf, true));
     }
 }
