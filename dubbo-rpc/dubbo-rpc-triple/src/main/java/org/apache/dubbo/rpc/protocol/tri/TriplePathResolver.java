@@ -1,12 +1,16 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TripleInvokerResolver implements InvokerResolver {
+public class TriplePathResolver implements PathResolver {
+    private static final Logger logger = LoggerFactory.getLogger(TriplePathResolver.class);
+
     private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
     private final Set<String> ignoreSet = ConcurrentHashMap.newKeySet();
 
@@ -23,4 +27,15 @@ public class TripleInvokerResolver implements InvokerResolver {
     public Invoker<?> resolve(String path) {
         return path2Invoker.get(path);
     }
+
+    @Override
+    public void remove(String path) {
+        path2Invoker.remove(path);
+    }
+
+    @Override
+    public void destroy() {
+        path2Invoker.clear();
+    }
+
 }

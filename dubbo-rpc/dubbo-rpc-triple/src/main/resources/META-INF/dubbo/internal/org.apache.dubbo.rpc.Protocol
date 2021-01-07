@@ -1,1 +1,1 @@
-triple=org.apache.dubbo.rpc.protocol.tri.TripleProtocol
+tri=org.apache.dubbo.rpc.protocol.tri.TripleProtocol

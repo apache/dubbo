@@ -46,7 +46,7 @@ public class TripleClientOutboundHandler extends ChannelOutboundHandlerAdapter {
             TripleUtil.setClientStream(streamChannel, clientStream);
             streamChannel.pipeline().addLast(responseHandler)
                     .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-                    .addLast(new TripleInvokeClientHandler());
+                    .addLast(new TripleClientInboundHandler());
             streamChannel.write(frame);
             if (invocation.getArguments().length == 1) {
                 final ByteBuf buf = ctx.alloc().buffer();

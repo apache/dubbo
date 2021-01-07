@@ -24,7 +24,7 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextErro
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
-    private static final InvokerResolver invokerResolver = ExtensionLoader.getExtensionLoader(InvokerResolver.class).getDefaultExtension();
+    private static final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -50,10 +50,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         super.channelRead(ctx, msg.content());
         if (msg.isEndStream()) {
-            final ServerStream invoker = TripleUtil.getServerStream(ctx);
+            final ServerStream serverStream = TripleUtil.getServerStream(ctx);
             // stream already closed;
-            if (invoker != null) {
-                invoker.halfClose();
+            if (serverStream != null) {
+                serverStream.halfClose();
             }
         }
     }
@@ -62,9 +62,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final String version = headers.contains(TripleConstant.VERSION_KEY) ? headers.get(TripleConstant.VERSION_KEY).toString() : null;
         final String group = headers.contains(TripleConstant.GROUP_KEY) ? headers.get(TripleConstant.GROUP_KEY).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
-        Invoker<?> invoker = invokerResolver.resolve(key);
+        Invoker<?> invoker = pathResolver.resolve(key);
         if (invoker == null) {
-            invoker = invokerResolver.resolve(serviceName);
+            invoker = pathResolver.resolve(serviceName);
         }
         return invoker;
     }
