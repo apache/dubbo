@@ -74,18 +74,14 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             // ServiceInstance Metadata is empty. Happened when registry not support metadata write.
             urls.add(generateUrlWithoutMetadata(serviceName, host, serviceInstance.getPort()));
         } else {
-            for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
-                String protocol = entry.getKey();
-                Map<String, String> params = entry.getValue();
-
-                urls.add(generateWithMetadata(serviceName, host, protocol, params));
-            }
+            urls.add(generateWithMetadata(serviceName, host, paramsMap));
         }
 
         return urls;
     }
 
-    private URL generateWithMetadata(String serviceName, String host, String protocol, Map<String, String> params) {
+    private URL generateWithMetadata(String serviceName, String host, Map<String, String> params) {
+        String protocol = params.get(PROTOCOL_KEY);
         int port = Integer.parseInt(params.get(PORT_KEY));
         URLBuilder urlBuilder = new URLBuilder()
                 .setHost(host)
@@ -96,7 +92,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .addParameter(SIDE_KEY, CONSUMER);
 
         // add parameters
-        params.forEach((name, value) -> urlBuilder.addParameter(name, valueOf(value)));
+        params.forEach(urlBuilder::addParameter);
 
         // add the default parameters
         urlBuilder.addParameter(GROUP_KEY, serviceName);
