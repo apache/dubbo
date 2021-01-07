@@ -196,7 +196,7 @@ public class MigrationRule {
         return false;
     }
 
-    public boolean addInterfaceRule(String serviceKey, MigrationStep step, Float threshold) {
+    public boolean addInterfaceRule(String providerApp, String serviceKey, MigrationStep step, Float threshold) {
         if (getInterfaceRule(serviceKey) != null) {
             return false;
         }
@@ -204,7 +204,7 @@ public class MigrationRule {
         if (this.interfaces == null) {
             this.interfaces = new ArrayList<>();
         }
-        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule(serviceKey, step, threshold);
+        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule(providerApp, serviceKey, step, threshold);
         this.interfaces.add(interfaceMigrationRule);
 
         if (interfaceRules == null) {

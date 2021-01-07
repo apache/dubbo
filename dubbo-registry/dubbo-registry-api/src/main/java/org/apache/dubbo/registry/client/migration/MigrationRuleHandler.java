@@ -65,7 +65,7 @@ public class MigrationRuleHandler<T> {
                 String serviceKey = consumerURL.getDisplayServiceKey();
                 Set<String> apps = writableMetadataService.getCachedMapping(consumerURL);
                 // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isNotEmpty(apps)) { // only happens when meta server does not work properly
+                if (CollectionUtils.isNotEmpty(apps)) { //empty only happens when meta server does not work properly
                     if (CollectionUtils.isEmpty(rule.getTargetIps())) {
                         setMigrationRule(rule);
                         step = getMigrationStep(rule, step, serviceKey, apps);

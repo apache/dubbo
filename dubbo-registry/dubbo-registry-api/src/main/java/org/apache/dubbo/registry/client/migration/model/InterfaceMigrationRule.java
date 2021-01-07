@@ -17,16 +17,26 @@
 package org.apache.dubbo.registry.client.migration.model;
 
 public class InterfaceMigrationRule {
+    private String appName;
     private String serviceKey;
     private MigrationStep step;
     private Float threshold;
 
     public InterfaceMigrationRule(){}
 
-    public InterfaceMigrationRule(String serviceKey, MigrationStep step, Float threshold) {
+    public InterfaceMigrationRule(String appName, String serviceKey, MigrationStep step, Float threshold) {
+        this.appName = appName;
         this.serviceKey = serviceKey;
         this.step = step;
         this.threshold = threshold;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 
     public String getServiceKey() {
