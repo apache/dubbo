@@ -17,6 +17,9 @@ public enum GrpcStatus {
         this.code=code;
     }
 
+    public static boolean isOk(Integer status){
+        return status== OK.code;
+    }
     public static GrpcStatus fromCode(int code){
         for (GrpcStatus value : GrpcStatus.values()) {
             if(value.code==code){

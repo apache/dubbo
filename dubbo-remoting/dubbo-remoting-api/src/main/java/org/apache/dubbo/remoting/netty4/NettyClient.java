@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -34,6 +35,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.proxy.Socks5ProxyHandler;
@@ -52,10 +54,7 @@ import static org.apache.dubbo.remoting.netty4.NettyEventLoopFactory.socketChann
 public class NettyClient extends AbstractClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
-    /**
-     * netty client bootstrap
-     */
-    private static final EventLoopGroup NIO_EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
+
 
     private static final String SOCKS_PROXY_HOST = "socksProxyHost";
 
@@ -77,9 +76,9 @@ public class NettyClient extends AbstractClient {
      * It wil init and start netty.
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-    	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-    	super(url, wrapChannelHandler(url, handler));
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+        super(url, wrapChannelHandler(url, handler));
     }
 
     /**
@@ -91,7 +90,7 @@ public class NettyClient extends AbstractClient {
     protected void doOpen() throws Throwable {
         final NettyClientHandler nettyClientHandler = new NettyClientHandler(getUrl(), this);
         bootstrap = new Bootstrap();
-        bootstrap.group(NIO_EVENT_LOOP_GROUP)
+        bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
@@ -105,20 +104,29 @@ public class NettyClient extends AbstractClient {
             protected void initChannel(SocketChannel ch) throws Exception {
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 
+                // TODO support SSL
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                     ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(getUrl(), nettyClientHandler));
                 }
 
-                // todo add protocol
-                NettyCodecAdapter adapter = new NettyCodecAdapter(null, getUrl(), NettyClient.this);
-                ch.pipeline()//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                        .addLast("decoder", adapter.getDecoder())
-                        .addLast("encoder", adapter.getEncoder())
-                        .addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS))
-                        .addLast("handler", nettyClientHandler);
+                final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                p.addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS));
+                final ExtensionLoader<WireProtocol> loader = ExtensionLoader.getExtensionLoader(WireProtocol.class);
+                if (loader.hasExtension(getUrl().getProtocol())) {
+                    final WireProtocol protocol = loader.getExtension(getUrl().getProtocol());
+                    // TODO support ssl
+                    protocol.configClientPipeline(p, null);
+                } else {
+                    // TODO add protocol
+                    NettyCodecAdapter adapter = new NettyCodecAdapter(null, getUrl(), NettyClient.this);
+                    p.addLast("decoder", adapter.getDecoder())
+                            .addLast("encoder", adapter.getEncoder())
+                            .addLast("handler", nettyClientHandler);
+                }
 
                 String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
-                if(socksProxyHost != null) {
+                // TODO support Socks5
+                if (socksProxyHost != null) {
                     int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
                     Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
                     ch.pipeline().addFirst(socks5ProxyHandler);
@@ -126,6 +134,7 @@ public class NettyClient extends AbstractClient {
             }
         });
     }
+
 
     @Override
     protected void doConnect() throws Throwable {

@@ -29,8 +29,8 @@ import java.util.function.Function;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
-public class UnaryInvoker {
-    private static final Logger LOGGER = LoggerFactory.getLogger(UnaryInvoker.class);
+public class ServerStream {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     private static final String TOO_MANY_REQ = "Too many requests";
     private static final String MISSING_REQ = "Missing request";
     private final Invoker<?> invoker;
@@ -43,7 +43,7 @@ public class UnaryInvoker {
     private ByteBuf pendingData;
 
 
-    public UnaryInvoker(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, Http2Headers headers, String serviceName, String methodName) {
+    public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, Http2Headers headers, String serviceName, String methodName) {
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
         this.ctx = ctx;

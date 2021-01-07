@@ -41,6 +41,10 @@ public class RemotingException extends Exception {
         this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
                 msg);
     }
+    public RemotingException(io.netty.channel.Channel channel, String msg) {
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.remoteAddress(),
+                msg);
+    }
 
     public RemotingException(InetSocketAddress localAddress, InetSocketAddress remoteAddress, String message) {
         super(message);
@@ -51,6 +55,10 @@ public class RemotingException extends Exception {
 
     public RemotingException(Channel channel, Throwable cause) {
         this(channel == null ? null : channel.getLocalAddress(), channel == null ? null : channel.getRemoteAddress(),
+                cause);
+    }
+    public RemotingException(io.netty.channel.Channel channel, Throwable cause) {
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.remoteAddress(),
                 cause);
     }
 
@@ -73,6 +81,12 @@ public class RemotingException extends Exception {
         this.localAddress = localAddress;
         this.remoteAddress = remoteAddress;
     }
+
+    public RemotingException(io.netty.channel.Channel channel, String message, Throwable cause) {
+        this(channel == null ? null : (InetSocketAddress) channel.localAddress(), channel == null ? null : (InetSocketAddress) channel.remoteAddress(),
+                message, cause);
+    }
+
 
     public InetSocketAddress getLocalAddress() {
         return localAddress;

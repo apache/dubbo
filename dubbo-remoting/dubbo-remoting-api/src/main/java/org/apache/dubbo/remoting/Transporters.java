@@ -19,6 +19,7 @@ package org.apache.dubbo.remoting;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.remoting.netty4.NettyClient;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
 
@@ -58,6 +59,13 @@ public class Transporters {
 
     public static Client connect(String url, ChannelHandler... handler) throws RemotingException {
         return connect(URL.valueOf(url), handler);
+    }
+
+    public static Client2 connect2(URL url) throws RemotingException {
+        if (url == null) {
+            throw new IllegalArgumentException("url == null");
+        }
+        return new Client2(url);
     }
 
     public static Client connect(URL url, ChannelHandler... handlers) throws RemotingException {

@@ -1,7 +1,7 @@
 package org.apache.dubbo.remoting.netty4;
 
-import io.netty.channel.ChannelHandlerContext;
-import org.apache.dubbo.common.URL;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
 public class CompatibleProtocol implements WireProtocol {
     private final ProtocolDetector detector = new CompatibleProtocolDetector();
@@ -12,14 +12,15 @@ public class CompatibleProtocol implements WireProtocol {
     }
 
     @Override
-    public void configServerPipeline(ChannelHandlerContext ctx) {
+    public void configServerPipeline(ChannelPipeline pipeline) {
 
     }
 
     @Override
-    public void configClientPipeline(ChannelHandlerContext ctx) {
+    public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
 
     }
+
 
     @Override
     public void close() {

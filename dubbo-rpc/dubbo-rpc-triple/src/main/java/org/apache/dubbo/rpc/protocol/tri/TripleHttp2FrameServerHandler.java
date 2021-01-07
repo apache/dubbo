@@ -50,7 +50,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         super.channelRead(ctx, msg.content());
         if (msg.isEndStream()) {
-            final UnaryInvoker invoker = TripleUtil.getInvoker(ctx);
+            final ServerStream invoker = TripleUtil.getServerStream(ctx);
             // stream already closed;
             if (invoker != null) {
                 invoker.halfClose();
@@ -122,8 +122,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             responseErr(ctx, GrpcStatus.UNIMPLEMENTED, "Method not found:" + methodName + " of service:" + serviceName);
             return;
         }
-        final UnaryInvoker invoker = new UnaryInvoker(delegateInvoker, methodDescriptor, ctx, headers, serviceName, methodName);
-        ctx.channel().attr(TripleUtil.INVOKER_KEY).set(invoker);
+        final ServerStream invoker = new ServerStream(delegateInvoker, methodDescriptor, ctx, headers, serviceName, methodName);
+        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(invoker);
         if (msg.isEndStream()) {
             invoker.halfClose();
         }

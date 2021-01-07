@@ -1,16 +1,18 @@
 package org.apache.dubbo.remoting.netty4;
 
-import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.extension.SPI;
+
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
 @SPI
 public interface WireProtocol {
 
-  ProtocolDetector detector();
+    ProtocolDetector detector();
 
-  void configServerPipeline(ChannelHandlerContext ctx);
+    void configServerPipeline(ChannelPipeline pipeline);
 
-  void configClientPipeline(ChannelHandlerContext ctx);
+    void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext);
 
-  void close();
+    void close();
 }

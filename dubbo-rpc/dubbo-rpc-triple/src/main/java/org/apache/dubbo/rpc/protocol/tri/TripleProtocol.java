@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
+import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  *
  */
-public class TripleProtocol implements Protocol {
+public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     public static final String NAME = "triple";
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
@@ -81,7 +82,16 @@ public class TripleProtocol implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        // TODO fill me
+
+        // create rpc invoker.
+        TripleInvoker<T> invoker = new TripleInvoker<T>(type, url, invokers);
+        invokers.add(invoker);
+
+        return invoker;
+    }
+
+    @Override
+    protected <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException {
         return null;
     }
 

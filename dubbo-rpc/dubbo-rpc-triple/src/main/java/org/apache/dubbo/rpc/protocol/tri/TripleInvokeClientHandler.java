@@ -4,10 +4,10 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-public class TripleInvokeServerHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class TripleInvokeClientHandler extends SimpleChannelInboundHandler<ByteBuf> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        final ServerStream invoker = TripleUtil.getServerStream(ctx);
+        final ClientStream invoker = TripleUtil.getClientStream(ctx);
         if (invoker != null) {
             invoker.receiveData(msg.retainedDuplicate());
         }

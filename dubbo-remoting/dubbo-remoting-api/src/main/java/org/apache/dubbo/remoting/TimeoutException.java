@@ -36,6 +36,11 @@ public class TimeoutException extends RemotingException {
         this.phase = serverSide ? SERVER_SIDE : CLIENT_SIDE;
     }
 
+    public TimeoutException(boolean serverSide, io.netty.channel.Channel channel, String message) {
+        super(channel, message);
+        this.phase = serverSide ? SERVER_SIDE : CLIENT_SIDE;
+    }
+
     public TimeoutException(boolean serverSide, InetSocketAddress localAddress,
                             InetSocketAddress remoteAddress, String message) {
         super(localAddress, remoteAddress, message);

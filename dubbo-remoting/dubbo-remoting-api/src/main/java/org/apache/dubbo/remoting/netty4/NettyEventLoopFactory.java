@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.channel.EventLoopGroup;
@@ -34,6 +35,10 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import java.util.concurrent.ThreadFactory;
 
 public class NettyEventLoopFactory {
+    /**
+     * netty client bootstrap
+     */
+    public static final EventLoopGroup NIO_EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);
         return shouldEpoll() ? new EpollEventLoopGroup(threads, threadFactory) :

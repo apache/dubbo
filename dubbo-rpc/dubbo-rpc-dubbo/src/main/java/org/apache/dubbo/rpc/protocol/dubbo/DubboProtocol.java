@@ -592,7 +592,6 @@ public class DubboProtocol extends AbstractProtocol {
             // connection should be lazy
             if (url.getParameter(LAZY_CONNECT_KEY, false)) {
                 client = new LazyConnectExchangeClient(url, requestHandler);
-
             } else {
                 client = Exchangers.connect(url, requestHandler);
             }
