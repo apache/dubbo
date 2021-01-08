@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.nacos;
 
 
 import com.alibaba.nacos.api.common.Constants;
+import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
@@ -553,6 +554,7 @@ public class NacosRegistry extends FailbackRegistry {
         URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
+        newURL = appendNacosPreservedMetaKey(newURL);
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();
@@ -560,6 +562,31 @@ public class NacosRegistry extends FailbackRegistry {
         instance.setPort(port);
         instance.setMetadata(new HashMap<>(newURL.getParameters()));
         return instance;
+    }
+
+    private URL appendNacosPreservedMetaKey(URL url) {
+        URL registryUrl = getUrl();
+        if (registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE) != null) {
+            url = url.addParameter(PreservedMetadataKeys.REGISTER_SOURCE,
+                    registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT) != null) {
+            url = url.addParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT,
+                    registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT) != null) {
+            url = url.addParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT,
+                    registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL) != null) {
+            url = url.addParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL,
+                    registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR) != null) {
+            url = url.addParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR,
+                    registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR));
+        }
+        return url;
     }
 
     private NacosServiceName createServiceName(URL url) {
