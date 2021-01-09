@@ -24,8 +24,14 @@ public class DNSClientConst {
 
     public final static String MAX_QUERIES_PER_RESOLVE = "maxQueriesPerResolve";
 
+    /**
+     * To decide the frequency of execute DNS poll (in ms)
+     */
     public final static String DNS_POLLING_CYCLE = "dnsPollingCycle";
 
+    /**
+     * Default value for check frequency: 60000 (ms)
+     */
     public final static int DEFAULT_DNS_POLLING_CYCLE = 60000;
 
     /**
