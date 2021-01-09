@@ -27,6 +27,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -107,8 +108,8 @@ public class DNSServiceDiscoveryTest {
         DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
 
         URL registryURL = URL.valueOf("dns://")
-                .addParameter(DNSClientConst.POLLING_CYCLE, 100)
-                .addParameter(DNSClientConst.ECHO_POLLING_CYCLE, 100);
+                .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
+                .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
         ApplicationModel.getEnvironment().getAppExternalConfigurationMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
