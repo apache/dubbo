@@ -23,11 +23,11 @@ import javax.lang.model.type.TypeMirror;
 import static org.apache.dubbo.metadata.annotation.processing.util.TypeUtils.ofDeclaredType;
 
 /**
- * An interface of {@link TypeDefinitionBuilder} for {@link DeclaredType}
+ * An interface of {@link TypeBuilder} for {@link DeclaredType}
  *
  * @since 2.7.6
  */
-public interface DeclaredTypeDefinitionBuilder extends TypeDefinitionBuilder<DeclaredType> {
+public interface DeclaredTypeDefinitionBuilder extends TypeBuilder<DeclaredType> {
 
     @Override
     default boolean accept(ProcessingEnvironment processingEnv, TypeMirror type) {

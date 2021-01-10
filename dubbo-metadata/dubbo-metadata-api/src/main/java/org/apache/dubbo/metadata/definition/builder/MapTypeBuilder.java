@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.definition.builder;
 
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -44,9 +45,9 @@ public class MapTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
-            return new TypeDefinition(clazz.getName());
+            return new TypeDefinition(clazz.getCanonicalName());
         }
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -65,9 +66,15 @@ public class MapTypeBuilder implements TypeBuilder {
          * {@link ParameterizedType#toString()}
          * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
          */
-        String mapType = replace(type.toString(), ", ", ",");
+        String mapType = ClassUtils.getCanonicalNameForParameterizedType(parameterizedType);
+        mapType = replace(mapType, ", ", ",");
 
-        TypeDefinition typeDefinition = new TypeDefinition(mapType);
+        TypeDefinition td = typeCache.get(mapType);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(mapType);
+        typeCache.put(mapType, td);
 
         for (int i = 0; i < actualTypeArgsLength; i++) {
             Type actualType = actualTypeArgs[i];
@@ -79,9 +86,10 @@ public class MapTypeBuilder implements TypeBuilder {
             } else if (isClass(actualType)) {
                 item = TypeDefinitionBuilder.build(null, rawType, typeCache);
             }
-            typeDefinition.getItems().add(item);
+            if (item != null) {
+                td.getItems().add(item.getType());
+            }
         }
-
-        return typeDefinition;
+        return td;
     }
 }

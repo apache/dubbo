@@ -37,6 +37,6 @@ public interface TypeBuilder extends Prioritized {
     /**
      * Build type definition with the type or class.
      */
-    TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache);
+    TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache);
 
 }

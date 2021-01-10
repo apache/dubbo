@@ -19,6 +19,8 @@ package org.apache.dubbo.metadata.definition.model;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,15 +32,35 @@ import java.util.Objects;
  */
 public class TypeDefinition implements Serializable {
 
-    private String id;
+    /**
+     * the name of type
+     *
+     * @see Class#getCanonicalName()
+     * @see org.apache.dubbo.metadata.definition.util.ClassUtils#getCanonicalNameForParameterizedType(ParameterizedType) 
+     */
     private String type;
+
+    /**
+     * the items(generic parameter) of Map/List(ParameterizedType)
+     * <p>
+     * if this type is not ParameterizedType, the items is null or empty
+     */
     @SerializedName("items")
-    private List<TypeDefinition> items;
+    private List<String> items;
+
+    /**
+     * the enum's value
+     * <p>
+     * If this type is not enum, enums is null or empty
+     */
     @SerializedName("enum")
     private List<String> enums;
-    private String $ref;
-    private Map<String, TypeDefinition> properties;
-    private String typeBuilderName;
+
+    /**
+     * the key is property name,
+     * the value is property's type name
+     */
+    private Map<String, String> properties;
 
     public TypeDefinition() {
     }
@@ -47,29 +69,21 @@ public class TypeDefinition implements Serializable {
         this.type = type;
     }
 
-    public String get$ref() {
-        return $ref;
-    }
-
     public List<String> getEnums() {
         if (enums == null) {
-            enums = new ArrayList<String>();
+            enums = new ArrayList<>();
         }
         return enums;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public List<TypeDefinition> getItems() {
+    public List<String> getItems() {
         if (items == null) {
             items = new ArrayList<>();
         }
         return items;
     }
 
-    public Map<String, TypeDefinition> getProperties() {
+    public Map<String, String> getProperties() {
         if (properties == null) {
             properties = new HashMap<>();
         }
@@ -80,27 +94,15 @@ public class TypeDefinition implements Serializable {
         return type;
     }
 
-    public String getTypeBuilderName() {
-        return typeBuilderName;
-    }
-
-    public void set$ref(String $ref) {
-        this.$ref = $ref;
-    }
-
     public void setEnums(List<String> enums) {
         this.enums = enums;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setItems(List<TypeDefinition> items) {
+    public void setItems(List<String> items) {
         this.items = items;
     }
 
-    public void setProperties(Map<String, TypeDefinition> properties) {
+    public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
@@ -108,13 +110,9 @@ public class TypeDefinition implements Serializable {
         this.type = type;
     }
 
-    public void setTypeBuilderName(String typeBuilderName) {
-        this.typeBuilderName = typeBuilderName;
-    }
-
     @Override
     public String toString() {
-        return "TypeDefinition [id=" + id + ", type=" + type + ", properties=" + properties + ", $ref=" + $ref + "]";
+        return "TypeDefinition [type=" + type + ", properties=" + properties + "]";
     }
 
     @Override
@@ -126,16 +124,14 @@ public class TypeDefinition implements Serializable {
             return false;
         }
         TypeDefinition that = (TypeDefinition) o;
-        return Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getType(), that.getType()) &&
+        return Objects.equals(getType(), that.getType()) &&
                 Objects.equals(getItems(), that.getItems()) &&
                 Objects.equals(getEnums(), that.getEnums()) &&
-                Objects.equals(get$ref(), that.get$ref()) &&
                 Objects.equals(getProperties(), that.getProperties());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getType(), getItems(), getEnums(), get$ref(), getProperties());
+        return Objects.hash(getType(), getItems(), getEnums(), getProperties());
     }
 }

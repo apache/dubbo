@@ -23,10 +23,11 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.junit.jupiter.api.Test;
 
 import javax.lang.model.element.TypeElement;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.metadata.annotation.processing.builder.TypeDefinitionBuilder.build;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -58,7 +59,8 @@ public class EnumTypeDefinitionBuilderTest extends AbstractAnnotationProcessingT
     @Test
     public void testBuild() {
         TypeElement typeElement = getType(Color.class);
-        TypeDefinition typeDefinition = build(processingEnv, typeElement);
+        Map<String, TypeDefinition> typeCache = new HashMap<>();
+        TypeDefinition typeDefinition = TypeDefinitionBuilder.build(processingEnv, typeElement, typeCache);
         assertEquals(Color.class.getName(), typeDefinition.getType());
         assertEquals(asList("RED", "YELLOW", "BLUE"), typeDefinition.getEnums());
 //        assertEquals(typeDefinition.getTypeBuilderName(), builder.getClass().getName());
