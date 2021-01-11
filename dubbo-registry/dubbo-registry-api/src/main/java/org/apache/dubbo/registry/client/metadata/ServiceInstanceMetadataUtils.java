@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -232,7 +233,11 @@ public class ServiceInstanceMetadataUtils {
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
-        MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
+        if (metadataInfo == null) {
+            metadataInfo = ((InMemoryWritableMetadataService)writableMetadataService).getDefaultMetadataInfo();
+        }
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
             if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {

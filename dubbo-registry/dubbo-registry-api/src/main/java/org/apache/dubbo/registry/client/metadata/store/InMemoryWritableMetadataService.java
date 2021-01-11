@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
@@ -237,6 +238,18 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             }
         }
         return null;
+    }
+
+    public MetadataInfo getDefaultMetadataInfo() {
+        if (CollectionUtils.isEmptyMap(metadataInfos)) {
+            return null;
+        }
+        for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(DEFAULT_KEY)) {
+                return entry.getValue();
+            }
+        }
+        return metadataInfos.entrySet().iterator().next().getValue();
     }
 
     public void blockUntilUpdated() {
