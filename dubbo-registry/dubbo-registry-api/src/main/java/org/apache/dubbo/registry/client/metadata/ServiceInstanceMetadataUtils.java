@@ -42,15 +42,16 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
-import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Utilities class for the {@link ServiceInstance#getMetadata() metadata of the service instance}
@@ -227,9 +228,9 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster == null) {
-            return;
+            registryCluster = DEFAULT_KEY;
         }
         MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
         if (metadataInfo != null) {

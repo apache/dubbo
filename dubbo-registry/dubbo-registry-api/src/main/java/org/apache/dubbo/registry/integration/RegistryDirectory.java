@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -299,7 +300,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -551,8 +552,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
+            for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
+                if (entry.getValue().isAvailable()) {
                     return true;
                 }
             }
