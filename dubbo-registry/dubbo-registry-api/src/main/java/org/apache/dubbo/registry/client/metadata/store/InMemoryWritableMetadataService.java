@@ -52,6 +52,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -144,8 +145,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             this.metadataServiceURL = url;
             return true;
         }
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
                 return new MetadataInfo(ApplicationModel.getName());
@@ -163,8 +164,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             this.metadataServiceURL = null;
             return true;
         }
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.get(cluster);
             metadataInfo.removeService(url.getProtocolServiceKey());
@@ -174,6 +175,14 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         }
         metadataSemaphore.release();
         return removeURL(exportedServiceURLs, url);
+    }
+
+    private String getRegistryCluster(URL url){
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
+        if (StringUtils.isEmpty(registryCluster)) {
+            registryCluster = DEFAULT_KEY;
+        }
+        return registryCluster;
     }
 
     @Override
