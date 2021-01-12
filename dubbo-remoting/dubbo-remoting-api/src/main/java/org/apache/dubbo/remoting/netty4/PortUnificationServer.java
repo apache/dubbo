@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.netty4;
 
+import io.netty.channel.group.DefaultChannelGroup;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -71,6 +72,7 @@ public class PortUnificationServer {
      * the boss channel that receive connections and dispatch these to worker channel.
      */
     private io.netty.channel.Channel channel;
+    private DefaultChannelGroup channelGroup;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
     private URL url;
@@ -124,14 +126,19 @@ public class PortUnificationServer {
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                         if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
                             final ChannelPipeline p = ch.pipeline();
+                            PortUnificationServerHandler negotiation = new PortUnificationServerHandler(SslContexts.buildServerSslContext(getUrl()), protocols);
                             p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                             p.addLast("negotiation",
-                                    new PortUnificationServerHandler(SslContexts.buildServerSslContext(getUrl()), protocols));
+                                negotiation);
+
+                            channelGroup = negotiation.getChannels();
                         } else {
                             final ChannelPipeline p = ch.pipeline();
+                            PortUnificationServerHandler negotiation = new PortUnificationServerHandler(protocols);
                             p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
                             p.addLast("negotiation",
                                     new PortUnificationServerHandler(protocols));
+                            channelGroup = negotiation.getChannels();
                         }
                     }
                 });
@@ -155,6 +162,8 @@ public class PortUnificationServer {
                 channel.close();
                 channel = null;
             }
+
+            channelGroup.close();
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }

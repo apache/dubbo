@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -128,6 +129,17 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
         if (msg.isEndStream()) {
             serverStream.halfClose();
+        }
+    }
+
+    private GracefulShutdown gracefulShutdown;
+
+    @Override
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        if (gracefulShutdown == null) {
+            gracefulShutdown = new GracefulShutdown(ctx,"app_requested", null);
+            gracefulShutdown.gracefulShutdown();
+            ctx.flush();
         }
     }
 }
