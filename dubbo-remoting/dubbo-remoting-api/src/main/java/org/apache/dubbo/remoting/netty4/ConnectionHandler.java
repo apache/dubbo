@@ -49,7 +49,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         if (connection != null) {
             connection.setStatus(ChannelStatus.UNCONNECTED);
-            if (connection.isClosed()) {
+            if (!connection.isClosed()) {
                 reconnect(connection, 1);
             }
         }
