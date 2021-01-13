@@ -1,0 +1,2 @@
+multiplex=org.apache.dubbo.remoting.MultiplexProtocolConnectionManager
+single=org.apache.dubbo.remoting.SingleProtocolConnectionManager

@@ -24,11 +24,11 @@ import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.remoting.Client2;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.netty4.Connection;
 
 import io.netty.channel.Channel;
 
@@ -40,9 +40,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-
 /**
  * DefaultFuture.
  */
@@ -50,7 +47,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
 
-    private static final Map<Long, Channel> CHANNELS = new ConcurrentHashMap<>();
+    private static final Map<Long,Connection> CONNECTIONS = new ConcurrentHashMap<>();
 
     private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
 
@@ -61,7 +58,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     // invoke id.
     private final Long id;
-    private final Channel channel;
+    private final Connection connection;
     private final Request request;
     private final int timeout;
     private final long start = System.currentTimeMillis();
@@ -78,14 +75,14 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         this.executor = executor;
     }
 
-    private DefaultFuture2(Client2 client2, Request request, int timeout) {
-        this.channel = client2.getChannel();
+    private DefaultFuture2(Connection client2, Request request, int timeout) {
+        this.connection = client2;
         this.request = request;
         this.id = request.getId();
-        this.timeout = timeout > 0 ? timeout :client2.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        this.timeout = timeout ;
         // put into waiting map.
         FUTURES.put(id, this);
-        CHANNELS.put(id, channel);
+        CONNECTIONS.put(id, connection);
     }
 
     /**
@@ -106,7 +103,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
      * @param timeout timeout
      * @return a new DefaultFuture
      */
-    public static DefaultFuture2 newFuture(Client2 channel, Request request, int timeout, ExecutorService executor) {
+    public static DefaultFuture2 newFuture(Connection channel, Request request, int timeout, ExecutorService executor) {
         final DefaultFuture2 future = new DefaultFuture2(channel, request, timeout);
         future.setExecutor(executor);
         // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
@@ -123,7 +120,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     }
 
     public static boolean hasFuture(Channel channel) {
-        return CHANNELS.containsValue(channel);
+        return CONNECTIONS.containsValue(channel);
     }
 
     public static void sent(Request request) {
@@ -137,11 +134,11 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
      * close a channel when a channel is inactive
      * directly return the unfinished requests.
      *
-     * @param channel channel to close
+     * @param connection channel to close
      */
-    public static void closeChannel(Channel channel) {
-        for (Map.Entry<Long, Channel> entry : CHANNELS.entrySet()) {
-            if (channel.equals(entry.getValue())) {
+    public static void closeChannel(Connection connection) {
+        for (Map.Entry<Long, Connection> entry : CONNECTIONS.entrySet()) {
+            if (connection.equals(entry.getValue())) {
                 DefaultFuture2 future = getFuture(entry.getKey());
                 if (future != null && !future.isDone()) {
                     ExecutorService futureExecutor = future.getExecutor();
@@ -152,20 +149,20 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                     Response disconnectResponse = new Response(future.getId());
                     disconnectResponse.setStatus(Response.CHANNEL_INACTIVE);
                     disconnectResponse.setErrorMessage("Channel " +
-                            channel +
+                            connection +
                             " is inactive. Directly return the unFinished request : " +
                             future.getRequest());
-                    DefaultFuture2.received(channel, disconnectResponse);
+                    DefaultFuture2.received(connection, disconnectResponse);
                 }
             }
         }
     }
 
-    public static void received(Channel channel, Response response) {
-        received(channel, response, false);
+    public static void received(Connection connection, Response response) {
+        received(connection, response, false);
     }
 
-    public static void received(Channel channel, Response response, boolean timeout) {
+    public static void received(Connection connection, Response response, boolean timeout) {
         try {
             DefaultFuture2 future = FUTURES.remove(response.getId());
             if (future != null) {
@@ -179,11 +176,11 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                 logger.warn("The timeout response finally returned at "
                         + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new Date()))
                         + ", response status is " + response.getStatus()
-                        + (channel == null ? "" : ", channel: " + channel.localAddress()
-                        + " -> " + channel.remoteAddress()) + ", please check provider side for detailed result.");
+                        + (connection == null ? "" : ", channel: " + connection.getChannel().localAddress()
+                        + " -> " + connection.getRemote()) + ", please check provider side for detailed result.");
             }
         } finally {
-            CHANNELS.remove(response.getId());
+            CONNECTIONS.remove(response.getId());
         }
     }
 
@@ -194,7 +191,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         errorResult.setErrorMessage("request future has been canceled.");
         this.doReceived(errorResult);
         FUTURES.remove(id);
-        CHANNELS.remove(id);
+        CONNECTIONS.remove(id);
         return true;
     }
 
@@ -209,9 +206,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         if (res.getStatus() == Response.OK) {
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, channel, res.getErrorMessage()));
+            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, connection.getChannel(), res.getErrorMessage()));
         } else {
-            this.completeExceptionally(new RemotingException(channel, res.getErrorMessage()));
+            this.completeExceptionally(new RemotingException(connection.getChannel(), res.getErrorMessage()));
         }
 
         // the result is returning, but the caller thread may still waiting
@@ -229,8 +226,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         return id;
     }
 
-    private Channel getChannel() {
-        return channel;
+    private Connection getConnection() {
+        return connection;
     }
 
     private boolean isSent() {
@@ -258,8 +255,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + channel.localAddress()
-                + " -> " + channel.remoteAddress();
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + connection.getChannel().localAddress()
+                + " -> " + connection.getRemote();
     }
 
     private Request getRequestWithoutData() {
@@ -297,7 +294,7 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
             timeoutResponse.setStatus(future.isSent() ? Response.SERVER_TIMEOUT : Response.CLIENT_TIMEOUT);
             timeoutResponse.setErrorMessage(future.getTimeoutMessage(true));
             // handle response.
-            DefaultFuture2.received(future.getChannel(), timeoutResponse, true);
+            DefaultFuture2.received(future.getConnection(), timeoutResponse, true);
         }
     }
 }

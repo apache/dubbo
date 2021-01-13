@@ -17,6 +17,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 
@@ -47,7 +48,14 @@ public class TripleClientOutboundHandler extends ChannelOutboundHandlerAdapter {
             streamChannel.pipeline().addLast(responseHandler)
                     .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
                     .addLast(new TripleClientInboundHandler());
-            streamChannel.write(frame);
+            streamChannel.write(frame).addListener(future -> {
+                if (!future.isSuccess()) {
+                    if (future.cause() instanceof Http2NoMoreStreamIdsException) {
+                        ctx.close();
+                    }
+                    promise.setFailure(future.cause());
+                }
+            });
             if (invocation.getArguments().length == 1) {
                 final ByteBuf buf = ctx.alloc().buffer();
                 buf.writeByte(0);

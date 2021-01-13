@@ -7,64 +7,76 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.remoting.netty4.Connection;
+import org.apache.dubbo.remoting.netty4.ConnectionHandler;
 import org.apache.dubbo.remoting.netty4.NettyEventLoopFactory;
 import org.apache.dubbo.remoting.netty4.WireProtocol;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timer;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
+import io.netty.util.concurrent.ImmediateEventExecutor;
+import io.netty.util.concurrent.Promise;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.remoting.netty4.NettyEventLoopFactory.socketChannelClass;
 
 public class Client2 {
+    public static final Timer TIMER = new HashedWheelTimer(
+            new NamedThreadFactory("dubbo-network-timer", true), 30, TimeUnit.MILLISECONDS);
     private static final String CLIENT_THREAD_POOL_NAME = "DubboClientHandler";
     private static final Logger logger = LoggerFactory.getLogger(Client2.class);
-
-    private final ChannelStatus status;
     private final URL url;
     private final int connectTimeout;
     private final WireProtocol protocol;
     private final Lock connectLock = new ReentrantLock();
+    private final ChannelGroup cg;
+    private final boolean lazyConnect;
     protected ExecutorService executor;
     private Bootstrap bootstrap;
-    private volatile Channel channel;
-
+    private volatile Connection connection;
 
     public Client2(URL url) throws RemotingException {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
         this.url = url;
-        this.status = new ChannelStatus();
+        this.cg = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
         this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
         initExecutor(url);
         open();
-        connect();
-    }
-
-    public Channel getChannel() {
-        return channel;
+        this.lazyConnect = url.getParameter(LAZY_CONNECT_KEY, false);
+        if (!lazyConnect) {
+            connectWithoutGuard();
+        }
     }
 
     public void open() {
@@ -86,6 +98,7 @@ public class Client2 {
                 // TODO support SSL
 
                 final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
+                p.addLast(new ConnectionHandler(bootstrap, cg, TIMER));
                 p.addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS));
                 // TODO support ssl
                 protocol.configClientPipeline(p, null);
@@ -94,41 +107,39 @@ public class Client2 {
         });
     }
 
-    protected void connect() throws RemotingException {
-
+    private void concurrentConnect() throws RemotingException {
+        if (connection != null) {
+            return;
+        }
         connectLock.lock();
-
         try {
-
-            if (status.isConnected()) {
+            if (connection != null) {
                 return;
             }
-
-            doConnect();
-
-            if (!status.isConnected()) {
-                throw new RemotingException(this.channel, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                        + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
-
-            } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                            + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                            + ", channel is " + this.getChannel());
-                }
-            }
-
-        } catch (RemotingException e) {
-            throw e;
-
-        } catch (Throwable e) {
-            throw new RemotingException(this.channel, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
-                    + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
-                    + ", cause: " + e.getMessage(), e);
-
+            connectWithoutGuard();
         } finally {
             connectLock.unlock();
+        }
+    }
+
+    protected void connectWithoutGuard() throws RemotingException {
+        long start = System.currentTimeMillis();
+        final Future<Connection> connectFuture = connectAsync();
+        connectFuture.addListener(future -> {
+            if (future.isSuccess()) {
+                Client2.this.connection = (Connection) future.get();
+            }
+        });
+        connectFuture.awaitUninterruptibly(getConnectTimeout());
+        if (!connectFuture.isSuccess()) {
+            if (connectFuture.isDone()) {
+                throw new RemotingException(null, null, "client(url: " + getUrl() + ") failed to connect to server .error message is:" + connectFuture.cause().getMessage(),
+                        connectFuture.cause());
+            } else {
+                throw new RemotingException(null, null, "client(url: " + getUrl() + ") failed to connect to server. client-side timeout "
+                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
+                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+            }
         }
     }
 
@@ -136,61 +147,36 @@ public class Client2 {
         return new InetSocketAddress(NetUtils.filterLocalHost(getUrl().getHost()), getUrl().getPort());
     }
 
-    protected void doConnect() throws Throwable {
-        long start = System.currentTimeMillis();
+    protected Future<Connection> connectAsync() {
+        final Promise<Connection> promise = ImmediateEventExecutor.INSTANCE.newPromise();
         ChannelFuture future = bootstrap.connect(getConnectAddress());
-        try {
-            boolean ret = future.awaitUninterruptibly(getConnectTimeout(), MILLISECONDS);
-
-            if (ret && future.isSuccess()) {
-                Channel newChannel = future.channel();
-                try {
-                    // Close old channel
-                    // copy reference
-                    Channel oldChannel = Client2.this.channel;
-                    if (oldChannel != null) {
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Close old netty channel " + oldChannel + " on create new netty channel " + newChannel);
-                            }
-                            oldChannel.close();
-                        } finally {
-                            //TODO fill me
-//                            NettyChannel.removeChannelIfDisconnected(oldChannel);
-                        }
-                    }
-                } finally {
-                    if (Client2.this.status.isClosed()) {
-                        try {
-                            if (logger.isInfoEnabled()) {
-                                logger.info("Close new netty channel " + newChannel + ", because the client closed.");
-                            }
-                            newChannel.close();
-                        } finally {
-//                            NettyClient.this.channel = null;
-                            //TODO fill me
-//                            NettyChannel.removeChannelIfDisconnected(newChannel);
-                        }
-                    } else {
-                        Client2.this.channel = newChannel;
-                        status.connected();
-                    }
+        final ChannelFutureListener listener = new ChannelFutureListener() {
+            @Override
+            public void operationComplete(ChannelFuture future) {
+                if (bootstrap.config().group().isShuttingDown()) {
+                    promise.tryFailure(new IllegalStateException("Client is shutdown"));
+                    return;
                 }
-            } else if (future.cause() != null) {
-                throw new RemotingException(this.channel, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
-            } else {
-                throw new RemotingException(this.channel, "client(url: " + getUrl() + ") failed to connect to server "
-                        + getRemoteAddress() + " client-side timeout "
-                        + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
-                        + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
+                if (future.isSuccess()) {
+                    if (logger.isInfoEnabled()) {
+                        logger.info("Succeed connect to server " + future.channel().remoteAddress() + " from " + getClass().getSimpleName() + " "
+                                + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
+                                + ", channel is " + future.channel());
+                    }
+                    bootstrap.config().group().execute(() -> {
+                        promise.setSuccess(Connection.getConnectionFromChannel(future.channel()));
+                    });
+                } else {
+                    bootstrap.config().group().execute(() -> {
+                        final RemotingException cause = new RemotingException(future.channel(), "client(url: " + getUrl() + ") failed to connect to server "
+                                + future.channel().remoteAddress() + ", error message is:" + future.cause().getMessage(), future.cause());
+                        promise.tryFailure(cause);
+                    });
+                }
             }
-        } finally {
-            // just add new valid channel to NettyChannel's cache
-            if (!status.isConnected()) {
-                //future.cancel(true);
-            }
-        }
+        };
+        future.addListener(listener);
+        return promise;
     }
 
     /**
@@ -203,17 +189,20 @@ public class Client2 {
     }
 
     public CompletableFuture<Object> write(Object request, int timeout, ExecutorService executor) throws RemotingException {
-        if (status.isClosed()) {
-            throw new RemotingException((InetSocketAddress) getChannel().localAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
+        if (lazyConnect && connection == null) {
+            concurrentConnect();
+        }
+        if (connection == null || !connection.isAvailable()) {
+            throw new RemotingException(null, null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture2 future = DefaultFuture2.newFuture(this, req, timeout, executor);
+        DefaultFuture2 future = DefaultFuture2.newFuture(connection, req, timeout, executor);
 
-        final ChannelFuture writeFuture = getChannel().writeAndFlush(req);
+        final ChannelFuture writeFuture = connection.write(req);
         writeFuture.addListener(future1 -> {
             if (future1.isSuccess()) {
                 DefaultFuture2.sent(req);
@@ -232,23 +221,19 @@ public class Client2 {
         executor = executorRepository.createExecutorIfAbsent(url);
     }
 
-    private SocketAddress getRemoteAddress() {
-        return channel.remoteAddress();
-    }
-
-    private SocketAddress getLocalAddress() {
-        return channel.localAddress();
-    }
-
     private int getConnectTimeout() {
         return connectTimeout;
     }
 
     public boolean isActive() {
-        return channel != null && channel.isActive();
+        if (connection != null && connection.isAvailable()) {
+            return true;
+        }
+        connectAsync();
+        return false;
     }
 
     public void close(int timeout) {
-
+        cg.close();
     }
 }

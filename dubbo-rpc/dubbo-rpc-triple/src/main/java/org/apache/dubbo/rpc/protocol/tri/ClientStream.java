@@ -5,6 +5,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.remoting.netty4.Connection;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -43,7 +44,7 @@ public class ClientStream extends AbstractStream implements Stream {
         }
         // TODO map grpc status to response status
         response.setStatus(Response.BAD_REQUEST);
-        DefaultFuture2.received(getCtx().channel(), response);
+        DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
     }
 
     public void halfClose() {
@@ -79,7 +80,7 @@ public class ClientStream extends AbstractStream implements Stream {
             data.close();
             Response response = new Response(request.getId(), request.getVersion());
             response.setResult(new AppResponse(req));
-            DefaultFuture2.received(getCtx().channel(), response);
+            DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
         } catch (IOException e) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withCause(e)
