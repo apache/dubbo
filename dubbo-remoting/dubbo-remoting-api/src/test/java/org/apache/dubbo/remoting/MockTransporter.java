@@ -14,31 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.remoting;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.URL;
 
-import java.util.List;
+import org.mockito.Mockito;
 
-import static java.util.Arrays.asList;
+public class MockTransporter implements Transporter {
+    private RemotingServer server = Mockito.mock(RemotingServer.class);
+    private Client client = Mockito.mock(Client.class);
 
-/**
- * {@link DefaultPage}
- *
- * @since 2.7.5
- */
-public class DefaultPageTest {
+    @Override
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
+        return server;
+    }
 
-    @Test
-    public void test() {
-        List<Integer> data = asList(1, 2, 3, 4, 5);
-        DefaultPage<Integer> page = new DefaultPage<>(0, 1, data.subList(0, 1), data.size());
-        Assertions.assertEquals(page.getOffset(), 0);
-        Assertions.assertEquals(page.getPageSize(), 1);
-        Assertions.assertEquals(page.getTotalSize(), data.size());
-        Assertions.assertEquals(page.getData(), data.subList(0, 1));
-        Assertions.assertEquals(page.getTotalPages(), 5);
-        Assertions.assertTrue(page.hasNext());
+    @Override
+    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
+        return client;
     }
 }
