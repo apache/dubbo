@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -255,7 +254,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         writableMetadataService.unsubscribeURL(url);
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
-        Set<String> serviceNames = writableMetadataService.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(toStringKeys(serviceNames));
             instancesChangedListener.removeListener(protocolServiceKey);
