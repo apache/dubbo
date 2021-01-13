@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.distribute;
+package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -28,9 +28,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.RevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Constants;
-import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -50,7 +47,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public abstract class DistributeServiceDiscovery implements ServiceDiscovery {
+public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -265,9 +262,11 @@ public abstract class DistributeServiceDiscovery implements ServiceDiscovery {
         }
     }
 
-    public void doInitialize(URL registryURL) throws Exception {}
+    public void doInitialize(URL registryURL) throws Exception {
+    }
 
-    public void doDestroy() throws Exception {}
+    public void doDestroy() throws Exception {
+    }
 
     public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
 
