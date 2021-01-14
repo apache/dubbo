@@ -2,7 +2,6 @@ package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.ChannelStatus;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -10,7 +9,6 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.group.ChannelGroup;
 import io.netty.util.Timer;
 
 import java.util.concurrent.TimeUnit;
@@ -22,33 +20,26 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Timer timer;
     private final Bootstrap bootstrap;
-    private final ChannelGroup channels;
 
-    public ConnectionHandler(Bootstrap bootstrap, ChannelGroup channels, Timer timer) {
+    public ConnectionHandler(Bootstrap bootstrap, Timer timer) {
         this.bootstrap = bootstrap;
-        this.channels = channels;
         this.timer = timer;
     }
 
     @Override
-    public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
-        super.channelRegistered(ctx);
-        ctx.channel().attr(Connection.CONNECTION).set(new Connection());
-    }
-
-    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        channels.add(ctx.channel());
         ctx.fireChannelActive();
-        Connection.getConnectionFromChannel(ctx.channel()).onConnected(ctx.channel());
+        final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
+        if (connection != null) {
+            connection.onConnected(ctx.channel());
+        }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         if (connection != null) {
-            connection.setStatus(ChannelStatus.UNCONNECTED);
-            if (!connection.isClosed()) {
+            if (!connection.isClosed() && connection.setStatus(Connection.ConnectionStatus.DISCONNECTED)) {
                 reconnect(connection, 1);
             }
         }

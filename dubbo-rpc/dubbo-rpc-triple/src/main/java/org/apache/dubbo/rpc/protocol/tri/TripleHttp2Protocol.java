@@ -23,6 +23,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
     @Override
     public void configServerPipeline(ChannelPipeline pipeline) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
+                .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(SERVER_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
@@ -32,6 +33,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
     @Override
     public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
+                .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(CLIENT_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInboundHandlerAdapter());

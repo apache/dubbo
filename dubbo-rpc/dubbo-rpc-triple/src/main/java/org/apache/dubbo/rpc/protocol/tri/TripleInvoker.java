@@ -17,11 +17,16 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.remoting.Client2;
+import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.remoting.ConnectionManager;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
-import org.apache.dubbo.remoting.Transporters;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.remoting.netty4.Connection;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
@@ -35,17 +40,21 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
+import io.netty.channel.ChannelFuture;
+
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
@@ -56,7 +65,7 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-    private final Client2 client;
+    private final Connection connection;
 
     private final ReentrantLock destroyLock = new ReentrantLock();
 
@@ -66,7 +75,9 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     public TripleInvoker(Class<T> serviceType, URL url, Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
-        this.client = Transporters.connect2(url);
+
+        final ConnectionManager connectionManger = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
+        this.connection = connectionManger.connect(url);
     }
 
     @Override
@@ -78,11 +89,28 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             int timeout = calculateTimeout(invocation, methodName);
             invocation.put(TIMEOUT_KEY, timeout);
             ExecutorService executor = getCallbackExecutor(getUrl(), inv);
-            CompletableFuture<AppResponse> appResponseFuture =
-                    client.write(inv, timeout, executor).thenApply(obj -> (AppResponse) obj);
+            // create request.
+            Request req = new Request();
+            req.setVersion(Version.getProtocolVersion());
+            req.setTwoWay(true);
+            req.setData(inv);
+            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
+
+            final ChannelFuture writeFuture = connection.write(req);
+            writeFuture.addListener(future1 -> {
+                if (future1.isSuccess()) {
+                    DefaultFuture2.sent(req);
+                } else {
+                    Response response = new Response(req.getId(), req.getVersion());
+                    response.setStatus(Response.CHANNEL_INACTIVE);
+                    response.setErrorMessage(future1.cause().getMessage());
+                    DefaultFuture2.received(connection, response);
+                }
+            });
+            final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
-            FutureContext.getContext().setCompatibleFuture(appResponseFuture);
-            AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, inv);
+            FutureContext.getContext().setCompatibleFuture(respFuture);
+            AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
             return result;
         } catch (TimeoutException e) {
@@ -97,8 +125,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         if (!super.isAvailable()) {
             return false;
         }
-        //TODO check readonly
-        return client.isActive();
+        return connection.isAvailable();
     }
 
     @Override
@@ -118,7 +145,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                     invokers.remove(this);
                 }
                 try {
-                    client.close(ConfigurationUtils.getServerShutdownTimeout());
+                    connection.release();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
