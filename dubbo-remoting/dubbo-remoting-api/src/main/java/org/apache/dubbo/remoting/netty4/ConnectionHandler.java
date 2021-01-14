@@ -13,7 +13,6 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.util.Timer;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 @ChannelHandler.Sharable
@@ -34,14 +33,14 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) throws Exception {
         super.channelRegistered(ctx);
-        new Connection((InetSocketAddress) ctx.channel().remoteAddress(), ctx.channel());
+        ctx.channel().attr(Connection.CONNECTION).set(new Connection());
     }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         channels.add(ctx.channel());
         ctx.fireChannelActive();
-        Connection.getConnectionFromChannel(ctx.channel()).onConnected();
+        Connection.getConnectionFromChannel(ctx.channel()).onConnected(ctx.channel());
     }
 
     @Override

@@ -10,15 +10,13 @@ import io.netty.util.AttributeKey;
 import java.net.InetSocketAddress;
 
 public class Connection {
-    private static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
-    private final InetSocketAddress remote;
+    public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
+    private InetSocketAddress remote;
     private volatile ChannelStatus status;
     private volatile Channel channel;
 
-    public Connection(InetSocketAddress remote, Channel channel) {
-        this.remote = remote;
-        this.channel = channel;
-        this.channel.attr(CONNECTION).set(this);
+    public Connection() {
+        this.status=ChannelStatus.UNCONNECTED;
     }
 
 
@@ -34,6 +32,7 @@ public class Connection {
     }
     public void onConnected(Channel channel) {
         onConnected();
+        this.remote= (InetSocketAddress) channel.remoteAddress();
         this.channel = channel;
         channel.attr(CONNECTION).set(this);
     }

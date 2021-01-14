@@ -10,6 +10,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.remoting.netty4.Connection;
 import org.apache.dubbo.remoting.netty4.ConnectionHandler;
@@ -85,7 +86,6 @@ public class Client2 {
                 .option(ChannelOption.SO_KEEPALIVE, true)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                //.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, getTimeout())
                 .channel(socketChannelClass());
 
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, connectTimeout));
@@ -163,9 +163,7 @@ public class Client2 {
                                 + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                 + ", channel is " + future.channel());
                     }
-                    bootstrap.config().group().execute(() -> {
-                        promise.setSuccess(Connection.getConnectionFromChannel(future.channel()));
-                    });
+                    bootstrap.config().group().execute(() -> promise.setSuccess(Connection.getConnectionFromChannel(future.channel())));
                 } else {
                     bootstrap.config().group().execute(() -> {
                         final RemotingException cause = new RemotingException(future.channel(), "client(url: " + getUrl() + ") failed to connect to server "
@@ -207,7 +205,10 @@ public class Client2 {
             if (future1.isSuccess()) {
                 DefaultFuture2.sent(req);
             } else {
-                future.cancel();
+                Response response = new Response(req.getId(),req.getVersion());
+                response.setStatus(Response.CHANNEL_INACTIVE);
+                response.setErrorMessage(future1.cause().getMessage());
+                DefaultFuture2.received(connection,response);
             }
         });
         return future;
