@@ -240,6 +240,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return null;
     }
 
+    @Override
     public MetadataInfo getDefaultMetadataInfo() {
         if (CollectionUtils.isEmptyMap(metadataInfos)) {
             return null;
@@ -277,6 +278,16 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public void putCachedMapping(String serviceKey, Set<String> apps) {
         serviceToAppsMapping.put(serviceKey, apps);
+    }
+
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
+    }
+
+    @Override
+    public Set<String> getCachedMapping(String mappingKey) {
+        return serviceToAppsMapping.get(mappingKey);
     }
 
     @Override

@@ -217,6 +217,22 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return url;
     }
 
+    public Map<String, List<ServiceInstance>> getAllInstances() {
+        return allInstances;
+    }
+
+    public List<ServiceInstance> getInstancesOfApp(String appName) {
+        return allInstances.get(appName);
+    }
+
+    public Map<String, MetadataInfo> getRevisionToMetadata() {
+        return revisionToMetadata;
+    }
+
+    public MetadataInfo getMetadata(String revision) {
+        return revisionToMetadata.get(revision);
+    }
+
     /**
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
@@ -224,7 +240,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public final boolean accept(ServiceInstancesChangedEvent event) {
         return serviceNames.contains(event.getServiceName());
     }
-
 
     private boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         String appName = event.getServiceName();

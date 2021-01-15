@@ -408,4 +408,11 @@ public class ServiceDiscoveryRegistry implements Registry {
                 || Objects.equals(protocol, targetURL.getProtocol());
     }
 
+    public Set<String> getRegisteredListeners() {
+        return registeredListeners;
+    }
+
+    public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
+        return serviceListeners;
+    }
 }
