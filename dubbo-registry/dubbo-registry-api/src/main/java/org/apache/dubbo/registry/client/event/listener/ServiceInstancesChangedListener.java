@@ -112,7 +112,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
-        Map<Set<String>, List<URL>> revisionsToUrls = new HashMap<>();
+        Map<String, Map<Set<String>, List<URL>>> protocolRevisionsToUrls = new HashMap<>();
         Map<String, List<URL>> newServiceUrls = new HashMap<>();//TODO
         Map<String, MetadataInfo> newRevisionToMetadata = new HashMap<>();
 
@@ -150,6 +150,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.revisionToMetadata = newRevisionToMetadata;
 
         localServiceToRevisions.forEach((serviceInfo, revisions) -> {
+            String protocol = serviceInfo.getProtocol();
+            Map<Set<String>, List<URL>> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> {
+                return new HashMap<>();
+            });
             List<URL> urls = revisionsToUrls.get(revisions);
             if (urls != null) {
                 newServiceUrls.put(serviceInfo.getMatchKey(), urls);
@@ -159,7 +163,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     for (ServiceInstance i : revisionToInstances.get(r)) {
                         // different protocols may have ports specified in meta
                         if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
-                            DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, serviceInfo.getProtocol());
+                            DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                             if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
                                 urls.add(((DefaultServiceInstance)i).copy(endpoint).toURL());
                                 break;
@@ -213,6 +217,22 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return url;
     }
 
+    public Map<String, List<ServiceInstance>> getAllInstances() {
+        return allInstances;
+    }
+
+    public List<ServiceInstance> getInstancesOfApp(String appName) {
+        return allInstances.get(appName);
+    }
+
+    public Map<String, MetadataInfo> getRevisionToMetadata() {
+        return revisionToMetadata;
+    }
+
+    public MetadataInfo getMetadata(String revision) {
+        return revisionToMetadata.get(revision);
+    }
+
     /**
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
@@ -220,7 +240,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public final boolean accept(ServiceInstancesChangedEvent event) {
         return serviceNames.contains(event.getServiceName());
     }
-
 
     private boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         String appName = event.getServiceName();

@@ -27,6 +27,7 @@ import java.util.Map;
  */
 public class Test3TypeBuilder implements TypeBuilder {
     // it is smaller than the implements of TypeBuilder
+    @Override
     public int getPriority(){
         return 10;
     }
@@ -37,7 +38,7 @@ public class Test3TypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         return null;
     }
 }

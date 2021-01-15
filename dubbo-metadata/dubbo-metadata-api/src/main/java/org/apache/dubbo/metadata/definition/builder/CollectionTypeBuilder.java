@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.definition.builder;
 
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
+import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -40,9 +41,9 @@ public class CollectionTypeBuilder implements TypeBuilder {
     }
 
     @Override
-    public TypeDefinition build(Type type, Class<?> clazz, Map<Class<?>, TypeDefinition> typeCache) {
+    public TypeDefinition build(Type type, Class<?> clazz, Map<String, TypeDefinition> typeCache) {
         if (!(type instanceof ParameterizedType)) {
-            return new TypeDefinition(clazz.getName());
+            return new TypeDefinition(clazz.getCanonicalName());
         }
 
         ParameterizedType parameterizedType = (ParameterizedType) type;
@@ -54,17 +55,29 @@ public class CollectionTypeBuilder implements TypeBuilder {
                     type, actualTypeArgs));
         }
 
+        String colType = ClassUtils.getCanonicalNameForParameterizedType(parameterizedType);
+        TypeDefinition td = typeCache.get(colType);
+        if (td != null) {
+            return td;
+        }
+        td = new TypeDefinition(colType);
+        typeCache.put(colType, td);
+
         Type actualType = actualTypeArgs[0];
+        TypeDefinition itemTd = null;
         if (actualType instanceof ParameterizedType) {
             // Nested collection or map.
             Class<?> rawType = (Class<?>) ((ParameterizedType) actualType).getRawType();
-            TypeDefinitionBuilder.build(actualType, rawType, typeCache);
+            itemTd = TypeDefinitionBuilder.build(actualType, rawType, typeCache);
         } else if (actualType instanceof Class<?>) {
             Class<?> actualClass = (Class<?>) actualType;
-            TypeDefinitionBuilder.build(null, actualClass, typeCache);
+            itemTd = TypeDefinitionBuilder.build(null, actualClass, typeCache);
+        }
+        if (itemTd != null) {
+            td.getItems().add(itemTd.getType());
         }
 
-        return new TypeDefinition(type.toString());
+        return td;
     }
 
 }

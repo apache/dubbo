@@ -466,10 +466,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.application = application;
         if (application != null) {
             ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getApplication().orElseGet(() -> {
+            if (!configManager.getApplication().isPresent()) {
                 configManager.setApplication(application);
-                return application;
-            });
+            } else {
+                application.refresh();
+            }
         }
     }
 

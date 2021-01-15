@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -57,7 +56,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGIST
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
-import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * Being different to the traditional registry, {@link ServiceDiscoveryRegistry} that is a new service-oriented
@@ -246,7 +244,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     private URL addRegistryClusterKey(URL url) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
             url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
         }
@@ -256,7 +254,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         writableMetadataService.unsubscribeURL(url);
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
-        Set<String> serviceNames = writableMetadataService.removeCachedMapping(ServiceNameMapping.buildMappingKey(url));
+        Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
         if (CollectionUtils.isNotEmpty(serviceNames)) {
             ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(toStringKeys(serviceNames));
             instancesChangedListener.removeListener(protocolServiceKey);
@@ -410,4 +408,11 @@ public class ServiceDiscoveryRegistry implements Registry {
                 || Objects.equals(protocol, targetURL.getProtocol());
     }
 
+    public Set<String> getRegisteredListeners() {
+        return registeredListeners;
+    }
+
+    public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
+        return serviceListeners;
+    }
 }

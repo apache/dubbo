@@ -29,6 +29,7 @@ import org.apache.dubbo.registry.client.DefaultServiceInstance.Endpoint;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
+import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -42,15 +43,16 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
-import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Utilities class for the {@link ServiceInstance#getMetadata() metadata of the service instance}
@@ -227,11 +229,15 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster == null) {
-            return;
+            registryCluster = DEFAULT_KEY;
         }
-        MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
+        if (metadataInfo == null) {
+            metadataInfo = ((InMemoryWritableMetadataService)writableMetadataService).getDefaultMetadataInfo();
+        }
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
             if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {

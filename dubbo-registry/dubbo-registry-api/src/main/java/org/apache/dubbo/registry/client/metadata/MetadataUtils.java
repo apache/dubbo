@@ -149,4 +149,9 @@ public class MetadataUtils {
         // store in local
         getLocalMetadataService().setMetadataServiceURL(url);
     }
+
+    public static void saveMetadataURL(URL url) {
+        // store in local
+        getLocalMetadataService().setMetadataServiceURL(url);
+    }
 }

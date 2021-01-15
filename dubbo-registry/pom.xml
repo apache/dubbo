@@ -33,9 +33,9 @@
         <module>dubbo-registry-api</module>
         <module>dubbo-registry-multicast</module>
         <module>dubbo-registry-zookeeper</module>
-        <module>dubbo-registry-kubernetes</module>
-        <module>dubbo-registry-dns</module>
         <module>dubbo-registry-nacos</module>
         <module>dubbo-registry-multiple</module>
+        <module>dubbo-registry-kubernetes</module>
+        <module>dubbo-registry-dns</module>
     </modules>
 </project>
