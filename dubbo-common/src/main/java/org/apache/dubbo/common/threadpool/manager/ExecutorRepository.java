@@ -64,4 +64,8 @@ public interface ExecutorRepository {
      */
     ExecutorService getSharedExecutor();
 
+    /**
+     * Destroy all Executors
+     */
+    void destroyAll();
 }

@@ -156,6 +156,19 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         return SHARED_EXECUTOR;
     }
 
+    @Override
+    public void destroyAll() {
+        data.values().forEach(executors -> {
+            if (executors != null) {
+                executors.values().forEach(executor -> {
+                    if (executor != null && !executor.isShutdown()) {
+                        executor.shutdownNow();
+                    }
+                });
+            }
+        });
+    }
+
     private ExecutorService createExecutor(URL url) {
         return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
     }
