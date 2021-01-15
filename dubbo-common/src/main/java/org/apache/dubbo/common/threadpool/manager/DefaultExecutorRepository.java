@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import java.util.Map;
@@ -162,7 +163,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             if (executors != null) {
                 executors.values().forEach(executor -> {
                     if (executor != null && !executor.isShutdown()) {
-                        executor.shutdownNow();
+                        ExecutorUtil.shutdownNow(executor, 100);
                     }
                 });
             }
