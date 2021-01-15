@@ -17,9 +17,11 @@ import java.util.concurrent.TimeUnit;
 public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final int BACKOFF_CAP = 12;
+    private static final int MIN_BACKOFF_GAP = 4000;
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Timer timer;
     private final Bootstrap bootstrap;
+    private long lastReconnect;
 
     public ConnectionHandler(Bootstrap bootstrap, Timer timer) {
         this.bootstrap = bootstrap;
@@ -35,18 +37,28 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    public boolean shouldFastReconnect() {
+        final long period = System.currentTimeMillis() - lastReconnect;
+        return period > MIN_BACKOFF_GAP;
+    }
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         if (connection != null) {
             if (!connection.isClosed() && connection.setStatus(Connection.ConnectionStatus.DISCONNECTED)) {
-                reconnect(connection, 1);
+                if (shouldFastReconnect()) {
+                    reconnect(connection, 1);
+                } else {
+                    reconnect(connection, BACKOFF_CAP);
+                }
             }
         }
         ctx.fireChannelInactive();
     }
 
     private void reconnect(final Connection connection, final int attempts) {
+        lastReconnect = System.currentTimeMillis();
         int timeout = 2 << attempts;
         if (bootstrap.config().group().isShuttingDown()) {
             return;

@@ -55,7 +55,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private static final ExecutorRepository EXECUTOR_REPOSITORY = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final URL url;
     private final Bootstrap bootstrap;
-    private final boolean lazyConnect;
     private final int connectTimeout;
     private final WireProtocol protocol;
     private final Promise<Void> closeFuture;
@@ -74,7 +73,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         this.eventExecutor = new DefaultEventExecutor(executor);
         this.status = new AtomicReference<>(ConnectionStatus.DISCONNECTED);
         this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
-        this.lazyConnect = url.getParameter(LAZY_CONNECT_KEY, false);
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
         this.closeFuture = new DefaultPromise<>(eventExecutor);
         this.remote = getConnectAddress();
@@ -158,9 +156,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public ChannelFuture write(Object request) throws RemotingException {
-        if (lazyConnect && channel == null) {
-            concurrentConnect();
-        }
         if (channel == null || !channel.isActive()) {
             throw new RemotingException(null, null, "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
         }
