@@ -212,8 +212,9 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             try {
                 return invoker.invoke(invocation);
             } catch (Throwable e) {
-                AsyncRpcResult result = new AsyncRpcResult(new CompletableFuture<>(), invocation);
-                result.setException(e);
+                CompletableFuture<AppResponse> future = new CompletableFuture<>();
+                AsyncRpcResult result = new AsyncRpcResult(future, invocation);
+                future.completeExceptionally(e);
                 return result;
             } finally {
                 providers.add(invoker.getUrl().getAddress());
