@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -82,8 +83,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
     final Semaphore metadataSemaphore = new Semaphore(0);
-
     final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
+
+    String instanceMetadata;
+    ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
+
 
     // ==================================================================================== //
 
@@ -241,6 +245,22 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
+    public void exportInstanceMetadata(String metadata) {
+        this.instanceMetadata = metadata;
+    }
+
+    @Override
+    public Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+        return instanceMetadataChangedListenerMap;
+    }
+
+    @Override
+    public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
+        instanceMetadataChangedListenerMap.put(consumerId, listener);
+        return instanceMetadata;
+    }
+
+    @Override
     public MetadataInfo getDefaultMetadataInfo() {
         if (CollectionUtils.isEmptyMap(metadataInfos)) {
             return null;
@@ -379,5 +399,4 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             return o1.toFullString().compareTo(o2.toFullString());
         }
     }
-
 }

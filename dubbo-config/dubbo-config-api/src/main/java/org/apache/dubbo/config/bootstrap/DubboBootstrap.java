@@ -170,9 +170,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
-    private AtomicBoolean ready = new AtomicBoolean(true);
+    private AtomicBoolean startup = new AtomicBoolean(true);
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
+
+    private AtomicBoolean shutdown = new AtomicBoolean(false);
 
     private volatile ServiceInstance serviceInstance;
 
@@ -878,7 +880,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
-            ready.set(false);
+            startup.set(false);
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
@@ -902,13 +904,13 @@ public class DubboBootstrap extends GenericEventListener {
                     } catch (Exception e) {
                         logger.warn(NAME + " exportAsync occurred an exception.");
                     }
-                    ready.set(true);
+                    startup.set(true);
                     if (logger.isInfoEnabled()) {
                         logger.info(NAME + " is ready.");
                     }
                 }).start();
             } else {
-                ready.set(true);
+                startup.set(true);
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is ready.");
                 }
@@ -973,8 +975,12 @@ public class DubboBootstrap extends GenericEventListener {
         return started.get();
     }
 
-    public boolean isReady() {
-        return ready.get();
+    public boolean isStartup() {
+        return startup.get();
+    }
+
+    public boolean isShutdown() {
+        return shutdown.get();
     }
 
     public DubboBootstrap stop() throws IllegalStateException {
@@ -1197,7 +1203,8 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        if (destroyLock.tryLock()) {
+        if (destroyLock.tryLock()
+                && shutdown.compareAndSet(false, true)) {
             try {
                 DubboShutdownHook.destroyAll();
 

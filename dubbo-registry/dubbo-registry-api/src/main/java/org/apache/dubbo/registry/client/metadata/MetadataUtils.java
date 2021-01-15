@@ -33,7 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.METADATA_SERVICE_URLS_PROPERTY_NAME;
 
 public class MetadataUtils {
@@ -41,6 +45,10 @@ public class MetadataUtils {
     private static final Object REMOTE_LOCK = new Object();
 
     public static ConcurrentMap<String, MetadataService> metadataServiceProxies = new ConcurrentHashMap<>();
+
+    public static ConcurrentMap<String, Invoker<?>> metadataServiceInvokers = new ConcurrentHashMap<>();
+
+    public static ConcurrentMap<String, Lock> metadataServiceLocks = new ConcurrentHashMap<>();
 
     private static final ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -72,39 +80,69 @@ public class MetadataUtils {
         // store in local
         WritableMetadataService.getDefaultExtension().publishServiceDefinition(url);
         // send to remote
-//        if (REMOTE_METADATA_STORAGE_TYPE.equals(url.getParameter(METADATA_KEY))) {
-        getRemoteMetadataService().publishServiceDefinition(url);
-//        }
+        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
+            getRemoteMetadataService().publishServiceDefinition(url);
+        }
+    }
+
+    public static String computeKey(ServiceInstance serviceInstance) {
+        return serviceInstance.getServiceName() + "##" + serviceInstance.getId() + "##" +
+                ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
     public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
-        String key = instance.getServiceName() + "##" +
-                ServiceInstanceMetadataUtils.getExportedServicesRevision(instance);
-        return metadataServiceProxies.computeIfAbsent(key, k -> {
-            MetadataServiceURLBuilder builder = null;
-            ExtensionLoader<MetadataServiceURLBuilder> loader
-                    = ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
+        String key = computeKey(instance);
+        Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
 
-            Map<String, String> metadata = instance.getMetadata();
-            // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
-            String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
-            if (StringUtils.isNotEmpty(dubboURLsJSON)) {
-                builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
-            } else {
-                builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
+        lock.lock();
+        try {
+            return metadataServiceProxies.computeIfAbsent(key, k -> referProxy(k, instance));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public static void destroyMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+        String key = computeKey(instance);
+        Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            if (metadataServiceProxies.containsKey(key)) {
+                metadataServiceProxies.remove(key);
+                Invoker<?> invoker = metadataServiceInvokers.remove(key);
+                invoker.destroy();
             }
+        } finally {
+            lock.unlock();
+        }
+    }
 
-            List<URL> urls = builder.build(instance);
-            if (CollectionUtils.isEmpty(urls)) {
-                throw new IllegalStateException("You have enabled introspection service discovery mode for instance "
-                        + instance + ", but no metadata service can build from it.");
-            }
+    private static MetadataService referProxy(String key, ServiceInstance instance) {
+        MetadataServiceURLBuilder builder = null;
+        ExtensionLoader<MetadataServiceURLBuilder> loader
+                = ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
 
-            // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
-            Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
+        Map<String, String> metadata = instance.getMetadata();
+        // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
+        String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
+        if (metadata.isEmpty() || StringUtils.isEmpty(dubboURLsJSON)) {
+            builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
+        } else {
+            builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
+        }
 
-            return proxyFactory.getProxy(invoker);
-        });
+        List<URL> urls = builder.build(instance);
+        if (CollectionUtils.isEmpty(urls)) {
+            throw new IllegalStateException("You have enabled introspection service discovery mode for instance "
+                    + instance + ", but no metadata service can build from it.");
+        }
+
+        // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+        Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
+        metadataServiceInvokers.put(key, invoker);
+
+        return proxyFactory.getProxy(invoker);
     }
 
     public static void saveMetadataURL(URL url) {
