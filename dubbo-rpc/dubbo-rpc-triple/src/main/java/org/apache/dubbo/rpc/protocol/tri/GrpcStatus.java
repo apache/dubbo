@@ -37,6 +37,7 @@ public class GrpcStatus {
     enum Code {
         OK(0),
         UNKNOWN(2),
+        DEADLINE_EXCEEDED(4),
         NOT_FOUND(5),
         RESOURCE_EXHAUSTED(8),
         UNIMPLEMENTED(12),

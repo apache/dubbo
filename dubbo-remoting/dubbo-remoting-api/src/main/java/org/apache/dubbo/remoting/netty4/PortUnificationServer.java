@@ -136,8 +136,7 @@ public class PortUnificationServer {
                             final ChannelPipeline p = ch.pipeline();
                             PortUnificationServerHandler negotiation = new PortUnificationServerHandler(protocols);
                             p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
-                            p.addLast("negotiation",
-                                    new PortUnificationServerHandler(protocols));
+                            p.addLast("negotiation", negotiation);
                             channelGroup = negotiation.getChannels();
                         }
                     }
@@ -164,6 +163,7 @@ public class PortUnificationServer {
             }
 
             channelGroup.close();
+            Thread.sleep(1000000);
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }

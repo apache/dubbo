@@ -16,6 +16,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization2;
+import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,6 +33,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
@@ -83,6 +85,9 @@ public class ServerStream extends AbstractStream implements Stream {
         future.whenComplete((appResult, t) -> {
             try {
                 if (t != null) {
+                    if (t instanceof TimeoutException) {
+                        responseErr(ctx, GrpcStatus.fromCode(Code.DEADLINE_EXCEEDED).withCause(t));
+                    }
                     responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     return;
                 }
