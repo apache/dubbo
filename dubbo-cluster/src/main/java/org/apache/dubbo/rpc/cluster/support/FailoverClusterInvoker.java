@@ -20,6 +20,7 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
@@ -28,7 +29,9 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
@@ -157,40 +160,44 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             lastInvoker = invoker;
             RpcContext.getContext().setInvokers((List) invoked);
 
-            Result result = realInvoke(invoker, invocation);
-            result.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
+            Result invokeResult = realInvoke(invoker, invocation);
+            invokeResult.whenCompleteWithContext(new BiConsumer<Result, Throwable>() {
                 @Override
                 public void accept(Result result, Throwable throwable) {
-                    if (throwable == null) {
-                        setResult(result);
-                        recordFailover(invoker, invokers);
-                        return;
-                    }
-
-                    RpcException exception = getRpcException(throwable);
-                    if (exception.isBiz()) {
-                        setException(exception);
-                        return;
-                    }
-
-                    lastException = exception;
-
-                    if (remainingCount > 1) {
-                        List<Invoker<T>> nextInvokers;
-                        try {
-                            checkWhetherDestroyed();
-                            nextInvokers = list(invocation);
-                        } catch (RpcException e) {
-                            setException(e);
-                            return;
-                        } catch (Throwable t) {
-                            setException(new RpcException(t.getMessage(), t));
+                    try {
+                        if (throwable == null) {
+                            setResult(result);
+                            recordFailover(invoker, invokers);
                             return;
                         }
 
-                        doInvoke(nextInvokers, remainingCount - 1);
-                    } else {
-                        setException(generateFailException(invokers));
+                        RpcException exception = getRpcException(throwable);
+                        if (exception.isBiz()) {
+                            setException(exception);
+                            return;
+                        }
+
+                        lastException = exception;
+
+                        if (remainingCount > 1) {
+                            List<Invoker<T>> nextInvokers;
+                            try {
+                                checkWhetherDestroyed();
+                                nextInvokers = list(invocation);
+                            } catch (RpcException e) {
+                                setException(e);
+                                return;
+                            } catch (Throwable t) {
+                                setException(new RpcException(t.getMessage(), t));
+                                return;
+                            }
+
+                            doInvoke(nextInvokers, remainingCount - 1);
+                        } else {
+                            setException(generateFailException(invokers));
+                        }
+                    } catch (Throwable t) {
+                        setException(new RpcException("unexpected error", t));
                     }
                 }
             });
@@ -227,7 +234,11 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             } catch (Throwable e) {
                 CompletableFuture<AppResponse> future = new CompletableFuture<>();
                 AsyncRpcResult result = new AsyncRpcResult(future, invocation);
-                future.completeExceptionally(e);
+                if (e instanceof RpcException) {
+                    future.completeExceptionally(e);
+                } else {
+                    future.completeExceptionally(new RpcException(e));
+                }
                 return result;
             } finally {
                 providers.add(invoker.getUrl().getAddress());
@@ -244,8 +255,19 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
     }
 
     private RpcException getRpcException(Throwable throwable) {
+        if (throwable instanceof CompletionException) {
+            return doGetRpcException(throwable.getCause());
+        }
+        return doGetRpcException(throwable);
+    }
+
+    private RpcException doGetRpcException(Throwable throwable) {
         if (throwable instanceof RpcException) {
             return (RpcException) throwable;
+        } else if (throwable instanceof TimeoutException) {
+            return new RpcException(RpcException.TIMEOUT_EXCEPTION, throwable);
+        } else if (throwable instanceof RemotingException) {
+            return new RpcException(RpcException.NETWORK_EXCEPTION, throwable);
         } else {
             return new RpcException(throwable.getMessage(), throwable);
         }
