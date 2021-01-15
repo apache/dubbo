@@ -38,4 +38,11 @@ public class MappingChangedEvent {
         this.apps = apps;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{serviceKey: ").append(serviceKey).append(", apps: ");
+        sb.append(apps.toString()).append("}");
+        return sb.toString();
+    }
 }

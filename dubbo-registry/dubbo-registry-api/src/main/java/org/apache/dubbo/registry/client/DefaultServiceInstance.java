@@ -63,7 +63,6 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public DefaultServiceInstance(DefaultServiceInstance other) {
-        this.id = other.id;
         this.serviceName = other.serviceName;
         this.host = other.host;
         this.port = other.port;
@@ -73,6 +72,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.serviceMetadata = other.serviceMetadata;
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
+        this.address = null;
+        this.id = null;
     }
 
     public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
@@ -186,7 +187,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     public DefaultServiceInstance copy(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
-//        copyOfInstance.setId(copyOfInstance.getAddress());
+        copyOfInstance.setId(copyOfInstance.getAddress());
         return copyOfInstance;
     }
 

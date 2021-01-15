@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
@@ -52,6 +53,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -144,8 +146,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             this.metadataServiceURL = url;
             return true;
         }
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
                 return new MetadataInfo(ApplicationModel.getName());
@@ -163,8 +165,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             this.metadataServiceURL = null;
             return true;
         }
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.get(cluster);
             metadataInfo.removeService(url.getProtocolServiceKey());
@@ -174,6 +176,14 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         }
         metadataSemaphore.release();
         return removeURL(exportedServiceURLs, url);
+    }
+
+    private String getRegistryCluster(URL url){
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
+        if (StringUtils.isEmpty(registryCluster)) {
+            registryCluster = DEFAULT_KEY;
+        }
+        return registryCluster;
     }
 
     @Override
@@ -230,6 +240,19 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return null;
     }
 
+    @Override
+    public MetadataInfo getDefaultMetadataInfo() {
+        if (CollectionUtils.isEmptyMap(metadataInfos)) {
+            return null;
+        }
+        for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(DEFAULT_KEY)) {
+                return entry.getValue();
+            }
+        }
+        return metadataInfos.entrySet().iterator().next().getValue();
+    }
+
     public void blockUntilUpdated() {
         try {
             metadataSemaphore.acquire();
@@ -255,6 +278,16 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public void putCachedMapping(String serviceKey, Set<String> apps) {
         serviceToAppsMapping.put(serviceKey, apps);
+    }
+
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
+    }
+
+    @Override
+    public Set<String> getCachedMapping(String mappingKey) {
+        return serviceToAppsMapping.get(mappingKey);
     }
 
     @Override
