@@ -9,6 +9,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.Timer;
 
 import java.util.concurrent.TimeUnit;
@@ -43,10 +44,22 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+        if (evt instanceof IdleStateEvent) {
+            final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
+            if (connection != null) {
+                connection.onIdle();
+                ctx.close();
+            }
+        }
+    }
+
+    @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         if (connection != null) {
-            if (!connection.isClosed() && connection.setStatus(Connection.ConnectionStatus.DISCONNECTED)) {
+            if (!connection.isClosed() && connection.onDisConnected()) {
                 if (shouldFastReconnect()) {
                     reconnect(connection, 1);
                 } else {
@@ -66,6 +79,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
         timer.newTimeout(timeout1 -> tryReconnect(connection, Math.min(BACKOFF_CAP, attempts + 1)), timeout, TimeUnit.MILLISECONDS);
     }
+
 
     private void tryReconnect(final Connection connection, final int nextAttempt) {
         if (connection.isClosed() || bootstrap.config().group().isShuttingDown()) {

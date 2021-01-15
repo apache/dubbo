@@ -42,7 +42,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
-import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.remoting.netty4.NettyEventLoopFactory.socketChannelClass;
 
@@ -107,12 +106,10 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 ch.attr(CONNECTION).set(Connection.this);
                 Connection.this.channel = ch;
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
-
                 // TODO support SSL
-
                 final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
-                p.addLast(new ConnectionHandler(Connection.this.bootstrap, TIMER));
                 p.addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS));
+                p.addLast(new ConnectionHandler(Connection.this.bootstrap, TIMER));
                 // TODO support ssl
                 protocol.configClientPipeline(p, null);
                 // TODO support Socks5
@@ -125,8 +122,31 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         return channel;
     }
 
+    @Override
+    public String toString() {
+        return "Connection= " + getRemote() + ",channel=" + channel + ", status=" + status;
+    }
+
+
+    public void onIdle() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Connection:%s disconnected cause idle", this));
+        }
+        setStatus(ConnectionStatus.DISCONNECTED);
+        this.channel = null;
+    }
+
+    public boolean onDisConnected() {
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Connection:%s disconnected cause network error", this));
+        }
+        return setStatus(ConnectionStatus.DISCONNECTED);
+    }
 
     public void onConnected(Channel channel) {
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Connection:%s connected ", this));
+        }
         setStatus(ConnectionStatus.CONNECTED);
         this.channel = channel;
         channel.attr(CONNECTION).set(this);
