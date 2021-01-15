@@ -71,12 +71,10 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @return
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
-        Integer portKey = url.getPort();
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
+        //消费者：只有1个ExecutorService，key=Integer.MAX_VALUE
+        //提供者：分协议（即端口）使用不同的ExecutorService，key=url.port
+        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
@@ -88,12 +86,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     public ExecutorService getExecutor(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.get(componentKey);
-
+        Map<Integer, ExecutorService> executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
         /**
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
          * have Executor instances generated and stored.
@@ -103,17 +96,21 @@ public class DefaultExecutorRepository implements ExecutorRepository {
                     "before coming to here.");
             return null;
         }
-
-        Integer portKey = url.getPort();
+        //消费者：只有1个ExecutorService，key=Integer.MAX_VALUE
+        //提供者：分协议（即端口）使用不同的ExecutorService，key=url.port
+        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.get(portKey);
-        if (executor != null) {
-            if (executor.isShutdown() || executor.isTerminated()) {
-                executors.remove(portKey);
-                executor = createExecutor(url);
-                executors.put(portKey, executor);
-            }
+        if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
+            executors.remove(portKey);
+            // 不重建已经shutdown的Executor
+            executor = null;
         }
-        return executor;
+        if (executor == null) {
+            logger.warn("Executor of key + '" + portKey + "' has shutdown, return 'DubboSharedHandler' instead.");
+            return SHARED_EXECUTOR;
+        } else {
+            return executor;
+        }
     }
 
     @Override
