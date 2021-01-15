@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.function.BiConsumer;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
@@ -61,10 +62,15 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         CompletableFuture<AppResponse> responseFuture = result.getResponseFuture();
         FutureContext.getContext().setCompatibleFuture(responseFuture);
         RpcContext.getContext().setFuture(new FutureAdapter(responseFuture));
-        if (isSyncInvocation(invocation) && responseFuture.isCompletedExceptionally()) {
-            responseFuture.whenComplete((appResponse, throwable) -> {
-                throw getRpcException(throwable);
-            });
+        if (isSyncInvocation(failoverInvoker.getLastInvoker(), invocation) && responseFuture.isCompletedExceptionally()) {
+            try {
+                responseFuture.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RpcException(e);
+            } catch (ExecutionException e) {
+                throw getRpcException(e.getCause());
+            }
         }
         return result;
     }
@@ -85,6 +91,8 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
         private final List<Invoker<T>> invoked = new ArrayList<>();
 
+        private volatile Invoker<T> lastInvoker;
+
         private RpcException lastException = null;
 
         public FailoverInvoker(Invocation invocation, LoadBalance loadbalance, int maxInvokeCount) {
@@ -99,6 +107,10 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         public AsyncRpcResult invoke(List<Invoker<T>> invokers) {
             doInvoke(invokers, maxInvokeCount);
             return returnResult;
+        }
+
+        public Invoker<T> getLastInvoker() {
+            return lastInvoker;
         }
 
         private void resumeContext(AsyncRpcResult result) {
@@ -142,6 +154,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
 
             invoked.add(invoker);
+            lastInvoker = invoker;
             RpcContext.getContext().setInvokers((List) invoked);
 
             Result result = realInvoke(invoker, invocation);
@@ -222,8 +235,12 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
         }
     }
 
-    private boolean isSyncInvocation(Invocation invocation) {
-        return InvokeMode.SYNC == ((RpcInvocation) invocation).getInvokeMode();
+    private boolean isSyncInvocation(Invoker<T> invoker, Invocation invocation) {
+        if (invoker == null) {
+            return true;
+        } else {
+            return InvokeMode.SYNC == RpcUtils.getInvokeMode(invoker.getUrl(), invocation);
+        }
     }
 
     private RpcException getRpcException(Throwable throwable) {
