@@ -34,6 +34,7 @@
         <module>dubbo-rpc-dubbo</module>
         <module>dubbo-rpc-injvm</module>
         <module>dubbo-rpc-rest</module>
+        <module>dubbo-rpc-grpc</module>
         <module>dubbo-rpc-triple</module>
     </modules>
 </project>

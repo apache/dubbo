@@ -45,7 +45,7 @@ import static org.apache.dubbo.remoting.Constants.IDLE_TIMEOUT_KEY;
  */
 public abstract class AbstractServer extends AbstractEndpoint implements RemotingServer {
 
-    public static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
+    protected static final String SERVER_THREAD_POOL_NAME = "DubboServerHandler";
     private static final Logger logger = LoggerFactory.getLogger(AbstractServer.class);
     ExecutorService executor;
     private InetSocketAddress localAddress;

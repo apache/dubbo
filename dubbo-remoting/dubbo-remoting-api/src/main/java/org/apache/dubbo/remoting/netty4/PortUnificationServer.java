@@ -49,7 +49,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
-import static org.apache.dubbo.remoting.transport.AbstractServer.SERVER_THREAD_POOL_NAME;
 
 /**
  * PortUnificationServer.
@@ -80,7 +79,7 @@ public class PortUnificationServer {
     public PortUnificationServer(URL url) {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
         // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-        this.url = ExecutorUtil.setThreadName(url, SERVER_THREAD_POOL_NAME);
+        this.url = ExecutorUtil.setThreadName(url, "DubboPUServerHandler");
         this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(url, new String[0]);
     }
 

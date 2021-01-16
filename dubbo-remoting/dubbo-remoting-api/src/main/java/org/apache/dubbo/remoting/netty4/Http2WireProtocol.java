@@ -10,7 +10,6 @@ import static io.netty.handler.logging.LogLevel.INFO;
 public abstract class Http2WireProtocol implements WireProtocol {
     public static final Http2FrameLogger CLIENT_LOGGER = new Http2FrameLogger(INFO, "H2_CLIENT");
     public static final Http2FrameLogger SERVER_LOGGER = new Http2FrameLogger(INFO, "H2_SERVER");
-    private static final Set<Http2SessionHandler> handlers = ConcurrentHashMap.newKeySet();
     private final ProtocolDetector detector = new Http2ProtocolDetector();
 
     @Override
@@ -20,8 +19,5 @@ public abstract class Http2WireProtocol implements WireProtocol {
 
     @Override
     public void close() {
-        for (Http2SessionHandler handler : handlers) {
-            handler.close();
-        }
     }
 }
