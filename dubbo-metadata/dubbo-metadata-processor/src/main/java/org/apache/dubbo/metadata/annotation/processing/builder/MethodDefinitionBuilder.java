@@ -22,6 +22,7 @@ import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.ExecutableElement;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.getMethodName;
@@ -36,18 +37,18 @@ import static org.apache.dubbo.metadata.annotation.processing.util.MethodUtils.g
  */
 public interface MethodDefinitionBuilder {
 
-    static MethodDefinition build(ProcessingEnvironment processingEnv, ExecutableElement method) {
+    static MethodDefinition build(ProcessingEnvironment processingEnv, ExecutableElement method, Map<String, TypeDefinition> typeCache) {
         MethodDefinition methodDefinition = new MethodDefinition();
         methodDefinition.setName(getMethodName(method));
         methodDefinition.setReturnType(getReturnType(method));
         methodDefinition.setParameterTypes(getMethodParameterTypes(method));
-        methodDefinition.setParameters(getMethodParameters(processingEnv, method));
+        methodDefinition.setParameters(getMethodParameters(processingEnv, method, typeCache));
         return methodDefinition;
     }
 
-    static List<TypeDefinition> getMethodParameters(ProcessingEnvironment processingEnv, ExecutableElement method) {
+    static List<TypeDefinition> getMethodParameters(ProcessingEnvironment processingEnv, ExecutableElement method, Map<String, TypeDefinition> typeCache) {
         return method.getParameters().stream()
-                .map(element -> TypeDefinitionBuilder.build(processingEnv, element))
+                .map(element -> TypeDefinitionBuilder.build(processingEnv, element, typeCache))
                 .collect(Collectors.toList());
     }
 }

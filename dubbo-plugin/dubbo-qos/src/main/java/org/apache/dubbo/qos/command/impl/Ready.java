@@ -16,17 +16,38 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
+import org.apache.dubbo.qos.probe.ReadinessProbe;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
-@Cmd(name = "start",summary = "Judge if service has started? ")
+import java.util.List;
+
+@Cmd(name = "ready", summary = "Judge if service is ready to work? ")
 public class Ready implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return DubboBootstrap.getInstance().isReady() ? "true" : "false";
+        URL url = URL.valueOf("application://")
+                .addParameter(CommonConstants.QOS_READY_PROBE_EXTENSION, ApplicationModel.getApplicationConfig().getReadinessProbe());
+        List<ReadinessProbe> readinessProbes = ExtensionLoader.getExtensionLoader(ReadinessProbe.class)
+                .getActivateExtension(url, CommonConstants.QOS_READY_PROBE_EXTENSION);
+        if (!readinessProbes.isEmpty()) {
+            for (ReadinessProbe readinessProbe : readinessProbes) {
+                if (!readinessProbe.check()) {
+                    // 503 Service Unavailable
+                    commandContext.setHttpCode(503);
+                    return "false";
+                }
+            }
+        }
+        // 200 OK
+        commandContext.setHttpCode(200);
+        return "true";
     }
 
 }

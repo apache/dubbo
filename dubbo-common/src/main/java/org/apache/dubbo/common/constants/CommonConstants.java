@@ -263,6 +263,8 @@ public interface CommonConstants {
 
     String REFERENCE_FILTER_KEY = "reference.filter";
 
+    String INVOCATION_INTERCEPTOR_KEY = "invocation.interceptor";
+
     String INVOKER_LISTENER_KEY = "invoker.listener";
 
     String DUBBO_VERSION_KEY = "dubbo";
@@ -361,9 +363,13 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
-    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
+    String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
 
-    String FILTER_BUILDER_KEY = "filter-builder";
+    String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
+
+    String QOS_STARTUP_PROBE_EXTENSION = "dubbo.application.startup-probe";
+
+    String REGISTRY_DELAY_NOTIFICATION_KEY = "delay-notification";
 
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";

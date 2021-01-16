@@ -25,6 +25,9 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
@@ -182,6 +185,10 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Integer weight;
 
+    private Boolean publishInterface;
+
+    private Boolean publishInstance;
+
     public RegistryConfig() {
     }
 
@@ -195,6 +202,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     @Override
+    @Parameter(key = REGISTRY_CLUSTER_KEY)
     public String getId() {
         return super.getId();
     }
@@ -513,6 +521,24 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setWeight(Integer weight) {
         this.weight = weight;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
+    public Boolean getPublishInterface() {
+        return publishInterface;
+    }
+
+    public void setPublishInterface(Boolean publishInterface) {
+        this.publishInterface = publishInterface;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
+    public Boolean getPublishInstance() {
+        return publishInstance;
+    }
+
+    public void setPublishInstance(Boolean publishInstance) {
+        this.publishInstance = publishInstance;
     }
 
     @Override

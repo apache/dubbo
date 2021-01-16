@@ -17,16 +17,13 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.utils.UrlUtils;
-import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 public class OnlineInterface extends BaseOnline {
     @Override
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
         if (!UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
-            Registry registry = registryFactory.getRegistry(statedURL.getRegistryUrl());
-            registry.register(statedURL.getProviderUrl());
-            statedURL.setRegistered(true);
+            super.doExport(statedURL);
         }
     }
 }

@@ -173,7 +173,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     @Override
     public ScheduledExecutorService getMetadataRetryExecutor() {
-        return null;
+        return metadataRetryExecutor;
     }
 
     @Override

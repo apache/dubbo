@@ -16,22 +16,22 @@
  */
 package org.apache.dubbo.config.metadata;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.Set;
 
 /**
  * The {@link ServiceInstanceCustomizer} to customize the {@link ServiceInstance#getPort() port} of service instance.
  *
  * @since 2.7.5
  */
-public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer {
+public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomizer {
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
@@ -40,24 +40,31 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
             return;
         }
 
-        Collection<ProtocolConfig> protocols = ApplicationModel.getConfigManager()
-                .getProtocols();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
 
-        if (CollectionUtils.isEmpty(protocols)) {
-            throw new IllegalStateException("We should have at least one protocol configured at this point.");
-        }
-
-        Stream<ProtocolConfig> protocolStream = protocols.stream();
-        ProtocolConfig protocolConfig = protocolStream
-                // use rest as service instance's default protocol.
-                .filter(protocol -> "rest".equals(protocol.getName()))
-                .findFirst()
-                .orElseGet(() -> protocolStream.findFirst().get());
-
-        if (serviceInstance instanceof DefaultServiceInstance) {
-            DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
-            if (protocolConfig.getPort() != null) {
-                instance.setPort(protocolConfig.getPort());
+        String host = null;
+        Integer port = null;
+        Set<URL> urls = writableMetadataService.getExportedServiceURLs();
+        if (CollectionUtils.isNotEmpty(urls)) {
+            String preferredProtocol = ApplicationModel.getApplicationConfig().getProtocol();
+            if (preferredProtocol != null) {
+                for (URL exportedURL : urls) {
+                    if (preferredProtocol.equals(exportedURL.getProtocol())) {
+                        host = exportedURL.getHost();
+                        port = exportedURL.getPort();
+                        break;
+                    }
+                }
+            } else {
+                URL url = urls.iterator().next();
+                host = url.getHost();
+                port = url.getPort();
+            }
+            if (serviceInstance instanceof DefaultServiceInstance) {
+                DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
+                instance.setHost(host);
+                instance.setPort(port);
+                instance.setId(host + ":" + port);
             }
         }
     }

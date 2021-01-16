@@ -81,16 +81,16 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     @Override
     public Class<T> getInterface() {
-        return directory.getInterface();
+        return getDirectory().getInterface();
     }
 
     @Override
     public URL getUrl() {
-        return directory.getConsumerUrl();
+        return getDirectory().getConsumerUrl();
     }
 
     public URL getRegistryUrl() {
-        return directory.getUrl();
+        return getDirectory().getUrl();
     }
 
     @Override
@@ -99,7 +99,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (invoker != null) {
             return invoker.isAvailable();
         }
-        return directory.isAvailable();
+        return getDirectory().isAvailable();
     }
 
     public Directory<T> getDirectory() {
@@ -109,7 +109,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
     @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
-            directory.destroy();
+            getDirectory().destroy();
         }
     }
 
@@ -284,8 +284,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getConsumerUrl().getServiceKey()
-                    + " from registry " + directory.getUrl().getAddress()
+                    + ". No provider available for the service " + getDirectory().getConsumerUrl().getServiceKey()
+                    + " from registry " + getDirectory().getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()
                     + ". Please check if the providers have been started and registered.");
@@ -307,7 +307,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
                                        LoadBalance loadbalance) throws RpcException;
 
     protected List<Invoker<T>> list(Invocation invocation) throws RpcException {
-        return directory.list(invocation);
+        return getDirectory().list(invocation);
     }
 
     /**

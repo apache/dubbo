@@ -44,5 +44,7 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
 
+    void refreshServiceDiscoveryInvokerOnMappingCallback(boolean forceMigrate);
+
     void reRefer(URL newSubscribeUrl);
 }

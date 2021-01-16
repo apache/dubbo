@@ -88,4 +88,14 @@ public interface Constants {
     String REGISTRY_RETRY_PERIOD_KEY = "retry.period";
 
     String SESSION_TIMEOUT_KEY = "session";
+
+    /**
+     * To decide the frequency of checking Distributed Service Discovery Registry callback hook (in ms)
+     */
+    String ECHO_POLLING_CYCLE_KEY = "echoPollingCycle";
+
+    /**
+     * Default value for check frequency: 60000 (ms)
+     */
+    int DEFAULT_ECHO_POLLING_CYCLE = 60000;
 }

@@ -19,10 +19,13 @@ package org.apache.dubbo.registry.client.metadata.store;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -33,7 +36,10 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import com.google.gson.Gson;
 
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
@@ -48,6 +54,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -73,8 +80,14 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
      * and value is the {@link SortedSet sorted set} of the {@link URL URLs}
      */
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
+    URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
-    final Semaphore metadataSemaphore = new Semaphore(1);
+    final Semaphore metadataSemaphore = new Semaphore(0);
+    final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
+
+    String instanceMetadata;
+    ConcurrentMap<String, InstanceMetadataChangedListener> instanceMetadataChangedListenerMap = new ConcurrentHashMap<>();
+
 
     // ==================================================================================== //
 
@@ -123,9 +136,22 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
+    public Set<URL> getExportedServiceURLs() {
+        Set<URL> set = new HashSet<>();
+        for (Map.Entry<String, SortedSet<URL>> entry : exportedServiceURLs.entrySet()) {
+            set.addAll(entry.getValue());
+        }
+        return set;
+    }
+
+    @Override
     public boolean exportURL(URL url) {
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+        if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+            this.metadataServiceURL = url;
+            return true;
+        }
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
                 return new MetadataInfo(ApplicationModel.getName());
@@ -138,17 +164,30 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public boolean unexportURL(URL url) {
-        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        String[] clusters = registryCluster.split(",");
+        if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+            // TODO, metadata service need to be unexported.
+            this.metadataServiceURL = null;
+            return true;
+        }
+
+        String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
             MetadataInfo metadataInfo = metadataInfos.get(cluster);
             metadataInfo.removeService(url.getProtocolServiceKey());
-            if (metadataInfo.getServices().isEmpty()) {
-                metadataInfos.remove(cluster);
-            }
+//            if (metadataInfo.getServices().isEmpty()) {
+//                metadataInfos.remove(cluster);
+//            }
         }
         metadataSemaphore.release();
         return removeURL(exportedServiceURLs, url);
+    }
+
+    private String getRegistryCluster(URL url){
+        String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
+        if (StringUtils.isEmpty(registryCluster)) {
+            registryCluster = DEFAULT_KEY;
+        }
+        return registryCluster;
     }
 
     @Override
@@ -205,9 +244,39 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return null;
     }
 
+    @Override
+    public void exportInstanceMetadata(String metadata) {
+        this.instanceMetadata = metadata;
+    }
+
+    @Override
+    public Map<String, InstanceMetadataChangedListener> getInstanceMetadataChangedListenerMap() {
+        return instanceMetadataChangedListenerMap;
+    }
+
+    @Override
+    public String getAndListenInstanceMetadata(String consumerId, InstanceMetadataChangedListener listener) {
+        instanceMetadataChangedListenerMap.put(consumerId, listener);
+        return instanceMetadata;
+    }
+
+    @Override
+    public MetadataInfo getDefaultMetadataInfo() {
+        if (CollectionUtils.isEmptyMap(metadataInfos)) {
+            return null;
+        }
+        for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
+            if (entry.getKey().equalsIgnoreCase(DEFAULT_KEY)) {
+                return entry.getValue();
+            }
+        }
+        return metadataInfos.entrySet().iterator().next().getValue();
+    }
+
     public void blockUntilUpdated() {
         try {
             metadataSemaphore.acquire();
+            metadataSemaphore.drainPermits();
         } catch (InterruptedException e) {
             logger.warn("metadata refresh thread has been interrupted unexpectedly while wating for update.", e);
         }
@@ -215,6 +284,46 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     public Map<String, MetadataInfo> getMetadataInfos() {
         return metadataInfos;
+    }
+
+    void addMetaServiceURL(URL url) {
+        this.metadataServiceURL = url;
+    }
+
+    @Override
+    public URL getMetadataServiceURL() {
+        return this.metadataServiceURL;
+    }
+
+    @Override
+    public void putCachedMapping(String serviceKey, Set<String> apps) {
+        serviceToAppsMapping.put(serviceKey, apps);
+    }
+
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
+    }
+
+    @Override
+    public Set<String> getCachedMapping(String mappingKey) {
+        return serviceToAppsMapping.get(mappingKey);
+    }
+
+    @Override
+    public Set<String> getCachedMapping(URL consumerURL) {
+        String serviceKey = ServiceNameMapping.buildMappingKey(consumerURL);
+        return serviceToAppsMapping.get(serviceKey);
+    }
+
+    @Override
+    public Set<String> removeCachedMapping(String serviceKey) {
+        return serviceToAppsMapping.remove(serviceKey);
+    }
+
+    @Override
+    public void setMetadataServiceURL(URL url) {
+        this.metadataServiceURL = url;
     }
 
     boolean addURL(Map<String, SortedSet<URL>> serviceURLs, URL url) {
@@ -290,5 +399,4 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             return o1.toFullString().compareTo(o2.toFullString());
         }
     }
-
 }

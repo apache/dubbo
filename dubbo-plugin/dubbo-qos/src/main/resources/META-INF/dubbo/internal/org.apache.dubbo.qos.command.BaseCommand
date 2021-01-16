@@ -8,5 +8,7 @@ offline=org.apache.dubbo.qos.command.impl.Offline
 offlineApp=org.apache.dubbo.qos.command.impl.OfflineApp
 offlineInterface=org.apache.dubbo.qos.command.impl.OfflineInterface
 ready=org.apache.dubbo.qos.command.impl.Ready
+startup=org.apache.dubbo.qos.command.impl.Startup
+live=org.apache.dubbo.qos.command.impl.Live
 version=org.apache.dubbo.qos.command.impl.Version
 publish-metadata=org.apache.dubbo.qos.command.impl.PublishMetadata

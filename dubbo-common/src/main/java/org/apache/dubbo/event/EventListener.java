@@ -55,6 +55,7 @@ public interface EventListener<E extends Event> extends java.util.EventListener,
      * {@link Integer#MIN_VALUE} indicates the highest priority. The default value is {@link Integer#MAX_VALUE}.
      * The comparison rule , refer to {@link #compareTo}.
      */
+    @Override
     default int getPriority() {
         return NORMAL_PRIORITY;
     }

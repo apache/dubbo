@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
@@ -164,6 +165,26 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean enableFileCache;
 
     private Boolean publishInterface;
+
+    /**
+     * The preferred protocol(name) of this application
+     * convenient for places where it's hard to determine which is the preferred protocol
+     */
+    private String protocol;
+
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
+    /**
+     * used to set extensions of probe in qos
+     */
+    private String livenessProbe;
+
+    private String readinessProbe;
+
+    private String startupProbe;
 
     public ApplicationConfig() {
     }
@@ -467,6 +488,51 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setPublishInterface(Boolean publishInterface) {
         this.publishInterface = publishInterface;
+    }
+
+    @Parameter(excluded = true, key="application-protocol")
+    public String getProtocol() {
+        return protocol == null ? DUBBO : protocol;
+    }
+
+    public void setProtocol(String protocol) {
+        this.protocol = protocol;
+    }
+
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
+    @Parameter(key = "liveness-probe")
+    public String getLivenessProbe() {
+        return livenessProbe;
+    }
+
+    public void setLivenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+    }
+
+    @Parameter(key = "readiness-probe")
+    public String getReadinessProbe() {
+        return readinessProbe;
+    }
+
+    public void setReadinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+    }
+
+    @Parameter(key = "startup-probe")
+    public String getStartupProbe() {
+        return startupProbe;
+    }
+
+    public void setStartupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
     }
 
     @Override

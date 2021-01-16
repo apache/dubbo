@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
+
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     protected ServiceInstance serviceInstance;
@@ -27,6 +29,10 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        this.serviceInstance = serviceInstance;
+        if (ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance) == null) {
+            ServiceInstanceMetadataUtils.calInstanceRevision(this, serviceInstance);
+        }
     }
 
     @Override

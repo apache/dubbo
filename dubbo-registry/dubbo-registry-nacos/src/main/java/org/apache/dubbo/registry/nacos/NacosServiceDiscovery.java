@@ -72,7 +72,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+        super.register(serviceInstance);
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.registerInstance(instance.getServiceName(), group, instance);
@@ -81,10 +81,14 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
         // TODO: Nacos should support
-        unregister(serviceInstance);
-        register(serviceInstance);
+        if (this.serviceInstance == null) {
+            register(serviceInstance);
+        } else {
+            unregister(serviceInstance);
+            register(serviceInstance);
+            this.serviceInstance = serviceInstance;
+        }
     }
 
     @Override

@@ -61,7 +61,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
     private Gson gson = new Gson();
 
-    private Map<String, ChildListener> listenerMap = new ConcurrentHashMap<>();
+    private Map<String, MappingChildListener> listenerMap = new ConcurrentHashMap<>();
 
     public ZookeeperMetadataReport(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -177,16 +177,32 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     private void addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
-        ChildListener zkListener = new ChildListener() {
-            @Override
-            public void childChanged(String path, List<String> children) {
-                MappingChangedEvent event = new MappingChangedEvent();
-                event.setServiceKey(serviceKey);
-                event.setApps(null != children ? new HashSet<>(children) : null);
-                listener.onEvent(event);
-            }
-        };
-        zkClient.addChildListener(path, zkListener);
-        listenerMap.put(path, zkListener);
+        MappingChildListener mappingChildListener = listenerMap.computeIfAbsent(path, _k -> new MappingChildListener(serviceKey, path));
+        mappingChildListener.addListener(listener);
+        zkClient.addChildListener(path, mappingChildListener);
+    }
+
+    private static class MappingChildListener implements ChildListener {
+        private String serviceKey;
+        private String path;
+        private Set<MappingListener> listeners;
+
+        public MappingChildListener(String serviceKey, String path) {
+            this.serviceKey = serviceKey;
+            this.path = path;
+            this.listeners = new HashSet<>();
+        }
+
+        public void addListener(MappingListener listener) {
+            this.listeners.add(listener);
+        }
+
+        @Override
+        public void childChanged(String path, List<String> children) {
+            MappingChangedEvent event = new MappingChangedEvent();
+            event.setServiceKey(serviceKey);
+            event.setApps(null != children ? new HashSet<>(children) : null);
+            listeners.forEach(mappingListener -> mappingListener.onEvent(event));
+        }
     }
 }

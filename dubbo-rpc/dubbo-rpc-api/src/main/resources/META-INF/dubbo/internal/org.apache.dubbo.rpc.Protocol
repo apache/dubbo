@@ -1,3 +1,2 @@
-filter=org.apache.dubbo.rpc.protocol.ProtocolFilterWrapper
 listener=org.apache.dubbo.rpc.protocol.ProtocolListenerWrapper
 mock=org.apache.dubbo.rpc.support.MockProtocol

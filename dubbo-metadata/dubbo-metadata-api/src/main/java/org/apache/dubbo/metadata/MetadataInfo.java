@@ -97,10 +97,14 @@ public class MetadataInfo implements Serializable {
 
         StringBuilder sb = new StringBuilder();
         sb.append(app);
-        for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
-            sb.append(entry.getValue().toDescString());
+        if (CollectionUtils.isEmptyMap(services)) {
+            this.revision = RevisionResolver.getEmptyRevision(app);
+        } else {
+            for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
+                sb.append(entry.getValue().toDescString());
+            }
+            this.revision = RevisionResolver.calRevision(sb.toString());
         }
-        this.revision = RevisionResolver.calRevision(sb.toString());
         return revision;
     }
 
@@ -203,7 +207,7 @@ public class MetadataInfo implements Serializable {
         // service + group + version + protocol
         private transient String matchKey;
 
-        private URL url;
+        private transient URL url;
 
         public ServiceInfo() {
         }
@@ -305,6 +309,14 @@ public class MetadataInfo implements Serializable {
             this.path = path;
         }
 
+        public String getProtocol() {
+            return protocol;
+        }
+
+        public void setProtocol(String protocol) {
+            this.protocol = protocol;
+        }
+
         public Map<String, String> getParams() {
             if (params == null) {
                 return Collections.emptyMap();
@@ -356,9 +368,6 @@ public class MetadataInfo implements Serializable {
                 Map<String, String> keyMap = map.get(method);
                 if (keyMap != null) {
                     value = keyMap.get(key);
-                }
-                if (StringUtils.isEmpty(value)) {
-                    value = getParameter(key);
                 }
             }
             return value;

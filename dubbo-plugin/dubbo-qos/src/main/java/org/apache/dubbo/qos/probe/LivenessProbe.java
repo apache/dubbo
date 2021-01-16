@@ -14,11 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc;
+package org.apache.dubbo.qos.probe;
 
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI("default")
-public interface FilterChainBuilder {
-    <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group);
+/**
+ * A probe to indicate whether program is alive
+ * </p>
+ * If one or more spi return false, 'live' command in dubbo-qos
+ * will return false. This can be extend with custom program and developers
+ * can implement this to customize life cycle.
+ *
+ * @since 3.0
+ */
+@SPI
+public interface LivenessProbe {
+    /**
+     * Check if program is alive
+     *
+     * @return {@link boolean} result of probe
+     */
+    boolean check();
 }
