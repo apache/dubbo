@@ -1,6 +1,5 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -13,6 +12,7 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -41,7 +41,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        LOGGER.warn("Exception in processing triple message", cause);
+        if (LOGGER.isWarnEnabled()) {
+            LOGGER.warn("Exception in processing triple message", cause);
+        }
         if (cause instanceof TripleRpcException) {
             TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus());
         } else {
@@ -71,7 +73,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         return invoker;
     }
 
-    public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
+    public void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) throws Exception {
         final Http2Headers headers = msg.headers();
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {

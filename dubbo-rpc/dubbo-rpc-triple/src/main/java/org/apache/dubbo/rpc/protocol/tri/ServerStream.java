@@ -1,21 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
-import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
-import io.netty.handler.codec.http2.Http2Connection;
-import io.netty.handler.codec.http2.Http2ConnectionHandler;
-import io.netty.handler.codec.http2.Http2Error;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2PingFrame;
-import io.netty.util.concurrent.Future;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.serialize.Serialization2;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -23,21 +9,22 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.triple.TripleWrapper;
 
-import com.google.protobuf.MessageLite;
+import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import java.io.IOException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -52,17 +39,16 @@ public class ServerStream extends AbstractStream implements Stream {
     private final ChannelHandlerContext ctx;
     private final String serviceName;
     private final String methodName;
-    private final Serialization2 serialization2;
+    private String serializeType;
 
 
     public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, String serviceName, String methodName) {
-        super(ctx);
+        super(ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
         this.ctx = ctx;
         this.serviceName = serviceName;
         this.methodName = methodName;
-        this.serialization2 = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
     }
 
 
@@ -70,7 +56,12 @@ public class ServerStream extends AbstractStream implements Stream {
     public void onError(GrpcStatus status) {
     }
 
-    public void halfClose() {
+    @Override
+    public void write(Object obj, ChannelPromise promise) throws Exception {
+
+    }
+
+    public void halfClose() throws Exception {
         if (getData() == null) {
             responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription(MISSING_REQ));
@@ -82,7 +73,7 @@ public class ServerStream extends AbstractStream implements Stream {
         final Result result = this.invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
 
-        future.whenComplete((appResult, t) -> {
+        BiConsumer<Object, Throwable> onComplete = (appResult, t) -> {
             try {
                 if (t != null) {
                     if (t instanceof TimeoutException) {
@@ -97,11 +88,13 @@ public class ServerStream extends AbstractStream implements Stream {
                             .status(OK.codeAsText())
                             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                    final ByteBuf buf = ctx.alloc().buffer();
-                    final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
-                    bos.write(0);
-                    bos.writeInt(((MessageLite) (response.getValue())).getSerializedSize());
-                    serialization2.serialize(response.getValue(), bos);
+                    final Message message;
+                    if (isNeedWrap()) {
+                        message = TripleUtil.wrapResp(this.serializeType, response.getValue(), methodDescriptor);
+                    } else {
+                        message = (Message) response.getValue();
+                    }
+                    final ByteBuf buf = TripleUtil.pack(ctx, message);
                     ctx.write(new DefaultHttp2DataFrame(buf));
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
@@ -123,16 +116,23 @@ public class ServerStream extends AbstractStream implements Stream {
                     responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(e));
                 }
             }
-        });
+        };
 
+        future.whenComplete(onComplete);
     }
 
-    private Invocation buildInvocation(String serviceName, String methodName, MethodDescriptor methodDescriptor) {
+    private Invocation buildInvocation(String serviceName, String methodName, MethodDescriptor methodDescriptor) throws ClassNotFoundException {
         RpcInvocation inv = new RpcInvocation();
         try {
-            final Object req = serialization2.deserialize(getData(), methodDescriptor.getParameterClasses()[0]);
-            getData().close();
-            inv.setArguments(new Object[]{req});
+            if (isNeedWrap()) {
+                final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
+                this.serializeType = req.getSerializeType();
+                final Object[] arguments = TripleUtil.unwrapReq(req, methodDescriptor);
+                inv.setArguments(arguments);
+            } else {
+                final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
+                inv.setArguments(new Object[]{req});
+            }
         } catch (IOException e) {
             throw new RuntimeException("Failed to deserialize request on server side", e);
         }

@@ -14,18 +14,23 @@ public abstract class AbstractStream implements Stream {
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Too many data");
     private final Serialization2 serialization2 = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
-
-    public ChannelHandlerContext getCtx() {
-        return ctx;
-    }
-
+    private final boolean needWrap;
     private final ChannelHandlerContext ctx;
     private Http2Headers headers;
     private Http2Headers te;
     private InputStream data;
 
-    protected AbstractStream(ChannelHandlerContext ctx) {
+    protected AbstractStream(ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
+        this.needWrap = needWrap;
+    }
+
+    public boolean isNeedWrap() {
+        return needWrap;
+    }
+
+    public ChannelHandlerContext getCtx() {
+        return ctx;
     }
 
     public Http2Headers getHeaders() {
