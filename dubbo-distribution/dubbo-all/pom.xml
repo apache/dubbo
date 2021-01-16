@@ -215,13 +215,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-protobuf</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-configcenter-zookeeper</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -380,7 +373,6 @@
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
                                     <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
                                     <include>org.apache.dubbo:dubbo-serialization-jdk</include>
-                                    <include>org.apache.dubbo:dubbo-serialization-protobuf</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-api</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-apollo</include>
                                     <include>org.apache.dubbo:dubbo-configcenter-zookeeper</include>
@@ -710,13 +702,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.netty4.WireProtocol
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>
-                                        META-INF/dubbo/internal/org.apache.dubbo.common.serialize.Serialization2
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.WireProtocol
                                     </resource>
                                 </transformer>
 

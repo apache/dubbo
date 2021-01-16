@@ -1,7 +1,5 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.serialize.Serialization2;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Headers;
@@ -13,7 +11,6 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 public abstract class AbstractStream implements Stream {
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Too many data");
-    private final Serialization2 serialization2 = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
     private final boolean needWrap;
     private final ChannelHandlerContext ctx;
     private Http2Headers headers;
@@ -43,10 +40,6 @@ public abstract class AbstractStream implements Stream {
 
     public InputStream getData() {
         return data;
-    }
-
-    public Serialization2 getSerialization2() {
-        return serialization2;
     }
 
     @Override

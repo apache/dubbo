@@ -1,2 +1,0 @@
-netty=org.apache.dubbo.remoting.netty4.PortUnificationNettyTransporter
-netty4=org.apache.dubbo.remoting.netty4.NettyTransporter

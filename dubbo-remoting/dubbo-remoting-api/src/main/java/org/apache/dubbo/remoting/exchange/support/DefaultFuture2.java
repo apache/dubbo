@@ -26,9 +26,9 @@ import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.netty4.Connection;
 
 import io.netty.channel.Channel;
 
@@ -45,17 +45,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class DefaultFuture2 extends CompletableFuture<Object> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
-
-    private static final Map<Long,Connection> CONNECTIONS = new ConcurrentHashMap<>();
-
-    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
-
     public static final Timer TIME_OUT_TIMER = new HashedWheelTimer(
             new NamedThreadFactory("dubbo-future-timeout", true),
             30,
             TimeUnit.MILLISECONDS);
-
+    private static final Logger logger = LoggerFactory.getLogger(DefaultFuture2.class);
+    private static final Map<Long, Connection> CONNECTIONS = new ConcurrentHashMap<>();
+    private static final Map<Long, DefaultFuture2> FUTURES = new ConcurrentHashMap<>();
     // invoke id.
     private final Long id;
     private final Connection connection;
@@ -67,19 +63,11 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private ExecutorService executor;
 
-    public ExecutorService getExecutor() {
-        return executor;
-    }
-
-    public void setExecutor(ExecutorService executor) {
-        this.executor = executor;
-    }
-
     private DefaultFuture2(Connection client2, Request request, int timeout) {
         this.connection = client2;
         this.request = request;
         this.id = request.getId();
-        this.timeout = timeout ;
+        this.timeout = timeout;
         // put into waiting map.
         FUTURES.put(id, this);
         CONNECTIONS.put(id, connection);
@@ -184,6 +172,14 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         }
     }
 
+    public ExecutorService getExecutor() {
+        return executor;
+    }
+
+    public void setExecutor(ExecutorService executor) {
+        this.executor = executor;
+    }
+
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         Response errorResult = new Response(id);
@@ -206,9 +202,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         if (res.getStatus() == Response.OK) {
             this.complete(res.getResult());
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
-            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, connection.getChannel(), res.getErrorMessage()));
+            this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, null, connection.getRemote(), res.getErrorMessage()));
         } else {
-            this.completeExceptionally(new RemotingException(connection.getChannel(), res.getErrorMessage()));
+            this.completeExceptionally(new RemotingException(null, connection.getRemote(), res.getErrorMessage()));
         }
 
         // the result is returning, but the caller thread may still waiting

@@ -62,20 +62,14 @@ public class DubboInvokerAvilableTest {
 
     @Test
     public void test_Normal_available() {
-        int port = 50051;
+        int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService");
         ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, url);
 
-        //DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
-        //Assertions.assertTrue(invoker.isAvailable());
-        //invoker.destroy();
-        //Assertions.assertFalse(invoker.isAvailable());
-        System.out.println("http2server");
-        try {
-            Thread.sleep(100000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        DubboInvoker<?> invoker = (DubboInvoker<?>) protocol.protocolBindingRefer(IDemoService.class, url);
+        Assertions.assertTrue(invoker.isAvailable());
+        invoker.destroy();
+        Assertions.assertFalse(invoker.isAvailable());
     }
 
     @Test

@@ -1,7 +1,7 @@
 package org.apache.dubbo.remoting.exchange;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.netty4.PortUnificationServer;
+import org.apache.dubbo.remoting.api.PortUnificationServer;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

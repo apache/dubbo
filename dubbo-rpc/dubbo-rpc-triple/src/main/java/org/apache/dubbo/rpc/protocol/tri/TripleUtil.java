@@ -4,7 +4,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.Serialization2;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -38,9 +37,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class TripleUtil {
 
     public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
-    ;
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
-    private static final Serialization2 pbSerialization = ExtensionLoader.getExtensionLoader(Serialization2.class).getExtension("protobuf");
+    private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
+
 
     public static ServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
@@ -186,4 +185,6 @@ public class TripleUtil {
         }
         return builder.build();
     }
+
+
 }

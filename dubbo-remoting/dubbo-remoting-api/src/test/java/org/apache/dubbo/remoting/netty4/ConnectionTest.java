@@ -1,6 +1,7 @@
 package org.apache.dubbo.remoting.netty4;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.api.Connection;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

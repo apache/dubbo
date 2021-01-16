@@ -19,7 +19,6 @@ package org.apache.dubbo.remoting;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.remoting.netty4.NettyClient;
 import org.apache.dubbo.remoting.transport.ChannelHandlerAdapter;
 import org.apache.dubbo.remoting.transport.ChannelHandlerDispatcher;
 

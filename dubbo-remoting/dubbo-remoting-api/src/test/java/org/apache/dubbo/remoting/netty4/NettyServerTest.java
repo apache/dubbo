@@ -3,6 +3,7 @@ package org.apache.dubbo.remoting.netty4;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
+import org.apache.dubbo.remoting.api.PortUnificationServer;
 
 public class NettyServerTest {
 

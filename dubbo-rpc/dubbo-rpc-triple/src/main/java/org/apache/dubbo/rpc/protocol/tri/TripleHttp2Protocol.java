@@ -2,7 +2,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.netty4.Http2WireProtocol;
+import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
