@@ -33,7 +33,6 @@ public class GracefulShutdown {
             .writeAscii(ctx.alloc(), goAwayMessage));
         goAwayFrame.setExtraStreamIds(Integer.MAX_VALUE);
         ctx.write(goAwayFrame);
-
         pingFuture = ctx.executor().schedule(
             () -> secondGoAwayAndClose(ctx),
             GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS,
@@ -53,6 +52,10 @@ public class GracefulShutdown {
         pingFuture.cancel(false);
 
         try {
+            Http2GoAwayFrame goAwayFrame = new DefaultHttp2GoAwayFrame(Http2Error.NO_ERROR, ByteBufUtil.writeAscii(this.ctx.alloc(), this.goAwayMessage));
+            ctx.write(goAwayFrame);
+            ctx.flush();
+            //gracefulShutdownTimeoutMillis
             ctx.close();
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);

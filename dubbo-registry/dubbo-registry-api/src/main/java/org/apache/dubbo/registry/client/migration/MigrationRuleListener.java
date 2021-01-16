@@ -100,6 +100,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public void onDestroy() {
-        configuration.removeListener(RULE_KEY, this);
+        if (configuration != null)
+            configuration.removeListener(RULE_KEY, this);
     }
 }

@@ -131,15 +131,4 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             serverStream.halfClose();
         }
     }
-
-    private GracefulShutdown gracefulShutdown;
-
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        if (gracefulShutdown == null) {
-            gracefulShutdown = new GracefulShutdown(ctx,"app_requested", null);
-            gracefulShutdown.gracefulShutdown();
-            ctx.flush();
-        }
-    }
 }

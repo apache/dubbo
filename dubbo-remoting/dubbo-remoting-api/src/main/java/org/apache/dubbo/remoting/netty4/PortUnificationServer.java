@@ -163,7 +163,6 @@ public class PortUnificationServer {
             }
 
             channelGroup.close();
-            Thread.sleep(1000000);
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
