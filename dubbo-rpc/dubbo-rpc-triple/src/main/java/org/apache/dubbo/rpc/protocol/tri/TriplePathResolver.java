@@ -5,22 +5,16 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TriplePathResolver implements PathResolver {
     private static final Logger logger = LoggerFactory.getLogger(TriplePathResolver.class);
 
     private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
-    private final Set<String> ignoreSet = ConcurrentHashMap.newKeySet();
 
     @Override
     public void add(String path, Invoker<?> invoker) {
-        if (!ignoreSet.add(path)) {
-            path2Invoker.remove(path);
-        } else {
-            path2Invoker.put(path, invoker);
-        }
+        path2Invoker.put(path, invoker);
     }
 
     @Override

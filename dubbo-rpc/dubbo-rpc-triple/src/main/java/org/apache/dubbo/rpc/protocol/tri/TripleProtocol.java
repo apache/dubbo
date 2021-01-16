@@ -53,6 +53,8 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
             @Override
             public void unexport() {
                 super.unexport();
+                pathResolver.remove(url.getServiceKey());
+                pathResolver.remove(url.getServiceInterface());
                 exporterMap.remove(key);
             }
         };
@@ -62,9 +64,7 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
         invokers.add(invoker);
 
         pathResolver.add(url.getServiceKey(), invoker);
-        if (!url.getServiceKey().equals(url.getServiceInterface())) {
-            pathResolver.add(url.getServiceInterface(), invoker);
-        }
+        pathResolver.add(url.getServiceInterface(), invoker);
         PortUnificationExchanger.bind(invoker.getUrl());
         return exporter;
     }
