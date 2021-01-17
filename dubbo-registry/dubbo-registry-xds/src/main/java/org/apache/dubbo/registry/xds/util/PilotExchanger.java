@@ -35,6 +35,8 @@ import java.util.function.Consumer;
 
 public class PilotExchanger {
 
+    private XdsChannel xdsChannel;
+
     private final RdsProtocol rdsProtocol;
 
     private final EdsProtocol edsProtocol;
@@ -50,7 +52,7 @@ public class PilotExchanger {
     private final Map<String, Set<Consumer<Set<Endpoint>>>> domainObserveConsumer = new ConcurrentHashMap<>();
 
     private PilotExchanger(URL url) {
-        XdsChannel xdsChannel = new XdsChannel(url);
+        xdsChannel = new XdsChannel(url);
         LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build());
         this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build());
         this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build());
@@ -80,6 +82,10 @@ public class PilotExchanger {
 
     public static PilotExchanger initialize(URL url) {
         return new PilotExchanger(url);
+    }
+
+    public void destroy() {
+        xdsChannel.destroy();
     }
 
     public Set<String> getServices() {

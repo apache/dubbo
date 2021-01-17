@@ -17,43 +17,31 @@
 package org.apache.dubbo.registry.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
+import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.SelfHostMetaServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.xds.util.PilotExchanger;
 import org.apache.dubbo.registry.xds.util.protocol.message.Endpoint;
 
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class XdsServiceDiscovery extends AbstractServiceDiscovery {
+public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
     private PilotExchanger exchanger;
     private URL registryURL;
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         exchanger = PilotExchanger.initialize(registryURL);
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-
-    }
-
-    @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-
-    }
-
-    @Override
-    public void destroy() throws Exception {
-
-    }
-
-    @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-
+    public void doDestroy() throws Exception {
+        exchanger.destroy();
     }
 
     @Override
@@ -64,20 +52,26 @@ public class XdsServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         Set<Endpoint> endpoints = exchanger.getEndpoints(serviceName);
-        return null;
+        return changedToInstances(serviceName, endpoints);
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
             exchanger.observeEndpoints(serviceName, (endpoints -> {
-                listener.accept(new ServiceInstancesChangedEvent(serviceName, null));
+                notifyListener(serviceName, listener, changedToInstances(serviceName, endpoints));
             }));
         });
     }
 
-    @Override
-    public URL getUrl() {
-        return registryURL;
+    private List<ServiceInstance> changedToInstances(String serviceName, Collection<Endpoint> endpoints) {
+        List<ServiceInstance> instances = new LinkedList<>();
+        endpoints.forEach(endpoint -> {
+            DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue());
+            fillServiceInstance(serviceInstance);
+            instances.add(serviceInstance);
+        });
+        instances.sort(Comparator.comparingInt(ServiceInstance::hashCode));
+        return instances;
     }
 }
