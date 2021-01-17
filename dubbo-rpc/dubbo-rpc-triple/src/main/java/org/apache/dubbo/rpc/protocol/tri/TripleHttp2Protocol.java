@@ -37,12 +37,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(CLIENT_LOGGER)
                 .build();
-        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInboundHandlerAdapter() {
-            @Override
-            public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-                // eat all
-            }
-        });
-        pipeline.addLast(codec, handler, new TripleClientOutboundHandler());
+        final Http2MultiplexHandler handler = new Http2MultiplexHandler(new ChannelInboundHandlerAdapter());
+        pipeline.addLast(codec, handler, new TripleClientHandler());
     }
 }
