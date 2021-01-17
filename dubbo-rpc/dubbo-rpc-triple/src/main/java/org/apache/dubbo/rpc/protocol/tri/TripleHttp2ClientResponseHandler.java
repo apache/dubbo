@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -14,6 +15,16 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     public TripleHttp2ClientResponseHandler() {
         super(false);
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+        if (evt instanceof Http2GoAwayFrame) {
+            System.out.println("TripleHttp2ClientResponseHandler goaway!!!");
+            //todo set stream refuse
+            ctx.close();
+        }
     }
 
     @Override

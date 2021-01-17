@@ -153,6 +153,7 @@ public class PortUnificationServer {
             }
 
             channelGroup.close();
+            Thread.sleep(15000);
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }

@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -28,6 +29,10 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             System.out.println("Http2 Setting");
         }else if(msg instanceof Http2GoAwayFrame){
             System.out.println("Http2 goAway!");
+            final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
+            if (connection != null) {
+                connection.onIdle();
+            }
         }
     }
 
