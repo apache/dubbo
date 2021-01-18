@@ -472,7 +472,7 @@ public final class JavaBeanSerializeUtil {
     }
 
     private static boolean isReferenceType(String type) {
-        return type != null
+        return !StringUtils.isEmpty(type)
                 && type.startsWith(REFERENCE_TYPE_PREFIX)
                 && type.endsWith(REFERENCE_TYPE_SUFFIX);
     }
