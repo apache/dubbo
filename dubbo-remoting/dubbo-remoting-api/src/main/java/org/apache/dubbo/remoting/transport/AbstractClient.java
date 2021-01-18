@@ -48,6 +48,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClient.class);
     private final Lock connectLock = new ReentrantLock();
     private final boolean needReconnect;
+    //issue-7054:Consumer's executor is sharing globally.
     protected volatile ExecutorService executor;
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
@@ -90,7 +91,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
     }
 
     private void initExecutor(URL url) {
-        //消费着端executor共享，线程名中不需要url中的ip地址
+        //issue-7054:Consumer's executor is sharing globally, thread name not require provider ip.
         url = url.addParameter(THREAD_NAME_KEY, CLIENT_THREAD_POOL_NAME);
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         executor = executorRepository.createExecutorIfAbsent(url);

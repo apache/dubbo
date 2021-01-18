@@ -73,8 +73,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
         Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
-        //消费者：只有1个ExecutorService，key=Integer.MAX_VALUE
-        //提供者：分协议（即端口）使用不同的ExecutorService，key=url.port
+        //issue-7054:Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
         // If executor has been shut down, create a new one
@@ -97,13 +96,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
                     "before coming to here.");
             return null;
         }
-        //消费者：只有1个ExecutorService，key=Integer.MAX_VALUE
-        //提供者：分协议（即端口）使用不同的ExecutorService，key=url.port
+        //issue-7054:Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
         Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.get(portKey);
         if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
             executors.remove(portKey);
-            // 不重建已经shutdown的Executor
+            // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
             executor = null;
         }
         if (executor == null) {
