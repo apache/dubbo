@@ -165,15 +165,17 @@ public class PortUnificationServer {
                     }
                     System.out.println("shut operationComplete..");
                     long now = System.currentTimeMillis();
-                    while (now - start > 15000 || channelGroup.size() > 0) {
+                    while (now - start <= 15000 || channelGroup.size() > 0) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
                     }
                 }
-            }).await();
+            }).await(15000);
+            System.out.println("close cost:" + (System.currentTimeMillis()-start));
         } catch (InterruptedException e) {
+            System.out.println("Interrupted while shutting down" + e.getMessage());
             logger.warn("Interrupted while shutting down", e);
         }
 

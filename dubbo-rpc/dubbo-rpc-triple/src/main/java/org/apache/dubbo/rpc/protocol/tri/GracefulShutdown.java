@@ -56,7 +56,7 @@ public class GracefulShutdown {
             ctx.write(goAwayFrame);
             ctx.flush();
             //gracefulShutdownTimeoutMillis
-            ctx.close();
+            //ctx.close();
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);
         }
