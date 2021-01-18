@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+import io.netty.util.concurrent.ImmediateEventExecutor;
+import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -43,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -151,11 +156,25 @@ public class PortUnificationServer {
                 channel.close();
                 channel = null;
             }
-
-            channelGroup.close();
-            Thread.sleep(15000);
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
+            long start = System.currentTimeMillis();
+            channelGroup.close().addListener(new GenericFutureListener<Future<? super Void>>() {
+                @Override
+                public void operationComplete(final Future future) throws Exception {
+                    if (!future.isSuccess()) {
+                        logger.warn("Error shutting down server", future.cause());
+                    }
+                    System.out.println("shut operationComplete..");
+                    long now = System.currentTimeMillis();
+                    while (now - start > 15000 || channelGroup.size() > 0) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }).await();
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while shutting down", e);
         }
 
         for (WireProtocol protocol : protocols) {

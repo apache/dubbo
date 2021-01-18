@@ -23,6 +23,17 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        if (ctx.channel().isActive()) { // Ignore notification that the socket was closed
+            final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
+            if (connection != null) {
+                connection.onIdle();
+            }
+        }
+        super.close(ctx, promise);
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if(msg instanceof Http2SettingsFrame){
             // already handled
