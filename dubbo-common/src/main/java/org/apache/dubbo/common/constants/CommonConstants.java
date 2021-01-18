@@ -364,4 +364,8 @@ public interface CommonConstants {
     String SENTINEL_REDIS = "sentinel";
 
     String CLUSTER_REDIS = "cluster";
+
+    String SHARE_EXECUTOR_KEY = "share.threadpool";
+
+    String SHARED_CONSUMER_EXECUTOR = "consumer-shared-pool";
 }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.ShareableExecutor;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -34,6 +35,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHARED_CONSUMER_EXECUTOR;
+import static org.apache.dubbo.common.constants.CommonConstants.SHARE_EXECUTOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
@@ -53,7 +56,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, ConcurrentMap<String, ExecutorService>> data = new ConcurrentHashMap<>();
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -72,21 +75,20 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @return
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
-        //issue-7054:Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
+        Map<String, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
+        String shareKey = getShareKey(url);
+        ExecutorService executor = executors.computeIfAbsent(shareKey, k -> createExecutor(url));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
-            executors.remove(portKey);
+            executors.remove(shareKey);
             executor = createExecutor(url);
-            executors.put(portKey, executor);
+            executors.put(shareKey, executor);
         }
         return executor;
     }
 
     public ExecutorService getExecutor(URL url) {
-        Map<Integer, ExecutorService> executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+        Map<String, ExecutorService> executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
         /**
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
          * have Executor instances generated and stored.
@@ -96,20 +98,34 @@ public class DefaultExecutorRepository implements ExecutorRepository {
                     "before coming to here.");
             return null;
         }
-        //issue-7054:Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
-        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
-        ExecutorService executor = executors.get(portKey);
+        String shareKey = getShareKey(url);
+        ExecutorService executor = executors.get(shareKey);
         if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
-            executors.remove(portKey);
+            executors.remove(shareKey);
             // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
             executor = null;
         }
         if (executor == null) {
-            logger.warn("Executor of key + '" + portKey + "' has shutdown, return 'DubboSharedHandler' instead.");
+            logger.warn("Executor of key + '" + shareKey + "' has shutdown, return 'DubboSharedHandler' instead.");
             return SHARED_EXECUTOR;
         } else {
             return executor;
         }
+    }
+
+    /**
+     * Consumer's executor is sharing globally when share.threadpool = true, or not shareable when share.threadpool =false.
+     * Provider's executor is sharing by protocol.
+     *
+     * @param url
+     * @return
+     */
+    private String getShareKey(URL url) {
+        return isShared(url) ? SHARED_CONSUMER_EXECUTOR : url.getAddress();
+    }
+
+    private boolean isShared(URL url) {
+        return CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) && url.getParameter(SHARE_EXECUTOR_KEY, true);
     }
 
     @Override
@@ -169,7 +185,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private ExecutorService createExecutor(URL url) {
-        return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        ExecutorService executor = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
+        if (isShared(url)) {
+            return new ShareableExecutor(executor);
+        } else {
+            return executor;
+        }
     }
 
 }
