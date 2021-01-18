@@ -4,6 +4,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
 import io.netty.handler.codec.http2.DefaultHttp2PingFrame;
 import io.netty.handler.codec.http2.Http2Error;
@@ -56,7 +57,7 @@ public class GracefulShutdown {
             ctx.write(goAwayFrame);
             ctx.flush();
             //gracefulShutdownTimeoutMillis
-            //ctx.close();
+            ctx.close();
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);
         }

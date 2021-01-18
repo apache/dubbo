@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import io.netty.util.concurrent.ImmediateEventExecutor;
@@ -156,24 +157,30 @@ public class PortUnificationServer {
                 channel.close();
                 channel = null;
             }
-            long start = System.currentTimeMillis();
-            channelGroup.close().addListener(new GenericFutureListener<Future<? super Void>>() {
+
+            ChannelGroupFuture closeFuture = channelGroup.close();
+            closeFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
                 @Override
                 public void operationComplete(final Future future) throws Exception {
+                    System.out.println("1shut operationComplete..");
                     if (!future.isSuccess()) {
                         logger.warn("Error shutting down server", future.cause());
                     }
                     System.out.println("shut operationComplete..");
-                    long now = System.currentTimeMillis();
+                    long start = System.currentTimeMillis();
+                    long now = start;
                     while (now - start <= 15000 || channelGroup.size() > 0) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
                         }
+                        now = System.currentTimeMillis();
                     }
                 }
-            }).await(15000);
-            System.out.println("close cost:" + (System.currentTimeMillis()-start));
+            });
+            closeFuture.await(15000);
+
+            System.out.println("close ...");
         } catch (InterruptedException e) {
             System.out.println("Interrupted while shutting down" + e.getMessage());
             logger.warn("Interrupted while shutting down", e);
