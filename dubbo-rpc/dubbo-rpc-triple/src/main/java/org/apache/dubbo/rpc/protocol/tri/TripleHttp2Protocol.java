@@ -4,7 +4,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.http2.Http2FrameCodec;
@@ -22,7 +21,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
     }
 
     @Override
-    public void configServerPipeline(ChannelPipeline pipeline) {
+    public void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
                 .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(SERVER_LOGGER)

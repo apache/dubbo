@@ -11,7 +11,7 @@ public interface WireProtocol {
 
     ProtocolDetector detector();
 
-    void configServerPipeline(ChannelPipeline pipeline);
+    void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext);
 
     void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext);
 

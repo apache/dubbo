@@ -16,21 +16,18 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import io.netty.channel.group.ChannelGroupFuture;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
-import io.netty.util.concurrent.ImmediateEventExecutor;
-import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.utils.UrlUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -39,21 +36,32 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.ssl.ClientAuth;
+import io.netty.handler.ssl.OpenSsl;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
+import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
+import java.security.Provider;
+import java.security.Security;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.IO_THREADS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
 
 /**
  * PortUnificationServer.
@@ -88,10 +96,56 @@ public class PortUnificationServer {
         this.protocols = ExtensionLoader.getExtensionLoader(WireProtocol.class).getActivateExtension(url, new String[0]);
     }
 
+    private static boolean checkJdkProvider() {
+        Provider[] jdkProviders = Security.getProviders("SSLContext.TLS");
+        return (jdkProviders != null && jdkProviders.length > 0);
+    }
+
+    private static SslProvider findSslProvider() {
+        if (OpenSsl.isAvailable()) {
+            logger.info("Using OPENSSL provider.");
+            return SslProvider.OPENSSL;
+        } else if (checkJdkProvider()) {
+            logger.info("Using JDK provider.");
+            return SslProvider.JDK;
+        }
+        throw new IllegalStateException(
+                "Could not find any valid TLS provider, please check your dependency or deployment environment, " +
+                        "usually netty-tcnative, Conscrypt, or Jetty NPN/ALPN is needed.");
+    }
+
+    public static SslContext buildServerSslContext(URL url) {
+        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
+        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+
+        SslContextBuilder sslClientContextBuilder = null;
+        try {
+            String password = sslConfig.getServerKeyPassword();
+            if (password != null) {
+                sslClientContextBuilder = SslContextBuilder.forServer(sslConfig.getServerKeyCertChainPathStream(),
+                        sslConfig.getServerPrivateKeyPathStream(), password);
+            } else {
+                sslClientContextBuilder = SslContextBuilder.forServer(sslConfig.getServerKeyCertChainPathStream(),
+                        sslConfig.getServerPrivateKeyPathStream());
+            }
+
+            if (sslConfig.getServerTrustCertCollectionPathStream() != null) {
+                sslClientContextBuilder.trustManager(sslConfig.getServerTrustCertCollectionPathStream());
+                sslClientContextBuilder.clientAuth(ClientAuth.REQUIRE);
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not find certificate file or the certificate is invalid.", e);
+        }
+        try {
+            return sslClientContextBuilder.sslProvider(findSslProvider()).build();
+        } catch (SSLException e) {
+            throw new IllegalStateException("Build SslSession failed.", e);
+        }
+    }
+
     public URL getUrl() {
         return url;
     }
-
 
     public void bind() {
         if (channel == null) {
@@ -128,13 +182,19 @@ public class PortUnificationServer {
                     protected void initChannel(SocketChannel ch) throws Exception {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
-                        // TODO add SSL support
-
                         final ChannelPipeline p = ch.pipeline();
-                        PortUnificationServerHandler negotiation = new PortUnificationServerHandler(protocols);
+                        // TODO add SSL support
+                        final boolean enableSSL = getUrl().getParameter(SSL_ENABLED_KEY, false);
+                        final PortUnificationServerHandler puHandler;
+                        if (enableSSL) {
+                            final SslContext sslContext = buildServerSslContext(getUrl());
+                            puHandler = new PortUnificationServerHandler(sslContext, protocols);
+                        } else {
+                            puHandler = new PortUnificationServerHandler(protocols);
+                        }
                         p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
-                        p.addLast("negotiation", negotiation);
-                        channelGroup = negotiation.getChannels();
+                        p.addLast("negotiation", puHandler);
+                        channelGroup = puHandler.getChannels();
                     }
                 });
         // bind
@@ -234,10 +294,7 @@ public class PortUnificationServer {
     }
 
     public InetSocketAddress getLocalAddress() {
-        return null;
+        return (InetSocketAddress) channel.localAddress();
     }
 
-    public void send(Object message, boolean sent) throws RemotingException {
-
-    }
 }
