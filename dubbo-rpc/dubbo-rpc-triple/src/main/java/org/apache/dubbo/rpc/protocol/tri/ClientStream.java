@@ -98,7 +98,7 @@ public class ClientStream extends AbstractStream implements Stream {
         });
         final ByteBuf out;
         if (isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(invocation, getMultipleSerialization());
+            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
             out = TripleUtil.pack(getCtx(), wrap);
         } else {
             out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
@@ -139,7 +139,7 @@ public class ClientStream extends AbstractStream implements Stream {
             final Object resp;
             if (isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-                resp = TripleUtil.unwrapResp(message, getMultipleSerialization());
+                resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
             } else {
                 resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
             }

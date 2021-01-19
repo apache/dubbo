@@ -223,19 +223,19 @@ public class PortUnificationServer {
                 @Override
                 public void operationComplete(final Future future) throws Exception {
                     System.out.println("1shut operationComplete..");
-                    if (!future.isSuccess()) {
-                        logger.warn("Error shutting down server", future.cause());
-                    }
-                    System.out.println("shut operationComplete..");
-                    long start = System.currentTimeMillis();
-                    long now = start;
-                    while (now - start <= 15000 || channelGroup.size() > 0) {
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                        }
-                        now = System.currentTimeMillis();
-                    }
+//                    if (!future.isSuccess()) {
+//                        logger.warn("Error shutting down server", future.cause());
+//                    }
+//                    System.out.println("shut operationComplete..");
+//                    long start = System.currentTimeMillis();
+//                    long now = start;
+//                    while (now - start <= 15000 || channelGroup.size() > 0) {
+//                        try {
+//                            Thread.sleep(100);
+//                        } catch (InterruptedException e) {
+//                        }
+//                        now = System.currentTimeMillis();
+//                    }
                 }
             });
             closeFuture.await(15000);

@@ -22,6 +22,7 @@ public abstract class AbstractStream implements Stream {
     private final boolean needWrap;
     private final ChannelHandlerContext ctx;
     private final MultipleSerialization multipleSerialization;
+    private final URL url;
     private Http2Headers headers;
     private Http2Headers te;
     private InputStream data;
@@ -29,6 +30,7 @@ public abstract class AbstractStream implements Stream {
 
     protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
+        this.url = url;
         this.needWrap = needWrap;
         if (needWrap) {
             this.multipleSerialization = loadFromURL(url);
@@ -40,6 +42,10 @@ public abstract class AbstractStream implements Stream {
     public static MultipleSerialization loadFromURL(URL url) {
         final String value = url.getParameter(Constants.SERIALIZATION_CONTEXT_KEY, "default");
         return ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
+    }
+
+    public URL getUrl() {
+        return url;
     }
 
     public String getSerializeType() {
@@ -99,7 +105,7 @@ public abstract class AbstractStream implements Stream {
             if (v instanceof String || serializeType == null) {
                 trailers.addObject(key, v);
             } else {
-                String encoded = TripleUtil.encodeWrapper(v, this.serializeType, getMultipleSerialization());
+                String encoded = TripleUtil.encodeWrapper(url, v, this.serializeType, getMultipleSerialization());
                 trailers.add(key + "-tw-bin", encoded);
             }
         }

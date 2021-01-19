@@ -90,7 +90,7 @@ public class ServerStream extends AbstractStream implements Stream {
                     ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                     final Message message;
                     if (isNeedWrap()) {
-                        message = TripleUtil.wrapResp(getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
+                        message = TripleUtil.wrapResp(getUrl(),getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
                     } else {
                         message = (Message) response.getValue();
                     }
@@ -131,7 +131,7 @@ public class ServerStream extends AbstractStream implements Stream {
         if (isNeedWrap()) {
             final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
             setSerializeType(req.getSerializeType());
-            final Object[] arguments = TripleUtil.unwrapReq(req, getMultipleSerialization());
+            final Object[] arguments = TripleUtil.unwrapReq(getUrl(),req, getMultipleSerialization());
             inv.setArguments(arguments);
         } else {
             final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
@@ -147,7 +147,7 @@ public class ServerStream extends AbstractStream implements Stream {
             String key = header.getKey().toString();
             if (key.endsWith("-tw-bin") && key.length() > 7) {
                 try {
-                    attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(header.getValue(), getMultipleSerialization()));
+                    attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(),header.getValue(), getMultipleSerialization()));
                 } catch (Exception e) {
                     LOGGER.error("Failed to parse response attachment key=" + key, e);
                 }

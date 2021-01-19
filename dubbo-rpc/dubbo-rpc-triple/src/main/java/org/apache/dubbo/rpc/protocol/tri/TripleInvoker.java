@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -102,7 +103,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
                 } else {
                     Response response = new Response(req.getId(), req.getVersion());
                     response.setStatus(Response.CHANNEL_INACTIVE);
-                    response.setErrorMessage(future1.cause().getMessage());
+                    response.setErrorMessage(StringUtils.toString(future1.cause()));
                     DefaultFuture2.received(connection, response);
                 }
             });
