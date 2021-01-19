@@ -22,7 +22,8 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -39,11 +40,10 @@ public class ServerStream extends AbstractStream implements Stream {
     private final ChannelHandlerContext ctx;
     private final String serviceName;
     private final String methodName;
-    private String serializeType;
 
 
     public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, String serviceName, String methodName) {
-        super(ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
+        super(invoker.getUrl(), ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
         this.ctx = ctx;
@@ -68,7 +68,7 @@ public class ServerStream extends AbstractStream implements Stream {
             return;
         }
 
-        Invocation invocation = buildInvocation(serviceName, methodName, methodDescriptor);
+        Invocation invocation = buildInvocation();
 
         final Result result = this.invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
@@ -90,7 +90,7 @@ public class ServerStream extends AbstractStream implements Stream {
                     ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                     final Message message;
                     if (isNeedWrap()) {
-                        message = TripleUtil.wrapResp(this.serializeType, response.getValue(), methodDescriptor);
+                        message = TripleUtil.wrapResp(getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
                     } else {
                         message = (Message) response.getValue();
                     }
@@ -98,6 +98,10 @@ public class ServerStream extends AbstractStream implements Stream {
                     ctx.write(new DefaultHttp2DataFrame(buf));
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
+                    final Map<String, Object> attachments = response.getObjectAttachments();
+                    if (attachments != null) {
+                        convertAttachment(trailers, attachments);
+                    }
                     ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
                 } else {
                     final Throwable exception = response.getException();
@@ -121,26 +125,43 @@ public class ServerStream extends AbstractStream implements Stream {
         future.whenComplete(onComplete);
     }
 
-    private Invocation buildInvocation(String serviceName, String methodName, MethodDescriptor methodDescriptor) throws ClassNotFoundException {
+
+    private Invocation buildInvocation() {
         RpcInvocation inv = new RpcInvocation();
-        try {
-            if (isNeedWrap()) {
-                final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
-                this.serializeType = req.getSerializeType();
-                final Object[] arguments = TripleUtil.unwrapReq(req, methodDescriptor);
-                inv.setArguments(arguments);
-            } else {
-                final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
-                inv.setArguments(new Object[]{req});
-            }
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to deserialize request on server side", e);
+        if (isNeedWrap()) {
+            final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
+            setSerializeType(req.getSerializeType());
+            final Object[] arguments = TripleUtil.unwrapReq(req, getMultipleSerialization());
+            inv.setArguments(arguments);
+        } else {
+            final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
+            inv.setArguments(new Object[]{req});
         }
         inv.setMethodName(methodName);
         inv.setServiceName(serviceName);
         inv.setTargetServiceUniqueName(serviceName);
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
+        Map<String, Object> attachments = new HashMap<>();
+        for (Map.Entry<CharSequence, CharSequence> header : getHeaders()) {
+            String key = header.getKey().toString();
+            if (key.endsWith("-tw-bin") && key.length() > 7) {
+                try {
+                    attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(header.getValue(), getMultipleSerialization()));
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                }
+            } else if (key.endsWith("-bin") && key.length() > 4) {
+                try {
+                    attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeByteFromHeader(header.getValue()));
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                attachments.put(key, header.getValue().toString());
+            }
+        }
+        inv.setObjectAttachments(attachments);
         return inv;
     }
 }

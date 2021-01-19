@@ -1,7 +1,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -35,10 +37,10 @@ public class TripleClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if(msg instanceof Http2SettingsFrame){
+        if (msg instanceof Http2SettingsFrame) {
             // already handled
             System.out.println("Http2 Setting");
-        }else if(msg instanceof Http2GoAwayFrame){
+        } else if (msg instanceof Http2GoAwayFrame) {
             System.out.println("Http2 goAway!");
             final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
             if (connection != null) {
@@ -48,7 +50,10 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     }
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, ChannelPromise promise) throws IOException {
-        ClientStream clientStream = new ClientStream(ctx, req);
+        final RpcInvocation inv = (RpcInvocation) req.getData();
+        final boolean needWrapper = TripleUtil.needWrapper(inv.getParameterTypes());
+        final URL url = inv.getInvoker().getUrl();
+        ClientStream clientStream = new ClientStream(url, ctx, needWrapper, req);
         clientStream.write(req, promise);
     }
 }

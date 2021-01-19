@@ -1,11 +1,13 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -31,6 +33,7 @@ import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
@@ -41,8 +44,11 @@ public class ClientStream extends AbstractStream implements Stream {
     private final Request request;
 
 
-    public ClientStream(ChannelHandlerContext ctx, Request request) {
-        super(ctx,TripleUtil.needWrapper(((RpcInvocation) request.getData()).getParameterTypes()));
+    public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request) {
+        super(url, ctx, needWrap);
+        if (needWrap) {
+            setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
+        }
         this.request = request;
     }
 
@@ -69,6 +75,10 @@ public class ClientStream extends AbstractStream implements Stream {
                 .path("/" + invocation.getServiceName() + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+        final Map<String, Object> attachments = invocation.getObjectAttachments();
+        if (attachments != null) {
+            convertAttachment(headers, attachments);
+        }
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
 
@@ -88,7 +98,7 @@ public class ClientStream extends AbstractStream implements Stream {
         });
         final ByteBuf out;
         if (isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(invocation);
+            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(invocation, getMultipleSerialization());
             out = TripleUtil.pack(getCtx(), wrap);
         } else {
             out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
@@ -129,7 +139,7 @@ public class ClientStream extends AbstractStream implements Stream {
             final Object resp;
             if (isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-                resp = TripleUtil.unwrapResp(message, methodDescriptor);
+                resp = TripleUtil.unwrapResp(message, getMultipleSerialization());
             } else {
                 resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
             }

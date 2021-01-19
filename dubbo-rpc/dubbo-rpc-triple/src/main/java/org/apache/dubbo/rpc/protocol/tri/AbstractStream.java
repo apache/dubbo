@@ -1,10 +1,18 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.config.Constants;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
+import java.util.Map;
 
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
@@ -13,13 +21,33 @@ public abstract class AbstractStream implements Stream {
             .withDescription("Too many data");
     private final boolean needWrap;
     private final ChannelHandlerContext ctx;
+    private final MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
     private InputStream data;
+    private String serializeType;
 
-    protected AbstractStream(ChannelHandlerContext ctx, boolean needWrap) {
+    protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
         this.needWrap = needWrap;
+        if (needWrap) {
+            this.multipleSerialization = loadFromURL(url);
+        } else {
+            this.multipleSerialization = null;
+        }
+    }
+
+    public static MultipleSerialization loadFromURL(URL url) {
+        final String value = url.getParameter(Constants.SERIALIZATION_CONTEXT_KEY, "default");
+        return ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
+    }
+
+    public String getSerializeType() {
+        return serializeType;
+    }
+
+    protected void setSerializeType(String serializeType) {
+        this.serializeType = serializeType;
     }
 
     public boolean isNeedWrap() {
@@ -42,6 +70,10 @@ public abstract class AbstractStream implements Stream {
         return data;
     }
 
+    public MultipleSerialization getMultipleSerialization() {
+        return multipleSerialization;
+    }
+
     @Override
     public void onData(InputStream in) {
         if (data != null) {
@@ -57,6 +89,19 @@ public abstract class AbstractStream implements Stream {
             this.headers = headers;
         } else if (te == null) {
             this.te = headers;
+        }
+    }
+
+    protected void convertAttachment(Http2Headers trailers, Map<String, Object> attachments) throws IOException {
+        for (Map.Entry<String, Object> entry : attachments.entrySet()) {
+            final String key = entry.getKey().toLowerCase(Locale.ROOT);
+            final Object v = entry.getValue();
+            if (v instanceof String || serializeType == null) {
+                trailers.addObject(key, v);
+            } else {
+                String encoded = TripleUtil.encodeWrapper(v, this.serializeType, getMultipleSerialization());
+                trailers.add(key + "-tw-bin", encoded);
+            }
         }
     }
 }

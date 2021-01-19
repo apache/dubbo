@@ -1,15 +1,13 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufOutputStream;
@@ -29,6 +27,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,8 @@ public class TripleUtil {
     public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
-
+    private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
+    private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
     public static ServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
@@ -123,68 +124,106 @@ public class TripleUtil {
         return !Message.class.isAssignableFrom(parameterTypes[0]);
     }
 
-    public static Object unwrapResp(TripleWrapper.TripleResponseWrapper wrap, MethodDescriptor desc) throws IOException, ClassNotFoundException {
-        final Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(wrap.getSerializeType());
-        final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-        final ObjectInput in = serialization.deserialize(null, bais);
-        return in.readObject(desc.getReturnClass());
-    }
-
-    public static Object[] unwrapReq(TripleWrapper.TripleRequestWrapper wrap, MethodDescriptor desc) throws IOException, ClassNotFoundException {
-        final Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(wrap.getSerializeType());
-        Object[] arguments = new Object[wrap.getArgsCount()];
-        for (int i = 0; i < arguments.length; i++) {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getArgs(i).toByteArray());
-            final ObjectInput in = serialization.deserialize(null, bais);
-            arguments[i] = in.readObject(desc.getParameterClasses()[i]);
+    public static Object unwrapResp(TripleWrapper.TripleResponseWrapper wrap, MultipleSerialization serialization) {
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            return serialization.deserialize(wrap.getSerializeType(), wrap.getType(), bais);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap resp", e);
         }
-        return arguments;
     }
 
-    public static TripleWrapper.TripleResponseWrapper wrapResp(String serializeType, Object resp, MethodDescriptor desc) throws IOException {
-        final Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(serializeType);
-        final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
-                .setType(desc.getReturnClass().getName())
-                .setSerializeType(serializeType);
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        final ObjectOutput serialize = serialization.serialize(null, bos);
-        serialize.writeObject(resp);
-        serialize.flushBuffer();
-        builder.setData(ByteString.copyFrom(bos.toByteArray()));
-        return builder.build();
+    public static Object[] unwrapReq(TripleWrapper.TripleRequestWrapper wrap, MultipleSerialization multipleSerialization) {
+        try {
+            Object[] arguments = new Object[wrap.getArgsCount()];
+            for (int i = 0; i < arguments.length; i++) {
+                final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getArgs(i).toByteArray());
+                Object obj = multipleSerialization.deserialize(wrap.getSerializeType(),
+                        wrap.getArgTypes(i), bais);
+                arguments[i] = obj;
+            }
+            return arguments;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap req: "+e.getMessage(), e);
+        }
     }
 
-    public static <T> T unpack(InputStream is, Class<T> clz) throws IOException {
-        final T req = (T) pbSerialization.deserialize(is, clz);
-        is.close();
-        return req;
-    }
-
-    public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) throws IOException {
-        final ByteBuf buf = ctx.alloc().buffer();
-        buf.writeByte(0);
-        buf.writeInt(0);
-        final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
-        final int size = pbSerialization.serialize(obj, bos);
-        buf.setInt(1, size);
-        return buf;
-    }
-
-    public static TripleWrapper.TripleRequestWrapper wrapReq(RpcInvocation invocation) throws IOException {
-        String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
-        final Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(serializationName);
-        final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .setSerializeType(serializationName);
-        for (int i = 0; i < invocation.getArguments().length; i++) {
-            builder.addArgTypes(invocation.getParameterTypes()[i].getName());
+    public static TripleWrapper.TripleResponseWrapper wrapResp(String serializeType, Object resp, MethodDescriptor desc,
+                                                               MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
+                    .setType(desc.getReturnClass().getName())
+                    .setSerializeType(serializeType);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final ObjectOutput serialize = serialization.serialize(null, bos);
-            serialize.writeObject(invocation.getArguments()[i]);
-            serialize.flushBuffer();
-            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            multipleSerialization.serialize(serializeType, desc.getReturnClass().getName(), resp, bos);
+            builder.setData(ByteString.copyFrom(bos.toByteArray()));
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
         }
-        return builder.build();
     }
 
+    public static <T> T unpack(InputStream is, Class<T> clz) {
+        try {
+            final T req = (T) pbSerialization.deserialize(is, clz);
+            is.close();
+            return req;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to unpack req", e);
+        }
+    }
+
+    public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) {
+        try {
+            final ByteBuf buf = ctx.alloc().buffer();
+            buf.writeByte(0);
+            buf.writeInt(0);
+            final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
+            final int size = pbSerialization.serialize(obj, bos);
+            buf.setInt(1, size);
+            return buf;
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack req", e);
+        }
+    }
+
+    public static TripleWrapper.TripleRequestWrapper wrapReq(RpcInvocation invocation, MultipleSerialization serialization) {
+        try {
+            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                    .setSerializeType(serializationName);
+            for (int i = 0; i < invocation.getArguments().length; i++) {
+                final String clz = invocation.getParameterTypes()[i].getName();
+                builder.addArgTypes(clz);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                serialization.serialize(serializationName, clz, invocation.getArguments()[0], bos);
+                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            }
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+    public static String encodeWrapper(Object obj,String serializeType,MultipleSerialization serialization) throws IOException {
+        ByteArrayOutputStream bos=new ByteArrayOutputStream();
+        serialization.serialize(serializeType,obj.getClass().getName(),obj,bos);
+        final TripleWrapper.TripleRequestWrapper wrap = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .setSerializeType(serializeType)
+                .addArgTypes(obj.getClass().getName())
+                .addArgs(ByteString.copyFrom(bos.toByteArray()))
+                .build();
+        return new String(BASE64_ENCODER.encode(wrap.toByteArray()));
+    }
+
+    public static Object decodeObjFromHeader(CharSequence value, MultipleSerialization serialization) throws InvalidProtocolBufferException {
+        final byte[] decode = decodeByteFromHeader(value);
+        final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
+        final Object[] objects = TripleUtil.unwrapReq(wrapper, serialization);
+        return objects[0];
+    }
+
+    public static byte[] decodeByteFromHeader(CharSequence value) throws InvalidProtocolBufferException {
+        return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
+    }
 
 }
