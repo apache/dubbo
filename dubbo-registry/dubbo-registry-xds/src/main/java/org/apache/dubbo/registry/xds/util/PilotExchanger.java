@@ -35,7 +35,7 @@ import java.util.function.Consumer;
 
 public class PilotExchanger {
 
-    private XdsChannel xdsChannel;
+    private final XdsChannel xdsChannel;
 
     private final RdsProtocol rdsProtocol;
 
@@ -60,22 +60,33 @@ public class PilotExchanger {
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.getRouteConfigNames());
 
+        // Observer RDS update
         this.observeRouteRequest = rdsProtocol.observeResource(listenerResult.getRouteConfigNames(), (newResult) -> {
+            // check if observed domain update ( will update endpoint observation )
             domainObserveConsumer.forEach((domain, consumer) -> {
                 Set<String> newRoute = newResult.searchDomain(domain);
                 if (!routeResult.searchDomain(domain).equals(newRoute)) {
+                    // routers in observed domain has been updated
                     Long domainRequest = domainObserveRequest.get(domain);
                     if (domainRequest == null) {
+                        // router list is empty when observeEndpoints() called and domainRequest has not been created yet
+                        // create new observation
                         doObserveEndpoints(domain);
                     } else {
+                        // update observation by domainRequest
                         edsProtocol.updateObserve(domainRequest, newRoute);
                     }
                 }
             });
+            // update local cache
             routeResult = newResult;
         });
+
+        // Observe LDS updated
         ldsProtocol.observeListeners((newListener) -> {
+            // update local cache
             this.listenerResult = newListener;
+            // update RDS observation
             rdsProtocol.updateObserve(observeRouteRequest, newListener.getRouteConfigNames());
         });
     }
@@ -103,10 +114,12 @@ public class PilotExchanger {
     }
 
     public void observeEndpoints(String domain, Consumer<Set<Endpoint>> consumer) {
+        // store Consumer
         domainObserveConsumer.compute(domain, (k, v) -> {
             if (v == null) {
                 v = new ConcurrentHashSet<>();
             }
+            // support multi-consumer
             v.add(consumer);
             return v;
         });
@@ -116,12 +129,17 @@ public class PilotExchanger {
     }
 
     private void doObserveEndpoints(String domain) {
-        Set<String> route = routeResult.searchDomain(domain);
-        if (CollectionUtils.isNotEmpty(route)) {
-            long endpointRequest = edsProtocol.observeResource(route,
-                    endpointResult ->
-                            domainObserveConsumer.get(domain).forEach(
-                                    consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
+        Set<String> router = routeResult.searchDomain(domain);
+        // if router is empty, do nothing
+        // observation will be created when RDS updates
+        if (CollectionUtils.isNotEmpty(router)) {
+            long endpointRequest =
+                    edsProtocol.observeResource(
+                            router,
+                            endpointResult ->
+                                    // notify consumers
+                                    domainObserveConsumer.get(domain).forEach(
+                                            consumer1 -> consumer1.accept(endpointResult.getEndpoints())));
             domainObserveRequest.put(domain, endpointRequest);
         }
     }

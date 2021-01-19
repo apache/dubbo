@@ -68,6 +68,7 @@ public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
         List<ServiceInstance> instances = new LinkedList<>();
         endpoints.forEach(endpoint -> {
             DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue());
+            // fill metadata by SelfHostMetaServiceDiscovery, will be fetched by RPC request
             fillServiceInstance(serviceInstance);
             instances.add(serviceInstance);
         });

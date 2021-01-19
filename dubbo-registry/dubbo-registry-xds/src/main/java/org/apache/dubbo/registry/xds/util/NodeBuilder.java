@@ -20,6 +20,7 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 
 public class NodeBuilder {
     public static Node build() {
+        // TODO: fetch data from environment
         return Node.newBuilder()
                 .setId("sidecar~127.0.0.1~ratings-v1-7dc98c7588-lwvqd.default~default.svc.cluster.local")
                 .setCluster("ratings.default")

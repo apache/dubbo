@@ -44,14 +44,34 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected final Node node;
 
-    protected final Map<Long, Set<String>> requestTemp = new ConcurrentHashMap<>();
+    /**
+     * Store Request Parameter ( resourceNames )
+     * K - requestId, V - resourceNames
+     */
+    protected final Map<Long, Set<String>> requestParam = new ConcurrentHashMap<>();
 
+    /**
+     * Store ADS Request Observer ( StreamObserver in Streaming Request )
+     * K - requestId, V - StreamObserver
+     */
     private final Map<Long, StreamObserver<DiscoveryRequest>> requestObserverMap = new ConcurrentHashMap<>();
 
+    /**
+     * Store Delta-ADS Request Observer ( StreamObserver in Streaming Request )
+     * K - requestId, V - StreamObserver
+     */
     private final Map<Long, StreamObserver<DeltaDiscoveryRequest>> deltaRequestObserverMap = new ConcurrentHashMap<>();
 
+    /**
+     * Store CompletableFuture for Request ( used to fetch async result in ResponseObserver )
+     * K - requestId, V - CompletableFuture
+     */
     private final Map<Long, CompletableFuture<T>> streamResult = new ConcurrentHashMap<>();
 
+    /**
+     * Store consumers for Observers ( will consume message produced by Delta-ADS )
+     * K - requestId, V - Consumer
+     */
     private final Map<Long, Consumer<T>> consumers = new ConcurrentHashMap<>();
 
     protected final AtomicLong requestId = new AtomicLong(0);
@@ -71,35 +91,54 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     @Override
     public T getResource(Set<String> resourceNames) {
         long request = requestId.getAndIncrement();
-        requestTemp.put(request, resourceNames);
+
+        // Store Request Parameter, which will be used for ACK
+        requestParam.put(request, resourceNames);
+
+        // create observer
         StreamObserver<DiscoveryRequest> requestObserver = xdsChannel.createDeltaDiscoveryRequest(new ResponseObserver(request));
+
+        // use future to get async result
         CompletableFuture<T> future = new CompletableFuture<>();
         requestObserverMap.put(request, requestObserver);
         streamResult.put(request, future);
+
+        // send request to control panel
         requestObserver.onNext(buildDiscoveryRequest(resourceNames));
+
         try {
+            // get result
             return future.get();
         } catch (InterruptedException | ExecutionException e) {
             logger.error("Error occur when request control panel.");
             return null;
         } finally {
+            // close observer
             requestObserver.onCompleted();
+
+            // remove temp
             streamResult.remove(request);
             requestObserverMap.remove(request);
-            requestTemp.remove(request);
+            requestParam.remove(request);
         }
     }
 
     @Override
     public long observeResource(Set<String> resourceNames, Consumer<T> consumer) {
         long request = requestId.getAndIncrement();
-        requestTemp.put(request, resourceNames);
+
+        // Store Request Parameter, which will be used for ACK
+        requestParam.put(request, resourceNames);
+
+        // call once for full data
         consumer.accept(getResource(resourceNames));
+
         consumers.put(request, consumer);
         deltaRequestObserverMap.compute(request, (k, v) -> {
-            if (v == null) {
-                v = xdsChannel.observeDeltaDiscoveryRequest(new DeltaResponseObserver(request));
-            }
+            // create Delta-ADS observer
+            v= xdsChannel.observeDeltaDiscoveryRequest(new DeltaResponseObserver(request));
+
+            // send observe request
             v.onNext(buildDeltaDiscoveryRequest(resourceNames));
             return v;
         });
@@ -108,6 +147,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     @Override
     public void updateObserve(long request, Set<String> resourceNames) {
+        // send difference in resourceNames
         deltaRequestObserverMap.get(request).onNext(buildDeltaDiscoveryRequest(request, resourceNames));
     }
 
@@ -120,6 +160,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames, DiscoveryResponse response) {
+        // for ACK
         return DiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setTypeUrl(getTypeUrl())
@@ -138,11 +179,12 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     protected DeltaDiscoveryRequest buildDeltaDiscoveryRequest(long request, Set<String> resourceNames) {
-        Set<String> previous = requestTemp.get(request);
+        // compare with previous
+        Set<String> previous = requestParam.get(request);
         Set<String> unsubscribe = new HashSet<String>(previous) {{
             removeAll(resourceNames);
         }};
-        requestTemp.put(request, resourceNames);
+        requestParam.put(request, resourceNames);
         return DeltaDiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setTypeUrl(getTypeUrl())
@@ -152,6 +194,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     }
 
     private DeltaDiscoveryRequest buildDeltaDiscoveryRequest(Set<String> resourceNames, DeltaDiscoveryResponse response) {
+        // for ACK
         return DeltaDiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setTypeUrl(getTypeUrl())
@@ -174,7 +217,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
         @Override
         public void onNext(DiscoveryResponse value) {
             T result = decodeDiscoveryResponse(value);
-            requestObserverMap.get(requestId).onNext(buildDiscoveryRequest(requestTemp.get(requestId), value));
+            requestObserverMap.get(requestId).onNext(buildDiscoveryRequest(requestParam.get(requestId), value));
             streamResult.get(requestId).complete(result);
         }
 
@@ -202,7 +245,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             delta = decodeDeltaDiscoveryResponse(value, delta);
             T routes = delta.getResource();
             consumers.get(requestId).accept(routes);
-            deltaRequestObserverMap.get(requestId).onNext(buildDeltaDiscoveryRequest(requestTemp.get(requestId), value));
+            deltaRequestObserverMap.get(requestId).onNext(buildDeltaDiscoveryRequest(requestParam.get(requestId), value));
         }
 
         @Override
