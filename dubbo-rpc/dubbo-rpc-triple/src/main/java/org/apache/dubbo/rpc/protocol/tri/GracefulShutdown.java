@@ -3,6 +3,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import java.util.concurrent.TimeUnit;
 
 import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2GoAwayFrame;
@@ -11,6 +12,7 @@ import io.netty.handler.codec.http2.Http2Error;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 public class GracefulShutdown {
     private final ChannelHandlerContext ctx;
@@ -21,12 +23,14 @@ public class GracefulShutdown {
     private static final long GRACEFUL_SHUTDOWN_PING_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(10);
     static final long GRACEFUL_SHUTDOWN_PING = 0x97ACEF001L;
     private static final long MAX_CONNECTION_AGE_GRACE_NANOS_INFINITE = Long.MAX_VALUE;
+    private final ChannelPromise originPromise;
 
     public GracefulShutdown(ChannelHandlerContext ctx, String goAwayMessage,
-        Long graceTimeInNanos) {
+        Long graceTimeInNanos,ChannelPromise originPromise) {
         this.ctx = ctx;
         this.goAwayMessage = goAwayMessage;
         this.graceTimeInNanos = graceTimeInNanos;
+        this.originPromise=originPromise;
     }
 
     public void gracefulShutdown() {
@@ -57,7 +61,7 @@ public class GracefulShutdown {
             ctx.write(goAwayFrame);
             ctx.flush();
             //gracefulShutdownTimeoutMillis
-            ctx.close();
+            ctx.close(originPromise);
         } catch (Exception e) {
             ctx.fireExceptionCaught(e);
         }

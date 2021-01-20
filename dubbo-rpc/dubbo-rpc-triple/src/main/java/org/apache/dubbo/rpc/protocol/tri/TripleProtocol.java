@@ -88,8 +88,8 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public void destroy() {
+        PortUnificationExchanger.close();
         pathResolver.destroy();
-
         for (String key : new ArrayList<>(exporterMap.keySet())) {
             Exporter<?> exporter = exporterMap.remove(key);
             if (exporter != null) {
@@ -104,6 +104,5 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
             }
         }
 
-        PortUnificationExchanger.close();
     }
 }

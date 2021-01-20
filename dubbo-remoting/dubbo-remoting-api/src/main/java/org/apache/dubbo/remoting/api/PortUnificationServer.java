@@ -39,14 +39,14 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.SslProvider;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
@@ -183,6 +183,7 @@ public class PortUnificationServer {
                         // FIXME: should we use getTimeout()?
                         int idleTimeout = UrlUtils.getIdleTimeout(getUrl());
                         final ChannelPipeline p = ch.pipeline();
+//                        p.addLast(new LoggingHandler(LogLevel.DEBUG));
                         // TODO add SSL support
                         final boolean enableSSL = getUrl().getParameter(SSL_ENABLED_KEY, false);
                         final PortUnificationServerHandler puHandler;
@@ -211,6 +212,8 @@ public class PortUnificationServer {
     }
 
     protected void doClose() throws Throwable {
+        final long st = System.currentTimeMillis();
+
         try {
             if (channel != null) {
                 // unbind.
@@ -219,28 +222,9 @@ public class PortUnificationServer {
             }
 
             ChannelGroupFuture closeFuture = channelGroup.close();
-            closeFuture.addListener(new GenericFutureListener<Future<? super Void>>() {
-                @Override
-                public void operationComplete(final Future future) throws Exception {
-                    System.out.println("1shut operationComplete..");
-//                    if (!future.isSuccess()) {
-//                        logger.warn("Error shutting down server", future.cause());
-//                    }
-//                    System.out.println("shut operationComplete..");
-//                    long start = System.currentTimeMillis();
-//                    long now = start;
-//                    while (now - start <= 15000 || channelGroup.size() > 0) {
-//                        try {
-//                            Thread.sleep(100);
-//                        } catch (InterruptedException e) {
-//                        }
-//                        now = System.currentTimeMillis();
-//                    }
-                }
-            });
             closeFuture.await(15000);
-
-            System.out.println("close ...");
+            final long cost = System.currentTimeMillis() - st;
+            logger.info("Port unification server closed. cost:" + cost);
         } catch (InterruptedException e) {
             System.out.println("Interrupted while shutting down" + e.getMessage());
             logger.warn("Interrupted while shutting down", e);
