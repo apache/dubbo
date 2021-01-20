@@ -306,8 +306,11 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
             }
 
-            if (semaphore.tryAcquire() && CollectionUtils.isNotEmptyMap(waitForRemove)) {//move to next schedule
-                cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+            if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
+                // move to next schedule
+                if (semaphore.tryAcquire()) {
+                    cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                }
             }
         }
     }
