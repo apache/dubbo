@@ -87,6 +87,14 @@ public class TripleUtil {
         }
     }
 
+    public static String limitSizeTo4KB(String desc) {
+        if (desc.length() < 4096) {
+            return desc;
+        } else {
+            return desc.substring(0, 4086);
+        }
+    }
+
     public static String percentDecode(CharSequence corpus) {
         if (corpus == null) {
             return "";
@@ -102,6 +110,7 @@ public class TripleUtil {
         if (corpus == null) {
             return "";
         }
+        corpus = limitSizeTo4KB(corpus);
         QueryStringEncoder encoder = new QueryStringEncoder("");
         encoder.addParam("", corpus);
         // ?=

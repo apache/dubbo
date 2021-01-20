@@ -64,8 +64,14 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         if (connection != null) {
             if (!connection.isClosed() && connection.onDisConnected()) {
                 if (shouldFastReconnect()) {
+                    if(log.isDebugEnabled()) {
+                        log.debug(String.format( "Connection %s inactive, schedule fast reconnect",connection ));
+                    }
                     reconnect(connection, 1);
                 } else {
+                    if(log.isDebugEnabled()) {
+                        log.debug(String.format( "Connection %s inactive, schedule normal reconnect",connection ));
+                    }
                     reconnect(connection, BACKOFF_CAP);
                 }
             }
@@ -89,12 +95,12 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private void tryReconnect(final Connection connection, final int nextAttempt) {
         permit.release();
+
         if (connection.isClosed() || bootstrap.config().group().isShuttingDown()) {
             return;
         }
-
-        if (log.isDebugEnabled()) {
-            log.debug(String.format("reconnecting connection=%s to %s ", connection, connection.getRemote()));
+        if(log.isDebugEnabled()) {
+            log.debug(String.format( "Connection %s is reconnecting, attempt=%d",connection,nextAttempt ));
         }
 
         bootstrap.connect(connection.getRemote()).addListener((ChannelFutureListener) future -> {

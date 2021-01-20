@@ -4,6 +4,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -17,6 +18,7 @@ import java.util.Map;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public abstract class AbstractStream implements Stream {
+    public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Too many data");
     private final boolean needWrap;
@@ -102,11 +104,17 @@ public abstract class AbstractStream implements Stream {
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             final Object v = entry.getValue();
-            if (v instanceof String || serializeType == null) {
-                trailers.addObject(key, v);
+            if (!ENABLE_ATTACHMENT_WRAP) {
+                if (v instanceof String) {
+                    trailers.addObject(key, v);
+                }
             } else {
-                String encoded = TripleUtil.encodeWrapper(url, v, this.serializeType, getMultipleSerialization());
-                trailers.add(key + "-tw-bin", encoded);
+                if (v instanceof String || serializeType == null) {
+                    trailers.addObject(key, v);
+                } else {
+                    String encoded = TripleUtil.encodeWrapper(url, v, this.serializeType, getMultipleSerialization());
+                    trailers.add(key + "-tw-bin", encoded);
+                }
             }
         }
     }

@@ -81,6 +81,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
+        long st=System.currentTimeMillis();
         RpcInvocation inv = (RpcInvocation) invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(PATH_KEY, getUrl().getPath());
@@ -98,6 +99,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             this.connection.init();
             final ChannelFuture writeFuture = this.connection.write(req);
             writeFuture.addListener(future1 -> {
+                long cost=System.currentTimeMillis()-st;
+                System.out.println("Triple invoker cost:"+cost);
                 if (future1.isSuccess()) {
                     DefaultFuture2.sent(req);
                 } else {

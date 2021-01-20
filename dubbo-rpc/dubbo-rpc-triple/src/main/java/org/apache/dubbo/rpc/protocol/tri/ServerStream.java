@@ -78,8 +78,9 @@ public class ServerStream extends AbstractStream implements Stream {
                 if (t != null) {
                     if (t instanceof TimeoutException) {
                         responseErr(ctx, GrpcStatus.fromCode(Code.DEADLINE_EXCEEDED).withCause(t));
+                    }else {
+                        responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     }
-                    responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     return;
                 }
                 AppResponse response = (AppResponse) appResult;
@@ -87,22 +88,23 @@ public class ServerStream extends AbstractStream implements Stream {
                     Http2Headers http2Headers = new DefaultHttp2Headers()
                             .status(OK.codeAsText())
                             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                     final Message message;
                     if (isNeedWrap()) {
-                        message = TripleUtil.wrapResp(getUrl(),getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
+                        message = TripleUtil.wrapResp(getUrl(), getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
                     } else {
                         message = (Message) response.getValue();
                     }
                     final ByteBuf buf = TripleUtil.pack(ctx, message);
-                    ctx.write(new DefaultHttp2DataFrame(buf));
+
                     final Http2Headers trailers = new DefaultHttp2Headers()
                             .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
                     }
-                    ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
+                    ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
+                    ctx.write(new DefaultHttp2DataFrame(buf));
+                    ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
                 } else {
                     final Throwable exception = response.getException();
                     if (exception instanceof TripleRpcException) {
@@ -131,7 +133,7 @@ public class ServerStream extends AbstractStream implements Stream {
         if (isNeedWrap()) {
             final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
             setSerializeType(req.getSerializeType());
-            final Object[] arguments = TripleUtil.unwrapReq(getUrl(),req, getMultipleSerialization());
+            final Object[] arguments = TripleUtil.unwrapReq(getUrl(), req, getMultipleSerialization());
             inv.setArguments(arguments);
         } else {
             final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
@@ -142,16 +144,20 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setTargetServiceUniqueName(serviceName);
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
+
         Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : getHeaders()) {
             String key = header.getKey().toString();
-            if (key.endsWith("-tw-bin") && key.length() > 7) {
-                try {
-                    attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(),header.getValue(), getMultipleSerialization()));
-                } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+            if (ENABLE_ATTACHMENT_WRAP) {
+                if (key.endsWith("-tw-bin") && key.length() > 7) {
+                    try {
+                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(), header.getValue(), getMultipleSerialization()));
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to parse response attachment key=" + key, e);
+                    }
                 }
-            } else if (key.endsWith("-bin") && key.length() > 4) {
+            }
+            if (key.endsWith("-bin") && key.length() > 4) {
                 try {
                     attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeByteFromHeader(header.getValue()));
                 } catch (Exception e) {

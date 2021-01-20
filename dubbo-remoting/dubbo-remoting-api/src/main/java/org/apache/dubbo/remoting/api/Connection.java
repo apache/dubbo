@@ -126,7 +126,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     @Override
     public String toString() {
-        return "Connection= " + getRemote() + ",channel=" + channel + ", status=" + status;
+        return getRemote() + ",channel=" + channel + ", status=" + status;
     }
 
 
@@ -140,18 +140,18 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     public boolean onDisConnected() {
         if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Connection:%s disconnected cause network error", this));
+            logger.debug(String.format("Connection:%s disconnected ", this));
         }
         return setStatus(ConnectionStatus.DISCONNECTED);
     }
 
     public void onConnected(Channel channel) {
-        if (logger.isDebugEnabled()) {
-            logger.debug(String.format("Connection:%s connected ", this));
-        }
         setStatus(ConnectionStatus.CONNECTED);
         this.channel = channel;
         channel.attr(CONNECTION).set(this);
+        if (logger.isDebugEnabled()) {
+            logger.debug(String.format("Connection:%s connected ", this));
+        }
     }
 
     public boolean isAvailable() {

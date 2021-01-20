@@ -36,7 +36,7 @@ import java.util.ArrayList;
  */
 public class TripleProtocol extends AbstractProtocol implements Protocol {
 
-    public static final String NAME = "triple";
+    public static final String NAME = "tri";
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
 
