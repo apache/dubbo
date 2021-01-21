@@ -12,6 +12,6 @@ public interface MultipleSerialization {
 
     void serialize(URL url, String serializeType, String clz, Object obj, OutputStream os) throws IOException;
 
-    Object deserialize(URL url,String serializeType, String clz, InputStream os) throws IOException, ClassNotFoundException;
+    Object deserialize(URL url, String serializeType, String clz, InputStream os) throws IOException, ClassNotFoundException;
 
 }
