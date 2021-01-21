@@ -80,11 +80,8 @@ public class TripleUtil {
     }
 
     public static String getErrorMsg(GrpcStatus status) {
-        if (status.description != null) {
-            return percentEncode(status.description);
-        } else {
-            return percentEncode(StringUtils.toString(status.cause));
-        }
+        String msg=StringUtils.toString(status.description,status.cause);
+        return percentEncode(msg);
     }
 
     public static String limitSizeTo4KB(String desc) {

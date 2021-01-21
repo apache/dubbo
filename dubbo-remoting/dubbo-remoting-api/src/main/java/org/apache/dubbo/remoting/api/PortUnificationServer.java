@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.utils.UrlUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -39,8 +39,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.ClientAuth;
 import io.netty.handler.ssl.OpenSsl;
 import io.netty.handler.ssl.SslContext;
@@ -52,10 +50,8 @@ import javax.net.ssl.SSLException;
 import java.net.InetSocketAddress;
 import java.security.Provider;
 import java.security.Security;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -70,12 +66,6 @@ public class PortUnificationServer {
 
     private static final Logger logger = LoggerFactory.getLogger(PortUnificationServer.class);
     private final List<WireProtocol> protocols;
-    /**
-     * the cache for alive worker channel.
-     * <ip:port, dubbo channel>
-     */
-    private Map<String, Channel> channels;
-    private InetSocketAddress localAddress;
     /**
      * netty server bootstrap.
      */
@@ -161,8 +151,6 @@ public class PortUnificationServer {
 
     /**
      * Init and start netty server
-     *
-     * @throws Throwable
      */
     protected void doOpen() {
         bootstrap = new ServerBootstrap();
@@ -241,31 +229,6 @@ public class PortUnificationServer {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
-        try {
-            if (channels != null) {
-                channels.clear();
-            }
-        } catch (Throwable e) {
-            logger.warn(e.getMessage(), e);
-        }
-    }
-
-    public Collection<Channel> getChannels() {
-        Collection<Channel> chs = new ArrayList<>(this.channels.size());
-        chs.addAll(this.channels.values());
-        //复用 NettyServerHandler 里面的 channels，所以不再需要检查是否可连
-//        for (Channel channel : this.channels.values()) {
-//            if (channel.isConnected()) {
-//                chs.add(channel);
-//            } else {
-//                channels.remove(NetUtils.toAddressString(channel.getRemoteAddress()));
-//            }
-//        }
-        return chs;
-    }
-
-    public Channel getChannel(InetSocketAddress remoteAddress) {
-        return channels.get(NetUtils.toAddressString(remoteAddress));
     }
 
     public boolean canHandleIdle() {

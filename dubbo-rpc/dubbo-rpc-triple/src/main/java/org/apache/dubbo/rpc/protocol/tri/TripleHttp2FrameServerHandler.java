@@ -1,7 +1,5 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2PingFrame;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -14,7 +12,6 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -23,7 +20,6 @@ import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 
-import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextError;
 

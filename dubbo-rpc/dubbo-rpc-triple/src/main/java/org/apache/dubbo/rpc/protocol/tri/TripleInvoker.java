@@ -20,14 +20,14 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.api.ConnectionManager;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.FutureContext;
@@ -64,8 +64,8 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
+    private static final ConnectionManager CONNECTION_MANAGER = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
     private final Connection connection;
-
     private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Set<Invoker<?>> invokers;
@@ -74,9 +74,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     public TripleInvoker(Class<T> serviceType, URL url, Set<Invoker<?>> invokers) throws RemotingException {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
-
-        final ConnectionManager connectionManger = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
-        this.connection = connectionManger.connect(url);
+        this.connection = CONNECTION_MANAGER.connect(url);
     }
 
     @Override
@@ -84,7 +82,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         RpcInvocation inv = (RpcInvocation) invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(PATH_KEY, getUrl().getPath());
-        inv.setAttachment(Constants.SERIALIZATION_KEY,getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        inv.setAttachment(Constants.SERIALIZATION_KEY, getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         try {
             int timeout = calculateTimeout(invocation, methodName);
             invocation.put(TIMEOUT_KEY, timeout);

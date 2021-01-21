@@ -71,7 +71,7 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        TripleInvoker<T> invoker = null;
+        TripleInvoker<T> invoker;
         try {
             invoker = new TripleInvoker<T>(type, url, invokers);
         } catch (RemotingException e) {

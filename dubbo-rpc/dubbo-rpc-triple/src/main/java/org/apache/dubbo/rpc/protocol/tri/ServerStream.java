@@ -1,7 +1,10 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -25,6 +28,8 @@ import io.netty.handler.codec.http2.Http2Headers;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -43,7 +48,8 @@ public class ServerStream extends AbstractStream implements Stream {
 
 
     public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, String serviceName, String methodName) {
-        super(invoker.getUrl(), ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
+        super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"),
+                ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
         this.ctx = ctx;
@@ -67,7 +73,27 @@ public class ServerStream extends AbstractStream implements Stream {
                     .withDescription(MISSING_REQ));
             return;
         }
+        ExecutorRepository executorRepository =
+                ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        ExecutorService executor = executorRepository.getExecutor(getUrl());
+        if (executor == null) {
+            executor = executorRepository.createExecutorIfAbsent(getUrl());
+        }
 
+        try {
+            executor.execute(this::unaryInvoke);
+        } catch (RejectedExecutionException e) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.RESOURCE_EXHAUSTED)
+                    .withDescription("Provider's thread pool is full")
+                    .withCause(e));
+        } catch (Throwable t) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL)
+                    .withCause(t)
+                    .withDescription("Provider's thread pool is full"));
+        }
+    }
+
+    private void unaryInvoke() {
         Invocation invocation = buildInvocation();
 
         final Result result = this.invoker.invoke(invocation);
@@ -78,7 +104,7 @@ public class ServerStream extends AbstractStream implements Stream {
                 if (t != null) {
                     if (t instanceof TimeoutException) {
                         responseErr(ctx, GrpcStatus.fromCode(Code.DEADLINE_EXCEEDED).withCause(t));
-                    }else {
+                    } else {
                         responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     }
                     return;
