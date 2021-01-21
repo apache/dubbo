@@ -1,9 +1,10 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.Invoker;
 
-@SPI("tri")
+@SPI(CommonConstants.TRIPLE)
 public interface PathResolver {
 
     void add(String path, Invoker<?> invoker);
