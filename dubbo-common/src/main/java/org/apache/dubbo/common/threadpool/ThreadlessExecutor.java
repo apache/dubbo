@@ -85,8 +85,13 @@ public class ThreadlessExecutor extends AbstractExecutorService {
         if (finished) {
             return;
         }
-
-        Runnable runnable = queue.take();
+        Runnable runnable;
+        try {
+            runnable = queue.take();
+        }catch (InterruptedException e){
+            waiting = false;
+            throw e;
+        }
 
         synchronized (lock) {
             waiting = false;
