@@ -80,7 +80,12 @@ public class TripleUtil {
     }
 
     public static String getErrorMsg(GrpcStatus status) {
-        String msg=StringUtils.toString(status.description,status.cause);
+        final String msg;
+        if (status.cause == null) {
+            msg = status.description;
+        } else {
+            msg = StringUtils.toString(status.description, status.cause);
+        }
         return percentEncode(msg);
     }
 
