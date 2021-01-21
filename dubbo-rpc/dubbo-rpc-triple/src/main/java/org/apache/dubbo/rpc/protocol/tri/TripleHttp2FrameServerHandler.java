@@ -49,7 +49,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         if (cause instanceof TripleRpcException) {
             TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus());
         } else {
-            TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withCause(cause));
+            TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withDescription("Provider's error:\n" + cause.getMessage()));
         }
     }
 
