@@ -17,6 +17,10 @@
 
 package org.apache.dubbo.remoting.exchange.support;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -28,6 +32,8 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultFutureTest {
@@ -116,6 +122,35 @@ public class DefaultFutureTest {
         }
     }
 
+    @Test
+    public void interruptSend() throws Exception {
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        System.out.println("before a future is create , time is : " + LocalDateTime.now().format(formatter));
+        // timeout after 5 seconds.
+        Channel channel = new MockedChannel();
+        Request request = new Request(10);
+        ExecutorService sharedExecutor = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+                .getDefaultExtension().createExecutorIfAbsent(URL.valueOf("dubbo://127.0.0.1:23456"));
+        ThreadlessExecutor executor = new ThreadlessExecutor(sharedExecutor);
+        DefaultFuture f = DefaultFuture.newFuture(channel, request, 5000, executor);
+        //mark the future is sent
+        DefaultFuture.sent(channel, request);
+        // get operate will throw a timeout exception, because the future is timeout.
+        try {
+            new InterruptThread(Thread.currentThread()).start();
+            executor.waitAndDrain();
+            f.get();
+        } catch (Exception e) {
+            Assertions.assertTrue(e instanceof InterruptedException, "catch exception is not interrupted exception!");
+            System.out.println(e.getMessage());
+        }
+        //waiting timeout check task finishing
+        Thread.sleep(8000);
+        DefaultFuture future = DefaultFuture.getFuture(10);
+        //waiting future should be removed by time out check task
+        Assertions.assertNull(future);
+    }
+
     /**
      * mock a default future
      */
@@ -123,6 +158,27 @@ public class DefaultFutureTest {
         Channel channel = new MockedChannel();
         Request request = new Request(index.getAndIncrement());
         return DefaultFuture.newFuture(channel, request, timeout, null);
+    }
+
+    static class InterruptThread extends Thread {
+        private Thread parent;
+
+        public InterruptThread(Thread parent) {
+            this.parent = parent;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            try {
+                //interrupt waiting thread before timeout
+                Thread.sleep(1000);
+                parent.interrupt();
+            } catch (InterruptedException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+
     }
 
 }
