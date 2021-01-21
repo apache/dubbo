@@ -12,8 +12,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -47,15 +50,15 @@ public class ServerStream extends AbstractStream implements Stream {
     private final Invoker<?> invoker;
     private final MethodDescriptor methodDescriptor;
     private final ChannelHandlerContext ctx;
-    private final ProviderModel providerModel;
+    private final ServiceDescriptor serviceDescriptor;
 
 
-    public ServerStream(Invoker<?> invoker, ProviderModel providerModel, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx) {
+    public ServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx) {
         super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"),
                 ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
-        this.providerModel = providerModel;
+        this.serviceDescriptor = serviceDescriptor;
         this.ctx = ctx;
     }
 
@@ -75,7 +78,12 @@ public class ServerStream extends AbstractStream implements Stream {
                     .withDescription(MISSING_REQ));
             return;
         }
-        ExecutorService executor = (ExecutorService) providerModel.getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
+        ExecutorService executor = null;
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        final ProviderModel providerModel = repo.lookupExportedService(getUrl().getServiceKey());
+        if (providerModel != null) {
+            executor = (ExecutorService) providerModel.getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
+        }
         if (executor == null) {
             executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
         }
@@ -169,8 +177,8 @@ public class ServerStream extends AbstractStream implements Stream {
             inv.setArguments(new Object[]{req});
         }
         inv.setMethodName(methodDescriptor.getMethodName());
-        inv.setServiceName(providerModel.getServiceName());
-        inv.setTargetServiceUniqueName(providerModel.getServiceKey());
+        inv.setServiceName(serviceDescriptor.getServiceName());
+        inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
 

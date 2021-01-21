@@ -7,7 +7,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
@@ -111,7 +111,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         String[] parts = path.split("/");
         String serviceName = parts[1];
         String originalMethodName = parts[2];
-
         String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);
 
         final Invoker<?> delegateInvoker = getInvoker(headers, serviceName);
@@ -120,8 +119,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
         ServiceRepository repo = ApplicationModel.getServiceRepository();
-        final ProviderModel providerModel = repo.lookupExportedService(delegateInvoker.getUrl().getServiceKey());
-        if (providerModel== null) {
+        final ServiceDescriptor descriptor = repo.lookupService(delegateInvoker.getUrl().getServiceKey());
+        if (descriptor == null) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
@@ -131,7 +130,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Method not found:" + methodName + " of service:" + serviceName));
             return;
         }
-        final ServerStream serverStream = new ServerStream(delegateInvoker, providerModel,methodDescriptor, ctx);
+        final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, methodDescriptor, ctx);
         serverStream.onHeaders(headers);
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
         if (msg.isEndStream()) {
