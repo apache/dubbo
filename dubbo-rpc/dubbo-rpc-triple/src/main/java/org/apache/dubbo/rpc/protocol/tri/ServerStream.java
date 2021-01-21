@@ -51,12 +51,15 @@ public class ServerStream extends AbstractStream implements Stream {
     private final MethodDescriptor methodDescriptor;
     private final ChannelHandlerContext ctx;
     private final ServiceDescriptor serviceDescriptor;
+    private final ProviderModel providerModel;
 
 
     public ServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx) {
         super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"),
                 ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        this.providerModel = repo.lookupExportedService(getUrl().getServiceKey());
         this.methodDescriptor = methodDescriptor;
         this.serviceDescriptor = serviceDescriptor;
         this.ctx = ctx;
@@ -79,8 +82,6 @@ public class ServerStream extends AbstractStream implements Stream {
             return;
         }
         ExecutorService executor = null;
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        final ProviderModel providerModel = repo.lookupExportedService(getUrl().getServiceKey());
         if (providerModel != null) {
             executor = (ExecutorService) providerModel.getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
         }
@@ -121,28 +122,7 @@ public class ServerStream extends AbstractStream implements Stream {
                     return;
                 }
                 AppResponse response = (AppResponse) appResult;
-                if (!response.hasException()) {
-                    Http2Headers http2Headers = new DefaultHttp2Headers()
-                            .status(OK.codeAsText())
-                            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    final Message message;
-                    if (isNeedWrap()) {
-                        message = TripleUtil.wrapResp(getUrl(), getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
-                    } else {
-                        message = (Message) response.getValue();
-                    }
-                    final ByteBuf buf = TripleUtil.pack(ctx, message);
-
-                    final Http2Headers trailers = new DefaultHttp2Headers()
-                            .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
-                    final Map<String, Object> attachments = response.getObjectAttachments();
-                    if (attachments != null) {
-                        convertAttachment(trailers, attachments);
-                    }
-                    ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                    ctx.write(new DefaultHttp2DataFrame(buf));
-                    ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
-                } else {
+                if (response.hasException()) {
                     final Throwable exception = response.getException();
                     if (exception instanceof TripleRpcException) {
                         responseErr(ctx, ((TripleRpcException) exception).getStatus());
@@ -150,7 +130,37 @@ public class ServerStream extends AbstractStream implements Stream {
                         responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withCause(exception));
                     }
+                    return;
                 }
+                Http2Headers http2Headers = new DefaultHttp2Headers()
+                        .status(OK.codeAsText())
+                        .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+                final Message message;
+
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+
+                final ByteBuf buf;
+                try {
+                    ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+                    if (isNeedWrap()) {
+                        message = TripleUtil.wrapResp(getUrl(), getSerializeType(), response.getValue(), methodDescriptor, getMultipleSerialization());
+                    } else {
+                        message = (Message) response.getValue();
+                    }
+                    buf = TripleUtil.pack(ctx, message);
+                } finally {
+                    ClassLoadUtil.switchContextLoader(tccl);
+                }
+
+                final Http2Headers trailers = new DefaultHttp2Headers()
+                        .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
+                final Map<String, Object> attachments = response.getObjectAttachments();
+                if (attachments != null) {
+                    convertAttachment(trailers, attachments);
+                }
+                ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
+                ctx.write(new DefaultHttp2DataFrame(buf));
+                ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
             } catch (Exception e) {
                 LOGGER.warn("Exception processing triple message", e);
                 if (e instanceof TripleRpcException) {
@@ -166,15 +176,24 @@ public class ServerStream extends AbstractStream implements Stream {
 
 
     private Invocation buildInvocation() {
+
         RpcInvocation inv = new RpcInvocation();
-        if (isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
-            setSerializeType(req.getSerializeType());
-            final Object[] arguments = TripleUtil.unwrapReq(getUrl(), req, getMultipleSerialization());
-            inv.setArguments(arguments);
-        } else {
-            final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
-            inv.setArguments(new Object[]{req});
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            if (providerModel != null) {
+                ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+            }
+            if (isNeedWrap()) {
+                final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
+                setSerializeType(req.getSerializeType());
+                final Object[] arguments = TripleUtil.unwrapReq(getUrl(), req, getMultipleSerialization());
+                inv.setArguments(arguments);
+            } else {
+                final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
+                inv.setArguments(new Object[]{req});
+            }
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
         }
         inv.setMethodName(methodDescriptor.getMethodName());
         inv.setServiceName(serviceDescriptor.getServiceName());

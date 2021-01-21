@@ -13,6 +13,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.triple.TripleWrapper;
@@ -36,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class ClientStream extends AbstractStream implements Stream {
@@ -43,6 +45,7 @@ public class ClientStream extends AbstractStream implements Stream {
     private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Missing Response");
     private final Request request;
+    private final RpcInvocation invocation;
 
 
     public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request) {
@@ -51,8 +54,17 @@ public class ClientStream extends AbstractStream implements Stream {
             setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
         this.request = request;
+        this.invocation = (RpcInvocation) request.getData();
     }
 
+    public static ConsumerModel getConsumerModel(Invocation invocation) {
+        Object o = invocation.get(CONSUMER_MODEL);
+        if (o instanceof ConsumerModel) {
+            return (ConsumerModel) o;
+        }
+        String serviceKey = invocation.getInvoker().getUrl().getServiceKey();
+        return ApplicationModel.getConsumerModel(serviceKey);
+    }
 
     @Override
     public void onError(GrpcStatus status) {
@@ -69,8 +81,6 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void write(Object obj, ChannelPromise promise) throws IOException {
-        Request req = (Request) obj;
-        final RpcInvocation invocation = (RpcInvocation) req.getData();
         Http2Headers headers = new DefaultHttp2Headers()
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
@@ -98,11 +108,21 @@ public class ClientStream extends AbstractStream implements Stream {
             }
         });
         final ByteBuf out;
-        if (isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
-            out = TripleUtil.pack(getCtx(), wrap);
-        } else {
-            out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
+
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            final ConsumerModel model = getConsumerModel(invocation);
+            if (model != null) {
+                ClassLoadUtil.switchContextLoader(model.getClassLoader());
+            }
+            if (isNeedWrap()) {
+                final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
+                out = TripleUtil.pack(getCtx(), wrap);
+            } else {
+                out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
+            }
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
         }
         streamChannel.write(new DefaultHttp2DataFrame(out, true));
 
@@ -136,8 +156,13 @@ public class ClientStream extends AbstractStream implements Stream {
         final Invocation invocation = (Invocation) (request.getData());
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(invocation.getServiceName(), invocation.getMethodName());
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             final Object resp;
+            final ConsumerModel model = getConsumerModel(invocation);
+            if (model != null) {
+                ClassLoadUtil.switchContextLoader(model.getClassLoader());
+            }
             if (isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
                 resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
@@ -152,6 +177,8 @@ public class ClientStream extends AbstractStream implements Stream {
                     .withCause(e)
                     .withDescription("Failed to deserialize response");
             onError(status);
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
         }
     }
 
