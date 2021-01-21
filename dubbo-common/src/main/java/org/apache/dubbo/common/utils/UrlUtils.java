@@ -504,8 +504,16 @@ public class UrlUtils {
      * @return If it is, return <code>true</code>, or <code>false</code>
      * @since 2.7.5
      */
-    public static boolean isServiceDiscoveryRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url == null ? emptyMap() : url.getParameters());
+    public static boolean hasServiceDiscoveryRegistryTypeKey(URL url) {
+        return hasServiceDiscoveryRegistryTypeKey(url == null ? emptyMap() : url.getParameters());
+    }
+
+    public static boolean hasServiceDiscoveryRegistryProtocol(URL url) {
+        return SERVICE_REGISTRY_PROTOCOL.equalsIgnoreCase(url.getProtocol());
+    }
+
+    public static boolean isServiceDiscoveryURL(URL url) {
+        return hasServiceDiscoveryRegistryProtocol(url) || hasServiceDiscoveryRegistryTypeKey(url);
     }
 
     /**
@@ -515,7 +523,7 @@ public class UrlUtils {
      * @return If it is, return <code>true</code>, or <code>false</code>
      * @since 2.7.5
      */
-    public static boolean isServiceDiscoveryRegistryType(Map<String, String> parameters) {
+    public static boolean hasServiceDiscoveryRegistryTypeKey(Map<String, String> parameters) {
         if (parameters == null || parameters.isEmpty()) {
             return false;
         }

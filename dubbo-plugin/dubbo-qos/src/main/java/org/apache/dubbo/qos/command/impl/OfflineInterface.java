@@ -26,7 +26,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 })
 public class OfflineInterface extends BaseOffline {
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
-        if (!UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
+        if (!UrlUtils.isServiceDiscoveryURL(statedURL.getRegistryUrl())) {
             super.doUnexport(statedURL);
         }
     }

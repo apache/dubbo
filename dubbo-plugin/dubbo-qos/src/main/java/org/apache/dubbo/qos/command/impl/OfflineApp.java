@@ -31,7 +31,7 @@ public class OfflineApp extends BaseOffline {
 
     @Override
     protected void doUnexport(ProviderModel.RegisterStatedURL statedURL) {
-        if (UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
+        if (UrlUtils.isServiceDiscoveryURL(statedURL.getRegistryUrl())) {
             super.doUnexport(statedURL);
         }
     }

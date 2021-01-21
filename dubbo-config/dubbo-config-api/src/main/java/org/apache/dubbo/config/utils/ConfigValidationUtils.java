@@ -97,7 +97,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.utils.UrlUtils.isServiceDiscoveryRegistryType;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -547,7 +546,7 @@ public class ConfigValidationUtils {
     }
 
     private static String extractRegistryType(URL url) {
-        return isServiceDiscoveryRegistryType(url) ? SERVICE_REGISTRY_PROTOCOL : getRegistryProtocolType(url);
+        return UrlUtils.hasServiceDiscoveryRegistryTypeKey(url) ? SERVICE_REGISTRY_PROTOCOL : getRegistryProtocolType(url);
     }
 
     private static String getRegistryProtocolType(URL url) {

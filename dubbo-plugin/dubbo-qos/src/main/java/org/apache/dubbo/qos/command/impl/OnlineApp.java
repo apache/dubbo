@@ -27,7 +27,7 @@ public class OnlineApp extends BaseOnline {
 
     @Override
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-        if (UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
+        if (UrlUtils.isServiceDiscoveryURL(statedURL.getRegistryUrl())) {
            super.doExport(statedURL);
         }
     }

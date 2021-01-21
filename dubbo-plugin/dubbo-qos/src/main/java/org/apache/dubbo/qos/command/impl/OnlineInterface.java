@@ -22,7 +22,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 public class OnlineInterface extends BaseOnline {
     @Override
     protected void doExport(ProviderModel.RegisterStatedURL statedURL) {
-        if (!UrlUtils.isServiceDiscoveryRegistryType(statedURL.getRegistryUrl())) {
+        if (!UrlUtils.isServiceDiscoveryURL(statedURL.getRegistryUrl())) {
             super.doExport(statedURL);
         }
     }
