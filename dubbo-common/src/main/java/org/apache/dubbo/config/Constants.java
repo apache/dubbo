@@ -116,5 +116,5 @@ public interface Constants {
 
     String REGISTER_KEY = "register";
 
-    String SERIALIZATION_CONTEXT_KEY= "serialize.multiple";
+    String MULTI_SERIALIZATION_KEY = "serialize.multiple";
 }

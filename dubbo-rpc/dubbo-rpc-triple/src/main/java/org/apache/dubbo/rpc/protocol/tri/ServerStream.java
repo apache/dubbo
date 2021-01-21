@@ -1,5 +1,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -12,6 +13,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -40,21 +42,21 @@ public class ServerStream extends AbstractStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServerStream.class);
     private static final String TOO_MANY_REQ = "Too many requests";
     private static final String MISSING_REQ = "Missing request";
+    private static final ExecutorRepository EXECUTOR_REPOSITORY =
+            ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final Invoker<?> invoker;
     private final MethodDescriptor methodDescriptor;
     private final ChannelHandlerContext ctx;
-    private final String serviceName;
-    private final String methodName;
+    private final ProviderModel providerModel;
 
 
-    public ServerStream(Invoker<?> invoker, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx, String serviceName, String methodName) {
+    public ServerStream(Invoker<?> invoker, ProviderModel providerModel, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx) {
         super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"),
                 ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
         this.invoker = invoker;
         this.methodDescriptor = methodDescriptor;
+        this.providerModel = providerModel;
         this.ctx = ctx;
-        this.serviceName = serviceName;
-        this.methodName = methodName;
     }
 
 
@@ -73,11 +75,12 @@ public class ServerStream extends AbstractStream implements Stream {
                     .withDescription(MISSING_REQ));
             return;
         }
-        ExecutorRepository executorRepository =
-                ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-        ExecutorService executor = executorRepository.getExecutor(getUrl());
+        ExecutorService executor = (ExecutorService) providerModel.getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
         if (executor == null) {
-            executor = executorRepository.createExecutorIfAbsent(getUrl());
+            executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
+        }
+        if (executor == null) {
+            executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(getUrl());
         }
 
         try {
@@ -165,9 +168,9 @@ public class ServerStream extends AbstractStream implements Stream {
             final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
             inv.setArguments(new Object[]{req});
         }
-        inv.setMethodName(methodName);
-        inv.setServiceName(serviceName);
-        inv.setTargetServiceUniqueName(serviceName);
+        inv.setMethodName(methodDescriptor.getMethodName());
+        inv.setServiceName(providerModel.getServiceName());
+        inv.setTargetServiceUniqueName(providerModel.getServiceKey());
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
 

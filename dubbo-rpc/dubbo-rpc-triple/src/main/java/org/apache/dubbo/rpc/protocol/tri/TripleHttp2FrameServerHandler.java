@@ -7,6 +7,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
@@ -118,14 +119,19 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
-
         ServiceRepository repo = ApplicationModel.getServiceRepository();
+        final ProviderModel providerModel = repo.lookupExportedService(delegateInvoker.getUrl().getServiceKey());
+        if (providerModel== null) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            return;
+        }
+
         MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
         if (methodDescriptor == null) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Method not found:" + methodName + " of service:" + serviceName));
             return;
         }
-        final ServerStream serverStream = new ServerStream(delegateInvoker, methodDescriptor, ctx, serviceName, methodName);
+        final ServerStream serverStream = new ServerStream(delegateInvoker, providerModel,methodDescriptor, ctx);
         serverStream.onHeaders(headers);
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
         if (msg.isEndStream()) {

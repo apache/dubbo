@@ -42,7 +42,7 @@ public abstract class AbstractStream implements Stream {
     }
 
     public static MultipleSerialization loadFromURL(URL url) {
-        final String value = url.getParameter(Constants.SERIALIZATION_CONTEXT_KEY, "default");
+        final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, "default");
         return ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
     }
 
