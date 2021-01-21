@@ -226,7 +226,6 @@ public class PortUnificationServer {
             final long cost = System.currentTimeMillis() - st;
             logger.info("Port unification server closed. cost:" + cost);
         } catch (InterruptedException e) {
-            System.out.println("Interrupted while shutting down" + e.getMessage());
             logger.warn("Interrupted while shutting down", e);
         }
 
