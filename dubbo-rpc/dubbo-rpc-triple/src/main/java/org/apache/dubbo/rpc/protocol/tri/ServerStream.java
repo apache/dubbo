@@ -6,6 +6,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.Log;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -95,13 +96,14 @@ public class ServerStream extends AbstractStream implements Stream {
         try {
             executor.execute(this::unaryInvoke);
         } catch (RejectedExecutionException e) {
+            LOGGER.error("Provider's thread pool is full",e);
             responseErr(ctx, GrpcStatus.fromCode(Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Provider's thread pool is full")
-                    .withCause(e));
+                    .withDescription("Provider's thread pool is full"));
         } catch (Throwable t) {
+            LOGGER.error("Provider submit request to thread pool error ",t);
             responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL)
                     .withCause(t)
-                    .withDescription("Provider's thread pool is full"));
+                    .withDescription("Provider's error"));
         }
     }
 
