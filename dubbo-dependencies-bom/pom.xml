@@ -92,9 +92,9 @@
         <spring_version>4.3.16.RELEASE</spring_version>
         <javassist_version>3.20.0-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
-        <netty4_version>4.1.25.Final</netty4_version>
+        <netty4_version>4.1.51.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
-        <grizzly_version>2.1.4</grizzly_version>
+        <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
         <httpcore_version>4.4.6</httpcore_version>
         <fastjson_version>1.2.70</fastjson_version>
@@ -129,9 +129,9 @@
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
-        <jetcd_version>0.4.1</jetcd_version>
+        <jetcd_version>0.5.3</jetcd_version>
         <nacos_version>1.3.1</nacos_version>
-        <grpc.version>1.22.1</grpc.version>
+        <grpc.version>1.31.1</grpc.version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
         <jcl_version>1.2</jcl_version>
@@ -145,13 +145,16 @@
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
 
+        <!-- Fabric8 for Kubernetes -->
+        <fabric8_kubernetes_version>4.10.3</fabric8_kubernetes_version>
+
         <!-- Alibaba -->
         <alibaba_spring_context_support_version>1.0.8</alibaba_spring_context_support_version>
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.11.2</test_container_version>
-        <etcd_launcher_version>0.3.0</etcd_launcher_version>
+        <etcd_launcher_version>0.5.3</etcd_launcher_version>
         <hessian_lite_version>3.2.8</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
         <spring_test_version>4.3.16.RELEASE</spring_test_version>
@@ -468,11 +471,6 @@
                     </exclusion>
                 </exclusions>
             </dependency>
-            <dependency>
-                <groupId>io.etcd</groupId>
-                <artifactId>jetcd-launcher</artifactId>
-                <version>${jetcd_version}</version>
-            </dependency>
             <!-- Log libs -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -702,6 +700,17 @@
                 <groupId>io.grpc</groupId>
                 <artifactId>grpc-grpclb</artifactId>
                 <version>${grpc.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-client</artifactId>
+                <version>${fabric8_kubernetes_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.fabric8</groupId>
+                <artifactId>kubernetes-server-mock</artifactId>
+                <scope>test</scope>
+                <version>${fabric8_kubernetes_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

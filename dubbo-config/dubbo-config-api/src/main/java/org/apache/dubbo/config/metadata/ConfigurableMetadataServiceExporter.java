@@ -19,7 +19,10 @@ package org.apache.dubbo.config.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ArgumentConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -28,10 +31,12 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
@@ -73,6 +78,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(getApplicationConfig().getName());
             serviceConfig.setVersion(metadataService.version());
+            serviceConfig.setMethods(generateMethodConfig());
 
             // export
             serviceConfig.export();
@@ -90,6 +96,28 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
         }
 
         return this;
+    }
+
+    /**
+     * Generate Method Config for Service Discovery Metadata <p/>
+     * <p>
+     * Make {@link MetadataService} support argument callback,
+     * used to notify {@link org.apache.dubbo.registry.client.ServiceInstance}'s
+     * metadata change event
+     *
+     * @since 3.0
+     */
+    private List<MethodConfig> generateMethodConfig() {
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("getAndListenInstanceMetadata");
+
+        ArgumentConfig argumentConfig = new ArgumentConfig();
+        argumentConfig.setIndex(1);
+        argumentConfig.setCallback(true);
+
+        methodConfig.setArguments(Collections.singletonList(argumentConfig));
+
+        return Collections.singletonList(methodConfig);
     }
 
     @Override
@@ -115,10 +143,44 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
 
     private ProtocolConfig generateMetadataProtocol() {
         ProtocolConfig defaultProtocol = new ProtocolConfig();
-        defaultProtocol.setName(DUBBO);
-        // defaultProtocol.setHost() ?
-        // auto-increment port
-        defaultProtocol.setPort(-1);
+        Integer port = getApplicationConfig().getMetadataServicePort();
+
+        if (port == null || port < -1) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Metadata Service Port hasn't been set will use default protocol defined in protocols.");
+            }
+            List<ProtocolConfig> defaultProtocols = ApplicationModel.getConfigManager().getDefaultProtocols();
+
+            ProtocolConfig dubboProtocol = findDubboProtocol(defaultProtocols);
+            if (dubboProtocol != null) {
+                logger.info("Using dubbo protocol " + dubboProtocol + " to export MetadataService.");
+                return dubboProtocol;
+            } else {
+                defaultProtocol.setName(DUBBO_PROTOCOL);
+                defaultProtocol.setPort(-1);
+            }
+
+        } else {
+            defaultProtocol.setName(DUBBO_PROTOCOL);
+            defaultProtocol.setPort(port);
+        }
+
+        logger.info("Using dubbo protocol " + defaultProtocol + " to export MetadataService.");
+
         return defaultProtocol;
+    }
+
+    private ProtocolConfig findDubboProtocol(List<ProtocolConfig> protocolConfigs) {
+        if (CollectionUtils.isEmpty(protocolConfigs)) {
+            return null;
+        }
+
+        for (ProtocolConfig protocolConfig : protocolConfigs) {
+            if (DUBBO_PROTOCOL.equalsIgnoreCase(protocolConfig.getName())) {
+                return protocolConfig;
+            }
+        }
+
+        return null;
     }
 }

@@ -18,12 +18,16 @@ package org.apache.dubbo.qos.command.util;
 
 import org.apache.dubbo.qos.command.GreetingCommand;
 import org.apache.dubbo.qos.command.impl.Help;
+import org.apache.dubbo.qos.command.impl.Live;
 import org.apache.dubbo.qos.command.impl.Ls;
 import org.apache.dubbo.qos.command.impl.Offline;
 import org.apache.dubbo.qos.command.impl.Online;
+import org.apache.dubbo.qos.command.impl.PublishMetadata;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
+import org.apache.dubbo.qos.command.impl.Startup;
 import org.apache.dubbo.qos.command.impl.Version;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -47,7 +51,7 @@ public class CommandHelperTest {
         List<Class<?>> classes = CommandHelper.getAllCommandClass();
         assertThat(classes,
                 containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class,
-                        Ready.class, Version.class));
+                        Live.class, Ready.class, Startup.class, Version.class, PublishMetadata.class));
     }
 
     @Test

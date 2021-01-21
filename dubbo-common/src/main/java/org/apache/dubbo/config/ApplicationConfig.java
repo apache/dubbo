@@ -172,6 +172,20 @@ public class ApplicationConfig extends AbstractConfig {
      */
     private String protocol;
 
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
+
+    /**
+     * used to set extensions of probe in qos
+     */
+    private String livenessProbe;
+
+    private String readinessProbe;
+
+    private String startupProbe;
+
     public ApplicationConfig() {
     }
 
@@ -483,6 +497,42 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+    }
+
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
+    @Parameter(key = "liveness-probe")
+    public String getLivenessProbe() {
+        return livenessProbe;
+    }
+
+    public void setLivenessProbe(String livenessProbe) {
+        this.livenessProbe = livenessProbe;
+    }
+
+    @Parameter(key = "readiness-probe")
+    public String getReadinessProbe() {
+        return readinessProbe;
+    }
+
+    public void setReadinessProbe(String readinessProbe) {
+        this.readinessProbe = readinessProbe;
+    }
+
+    @Parameter(key = "startup-probe")
+    public String getStartupProbe() {
+        return startupProbe;
+    }
+
+    public void setStartupProbe(String startupProbe) {
+        this.startupProbe = startupProbe;
     }
 
     @Override
