@@ -12,8 +12,8 @@ import io.netty.handler.codec.http2.Http2PingFrame;
 
 import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 
-public class GracefulShutdownHandler extends Http2ChannelDuplexHandler {
-    private static final Logger logger = LoggerFactory.getLogger(GracefulShutdownHandler.class);
+public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
+    private static final Logger logger = LoggerFactory.getLogger(TripleServerConnectionHandler.class);
     private GracefulShutdown gracefulShutdown;
 
     @Override
@@ -28,16 +28,22 @@ public class GracefulShutdownHandler extends Http2ChannelDuplexHandler {
                 }
             }
         } else if (msg instanceof Http2GoAwayFrame) {
-        }else {
+        } else {
             super.channelRead(ctx, msg);
         }
     }
 
     @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.warn(String.format("Channel:%s Error", ctx.channel()), cause);
+        ctx.close();
+    }
+
+    @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         if (gracefulShutdown == null) {
-            gracefulShutdown = new GracefulShutdown(ctx, "app_requested", null,promise);
-            gracefulShutdown.gracefulShutdown();
+            gracefulShutdown = new GracefulShutdown(ctx, "app_requested", null, promise);
         }
+        gracefulShutdown.gracefulShutdown();
     }
 }

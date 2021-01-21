@@ -27,7 +27,7 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 .frameLogger(SERVER_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
-        pipeline.addLast(codec, new GracefulShutdownHandler(), handler);
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler);
     }
 
     @Override
