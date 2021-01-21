@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -10,6 +11,7 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -125,7 +127,12 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
 
-        MethodDescriptor methodDescriptor = repo.lookupMethod(serviceName, methodName);
+        MethodDescriptor methodDescriptor;
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+            methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
+        } else {
+            methodDescriptor = repo.lookupMethod(serviceName, methodName);
+        }
         if (methodDescriptor == null) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Method not found:" + methodName + " of service:" + serviceName));
             return;

@@ -39,9 +39,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2SettingsFrame) {
             // already handled
-            System.out.println("Http2 Setting");
         } else if (msg instanceof Http2GoAwayFrame) {
-            System.out.println("Http2 goAway!");
             final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
             if (connection != null) {
                 connection.onIdle();

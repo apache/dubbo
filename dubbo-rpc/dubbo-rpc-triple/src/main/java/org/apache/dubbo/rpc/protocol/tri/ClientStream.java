@@ -1,6 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
@@ -72,7 +73,7 @@ public class ClientStream extends AbstractStream implements Stream {
         final RpcInvocation invocation = (RpcInvocation) req.getData();
         Http2Headers headers = new DefaultHttp2Headers()
                 .method(HttpMethod.POST.asciiName())
-                .path("/" + invocation.getServiceName() + "/" + invocation.getMethodName())
+                .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
         final Map<String, Object> attachments = invocation.getObjectAttachments();
