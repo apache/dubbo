@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.SslConfig;
@@ -51,7 +50,6 @@ import java.net.InetSocketAddress;
 import java.security.Provider;
 import java.security.Security;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -209,8 +207,10 @@ public class PortUnificationServer {
                 channel = null;
             }
 
-            ChannelGroupFuture closeFuture = channelGroup.close();
-            closeFuture.await(15000);
+            if (channelGroup != null) {
+                ChannelGroupFuture closeFuture = channelGroup.close();
+                closeFuture.await(15000);
+            }
             final long cost = System.currentTimeMillis() - st;
             logger.info("Port unification server closed. cost:" + cost);
         } catch (InterruptedException e) {
