@@ -459,7 +459,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (globalApplication == null) {
             return application;
         }
-        if (application != null && !application.getName().equals(globalApplication.getName())) {
+        if (application != null && !StringUtils.isEquals(application.getName(), globalApplication.getName())) {
             return application;
         }
         return globalApplication;
