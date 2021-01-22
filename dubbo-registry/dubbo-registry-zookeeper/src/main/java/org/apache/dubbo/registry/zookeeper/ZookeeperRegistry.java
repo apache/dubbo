@@ -191,7 +191,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                                 return lock;
                             }
                         };
-                        ChildListener zkListener = listeners.putIfAbsent(listener, childListener);
+                        ChildListener zkListener = listeners.computeIfAbsent(listener, k -> childListener);
                         zkClient.create(path, false);
                         List<String> children = zkClient.addChildListener(path, zkListener);
                         if (children != null) {
