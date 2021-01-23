@@ -240,7 +240,8 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
                 serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
 
         if (logger.isDebugEnabled()) {
-            logger.debug("Poll DNS data. Service Instance changed: " + changed + " Service Name: " + serviceName);
+            logger.debug("Service changed event received (possibly because of DNS polling). " +
+                    "Service Instance changed: " + changed + " Service Name: " + serviceName);
         }
 
         if (changed) {
