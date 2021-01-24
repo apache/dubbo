@@ -108,7 +108,14 @@ public class ServerStream extends AbstractStream implements Stream {
     }
 
     private void unaryInvoke() {
-        Invocation invocation = buildInvocation();
+
+        Invocation invocation;
+        try {
+            invocation = buildInvocation();
+        }catch (Throwable t){
+            responseErr(ctx,GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed"));
+            return ;
+        }
 
         final Result result = this.invoker.invoke(invocation);
         CompletionStage<Object> future = result.thenApply(Function.identity());
