@@ -25,7 +25,7 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextErro
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
-    private static final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
+    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -63,12 +63,12 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
-        final String version = headers.contains(TripleConstant.VERSION_KEY) ? headers.get(TripleConstant.VERSION_KEY).toString() : null;
-        final String group = headers.contains(TripleConstant.GROUP_KEY) ? headers.get(TripleConstant.GROUP_KEY).toString() : null;
+        final String version = headers.contains(TripleConstant.SERVICE_VERSION) ? headers.get(TripleConstant.SERVICE_VERSION).toString() : null;
+        final String group = headers.contains(TripleConstant.SERVICE_GROUP) ? headers.get(TripleConstant.SERVICE_GROUP).toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
-        Invoker<?> invoker = pathResolver.resolve(key);
+        Invoker<?> invoker = PATH_RESOLVER.resolve(key);
         if (invoker == null) {
-            invoker = pathResolver.resolve(serviceName);
+            invoker = PATH_RESOLVER.resolve(serviceName);
         }
         return invoker;
     }

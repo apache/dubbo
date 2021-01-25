@@ -86,6 +86,24 @@ public class ClientStream extends AbstractStream implements Stream {
                 .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+
+        final String version = (String) invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
+        if (version != null) {
+            headers.set(TripleConstant.SERVICE_VERSION, version);
+            invocation.getObjectAttachments().remove(CommonConstants.VERSION_KEY);
+        }
+
+        final String app = (String) invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
+        if (app != null) {
+            headers.set(TripleConstant.CONSUMER_APP_NAME_KEY, app);
+            invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
+        }
+
+        final String group = (String) invocation.getObjectAttachment(CommonConstants.GROUP_KEY);
+        if (group != null) {
+            headers.set(TripleConstant.SERVICE_GROUP, group);
+            invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
+        }
         final Map<String, Object> attachments = invocation.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(headers, attachments);
@@ -170,7 +188,9 @@ public class ClientStream extends AbstractStream implements Stream {
                 resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
             }
             Response response = new Response(request.getId(), request.getVersion());
-            response.setResult(new AppResponse(resp));
+            final AppResponse result = new AppResponse(resp);
+            result.setObjectAttachments(parseHeadersToMap(te));
+            response.setResult(result);
             DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
         } catch (Exception e) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)

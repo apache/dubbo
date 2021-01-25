@@ -252,29 +252,8 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
+        final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
 
-        Map<String, Object> attachments = new HashMap<>();
-        for (Map.Entry<CharSequence, CharSequence> header : getHeaders()) {
-            String key = header.getKey().toString();
-            if (ENABLE_ATTACHMENT_WRAP) {
-                if (key.endsWith("-tw-bin") && key.length() > 7) {
-                    try {
-                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(), header.getValue(), getMultipleSerialization()));
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to parse response attachment key=" + key, e);
-                    }
-                }
-            }
-            if (key.endsWith("-bin") && key.length() > 4) {
-                try {
-                    attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeByteFromHeader(header.getValue()));
-                } catch (Exception e) {
-                    LOGGER.error("Failed to parse response attachment key=" + key, e);
-                }
-            } else {
-                attachments.put(key, header.getValue().toString());
-            }
-        }
         inv.setObjectAttachments(attachments);
         return inv;
     }

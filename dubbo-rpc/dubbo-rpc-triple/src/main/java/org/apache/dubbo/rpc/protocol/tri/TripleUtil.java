@@ -2,6 +2,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -31,12 +32,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
+
 
     public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
@@ -228,17 +231,33 @@ public class TripleUtil {
                 .addArgTypes(obj.getClass().getName())
                 .addArgs(ByteString.copyFrom(bos.toByteArray()))
                 .build();
-        return new String(BASE64_ENCODER.encode(wrap.toByteArray()));
+        return encodeBase64ASCII(wrap.toByteArray());
+    }
+
+    public static String encodeBase64ASCII(byte[] in) {
+        byte[] bytes=encodeBase64(in);
+        return new String(bytes,StandardCharsets.US_ASCII);
+    }
+    public static byte[] encodeBase64(byte[] in) {
+        return BASE64_ENCODER.encode(in);
+    }
+
+    public static byte[] decodeBase64(byte[] in) {
+        return BASE64_DECODER.decode(in);
+    }
+
+    public static byte[] decodeBase64(String in) {
+        return BASE64_DECODER.decode(in.getBytes(StandardCharsets.UTF_8));
     }
 
     public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization) throws InvalidProtocolBufferException {
-        final byte[] decode = decodeByteFromHeader(value);
+        final byte[] decode = decodeASCIIByte(value);
         final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
         final Object[] objects = TripleUtil.unwrapReq(url, wrapper, serialization);
         return objects[0];
     }
 
-    public static byte[] decodeByteFromHeader(CharSequence value) throws InvalidProtocolBufferException {
+    public static byte[] decodeASCIIByte(CharSequence value) {
         return BASE64_DECODER.decode(value.toString().getBytes(StandardCharsets.US_ASCII));
     }
 
@@ -255,5 +274,7 @@ public class TripleUtil {
         }
         return serializeType;
     }
+
+
 
 }

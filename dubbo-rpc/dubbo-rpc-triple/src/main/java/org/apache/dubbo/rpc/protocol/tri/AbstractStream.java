@@ -3,6 +3,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
@@ -12,6 +14,7 @@ import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -19,6 +22,7 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStream.class);
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Too many data");
     private final ChannelHandlerContext ctx;
@@ -106,6 +110,33 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
+    protected Map<String, Object> parseHeadersToMap(Http2Headers headers) {
+        Map<String, Object> attachments = new HashMap<>();
+        for (Map.Entry<CharSequence, CharSequence> header : headers) {
+            String key = header.getKey().toString();
+
+            if (ENABLE_ATTACHMENT_WRAP) {
+                if (key.endsWith("-tw-bin") && key.length() > 7) {
+                    try {
+                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(), header.getValue(), getMultipleSerialization()));
+                    } catch (Exception e) {
+                        LOGGER.error("Failed to parse response attachment key=" + key, e);
+                    }
+                }
+            }
+            if (key.endsWith("-bin") && key.length() > 4) {
+                try {
+                    attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeASCIIByte(header.getValue()));
+                } catch (Exception e) {
+                    LOGGER.error("Failed to parse response attachment key=" + key, e);
+                }
+            } else {
+                attachments.put(key, header.getValue().toString());
+            }
+        }
+        return attachments;
+    }
+
     protected void convertAttachment(Http2Headers trailers, Map<String, Object> attachments) throws IOException {
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
@@ -113,6 +144,8 @@ public abstract class AbstractStream implements Stream {
             if (!ENABLE_ATTACHMENT_WRAP) {
                 if (v instanceof String) {
                     trailers.addObject(key, v);
+                } else if (v instanceof byte[]) {
+                    trailers.addObject(key + "-bin", TripleUtil.encodeBase64((byte[]) v));
                 }
             } else {
                 if (v instanceof String || serializeType == null) {
