@@ -47,7 +47,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
-                ByteBuf buf = in.readBytes(len);
+                ByteBuf buf = in.readRetainedSlice(len);
                 out.add(buf);
                 checkpoint(GrpcDecodeState.HEADER);
                 break;

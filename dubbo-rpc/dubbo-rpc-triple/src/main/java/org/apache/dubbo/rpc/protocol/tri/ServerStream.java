@@ -32,7 +32,6 @@ import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -115,7 +114,8 @@ public class ServerStream extends AbstractStream implements Stream {
         try {
             invocation = buildInvocation();
         } catch (Throwable t) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed"));
+            LOGGER.warn("Exception processing triple message", t);
+            responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed:" + t.getMessage()));
             return;
         }
         if (invocation == null) {
@@ -209,7 +209,7 @@ public class ServerStream extends AbstractStream implements Stream {
             // can not determine which one to invoke when same protobuf method name is used, force wrap it
             setNeedWrap(true);
         }
-        if(isNeedWrap()) {
+        if (isNeedWrap()) {
             loadFromURL(getUrl());
         }
 

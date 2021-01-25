@@ -71,9 +71,8 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
                     case UNRECOGNIZED:
                         continue;
                     case RECOGNIZED:
-                        protocol.configServerPipeline(ctx.pipeline(),null);
+                        protocol.configServerPipeline(ctx.pipeline(), null);
                         ctx.pipeline().remove(this);
-                        ctx.fireChannelRead(in.retain());
                     case NEED_MORE_DATA:
                         return;
                 }
