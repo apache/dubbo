@@ -860,6 +860,8 @@ public class ExtensionLoader<T> {
                             if (i > 0) {
                                 name = line.substring(0, i).trim();
                                 clazz = line.substring(i + 1).trim();
+                            } else {
+                                clazz = line;
                             }
                             if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages)) {
                                 loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
