@@ -21,8 +21,6 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
         if (evt instanceof Http2GoAwayFrame) {
-            System.out.println("TripleHttp2ClientResponseHandler goaway!!!");
-            //todo set stream refuse
             ctx.close();
         }
     }
