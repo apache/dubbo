@@ -21,29 +21,31 @@ public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Too many data");
-    private final boolean needWrap;
     private final ChannelHandlerContext ctx;
-    private final MultipleSerialization multipleSerialization;
     private final URL url;
+    private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
+    private boolean needWrap;
     private InputStream data;
     private String serializeType;
+
+    protected AbstractStream(URL url, ChannelHandlerContext ctx) {
+        this(url, ctx, false);
+    }
 
     protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
         this.url = url;
         this.needWrap = needWrap;
         if (needWrap) {
-            this.multipleSerialization = loadFromURL(url);
-        } else {
-            this.multipleSerialization = null;
+            loadFromURL(url);
         }
     }
 
-    public static MultipleSerialization loadFromURL(URL url) {
+    protected void loadFromURL(URL url) {
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, "default");
-        return ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
+        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
     }
 
     public URL getUrl() {
@@ -58,8 +60,12 @@ public abstract class AbstractStream implements Stream {
         this.serializeType = serializeType;
     }
 
-    public boolean isNeedWrap() {
+    protected boolean isNeedWrap() {
         return needWrap;
+    }
+
+    protected void setNeedWrap(boolean needWrap) {
+        this.needWrap = needWrap;
     }
 
     public ChannelHandlerContext getCtx() {

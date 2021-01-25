@@ -6,7 +6,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.Log;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
@@ -19,6 +18,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Message;
@@ -31,7 +31,9 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
@@ -49,19 +51,19 @@ public class ServerStream extends AbstractStream implements Stream {
     private static final ExecutorRepository EXECUTOR_REPOSITORY =
             ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final Invoker<?> invoker;
-    private final MethodDescriptor methodDescriptor;
     private final ChannelHandlerContext ctx;
     private final ServiceDescriptor serviceDescriptor;
     private final ProviderModel providerModel;
+    private final String methodName;
+    private MethodDescriptor methodDescriptor;
 
 
-    public ServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor methodDescriptor, ChannelHandlerContext ctx) {
-        super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"),
-                ctx, TripleUtil.needWrapper(methodDescriptor.getParameterClasses()));
+    public ServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, String methodName, ChannelHandlerContext ctx) {
+        super(ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), ctx);
         this.invoker = invoker;
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         this.providerModel = repo.lookupExportedService(getUrl().getServiceKey());
-        this.methodDescriptor = methodDescriptor;
+        this.methodName = methodName;
         this.serviceDescriptor = serviceDescriptor;
         this.ctx = ctx;
     }
@@ -96,11 +98,11 @@ public class ServerStream extends AbstractStream implements Stream {
         try {
             executor.execute(this::unaryInvoke);
         } catch (RejectedExecutionException e) {
-            LOGGER.error("Provider's thread pool is full",e);
+            LOGGER.error("Provider's thread pool is full", e);
             responseErr(ctx, GrpcStatus.fromCode(Code.RESOURCE_EXHAUSTED)
                     .withDescription("Provider's thread pool is full"));
         } catch (Throwable t) {
-            LOGGER.error("Provider submit request to thread pool error ",t);
+            LOGGER.error("Provider submit request to thread pool error ", t);
             responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL)
                     .withCause(t)
                     .withDescription("Provider's error"));
@@ -112,9 +114,12 @@ public class ServerStream extends AbstractStream implements Stream {
         Invocation invocation;
         try {
             invocation = buildInvocation();
-        }catch (Throwable t){
-            responseErr(ctx,GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed"));
-            return ;
+        } catch (Throwable t) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed"));
+            return;
+        }
+        if (invocation == null) {
+            return;
         }
 
         final Result result = this.invoker.invoke(invocation);
@@ -170,12 +175,14 @@ public class ServerStream extends AbstractStream implements Stream {
                 ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                 ctx.write(new DefaultHttp2DataFrame(buf));
                 ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 LOGGER.warn("Exception processing triple message", e);
                 if (e instanceof TripleRpcException) {
                     responseErr(ctx, ((TripleRpcException) e).getStatus());
                 } else {
-                    responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(e));
+                    responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
+                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
+                            .withCause(e));
                 }
             }
         };
@@ -188,6 +195,24 @@ public class ServerStream extends AbstractStream implements Stream {
 
         RpcInvocation inv = new RpcInvocation();
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        final List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
+        if (methods == null || methods.isEmpty()) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                    .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
+            return null;
+        }
+        if (methods.size() == 1) {
+            this.methodDescriptor = methods.get(0);
+            setNeedWrap(TripleUtil.needWrapper(this.methodDescriptor.getParameterClasses()));
+        } else {
+            // can not determine which one to invoke when same protobuf method name is used, force wrap it
+            setNeedWrap(true);
+        }
+        if(isNeedWrap()) {
+            loadFromURL(getUrl());
+        }
+
         try {
             if (providerModel != null) {
                 ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
@@ -195,9 +220,27 @@ public class ServerStream extends AbstractStream implements Stream {
             if (isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
                 setSerializeType(req.getSerializeType());
+                if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+                    this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
+                } else {
+                    String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
+                    for (MethodDescriptor method : methods) {
+                        if (Arrays.equals(method.getCompatibleParamSignatures(), paramTypes)) {
+                            this.methodDescriptor = method;
+                            break;
+                        }
+                    }
+                    if (this.methodDescriptor == null) {
+                        responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                                .withDescription("Method not found:" + methodName +
+                                        " args:" + Arrays.toString(paramTypes) + " of service:" + serviceDescriptor.getServiceName()));
+                        return null;
+                    }
+                }
                 final Object[] arguments = TripleUtil.unwrapReq(getUrl(), req, getMultipleSerialization());
                 inv.setArguments(arguments);
             } else {
+
                 final Object req = TripleUtil.unpack(getData(), methodDescriptor.getParameterClasses()[0]);
                 inv.setArguments(new Object[]{req});
             }
