@@ -125,6 +125,7 @@
         <snakeyaml_version>1.20</snakeyaml_version>
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
+        <envoy_api_version>0.1.23</envoy_api_version>
 
         <rs_api_version>2.0</rs_api_version>
         <resteasy_version>3.0.19.Final</resteasy_version>
@@ -532,6 +533,11 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons_lang3_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.envoyproxy.controlplane</groupId>
+                <artifactId>api</artifactId>
+                <version>${envoy_api_version}</version>
             </dependency>
 
             <!-- for dubbo-rpc-webservice -->

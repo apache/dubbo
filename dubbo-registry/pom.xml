@@ -37,5 +37,6 @@
         <module>dubbo-registry-multiple</module>
         <module>dubbo-registry-kubernetes</module>
         <module>dubbo-registry-dns</module>
+        <module>dubbo-registry-xds</module>
     </modules>
 </project>
