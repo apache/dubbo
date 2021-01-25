@@ -32,7 +32,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.*;
+import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
+import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
+import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
+
 
 public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistryServiceDiscovery.class);
