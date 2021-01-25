@@ -72,6 +72,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return false;
         }
         for (Invoker<T> invoker : invokers) {
+            // 只要有一个 Invoker 是可用的，就认为当前目录是可用的
             if (invoker.isAvailable()) {
                 return true;
             }
@@ -85,6 +86,7 @@ public class StaticDirectory<T> extends AbstractDirectory<T> {
             return;
         }
         super.destroy();
+        // 遍历 Invoker 列表，并执行相应的销毁逻辑
         for (Invoker<T> invoker : invokers) {
             invoker.destroy();
         }

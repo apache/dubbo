@@ -423,39 +423,54 @@ public class UrlUtils {
 
     public static boolean isMatchGlobPattern(String pattern, String value, URL param) {
         if (param != null && pattern.startsWith("$")) {
+            // 引用服务消费者参数，param 参数为服务消费者 url
             pattern = param.getRawParameter(pattern.substring(1));
         }
+        // 调用重载方法继续比较
         return isMatchGlobPattern(pattern, value);
     }
 
     public static boolean isMatchGlobPattern(String pattern, String value) {
+        // 对 * 通配符提供支持
         if ("*".equals(pattern)) {
             return true;
         }
         if (StringUtils.isEmpty(pattern) && StringUtils.isEmpty(value)) {
+            // pattern 和 value 均为空，此时可认为两者相等，返回 true
             return true;
         }
         if (StringUtils.isEmpty(pattern) || StringUtils.isEmpty(value)) {
+            // pattern 和 value 其中有一个为空，表明两者不相等，返回 false
             return false;
         }
 
+        // 定位 * 通配符位置
         int i = pattern.lastIndexOf('*');
         // doesn't find "*"
         if (i == -1) {
+            // 匹配规则中不包含通配符，此时直接比较 value 和 pattern 是否相等即可，并返回比较结果
             return value.equals(pattern);
         }
         // "*" is at the end
+        // 通配符 "*" 在匹配规则尾部，比如 10.0.21.*
         else if (i == pattern.length() - 1) {
+            // 检测 value 是否以“不含通配符的匹配规则”开头，并返回结果。比如:
+            // pattern = 10.0.21.*，value = 10.0.21.12，此时返回 true
             return value.startsWith(pattern.substring(0, i));
         }
         // "*" is at the beginning
+        // 通配符 "*" 在匹配规则头部
         else if (i == 0) {
+            // 检测 value 是否以“不含通配符的匹配规则”结尾，并返回结果
             return value.endsWith(pattern.substring(i + 1));
         }
         // "*" is in the middle
+        // 通配符 "*" 在匹配规则中间位置
         else {
+            // 通过通配符将 pattern 分成两半，得到 prefix 和 suffix
             String prefix = pattern.substring(0, i);
             String suffix = pattern.substring(i + 1);
+            // 检测 value 是否以 prefix 开头，且以 suffix 结尾，并返回结果
             return value.startsWith(prefix) && value.endsWith(suffix);
         }
     }
