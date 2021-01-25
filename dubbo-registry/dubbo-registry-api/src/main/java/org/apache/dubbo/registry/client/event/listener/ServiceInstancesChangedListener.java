@@ -54,7 +54,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
-import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
+import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
@@ -120,7 +120,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
-                if (DEFAULT_REVISION.equals(revision)) {
+                if (EMPTY_REVISION.equals(revision)) {
                     logger.info("Find instance without valid service metadata: " + instance.getAddress());
                     continue;
                 }

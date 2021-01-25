@@ -42,7 +42,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPAR
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
 public class MetadataInfo implements Serializable {
-    public static String DEFAULT_REVISION = "0";
     private String app;
     private String revision;
     private Map<String, ServiceInfo> services;
@@ -92,14 +91,10 @@ public class MetadataInfo implements Serializable {
         }
 
         if (CollectionUtils.isEmptyMap(services)) {
-            return DEFAULT_REVISION;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(app);
-        if (CollectionUtils.isEmptyMap(services)) {
             this.revision = RevisionResolver.getEmptyRevision(app);
         } else {
+            StringBuilder sb = new StringBuilder();
+            sb.append(app);
             for (Map.Entry<String, ServiceInfo> entry : new TreeMap<>(services).entrySet()) {
                 sb.append(entry.getValue().toDescString());
             }
