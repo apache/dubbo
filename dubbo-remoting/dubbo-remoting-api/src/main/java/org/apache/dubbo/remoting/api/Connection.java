@@ -242,11 +242,11 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
 
     private void concurrentConnect() throws RemotingException {
-        if (channel != null) {
+        if (channel != null && channel.isActive()) {
             return;
         }
         synchronized (this) {
-            if (channel != null) {
+            if (channel != null && channel.isActive()) {
                 return;
             }
             if (connectFuture != null) {
