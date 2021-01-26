@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.netty4;
+package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.Connection;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
