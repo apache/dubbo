@@ -180,7 +180,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return "";
     }
 
-    private void refreshOverrideAndInvoker(List<URL> urls) {
+    // issue: https://github.com/apache/dubbo/issues/6763.
+    // refreshOverrideAndInvoker will be executed by RegistryCenter and ConfigCenter, so it should be synchronized.
+    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideConsumerUrl();
         refreshInvoker(urls);
@@ -198,7 +200,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      *
      * @param invokerUrls this parameter can't be null
      */
-    private synchronized void refreshInvoker(List<URL> invokerUrls) {
+    private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null");
 
         if (invokerUrls.size() == 1
