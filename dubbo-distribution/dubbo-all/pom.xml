@@ -124,6 +124,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-triple</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -372,6 +379,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rest</include>
                                     <include>org.apache.dubbo:dubbo-rpc-grpc</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-triple</include>
                                     <include>org.apache.dubbo:dubbo-cluster</include>
                                     <include>org.apache.dubbo:dubbo-registry-api</include>
                                     <include>org.apache.dubbo:dubbo-registry-default</include>
@@ -711,6 +719,14 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
+                                    </resource>
+                                </transformer>
+
+                                <!-- @since 3.0.0 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.remoting.api.WireProtocol
                                     </resource>
                                 </transformer>
 

@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 public interface CommonConstants {
     String DUBBO = "dubbo";
 
+    String TRIPLE= "tri";
+
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";

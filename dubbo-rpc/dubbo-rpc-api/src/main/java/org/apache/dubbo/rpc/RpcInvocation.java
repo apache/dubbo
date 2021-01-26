@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -197,18 +198,22 @@ public class RpcInvocation implements Invocation, Serializable {
         return targetServiceUniqueName;
     }
 
-    @Override
-    public String getProtocolServiceKey() {
-        return protocolServiceKey;
-    }
-
     public void setTargetServiceUniqueName(String targetServiceUniqueName) {
         this.targetServiceUniqueName = targetServiceUniqueName;
     }
 
     @Override
+    public String getProtocolServiceKey() {
+        return protocolServiceKey;
+    }
+
+    @Override
     public String getMethodName() {
         return methodName;
+    }
+
+    public void setMethodName(String methodName) {
+        this.methodName = methodName;
     }
 
     @Override
@@ -218,10 +223,6 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
-    }
-
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
     }
 
     @Override
@@ -265,6 +266,10 @@ public class RpcInvocation implements Invocation, Serializable {
         return attachments;
     }
 
+    public void setObjectAttachments(Map<String, Object> attachments) {
+        this.attachments = attachments == null ? new HashMap<>() : attachments;
+    }
+
     @Override
     public void setAttachment(String key, String value) {
         setObjectAttachment(key, value);
@@ -281,12 +286,8 @@ public class RpcInvocation implements Invocation, Serializable {
         this.attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
     }
 
-    public void setObjectAttachments(Map<String, Object> attachments) {
-        this.attachments = attachments == null ? new HashMap<>() : attachments;
-    }
-
     public void setAttachment(String key, Object value) {
-       setObjectAttachment(key, value);
+        setObjectAttachment(key, value);
     }
 
     @Override
@@ -374,7 +375,11 @@ public class RpcInvocation implements Invocation, Serializable {
         if (attachments == null) {
             return null;
         }
-        return attachments.get(key);
+        final Object val = attachments.get(key);
+        if (val != null) {
+            return val;
+        }
+        return attachments.get(key.toLowerCase(Locale.ROOT));
     }
 
     @Override
