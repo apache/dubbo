@@ -51,7 +51,6 @@ public class InterfaceAddressURLTest {
         ServiceAddressURL interfaceAddressURL = new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
 
         assertEquals("3000", interfaceAddressURL.getParameter(TIMEOUT_KEY));
-        assertNotEquals("1.0.0", interfaceAddressURL.getVersion());
 
         assertEquals("morgan", interfaceAddressURL.getApplication());
         assertEquals("provider", interfaceAddressURL.getRemoteApplication());
