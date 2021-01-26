@@ -13,6 +13,8 @@ env:
     spring-boot.version:1.5.22.RELEASE;
     spring-boot.version:2.4.1;
     '
+  DUBBO_SPRING_BOOT_REF: '2.7.x'
+
 jobs:
   build-source:
     runs-on: ubuntu-18.04
