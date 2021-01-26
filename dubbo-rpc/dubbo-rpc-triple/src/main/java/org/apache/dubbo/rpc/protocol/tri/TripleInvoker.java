@@ -92,24 +92,34 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay(true);
             req.setData(inv);
-            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             this.connection.init();
-            final ChannelFuture writeFuture = this.connection.write(req);
-            writeFuture.addListener(future1 -> {
-                if (future1.isSuccess()) {
-                    DefaultFuture2.sent(req);
-                } else {
-                    Response response = new Response(req.getId(), req.getVersion());
-                    response.setStatus(Response.CHANNEL_INACTIVE);
-                    response.setErrorMessage(StringUtils.toString(future1.cause()));
-                    DefaultFuture2.received(connection, response);
-                }
-            });
+
+            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
+
+            if (!connection.isAvailable()) {
+                Response response = new Response(req.getId(), req.getVersion());
+                response.setStatus(Response.CHANNEL_INACTIVE);
+                response.setErrorMessage(String.format("Connect to %s failed", this));
+                DefaultFuture2.received(connection, response);
+            } else {
+                final ChannelFuture writeFuture = this.connection.write(req);
+                writeFuture.addListener(future1 -> {
+                    if (future1.isSuccess()) {
+                        DefaultFuture2.sent(req);
+                    } else {
+                        Response response = new Response(req.getId(), req.getVersion());
+                        response.setStatus(Response.CHANNEL_INACTIVE);
+                        response.setErrorMessage(StringUtils.toString(future1.cause()));
+                        DefaultFuture2.received(connection, response);
+                    }
+                });
+            }
+
             return result;
         } catch (TimeoutException e) {
             throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);

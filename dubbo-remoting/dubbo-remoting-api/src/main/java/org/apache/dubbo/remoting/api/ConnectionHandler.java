@@ -10,6 +10,7 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleStateEvent;
+import io.netty.util.AttributeKey;
 import io.netty.util.Timer;
 
 import java.util.concurrent.Semaphore;
@@ -21,6 +22,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
 
     private static final int MIN_FAST_RECONNECT_INTERVAL = 4000;
     private static final int BACKOFF_CAP = 12;
+    private static final AttributeKey<Boolean> GO_AWAY_KEY = AttributeKey.valueOf("dubbo_channel_goaway");
     private final Timer timer;
     private final Bootstrap bootstrap;
     private final Semaphore permit = new Semaphore(1);
@@ -29,6 +31,14 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     public ConnectionHandler(Bootstrap bootstrap, Timer timer) {
         this.bootstrap = bootstrap;
         this.timer = timer;
+    }
+
+    public void onGoAway(Channel channel) {
+        channel.attr(GO_AWAY_KEY).set(true);
+        final Connection connection = Connection.getConnectionFromChannel(channel);
+        if (connection != null) {
+            connection.onIdle();
+        }
     }
 
     @Override
@@ -64,8 +74,16 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    private boolean isGoAway(Channel channel) {
+        return Boolean.TRUE.equals(channel.attr(GO_AWAY_KEY).get());
+    }
+
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        // Reconnect event will be triggered by Connection.init();
+        if (isGoAway(ctx.channel())) {
+            return;
+        }
         Connection connection = Connection.getConnectionFromChannel(ctx.channel());
         if (connection != null) {
             if (!connection.isClosed() && connection.onDisConnected()) {

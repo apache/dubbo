@@ -63,6 +63,8 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final AtomicReference<ConnectionStatus> status;
     private volatile Channel channel;
     private volatile Future<Channel> connectFuture;
+    private int retryAttempts = 1;
+    private long lastReconnectTime;
 
     public Connection(URL url) {
         this.url = url;
@@ -129,7 +131,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         return getRemote() + ",channel=" + channel + ", status=" + status;
     }
 
-
     public void onIdle() {
         if (logger.isDebugEnabled()) {
             logger.debug(String.format("Connection:%s disconnected cause idle", this));
@@ -155,7 +156,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public boolean isAvailable() {
-        return ConnectionStatus.CONNECTED == getStatus();
+        return ConnectionStatus.CONNECTED == getStatus() && channel != null && channel.isActive();
     }
 
     public ConnectionStatus getStatus() {
@@ -252,25 +253,33 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             if (connectFuture != null) {
                 connectFuture.awaitUninterruptibly(getConnectTimeout());
             } else {
-                connectWithoutGuard();
+                int backoff = 2 << retryAttempts;
+                if (System.currentTimeMillis() - lastReconnectTime < backoff) {
+                    return;
+                }
+                connectWithGuard();
             }
         }
     }
 
-    protected void connectWithoutGuard() throws RemotingException {
+    protected synchronized void connectWithGuard() throws RemotingException {
+        this.lastReconnectTime = System.currentTimeMillis();
+        this.retryAttempts = Math.min(12, retryAttempts + 1);
         long start = System.currentTimeMillis();
         final Future<Channel> connectFuture = connectAsync();
         this.connectFuture = connectFuture;
         connectFuture.awaitUninterruptibly(getConnectTimeout());
         if (!connectFuture.isSuccess()) {
             if (connectFuture.isDone()) {
-                throw new RemotingException(null, null, "client(url: " + getUrl() + ") failed to connect to server .error message is:" + connectFuture.cause().getMessage(),
+                throw new RemotingException(null, getRemote(), "client(url: " + getUrl() + ") failed to connect to server .error message is:" + connectFuture.cause().getMessage(),
                         connectFuture.cause());
             } else {
-                throw new RemotingException(null, null, "client(url: " + getUrl() + ") failed to connect to server. client-side timeout "
+                throw new RemotingException(null, getRemote(), "client(url: " + getUrl() + ") failed to connect to server. client-side timeout "
                         + getConnectTimeout() + "ms (elapsed: " + (System.currentTimeMillis() - start) + "ms) from netty client "
                         + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion());
             }
+        } else {
+            this.retryAttempts = 0;
         }
     }
 

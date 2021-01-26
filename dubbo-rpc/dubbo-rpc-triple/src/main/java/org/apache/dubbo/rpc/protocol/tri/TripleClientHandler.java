@@ -1,7 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.api.ConnectionHandler;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -34,10 +34,8 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (msg instanceof Http2SettingsFrame) {
             // already handled
         } else if (msg instanceof Http2GoAwayFrame) {
-            final Connection connection = Connection.getConnectionFromChannel(ctx.channel());
-            if (connection != null) {
-                connection.onIdle();
-            }
+            final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
+            connectionHandler.onGoAway(ctx.channel());
         }
     }
 
