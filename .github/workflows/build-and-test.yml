@@ -1,6 +1,6 @@
 name: Build and Test
 
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 
 env:
   FORK_COUNT: 2
