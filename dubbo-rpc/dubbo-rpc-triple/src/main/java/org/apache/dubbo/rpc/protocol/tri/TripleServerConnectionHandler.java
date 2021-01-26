@@ -61,7 +61,7 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
         if (gracefulShutdown == null) {
-            gracefulShutdown = new GracefulShutdown(ctx, "app_requested", null, promise);
+            gracefulShutdown = new GracefulShutdown(ctx, "app_requested", promise);
         }
         gracefulShutdown.gracefulShutdown();
     }
