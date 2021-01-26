@@ -11,9 +11,9 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public interface ProtocolDetector {
 
-  Result detect(final ChannelHandlerContext ctx, final ByteBuf in);
+    Result detect(final ChannelHandlerContext ctx, final ByteBuf in);
 
-  enum Result {
-    RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
-  }
+    enum Result {
+        RECOGNIZED, UNRECOGNIZED, NEED_MORE_DATA
+    }
 }

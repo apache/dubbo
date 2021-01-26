@@ -39,6 +39,7 @@ public class NettyEventLoopFactory {
      * netty client bootstrap
      */
     public static final EventLoopGroup NIO_EVENT_LOOP_GROUP = eventLoopGroup(Constants.DEFAULT_IO_THREADS, "NettyClientWorker");
+
     public static EventLoopGroup eventLoopGroup(int threads, String threadFactoryName) {
         ThreadFactory threadFactory = new DefaultThreadFactory(threadFactoryName, true);
         return shouldEpoll() ? new EpollEventLoopGroup(threads, threadFactory) :

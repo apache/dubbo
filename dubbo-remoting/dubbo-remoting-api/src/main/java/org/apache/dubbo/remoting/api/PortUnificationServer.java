@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -64,6 +65,7 @@ public class PortUnificationServer {
 
     private static final Logger logger = LoggerFactory.getLogger(PortUnificationServer.class);
     private final List<WireProtocol> protocols;
+    private final URL url;
     /**
      * netty server bootstrap.
      */
@@ -71,11 +73,10 @@ public class PortUnificationServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-    private io.netty.channel.Channel channel;
+    private Channel channel;
     private DefaultChannelGroup channelGroup;
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;
-    private URL url;
 
     public PortUnificationServer(URL url) {
         // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
@@ -229,10 +230,6 @@ public class PortUnificationServer {
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
         }
-    }
-
-    public boolean canHandleIdle() {
-        return true;
     }
 
     public boolean isBound() {

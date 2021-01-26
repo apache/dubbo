@@ -2,7 +2,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -32,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -235,9 +233,10 @@ public class TripleUtil {
     }
 
     public static String encodeBase64ASCII(byte[] in) {
-        byte[] bytes=encodeBase64(in);
-        return new String(bytes,StandardCharsets.US_ASCII);
+        byte[] bytes = encodeBase64(in);
+        return new String(bytes, StandardCharsets.US_ASCII);
     }
+
     public static byte[] encodeBase64(byte[] in) {
         return BASE64_ENCODER.encode(in);
     }
@@ -274,7 +273,6 @@ public class TripleUtil {
         }
         return serializeType;
     }
-
 
 
 }

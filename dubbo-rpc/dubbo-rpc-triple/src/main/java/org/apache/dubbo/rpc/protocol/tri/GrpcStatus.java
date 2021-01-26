@@ -15,6 +15,7 @@ public class GrpcStatus {
         this.cause = cause;
         this.description = description;
     }
+
     public static GrpcStatus fromCode(int code) {
         return fromCode(Code.fromCode(code));
     }
@@ -31,9 +32,10 @@ public class GrpcStatus {
         return new GrpcStatus(this.code, this.cause, description);
     }
 
-    public TripleRpcException asException(){
+    public TripleRpcException asException() {
         return new TripleRpcException(this);
     }
+
     enum Code {
         OK(0),
         UNKNOWN(2),
