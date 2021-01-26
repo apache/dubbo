@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.annotation.processing.builder;
 
 import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.metadata.annotation.processing.builder.TypeBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 
 import javax.annotation.processing.ProcessingEnvironment;
