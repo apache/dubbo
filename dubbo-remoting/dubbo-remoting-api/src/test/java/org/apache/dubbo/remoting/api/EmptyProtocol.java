@@ -14,10 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.netty4;
-
-import org.apache.dubbo.remoting.api.ProtocolDetector;
-import org.apache.dubbo.remoting.api.WireProtocol;
+package org.apache.dubbo.remoting.api;
 
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslContext;
