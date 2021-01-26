@@ -24,7 +24,6 @@ import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -47,15 +46,13 @@ import io.netty.util.AttributeKey;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.ReferenceCounted;
 import io.netty.util.Timer;
-import io.netty.util.concurrent.DefaultEventExecutor;
 import io.netty.util.concurrent.DefaultPromise;
-import io.netty.util.concurrent.EventExecutor;
 import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 import io.netty.util.concurrent.Promise;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -70,15 +67,12 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             new NamedThreadFactory("dubbo-network-timer", true), 30, TimeUnit.MILLISECONDS);
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
-    private static final ExecutorRepository EXECUTOR_REPOSITORY = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final URL url;
     private final Bootstrap bootstrap;
     private final int connectTimeout;
     private final WireProtocol protocol;
     private final Promise<Void> closeFuture;
     private final InetSocketAddress remote;
-    private final ExecutorService executor;
-    private final EventExecutor eventExecutor;
     private final AtomicReference<ConnectionStatus> status;
     private volatile Channel channel;
     private volatile Future<Channel> connectFuture;
@@ -86,15 +80,13 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private long lastReconnectTime;
 
     public Connection(URL url) {
-        this.url = url;
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
-        this.executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(url);
-        this.eventExecutor = new DefaultEventExecutor(executor);
+        this.url = url;
         this.status = new AtomicReference<>(ConnectionStatus.DISCONNECTED);
         this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
         this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
-        this.closeFuture = new DefaultPromise<>(eventExecutor);
+        this.closeFuture = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.remote = getConnectAddress();
         this.bootstrap = open();
     }
@@ -125,7 +117,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
+            protected void initChannel(SocketChannel ch) {
                 ch.attr(CONNECTION).set(Connection.this);
                 Connection.this.channel = ch;
                 int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
@@ -216,8 +208,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             channel.close();
         }
         closeFuture.setSuccess(null);
-        eventExecutor.shutdownGracefully();
-        ExecutorUtil.shutdownNow(executor, 100);
     }
 
     @Override
