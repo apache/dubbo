@@ -27,6 +27,7 @@ import io.netty.util.AttributeKey;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -182,12 +183,23 @@ public class TripleUtil {
     public static <T> T unpack(InputStream is, Class<T> clz) {
         try {
             final T req = (T) pbSerialization.deserialize(is, clz);
-            is.close();
             return req;
         } catch (IOException e) {
             throw new RuntimeException("Failed to unpack req", e);
+        }finally {
+            closeQuietly(is);
         }
     }
+    private static void closeQuietly(Closeable c) {
+        if (c != null) {
+            try {
+                c.close();
+            } catch (IOException ignore) {
+                // ignored
+            }
+        }
+    }
+
 
     public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) {
         try {
