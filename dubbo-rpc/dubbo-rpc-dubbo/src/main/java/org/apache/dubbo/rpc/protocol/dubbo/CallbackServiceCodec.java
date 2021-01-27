@@ -296,8 +296,8 @@ class CallbackServiceCodec {
             }
             return inObject;
         }
-        byte callBackStatus = isCallBack(url, inv.getProtocolServiceKey(), inv.getMethodName(), paraIndex);
-        switch (callBackStatus) {
+        byte callbackstatus = isCallBack(url, inv.getProtocolServiceKey(), inv.getMethodName(), paraIndex);
+        switch (callbackstatus) {
             case CallbackServiceCodec.CALLBACK_CREATE:
                 try {
                     return referOrDestroyCallbackService(channel, url, pts[paraIndex], inv, Integer.parseInt(inv.getAttachment(INV_ATT_CALLBACK_KEY + paraIndex)), true);
