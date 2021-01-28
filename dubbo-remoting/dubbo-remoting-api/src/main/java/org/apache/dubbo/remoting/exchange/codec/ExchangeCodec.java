@@ -38,6 +38,7 @@ import org.apache.dubbo.remoting.telnet.codec.TelnetCodec;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.remoting.transport.ExceedPayloadLimitException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -150,12 +151,14 @@ public class ExchangeCodec extends TelnetCodec {
             try {
                 if (status == Response.OK) {
                     Object data;
-                    if (res.isHeartbeat()) {
-                        // heart beat response data is always null;
-                        is.skip(64);
-                        data = null;
-                    } else if (res.isEvent()) {
-                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
+                    if (res.isEvent()) {
+                        byte[] eventPayload = CodecSupport.getPayload(is);
+                        if (CodecSupport.isHeartBeat(eventPayload, proto)) {
+                            // heart beat response data is always null;
+                            data = null;
+                        } else {
+                            data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                        }
                     } else {
                         data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(id));
                     }
@@ -178,12 +181,14 @@ public class ExchangeCodec extends TelnetCodec {
             }
             try {
                 Object data;
-                if (req.isHeartbeat()) {
-                    // heart beat request data is always null;
-                    is.skip(64);
-                    data = null;
-                } else if (req.isEvent()) {
-                    data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
+                if (req.isEvent()) {
+                    byte[] eventPayload = CodecSupport.getPayload(is);
+                    if (CodecSupport.isHeartBeat(eventPayload, proto)) {
+                        // heart beat response data is always null;
+                        data = null;
+                    } else {
+                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                    }
                 } else {
                     data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
                 }

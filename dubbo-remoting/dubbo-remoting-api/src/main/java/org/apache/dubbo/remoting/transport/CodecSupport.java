@@ -29,6 +29,7 @@ import org.apache.dubbo.remoting.Constants;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -120,5 +121,34 @@ public class CodecSupport {
             }
             return nullBytes;
         });
+    }
+
+    /**
+     * Read all payload to byte[]
+     *
+     * @param is
+     * @return
+     * @throws IOException
+     */
+    public static byte[] getPayload(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = is.read(buffer)) > -1) {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+        return baos.toByteArray();
+    }
+
+    /**
+     * Check if payload is null object serialize result byte[] of serialization
+     *
+     * @param payload
+     * @param proto
+     * @return
+     */
+    public static boolean isHeartBeat(byte[] payload, byte proto) {
+        return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
     }
 }
