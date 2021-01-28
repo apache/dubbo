@@ -34,7 +34,12 @@ jobs:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: "Build with Maven"
-        run: ./mvnw --batch-mode -U -e --no-transfer-progress  clean install -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+        run: |
+          ./mvnw --batch-mode -U -e --no-transfer-progress  clean install -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          # just keep dubbo modules, remove dubbo-spring-boot-* modules from maven local repo
+          cd  ~/.m2/repository/org/apache/dubbo
+          ls | grep dubbo-spring-boot | xargs -I {} rm -rf {}
+          echo "removed dubbo-spring-boot* modules in local repo"
       - name: "Calculate Dubbo Version"
         run: |
           REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' pom.xml`
@@ -47,6 +52,7 @@ jobs:
           path: dubbo-version
 
   build-dubbo-spring-boot:
+    needs: build-source
     runs-on: ubuntu-latest
     outputs:
       commit_id: ${{ steps.git-checker.outputs.commit_id }}
@@ -86,6 +92,10 @@ jobs:
         if: steps.dubbocache.outputs.cache-hit != 'true'
         run: |
           ./mvnw --batch-mode --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          # just keep dubbo-spring-boot-* modules, remove other dubbo modules from maven local repo
+          cd  ~/.m2/repository/org/apache/dubbo
+          ls | grep -v dubbo-spring-boot | xargs -I {} rm -rf {}
+          echo "modules in `pwd`:" && ls
 
   unit-test:
     needs: [build-source]
@@ -141,7 +151,7 @@ jobs:
           path: test/jobs
 
   integration-test-job:
-    needs: [build-source, integration-test-prepare]
+    needs: [build-source, build-dubbo-spring-boot, integration-test-prepare]
     name: "Integration Test on ubuntu-18.04 (JobId: ${{matrix.job_id}})"
     runs-on: ubuntu-18.04
     timeout-minutes: 30
@@ -164,18 +174,16 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: "Restore Dubbo cache"
-        uses: actions/cache@v2
-        with:
-          path: ~/.m2/repository/org/apache/dubbo
-          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-dubbo-
       - name: "Restore Dubbo-spring-boot cache"
         uses: actions/cache@v2
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-spring-boot-snapshot-${{needs.build-dubbo-spring-boot.outputs.commit_id}}
+      - name: "Restore Dubbo cache"
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository/org/apache/dubbo
+          key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
       - name: "Download test list"
         uses: actions/download-artifact@v2
         with:
