@@ -30,34 +30,15 @@ public class ExecutorRepositoryTest {
 
     @Test
     public void testGetExecutor() {
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456"), true);
-        testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"), false);
+        testGet(URL.valueOf("dubbo://127.0.0.1:23456"));
+        testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"));
 
         Assertions.assertNotNull(executorRepository.getSharedExecutor());
         Assertions.assertNotNull(executorRepository.getServiceExporterExecutor());
         executorRepository.nextScheduledExecutor();
     }
 
-    private void testGet(URL url, Boolean isFirst) {
-        if (isFirst) {
-            Assertions.assertNull(executorRepository.getExecutor(url));
-        } else {
-            Assertions.assertEquals(executorRepository.getExecutor(url), executorRepository.getSharedExecutor());
-        }
-
-        ExecutorService executorService = executorRepository.createExecutorIfAbsent(url);
-        executorService.shutdown();
-        executorService = executorRepository.createExecutorIfAbsent(url);
-        Assertions.assertFalse(executorService.isShutdown());
-
-        Assertions.assertEquals(executorService, executorRepository.getExecutor(url));
-        executorService.shutdown();
-        Assertions.assertNotEquals(executorService, executorRepository.getExecutor(url));
-    }
-
-    private void testGetNotShared(URL url) {
-        Assertions.assertNull(executorRepository.getExecutor(url));
-
+    private void testGet(URL url) {
         ExecutorService executorService = executorRepository.createExecutorIfAbsent(url);
         executorService.shutdown();
         executorService = executorRepository.createExecutorIfAbsent(url);
