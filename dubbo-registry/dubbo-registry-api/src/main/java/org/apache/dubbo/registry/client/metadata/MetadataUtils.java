@@ -71,7 +71,7 @@ public class MetadataUtils {
     }
 
     public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
-        String key = instance.getServiceName() + "##" + instance.getId() + "##" +
+        String key = instance.getServiceName() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance);
         return metadataServiceProxies.computeIfAbsent(key, k -> {
             MetadataServiceURLBuilder builder = null;
@@ -81,10 +81,10 @@ public class MetadataUtils {
             Map<String, String> metadata = instance.getMetadata();
             // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
             String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
-            if (metadata.isEmpty() || StringUtils.isEmpty(dubboURLsJSON)) {
-                builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
-            } else {
+            if (StringUtils.isNotEmpty(dubboURLsJSON)) {
                 builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
+            } else {
+                builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
             }
 
             List<URL> urls = builder.build(instance);
