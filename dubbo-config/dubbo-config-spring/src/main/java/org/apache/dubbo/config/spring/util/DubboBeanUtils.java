@@ -26,9 +26,11 @@ import org.apache.dubbo.config.spring.context.DubboApplicationListenerRegistrar;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
 import java.util.ArrayList;
@@ -102,6 +104,10 @@ public abstract class DubboBeanUtils {
      * @return
      */
     public static <T> T getOptionalBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) throws BeansException {
+        if (beanName == null) {
+            return getOptionalBeanByType(beanFactory, beanType);
+        }
+
         T bean = null;
         try {
             bean = beanFactory.getBean(beanName, beanType);
@@ -113,6 +119,17 @@ public abstract class DubboBeanUtils {
                     beanName, beanType.getName(), e.getActualType().getName()));
         }
         return bean;
+    }
+
+    private static <T> T getOptionalBeanByType(ListableBeanFactory beanFactory, Class<T> beanType) {
+        // Issue : https://github.com/alibaba/spring-context-support/issues/20
+        String[] beanNames = BeanFactoryUtils.beanNamesForTypeIncludingAncestors(beanFactory, beanType, true, false);
+        if (beanNames == null || beanNames.length == 0) {
+            return null;
+        } else if (beanNames.length > 1){
+            throw new NoUniqueBeanDefinitionException(beanType, Arrays.asList(beanNames));
+        }
+        return (T) beanFactory.getBean(beanNames[0]);
     }
 
     public static <T> T getBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) throws BeansException {
