@@ -18,6 +18,8 @@ env:
 jobs:
   build-source:
     runs-on: ubuntu-18.04
+    outputs:
+      version: ${{ steps.dubbo-version.outputs.version }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -49,15 +51,11 @@ jobs:
           cd ./dubbo-spring-boot-project
           ./mvnw --batch-mode --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
       - name: "Calculate Dubbo Version"
+        id: dubbo-version
         run: |
           REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
-          mkdir dubbo-version
-          echo $REVISION > dubbo-version/dubbo-version
-      - name: "Upload Dubbo version"
-        uses: actions/upload-artifact@v2
-        with:
-          name: dubbo-version
-          path: dubbo-version
+          echo "::set-output name=version::$REVISION"
+          echo "dubbo version: $REVISION"
 
   unit-test:
     needs: [build-source]
@@ -146,18 +144,13 @@ jobs:
         with:
           name: test-list
           path: test/jobs/
-      - name: "Download Dubbo version"
-        uses: actions/download-artifact@v2
-        with:
-          name: dubbo-version
-          path: dubbo-version
       - name: "Set up JDK 8"
         uses: actions/setup-java@v1
         with:
           java-version: 8
       - name: "Init Candidate Versions"
         run: |
-          DUBBO_VERSION=`cat dubbo-version/dubbo-version`
+          DUBBO_VERSION="${{needs.build-source.outputs.version}}"
           CANDIDATE_VERSIONS="dubbo.version:$DUBBO_VERSION;$CANDIDATE_VERSIONS"
           echo "CANDIDATE_VERSIONS=$CANDIDATE_VERSIONS" >> $GITHUB_ENV
       - name: "Build test image"
