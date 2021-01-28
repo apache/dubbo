@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
@@ -23,17 +25,29 @@ import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigEarlyIniti
 import org.apache.dubbo.config.spring.context.DubboApplicationListenerRegistrar;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
-
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
+import static org.springframework.util.ObjectUtils.isEmpty;
 
 /**
  * Dubbo Bean utilities class
  *
  * @since 2.7.6
  */
-public interface DubboBeanUtils {
+public abstract class DubboBeanUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(DubboBeanUtils.class);
 
     /**
      * Register the common beans
@@ -45,7 +59,7 @@ public interface DubboBeanUtils {
      * @see DubboLifecycleComponentApplicationListener
      * @see DubboBootstrapApplicationListener
      */
-    static void registerCommonBeans(BeanDefinitionRegistry registry) {
+    public static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
@@ -76,5 +90,55 @@ public interface DubboBeanUtils {
         // Since 2.7.9 Register DubboConfigEarlyInitializationPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigEarlyInitializationPostProcessor.BEAN_NAME,
                 DubboConfigEarlyInitializationPostProcessor.class);
+    }
+
+    /**
+     * Get optional bean by name and type
+     *
+     * @param beanFactory
+     * @param beanName
+     * @param beanType
+     * @param <T>
+     * @return
+     */
+    public static <T> T getOptionalBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) throws BeansException {
+        T bean = null;
+        try {
+            bean = beanFactory.getBean(beanName, beanType);
+        } catch (NoSuchBeanDefinitionException e) {
+            // ignore NoSuchBeanDefinitionException
+        } catch (BeanNotOfRequiredTypeException e) {
+            // ignore BeanNotOfRequiredTypeException
+            logger.warn(String.format("bean type not match, name: %s, expected type: %s, actual type: %s",
+                    beanName, beanType.getName(), e.getActualType().getName()));
+        }
+        return bean;
+    }
+
+    public static <T> T getBean(ListableBeanFactory beanFactory, String beanName, Class<T> beanType) throws BeansException {
+        return beanFactory.getBean(beanName, beanType);
+    }
+
+    /**
+     * Get beans by names and type
+     *
+     * @param beanFactory
+     * @param beanNames
+     * @param beanType
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> getBeans(ListableBeanFactory beanFactory, String[] beanNames, Class<T> beanType) throws BeansException {
+        if (isEmpty(beanNames)) {
+            return emptyList();
+        }
+        List<T> beans = new ArrayList<T>(beanNames.length);
+        for (String beanName : beanNames) {
+            T bean = getBean(beanFactory, beanName, beanType);
+            if (bean != null) {
+                beans.add(bean);
+            }
+        }
+        return unmodifiableList(beans);
     }
 }
