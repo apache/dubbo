@@ -21,6 +21,10 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
+<<<<<<< HEAD
+=======
+import org.springframework.test.annotation.DirtiesContext;
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -50,6 +58,7 @@ import static org.springframework.util.ReflectionUtils.findField;
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ReferenceBeanBuilderTest {
 
     @DubboReference(

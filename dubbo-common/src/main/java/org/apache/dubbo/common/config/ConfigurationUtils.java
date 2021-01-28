@@ -66,6 +66,13 @@ public class ConfigurationUtils {
         return ApplicationModel.getEnvironment().getConfiguration();
     }
 
+<<<<<<< HEAD
+=======
+    public static Configuration getDynamicGlobalConfiguration() {
+        return ApplicationModel.getEnvironment().getDynamicGlobalConfiguration();
+    }
+
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     // FIXME
     @SuppressWarnings("deprecation")
     public static int getServerShutdownTimeout() {
@@ -90,6 +97,14 @@ public class ConfigurationUtils {
             }
         }
         return timeout;
+    }
+
+    public static String getDynamicProperty(String property) {
+        return getDynamicProperty(property, null);
+    }
+
+    public static String getDynamicProperty(String property, String defaultValue) {
+        return StringUtils.trim(getDynamicGlobalConfiguration().getString(property, defaultValue));
     }
 
     public static String getProperty(String property) {

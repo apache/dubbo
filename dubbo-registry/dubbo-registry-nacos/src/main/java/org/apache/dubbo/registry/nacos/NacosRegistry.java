@@ -232,11 +232,15 @@ public class NacosRegistry extends FailbackRegistry {
      * @return
      */
     private boolean isServiceNamesWithCompatibleMode(final URL url) {
+<<<<<<< HEAD
         if (!isAdminProtocol(url) && createServiceName(url).isConcrete()) {
             return true;
         } else {
             return false;
         }
+=======
+        return !isAdminProtocol(url) && createServiceName(url).isConcrete();
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     }
 
     @Override
@@ -324,7 +328,11 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
         String parameterValue = url.getParameter(parameterName);
+<<<<<<< HEAD
         if (!org.apache.commons.lang3.StringUtils.isBlank(parameterValue)) {
+=======
+        if (!StringUtils.isBlank(parameterValue)) {
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
             target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
         }
     }

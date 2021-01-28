@@ -1175,11 +1175,26 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         //FIXME
+<<<<<<< HEAD
         publishMetadataToRemote(serviceInstance);
 
         getServiceDiscoveries().forEach(serviceDiscovery ->
         {
             calInstanceRevision(serviceDiscovery, serviceInstance);
+=======
+        if (logger.isInfoEnabled()) {
+            logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
+        }
+        publishMetadataToRemote(serviceInstance);
+
+        logger.info("Start registering instance address to registry.");
+        getServiceDiscoveries().forEach(serviceDiscovery ->
+        {
+            calInstanceRevision(serviceDiscovery, serviceInstance);
+            if (logger.isDebugEnabled()) {
+                logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+            }
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
             // register metadata
             serviceDiscovery.register(serviceInstance);
         });

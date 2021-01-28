@@ -79,8 +79,6 @@ public class RedisRegistry extends FailbackRegistry {
 
     private static final Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
 
-    private static final int DEFAULT_REDIS_PORT = 6379;
-
     private final static String DEFAULT_ROOT = "dubbo";
 
     private static final String REDIS_MASTER_NAME_KEY = "master-name";
@@ -100,8 +98,6 @@ public class RedisRegistry extends FailbackRegistry {
     private final int expirePeriod;
 
     private volatile boolean admin = false;
-
-    private boolean replicate;
 
     public RedisRegistry(URL url) {
         super(url);
@@ -214,12 +210,16 @@ public class RedisRegistry extends FailbackRegistry {
         String key = toCategoryPath(url);
         String value = url.toFullString();
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
+<<<<<<< HEAD
         boolean success = false;
         RpcException exception = null;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         try {
             redisClient.hset(key, value, expire);
             redisClient.publish(key, REGISTER);
         } catch (Throwable t) {
+<<<<<<< HEAD
             exception = new RpcException("Failed to register service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
 
@@ -229,6 +229,9 @@ public class RedisRegistry extends FailbackRegistry {
             } else {
                 throw exception;
             }
+=======
+            throw new RpcException("Failed to register service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         }
     }
 
@@ -236,6 +239,7 @@ public class RedisRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         String key = toCategoryPath(url);
         String value = url.toFullString();
+<<<<<<< HEAD
         RpcException exception = null;
         boolean success = false;
         try {
@@ -252,6 +256,13 @@ public class RedisRegistry extends FailbackRegistry {
             } else {
                 throw exception;
             }
+=======
+        try {
+            redisClient.hdel(key, value);
+            redisClient.publish(key, UNREGISTER);
+        } catch (Throwable t) {
+            throw new RpcException("Failed to unregister service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         }
     }
 
@@ -267,8 +278,11 @@ public class RedisRegistry extends FailbackRegistry {
                 notifier.start();
             }
         }
+<<<<<<< HEAD
         boolean success = false;
         RpcException exception = null;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         try {
             if (service.endsWith(ANY_VALUE)) {
                 admin = true;
@@ -284,6 +298,7 @@ public class RedisRegistry extends FailbackRegistry {
                         doNotify(sk, url, Collections.singletonList(listener));
                     }
                 }
+<<<<<<< HEAD
             } else {
                 doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
             }
@@ -294,9 +309,13 @@ public class RedisRegistry extends FailbackRegistry {
         if (exception != null) {
             if (success) {
                 logger.warn(exception.getMessage(), exception);
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
             } else {
-                throw exception;
+                doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
             }
+        } catch (Throwable t) {
+            throw new RpcException("Failed to subscribe service from redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 

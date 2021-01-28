@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Collection;
 import java.util.List;
@@ -60,18 +61,31 @@ import java.util.List;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
+<<<<<<< HEAD
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail ;
 import static org.hamcrest.Matchers.containsString;
+=======
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 
 
 /**
  * ConfigTest
  */
 @Disabled
+<<<<<<< HEAD
+=======
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 public class ConfigTest {
 
     @Test

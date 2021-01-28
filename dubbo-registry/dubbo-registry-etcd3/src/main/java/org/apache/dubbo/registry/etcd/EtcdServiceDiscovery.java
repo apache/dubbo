@@ -160,7 +160,11 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+<<<<<<< HEAD
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName));
+=======
+        registerServiceWatcher(listener.getServiceNames());
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     }
 
     @Override

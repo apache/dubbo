@@ -176,11 +176,18 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
 
     @Override
     public void destroy() {
+<<<<<<< HEAD
         if (!notifiers.isEmpty()) {
             notifiers.forEach((key, notifier) -> notifier.stop());
             notifiers.clear();
         }
 
+=======
+        if (notifier != null) {
+            notifier.stop();
+        }
+        notifier = null;
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         notifierExecutor.shutdownNow();
 
         if (!ttlSchedulers.isEmpty()) {
@@ -200,6 +207,7 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+<<<<<<< HEAD
         for (String serviceName : listener.getServiceNames()) {
             ConsulNotifier notifier = notifiers.get(serviceName);
 
@@ -210,6 +218,13 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
                 notifiers.put(serviceName, notifier);
             }
             notifierExecutor.execute(notifier);
+=======
+        if (notifier == null) {
+            String serviceName = listener.getServiceNames();
+            Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+            Long consulIndex = response.getConsulIndex();
+            notifier = new ConsulNotifier(serviceName, consulIndex);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         }
     }
 
@@ -224,9 +239,13 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         TtlScheduler ttlScheduler = ttlSchedulers.get(serviceInstance.getServiceName());
         String id = buildId(serviceInstance);
+<<<<<<< HEAD
         if (ttlScheduler != null) {
             ttlScheduler.remove(id);
         }
+=======
+        ttlScheduler.remove(id);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         client.agentServiceDeregister(id, aclToken);
     }
 

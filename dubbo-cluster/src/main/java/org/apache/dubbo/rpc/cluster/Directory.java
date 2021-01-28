@@ -53,4 +53,9 @@ public interface Directory<T> extends Node {
 
     boolean isDestroyed();
 
+<<<<<<< HEAD
+=======
+    void discordAddresses();
+
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 }

@@ -19,8 +19,11 @@ package org.apache.dubbo.registry.client.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
+<<<<<<< HEAD
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
@@ -32,12 +35,18 @@ import java.util.Map;
 
 import static java.lang.String.valueOf;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+<<<<<<< HEAD
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_TIMEOUT_VALUE;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PROXY_TIMEOUT_KEY;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataServiceURLsParams;
@@ -49,9 +58,13 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @since 2.7.5
  */
 public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+<<<<<<< HEAD
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+=======
+    
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     public static final String NAME = "standard";
 
     /**
@@ -71,6 +84,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
 
         String host = serviceInstance.getHost();
 
+<<<<<<< HEAD
         if (paramsMap.isEmpty()) {
             // ServiceInstance Metadata is empty. Happened when registry not support metadata write.
             urls.add(generateUrlWithoutMetadata(serviceName, host));
@@ -103,6 +117,19 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
         urlBuilder.addParameter(GROUP_KEY, serviceName);
         return urlBuilder.build();
     }
+=======
+        for (Map.Entry<String, Map<String, String>> entry : paramsMap.entrySet()) {
+            String protocol = entry.getKey();
+            Map<String, String> params = entry.getValue();
+            int port = Integer.parseInt(params.get(PORT_KEY));
+            URLBuilder urlBuilder = new URLBuilder()
+                    .setHost(host)
+                    .setPort(port)
+                    .setProtocol(protocol)
+                    .setPath(MetadataService.class.getName())
+                    .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                    .addParameter(SIDE_KEY, CONSUMER);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 
     private URL generateUrlWithoutMetadata(String serviceName, String host) {
         Integer port = ApplicationModel.getApplicationConfig().getMetadataServicePort();

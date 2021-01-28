@@ -1,2 +1,6 @@
 registry=org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol
+<<<<<<< HEAD
 service-discovery-registry=org.apache.dubbo.registry.client.RegistryProtocol
+=======
+service-discovery-registry=org.apache.dubbo.registry.integration.RegistryProtocol
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05

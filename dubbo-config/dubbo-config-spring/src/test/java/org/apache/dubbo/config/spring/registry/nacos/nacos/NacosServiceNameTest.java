@@ -20,18 +20,25 @@ import org.apache.dubbo.registry.nacos.NacosServiceName;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.annotation.DirtiesContext;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.WILDCARD;
+<<<<<<< HEAD
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+=======
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link NacosServiceName} Test
  *
  * @since 2.7.3
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class NacosServiceNameTest {
 
     private static final String category = DEFAULT_CATEGORY;

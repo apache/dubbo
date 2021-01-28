@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -159,6 +160,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String repository;
 
+<<<<<<< HEAD
+=======
+    private Boolean publishInterface;
+
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     /**
      * Metadata Service, used in Service Discovery
      */
@@ -450,6 +456,18 @@ public class ApplicationConfig extends AbstractConfig {
         this.repository = repository;
     }
 
+<<<<<<< HEAD
+=======
+    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
+    public Boolean getPublishInterface() {
+        return publishInterface;
+    }
+
+    public void setPublishInterface(Boolean publishInterface) {
+        this.publishInterface = publishInterface;
+    }
+
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
     @Parameter(key = "metadata-service-port")
     public Integer getMetadataServicePort() {
         return metadataServicePort;

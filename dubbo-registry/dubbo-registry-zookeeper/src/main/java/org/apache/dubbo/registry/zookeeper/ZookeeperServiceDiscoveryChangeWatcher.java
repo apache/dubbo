@@ -39,6 +39,8 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
+    private boolean keepWatching = true;
+
     private final String serviceName;
 
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
@@ -55,9 +57,25 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         Watcher.Event.EventType eventType = event.getType();
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
+<<<<<<< HEAD
             listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
             zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
             zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+=======
+            if (shouldKeepWatching()) {
+                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
+                zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
+                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+            }
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         }
+    }
+
+    public boolean shouldKeepWatching() {
+        return keepWatching;
+    }
+
+    public void stopWatching() {
+        this.keepWatching = false;
     }
 }

@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -162,6 +163,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         Set<String>  appNameSet = new HashSet<>();
         String path = toRootDir() + serviceKey;
+<<<<<<< HEAD
         appNameSet.addAll(zkClient.getChildren(path));
 
         if (null == listenerMap.get(path)) {
@@ -176,8 +178,35 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
             };
             zkClient.addChildListener(path, zkListener);
             listenerMap.put(path, zkListener);
+=======
+        List<String> appNameList = zkClient.getChildren(path);
+        if (!CollectionUtils.isEmpty(appNameList)) {
+            appNameSet.addAll(appNameList);
+        }
+
+        if (null == listenerMap.get(path)) {
+            zkClient.create(path, false);
+            addServiceMappingListener(path, serviceKey, listener);
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
         }
 
         return appNameSet;
     }
+<<<<<<< HEAD
+=======
+
+    private void addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
+        ChildListener zkListener = new ChildListener() {
+            @Override
+            public void childChanged(String path, List<String> children) {
+                MappingChangedEvent event = new MappingChangedEvent();
+                event.setServiceKey(serviceKey);
+                event.setApps(null != children ? new HashSet<>(children) : null);
+                listener.onEvent(event);
+            }
+        };
+        zkClient.addChildListener(path, zkListener);
+        listenerMap.put(path, zkListener);
+    }
+>>>>>>> 7ddf6114b011b87631b0e72129630b0eb2133e05
 }
