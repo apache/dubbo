@@ -23,7 +23,9 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
