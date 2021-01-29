@@ -41,9 +41,14 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        super.close(ctx, promise);
+    }
+
+    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2SettingsFrame) {
-            //
+            // already handled
         } else if (msg instanceof Http2GoAwayFrame) {
             final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
             connectionHandler.onGoAway(ctx.channel());
