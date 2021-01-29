@@ -164,7 +164,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public boolean isAvailable() {
-        return ConnectionStatus.CONNECTED == getStatus() && channel != null && channel.isActive();
+        return ConnectionStatus.CLOSED != getStatus() && channel != null && channel.isActive();
     }
 
     public ConnectionStatus getStatus() {
@@ -272,8 +272,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         this.lastReconnectTime = System.currentTimeMillis();
         this.retryAttempts = Math.min(12, retryAttempts + 1);
         long start = System.currentTimeMillis();
-        final Future<Channel> connectFuture = connectAsync();
-        this.connectFuture = connectFuture;
+        this.connectFuture= connectAsync();
         connectFuture.awaitUninterruptibly(getConnectTimeout());
         if (!connectFuture.isSuccess()) {
             if (connectFuture.isDone()) {

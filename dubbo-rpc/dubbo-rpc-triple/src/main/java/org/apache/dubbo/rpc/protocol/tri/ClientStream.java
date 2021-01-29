@@ -48,10 +48,10 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.AsciiString;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
@@ -60,15 +60,17 @@ public class ClientStream extends AbstractStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(ClientStream.class);
     private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Missing Response");
+    private static final AsciiString SCHEME = AsciiString.of("http");
+    private final String authority ;
     private final Request request;
     private final RpcInvocation invocation;
-
 
     public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request) {
         super(url, ctx, needWrap);
         if (needWrap) {
             setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
+        this.authority=url.getAddress();
         this.request = request;
         this.invocation = (RpcInvocation) request.getData();
     }
@@ -97,7 +99,12 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     public void write(Object obj, ChannelPromise promise) throws IOException {
+        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
+        final Http2StreamChannel streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+
         Http2Headers headers = new DefaultHttp2Headers()
+                .authority(authority)
+                .scheme(SCHEME)
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
@@ -120,15 +127,14 @@ public class ClientStream extends AbstractStream implements Stream {
             headers.set(TripleConstant.SERVICE_GROUP, group);
             invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         }
-        final Map<String, Object> attachments = invocation.getObjectAttachments();
-        if (attachments != null) {
-            convertAttachment(headers, attachments);
-        }
+//        final Map<String, Object> attachments = invocation.getObjectAttachments();
+//        if (attachments != null) {
+//            convertAttachment(headers, attachments);
+//        }
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
 
-        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
-        final Http2StreamChannel streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+
         TripleUtil.setClientStream(streamChannel, this);
         streamChannel.pipeline().addLast(responseHandler)
                 .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
