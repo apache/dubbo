@@ -1,1 +1,1 @@
-org.apache.dubbo.config.spring.context.DubboBootstrapStartStopListenerSpringAdapter
+default=org.apache.dubbo.config.spring.context.DubboBootstrapStartStopListenerSpringAdapter
