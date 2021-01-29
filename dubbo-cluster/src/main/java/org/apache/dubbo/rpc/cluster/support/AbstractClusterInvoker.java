@@ -113,6 +113,11 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         }
     }
 
+    @Override
+    public boolean isDestroyed() {
+        return destroyed.get();
+    }
+
     /**
      * Select a invoker using loadbalance policy.</br>
      * a) Firstly, select an invoker using loadbalance. If this invoker is in previously selected list, or,
