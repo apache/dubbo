@@ -27,7 +27,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
  * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationListener
  * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
- * @since 2.7.8
+ * @since 2.7.9
  */
 public class DubboBootstrapStatedEvent extends ApplicationEvent {
 
