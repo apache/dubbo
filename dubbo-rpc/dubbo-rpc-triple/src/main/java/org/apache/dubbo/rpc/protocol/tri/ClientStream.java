@@ -18,8 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -52,16 +50,16 @@ import io.netty.util.AsciiString;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class ClientStream extends AbstractStream implements Stream {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientStream.class);
     private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
             .withDescription("Missing Response");
     private static final AsciiString SCHEME = AsciiString.of("http");
-    private final String authority ;
+    private final String authority;
     private final Request request;
     private final RpcInvocation invocation;
 
@@ -70,7 +68,7 @@ public class ClientStream extends AbstractStream implements Stream {
         if (needWrap) {
             setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
-        this.authority=url.getAddress();
+        this.authority = url.getAddress();
         this.request = request;
         this.invocation = (RpcInvocation) request.getData();
     }
@@ -127,10 +125,10 @@ public class ClientStream extends AbstractStream implements Stream {
             headers.set(TripleConstant.SERVICE_GROUP, group);
             invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         }
-//        final Map<String, Object> attachments = invocation.getObjectAttachments();
-//        if (attachments != null) {
-//            convertAttachment(headers, attachments);
-//        }
+        final Map<String, Object> attachments = invocation.getObjectAttachments();
+        if (attachments != null) {
+            convertAttachment(headers, attachments);
+        }
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
 
