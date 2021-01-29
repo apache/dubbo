@@ -95,7 +95,7 @@ public abstract class DubboBeanUtils {
     }
 
     /**
-     * Get optional bean by name and type
+     * Get optional bean by name and type if beanName is not null, or else find by type
      *
      * @param beanFactory
      * @param beanName
