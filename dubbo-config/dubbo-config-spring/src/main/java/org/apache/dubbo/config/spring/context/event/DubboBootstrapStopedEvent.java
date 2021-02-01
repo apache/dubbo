@@ -23,7 +23,6 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 /**
  * A {@link org.springframework.context.ApplicationEvent} after {@link org.apache.dubbo.config.bootstrap.DubboBootstrap#stop()} success
  *
- * @author <mailto:chenxilzx1@gmail.com>theonefx</mailto:>
  * @see org.springframework.context.ApplicationEvent
  * @see org.springframework.context.ApplicationListener
  * @see org.apache.dubbo.config.bootstrap.DubboBootstrap

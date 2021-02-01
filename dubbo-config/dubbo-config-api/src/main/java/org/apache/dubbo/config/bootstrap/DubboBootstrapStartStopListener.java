@@ -22,7 +22,6 @@ import org.apache.dubbo.common.extension.SPI;
 /**
  * call on DubboBootstrap start or stop.
  *
- * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
  * @scene 2.7.9
  * @see DubboBootstrap
  */

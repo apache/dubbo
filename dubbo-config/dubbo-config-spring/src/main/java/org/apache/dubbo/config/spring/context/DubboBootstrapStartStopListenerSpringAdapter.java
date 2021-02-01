@@ -10,7 +10,6 @@ import org.springframework.context.ApplicationContext;
 /**
  * convcert Dubbo bootstrap event to spring environment.
  *
- * @author <a href="mailto:chenxilzx1@gmail.com">theonefx</a>
  * @scene 2.7.9
  */
 public class DubboBootstrapStartStopListenerSpringAdapter implements DubboBootstrapStartStopListener {
