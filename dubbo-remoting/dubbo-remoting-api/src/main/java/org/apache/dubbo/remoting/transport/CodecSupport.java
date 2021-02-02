@@ -22,16 +22,24 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +50,8 @@ public class CodecSupport {
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
+    // Cache null object serialize results, for heartbeat request/response serialize use.
+    private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new HashMap<Byte, byte[]>();
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
@@ -88,6 +98,60 @@ public class CodecSupport {
     public static ObjectInput deserialize(URL url, InputStream is, byte proto) throws IOException {
         Serialization s = getSerialization(url, proto);
         return s.deserialize(url, is);
+    }
+
+    /**
+     * Get the null object serialize result byte[] of Serialization from the cache,
+     * if not, generate it first.
+     *
+     * @param s Serialization Instances
+     * @return serialize result of null object
+     */
+    public static byte[] getNullBytesOf(Serialization s) {
+        return ID_NULLBYTES_MAP.computeIfAbsent(s.getContentTypeId(), k -> {
+            //Pre-generated Null object bytes
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            byte[] nullBytes = new byte[0];
+            try {
+                ObjectOutput out = s.serialize(null, baos);
+                out.writeObject(null);
+                out.flushBuffer();
+                nullBytes = baos.toByteArray();
+                baos.close();
+            } catch (Exception e) {
+                logger.warn("Serialization extension " + s.getClass().getName() + " not support serializing null object, return an empty bytes instead.");
+            }
+            return nullBytes;
+        });
+    }
+
+    /**
+     * Read all payload to byte[]
+     *
+     * @param is
+     * @return
+     * @throws IOException
+     */
+    public static byte[] getPayload(InputStream is) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = is.read(buffer)) > -1) {
+            baos.write(buffer, 0, len);
+        }
+        baos.flush();
+        return baos.toByteArray();
+    }
+
+    /**
+     * Check if payload is null object serialize result byte[] of serialization
+     *
+     * @param payload
+     * @param proto
+     * @return
+     */
+    public static boolean isHeartBeat(byte[] payload, byte proto) {
+        return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
     }
 
     public static void checkSerialization(String path, String version, Byte id) throws IOException {
