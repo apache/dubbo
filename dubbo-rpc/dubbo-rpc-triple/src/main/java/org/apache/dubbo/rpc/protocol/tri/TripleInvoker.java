@@ -92,7 +92,6 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay(true);
             req.setData(inv);
-            this.connection.init();
 
             DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
