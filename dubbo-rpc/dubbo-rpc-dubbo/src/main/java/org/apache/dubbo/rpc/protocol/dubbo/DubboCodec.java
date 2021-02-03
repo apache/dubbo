@@ -28,6 +28,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -86,7 +88,7 @@ public class DubboCodec extends ExchangeCodec {
                             data = null;
                         } else {
                             ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
-                            data = decodeEventData(channel, in);
+                            data = decodeEventData(channel, in, eventPayload);
                         }
                     } else {
                         DecodeableRpcResult result;
@@ -131,7 +133,7 @@ public class DubboCodec extends ExchangeCodec {
                         data = null;
                     } else {
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
-                        data = decodeEventData(channel, in);
+                        data = decodeEventData(channel, in, eventPayload);
                     }
                 } else {
                     DecodeableRpcInvocation inv;

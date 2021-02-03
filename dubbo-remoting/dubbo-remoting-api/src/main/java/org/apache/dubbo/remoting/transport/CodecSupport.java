@@ -25,11 +25,7 @@ import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
@@ -40,18 +36,18 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class CodecSupport {
-
     private static final Logger logger = LoggerFactory.getLogger(CodecSupport.class);
     private static Map<Byte, Serialization> ID_SERIALIZATION_MAP = new HashMap<Byte, Serialization>();
     private static Map<Byte, String> ID_SERIALIZATIONNAME_MAP = new HashMap<Byte, String>();
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
     private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new HashMap<Byte, byte[]>();
+
+    private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
@@ -87,10 +83,10 @@ public class CodecSupport {
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
-    public static Serialization getSerialization(URL url, Byte id) {
+    public static Serialization getSerialization(URL url, Byte id) throws IOException {
         Serialization result = getSerializationById(id);
         if (result == null) {
-            result = getSerialization(url);
+            throw new IOException("Unrecognized serialize type from consumer: " + id);
         }
         return result;
     }
@@ -134,13 +130,21 @@ public class CodecSupport {
      */
     public static byte[] getPayload(InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
+        byte[] buffer = getBuffer(is.available());
         int len;
         while ((len = is.read(buffer)) > -1) {
             baos.write(buffer, 0, len);
         }
         baos.flush();
         return baos.toByteArray();
+    }
+
+    private static byte[] getBuffer(int size) {
+        byte[] bytes = TL_BUFFER.get();
+        if (size <= bytes.length) {
+            return bytes;
+        }
+        return new byte[size];
     }
 
     /**
