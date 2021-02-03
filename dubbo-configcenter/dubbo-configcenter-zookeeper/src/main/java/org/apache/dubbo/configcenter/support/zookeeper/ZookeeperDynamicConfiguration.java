@@ -74,7 +74,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
      */
     @Override
     public String getInternalProperty(String key) {
-        return zkClient.getContent(key);
+        return zkClient.getContent(buildPathKey("",key));
     }
 
     @Override

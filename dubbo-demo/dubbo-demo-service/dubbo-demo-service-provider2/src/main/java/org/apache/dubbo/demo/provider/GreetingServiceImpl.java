@@ -14,25 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.demo.provider;
 
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.demo.GreetingService;
 
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener {
+/**
+ *
+ */
+public class GreetingServiceImpl implements GreetingService {
     @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
-
-    }
-
-    @Override
-    public void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker) {
-
-    }
-
-    @Override
-    public void onDestroy() {
-
+    public String hello() {
+        return "Greetings from provider2!";
     }
 }
