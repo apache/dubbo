@@ -173,6 +173,8 @@ public interface CommonConstants {
 
     String GROUP_KEY = "group";
 
+    String DEFAULT_GROUP_KEY="default.group";
+
     String PATH_KEY = "path";
 
     String INTERFACE_KEY = "interface";
@@ -184,6 +186,8 @@ public interface CommonConstants {
     String CLASSIFIER_KEY = "classifier";
 
     String VERSION_KEY = "version";
+
+    String DEFAULT_VERSION_KEY = "default.version";
 
     String REVISION_KEY = "revision";
 

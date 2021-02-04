@@ -28,22 +28,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
-import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.CLASSIFIER_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
-import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_CATEGORY;
@@ -94,23 +80,28 @@ public class UrlUtils {
         int defaultPort = StringUtils.parseInteger(defaults == null ? null : defaults.get(PORT_KEY));
         String defaultPath = defaults == null ? null : defaults.get(PATH_KEY);
         Map<String, String> defaultParameters = defaults == null ? null : new HashMap<>(defaults);
-        if (defaultParameters != null) {
-            defaultParameters.remove(PROTOCOL_KEY);
-            defaultParameters.remove(USERNAME_KEY);
-            defaultParameters.remove(PASSWORD_KEY);
-            defaultParameters.remove(HOST_KEY);
-            defaultParameters.remove(PORT_KEY);
-            defaultParameters.remove(PATH_KEY);
-        }
         URL u = URL.valueOf(url);
-        boolean changed = false;
         String protocol = u.getProtocol();
         String username = u.getUsername();
         String password = u.getPassword();
         String host = u.getHost();
         int port = u.getPort();
         String path = u.getPath();
+        boolean changed = false;
         Map<String, String> parameters = new HashMap<>(u.getParameters());
+        if (defaultParameters != null) {
+            boolean protocolBank = StringUtils.isBlank(protocol);
+            // If the protocol parameter is equal to "nacos", the username and password will not be removed from the collection ;
+            // If the protocol parameter is not equal to "nacos", the username and password will  be removed from the collection ;
+            if (protocolBank || !protocol.equals("nacos")) {
+                defaultParameters.remove(USERNAME_KEY);
+                defaultParameters.remove(PASSWORD_KEY);
+            }
+            defaultParameters.remove(PROTOCOL_KEY);
+            defaultParameters.remove(HOST_KEY);
+            defaultParameters.remove(PORT_KEY);
+            defaultParameters.remove(PATH_KEY);
+        }
         if (protocol == null || protocol.length() == 0) {
             changed = true;
             protocol = defaultProtocol;
@@ -413,8 +404,19 @@ public class UrlUtils {
         String consumerVersion = consumerUrl.getParameter(VERSION_KEY);
         String consumerClassifier = consumerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
 
-        String providerGroup = providerUrl.getParameter(GROUP_KEY);
-        String providerVersion = providerUrl.getParameter(VERSION_KEY);
+        String providerGroup;
+        String providerVersion;
+        //Compatible with old version service providers ;
+        String defaultProviderGroup = providerUrl.getParameter(DEFAULT_GROUP_KEY);
+        String defaultProviderVersion = providerUrl.getParameter(DEFAULT_VERSION_KEY);
+        //If the defaultProviderGroup and defaultProviderVersion parameters are not empty, they will be given priority ;
+        if (!StringUtils.isBlank(defaultProviderGroup) && !StringUtils.isBlank(defaultProviderVersion)) {
+            providerGroup = defaultProviderGroup;
+            providerVersion = defaultProviderVersion;
+        } else {
+            providerGroup = providerUrl.getParameter(GROUP_KEY);
+            providerVersion = providerUrl.getParameter(VERSION_KEY);
+        }
         String providerClassifier = providerUrl.getParameter(CLASSIFIER_KEY, ANY_VALUE);
         return (ANY_VALUE.equals(consumerGroup) || StringUtils.isEquals(consumerGroup, providerGroup) || StringUtils.isContains(consumerGroup, providerGroup))
                 && (ANY_VALUE.equals(consumerVersion) || StringUtils.isEquals(consumerVersion, providerVersion))
