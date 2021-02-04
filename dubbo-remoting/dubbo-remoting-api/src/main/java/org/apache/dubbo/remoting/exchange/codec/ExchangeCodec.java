@@ -423,7 +423,7 @@ public class ExchangeCodec extends TelnetCodec {
                 int dataLen = eventBytes.length;
                 int threshold = ConfigurationUtils.getSystemConfiguration().getInt("deserialization.event.size", 10);
                 if (dataLen > threshold) {
-                    throw new IllegalArgumentException("Event data too long, actual size " + threshold + ", threshold " + threshold + " rejected for security consideration.");
+                    throw new IllegalArgumentException("Event data too long, actual size " + dataLen + ", threshold " + threshold + " rejected for security consideration.");
                 }
             }
             return in.readEvent();
