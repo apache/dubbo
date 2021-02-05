@@ -74,7 +74,7 @@ public class CodecSupport {
         return ID_SERIALIZATION_MAP.get(id);
     }
 
-    public static byte getIDByName(String name) {
+    public static Byte getIDByName(String name) {
         return SERIALIZATIONNAME_ID_MAP.get(name);
     }
 
