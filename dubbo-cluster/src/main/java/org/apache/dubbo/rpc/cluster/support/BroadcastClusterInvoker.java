@@ -50,6 +50,13 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (Invoker<T> invoker : invokers) {
             try {
                 result = invoker.invoke(invocation);
+                if(null != result && result.hasException()){
+                    Throwable resultException = result.getException();
+                    if(null != resultException){
+                        logger.warn(resultException.getMessage(), resultException);
+                        throw resultException;
+                    }
+                }
             } catch (RpcException e) {
                 exception = e;
                 logger.warn(e.getMessage(), e);
