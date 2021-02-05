@@ -214,6 +214,7 @@ public class DubboProtocolTest {
             service.returnNonSerialized();
             Assertions.fail();
         } catch (RpcException e) {
+            e.printStackTrace();
             Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
