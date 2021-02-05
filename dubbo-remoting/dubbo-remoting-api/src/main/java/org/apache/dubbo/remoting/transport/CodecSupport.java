@@ -75,7 +75,11 @@ public class CodecSupport {
     }
 
     public static byte getIDByName(String name) {
-        return SERIALIZATIONNAME_ID_MAP.get(name);
+        Byte id = SERIALIZATIONNAME_ID_MAP.get(name);
+        if (id == null) {
+            throw new RuntimeException("No extension find for serialization name " + name);
+        }
+        return id;
     }
 
     public static Serialization getSerialization(URL url) {
