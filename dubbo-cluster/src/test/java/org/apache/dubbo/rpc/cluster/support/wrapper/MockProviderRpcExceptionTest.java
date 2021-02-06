@@ -55,7 +55,7 @@ public class MockProviderRpcExceptionTest {
     public void testMockInvokerProviderRpcException() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloRpcService.class.getName());
         url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true")
-                .addParameter(REFER_KEY, "path%3dorg.apache.dubbo.rpc.cluster.support.wrapper.MockProviderRpcExceptionTest%24IHelloRpcService%26mock%3dtrue");
+                .addParameter(REFER_KEY, "path%3dorg.apache.dubbo.rpc.cluster.support.wrapper.MockProviderRpcExceptionTest%24IHelloRpcService%26mock%3dtrue%26proxy%3djdk");
         Invoker<IHelloRpcService> cluster = getClusterInvoker(url);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething4");
