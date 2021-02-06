@@ -56,6 +56,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -236,8 +237,10 @@ public class AbstractClusterInvokerTest {
     public void testCloseAvailablecheck() {
         LoadBalance lb = mock(LoadBalance.class);
         Map<String, String> queryMap = (Map<String, String> )url.getAttribute(REFER_KEY);
-        URL tmpUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
-        given(lb.select(invokers, tmpUrl, invocation)).willReturn(invoker1);
+        // disabled due to URL will always returns a new instance
+        // URL tmpUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
+
+        given(lb.select(any(List.class), any(URL.class), any(Invocation.class))).willReturn(invoker1);
         initlistsize5();
 
         Invoker sinvoker = cluster_nocheck.select(lb, invocation, invokers, selectedInvokers);
