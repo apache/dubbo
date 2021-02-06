@@ -95,6 +95,6 @@ public class MethodDefinition implements Serializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(), getReturnType(), getParameterTypes());
+        return Objects.hash(getName(), getReturnType(), Arrays.toString(getParameterTypes()));
     }
 }
