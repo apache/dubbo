@@ -29,7 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
 import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
@@ -143,7 +143,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private final ServiceRepository repository;
 
-    private DubboBootstrap bootstrap;
+    private DubboServer dubboServer;
 
     /**
      * The service names that the Dubbo interface subscribed.
@@ -198,11 +198,30 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized T get() {
+        beforeInitByDubboServer();
+        initByDubboServer();
+        return ref;
+    }
+
+    public synchronized void beforeInitByDubboServer(){
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
         if (ref == null) {
             init();
+        }
+    }
+
+    public synchronized T getByBean() {
+        if (destroyed) {
+            throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
+        }
+        if (ref == null) {
+            init();
+        }
+        //Add one Boolean and throw
+        if (!dubboServer.isStarted()) {
+            throw new IllegalStateException("The DubboServer has not been started!");
         }
         return ref;
     }
@@ -233,13 +252,15 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.reference(this);
+        if (dubboServer == null) {
+            dubboServer = DubboServer.getInstance();
+            dubboServer.initialize();
+            dubboServer.reference(this);
         }
+    }
 
-        checkAndUpdateSubConfigs();
+
+    public synchronized void initByDubboServer() {
 
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
@@ -431,7 +452,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 setRegistryIds(consumer.getRegistryIds());
             }
         }
-        // get consumer's global configuration
+        // get consumercheckAndUpdateSubConfigs's global configuration
         checkDefault();
 
         // init some null configuration.
@@ -514,12 +535,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
+    public DubboServer getDubboServer() {
+        return dubboServer;
     }
 
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
+    public void setBootstrap(DubboServer dubboServer) {
+        this.dubboServer = dubboServer;
     }
 
     private void postProcessConfig() {
@@ -531,5 +552,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     // just for test
     Invoker<?> getInvoker() {
         return invoker;
+    }
+
+    @Override
+    public boolean equals(Object object){
+        return this == object;
     }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
+import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
@@ -38,12 +39,12 @@ public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicati
      *
      * @since 2.7.6
      */
-    public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
+    public static final String BEAN_NAME = "dubboServerApplicationListener";
 
-    private final DubboBootstrap dubboBootstrap;
+    private final DubboServer dubboServer;
 
     public DubboBootstrapApplicationListener() {
-        this.dubboBootstrap = DubboBootstrap.getInstance();
+        this.dubboServer = DubboServer.getInstance();
     }
 
     @Override
@@ -56,11 +57,11 @@ public class DubboBootstrapApplicationListener extends OneTimeExecutionApplicati
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        dubboBootstrap.start();
+        dubboServer.start();
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        dubboBootstrap.stop();
+        dubboServer.stop();
     }
 
     @Override

@@ -127,7 +127,7 @@ public class DubboBootstrap extends GenericEventListener {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
 
-        //是否要组做成类似上面这两种的初始化方式？
+        //Is this the best way to get the singleton instance
         dubboServer = DubboServer.getInstance();
 
         DubboShutdownHook.getDubboShutdownHook().register();
