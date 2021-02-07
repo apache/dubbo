@@ -915,12 +915,16 @@ public class DubboBootstrap extends GenericEventListener {
                     if (logger.isInfoEnabled()) {
                         logger.info(NAME + " is ready.");
                     }
+                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
                 }).start();
             } else {
                 ready.set(true);
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is ready.");
                 }
+                ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
             }
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
@@ -985,6 +989,7 @@ public class DubboBootstrap extends GenericEventListener {
     public boolean isReady() {
         return ready.get();
     }
+
 
     public DubboBootstrap stop() throws IllegalStateException {
         destroy();
@@ -1261,6 +1266,8 @@ public class DubboBootstrap extends GenericEventListener {
                     clear();
                     shutdown();
                     release();
+                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
             } finally {
                 destroyLock.unlock();
