@@ -14,15 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.multicast;
+package org.apache.dubbo.metadata.store.failover;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
-public class MulticastServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class MockMetadataReportFactory extends AbstractMetadataReportFactory {
+
     @Override
-    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        return new MulticastServiceDiscovery();
+    protected MetadataReport createMetadataReport(URL url) {
+        return new MockMetadataReport(url);
     }
+
 }
