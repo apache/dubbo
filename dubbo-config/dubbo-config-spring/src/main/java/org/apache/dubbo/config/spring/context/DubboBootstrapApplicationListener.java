@@ -46,6 +46,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
+        DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
     }
 
     @Override

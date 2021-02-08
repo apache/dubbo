@@ -46,6 +46,8 @@ public class CodecSupport {
     private static Map<String, Byte> SERIALIZATIONNAME_ID_MAP = new HashMap<String, Byte>();
     // Cache null object serialize results, for heartbeat request/response serialize use.
     private static Map<Byte, byte[]> ID_NULLBYTES_MAP = new HashMap<Byte, byte[]>();
+    // NIO ThreadLocal buffer to read event payload
+    private static final ThreadLocal<byte[]> TL_BUFFER = ThreadLocal.withInitial(() -> new byte[1024]);
 
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
@@ -132,13 +134,21 @@ public class CodecSupport {
      */
     public static byte[] getPayload(InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
+        byte[] buffer = getBuffer(is.available());
         int len;
         while ((len = is.read(buffer)) > -1) {
             baos.write(buffer, 0, len);
         }
         baos.flush();
         return baos.toByteArray();
+    }
+
+    private static byte[] getBuffer(int size) {
+        byte[] bytes = TL_BUFFER.get();
+        if (size <= bytes.length) {
+            return bytes;
+        }
+        return new byte[size];
     }
 
     /**
