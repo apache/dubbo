@@ -17,10 +17,14 @@
 package org.apache.dubbo.demo.provider;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.dubboserver.DubboServer;
+import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.demo.DemoService;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -29,8 +33,10 @@ public class Application {
         if (isClassic(args)) {
             startWithExport();
         } else {
-            startWithBootstrap();
+//            startWithBootstrap();
+            runWithDubboServer();
         }
+
     }
 
     private static boolean isClassic(String[] args) {
@@ -61,4 +67,19 @@ public class Application {
         System.out.println("dubbo service started");
         new CountDownLatch(1).await();
     }
+
+
+    private static void runWithDubboServer() {
+        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+
+        DubboServer dubboServer = DubboServer.getInstance();
+        dubboServer.application(new ApplicationConfig("dubbo-demo-api-provider"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .service(service)
+                .start()
+                .await();
+    }
+
 }

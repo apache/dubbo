@@ -130,17 +130,6 @@ public class DubboBootstrap extends GenericEventListener {
         //Is this the best way to get the singleton instance
         dubboServer = DubboServer.getInstance();
 
-        DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
-            @Override
-            public void callback() throws Throwable {
-                DubboBootstrap.this.destroy();
-            }
-        });
-    }
-
-    public void unRegisterShutdownHook() {
-        DubboShutdownHook.getDubboShutdownHook().unregister();
     }
 
     private boolean isOnlyRegisterProvider() {

@@ -20,6 +20,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.demo.DemoService;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -29,7 +30,8 @@ public class Application {
         if (isClassic(args)) {
             runWithRefer();
         } else {
-            runWithBootstrap();
+//            runWithBootstrap();
+            runWithDubboServer();
         }
     }
 
@@ -68,4 +70,27 @@ public class Application {
         String message = service.sayHello("dubbo");
         System.out.println(message);
     }
+
+    private static void runWithDubboServer() {
+        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
+        reference.setInterface(DemoService.class);
+        reference.setGeneric("true");
+
+        DubboServer dubboServer = DubboServer.getInstance();
+        dubboServer.application(new ApplicationConfig("dubbo-demo-api-consumer"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .reference(reference)
+                .start();
+
+        DemoService demoService = ReferenceConfigCache.getCache().get(reference);
+        String message = demoService.sayHello("dubbo");
+        System.out.println(message);
+
+        // generic invoke
+        GenericService genericService = (GenericService) demoService;
+        Object genericInvokeResult = genericService.$invoke("sayHello", new String[] { String.class.getName() },
+                new Object[] { "dubbo generic invoke" });
+        System.out.println(genericInvokeResult);
+    }
+
 }

@@ -207,6 +207,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public synchronized void exportByDubboServer() {
 
+        if (!shouldExport() || exported) {
+            return;
+        }
+
+
         checkAndUpdateSubConfigs();
 
         //init serviceMetadata
