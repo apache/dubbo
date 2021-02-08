@@ -24,8 +24,6 @@ import io.netty.util.internal.PlatformDependent;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
-import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
-
 public class SingleProtocolConnectionManager implements ConnectionManager {
     private final ConcurrentMap<String, Connection> connections = PlatformDependent.newConcurrentHashMap();
 
@@ -34,7 +32,7 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
-        final Connection connection = connections.compute(url.getAddress(), (address, conn) -> {
+        return connections.compute(url.getAddress(), (address, conn) -> {
             if (conn == null) {
                 final Connection created = new Connection(url);
                 created.getCloseFuture().addListener(future -> connections.remove(address, created));
@@ -44,10 +42,6 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
                 return conn;
             }
         });
-        if (!url.getParameter(LAZY_CONNECT_KEY, false)) {
-            connection.init();
-        }
-        return connection;
     }
 
     @Override
