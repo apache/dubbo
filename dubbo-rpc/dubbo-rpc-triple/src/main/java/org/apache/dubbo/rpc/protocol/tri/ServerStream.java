@@ -269,7 +269,6 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
-        attachments.put(TripleConstant.TRI_CHANNEL_CTX_KEY, ctx);
         inv.setObjectAttachments(attachments);
         return inv;
     }
