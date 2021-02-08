@@ -257,10 +257,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             dubboServer.initialize();
             dubboServer.reference(this);
         }
+
     }
 
 
     public synchronized void initByDubboServer() {
+
+        checkAndUpdateSubConfigs();
 
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
