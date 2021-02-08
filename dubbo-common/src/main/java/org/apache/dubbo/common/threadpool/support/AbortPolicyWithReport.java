@@ -144,10 +144,14 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
             return USER_HOME;
         }
         final File dumpDirectory = new File(dumpPath);
-        if (!dumpDirectory.exists() && !dumpDirectory.mkdirs()) {
-            logger.warn(format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
-                    dumpDirectory.getAbsolutePath(), USER_HOME));
-            return USER_HOME;
+        if (!dumpDirectory.exists()) {
+            if (dumpDirectory.mkdirs()) {
+                logger.info(format("Dubbo dump directory[%s] created", dumpDirectory.getAbsolutePath()));
+            } else {
+                logger.warn(format("Dubbo dump directory[%s] can't be created, use the 'user.home'[%s]",
+                        dumpDirectory.getAbsolutePath(), USER_HOME));
+                return USER_HOME;
+            }
         }
         return dumpPath;
     }

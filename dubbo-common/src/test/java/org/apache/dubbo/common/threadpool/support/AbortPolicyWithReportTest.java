@@ -46,7 +46,7 @@ public class AbortPolicyWithReportTest {
     }
 
     @Test
-    public void jStackDumpTest_dumpDirectoryCannotBeCreated_useUserHome() throws InterruptedException {
+    public void jStackDumpTest_dumpDirectoryNotExists_cannotBeCreatedTakeUserHome() throws InterruptedException {
         final String dumpDirectory = dumpDirectoryCannotBeCreated();
 
         URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
@@ -76,5 +76,28 @@ public class AbortPolicyWithReportTest {
         } else {
             return "/dev/full/" + UUID.randomUUID().toString();
         }
+    }
+
+    @Test
+    public void jStackDumpTest_dumpDirectoryNotExists_canBeCreated() throws InterruptedException {
+        final String dumpDirectory = UUID.randomUUID().toString();
+
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?dump.directory="
+                + dumpDirectory
+                + "&version=1.0.0&application=morgan&noValue");
+        AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
+
+        try {
+            abortPolicyWithReport.rejectedExecution(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println("hello");
+                }
+            }, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+        } catch (RejectedExecutionException rj) {
+            // ignore
+        }
+
+        Thread.sleep(1000);
     }
 }
