@@ -103,9 +103,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             executors.remove(portKey);
             // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
             executor = null;
+            logger.info("Executor for " + url + " is shutdown.");
         }
         if (executor == null) {
-            logger.warn("Executor of key + '" + portKey + "' has shutdown, return 'DubboSharedHandler' instead.");
             return SHARED_EXECUTOR;
         } else {
             return executor;
