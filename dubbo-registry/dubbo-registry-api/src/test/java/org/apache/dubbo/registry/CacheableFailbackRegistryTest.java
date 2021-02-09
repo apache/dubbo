@@ -185,7 +185,6 @@ public class CacheableFailbackRegistryTest {
         assertEquals(1, registry.getStringAddress().size());
         assertEquals(2, registry.getStringParam().size());
         assertEquals(1, resCount.get());
-        System.out.println(System.getProperty("dubbo.application.url.cache.task.interval"));
         Thread.sleep(5000);
         // After RemovalTask
         assertEquals(1, registry.getStringParam().size());
