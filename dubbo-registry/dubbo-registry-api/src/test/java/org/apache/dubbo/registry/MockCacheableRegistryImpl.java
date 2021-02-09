@@ -32,7 +32,7 @@ import java.util.Map;
  */
 public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
-    static List<String> children = new ArrayList<>();
+    private final List<String> children = new ArrayList<>();
 
     public MockCacheableRegistryImpl(URL url) {
         super(url);

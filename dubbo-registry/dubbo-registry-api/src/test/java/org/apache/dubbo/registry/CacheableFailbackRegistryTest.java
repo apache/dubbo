@@ -19,6 +19,8 @@ package org.apache.dubbo.registry;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,12 +37,25 @@ public class CacheableFailbackRegistryTest {
     static String urlStr;
     MockCacheableRegistryImpl registry;
 
+    @BeforeAll
+    static void setProperty() {
+        System.setProperty("dubbo.application.url.cache.task.interval", "0");
+        System.setProperty("dubbo.application.url.cache.clear.waiting", "0");
+    }
+
     @BeforeEach
     public void setUp() throws Exception {
         service = "org.apache.dubbo.test.DemoService";
         serviceUrl = URL.valueOf("dubbo://127.0.0.1/org.apache.dubbo.test.DemoService?category=providers");
         registryUrl = URL.valueOf("http://1.2.3.4:9090/registry?check=false&file=N/A");
         urlStr = "dubbo%3A%2F%2F172.19.4.113%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fside%3Dprovider%26timeout%3D3000";
+    }
+
+    @AfterEach
+    public void tearDown() {
+        registry.getStringUrls().clear();
+        registry.getStringAddress().clear();
+        registry.getStringParam().clear();
     }
 
     @Test
@@ -58,6 +73,7 @@ public class CacheableFailbackRegistryTest {
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
+        System.out.println(registry.getStringUrls().get(serviceUrl));
         assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
         assertEquals(1, resCount.get());
 
@@ -143,8 +159,6 @@ public class CacheableFailbackRegistryTest {
 
     @Test
     public void testRemove() throws Exception {
-        System.setProperty("dubbo.application.url.cache.task.interval", "0");
-        System.setProperty("dubbo.application.url.cache.clear.waiting", "0");
         final AtomicReference<Integer> resCount = new AtomicReference<>(0);
         registry = new MockCacheableRegistryImpl(registryUrl);
         URL url = URLStrParser.parseEncodedStr(urlStr);
@@ -171,7 +185,8 @@ public class CacheableFailbackRegistryTest {
         assertEquals(1, registry.getStringAddress().size());
         assertEquals(2, registry.getStringParam().size());
         assertEquals(1, resCount.get());
-        Thread.sleep(3000);
+        System.out.println(System.getProperty("dubbo.application.url.cache.task.interval"));
+        Thread.sleep(5000);
         // After RemovalTask
         assertEquals(1, registry.getStringParam().size());
         // StringAddress will be deleted because the related stringUrls cache has been deleted.
@@ -185,7 +200,7 @@ public class CacheableFailbackRegistryTest {
         assertEquals(1, registry.getStringAddress().size());
         assertEquals(1, registry.getStringParam().size());
         assertEquals(1, resCount.get());
-        Thread.sleep(3000);
+        Thread.sleep(5000);
         // After RemovalTask
         assertEquals(1, registry.getStringAddress().size());
         // StringParam will be deleted because the related stringUrls cache has been deleted.
