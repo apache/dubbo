@@ -71,7 +71,6 @@ public class MonitorFilter implements Filter, Filter.Listener {
         this.monitorFactory = monitorFactory;
     }
 
-
     /**
      * The invocation interceptor,it will collect the invoke data about this invocation and send it to monitor center
      *
@@ -82,7 +81,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (shouldCollect(invoker)) {
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }
@@ -97,7 +96,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (shouldCollect(invoker)) {
             collect(invoker, invocation, result, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
@@ -105,10 +104,15 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (shouldCollect(invoker)) {
             collect(invoker, invocation, null, RpcContext.getContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
+    }
+
+    private boolean shouldCollect(Invoker<?> invoker) {
+        // Only that factories extends AbstractMonitorFactory will collector statistics by MonitorFilter
+        return invoker.getUrl().hasParameter(MONITOR_KEY) && AbstractMonitorFactory.getMonitors().size() > 0;
     }
 
     /**
