@@ -80,6 +80,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
@@ -266,23 +267,29 @@ public class ConfigValidationUtils {
         } else if (monitor != null) {
             address = monitor.getAddress();
         }
-        if (ConfigUtils.isNotEmpty(address)) {
+        String protocol = monitor.getProtocol();
+        if (monitor != null &&
+                (REGISTRY_PROTOCOL.equals(protocol) || SERVICE_REGISTRY_PROTOCOL.equals(protocol))
+                && registryURL != null) {
+            return URLBuilder.from(registryURL)
+                    .setProtocol(DUBBO_PROTOCOL)
+                    .addParameter(PROTOCOL_KEY, protocol)
+                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                    .build();
+        } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
                 if (getExtensionLoader(MonitorFactory.class).hasExtension(LOGSTAT_PROTOCOL)) {
                     map.put(PROTOCOL_KEY, LOGSTAT_PROTOCOL);
+                } else if (ConfigUtils.isNotEmpty(protocol)) {
+                    map.put(PROTOCOL_KEY, protocol);
                 } else {
                     map.put(PROTOCOL_KEY, DUBBO_PROTOCOL);
                 }
             }
+            if (ConfigUtils.isEmpty(address)) {
+                address = LOCALHOST_VALUE;
+            }
             return UrlUtils.parseURL(address, map);
-        } else if (monitor != null &&
-                (REGISTRY_PROTOCOL.equals(monitor.getProtocol()) || SERVICE_REGISTRY_PROTOCOL.equals(monitor.getProtocol()))
-                && registryURL != null) {
-            return URLBuilder.from(registryURL)
-                    .setProtocol(DUBBO_PROTOCOL)
-                    .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
-                    .build();
         }
         return null;
     }
