@@ -73,7 +73,6 @@ public class CacheableFailbackRegistryTest {
 
         registry.addChildren(url);
         registry.subscribe(serviceUrl, listener);
-        System.out.println(registry.getStringUrls().get(serviceUrl));
         assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
         assertEquals(1, resCount.get());
 
