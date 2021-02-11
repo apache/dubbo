@@ -181,10 +181,8 @@ public class CacheableFailbackRegistryTest {
         registry.addChildren(url1);
         registry.subscribe(serviceUrl, listener);
         assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(1, registry.getStringAddress().size());
-        assertEquals(2, registry.getStringParam().size());
         assertEquals(1, resCount.get());
-        Thread.sleep(5000);
+
         // After RemovalTask
         assertEquals(1, registry.getStringParam().size());
         // StringAddress will be deleted because the related stringUrls cache has been deleted.
@@ -195,10 +193,8 @@ public class CacheableFailbackRegistryTest {
         registry.addChildren(url2);
         registry.subscribe(serviceUrl, listener);
         assertEquals(1, registry.getStringUrls().get(serviceUrl).size());
-        assertEquals(1, registry.getStringAddress().size());
-        assertEquals(1, registry.getStringParam().size());
         assertEquals(1, resCount.get());
-        Thread.sleep(5000);
+
         // After RemovalTask
         assertEquals(1, registry.getStringAddress().size());
         // StringParam will be deleted because the related stringUrls cache has been deleted.

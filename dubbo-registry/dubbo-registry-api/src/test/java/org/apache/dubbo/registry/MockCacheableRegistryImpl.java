@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  *
@@ -61,7 +62,22 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
         List<URL> res = toUrlsWithoutEmpty(url, children);
+        Semaphore semaphore = getSemaphore();
+        while (semaphore.availablePermits() != 1) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
         listener.notify(res);
+
+        // Make sure RemovalTask is completed
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

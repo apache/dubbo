@@ -279,6 +279,15 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return DUBBO;
     }
 
+    /**
+     * This method is for unit test to see if the RemovalTask has completed or not.<br />
+     * <strong>Please do not call this method in other places.</strong>
+     */
+    @Deprecated
+    protected Semaphore getSemaphore() {
+        return semaphore;
+    }
+
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
 
 
