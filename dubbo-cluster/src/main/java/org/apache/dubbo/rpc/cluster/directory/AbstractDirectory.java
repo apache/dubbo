@@ -72,7 +72,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
         this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
 
-        this.consumerUrl = this.url.setProtocol(consumedProtocol).setPath(path == null ? queryMap.get(INTERFACE_KEY) : path).addParameters(queryMap)
+        this.consumerUrl = this.url.setProtocol(consumedProtocol)
+                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path)
+                .clearParameters()
+                .addParameters(queryMap)
                 .removeParameter(MONITOR_KEY);
 
         setRouterChain(routerChain);
