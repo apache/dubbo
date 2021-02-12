@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -59,15 +60,15 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
+                public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
+
+                }
+
+                @Override
                 public List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier) {
                     return null;
                 }
 
-                @Override
-                public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier,
-                                               Collection<String> urls) {
-
-                }
 
                 @Override
                 public List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier) {
@@ -82,11 +83,6 @@ public class AbstractMetadataReportFactoryTest {
                 @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
                     store.put(consumerMetadataIdentifier.getIdentifierKey(), new Gson().toJson(serviceParameterMap));
-                }
-
-                @Override
-                public void close() throws Exception {
-
                 }
 
                 Map<String, String> store = new ConcurrentHashMap<>();
