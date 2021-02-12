@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -513,6 +515,9 @@ public class PojoUtils {
                 }
                 return dest;
             }
+        }
+        if (pojo instanceof JsonObject) {
+            return new Gson().fromJson((JsonObject)pojo, Map.class);
         }
         return pojo;
     }

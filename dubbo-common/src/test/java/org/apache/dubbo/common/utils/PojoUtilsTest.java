@@ -288,11 +288,11 @@ public class PojoUtilsTest {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("1", "test");
         @SuppressWarnings("unchecked")
-        Map<Integer, Object> value = (Map<Integer, Object>) PojoUtils.realize(jsonObject,
+        Map<String, String> value = (Map<String, String>) PojoUtils.realize(jsonObject,
                 method.getParameterTypes()[0],
                 method.getGenericParameterTypes()[0]);
         method.invoke(new PojoUtilsTest(), value);
-        assertEquals("test", value.get(1));
+        assertEquals("test", value.get("1"));
     }
 
     @Test
@@ -304,12 +304,12 @@ public class PojoUtilsTest {
         List<JsonObject> list = new ArrayList<>(1);
         list.add(jsonObject);
         @SuppressWarnings("unchecked")
-        List<Map<Integer, Object>> result = (List<Map<Integer, Object>>) PojoUtils.realize(
+        List<Map<String, String>> result = (List<Map<String, String>>) PojoUtils.realize(
                 list,
                 method.getParameterTypes()[0],
                 method.getGenericParameterTypes()[0]);
         method.invoke(new PojoUtilsTest(), result);
-        assertEquals("test", result.get(0).get(1));
+        assertEquals("test", result.get(0).get("1"));
     }
 
     public void setMap(Map<Integer, Object> map) {
