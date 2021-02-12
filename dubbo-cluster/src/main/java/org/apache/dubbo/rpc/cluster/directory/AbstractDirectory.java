@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
@@ -74,7 +75,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         this.consumerUrl = this.url.setProtocol(consumedProtocol)
                 .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path)
-                .clearParameters()
+                .removeParameter(GROUP_KEY)
                 .addParameters(queryMap)
                 .removeParameter(MONITOR_KEY);
 
