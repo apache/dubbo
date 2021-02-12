@@ -27,8 +27,8 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.alibaba.fastjson.JSON;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -100,7 +100,8 @@ public class ServiceInstanceMetadataUtils {
     public static Map<String, Map<String, String>> getMetadataServiceURLsParams(ServiceInstance serviceInstance) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String param = metadata.get(METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME);
-        return isBlank(param) ? emptyMap() : (Map) JSON.parse(param);
+        Gson gson = new Gson();
+        return isBlank(param) ? emptyMap() : gson.fromJson(param, new TypeToken<Map<String, Map<String, String>>>() {}.getType());
     }
 
     /**
@@ -136,7 +137,7 @@ public class ServiceInstanceMetadataUtils {
             return null;
         }
 
-        return JSON.toJSONString(params);
+        return new Gson().toJson(params);
     }
 
     private static Map<String, String> getParams(URL providerURL) {
@@ -214,7 +215,7 @@ public class ServiceInstanceMetadataUtils {
             endpoints.add(endpoint);
         });
 
-        metadata.put(ENDPOINTS, JSON.toJSONString(endpoints));
+        metadata.put(ENDPOINTS, new Gson().toJson(endpoints));
     }
 
     /**
@@ -229,7 +230,7 @@ public class ServiceInstanceMetadataUtils {
         Map<String, String> metadata = serviceInstance.getMetadata();
         String rawEndpoints = metadata.get(ENDPOINTS);
         if (StringUtils.isNotEmpty(rawEndpoints)) {
-            List<Endpoint> endpoints = JSON.parseArray(rawEndpoints, Endpoint.class);
+            List<Endpoint> endpoints = new Gson().fromJson(rawEndpoints, new TypeToken<Endpoint>(){}.getType());
             for (Endpoint endpoint : endpoints) {
                 if (endpoint.getProtocol().equals(protocol)) {
                     return endpoint.getPort();

@@ -20,7 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.util.Collections;
 import java.util.List;
@@ -45,7 +46,7 @@ public class SpringCloudMetadataServiceURLBuilder implements MetadataServiceURLB
         if (StringUtils.isBlank(dubboURLsJSON)) {
             return Collections.emptyList();
         }
-        List<String> urlStrings = JSON.parseArray(dubboURLsJSON, String.class);
+        List<String> urlStrings = new Gson().fromJson(dubboURLsJSON, new TypeToken<List<String>>(){}.getType());
         return urlStrings.stream().map(URL::valueOf).collect(Collectors.toList());
     }
 }

@@ -26,7 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.alibaba.fastjson.JSON.toJSONString;
 import static java.lang.String.format;
 import static java.nio.channels.FileChannel.open;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
@@ -123,10 +122,11 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
+        Gson gson = new Gson();
         return dynamicConfiguration.getConfigKeys(DEFAULT_GROUP)
                 .stream()
                 .map(serviceInstanceId -> dynamicConfiguration.getConfig(serviceInstanceId, serviceName))
-                .map(content -> JSON.parseObject(content, DefaultServiceInstance.class))
+                .map(content -> gson.fromJson(content, DefaultServiceInstance.class))
                 .collect(Collectors.toList());
     }
 
@@ -145,7 +145,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
         this.serviceInstance = serviceInstance;
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
-        String content = toJSONString(serviceInstance);
+        String content = new Gson().toJson(serviceInstance);
         if (dynamicConfiguration.publishConfig(serviceInstanceId, serviceName, content)) {
             lockFile(serviceInstanceId, serviceName);
         }

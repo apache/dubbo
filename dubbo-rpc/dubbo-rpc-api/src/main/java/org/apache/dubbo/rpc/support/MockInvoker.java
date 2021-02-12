@@ -32,7 +32,8 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -66,6 +67,7 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     public static Object parseMockValue(String mock, Type[] returnTypes) throws Exception {
         Object value = null;
+        Gson gson = new Gson();
         if ("empty".equals(mock)) {
             value = ReflectUtils.getEmptyObject(returnTypes != null && returnTypes.length > 0 ? (Class<?>) returnTypes[0] : null);
         } else if ("null".equals(mock)) {
@@ -80,11 +82,17 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
         } else if (StringUtils.isNumeric(mock, false)) {
-            value = JSON.parse(mock);
+            try {
+                value = gson.fromJson(mock,Integer.class);
+            } catch (JsonSyntaxException e) {
+                if (e.getCause() instanceof NumberFormatException) {
+                    value = gson.fromJson(mock, Long.class);
+                }
+            }
         } else if (mock.startsWith("{")) {
-            value = JSON.parseObject(mock, Map.class);
+            value = gson.fromJson(mock, Map.class);
         } else if (mock.startsWith("[")) {
-            value = JSON.parseObject(mock, List.class);
+            value = gson.fromJson(mock, List.class);
         } else {
             value = mock;
         }

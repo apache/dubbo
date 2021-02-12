@@ -577,10 +577,6 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-        </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
