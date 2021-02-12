@@ -26,9 +26,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -50,6 +50,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
@@ -292,11 +293,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     private Stream<String> toKeysStream(String content) {
-        JSONObject jsonObject = JSON.parseObject(content);
-        JSONArray pageItems = jsonObject.getJSONArray("pageItems");
-        return pageItems.stream()
-                .map(object -> (JSONObject) object)
-                .map(json -> json.getString("dataId"));
+        Gson gson = new Gson();
+        JsonObject jsonObject = gson.toJsonTree(content).getAsJsonObject();
+        JsonArray pageItems = jsonObject.getAsJsonArray("pageItems");
+        return StreamSupport.stream(pageItems.spliterator(), false)
+                .map(object -> (JsonObject) object)
+                .map(json -> json.get("dataId").getAsString());
     }
 
     private String getProperty(String name, String defaultValue) {

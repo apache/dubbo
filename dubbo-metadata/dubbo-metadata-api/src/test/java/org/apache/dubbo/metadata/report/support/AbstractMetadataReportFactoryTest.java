@@ -24,7 +24,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -45,7 +45,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {
-                    store.put(providerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceDefinition));
+                    store.put(providerMetadataIdentifier.getIdentifierKey(), new Gson().toJson(serviceDefinition));
                 }
 
                 @Override
@@ -81,7 +81,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
-                    store.put(consumerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceParameterMap));
+                    store.put(consumerMetadataIdentifier.getIdentifierKey(), new Gson().toJson(serviceParameterMap));
                 }
 
                 @Override

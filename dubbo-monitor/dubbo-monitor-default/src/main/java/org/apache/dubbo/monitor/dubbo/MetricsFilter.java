@@ -33,7 +33,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import com.alibaba.metrics.FastCompass;
 import com.alibaba.metrics.MetricLevel;
 import com.alibaba.metrics.MetricManager;
@@ -237,7 +237,7 @@ public class MetricsFilter implements Filter {
 
                 List res = collector.build();
                 res.addAll(getThreadPoolMessage());
-                return AsyncRpcResult.newDefaultAsyncResult(JSON.toJSONString(res), invocation);
+                return AsyncRpcResult.newDefaultAsyncResult(new Gson().toJson(res), invocation);
             }
 
             @Override

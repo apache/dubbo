@@ -31,7 +31,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -83,6 +83,7 @@ public class TraceFilter implements Filter {
                 key = invoker.getInterface().getName();
                 channels = TRACERS.get(key);
             }
+            Gson gson = new Gson();
             if (CollectionUtils.isNotEmpty(channels)) {
                 for (Channel channel : new ArrayList<>(channels)) {
                     if (channel.isConnected()) {
@@ -104,7 +105,7 @@ public class TraceFilter implements Filter {
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
-                                        + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
+                                        + "(" + gson.toJson(invocation.getArguments()) + ")" + " -> " + gson.toJson(result.getValue())
                                         + "\r\nelapsed: " + (end - start) + " ms."
                                         + "\r\n\r\n" + prompt);
                             }

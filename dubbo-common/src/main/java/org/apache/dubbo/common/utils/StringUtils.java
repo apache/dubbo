@@ -20,7 +20,7 @@ import org.apache.dubbo.common.io.UnsafeStringWriter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -917,6 +917,7 @@ public final class StringUtils {
 
     public static String toArgumentString(Object[] args) {
         StringBuilder buf = new StringBuilder();
+        Gson gson = new Gson();
         for (Object arg : args) {
             if (buf.length() > 0) {
                 buf.append(COMMA_SEPARATOR);
@@ -925,7 +926,7 @@ public final class StringUtils {
                 buf.append(arg);
             } else {
                 try {
-                    buf.append(JSON.toJSONString(arg));
+                    buf.append(gson.toJson(arg));
                 } catch (Exception e) {
                     logger.warn(e.getMessage(), e);
                     buf.append(arg);

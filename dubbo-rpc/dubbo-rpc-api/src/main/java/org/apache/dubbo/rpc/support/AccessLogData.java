@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -234,7 +234,7 @@ public final class AccessLogData {
 
         Object[] args = get(ARGUMENTS) != null ? (Object[]) get(ARGUMENTS) : null;
         if (args != null && args.length > 0) {
-            sn.append(JSON.toJSONString(args));
+            sn.append(new Gson().toJson(args));
         }
 
         return sn.toString();

@@ -16,8 +16,9 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONValidator;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -65,7 +66,8 @@ public class ConfigParser {
 
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        List<String> list = JSON.parseArray(rawConfig, String.class);
+        Gson gson = new Gson();
+        List<String> list = gson.fromJson(rawConfig, new TypeToken<List<String>>(){}.getType());
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(u -> urls.add(URL.valueOf(u)));
         }
@@ -218,12 +220,6 @@ public class ConfigParser {
     }
 
     private static boolean isJsonArray(String rawConfig) {
-        try {
-            JSONValidator validator = JSONValidator.from(rawConfig);
-            return validator.validate() && validator.getType() == JSONValidator.Type.Array;
-        } catch (Exception e) {
-            // ignore exception and return false
-        }
-        return false;
+        return new JsonParser().parse(rawConfig).isJsonArray();
     }
 }

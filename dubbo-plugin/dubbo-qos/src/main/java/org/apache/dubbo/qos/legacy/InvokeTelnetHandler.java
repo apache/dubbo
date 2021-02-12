@@ -28,8 +28,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
-import com.alibaba.fastjson.JSON;
-
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,8 +77,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
 
         List<Object> list;
+        Gson gson = new Gson();
         try {
-            list = JSON.parseArray("[" + args + "]", Object.class);
+            list = gson.fromJson("[" + args + "]", new TypeToken<List<Object>>() {}.getType());
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -135,7 +136,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     }
                     long end = System.currentTimeMillis();
                     buf.append("\r\nresult: ");
-                    buf.append(JSON.toJSONString(result.recreate()));
+                    buf.append(gson.toJson(result.recreate()));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");

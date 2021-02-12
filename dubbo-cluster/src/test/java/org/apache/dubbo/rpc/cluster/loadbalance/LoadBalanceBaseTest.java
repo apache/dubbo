@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -201,7 +201,7 @@ public class LoadBalanceBaseTest {
 
         @Override
         public String toString() {
-            return JSON.toJSONString(this);
+            return new Gson().toJson(this);
         }
     }
 
