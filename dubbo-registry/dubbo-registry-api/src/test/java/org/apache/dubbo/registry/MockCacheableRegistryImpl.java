@@ -71,13 +71,6 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
             }
         }
         listener.notify(res);
-
-        // Make sure RemovalTask is completed
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
