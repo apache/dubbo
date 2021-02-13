@@ -79,7 +79,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
         if (isUrlFromRegistry) {
             // reserve parameters if url is already a consumer url
-            consumerUrlFrom.clearParameters();
+            consumerUrlFrom = consumerUrlFrom.clearParameters();
         }
         this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
 
