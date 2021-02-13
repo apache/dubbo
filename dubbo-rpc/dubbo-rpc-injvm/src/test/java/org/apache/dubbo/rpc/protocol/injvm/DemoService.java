@@ -38,7 +38,4 @@ public interface DemoService {
     int stringLength(String str);
 
     Type enumlength(Type... types);
-
-
-    String getRemoteApplicationName();
 }

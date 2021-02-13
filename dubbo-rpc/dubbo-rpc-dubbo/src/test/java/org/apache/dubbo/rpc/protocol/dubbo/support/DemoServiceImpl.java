@@ -121,9 +121,4 @@ public class DemoServiceImpl implements DemoService {
     public String getPerson(Man man) {
         return man.getName();
     }
-
-    @Override
-    public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
-    }
 }

@@ -64,6 +64,4 @@ public interface DemoService {
     int getPerson(Person person1, Person perso2);
 
     String getPerson(Man man);
-
-    String getRemoteApplicationName();
 }

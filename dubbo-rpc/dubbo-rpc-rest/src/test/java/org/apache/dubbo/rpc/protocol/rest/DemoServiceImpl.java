@@ -49,9 +49,4 @@ public class DemoServiceImpl implements DemoService {
     public static Map<String, Object> getAttachments() {
         return context;
     }
-
-    @Override
-    public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
-    }
 }

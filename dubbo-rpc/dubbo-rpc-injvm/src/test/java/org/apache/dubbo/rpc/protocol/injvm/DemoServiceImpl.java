@@ -69,10 +69,4 @@ public class DemoServiceImpl implements DemoService {
     public int stringLength(String str) {
         return str.length();
     }
-
-
-    @Override
-    public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
-    }
 }

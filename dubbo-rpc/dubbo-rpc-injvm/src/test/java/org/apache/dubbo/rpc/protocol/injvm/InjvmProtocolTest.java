@@ -110,17 +110,4 @@ public class InjvmProtocolTest {
 
     }
 
-
-    @Test
-    public void testRemoteApplicationName() throws Exception {
-        DemoService service = new DemoServiceImpl();
-        URL url = URL.valueOf("injvm://127.0.0.1/TestService").addParameter(INTERFACE_KEY, DemoService.class.getName()).addParameter("application", "consumer");
-        Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, url);
-        assertTrue(invoker.isAvailable());
-        Exporter<?> exporter = protocol.export(invoker);
-        exporters.add(exporter);
-        service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals(service.getRemoteApplicationName(), "consumer");
-    }
-
 }

@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.service.EchoService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -215,16 +216,5 @@ public class DubboProtocolTest {
         } catch (RpcException e) {
             Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
-    }
-
-    @Test
-    public void testRemoteApplicationName() throws Exception {
-        DemoService service = new DemoServiceImpl();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L).addParameter("application", "consumer");
-        protocol.export(proxy.getInvoker(service, DemoService.class, url));
-        service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals(service.getRemoteApplicationName(), "consumer");
     }
 }
