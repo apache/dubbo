@@ -287,5 +287,12 @@ public @interface DubboReference {
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
      * @since 2.7.8
      */
+    @Deprecated
     String[] services() default {};
+
+    /**
+     * declares which app or service this interface belongs to
+     * @see RegistryConstants#PROVIDED_BY
+     */
+    String[] providedBy() default {};
 }
