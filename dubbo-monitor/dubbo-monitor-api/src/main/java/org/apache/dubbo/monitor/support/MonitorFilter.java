@@ -21,8 +21,6 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.monitor.Monitor;
-import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -61,15 +59,6 @@ public class MonitorFilter implements Filter, Filter.Listener {
      * The Concurrent counter
      */
     private final ConcurrentMap<String, AtomicInteger> concurrents = new ConcurrentHashMap<String, AtomicInteger>();
-
-    /**
-     * The MonitorFactory
-     */
-    private MonitorFactory monitorFactory;
-
-    public void setMonitorFactory(MonitorFactory monitorFactory) {
-        this.monitorFactory = monitorFactory;
-    }
 
     /**
      * The invocation interceptor,it will collect the invoke data about this invocation and send it to monitor center
@@ -111,7 +100,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
     }
 
     private boolean shouldCollect(Invoker<?> invoker) {
-        // Only that factories extends AbstractMonitorFactory will collector statistics by MonitorFilter
+        // Only that factories extends AbstractMonitorFactory will collect statistics by MonitorFilter
         return invoker.getUrl().hasParameter(MONITOR_KEY) && AbstractMonitorFactory.getMonitors().size() > 0;
     }
 

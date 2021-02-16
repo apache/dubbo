@@ -122,4 +122,9 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
         }
     }
 
+    // For test only
+    public static void addMonitor(String key, Monitor monitor) {
+        AbstractMonitorFactory.MONITORS.put(key, monitor);
+    }
+
 }

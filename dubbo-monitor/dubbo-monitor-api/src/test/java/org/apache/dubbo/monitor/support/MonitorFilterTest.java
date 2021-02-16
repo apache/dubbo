@@ -118,7 +118,7 @@ public class MonitorFilterTest {
     @Test
     public void testFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
-        monitorFilter.setMonitorFactory(monitorFactory);
+        AbstractMonitorFactory.addMonitor("test", monitorFactory.getMonitor(URL.valueOf("test://0.0.0.0")));
         Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
@@ -147,21 +147,21 @@ public class MonitorFilterTest {
     @Test
     public void testSkipMonitorIfNotHasKey() {
         MonitorFilter monitorFilter = new MonitorFilter();
-        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
-        monitorFilter.setMonitorFactory(mockMonitorFactory);
+        Monitor mockMonitor = mock(Monitor.class);
+        AbstractMonitorFactory.addMonitor("test", mockMonitor);
         Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
         Invoker invoker = mock(Invoker.class);
         given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE));
 
         monitorFilter.invoke(invoker, invocation);
 
-        verify(mockMonitorFactory, never()).getMonitor(any(URL.class));
+        verify(mockMonitor, never()).collect(any(URL.class));
     }
 
     @Test
     public void testGenericFilter() throws Exception {
         MonitorFilter monitorFilter = new MonitorFilter();
-        monitorFilter.setMonitorFactory(monitorFactory);
+        AbstractMonitorFactory.addMonitor("test", monitorFactory.getMonitor(URL.valueOf("test://0.0.0.0")));
         Invocation invocation = new RpcInvocation("$invoke", MonitorService.class.getName(), "", new Class<?>[]{String.class, String[].class, Object[].class}, new Object[]{"xxx", new String[]{}, new Object[]{}});
         RpcContext.getContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         Result result = monitorFilter.invoke(serviceInvoker, invocation);
@@ -190,12 +190,10 @@ public class MonitorFilterTest {
     @Test
     public void testSafeFailForMonitorCollectFail() {
         MonitorFilter monitorFilter = new MonitorFilter();
-        MonitorFactory mockMonitorFactory = mock(MonitorFactory.class);
         Monitor mockMonitor = mock(Monitor.class);
         Mockito.doThrow(new RuntimeException()).when(mockMonitor).collect(any(URL.class));
 
-        monitorFilter.setMonitorFactory(mockMonitorFactory);
-        given(mockMonitorFactory.getMonitor(any(URL.class))).willReturn(mockMonitor);
+        AbstractMonitorFactory.addMonitor("test", mockMonitor);
         Invocation invocation = new RpcInvocation("aaa", MonitorService.class.getName(), "", new Class<?>[0], new Object[0]);
 
         monitorFilter.invoke(serviceInvoker, invocation);
