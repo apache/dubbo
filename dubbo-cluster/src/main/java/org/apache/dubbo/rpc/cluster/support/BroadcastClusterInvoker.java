@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invocation;
@@ -47,28 +48,53 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         RpcContext.getContext().setInvokers((List) invokers);
         RpcException exception = null;
         Result result = null;
+        URL url = getUrl();
+        // The value range of broadcast.fail.threshold must be 0～100.
+        // 100 means that an exception will be thrown last, and 0 means that as long as an exception occurs, it will be thrown.
+        int broadcastFailPercent = url.getParameter("broadcast.fail.percent", 100);
+
+        int failThresholdIndex = invokers.size() * broadcastFailPercent / 100;
+        int failIndex = 0;
         for (Invoker<T> invoker : invokers) {
             try {
                 result = invoker.invoke(invocation);
                 if(null != result && result.hasException()){
                     Throwable resultException = result.getException();
                     if(null != resultException){
-                        logger.warn(resultException.getMessage(), resultException);
-                        throw resultException;
+                        exception = getRpcException(result.getException());
+                        if(failIndex == failThresholdIndex){
+                            break;
+                        }else{
+                            logger.warn(exception.getMessage(), exception);
+                            failIndex++;
+                        }
                     }
                 }
-            } catch (RpcException e) {
-                exception = e;
-                logger.warn(e.getMessage(), e);
             } catch (Throwable e) {
-                exception = new RpcException(e.getMessage(), e);
-                logger.warn(e.getMessage(), e);
+                exception = getRpcException(e);
+                if(failIndex == failThresholdIndex){
+                    break;
+                }else{
+                    logger.warn(exception.getMessage(), exception);
+                    failIndex++;
+                }
             }
         }
-        if (exception != null) {
+
+        if (exception != null && failIndex == failThresholdIndex) {
             throw exception;
         }
+
         return result;
     }
 
+    private RpcException getRpcException(Throwable throwable){
+        RpcException rpcException = null;
+        if(throwable instanceof RpcException){
+            rpcException = (RpcException) throwable;
+        }else{
+            rpcException = new RpcException(throwable.getMessage(), throwable);
+        }
+        return rpcException;
+    }
 }
