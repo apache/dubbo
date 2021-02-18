@@ -6,9 +6,7 @@
 ![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
 ![maven](https://img.shields.io/maven-central/v/com.alibaba/dubbo.svg)
 
-Dubbo is a high-performance, java based RPC framework open-sourced by Alibaba. Please visit [dubbo.io](http://dubbo.io) for quick start and other information.
-
-We are now collecting dubbo user info in order to help us to improve dubbo better, pls. kindly help us by providing yours on [issue#1012: Wanted: who's using dubbo](https://github.com/alibaba/dubbo/issues/1012), thanks :)
+This version has been announced as EOF, it's no longer maintained by the official team. We recommend use the latest [2.7.x](https://github.com/apache/dubbo) version
 
 ## Links
 
