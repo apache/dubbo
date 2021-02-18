@@ -98,7 +98,6 @@ public abstract class AbstractMonitorFactory implements MonitorFactory {
 
     protected abstract Monitor createMonitor(URL url);
 
-
     class MonitorListener implements Runnable {
 
         private String key;
