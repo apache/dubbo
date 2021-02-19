@@ -792,7 +792,7 @@ public class Demo {
             int lastComparison = 0;
             echoBool_args typedOther = (echoBool_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -1091,7 +1091,7 @@ public class Demo {
             int lastComparison = 0;
             echoBool_result typedOther = (echoBool_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -1385,7 +1385,7 @@ public class Demo {
             int lastComparison = 0;
             echoByte_args typedOther = (echoByte_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -1684,7 +1684,7 @@ public class Demo {
             int lastComparison = 0;
             echoByte_result typedOther = (echoByte_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -1978,7 +1978,7 @@ public class Demo {
             int lastComparison = 0;
             echoI16_args typedOther = (echoI16_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -2273,7 +2273,7 @@ public class Demo {
             int lastComparison = 0;
             echoI16_result typedOther = (echoI16_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -2563,7 +2563,7 @@ public class Demo {
             int lastComparison = 0;
             echoI32_args typedOther = (echoI32_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -2856,7 +2856,7 @@ public class Demo {
             int lastComparison = 0;
             echoI32_result typedOther = (echoI32_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -3144,7 +3144,7 @@ public class Demo {
             int lastComparison = 0;
             echoI64_args typedOther = (echoI64_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -3437,7 +3437,7 @@ public class Demo {
             int lastComparison = 0;
             echoI64_result typedOther = (echoI64_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -3725,7 +3725,7 @@ public class Demo {
             int lastComparison = 0;
             echoDouble_args typedOther = (echoDouble_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -4018,7 +4018,7 @@ public class Demo {
             int lastComparison = 0;
             echoDouble_result typedOther = (echoDouble_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -4304,7 +4304,7 @@ public class Demo {
             int lastComparison = 0;
             echoString_args typedOther = (echoString_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -4597,7 +4597,7 @@ public class Demo {
             int lastComparison = 0;
             echoString_result typedOther = (echoString_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }

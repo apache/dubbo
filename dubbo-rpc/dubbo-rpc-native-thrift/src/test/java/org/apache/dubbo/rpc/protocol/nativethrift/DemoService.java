@@ -1175,7 +1175,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetName()).compareTo(other.isSetName());
+      lastComparison = Boolean.compare(isSetName(), other.isSetName());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1530,7 +1530,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -1892,7 +1892,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetHasName()).compareTo(other.isSetHasName());
+      lastComparison = Boolean.compare(isSetHasName(), other.isSetHasName());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2244,7 +2244,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2667,7 +2667,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetName()).compareTo(other.isSetName());
+      lastComparison = Boolean.compare(isSetName(), other.isSetName());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -2677,7 +2677,7 @@ public class DemoService {
           return lastComparison;
         }
       }
-      lastComparison = Boolean.valueOf(isSetTimes()).compareTo(other.isSetTimes());
+      lastComparison = Boolean.compare(isSetTimes(), other.isSetTimes());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -3056,7 +3056,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -3418,7 +3418,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetMillis()).compareTo(other.isSetMillis());
+      lastComparison = Boolean.compare(isSetMillis(), other.isSetMillis());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -4266,7 +4266,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -4628,7 +4628,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetName()).compareTo(other.isSetName());
+      lastComparison = Boolean.compare(isSetName(), other.isSetName());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -4983,7 +4983,7 @@ public class DemoService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }

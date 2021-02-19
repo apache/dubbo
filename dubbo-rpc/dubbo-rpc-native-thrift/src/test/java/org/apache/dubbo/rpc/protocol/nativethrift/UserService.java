@@ -446,7 +446,7 @@ public class UserService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetId()).compareTo(other.isSetId());
+      lastComparison = Boolean.compare(isSetId(), other.isSetId());
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -798,7 +798,7 @@ public class UserService {
 
       int lastComparison = 0;
 
-      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      lastComparison = Boolean.compare(isSetSuccess(), other.isSetSuccess());
       if (lastComparison != 0) {
         return lastComparison;
       }

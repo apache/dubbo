@@ -308,7 +308,7 @@ public class ClassNameTestThrift {
             int lastComparison = 0;
             echo_args typedOther = (echo_args) other;
 
-            lastComparison = Boolean.valueOf(isSetArg()).compareTo(typedOther.isSetArg());
+            lastComparison = Boolean.compare(isSetArg(), typedOther.isSetArg());
             if (lastComparison != 0) {
                 return lastComparison;
             }
@@ -610,7 +610,7 @@ public class ClassNameTestThrift {
             int lastComparison = 0;
             echo_result typedOther = (echo_result) other;
 
-            lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(typedOther.isSetSuccess());
+            lastComparison = Boolean.compare(isSetSuccess(), typedOther.isSetSuccess());
             if (lastComparison != 0) {
                 return lastComparison;
             }
