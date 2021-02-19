@@ -35,7 +35,7 @@ import java.util.Arrays;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
-
+@Disabled
 public class InvokerSideConfigUrlTest extends UrlTestBase {
     private static final Logger log = LoggerFactory.getLogger(InvokerSideConfigUrlTest.class);
 

@@ -83,6 +83,7 @@ import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
@@ -341,7 +342,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         if (UrlUtils.isRegistry(url)) {
                             urls.add(url.putAttribute(REFER_KEY, map));
                         } else {
-                            urls.add(ClusterUtils.mergeUrl(url, map));
+                            URL peerURL = ClusterUtils.mergeUrl(url, map);
+                            peerURL = peerURL.putAttribute(PEER_KEY, true);
+                            urls.add(peerURL);
                         }
                     }
                 }
