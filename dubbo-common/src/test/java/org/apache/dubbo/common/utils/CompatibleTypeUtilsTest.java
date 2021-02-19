@@ -213,8 +213,8 @@ public class CompatibleTypeUtilsTest {
             result = CompatibleTypeUtils.compatibleTypeConvert(list, String[].class);
             assertEquals(String[].class, result.getClass());
             assertEquals(2, ((String[]) result).length);
-            assertTrue(((String[]) result)[0].equals("a"));
-            assertTrue(((String[]) result)[1].equals("b"));
+            assertEquals("a", ((String[]) result)[0]);
+            assertEquals("b", ((String[]) result)[1]);
 
         }
 

@@ -57,7 +57,7 @@ public class StaticDirectoryTest {
         List<Invoker<String>> filteredInvokers = router.route(invokers, URL.valueOf("consumer://" + NetUtils.getLocalHost() + "/com.foo.BarService"), new RpcInvocation());
         StaticDirectory<String> staticDirectory = new StaticDirectory<>(filteredInvokers);
         boolean isAvailable = staticDirectory.isAvailable();
-        Assertions.assertTrue(!isAvailable);
+        Assertions.assertFalse(isAvailable);
         List<Invoker<String>> newInvokers = staticDirectory.list(new MockDirInvocation());
         Assertions.assertTrue(newInvokers.size() > 0);
         staticDirectory.destroy();

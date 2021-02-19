@@ -29,8 +29,10 @@ import java.util.Random;
 
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.directBuffer;
 import static org.apache.dubbo.remoting.buffer.ChannelBuffers.wrappedBuffer;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -774,7 +776,7 @@ public abstract class AbstractChannelBufferTest {
 
             // Make sure if it is a copied buffer.
             actualValue.setByte(0, (byte) (actualValue.getByte(0) + 1));
-            assertFalse(buffer.getByte(i) == actualValue.getByte(0));
+            assertNotEquals(buffer.getByte(i), actualValue.getByte(0));
         }
     }
 
@@ -794,7 +796,7 @@ public abstract class AbstractChannelBufferTest {
             buffer.getBytes(i, out, BLOCK_SIZE);
         }
 
-        assertTrue(Arrays.equals(expected, out.toByteArray()));
+        assertArrayEquals(expected, out.toByteArray());
     }
 
     @Test
@@ -817,7 +819,7 @@ public abstract class AbstractChannelBufferTest {
             assertEquals(i + BLOCK_SIZE, buffer.readerIndex());
         }
 
-        assertTrue(Arrays.equals(expected, out.toByteArray()));
+        assertArrayEquals(expected, out.toByteArray());
     }
 
     @Test

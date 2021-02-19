@@ -43,7 +43,7 @@ public class DefaultFutureTest {
     @Test
     public void isDone() {
         DefaultFuture future = defaultFuture(3000);
-        Assertions.assertTrue(!future.isDone(), "init future is finished!");
+        Assertions.assertFalse(future.isDone(), "init future is finished!");
 
         //cancel a future
         future.cancel();

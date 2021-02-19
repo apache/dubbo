@@ -71,7 +71,7 @@ public class ReferenceConfigTest {
             System.setProperty("java.net.preferIPv4Stack", "true");
             demoService.export();
             rc.get();
-            Assertions.assertTrue(!LOCAL_PROTOCOL.equalsIgnoreCase(
+            Assertions.assertFalse(LOCAL_PROTOCOL.equalsIgnoreCase(
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");

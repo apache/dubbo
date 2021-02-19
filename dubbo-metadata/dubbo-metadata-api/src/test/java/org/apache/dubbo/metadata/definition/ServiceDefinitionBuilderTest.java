@@ -51,11 +51,14 @@ public class ServiceDefinitionBuilderTest {
                 findComplexObject = methodDefinition;
             }
         }
-        Assertions.assertTrue(Arrays.equals(complexCompute.getParameterTypes(), new String[]{String.class.getName(), ComplexObject.class.getName()}));
+        Assertions.assertArrayEquals(complexCompute.getParameterTypes(), new String[]{String.class.getName(),
+                ComplexObject.class.getName()});
         Assertions.assertEquals(complexCompute.getReturnType(), String.class.getName());
 
-        Assertions.assertTrue(Arrays.equals(findComplexObject.getParameterTypes(), new String[]{String.class.getName(), "int", "long",
-                String[].class.getCanonicalName(), "java.util.List<java.lang.Integer>", ComplexObject.TestEnum.class.getCanonicalName()}));
+        Assertions.assertArrayEquals(findComplexObject.getParameterTypes(), new String[]{String.class.getName(), "int"
+                , "long",
+                String[].class.getCanonicalName(), "java.util.List<java.lang.Integer>",
+                ComplexObject.TestEnum.class.getCanonicalName()});
         Assertions.assertEquals(findComplexObject.getReturnType(), ComplexObject.class.getCanonicalName());
 
 

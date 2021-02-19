@@ -48,7 +48,7 @@ public class Hessian2SerializationTest extends AbstractSerializationPersonFailTe
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject(boolean[].class)));
+        assertArrayEquals(data, (boolean[]) deserialize.readObject(boolean[].class));
 
         try {
             deserialize.readObject(boolean[].class);

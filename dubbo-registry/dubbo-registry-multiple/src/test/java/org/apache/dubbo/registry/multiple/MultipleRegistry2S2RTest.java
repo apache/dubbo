@@ -144,7 +144,7 @@ public class MultipleRegistry2S2RTest {
 
         String path = "/dubbo/" + SERVICE_NAME + "/providers";
         List<String> providerList = zookeeperClient.getChildren(path);
-        Assertions.assertTrue(!providerList.isEmpty());
+        Assertions.assertFalse(providerList.isEmpty());
         System.out.println(providerList.get(0));
 
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
@@ -177,7 +177,7 @@ public class MultipleRegistry2S2RTest {
 
         String path = "/dubbo/" + SERVICE2_NAME + "/providers";
         List<String> providerList = zookeeperClient.getChildren(path);
-        Assertions.assertTrue(!providerList.isEmpty());
+        Assertions.assertFalse(providerList.isEmpty());
         System.out.println(providerList.get(0));
 
         Assertions.assertNotNull(MultipleRegistryTestUtil.getRedisHashContent(redisServerPort, path, serviceUrl.toFullString()));
@@ -200,7 +200,7 @@ public class MultipleRegistry2S2RTest {
         Assertions.assertEquals(1, list.size());
         List<URL> urls = MultipleRegistryTestUtil.getProviderURLsFromNotifyURLS(list);
         Assertions.assertEquals(1, list.size());
-        Assertions.assertTrue(!"empty".equals(list.get(0).getProtocol()));
+        Assertions.assertFalse("empty".equals(list.get(0).getProtocol()));
 
         serviceRegistries.get(1).unregister(serviceUrl);
         Thread.sleep(1500);

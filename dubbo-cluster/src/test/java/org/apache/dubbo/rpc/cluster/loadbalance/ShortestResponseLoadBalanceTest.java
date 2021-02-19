@@ -41,7 +41,7 @@ public class ShortestResponseLoadBalanceTest extends LoadBalanceBaseTest{
                 sumInvoker2++;
             }
             // never select invoker5 because it's estimated response time is more than invoker1 and invoker2
-            Assertions.assertTrue(!selected.getUrl().getProtocol().equals("test5"), "select is not the shortest one");
+            Assertions.assertFalse(selected.getUrl().getProtocol().equals("test5"), "select is not the shortest one");
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9

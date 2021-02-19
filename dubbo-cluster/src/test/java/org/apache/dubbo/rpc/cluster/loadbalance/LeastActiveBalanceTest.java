@@ -57,7 +57,8 @@ public class LeastActiveBalanceTest extends LoadBalanceBaseTest {
                 sumInvoker2++;
             }
             // never select invoker3 because it's active is more than invoker1 and invoker2
-            Assertions.assertTrue(!selected.getUrl().getProtocol().equals("test3"), "select is not the least active one");
+            Assertions.assertFalse(selected.getUrl().getProtocol().equals("test3"), "select is not the least active " +
+                    "one");
         }
 
         // the sumInvoker1 : sumInvoker2 approximately equal to 1: 9

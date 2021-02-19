@@ -470,7 +470,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject()));
+        assertArrayEquals(data, (boolean[]) deserialize.readObject());
 
         try {
             deserialize.readObject();
@@ -491,7 +491,7 @@ public abstract class AbstractSerializationTest {
                 byteArrayOutputStream.toByteArray());
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
-        assertTrue(Arrays.equals(data, (boolean[]) deserialize.readObject(boolean[].class)));
+        assertArrayEquals(data, (boolean[]) deserialize.readObject(boolean[].class));
 
         try {
             deserialize.readObject(boolean[].class);
