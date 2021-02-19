@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -54,7 +55,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
 
-    static final Charset CHARSET = Charset.forName("UTF-8");
+    static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
