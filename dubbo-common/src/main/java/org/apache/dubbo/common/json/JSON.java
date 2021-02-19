@@ -468,30 +468,10 @@ public class JSON {
                     throw new ParseException("JSON source format error.");
                 case START: {
                     switch (token.type) {
-                        case JSONToken.NULL: {
-                            value = token.value;
-                            state = END;
-                            pv = true;
-                            break;
-                        }
-                        case JSONToken.BOOL: {
-                            value = token.value;
-                            state = END;
-                            pv = true;
-                            break;
-                        }
-                        case JSONToken.INT: {
-                            value = token.value;
-                            state = END;
-                            pv = true;
-                            break;
-                        }
-                        case JSONToken.FLOAT: {
-                            value = token.value;
-                            state = END;
-                            pv = true;
-                            break;
-                        }
+                        case JSONToken.NULL:
+                        case JSONToken.BOOL:
+                        case JSONToken.INT:
+                        case JSONToken.FLOAT:
                         case JSONToken.STRING: {
                             value = token.value;
                             state = END;
@@ -517,27 +497,11 @@ public class JSON {
                     switch (token.type) {
                         case JSONToken.COMMA:
                             break;
-                        case JSONToken.NULL: {
-                            handler.arrayItem(index++);
-                            handler.arrayItemValue(index, token.value, true);
-                            break;
-                        }
+                        case JSONToken.NULL:
+                        case JSONToken.STRING:
+                        case JSONToken.FLOAT:
+                        case JSONToken.INT:
                         case JSONToken.BOOL: {
-                            handler.arrayItem(index++);
-                            handler.arrayItemValue(index, token.value, true);
-                            break;
-                        }
-                        case JSONToken.INT: {
-                            handler.arrayItem(index++);
-                            handler.arrayItemValue(index, token.value, true);
-                            break;
-                        }
-                        case JSONToken.FLOAT: {
-                            handler.arrayItem(index++);
-                            handler.arrayItemValue(index, token.value, true);
-                            break;
-                        }
-                        case JSONToken.STRING: {
                             handler.arrayItem(index++);
                             handler.arrayItemValue(index, token.value, true);
                             break;
@@ -644,27 +608,11 @@ public class JSON {
                     switch (token.type) {
                         case JSONToken.COLON:
                             break;
-                        case JSONToken.NULL: {
-                            handler.objectItemValue(token.value, true);
-                            state = OBJECT_ITEM;
-                            break;
-                        }
+                        case JSONToken.NULL:
+                        case JSONToken.STRING:
+                        case JSONToken.FLOAT:
+                        case JSONToken.INT:
                         case JSONToken.BOOL: {
-                            handler.objectItemValue(token.value, true);
-                            state = OBJECT_ITEM;
-                            break;
-                        }
-                        case JSONToken.INT: {
-                            handler.objectItemValue(token.value, true);
-                            state = OBJECT_ITEM;
-                            break;
-                        }
-                        case JSONToken.FLOAT: {
-                            handler.objectItemValue(token.value, true);
-                            state = OBJECT_ITEM;
-                            break;
-                        }
-                        case JSONToken.STRING: {
                             handler.objectItemValue(token.value, true);
                             state = OBJECT_ITEM;
                             break;

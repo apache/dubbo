@@ -687,74 +687,75 @@ public class Yylex {
                     return new JSONToken(JSONToken.NULL, null);
                 }
                 case 29:
+                case 56:
+                case 55:
+                case 54:
+                case 53:
+                case 52:
+                case 51:
+                case 50:
+                case 49:
+                case 48:
+                case 47:
+                case 46:
+                case 45:
+                case 44:
+                case 43:
+                case 42:
+                case 41:
+                case 40:
+                case 39:
+                case 38:
+                case 37:
+                case 36:
+                case 35:
+                case 34:
+                case 33:
+                case 32:
+                case 31:
+                case 30:
                     break;
                 case 13: {
                     sb.append(yytext());
                 }
-                case 30:
-                    break;
                 case 18: {
                     sb.append('\b');
                 }
-                case 31:
-                    break;
                 case 9: {
                     return new JSONToken(JSONToken.LSQUARE);
                 }
-                case 32:
-                    break;
                 case 2: {
                     Long val = Long.valueOf(yytext());
                     return new JSONToken(JSONToken.INT, val);
                 }
-                case 33:
-                    break;
                 case 16: {
                     sb.append('\\');
                 }
-                case 34:
-                    break;
                 case 8: {
                     return new JSONToken(JSONToken.RBRACE);
                 }
-                case 35:
-                    break;
                 case 26: {
                     return new JSONToken(JSONToken.BOOL, Boolean.TRUE);
                 }
-                case 36:
-                    break;
                 case 23: {
                     sb.append('\'');
                 }
-                case 37:
-                    break;
                 case 5: {
                     sb = new StringBuffer();
                     yybegin(STR2);
                 }
-                case 38:
-                    break;
                 case 27: {
                     return new JSONToken(JSONToken.BOOL, Boolean.FALSE);
                 }
-                case 39:
-                    break;
                 case 12: {
                     return new JSONToken(JSONToken.COLON);
                 }
-                case 40:
-                    break;
                 case 21: {
                     sb.append('\r');
                 }
-                case 41:
-                    break;
                 case 3: {
                     return new JSONToken(JSONToken.IDENT, yytext());
                 }
-                case 42:
-                    break;
                 case 28: {
                     try {
                         sb.append((char) Integer.parseInt(yytext().substring(2), 16));
@@ -762,75 +763,47 @@ public class Yylex {
                         throw new ParseException(e.getMessage());
                     }
                 }
-                case 43:
-                    break;
                 case 10: {
                     return new JSONToken(JSONToken.RSQUARE);
                 }
-                case 44:
-                    break;
                 case 17: {
                     sb.append('/');
                 }
-                case 45:
-                    break;
                 case 11: {
                     return new JSONToken(JSONToken.COMMA);
                 }
-                case 46:
-                    break;
                 case 15: {
                     sb.append('"');
                 }
-                case 47:
-                    break;
                 case 24: {
                     Double val = Double.valueOf(yytext());
                     return new JSONToken(JSONToken.FLOAT, val);
                 }
-                case 48:
-                    break;
                 case 1: {
                     throw new ParseException("Unexpected char [" + yytext() + "]");
                 }
-                case 49:
-                    break;
                 case 19: {
                     sb.append('\f');
                 }
-                case 50:
-                    break;
                 case 7: {
                     return new JSONToken(JSONToken.LBRACE);
                 }
-                case 51:
-                    break;
                 case 14: {
                     yybegin(YYINITIAL);
                     return new JSONToken(JSONToken.STRING, sb.toString());
                 }
-                case 52:
-                    break;
                 case 22: {
                     sb.append('\t');
                 }
-                case 53:
-                    break;
                 case 4: {
                     sb = new StringBuffer();
                     yybegin(STR1);
                 }
-                case 54:
-                    break;
                 case 20: {
                     sb.append('\n');
                 }
-                case 55:
-                    break;
                 case 6: {
                 }
-                case 56:
-                    break;
                 default:
                     if (zzInput == YYEOF && zzStartRead == zzCurrentPos) {
                         zzAtEOF = true;
