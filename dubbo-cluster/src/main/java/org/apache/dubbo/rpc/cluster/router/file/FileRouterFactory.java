@@ -56,7 +56,7 @@ public class FileRouterFactory implements RouterFactory {
                     type = path.substring(i + 1);
                 }
             }
-            String rule = IOUtils.read(new FileReader(new File(url.getAbsolutePath())));
+            String rule = IOUtils.read(new FileReader(url.getAbsolutePath()));
 
             // FIXME: this code looks useless
             boolean runtime = url.getParameter(RUNTIME_KEY, false);

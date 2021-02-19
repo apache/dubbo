@@ -236,7 +236,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             }
             if (resolveFile != null && resolveFile.length() > 0) {
                 Properties properties = new Properties();
-                try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
+                try (FileInputStream fis = new FileInputStream(resolveFile)) {
                     properties.load(fis);
                 } catch (IOException e) {
                     throw new IllegalStateException("Failed to load " + resolveFile + ", cause: " + e.getMessage(), e);
