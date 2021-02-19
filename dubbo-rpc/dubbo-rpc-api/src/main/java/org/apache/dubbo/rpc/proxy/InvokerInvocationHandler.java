@@ -57,13 +57,16 @@ public class InvokerInvocationHandler implements InvocationHandler {
         String methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 0) {
-            if ("toString".equals(methodName)) {
-                return invoker.toString();
-            } else if ("$destroy".equals(methodName)) {
-                invoker.destroy();
-                return null;
-            } else if ("hashCode".equals(methodName)) {
-                return invoker.hashCode();
+            switch (methodName) {
+                case "toString":
+                    return invoker.toString();
+                case "$destroy":
+                    invoker.destroy();
+                    return null;
+                case "hashCode":
+                    return invoker.hashCode();
+                default:
+                    // do nothing
             }
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);

@@ -358,6 +358,46 @@ public final class ReflectUtils {
         return ret.toString();
     }
 
+    private static void addClassDescToStringBuilder(StringBuilder stringBuilder, String className) {
+            char jvmClassChar;
+            switch (className) {
+                case "void":
+                    jvmClassChar = JVM_VOID;
+                    break;
+                case "boolean":
+                    jvmClassChar = JVM_BOOLEAN;
+                    break;
+                case "byte":
+                    jvmClassChar = JVM_BYTE;
+                    break;
+                case "char":
+                    jvmClassChar = JVM_CHAR;
+                    break;
+                case "double":
+                    jvmClassChar = JVM_DOUBLE;
+                    break;
+                case "float":
+                    jvmClassChar = JVM_FLOAT;
+                    break;
+                case "int":
+                    jvmClassChar = JVM_INT;
+                    break;
+                case "long":
+                    jvmClassChar = JVM_LONG;
+                    break;
+                case "short":
+                    jvmClassChar = JVM_SHORT;
+                    break;
+                default:
+                    jvmClassChar = 'L';
+            }
+            stringBuilder.append(jvmClassChar);
+            if ('L' == jvmClassChar) {
+                stringBuilder.append(className.replace('.', '/'));
+                stringBuilder.append(';');
+            }
+    }
+
     /**
      * get class desc.
      * boolean[].class => "[Z"
@@ -374,33 +414,9 @@ public final class ReflectUtils {
             ret.append('[');
             c = c.getComponentType();
         }
+        String className = c.getName();
+        addClassDescToStringBuilder(ret, className);
 
-        if (c.isPrimitive()) {
-            String t = c.getName();
-            if ("void".equals(t)) {
-                ret.append(JVM_VOID);
-            } else if ("boolean".equals(t)) {
-                ret.append(JVM_BOOLEAN);
-            } else if ("byte".equals(t)) {
-                ret.append(JVM_BYTE);
-            } else if ("char".equals(t)) {
-                ret.append(JVM_CHAR);
-            } else if ("double".equals(t)) {
-                ret.append(JVM_DOUBLE);
-            } else if ("float".equals(t)) {
-                ret.append(JVM_FLOAT);
-            } else if ("int".equals(t)) {
-                ret.append(JVM_INT);
-            } else if ("long".equals(t)) {
-                ret.append(JVM_LONG);
-            } else if ("short".equals(t)) {
-                ret.append(JVM_SHORT);
-            }
-        } else {
-            ret.append('L');
-            ret.append(c.getName().replace('.', '/'));
-            ret.append(';');
-        }
         return ret.toString();
     }
 
@@ -501,31 +517,8 @@ public final class ReflectUtils {
         if (c.isArray()) {
             ret.append('[');
             ret.append(getDesc(c.getComponentType()));
-        } else if (c.isPrimitive()) {
-            String t = c.getName();
-            if ("void".equals(t)) {
-                ret.append(JVM_VOID);
-            } else if ("boolean".equals(t)) {
-                ret.append(JVM_BOOLEAN);
-            } else if ("byte".equals(t)) {
-                ret.append(JVM_BYTE);
-            } else if ("char".equals(t)) {
-                ret.append(JVM_CHAR);
-            } else if ("double".equals(t)) {
-                ret.append(JVM_DOUBLE);
-            } else if ("float".equals(t)) {
-                ret.append(JVM_FLOAT);
-            } else if ("int".equals(t)) {
-                ret.append(JVM_INT);
-            } else if ("long".equals(t)) {
-                ret.append(JVM_LONG);
-            } else if ("short".equals(t)) {
-                ret.append(JVM_SHORT);
-            }
         } else {
-            ret.append('L');
-            ret.append(c.getName().replace('.', '/'));
-            ret.append(';');
+            addClassDescToStringBuilder(ret, c.getName());
         }
         return ret.toString();
     }
@@ -599,27 +592,7 @@ public final class ReflectUtils {
         while (c-- > 0) {
             sb.append("[");
         }
-        if ("void".equals(name)) {
-            sb.append(JVM_VOID);
-        } else if ("boolean".equals(name)) {
-            sb.append(JVM_BOOLEAN);
-        } else if ("byte".equals(name)) {
-            sb.append(JVM_BYTE);
-        } else if ("char".equals(name)) {
-            sb.append(JVM_CHAR);
-        } else if ("double".equals(name)) {
-            sb.append(JVM_DOUBLE);
-        } else if ("float".equals(name)) {
-            sb.append(JVM_FLOAT);
-        } else if ("int".equals(name)) {
-            sb.append(JVM_INT);
-        } else if ("long".equals(name)) {
-            sb.append(JVM_LONG);
-        } else if ("short".equals(name)) {
-            sb.append(JVM_SHORT);
-        } else {
-            sb.append('L').append(name.replace('.', '/')).append(';');
-        }
+        addClassDescToStringBuilder(sb, name);
         return sb.toString();
     }
 
@@ -731,57 +704,30 @@ public final class ReflectUtils {
             while (c-- > 0) {
                 sb.append("[");
             }
-
-            if ("void".equals(name)) {
-                sb.append(JVM_VOID);
-            } else if ("boolean".equals(name)) {
-                sb.append(JVM_BOOLEAN);
-            } else if ("byte".equals(name)) {
-                sb.append(JVM_BYTE);
-            } else if ("char".equals(name)) {
-                sb.append(JVM_CHAR);
-            } else if ("double".equals(name)) {
-                sb.append(JVM_DOUBLE);
-            } else if ("float".equals(name)) {
-                sb.append(JVM_FLOAT);
-            } else if ("int".equals(name)) {
-                sb.append(JVM_INT);
-            } else if ("long".equals(name)) {
-                sb.append(JVM_LONG);
-            } else if ("short".equals(name)) {
-                sb.append(JVM_SHORT);
-            } else {
-                // "java.lang.Object" ==> "Ljava.lang.Object;"
-                sb.append('L').append(name).append(';');
-            }
+            addClassDescToStringBuilder(sb, name);
             name = sb.toString();
         } else {
-            if ("void".equals(name)) {
-                return void.class;
-            }
-            if ("boolean".equals(name)) {
-                return boolean.class;
-            }
-            if ("byte".equals(name)) {
-                return byte.class;
-            }
-            if ("char".equals(name)) {
-                return char.class;
-            }
-            if ("double".equals(name)) {
-                return double.class;
-            }
-            if ("float".equals(name)) {
-                return float.class;
-            }
-            if ("int".equals(name)) {
-                return int.class;
-            }
-            if ("long".equals(name)) {
-                return long.class;
-            }
-            if ("short".equals(name)) {
-                return short.class;
+            switch(name) {
+                case "void":
+                    return void.class;
+                case "boolean":
+                    return boolean.class;
+                case "byte":
+                    return byte.class;
+                case "char":
+                    return char.class;
+                case "double":
+                    return double.class;
+                case "float":
+                    return float.class;
+                case "int":
+                    return int.class;
+                case "long":
+                    return long.class;
+                case "short":
+                    return short.class;
+                default:
+                    // not primitive type, do nothing
             }
         }
 
