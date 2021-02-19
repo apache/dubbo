@@ -33,9 +33,7 @@ public class MigrationRule {
 
     static {
         Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
-        if (optional.isPresent()) {
-            configuration = optional.get();
-        }
+        optional.ifPresent(dynamicConfiguration -> configuration = dynamicConfiguration);
     }
 
     private String key;

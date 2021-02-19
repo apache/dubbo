@@ -563,7 +563,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     }
 
     private static Optional<WatchService> newWatchService() {
-        Optional<WatchService> watchService = null;
+        Optional<WatchService> watchService;
         FileSystem fileSystem = FileSystems.getDefault();
         try {
             watchService = Optional.of(fileSystem.newWatchService());
