@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.serialize.gson;
 
 
+import java.util.Objects;
+
 public class Image implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
     public String uri;
@@ -46,8 +48,8 @@ public class Image implements java.io.Serializable {
         if (height != image.height) return false;
         if (width != image.width) return false;
         if (size != image.size) return false;
-        if (title != null ? !title.equals(image.title) : image.title != null) return false;
-        if (uri != null ? !uri.equals(image.uri) : image.uri != null) return false;
+        if (!Objects.equals(title, image.title)) return false;
+        if (!Objects.equals(uri, image.uri)) return false;
 
         return true;
     }

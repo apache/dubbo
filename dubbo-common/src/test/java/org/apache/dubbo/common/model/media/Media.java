@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.model.media;
 
 import java.util.List;
+import java.util.Objects;
 
 @SuppressWarnings("serial")
 public class Media implements java.io.Serializable {
@@ -64,12 +65,12 @@ public class Media implements java.io.Serializable {
         if (height != media.height) return false;
         if (size != media.size) return false;
         if (width != media.width) return false;
-        if (copyright != null ? !copyright.equals(media.copyright) : media.copyright != null) return false;
-        if (format != null ? !format.equals(media.format) : media.format != null) return false;
-        if (persons != null ? !persons.equals(media.persons) : media.persons != null) return false;
+        if (!Objects.equals(copyright, media.copyright)) return false;
+        if (!Objects.equals(format, media.format)) return false;
+        if (!Objects.equals(persons, media.persons)) return false;
         if (player != media.player) return false;
-        if (title != null ? !title.equals(media.title) : media.title != null) return false;
-        if (uri != null ? !uri.equals(media.uri) : media.uri != null) return false;
+        if (!Objects.equals(title, media.title)) return false;
+        if (!Objects.equals(uri, media.uri)) return false;
 
         return true;
     }
