@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.springmvc;
 
+import java.util.Arrays;
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 
@@ -115,7 +116,7 @@ public class SpringMvcServiceRestMetadataResolver extends AbstractServiceRestMet
         String[] mediaTypes = getAttribute(mappingAnnotation, annotationAttributeName);
 
         if (isNotEmpty(mediaTypes)) {
-            of(mediaTypes).forEach(mediaTypesSet::add);
+            mediaTypesSet.addAll(Arrays.asList(mediaTypes));
         }
     }
 

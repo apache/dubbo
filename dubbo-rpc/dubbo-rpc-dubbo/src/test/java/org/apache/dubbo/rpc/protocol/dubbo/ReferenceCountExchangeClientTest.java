@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import java.util.Arrays;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.DubboAppender;
@@ -282,9 +283,7 @@ public class ReferenceCountExchangeClientTest {
             ExchangeClient[] clients = (ExchangeClient[]) clientField.get(dInvoker);
 
             List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.length);
-            for (ExchangeClient client : clients) {
-                clientList.add(client);
-            }
+            clientList.addAll(Arrays.asList(clients));
 
             // sorting makes it easy to compare between lists
             Collections.sort(clientList, Comparator.comparing(c -> Integer.valueOf(Objects.hashCode(c))));

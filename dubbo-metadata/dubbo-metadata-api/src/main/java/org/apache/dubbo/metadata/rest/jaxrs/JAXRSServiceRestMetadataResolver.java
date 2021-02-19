@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.rest.jaxrs;
 
+import java.util.Arrays;
 import org.apache.dubbo.metadata.rest.AbstractServiceRestMetadataResolver;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver;
 
@@ -93,7 +94,7 @@ public class JAXRSServiceRestMetadataResolver extends AbstractServiceRestMetadat
         Annotation annotation = findAnnotation(serviceMethod, annotationAttributeName);
         String[] value = getValue(annotation);
         if (value != null) {
-            Stream.of(value).forEach(result::add);
+            result.addAll(Arrays.asList(value));
         }
     }
 }

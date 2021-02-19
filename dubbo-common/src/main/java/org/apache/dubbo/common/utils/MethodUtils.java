@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.Arrays;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -162,9 +163,7 @@ public interface MethodUtils {
         for (Class<?> classToSearch : declaredClasses) {
             Method[] methods = publicOnly ? classToSearch.getMethods() : classToSearch.getDeclaredMethods();
             // Add the declared methods or public methods
-            for (Method method : methods) {
-                allMethods.add(method);
-            }
+            allMethods.addAll(Arrays.asList(methods));
         }
 
         return unmodifiableList(filterAll(allMethods, methodsToFilter));

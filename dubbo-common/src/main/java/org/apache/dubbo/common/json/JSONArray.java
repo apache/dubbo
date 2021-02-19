@@ -18,6 +18,7 @@ package org.apache.dubbo.common.json;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -151,9 +152,7 @@ public class JSONArray implements JSONNode {
      * add items.
      */
     public void addAll(Object[] eles) {
-        for (Object ele : eles) {
-            mArray.add(ele);
-        }
+        mArray.addAll(Arrays.asList(eles));
     }
 
     /**
