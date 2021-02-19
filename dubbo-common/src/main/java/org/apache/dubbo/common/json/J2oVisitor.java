@@ -100,7 +100,7 @@ class J2oVisitor implements JSONVisitor {
             for (int i = len - 1; i >= 0; i--) {
                 o = list.pop();
                 if (o instanceof Boolean) {
-                    ret[i] = ((Boolean) o).booleanValue();
+                    ret[i] = (Boolean) o;
                 }
             }
             return ret;
@@ -184,7 +184,7 @@ class J2oVisitor implements JSONVisitor {
             for (int i = len - 1; i >= 0; i--) {
                 o = list.pop();
                 if (o instanceof Character) {
-                    ret[i] = ((Character) o).charValue();
+                    ret[i] = (Character) o;
                 }
             }
             return ret;

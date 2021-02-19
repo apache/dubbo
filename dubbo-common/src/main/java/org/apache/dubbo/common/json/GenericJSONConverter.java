@@ -137,7 +137,7 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Boolean) {
-                    return ((Boolean) jv).booleanValue();
+                    return jv;
                 }
                 return false;
             }
@@ -148,9 +148,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Boolean) {
-                    return (Boolean) jv;
+                    return jv;
                 }
-                return (Boolean) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Boolean.class, d);
@@ -172,7 +172,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof String && ((String) jv).length() > 0) {
                     return ((String) jv).charAt(0);
                 }
-                return (Character) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Character.class, d);
@@ -192,9 +192,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return Integer.valueOf(((Number) jv).intValue());
+                    return ((Number) jv).intValue();
                 }
-                return (Integer) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Integer.class, d);
@@ -214,9 +214,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return Short.valueOf(((Number) jv).shortValue());
+                    return ((Number) jv).shortValue();
                 }
-                return (Short) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Short.class, d);
@@ -236,9 +236,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return Long.valueOf(((Number) jv).longValue());
+                    return ((Number) jv).longValue();
                 }
-                return (Long) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Long.class, d);
@@ -258,9 +258,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return new Float(((Number) jv).floatValue());
+                    return ((Number) jv).floatValue();
                 }
-                return (Float) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Float.class, d);
@@ -280,9 +280,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return new Double(((Number) jv).doubleValue());
+                    return ((Number) jv).doubleValue();
                 }
-                return (Double) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Double.class, d);
@@ -302,9 +302,9 @@ public class GenericJSONConverter implements JSONConverter {
             @Override
             public Object decode(Object jv) {
                 if (jv instanceof Number) {
-                    return Byte.valueOf(((Number) jv).byteValue());
+                    return ((Number) jv).byteValue();
                 }
-                return (Byte) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Byte.class, d);
@@ -315,7 +315,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof String) {
                     return Bytes.base642bytes((String) jv);
                 }
-                return (byte[]) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(byte[].class, d);
@@ -342,7 +342,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof Number) {
                     return BigInteger.valueOf(((Number) jv).longValue());
                 }
-                return (BigInteger) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(BigInteger.class, d);
@@ -353,7 +353,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof Number) {
                     return BigDecimal.valueOf(((Number) jv).doubleValue());
                 }
-                return (BigDecimal) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(BigDecimal.class, d);
@@ -364,7 +364,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof Number) {
                     return new AtomicInteger(((Number) jv).intValue());
                 }
-                return (AtomicInteger) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(AtomicInteger.class, d);
@@ -375,7 +375,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof Number) {
                     return new AtomicLong(((Number) jv).longValue());
                 }
-                return (AtomicLong) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(AtomicLong.class, d);
@@ -393,7 +393,7 @@ public class GenericJSONConverter implements JSONConverter {
                 if (jv instanceof Number) {
                     return new Date(((Number) jv).longValue());
                 }
-                return (Date) null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Date.class, d);
@@ -411,7 +411,7 @@ public class GenericJSONConverter implements JSONConverter {
                     }
                     return new Locale(items[0], items[1], items[2]);
                 }
-                return (Locale)null;
+                return null;
             }
         };
         GLOBAL_DECODER_MAP.put(Locale.class, d);

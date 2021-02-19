@@ -142,7 +142,7 @@ public class JEtcdClientWrapper {
 
         int maxInboundSize = DEFAULT_INBOUND_SIZE;
         if (StringUtils.isNotEmpty(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY))) {
-            maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
+            maxInboundSize = Integer.parseInt(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
         // TODO, uses default pick-first round robin.
@@ -287,7 +287,7 @@ public class JEtcdClientWrapper {
                                 .get(ByteSequence.from(path, UTF_8))
                                 .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
                                 .getKvs().stream()
-                                .mapToLong(keyValue -> Long.valueOf(keyValue.getValue().toString(UTF_8)))
+                                .mapToLong(keyValue -> Long.parseLong(keyValue.getValue().toString(UTF_8)))
                                 .findFirst().getAsLong();
                     }, retryPolicy);
         } catch (Exception e) {
@@ -744,7 +744,7 @@ public class JEtcdClientWrapper {
 
     private static int obtainRequestTimeout() {
         if (StringUtils.isNotEmpty(System.getProperty(ETCD_REQUEST_TIMEOUT_KEY))) {
-            return Integer.valueOf(System.getProperty(ETCD_REQUEST_TIMEOUT_KEY));
+            return Integer.parseInt(System.getProperty(ETCD_REQUEST_TIMEOUT_KEY));
         }
         /**
          * 10 seconds.

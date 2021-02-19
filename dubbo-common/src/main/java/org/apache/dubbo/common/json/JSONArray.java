@@ -47,7 +47,7 @@ public class JSONArray implements JSONNode {
      */
     public boolean getBoolean(int index, boolean def) {
         Object tmp = mArray.get(index);
-        return tmp instanceof Boolean ? ((Boolean) tmp).booleanValue() : def;
+        return tmp instanceof Boolean ? (Boolean) tmp : def;
     }
 
     /**

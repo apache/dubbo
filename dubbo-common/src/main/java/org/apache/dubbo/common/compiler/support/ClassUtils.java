@@ -160,35 +160,35 @@ public class ClassUtils {
     }
 
     public static Boolean boxed(boolean v) {
-        return Boolean.valueOf(v);
+        return v;
     }
 
     public static Character boxed(char v) {
-        return Character.valueOf(v);
+        return v;
     }
 
     public static Byte boxed(byte v) {
-        return Byte.valueOf(v);
+        return v;
     }
 
     public static Short boxed(short v) {
-        return Short.valueOf(v);
+        return v;
     }
 
     public static Integer boxed(int v) {
-        return Integer.valueOf(v);
+        return v;
     }
 
     public static Long boxed(long v) {
-        return Long.valueOf(v);
+        return v;
     }
 
     public static Float boxed(float v) {
-        return Float.valueOf(v);
+        return v;
     }
 
     public static Double boxed(double v) {
-        return Double.valueOf(v);
+        return v;
     }
 
     public static Object boxed(Object v) {
@@ -196,35 +196,35 @@ public class ClassUtils {
     }
 
     public static boolean unboxed(Boolean v) {
-        return v == null ? false : v.booleanValue();
+        return v == null ? false : v;
     }
 
     public static char unboxed(Character v) {
-        return v == null ? '\0' : v.charValue();
+        return v == null ? '\0' : v;
     }
 
     public static byte unboxed(Byte v) {
-        return v == null ? 0 : v.byteValue();
+        return v == null ? 0 : v;
     }
 
     public static short unboxed(Short v) {
-        return v == null ? 0 : v.shortValue();
+        return v == null ? 0 : v;
     }
 
     public static int unboxed(Integer v) {
-        return v == null ? 0 : v.intValue();
+        return v == null ? 0 : v;
     }
 
     public static long unboxed(Long v) {
-        return v == null ? 0 : v.longValue();
+        return v == null ? 0 : v;
     }
 
     public static float unboxed(Float v) {
-        return v == null ? 0 : v.floatValue();
+        return v == null ? 0 : v;
     }
 
     public static double unboxed(Double v) {
-        return v == null ? 0 : v.doubleValue();
+        return v == null ? 0 : v;
     }
 
     public static Object unboxed(Object v) {

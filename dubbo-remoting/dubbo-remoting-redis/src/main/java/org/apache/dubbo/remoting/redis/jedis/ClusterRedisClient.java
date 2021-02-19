@@ -126,7 +126,7 @@ public class ClusterRedisClient extends AbstractRedisClient implements RedisClie
         if (nodes.length > 0) {
             for (String node : nodes) {
                 String[] hostAndPort = COLON_SPLIT_PATTERN.split(node);
-                hostAndPorts.add(new HostAndPort(hostAndPort[0], Integer.valueOf(hostAndPort[1])));
+                hostAndPorts.add(new HostAndPort(hostAndPort[0], Integer.parseInt(hostAndPort[1])));
             }
         }
         return hostAndPorts;

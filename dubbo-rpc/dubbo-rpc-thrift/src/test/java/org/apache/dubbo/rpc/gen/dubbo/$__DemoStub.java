@@ -317,7 +317,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Boolean.valueOf(isArg());
+                    return isArg();
 
             }
             throw new IllegalStateException();
@@ -616,7 +616,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Boolean.valueOf(isSuccess());
+                    return isSuccess();
 
             }
             throw new IllegalStateException();
@@ -912,7 +912,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Byte.valueOf(getArg());
+                    return getArg();
 
             }
             throw new IllegalStateException();
@@ -1211,7 +1211,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Byte.valueOf(getSuccess());
+                    return getSuccess();
 
             }
             throw new IllegalStateException();
@@ -1507,7 +1507,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Short.valueOf(getArg());
+                    return getArg();
 
             }
             throw new IllegalStateException();
@@ -1802,7 +1802,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Short.valueOf(getSuccess());
+                    return getSuccess();
 
             }
             throw new IllegalStateException();
@@ -2094,7 +2094,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Integer.valueOf(getArg());
+                    return getArg();
 
             }
             throw new IllegalStateException();
@@ -2389,7 +2389,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Integer.valueOf(getSuccess());
+                    return getSuccess();
 
             }
             throw new IllegalStateException();
@@ -2679,7 +2679,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Long.valueOf(getArg());
+                    return getArg();
 
             }
             throw new IllegalStateException();
@@ -2972,7 +2972,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Long.valueOf(getSuccess());
+                    return getSuccess();
 
             }
             throw new IllegalStateException();
@@ -3262,7 +3262,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case ARG:
-                    return Double.valueOf(getArg());
+                    return getArg();
 
             }
             throw new IllegalStateException();
@@ -3555,7 +3555,7 @@ public class $__DemoStub {
         public Object getFieldValue(_Fields field) {
             switch (field) {
                 case SUCCESS:
-                    return Double.valueOf(getSuccess());
+                    return getSuccess();
 
             }
             throw new IllegalStateException();

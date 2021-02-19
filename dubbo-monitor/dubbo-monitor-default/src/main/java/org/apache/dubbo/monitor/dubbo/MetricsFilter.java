@@ -83,7 +83,7 @@ public class MetricsFilter implements Filter {
             Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
-                    protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
+                    protocol.getDefaultPort() : Integer.parseInt(invoker.getUrl().getParameter(METRICS_PORT));
 
             Invoker<MetricsService> metricsInvoker = initMetricsInvoker();
 

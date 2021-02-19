@@ -228,7 +228,7 @@ public class DubboMonitorTest {
             @Override
             public boolean matches(Object item) {
                 URL url = (URL) item;
-                return Integer.valueOf(url.getParameter(MonitorService.SUCCESS)) > 1;
+                return Integer.parseInt(url.getParameter(MonitorService.SUCCESS)) > 1;
             }
         }));
     }

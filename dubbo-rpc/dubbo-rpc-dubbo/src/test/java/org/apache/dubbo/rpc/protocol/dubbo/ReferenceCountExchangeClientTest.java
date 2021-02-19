@@ -287,7 +287,7 @@ public class ReferenceCountExchangeClientTest {
             }
 
             // sorting makes it easy to compare between lists
-            Collections.sort(clientList, Comparator.comparing(c -> Integer.valueOf(Objects.hashCode(c))));
+            Collections.sort(clientList, Comparator.comparing(Objects::hashCode));
 
             return clientList;
 

@@ -115,12 +115,12 @@ public class PojoUtilsTest {
         assertObject(Boolean.TRUE);
         assertObject(Boolean.FALSE);
 
-        assertObject(Byte.valueOf((byte) 78));
+        assertObject((byte) 78);
 
         assertObject('a');
         assertObject('中');
 
-        assertObject(Short.valueOf((short) 37));
+        assertObject((short) 37);
 
         assertObject(78);
 

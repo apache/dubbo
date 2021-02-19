@@ -754,7 +754,7 @@ public class DubboBootstrap extends GenericEventListener {
 
         Boolean configuredValue = usedRegistryAsCenter.get();
         if (configuredValue != null) { // If configured, take its value.
-            supported = configuredValue.booleanValue();
+            supported = configuredValue;
         } else {                       // Or check the extension existence
             String protocol = registryConfig.getProtocol();
             supported = supportsExtension(extensionClass, protocol);

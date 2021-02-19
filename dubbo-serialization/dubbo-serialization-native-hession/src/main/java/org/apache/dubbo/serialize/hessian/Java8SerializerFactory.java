@@ -83,6 +83,6 @@ public class Java8SerializerFactory extends ExtSerializerFactory {
 
     private static boolean isJava8() {
         String javaVersion = System.getProperty("java.specification.version");
-        return Double.valueOf(javaVersion) >= 1.8;
+        return Double.parseDouble(javaVersion) >= 1.8;
     }
 }
