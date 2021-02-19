@@ -33,7 +33,7 @@ public interface ConfigurableSourceBeanMetadataElement {
      */
     default void setSource(BeanMetadataElement beanMetadataElement) {
         if (beanMetadataElement instanceof BeanMetadataAttributeAccessor) {
-            BeanMetadataAttributeAccessor.class.cast(beanMetadataElement).setSource(this);
+            ((BeanMetadataAttributeAccessor) beanMetadataElement).setSource(this);
         }
     }
 }

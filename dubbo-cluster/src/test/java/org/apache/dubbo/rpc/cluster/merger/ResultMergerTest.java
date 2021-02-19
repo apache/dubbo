@@ -69,7 +69,7 @@ public class ResultMergerTest {
         Object result = ArrayMerger.INSTANCE.merge(stringArray1, stringArray2, stringArray3, null);
         Assertions.assertTrue(result.getClass().isArray());
         Assertions.assertEquals(6, Array.getLength(result));
-        Assertions.assertTrue(String.class.isInstance(Array.get(result, 0)));
+        Assertions.assertTrue(Array.get(result, 0) instanceof String);
         for (int i = 0; i < 6; i++) {
             Assertions.assertEquals(String.valueOf(i + 1), Array.get(result, i));
         }
