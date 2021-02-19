@@ -158,7 +158,7 @@ public class FileSystemDynamicConfiguration extends TreePathDynamicConfiguration
     private final String encoding;
 
     /**
-     * The {@link Set} of {@link #groupDirectory(String) directories} that may be processing,
+     * The {@link Set} of directories that may be processing,
      * <p>
      * if {@link #isBasedPoolingWatchService()} is <code>false</code>, this properties will be
      * {@link Collections#emptySet() empty}

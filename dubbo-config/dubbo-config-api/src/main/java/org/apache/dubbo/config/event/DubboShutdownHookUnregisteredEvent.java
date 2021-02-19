@@ -21,10 +21,10 @@ import org.apache.dubbo.event.Event;
 
 /**
  * An event raised when the {@link DubboShutdownHook} {@link Runtime#removeShutdownHook(Thread) unregistered} on
- * {@link ApplicationShutdownHooks JVM ShutdownHooks}
+ * {@link java.lang.ApplicationShutdownHooks JVM ShutdownHooks}
  *
  * @see DubboShutdownHook
- * @see ApplicationShutdownHooks
+ * @see java.lang.ApplicationShutdownHooks
  * @since 2.7.5
  */
 public class DubboShutdownHookUnregisteredEvent extends Event {

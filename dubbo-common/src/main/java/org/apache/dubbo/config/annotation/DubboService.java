@@ -218,14 +218,14 @@ public @interface DubboService {
     /**
      * Filters for service invocation
      *
-     * @see Filter
+     * @see org.apache.dubbo.rpc.Filter
      */
     String[] filter() default {};
 
     /**
      * Listeners for service exporting and unexporting
      *
-     * @see ExporterListener
+     * @see org.apache.dubbo.rpc.ExporterListener
      */
     String[] listener() default {};
 

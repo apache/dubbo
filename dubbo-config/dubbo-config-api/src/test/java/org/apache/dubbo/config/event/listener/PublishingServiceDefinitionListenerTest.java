@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * {@link PublishingServiceDefinitionListener} Test-Cases
+ * PublishingServiceDefinitionListener Test-Cases
  *
  * @since 2.7.8
  */
