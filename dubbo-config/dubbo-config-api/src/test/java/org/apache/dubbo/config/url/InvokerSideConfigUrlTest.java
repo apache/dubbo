@@ -48,15 +48,15 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
     private ConsumerConfig consumerConf;
     private ReferenceConfig<DemoService> refConf;
 
-    private Object appConfForConsumerTable[][] = {
+    private Object[][] appConfForConsumerTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
 
-    private Object appConfForReferenceTable[][] = {
+    private Object[][] appConfForReferenceTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
 
-    private Object regConfForConsumerTable[][] = {
+    private Object[][] regConfForConsumerTable = {
 //            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
 //            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
 //            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
@@ -65,7 +65,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
 
-    private Object regConfForReferenceTable[][] = {
+    private Object[][] regConfForReferenceTable = {
             {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
             {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
             {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
@@ -74,7 +74,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
 
-    private Object methodConfForReferenceTable[][] = {
+    private Object[][] methodConfForReferenceTable = {
             {"actives", "eatTiger.actives", "int", 0, 90, "", "", "", "", ""},
             {"executes", "eatTiger.executes", "int", 0, 90, "", "", "", "", ""},
             {"deprecated", "eatTiger.deprecated", "boolean", false, true, "", "", "", "", ""},
@@ -82,7 +82,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             {"timeout", "eatTiger.timeout", "int", 0, 90, "", "", "", "", ""},
     };
 
-    private Object refConfTable[][] = {
+    private Object[][] refConfTable = {
 //            {"version", "version", "string", "0.0.0", "1.2.3", "", "", "", "", ""},
 //            {"group", "group", "string", "", "HaominTest", "", "", "", "", ""},
 
@@ -112,7 +112,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
             //{"", "", "", "", "", "", "", "", "", ""},
     };
 
-    private Object consumerConfTable[][] = {{"timeout", "timeout", "int", 5000, 8000, "", "", "", "", ""}, {"retries", "retries", "int", 2, 5, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"connections", "connections", "int", 100, 5, "", "", "", "", ""},
+    private Object[][] consumerConfTable = {{"timeout", "timeout", "int", 5000, 8000, "", "", "", "", ""}, {"retries", "retries", "int", 2, 5, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"connections", "connections", "int", 100, 5, "", "", "", "", ""},
 //            {"generic", "generic", "boolean", false, false, "", "", "", "", ""},
             {"check", "check", "boolean", true, false, "", "", "", "", ""},
             {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},

@@ -33,7 +33,8 @@ public class ClassGeneratorTest {
     @Test
     public void testMain() throws Exception {
         Bean b = new Bean();
-        Field fname = null, fs[] = Bean.class.getDeclaredFields();
+        Field fname = null;
+        Field[] fs = Bean.class.getDeclaredFields();
         for (Field f : fs) {
             f.setAccessible(true);
             if (f.getName().equals("name"))
@@ -63,7 +64,8 @@ public class ClassGeneratorTest {
     @Test
     public void testMain0() throws Exception {
         Bean b = new Bean();
-        Field fname = null, fs[] = Bean.class.getDeclaredFields();
+        Field fname = null;
+        Field[] fs = Bean.class.getDeclaredFields();
         for (Field f : fs) {
             f.setAccessible(true);
             if (f.getName().equals("name"))

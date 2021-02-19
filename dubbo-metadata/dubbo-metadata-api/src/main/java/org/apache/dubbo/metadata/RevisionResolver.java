@@ -26,7 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RevisionResolver {
     private static final Logger logger = LoggerFactory.getLogger(RevisionResolver.class);
-    private static char hexDigits[] = {
+    private static char[] hexDigits = {
             '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
 
@@ -45,7 +45,7 @@ public class RevisionResolver {
         byte[] md5 = mdInst.digest();
 
         int j = md5.length;
-        char str[] = new char[j * 2];
+        char[] str = new char[j * 2];
         int k = 0;
         for (int i = 0; i < j; i++) {
             byte byte0 = md5[i];

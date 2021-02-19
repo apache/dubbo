@@ -59,7 +59,7 @@ public class UrlTestBase {
     protected ProtocolConfig protoConfForService;
     protected MethodConfig methodConfForService;
     protected ServiceConfig<DemoService> servConf;
-    protected Object servConfTable[][] = {
+    protected Object[][] servConfTable = {
             {"proxy", "proxy", "string", "javassist", "jdk", "javassist", "", "", "", ""},
             {"actives", "actives", "int", 0, 90, "", "", "", "", ""},
             {"executes", "executes", "int", 0, 90, "", "", "", "", ""},
@@ -73,7 +73,7 @@ public class UrlTestBase {
             //{"listener", "listener", "string", "", "", "", "", "", "", ""},
 
     };
-    protected Object regConfForServiceTable[][] = {
+    protected Object[][] regConfForServiceTable = {
             //            {"timeout", "registry.timeout", "int", 5000, 9000, "", "", "", "", ""},
             //            {"file", "registry.file", "string", "", "regConfForServiceTable.log", "", "", "", "", ""},
             //            {"wait", "registry.wait", "int", 0, 9000, "", "", "", "", ""},
@@ -81,13 +81,13 @@ public class UrlTestBase {
             //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
-    protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
+    protected Object[][] provConfTable = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
             //change by fengting listener 没有缺省值
             //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
 
     };
-    protected Object methodConfForServiceTable[][] = {
+    protected Object[][] methodConfForServiceTable = {
             {"actives", "sayName.actives", "int", 0, 90, "", "", "", "", ""},
             {"executes", "sayName.executes", "int", 0, 90, "", "", "", "", ""},
             {"deprecated", "sayName.deprecated", "boolean", false, true, "", "", "", "", ""},
@@ -95,19 +95,19 @@ public class UrlTestBase {
             {"timeout", "sayName.timeout", "int", 0, 90, "", "", "", "", ""},
     };
     protected DemoService demoService = new DemoServiceImpl();
-    private Object appConfForProviderTable[][] = {
+    private Object[][] appConfForProviderTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
-    private Object appConfForServiceTable[][] = {
+    private Object[][] appConfForServiceTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
-    private Object regConfForProviderTable[][] = {
+    private Object[][] regConfForProviderTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
-    private Object protoConfForProviderTable[][] = {
+    private Object[][] protoConfForProviderTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
-    private Object protoConfForServiceTable[][] = {
+    private Object[][] protoConfForServiceTable = {
             {"", "", "", "", "", "", "", "", "", ""},
     };
 
