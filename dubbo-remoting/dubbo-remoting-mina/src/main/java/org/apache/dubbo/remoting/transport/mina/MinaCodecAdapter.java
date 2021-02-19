@@ -111,7 +111,7 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
                     frame = buffer;
                 } else {
                     int size = buffer.readableBytes() + in.remaining();
-                    frame = ChannelBuffers.dynamicBuffer(size > bufferSize ? size : bufferSize);
+                    frame = ChannelBuffers.dynamicBuffer(Math.max(size, bufferSize));
                     frame.writeBytes(buffer, buffer.readableBytes());
                     frame.writeBytes(in.buf());
                 }

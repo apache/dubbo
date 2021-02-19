@@ -125,7 +125,7 @@ public final class URLBuilder {
     }
 
     public URL build() {
-        port = port < 0 ? 0 : port;
+        port = Math.max(port, 0);
         // trim the leading "/"
         int firstNonSlash = 0;
         if (path != null) {

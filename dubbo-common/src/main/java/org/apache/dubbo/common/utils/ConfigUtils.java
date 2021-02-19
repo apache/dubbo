@@ -103,11 +103,7 @@ public class ConfigUtils {
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             // add default extension
             int i = names.indexOf(DEFAULT_KEY);
-            if (i > 0) {
-                names.addAll(i, defaults);
-            } else {
-                names.addAll(0, defaults);
-            }
+            names.addAll(Math.max(i, 0), defaults);
             names.remove(DEFAULT_KEY);
         } else {
             names.remove(DEFAULT_KEY);

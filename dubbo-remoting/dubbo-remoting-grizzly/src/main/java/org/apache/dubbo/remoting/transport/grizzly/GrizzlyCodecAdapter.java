@@ -99,7 +99,7 @@ public class GrizzlyCodecAdapter extends BaseFilter {
                         frame = previousData;
                     } else {
                         int size = previousData.readableBytes() + grizzlyBuffer.remaining();
-                        frame = ChannelBuffers.dynamicBuffer(size > bufferSize ? size : bufferSize);
+                        frame = ChannelBuffers.dynamicBuffer(Math.max(size, bufferSize));
                         frame.writeBytes(previousData, previousData.readableBytes());
                         frame.writeBytes(grizzlyBuffer.toByteBuffer());
                     }

@@ -71,7 +71,7 @@ public class TelnetUtils {
             int countbefore = 0;
             for (int j = 0; j < widths.length; j++) {
                 widths[j] = Math.max(widths[j], row.get(j).length());
-                totalWidth = (totalWidth + widths[j]) > maxwidth ? maxwidth : (totalWidth + widths[j]);
+                totalWidth = Math.min((totalWidth + widths[j]), maxwidth);
                 if (j < widths.length - 1) {
                     countbefore = countbefore + widths[j];
                 }

@@ -116,7 +116,7 @@ final class NettyCodecAdapter {
                 } else {
                     int size = buffer.readableBytes() + input.readableBytes();
                     message = org.apache.dubbo.remoting.buffer.ChannelBuffers.dynamicBuffer(
-                            size > bufferSize ? size : bufferSize);
+                            Math.max(size, bufferSize));
                     message.writeBytes(buffer, buffer.readableBytes());
                     message.writeBytes(input.toByteBuffer());
                 }
