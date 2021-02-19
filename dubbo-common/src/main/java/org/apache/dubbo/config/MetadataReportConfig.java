@@ -96,11 +96,10 @@ public class MetadataReportConfig extends AbstractConfig {
         if (isEmpty(address)) {
             throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
-        Map<String, String> map = new HashMap<String, String>();
         URL url = URL.valueOf(address);
         // Issue : https://github.com/apache/dubbo/issues/6491
         // Append the parameters from address
-        map.putAll(url.getParameters());
+        Map<String, String> map = new HashMap<String, String>(url.getParameters());
         // Append or overrides the properties as parameters
         appendParameters(map, this);
         // Normalize the parameters

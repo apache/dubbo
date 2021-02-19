@@ -244,11 +244,9 @@ public interface AnnotationUtils {
     static List<Annotation> getAllMetaAnnotations(Class<? extends Annotation> annotationType,
                                                   Predicate<Annotation>... annotationsToFilter) {
 
-        List<Annotation> allMetaAnnotations = new LinkedList<>();
-
         List<Annotation> metaAnnotations = getMetaAnnotations(annotationType);
 
-        allMetaAnnotations.addAll(metaAnnotations);
+        List<Annotation> allMetaAnnotations = new LinkedList<>(metaAnnotations);
 
         for (Annotation metaAnnotation : metaAnnotations) {
             // Get the nested meta annotations recursively

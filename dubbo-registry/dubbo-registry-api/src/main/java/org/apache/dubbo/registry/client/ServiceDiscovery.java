@@ -120,15 +120,13 @@ public interface ServiceDiscovery extends Prioritized {
      */
     default List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
 
-        List<ServiceInstance> allInstances = new LinkedList<>();
-
         int offset = 0;
 
         int pageSize = getDefaultPageSize();
 
         Page<ServiceInstance> page = getInstances(serviceName, offset, pageSize);
 
-        allInstances.addAll(page.getData());
+        List<ServiceInstance> allInstances = new LinkedList<>(page.getData());
 
         while (page.hasNext()) {
             offset += page.getDataSize();
