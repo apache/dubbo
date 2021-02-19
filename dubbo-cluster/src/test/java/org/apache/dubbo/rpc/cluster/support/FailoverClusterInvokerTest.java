@@ -249,7 +249,7 @@ public class FailoverClusterInvokerTest {
         }
     }
 
-    public class MockDirectory<T> extends StaticDirectory<T> {
+    public static class MockDirectory<T> extends StaticDirectory<T> {
         public MockDirectory(URL url, List<Invoker<T>> invokers) {
             super(url, invokers);
         }

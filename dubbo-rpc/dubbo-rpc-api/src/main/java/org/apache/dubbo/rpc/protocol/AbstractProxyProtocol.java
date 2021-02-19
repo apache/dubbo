@@ -158,7 +158,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
 
     protected abstract <T> T doRefer(Class<T> type, URL url) throws RpcException;
 
-    protected class ProxyProtocolServer implements ProtocolServer {
+    protected static class ProxyProtocolServer implements ProtocolServer {
 
         private RemotingServer server;
         private String address;
@@ -193,7 +193,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         }
     }
 
-    protected abstract class RemotingServerAdapter implements RemotingServer {
+    protected abstract static class RemotingServerAdapter implements RemotingServer {
 
         public abstract Object getDelegateServer();
 

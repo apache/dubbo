@@ -46,7 +46,7 @@ public class MixinTest {
         void m3();
     }
 
-    class C1 implements Mixin.MixinAware {
+    static class C1 implements Mixin.MixinAware {
         public void m1() {
             System.out.println("c1.m1();");
         }
@@ -60,7 +60,7 @@ public class MixinTest {
         }
     }
 
-    class C2 implements Mixin.MixinAware {
+    static class C2 implements Mixin.MixinAware {
         public void m3() {
             System.out.println("c2.m3();");
         }

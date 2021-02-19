@@ -76,7 +76,7 @@ public class ThreadNameTest {
         }
     }
 
-    class ThreadNameVerifyHandler implements ChannelHandler {
+    static class ThreadNameVerifyHandler implements ChannelHandler {
 
         private String message;
         private boolean success;

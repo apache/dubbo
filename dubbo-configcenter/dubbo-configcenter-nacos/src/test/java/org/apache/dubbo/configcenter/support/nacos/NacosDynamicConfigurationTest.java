@@ -158,7 +158,7 @@ public class NacosDynamicConfigurationTest {
 
     }
 
-    private class TestListener implements ConfigurationListener {
+    private static class TestListener implements ConfigurationListener {
         private CountDownLatch latch;
         private String value;
         private Map<String, Integer> countMap = new HashMap<>();

@@ -306,13 +306,13 @@ public class ReferenceCountExchangeClientTest {
         String hello();
     }
 
-    public class DemoServiceImpl implements IDemoService {
+    public static class DemoServiceImpl implements IDemoService {
         public String demo() {
             return "demo";
         }
     }
 
-    public class HelloServiceImpl implements IHelloService {
+    public static class HelloServiceImpl implements IHelloService {
         public String hello() {
             return "hello";
         }

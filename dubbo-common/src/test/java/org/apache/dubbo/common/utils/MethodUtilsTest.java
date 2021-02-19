@@ -96,7 +96,7 @@ public class MethodUtilsTest {
 
     }
 
-    public class MethodTestClazz {
+    public static class MethodTestClazz {
         private String value;
 
         public String getValue() {

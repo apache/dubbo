@@ -303,7 +303,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return nacosProperties.getProperty(name, defaultValue);
     }
 
-    public class NacosConfigListener extends AbstractSharedListener {
+    public static class NacosConfigListener extends AbstractSharedListener {
 
         private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
         /**

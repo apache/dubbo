@@ -85,7 +85,7 @@ public class DubboLazyConnectTest {
         Assertions.assertEquals("ok", service.get());
     }
 
-    public class DemoServiceImpl implements IDemoService {
+    public static class DemoServiceImpl implements IDemoService {
         public String get() {
             return "ok";
         }

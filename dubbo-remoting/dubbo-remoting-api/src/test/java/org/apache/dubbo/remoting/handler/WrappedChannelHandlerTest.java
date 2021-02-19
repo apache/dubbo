@@ -140,7 +140,7 @@ public class WrappedChannelHandlerTest {
         }
     }
 
-    class BizException extends RuntimeException {
+    static class BizException extends RuntimeException {
         private static final long serialVersionUID = -7541893754900723624L;
     }
 }

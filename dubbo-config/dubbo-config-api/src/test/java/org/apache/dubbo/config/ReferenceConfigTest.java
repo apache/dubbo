@@ -153,7 +153,7 @@ public class ReferenceConfigTest {
             arguments = {@Argument(index = 24, callback = true, type = "sss")})})
     private InnerTest innerTest;
 
-    private class InnerTest {
+    private static class InnerTest {
 
     }
 }

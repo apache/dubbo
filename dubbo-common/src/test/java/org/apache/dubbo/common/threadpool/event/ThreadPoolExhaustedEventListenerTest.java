@@ -34,7 +34,7 @@ public class ThreadPoolExhaustedEventListenerTest {
 
     @BeforeEach
     public void init() {
-        this.listener = new ThreadPoolExhaustedEventListenerTest.MyGenericEventListener();
+        this.listener = new MyGenericEventListener();
         this.eventDispatcher = EventDispatcher.getDefaultExtension();
         this.eventDispatcher.addEventListener(listener);
     }
@@ -53,7 +53,7 @@ public class ThreadPoolExhaustedEventListenerTest {
         assertEquals(this, listener.getThreadPoolExhaustedEvent().getSource());
     }
 
-    class MyGenericEventListener implements EventListener<ThreadPoolExhaustedEvent> {
+    static class MyGenericEventListener implements EventListener<ThreadPoolExhaustedEvent> {
 
         private ThreadPoolExhaustedEvent threadPoolExhaustedEvent;
 

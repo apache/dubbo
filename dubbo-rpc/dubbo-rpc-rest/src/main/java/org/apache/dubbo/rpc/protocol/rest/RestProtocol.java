@@ -259,7 +259,7 @@ public class RestProtocol extends AbstractProxyProtocol {
         }
     }
 
-    protected class ConnectionMonitor extends Thread {
+    protected static class ConnectionMonitor extends Thread {
         private volatile boolean shutdown;
         private final List<PoolingHttpClientConnectionManager> connectionManagers = Collections.synchronizedList(new LinkedList<>());
 

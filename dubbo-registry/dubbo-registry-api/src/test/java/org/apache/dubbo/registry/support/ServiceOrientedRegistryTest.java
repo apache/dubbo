@@ -163,7 +163,7 @@ public class ServiceOrientedRegistryTest {
     }
 
 
-    private class MyNotifyListener implements NotifyListener {
+    private static class MyNotifyListener implements NotifyListener {
 
         private List<URL> cache = new LinkedList<>();
 

@@ -37,7 +37,7 @@ public class ServiceBeanTest {
         MatcherAssert.assertThat(beanService, not(nullValue()));
     }
 
-    abstract class TestService implements Service {
+    abstract static class TestService implements Service {
 
     }
 }

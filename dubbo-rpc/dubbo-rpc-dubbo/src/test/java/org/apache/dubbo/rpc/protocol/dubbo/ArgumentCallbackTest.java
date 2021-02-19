@@ -296,14 +296,14 @@ public class ArgumentCallbackTest {
         void unxxx2(IDemoCallback callback);
     }
 
-    class HelloServiceImpl implements IHelloService {
+    static class HelloServiceImpl implements IHelloService {
         public String sayHello() {
             return "hello";
         }
 
     }
 
-    class DemoServiceImpl implements IDemoService {
+    static class DemoServiceImpl implements IDemoService {
         private List<IDemoCallback> callbacks = new ArrayList<IDemoCallback>();
         private volatile Thread t = null;
         private volatile Lock lock = new ReentrantLock();

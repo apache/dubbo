@@ -568,7 +568,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         return proxyReports;
     }
 
-    class MetadataReportHolder {
+    static class MetadataReportHolder {
 
         final URL            url;
         final MetadataReport report;

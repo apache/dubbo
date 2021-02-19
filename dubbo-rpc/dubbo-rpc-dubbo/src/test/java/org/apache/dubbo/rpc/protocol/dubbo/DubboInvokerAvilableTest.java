@@ -161,13 +161,13 @@ public class DubboInvokerAvilableTest {
         return clients;
     }
 
-    public class DemoServiceImpl implements IDemoService {
+    public static class DemoServiceImpl implements IDemoService {
         public String get() {
             return "ok";
         }
     }
 
-    public class DemoServiceImpl0 implements IDemoService {
+    public static class DemoServiceImpl0 implements IDemoService {
         public String get() {
             return "ok";
         }

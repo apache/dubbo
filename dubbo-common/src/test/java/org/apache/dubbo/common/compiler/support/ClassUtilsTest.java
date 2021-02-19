@@ -157,25 +157,25 @@ public class ClassUtilsTest {
     private interface GenericInterface<T> {
     }
 
-    private class GenericClass<T> implements GenericInterface<T> {
+    private static class GenericClass<T> implements GenericInterface<T> {
     }
 
-    private class GenericClass0 implements GenericInterface<String> {
+    private static class GenericClass0 implements GenericInterface<String> {
     }
 
-    private class GenericClass1 implements GenericInterface<Collection<String>> {
+    private static class GenericClass1 implements GenericInterface<Collection<String>> {
     }
 
-    private class GenericClass2<T> implements GenericInterface<T[]> {
+    private static class GenericClass2<T> implements GenericInterface<T[]> {
     }
 
-    private class GenericClass3<T> implements GenericInterface<T[][]> {
+    private static class GenericClass3<T> implements GenericInterface<T[][]> {
         public int getLength() {
             return -1;
         }
     }
 
-    private class PrivateHelloServiceImpl implements HelloService {
+    private static class PrivateHelloServiceImpl implements HelloService {
         private PrivateHelloServiceImpl() {
         }
 

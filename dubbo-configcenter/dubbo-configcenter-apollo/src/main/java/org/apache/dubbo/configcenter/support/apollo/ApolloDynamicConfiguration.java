@@ -213,7 +213,7 @@ public class ApolloDynamicConfiguration implements DynamicConfiguration {
         return new ApolloListener();
     }
 
-    public class ApolloListener implements ConfigChangeListener {
+    public static class ApolloListener implements ConfigChangeListener {
 
         private Set<ConfigurationListener> listeners = new CopyOnWriteArraySet<>();
 

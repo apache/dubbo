@@ -229,7 +229,7 @@ public class ThriftProtocol extends AbstractProtocol {
         return new ThriftProtocolServer(server);
     }
 
-    private class ThriftProtocolServer implements ProtocolServer {
+    private static class ThriftProtocolServer implements ProtocolServer {
 
         private ExchangeServer server;
         private String address;

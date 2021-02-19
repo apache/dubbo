@@ -126,7 +126,7 @@ public class HeartbeatHandlerTest {
         System.out.println("connect count " + handler.connectCount);
     }
 
-    class TestHeartbeatHandler implements ExchangeHandler {
+    static class TestHeartbeatHandler implements ExchangeHandler {
 
         public int disconnectCount = 0;
         public int connectCount = 0;

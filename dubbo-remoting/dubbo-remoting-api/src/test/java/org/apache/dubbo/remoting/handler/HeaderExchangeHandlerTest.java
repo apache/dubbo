@@ -194,11 +194,11 @@ public class HeaderExchangeHandlerTest {
         hexhandler.received(mchannel, request);
     }
 
-    private class BizException extends RuntimeException {
+    private static class BizException extends RuntimeException {
         private static final long serialVersionUID = 1L;
     }
 
-    private class MockedExchangeHandler extends MockedChannelHandler implements ExchangeHandler {
+    private static class MockedExchangeHandler extends MockedChannelHandler implements ExchangeHandler {
 
         public String telnet(Channel channel, String message) throws RemotingException {
             throw new UnsupportedOperationException();
@@ -209,7 +209,7 @@ public class HeaderExchangeHandlerTest {
         }
     }
 
-    private class Person {
+    private static class Person {
         private String name;
 
         public Person(String name) {

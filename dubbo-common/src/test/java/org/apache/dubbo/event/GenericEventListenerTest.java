@@ -54,7 +54,7 @@ public class GenericEventListenerTest {
         assertEquals(value, listener.getEchoEvent().getSource());
     }
 
-    class MyGenericEventListener extends GenericEventListener {
+    static class MyGenericEventListener extends GenericEventListener {
 
         private EchoEvent echoEvent;
 

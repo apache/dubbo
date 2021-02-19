@@ -439,7 +439,7 @@ public class TTable implements TComponent {
     /**
      * border style
      */
-    public class Border {
+    public static class Border {
 
         private int borders = BORDER_OUTER | BORDER_INNER;
 
