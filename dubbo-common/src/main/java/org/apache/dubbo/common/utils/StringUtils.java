@@ -618,12 +618,9 @@ public final class StringUtils {
     public static String toString(String msg, Throwable e) {
         UnsafeStringWriter w = new UnsafeStringWriter();
         w.write(msg + "\n");
-        PrintWriter p = new PrintWriter(w);
-        try {
+        try (PrintWriter p = new PrintWriter(w)) {
             e.printStackTrace(p);
             return w.toString();
-        } finally {
-            p.close();
         }
     }
 

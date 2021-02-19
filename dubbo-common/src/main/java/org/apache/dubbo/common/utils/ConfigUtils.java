@@ -225,11 +225,8 @@ public class ConfigUtils {
         // add scene judgement in windows environment Fix 2557
         if (checkFileNameExist(fileName)) {
             try {
-                FileInputStream input = new FileInputStream(fileName);
-                try {
+                try (FileInputStream input = new FileInputStream(fileName)) {
                     properties.load(input);
-                } finally {
-                    input.close();
                 }
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);

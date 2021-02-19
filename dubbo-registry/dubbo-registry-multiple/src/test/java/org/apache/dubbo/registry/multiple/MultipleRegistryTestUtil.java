@@ -73,30 +73,18 @@ public class MultipleRegistryTestUtil {
     }
 
     public static String getRedisContent(int port, String key) {
-        Jedis jedis = null;
-        try {
-            jedis = new Jedis("127.0.0.1", port);
+        try (Jedis jedis = new Jedis("127.0.0.1", port)) {
             return jedis.get(key);
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
-        } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
         }
     }
 
     public static String getRedisHashContent(int port, String key, String field) {
-        Jedis jedis = null;
-        try {
-            jedis = new Jedis("127.0.0.1", port);
+        try (Jedis jedis = new Jedis("127.0.0.1", port)) {
             return jedis.hget(key, field);
         } catch (Throwable e) {
             throw new RpcException("Failed to put to redis . cause: " + e.getMessage(), e);
-        } finally {
-            if (jedis != null) {
-                jedis.close();
-            }
         }
     }
 

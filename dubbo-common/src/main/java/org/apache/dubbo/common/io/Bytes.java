@@ -843,11 +843,8 @@ public class Bytes {
      * @return MD5 byte array.
      */
     public static byte[] getMD5(File file) throws IOException {
-        InputStream is = new FileInputStream(file);
-        try {
+        try (InputStream is = new FileInputStream(file)) {
             return getMD5(is);
-        } finally {
-            is.close();
         }
     }
 

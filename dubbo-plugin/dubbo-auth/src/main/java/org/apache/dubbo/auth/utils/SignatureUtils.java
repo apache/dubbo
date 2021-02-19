@@ -78,20 +78,14 @@ public class SignatureUtils {
     }
 
     static byte[] toByteArray(Object[] parameters) throws Exception {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutput out = null;
-        try {
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            ObjectOutput out = null;
             out = new ObjectOutputStream(bos);
             out.writeObject(parameters);
             out.flush();
             return bos.toByteArray();
-        } finally {
-            try {
-                bos.close();
-            } catch (IOException ex) {
-                // ignore close exception
-            }
         }
+        // ignore close exception
     }
 
 }

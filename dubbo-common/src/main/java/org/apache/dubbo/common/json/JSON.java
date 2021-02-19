@@ -55,12 +55,9 @@ public class JSON {
         if (obj == null) {
             return NULL;
         }
-        StringWriter sw = new StringWriter();
-        try {
+        try (StringWriter sw = new StringWriter()) {
             json(obj, sw);
             return sw.getBuffer().toString();
-        } finally {
-            sw.close();
         }
     }
 
@@ -95,12 +92,9 @@ public class JSON {
         if (obj == null) {
             return NULL;
         }
-        StringWriter sw = new StringWriter();
-        try {
+        try (StringWriter sw = new StringWriter()) {
             json(obj, properties, sw);
             return sw.getBuffer().toString();
-        } finally {
-            sw.close();
         }
     }
 
@@ -161,13 +155,10 @@ public class JSON {
      * @throws ParseException
      */
     public static Object parse(String json) throws ParseException {
-        StringReader reader = new StringReader(json);
-        try {
+        try (StringReader reader = new StringReader(json)) {
             return parse(reader);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
-        } finally {
-            reader.close();
         }
     }
 
@@ -192,13 +183,10 @@ public class JSON {
      * @throws ParseException
      */
     public static <T> T parse(String json, Class<T> type) throws ParseException {
-        StringReader reader = new StringReader(json);
-        try {
+        try (StringReader reader = new StringReader(json)) {
             return parse(reader, type);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
-        } finally {
-            reader.close();
         }
     }
 
@@ -225,13 +213,10 @@ public class JSON {
      * @throws ParseException
      */
     public static Object[] parse(String json, Class<?>[] types) throws ParseException {
-        StringReader reader = new StringReader(json);
-        try {
+        try (StringReader reader = new StringReader(json)) {
             return (Object[]) parse(reader, types);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
-        } finally {
-            reader.close();
         }
     }
 
@@ -257,13 +242,10 @@ public class JSON {
      * @throws ParseException
      */
     public static Object parse(String json, JSONVisitor handler) throws ParseException {
-        StringReader reader = new StringReader(json);
-        try {
+        try (StringReader reader = new StringReader(json)) {
             return parse(reader, handler);
         } catch (IOException e) {
             throw new ParseException(e.getMessage());
-        } finally {
-            reader.close();
         }
     }
 
