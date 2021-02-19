@@ -3964,11 +3964,7 @@ public class DemoService {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder("customException_args(");
-      boolean first = true;
-
-      sb.append(")");
-      return sb.toString();
+      return "customException_args()";
     }
 
     public void validate() throws org.apache.thrift.TException {

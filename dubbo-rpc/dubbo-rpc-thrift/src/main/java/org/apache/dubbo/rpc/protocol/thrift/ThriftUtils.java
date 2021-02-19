@@ -34,23 +34,19 @@ public class ThriftUtils {
 
         if (index > 0) {
 
-            return new StringBuilder(32)
-                    .append(serviceName, 0, index + 1)
-                    .append("$__")
-                    .append(serviceName.substring(index + 1))
-                    .append("Stub$")
-                    .append(methodName)
-                    .append("_args")
-                    .toString();
+            return serviceName.substring(0, index + 1) +
+                    "$__" +
+                    serviceName.substring(index + 1) +
+                    "Stub$" +
+                    methodName +
+                    "_args";
 
         } else {
-            return new StringBuffer(32)
-                    .append("$__")
-                    .append(serviceName)
-                    .append("Stub$")
-                    .append(methodName)
-                    .append("_args")
-                    .toString();
+            return "$__" +
+                    serviceName +
+                    "Stub$" +
+                    methodName +
+                    "_args";
         }
 
     }
@@ -61,43 +57,35 @@ public class ThriftUtils {
 
         if (index > 0) {
 
-            return new StringBuilder(32)
-                    .append(serviceName, 0, index + 1)
-                    .append("$__")
-                    .append(serviceName.substring(index + 1))
-                    .append("Stub$")
-                    .append(method)
-                    .append("_result")
-                    .toString();
+            return serviceName.substring(0, index + 1) +
+                    "$__" +
+                    serviceName.substring(index + 1) +
+                    "Stub$" +
+                    method +
+                    "_result";
 
         } else {
-            return new StringBuilder(32)
-                    .append("$__")
-                    .append(serviceName)
-                    .append("Stub$")
-                    .append(method)
-                    .append("_result")
-                    .toString();
+            return "$__" +
+                    serviceName +
+                    "Stub$" +
+                    method +
+                    "_result";
         }
 
     }
 
     public static String generateSetMethodName(String fieldName) {
 
-        return new StringBuilder(16)
-                .append("set")
-                .append(Character.toUpperCase(fieldName.charAt(0)))
-                .append(fieldName.substring(1))
-                .toString();
+        return "set" +
+                Character.toUpperCase(fieldName.charAt(0)) +
+                fieldName.substring(1);
 
     }
 
     public static String generateGetMethodName(String fieldName) {
-        return new StringBuffer(16)
-                .append("get")
-                .append(Character.toUpperCase(fieldName.charAt(0)))
-                .append(fieldName.substring(1))
-                .toString();
+        return "get" +
+                Character.toUpperCase(fieldName.charAt(0)) +
+                fieldName.substring(1);
     }
 
     public static String generateMethodArgsClassNameThrift(String serviceName, String methodName) {
@@ -105,11 +93,9 @@ public class ThriftUtils {
         int index = serviceName.indexOf("$");
 
         if (index > 0) {
-            return new StringBuilder(32)
-                    .append(serviceName, 0, index + 1)
-                    .append(methodName)
-                    .append("_args")
-                    .toString();
+            return serviceName.substring(0, index + 1) +
+                    methodName +
+                    "_args";
         }
 
         return null;
@@ -121,11 +107,9 @@ public class ThriftUtils {
         int index = serviceName.indexOf("$");
 
         if (index > 0) {
-            return new StringBuilder(32)
-                    .append(serviceName, 0, index + 1)
-                    .append(methodName)
-                    .append("_result")
-                    .toString();
+            return serviceName.substring(0, index + 1) +
+                    methodName +
+                    "_result";
         }
 
         return null;

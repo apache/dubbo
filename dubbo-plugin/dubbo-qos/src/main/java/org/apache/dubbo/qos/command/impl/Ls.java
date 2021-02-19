@@ -33,11 +33,7 @@ import java.util.Collection;
 public class Ls implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        StringBuilder result = new StringBuilder();
-        result.append(listProvider());
-        result.append(listConsumer());
-
-        return result.toString();
+        return listProvider() + listConsumer();
     }
 
     public String listProvider() {

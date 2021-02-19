@@ -179,17 +179,15 @@ public class RestMethodMetadata implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("RestMethodMetadata{");
-        sb.append("method=").append(method);
-        sb.append(", request=").append(request);
-        sb.append(", urlIndex=").append(urlIndex);
-        sb.append(", bodyIndex=").append(bodyIndex);
-        sb.append(", headerMapIndex=").append(headerMapIndex);
-        sb.append(", bodyType='").append(bodyType).append('\'');
-        sb.append(", indexToName=").append(indexToName);
-        sb.append(", formParams=").append(formParams);
-        sb.append(", indexToEncoded=").append(indexToEncoded);
-        sb.append('}');
-        return sb.toString();
+        return "RestMethodMetadata{" + "method=" + method +
+                ", request=" + request +
+                ", urlIndex=" + urlIndex +
+                ", bodyIndex=" + bodyIndex +
+                ", headerMapIndex=" + headerMapIndex +
+                ", bodyType='" + bodyType + '\'' +
+                ", indexToName=" + indexToName +
+                ", formParams=" + formParams +
+                ", indexToEncoded=" + indexToEncoded +
+                '}';
     }
 }

@@ -92,12 +92,10 @@ public class ServiceRestMetadata implements Serializable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ServiceRestMetadata{");
-        sb.append("serviceInterface='").append(serviceInterface).append('\'');
-        sb.append(", version='").append(version).append('\'');
-        sb.append(", group='").append(group).append('\'');
-        sb.append(", meta=").append(meta);
-        sb.append('}');
-        return sb.toString();
+        return "ServiceRestMetadata{" + "serviceInterface='" + serviceInterface + '\'' +
+                ", version='" + version + '\'' +
+                ", group='" + group + '\'' +
+                ", meta=" + meta +
+                '}';
     }
 }

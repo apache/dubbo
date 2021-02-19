@@ -556,43 +556,41 @@ public class ProtocolConfig extends AbstractConfig {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("ProtocolConfig{");
-        sb.append("name='").append(name).append('\'');
-        sb.append(", host='").append(host).append('\'');
-        sb.append(", port=").append(port);
-        sb.append(", contextpath='").append(contextpath).append('\'');
-        sb.append(", threadpool='").append(threadpool).append('\'');
-        sb.append(", threadname='").append(threadname).append('\'');
-        sb.append(", corethreads=").append(corethreads);
-        sb.append(", threads=").append(threads);
-        sb.append(", iothreads=").append(iothreads);
-        sb.append(", alive=").append(alive);
-        sb.append(", queues=").append(queues);
-        sb.append(", accepts=").append(accepts);
-        sb.append(", codec='").append(codec).append('\'');
-        sb.append(", serialization='").append(serialization).append('\'');
-        sb.append(", charset='").append(charset).append('\'');
-        sb.append(", payload=").append(payload);
-        sb.append(", buffer=").append(buffer);
-        sb.append(", heartbeat=").append(heartbeat);
-        sb.append(", accesslog='").append(accesslog).append('\'');
-        sb.append(", transporter='").append(transporter).append('\'');
-        sb.append(", exchanger='").append(exchanger).append('\'');
-        sb.append(", dispatcher='").append(dispatcher).append('\'');
-        sb.append(", networker='").append(networker).append('\'');
-        sb.append(", server='").append(server).append('\'');
-        sb.append(", client='").append(client).append('\'');
-        sb.append(", telnet='").append(telnet).append('\'');
-        sb.append(", prompt='").append(prompt).append('\'');
-        sb.append(", status='").append(status).append('\'');
-        sb.append(", register=").append(register);
-        sb.append(", keepAlive=").append(keepAlive);
-        sb.append(", optimizer='").append(optimizer).append('\'');
-        sb.append(", extension='").append(extension).append('\'');
-        sb.append(", parameters=").append(parameters);
-        sb.append(", isDefault=").append(isDefault);
-        sb.append(", sslEnabled=").append(sslEnabled);
-        sb.append('}');
-        return sb.toString();
+        return "ProtocolConfig{" + "name='" + name + '\'' +
+                ", host='" + host + '\'' +
+                ", port=" + port +
+                ", contextpath='" + contextpath + '\'' +
+                ", threadpool='" + threadpool + '\'' +
+                ", threadname='" + threadname + '\'' +
+                ", corethreads=" + corethreads +
+                ", threads=" + threads +
+                ", iothreads=" + iothreads +
+                ", alive=" + alive +
+                ", queues=" + queues +
+                ", accepts=" + accepts +
+                ", codec='" + codec + '\'' +
+                ", serialization='" + serialization + '\'' +
+                ", charset='" + charset + '\'' +
+                ", payload=" + payload +
+                ", buffer=" + buffer +
+                ", heartbeat=" + heartbeat +
+                ", accesslog='" + accesslog + '\'' +
+                ", transporter='" + transporter + '\'' +
+                ", exchanger='" + exchanger + '\'' +
+                ", dispatcher='" + dispatcher + '\'' +
+                ", networker='" + networker + '\'' +
+                ", server='" + server + '\'' +
+                ", client='" + client + '\'' +
+                ", telnet='" + telnet + '\'' +
+                ", prompt='" + prompt + '\'' +
+                ", status='" + status + '\'' +
+                ", register=" + register +
+                ", keepAlive=" + keepAlive +
+                ", optimizer='" + optimizer + '\'' +
+                ", extension='" + extension + '\'' +
+                ", parameters=" + parameters +
+                ", isDefault=" + isDefault +
+                ", sslEnabled=" + sslEnabled +
+                '}';
     }
 }

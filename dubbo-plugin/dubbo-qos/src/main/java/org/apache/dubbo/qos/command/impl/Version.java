@@ -27,11 +27,9 @@ public class Version implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        StringBuilder versionDescBuilder = new StringBuilder();
-        versionDescBuilder.append("dubbo version \"");
-        versionDescBuilder.append(org.apache.dubbo.common.Version.getVersion());
-        versionDescBuilder.append("\"");
-        return versionDescBuilder.toString();
+        return "dubbo version \"" +
+                org.apache.dubbo.common.Version.getVersion() +
+                "\"";
     }
 
 }

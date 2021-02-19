@@ -52,12 +52,10 @@ public class MediaContent implements java.io.Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[MediaContent: ");
-        sb.append("media=").append(media);
-        sb.append(", images=").append(images);
-        sb.append("]");
-        return sb.toString();
+        return "[MediaContent: " +
+                "media=" + media +
+                ", images=" + images +
+                "]";
     }
 
     public Media getMedia() {

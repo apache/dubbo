@@ -23,79 +23,67 @@ public class JavaCodeTest {
     public final static AtomicInteger SUBFIX = new AtomicInteger(8);
 
     String getSimpleCode() {
-        StringBuilder code = new StringBuilder();
-        code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world!\"; ");
-        code.append("   }");
-        code.append("}");
-        return code.toString();
+        return "package org.apache.dubbo.common.compiler.support;" +
+                "public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {" +
+                "   public String sayHello() { " +
+                "       return \"Hello world!\"; " +
+                "   }" +
+                "}";
     }
 
     String getSimpleCodeWithoutPackage(){
-        StringBuilder code = new StringBuilder();
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + "implements org.apache.dubbo.common.compiler.support.HelloService.HelloService {");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world!\"; ");
-        code.append("   }");
-        code.append("}");
-        return code.toString();
+        return "public class HelloServiceImpl" + SUBFIX.getAndIncrement() + "implements org.apache.dubbo" +
+                ".common.compiler.support.HelloService.HelloService {" +
+                "   public String sayHello() { " +
+                "       return \"Hello world!\"; " +
+                "   }" +
+                "}";
     }
 
     String getSimpleCodeWithSyntax(){
-        StringBuilder code = new StringBuilder();
-        code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world!\"; ");
         // code.append("   }");
         // }
-        return code.toString();
+        return "package org.apache.dubbo.common.compiler.support;" +
+                "public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {" +
+                "   public String sayHello() { " +
+                "       return \"Hello world!\"; ";
     }
 
     // only used for javassist
     String getSimpleCodeWithSyntax0(){
-        StringBuilder code = new StringBuilder();
-        code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("public class HelloServiceImpl_0 implements HelloService {");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world!\"; ");
         // code.append("   }");
         // }
-        return code.toString();
+        return "package org.apache.dubbo.common.compiler.support;" +
+                "public class HelloServiceImpl_0 implements HelloService {" +
+                "   public String sayHello() { " +
+                "       return \"Hello world!\"; ";
     }
 
     String getSimpleCodeWithImports() {
-        StringBuilder code = new StringBuilder();
-        code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("import java.lang.*;\n");
-        code.append("import org.apache.dubbo.common.compiler.support;\n");
-
-        code.append("public class HelloServiceImpl2" + SUBFIX.getAndIncrement() + " implements HelloService {");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world!\"; ");
-        code.append("   }");
-        code.append("}");
-        return code.toString();
+        return "package org.apache.dubbo.common.compiler.support;" +
+                "import java.lang.*;\n" +
+                "import org.apache.dubbo.common.compiler.support;\n" +
+                "public class HelloServiceImpl2" + SUBFIX.getAndIncrement() + " implements HelloService {" +
+                "   public String sayHello() { " +
+                "       return \"Hello world!\"; " +
+                "   }" +
+                "}";
     }
 
     String getSimpleCodeWithWithExtends() {
-        StringBuilder code = new StringBuilder();
-        code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("import java.lang.*;\n");
-        code.append("import org.apache.dubbo.common.compiler.support;\n");
-
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " extends org.apache.dubbo.common.compiler.support.HelloServiceImpl0 {\n");
-        code.append("   public String sayHello() { ");
-        code.append("       return \"Hello world3!\"; ");
-        code.append("   }");
-        code.append("}");
-        return code.toString();
+        return "package org.apache.dubbo.common.compiler.support;" +
+                "import java.lang.*;\n" +
+                "import org.apache.dubbo.common.compiler.support;\n" +
+                "public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " extends org.apache.dubbo.common" +
+                ".compiler.support.HelloServiceImpl0 {\n" +
+                "   public String sayHello() { " +
+                "       return \"Hello world3!\"; " +
+                "   }" +
+                "}";
     }
 }

@@ -69,12 +69,10 @@ public final class TimeoutCountDown implements Comparable<TimeoutCountDown> {
     long timeoutMillis = TimeUnit.MILLISECONDS.convert(deadlineInNanos, TimeUnit.NANOSECONDS);
     long remainingMillis = timeRemaining(TimeUnit.MILLISECONDS);
 
-    StringBuilder buf = new StringBuilder();
-    buf.append("Total timeout value - ");
-    buf.append(timeoutMillis);
-    buf.append(", times remaining - ");
-    buf.append(remainingMillis);
-    return buf.toString();
+    return "Total timeout value - " +
+            timeoutMillis +
+            ", times remaining - " +
+            remainingMillis;
   }
 
   @Override

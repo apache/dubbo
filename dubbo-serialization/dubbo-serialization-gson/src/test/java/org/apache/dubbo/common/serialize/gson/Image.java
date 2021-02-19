@@ -63,15 +63,13 @@ public class Image implements java.io.Serializable {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("[Image ");
-        sb.append("uri=").append(uri);
-        sb.append(", title=").append(title);
-        sb.append(", width=").append(width);
-        sb.append(", height=").append(height);
-        sb.append(", size=").append(size);
-        sb.append("]");
-        return sb.toString();
+        return "[Image " +
+                "uri=" + uri +
+                ", title=" + title +
+                ", width=" + width +
+                ", height=" + height +
+                ", size=" + size +
+                "]";
     }
 
     public String getUri() {
