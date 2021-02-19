@@ -46,7 +46,7 @@ public class HelpTelnetHandler implements TelnetHandler {
             Help help = handler.getClass().getAnnotation(Help.class);
             StringBuilder buf = new StringBuilder();
             buf.append("Command:\r\n    ");
-            buf.append(message + " " + help.parameter().replace("\r\n", " ").replace("\n", " "));
+            buf.append(message).append(" ").append(help.parameter().replace("\r\n", " ").replace("\n", " "));
             buf.append("\r\nSummary:\r\n    ");
             buf.append(help.summary().replace("\r\n", " ").replace("\n", " "));
             buf.append("\r\nDetail:\r\n    ");

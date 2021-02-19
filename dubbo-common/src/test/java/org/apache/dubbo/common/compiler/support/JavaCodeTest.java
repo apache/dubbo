@@ -26,7 +26,8 @@ public class JavaCodeTest {
         StringBuilder code = new StringBuilder();
         code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {");
+        code.append("public class HelloServiceImpl").append(SUBFIX.getAndIncrement()).append(" implements " +
+                "HelloService {");
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
@@ -36,7 +37,8 @@ public class JavaCodeTest {
 
     String getSimpleCodeWithoutPackage(){
         StringBuilder code = new StringBuilder();
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + "implements org.apache.dubbo.common.compiler.support.HelloService.HelloService {");
+        code.append("public class HelloServiceImpl").append(SUBFIX.getAndIncrement()).append("implements org.apache" +
+                ".dubbo.common.compiler.support.HelloService.HelloService {");
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
@@ -48,7 +50,7 @@ public class JavaCodeTest {
         StringBuilder code = new StringBuilder();
         code.append("package org.apache.dubbo.common.compiler.support;");
 
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " implements HelloService {");
+        code.append("public class HelloServiceImpl").append(SUBFIX.getAndIncrement()).append(" implements HelloService {");
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         // code.append("   }");
@@ -76,7 +78,7 @@ public class JavaCodeTest {
         code.append("import java.lang.*;\n");
         code.append("import org.apache.dubbo.common.compiler.support;\n");
 
-        code.append("public class HelloServiceImpl2" + SUBFIX.getAndIncrement() + " implements HelloService {");
+        code.append("public class HelloServiceImpl2").append(SUBFIX.getAndIncrement()).append(" implements HelloService {");
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
@@ -91,7 +93,8 @@ public class JavaCodeTest {
         code.append("import java.lang.*;\n");
         code.append("import org.apache.dubbo.common.compiler.support;\n");
 
-        code.append("public class HelloServiceImpl" + SUBFIX.getAndIncrement() + " extends org.apache.dubbo.common.compiler.support.HelloServiceImpl0 {\n");
+        code.append("public class HelloServiceImpl").append(SUBFIX.getAndIncrement()).append(" extends org.apache" +
+                ".dubbo.common.compiler.support.HelloServiceImpl0 {\n");
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world3!\"; ");
         code.append("   }");

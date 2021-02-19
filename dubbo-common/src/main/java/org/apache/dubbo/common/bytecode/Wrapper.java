@@ -203,7 +203,8 @@ public abstract class Wrapper {
             c3.append(" }");
         }
 
-        c3.append(" throw new " + NoSuchMethodException.class.getName() + "(\"Not found method \\\"\"+$2+\"\\\" in class " + c.getName() + ".\"); }");
+        c3.append(" throw new ").append(NoSuchMethodException.class.getName()).append("(\"Not found method " +
+                "\\\"\"+$2+\"\\\" in class ").append(c.getName()).append(".\"); }");
 
         // deal with get/set method.
         Matcher matcher;
@@ -225,8 +226,10 @@ public abstract class Wrapper {
                 pts.put(pn, pt);
             }
         }
-        c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class " + c.getName() + ".\"); }");
+        c1.append(" throw new ").append(NoSuchPropertyException.class.getName()).append("(\"Not found property " +
+                "\\\"\"+$2+\"\\\" field or setter method in class ").append(c.getName()).append(".\"); }");
+        c2.append(" throw new ").append(NoSuchPropertyException.class.getName()).append("(\"Not found property " +
+                "\\\"\"+$2+\"\\\" field or getter method in class ").append(c.getName()).append(".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();

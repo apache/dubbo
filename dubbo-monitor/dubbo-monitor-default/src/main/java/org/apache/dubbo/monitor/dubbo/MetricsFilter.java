@@ -131,7 +131,7 @@ public class MetricsFilter implements Filter {
         method.append("(");
 
         for (int i = 0; i < argTypes.length; i++) {
-            method.append((i == 0 ? "" : ", ") + argTypes[i].getSimpleName());
+            method.append(i == 0 ? "" : ", ").append(argTypes[i].getSimpleName());
         }
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);

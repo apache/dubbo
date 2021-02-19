@@ -42,7 +42,7 @@ public class DemoServiceImpl implements DemoService.Iface {
         called = true;
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < times; i++) {
-            sb.append("Hello, " + name + ". ");
+            sb.append("Hello, ").append(name).append(". ");
         }
         return sb.toString();
     }
