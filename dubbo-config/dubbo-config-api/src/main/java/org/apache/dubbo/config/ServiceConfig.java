@@ -671,7 +671,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         Integer port = null;
         if (configPort != null && configPort.length() > 0) {
             try {
-                Integer intPort = Integer.parseInt(configPort);
+                int intPort = Integer.parseInt(configPort);
                 if (isInvalidPort(intPort)) {
                     throw new IllegalArgumentException("Specified invalid port from env value:" + configPort);
                 }
