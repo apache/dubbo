@@ -100,5 +100,7 @@ public interface Constants {
      */
     String EXPORT_KEY = "export";
 
+    String PEER_KEY = "peer";
+
     String CONSUMER_URL_KEY = "CONSUMER_URL";
 }
