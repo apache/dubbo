@@ -93,7 +93,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
         if (shouldCheck == null) {
             // default true
-            shouldCheck = true;
+            return true;
         }
         return shouldCheck;
     }
