@@ -215,8 +215,7 @@ public class FailoverMetadataReportTest {
                     }
                 }
             }
-        } catch (NoSuchFieldException ignored) {
-        } catch (IllegalAccessException ignored) {
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
         }
     }
 

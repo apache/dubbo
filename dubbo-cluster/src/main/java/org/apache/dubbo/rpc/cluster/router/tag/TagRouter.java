@@ -227,8 +227,6 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 if ((ANYHOST_VALUE + ":" + port).equals(address)) {
                     return true;
                 }
-            } catch (UnknownHostException e) {
-                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             } catch (Exception e) {
                 logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             }
