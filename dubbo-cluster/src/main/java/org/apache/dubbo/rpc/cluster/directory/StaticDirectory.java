@@ -32,6 +32,7 @@ import java.util.List;
  * StaticDirectory
  */
 public class StaticDirectory<T> extends AbstractDirectory<T> {
+
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
     private final List<Invoker<T>> invokers;
