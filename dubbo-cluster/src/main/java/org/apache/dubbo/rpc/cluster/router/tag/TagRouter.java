@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
