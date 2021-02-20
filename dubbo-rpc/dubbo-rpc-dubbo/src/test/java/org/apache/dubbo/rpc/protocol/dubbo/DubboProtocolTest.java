@@ -94,7 +94,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
                 3000L)));
         // test netty client
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
         System.out.println(service.stringLength(buf.toString()));
@@ -132,7 +132,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
                 3000L)));
         // test netty client
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
         System.out.println(service.stringLength(buf.toString()));

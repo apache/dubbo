@@ -60,7 +60,7 @@ public abstract class StrategyMetadataReport implements MetadataReport {
      * @return true store metadata to the specified URL.
      */
     protected boolean shouldRegister(URL url) {
-        return this.strategy == null ? true : this.strategy.shouldRegister(url);
+        return this.strategy == null || this.strategy.shouldRegister(url);
     }
 
     /**
@@ -70,7 +70,7 @@ public abstract class StrategyMetadataReport implements MetadataReport {
      * @return true read metadata from specified URL.
      */
     protected boolean shouldQuery(URL url) {
-        return this.strategy == null ? true : this.strategy.shouldQuery(url);
+        return this.strategy == null || this.strategy.shouldQuery(url);
     }
 
     /**
@@ -82,7 +82,7 @@ public abstract class StrategyMetadataReport implements MetadataReport {
      * @return
      */
     protected boolean isLocalDataCenter(URL url) {
-        return this.strategy == null ? true : this.strategy.isLocalDataCenter(url);
+        return this.strategy == null || this.strategy.isLocalDataCenter(url);
     }
 
 }
