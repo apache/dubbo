@@ -81,7 +81,7 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         }
 
-        if (exception != null && failIndex == failThresholdIndex) {
+        if (exception != null) {
             throw exception;
         }
 
