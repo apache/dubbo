@@ -30,12 +30,12 @@ public class LFUCache<K, V> {
     private int curSize = 0;
 
     private final ReentrantLock lock = new ReentrantLock();
-    private static final int DEFAULT_LOAD_FACTOR = 1000;
+    private static final int DEFAULT_INITIAL_CAPACITY = 1000;
 
-    private static final float DEFAULT_EVICTION_CAPACITY = 0.75f;
+    private static final float DEFAULT_EVICTION_FACTOR = 0.75f;
 
     public LFUCache() {
-        this(DEFAULT_LOAD_FACTOR, DEFAULT_EVICTION_CAPACITY);
+        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_EVICTION_FACTOR);
     }
 
     /**

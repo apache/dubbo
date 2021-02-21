@@ -153,7 +153,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <test_container_version>1.11.2</test_container_version>
+        <test_container_version>1.15.2</test_container_version>
         <etcd_launcher_version>0.5.3</etcd_launcher_version>
         <hessian_lite_version>3.2.8</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>

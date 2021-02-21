@@ -23,8 +23,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -75,7 +75,7 @@ import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
 /**
  * 2019-07-31
  */
-public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
+public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
 
@@ -87,8 +87,8 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-service-discovery-consul-notifier", true));
-    private Map<String, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
-    private Map<String, TtlScheduler> ttlSchedulers = new ConcurrentHashMap<>();
+    private ConsulNotifier notifier;
+    private TtlScheduler ttlScheduler;
     private long checkPassInterval;
     private URL url;
 
@@ -123,6 +123,7 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
         int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
         client = new ConsulClient(host, port);
+        ttlScheduler = new TtlScheduler(checkPassInterval, client);
         this.tag = registryURL.getParameter(QUERY_TAG);
         this.registeringTags.addAll(getRegisteringTags(url));
         this.aclToken = ACL_TOKEN.getValue(registryURL);
@@ -176,23 +177,16 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
 
     @Override
     public void destroy() {
-        if (!notifiers.isEmpty()) {
-            notifiers.forEach((key, notifier) -> notifier.stop());
-            notifiers.clear();
+        if (notifier != null) {
+            notifier.stop();
         }
-
+        notifier = null;
         notifierExecutor.shutdownNow();
-
-        if (!ttlSchedulers.isEmpty()) {
-            ttlSchedulers.forEach((key, ttlScheduler) -> ttlScheduler.stop());
-            ttlSchedulers.clear();
-        }
+        ttlScheduler.stop();
     }
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
-        TtlScheduler ttlScheduler = ttlSchedulers.computeIfAbsent(serviceInstance.getServiceName(), name -> new TtlScheduler(checkPassInterval, client));
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
         client.agentServiceRegister(consulService, aclToken);
@@ -200,33 +194,25 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        for (String serviceName : listener.getServiceNames()) {
-            ConsulNotifier notifier = notifiers.get(serviceName);
-
-            if (notifier == null) {
-                Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
-                Long consulIndex = response.getConsulIndex();
-                notifier = new ConsulNotifier(serviceName, consulIndex);
-                notifiers.put(serviceName, notifier);
-            }
-            notifierExecutor.execute(notifier);
+        if (notifier == null) {
+            String serviceName = listener.getServiceNames();
+            Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+            Long consulIndex = response.getConsulIndex();
+            notifier = new ConsulNotifier(serviceName, consulIndex);
         }
+        notifierExecutor.execute(notifier);
     }
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        super.update(serviceInstance);
         // TODO
         // client.catalogRegister(buildCatalogService(serviceInstance));
     }
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        TtlScheduler ttlScheduler = ttlSchedulers.get(serviceInstance.getServiceName());
         String id = buildId(serviceInstance);
-        if (ttlScheduler != null) {
-            ttlScheduler.remove(id);
-        }
+        ttlScheduler.remove(id);
         client.agentServiceDeregister(id, aclToken);
     }
 
@@ -243,11 +229,8 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
         Long consulIndex = response.getConsulIndex();
-
-        ConsulNotifier notifier = notifiers.get(serviceName);
         if (notifier == null) {
             notifier = new ConsulNotifier(serviceName, consulIndex);
-            notifiers.put(serviceName, notifier);
         }
         return convert(response.getValue());
     }
