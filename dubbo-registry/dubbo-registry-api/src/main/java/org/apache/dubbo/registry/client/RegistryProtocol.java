@@ -58,10 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -733,12 +732,12 @@ public class RegistryProtocol implements Protocol {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
-        private final ExecutorService executor = newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
-
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
         private URL subscribeUrl;
         private URL registerUrl;
+
+        private final AtomicBoolean unexported = new AtomicBoolean(false);
 
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
@@ -760,26 +759,26 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         public void unexport() {
-            String key = getCacheKey(this.originInvoker);
-            bounds.remove(key);
+            if (unexported.compareAndSet(false, true)) {
+                String key = getCacheKey(this.originInvoker);
+                bounds.remove(key);
 
-            Registry registry = RegistryProtocol.this.getRegistry(originInvoker);
-            try {
-                registry.unregister(registerUrl);
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-            try {
-                NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
-                registry.unsubscribe(subscribeUrl, listener);
-                ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                        .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                                serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
+                Registry registry = RegistryProtocol.this.getRegistry(originInvoker);
+                try {
+                    registry.unregister(registerUrl);
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
+                try {
+                    NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
+                    registry.unsubscribe(subscribeUrl, listener);
+                    ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
+                            .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
+                                    serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                } catch (Throwable t) {
+                    logger.warn(t.getMessage(), t);
+                }
 
-            executor.submit(() -> {
                 try {
                     int timeout = ConfigurationUtils.getServerShutdownTimeout();
                     if (timeout > 0) {
@@ -791,7 +790,7 @@ public class RegistryProtocol implements Protocol {
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
-            });
+            }
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {
