@@ -121,7 +121,7 @@ public class CompatibleTypeUtils {
                 if (StringUtils.isEmpty(string)) {
                     return null;
                 }
-                return LocalDate.parse(string);
+                return java.time.LocalDate.parse(string);
             }
             if (type == java.time.LocalTime.class) {
                 if (StringUtils.isEmpty(string)) {
