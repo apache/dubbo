@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TIMESTAMP_KEY;
 
 /**
  * AbstractRegistryFactory. (SPI, Singleton, ThreadSafe)
@@ -120,7 +121,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         url = URLBuilder.from(url)
                 .setPath(RegistryService.class.getName())
                 .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY)
+                .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
                 .build();
         String key = createRegistryCacheKey(url);
         // Lock the registry access process to ensure a single instance of the registry

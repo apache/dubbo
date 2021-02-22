@@ -95,6 +95,8 @@ public interface Constants {
      * The key name for reference URL in register center
      */
     String REFER_KEY = "refer";
+
+    String TIMESTAMP_KEY = "timestamp";
     /**
      * The key name for export URL in register center
      */
