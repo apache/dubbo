@@ -19,16 +19,43 @@ package org.apache.dubbo.cache.support.expiring;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.support.AbstractCacheFactory;
 import org.apache.dubbo.cache.support.AbstractCacheFactoryTest;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.core.Is.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ExpiringCacheFactoryTest extends AbstractCacheFactoryTest {
     @Test
-    public void testLruCacheFactory() throws Exception {
+    public void testExpiringCacheFactory() throws Exception {
         Cache cache = super.constructCache();
         assertThat(cache instanceof ExpiringCache, is(true));
+    }
+
+    @Test
+    public void testExpiringCacheGetExpired() throws Exception {
+        URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=1&cache.interval=1");
+        AbstractCacheFactory cacheFactory = getCacheFactory();
+        Invocation invocation = new RpcInvocation();
+        Cache cache = cacheFactory.getCache(url, invocation);
+        cache.put("testKey", "testValue");
+        Thread.sleep(2100);
+        assertNull(cache.get("testKey"));
+    }
+
+    @Test
+    public void testExpiringCacheUnExpired() throws Exception {
+        URL url = URL.valueOf("test://test:12/test?cache=expiring&cache.seconds=0&cache.interval=1");
+        AbstractCacheFactory cacheFactory = getCacheFactory();
+        Invocation invocation = new RpcInvocation();
+        Cache cache = cacheFactory.getCache(url, invocation);
+        cache.put("testKey", "testValue");
+        Thread.sleep(1100);
+        assertNotNull(cache.get("testKey"));
     }
 
     @Override

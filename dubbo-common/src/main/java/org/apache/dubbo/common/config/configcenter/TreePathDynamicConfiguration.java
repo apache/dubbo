@@ -18,7 +18,6 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration;
-import org.apache.dubbo.common.utils.PathUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
@@ -31,6 +30,7 @@ import static org.apache.dubbo.common.config.configcenter.Constants.CONFIG_NAMES
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.PathUtils.buildPath;
+import static org.apache.dubbo.common.utils.PathUtils.normalize;
 
 /**
  * An abstract implementation of {@link DynamicConfiguration} is like "tree-structure" path :
@@ -45,6 +45,11 @@ import static org.apache.dubbo.common.utils.PathUtils.buildPath;
  * @since 2.7.8
  */
 public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfiguration {
+
+    /**
+     * The parameter name of URL for the config root path
+     */
+    public static final String CONFIG_ROOT_PATH_PARAM_NAME = PARAM_NAME_PREFIX + "root-path";
 
     /**
      * The parameter name of URL for the config base path
@@ -82,7 +87,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
     @Override
     public final boolean publishConfig(String key, String group, String content) {
         String pathKey = buildPathKey(group, key);
-        return execute(() -> doPublishConfig(pathKey, content), getDefaultTimeout());
+        return Boolean.TRUE.equals(execute(() -> doPublishConfig(pathKey, content), getDefaultTimeout()));
     }
 
     @Override
@@ -137,12 +142,22 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
      * @return non-null
      */
     protected String getRootPath(URL url) {
-        String rootPath = PATH_SEPARATOR + getConfigNamespace(url) + getConfigBasePath(url);
-        rootPath = PathUtils.normalize(rootPath);
-        if (rootPath.endsWith(PATH_SEPARATOR)) {
-            rootPath = rootPath.substring(0, rootPath.length() - 1);
+
+        String rootPath = url.getParameter(CONFIG_ROOT_PATH_PARAM_NAME, buildRootPath(url));
+
+        rootPath = normalize(rootPath);
+
+        int rootPathLength = rootPath.length();
+
+        if (rootPathLength > 1 && rootPath.endsWith(PATH_SEPARATOR)) {
+            rootPath = rootPath.substring(0, rootPathLength - 1);
         }
+
         return rootPath;
+    }
+
+    private String buildRootPath(URL url) {
+        return PATH_SEPARATOR + getConfigNamespace(url) + getConfigBasePath(url);
     }
 
     /**
