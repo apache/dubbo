@@ -93,6 +93,7 @@ public class ServerStream extends AbstractStream implements Stream {
 
     }
 
+    @Override
     public void halfClose() throws Exception {
         if (getData() == null) {
             responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)

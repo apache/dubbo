@@ -29,7 +29,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
@@ -135,7 +135,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private transient volatile boolean unexported;
 
-    private DubboBootstrap bootstrap;
+    private DubboServer dubboServer;
 
     /**
      * The exported services
@@ -149,16 +149,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isExported() {
         return exported;
     }
 
+    @Override
     @Parameter(excluded = true)
     public boolean isUnexported() {
         return unexported;
     }
 
+    @Override
     public void unexport() {
         if (!exported) {
             return;
@@ -182,16 +185,32 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
+    @Override
     public synchronized void export() {
+        beforeExportByDubboServer();
+        exportByDubboServer();
+    }
+
+
+    public synchronized void beforeExportByDubboServer() {
         if (!shouldExport() || exported) {
             return;
         }
 
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.service(this);
+        if (dubboServer == null) {
+            dubboServer = DubboServer.getInstance();
+            dubboServer.initialize();
+            dubboServer.service(this);
         }
+
+    }
+
+    public synchronized void exportByDubboServer() {
+
+        if (!shouldExport() || exported) {
+            return;
+        }
+
 
         checkAndUpdateSubConfigs();
 
@@ -321,7 +340,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 serviceDescriptor,
                 this,
                 serviceMetadata
-        );
+                                   );
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
@@ -729,11 +748,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
-    public DubboBootstrap getBootstrap() {
-        return bootstrap;
+    public DubboServer getBootstrap() {
+        return dubboServer;
     }
 
-    public void setBootstrap(DubboBootstrap bootstrap) {
-        this.bootstrap = bootstrap;
+    public void setBootstrap(DubboServer dubboServer) {
+        this.dubboServer = dubboServer;
+    }
+
+    @Override
+    public boolean equals(Object object){
+        return this == object;
     }
 }

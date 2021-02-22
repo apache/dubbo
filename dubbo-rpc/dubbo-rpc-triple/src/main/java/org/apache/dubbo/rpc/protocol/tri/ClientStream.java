@@ -166,6 +166,7 @@ public class ClientStream extends AbstractStream implements Stream {
 
     }
 
+    @Override
     public void halfClose() {
         final int httpCode = HttpResponseStatus.parseLine(getHeaders().status()).code();
         if (HttpResponseStatus.OK.code() != httpCode) {
