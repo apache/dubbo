@@ -282,10 +282,10 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 
         private void processExpires() {
             long timeNow = System.currentTimeMillis();
+            if (timeToLiveMillis <= 0) {
+                return;
+            }
             for (ExpiryObject o : delegateMap.values()) {
-                if (timeToLiveMillis <= 0) {
-                    continue;
-                }
                 long timeIdle = timeNow - o.getLastAccessTime();
                 if (timeIdle >= timeToLiveMillis) {
                     delegateMap.remove(o.getKey());
