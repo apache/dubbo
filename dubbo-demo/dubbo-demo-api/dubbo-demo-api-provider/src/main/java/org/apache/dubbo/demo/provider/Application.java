@@ -33,8 +33,7 @@ public class Application {
         if (isClassic(args)) {
             startWithExport();
         } else {
-//            startWithBootstrap();
-            runWithDubboServer();
+            startWithBootstrap();
         }
 
     }
@@ -66,20 +65,6 @@ public class Application {
 
         System.out.println("dubbo service started");
         new CountDownLatch(1).await();
-    }
-
-
-    private static void runWithDubboServer() {
-        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
-        service.setInterface(DemoService.class);
-        service.setRef(new DemoServiceImpl());
-
-        DubboServer dubboServer = DubboServer.getInstance();
-        dubboServer.application(new ApplicationConfig("dubbo-demo-api-provider"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .service(service)
-                .start()
-                .await();
     }
 
 }

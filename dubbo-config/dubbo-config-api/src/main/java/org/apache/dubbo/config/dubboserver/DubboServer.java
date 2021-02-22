@@ -48,13 +48,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.bootstrap.builders.ApplicationBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ConsumerBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ProtocolBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ProviderBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
-import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
-import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -92,11 +85,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -116,18 +107,6 @@ import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServi
 import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 public class DubboServer extends GenericEventListener {
-
-    public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
-
-    public static final String DEFAULT_PROTOCOL_ID = "PROTOCOL#DEFAULT";
-
-    public static final String DEFAULT_SERVICE_ID = "SERVICE#DEFAULT";
-
-    public static final String DEFAULT_REFERENCE_ID = "REFERENCE#DEFAULT";
-
-    public static final String DEFAULT_PROVIDER_ID = "PROVIDER#DEFAULT";
-
-    public static final String DEFAULT_CONSUMER_ID = "CONSUMER#DEFAULT";
 
     private static final String NAME = DubboServer.class.getSimpleName();
 
@@ -214,275 +193,6 @@ public class DubboServer extends GenericEventListener {
 
     public void unRegisterShutdownHook() {
         DubboShutdownHook.getDubboShutdownHook().unregister();
-    }
-
-    public DubboServer metadataReport(MetadataReportConfig metadataReportConfig) {
-        configManager.addMetadataReport(metadataReportConfig);
-        return this;
-    }
-
-    public DubboServer metadataReports(List<MetadataReportConfig> metadataReportConfigs) {
-        if (CollectionUtils.isEmpty(metadataReportConfigs)) {
-            return this;
-        }
-
-        configManager.addMetadataReports(metadataReportConfigs);
-        return this;
-    }
-
-    // {@link ApplicationConfig} correlative methods
-
-    /**
-     * Set the name of application
-     *
-     * @param name the name of application
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer application(String name) {
-        return application(name, builder -> {
-            // DO NOTHING
-        });
-    }
-
-    /**
-     * Set the name of application and it's future build
-     *
-     * @param name            the name of application
-     * @param consumerBuilder {@link ApplicationBuilder}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer application(String name, Consumer<ApplicationBuilder> consumerBuilder) {
-        ApplicationBuilder builder = createApplicationBuilder(name);
-        consumerBuilder.accept(builder);
-        return application(builder.build());
-    }
-
-    /**
-     * Set the {@link ApplicationConfig}
-     *
-     * @param applicationConfig the {@link ApplicationConfig}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer application(ApplicationConfig applicationConfig) {
-        configManager.setApplication(applicationConfig);
-        return this;
-    }
-
-
-    // {@link RegistryConfig} correlative methods
-
-    /**
-     * Add an instance of {@link RegistryConfig} with {@link #DEFAULT_REGISTRY_ID default ID}
-     *
-     * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer registry(Consumer<RegistryBuilder> consumerBuilder) {
-        return registry(DEFAULT_REGISTRY_ID, consumerBuilder);
-    }
-
-    /**
-     * Add an instance of {@link RegistryConfig} with the specified ID
-     *
-     * @param id              the {@link RegistryConfig#getId() id}  of {@link RegistryConfig}
-     * @param consumerBuilder the {@link Consumer} of {@link RegistryBuilder}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer registry(String id, Consumer<RegistryBuilder> consumerBuilder) {
-        RegistryBuilder builder = createRegistryBuilder(id);
-        consumerBuilder.accept(builder);
-        return registry(builder.build());
-    }
-
-    /**
-     * Add an instance of {@link RegistryConfig}
-     *
-     * @param registryConfig an instance of {@link RegistryConfig}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer registry(RegistryConfig registryConfig) {
-        configManager.addRegistry(registryConfig);
-        return this;
-    }
-
-    /**
-     * Add an instance of {@link RegistryConfig}
-     *
-     * @param registryConfigs the multiple instances of {@link RegistryConfig}
-     * @return current {@link DubboServer} instance
-     */
-    public DubboServer registries(List<RegistryConfig> registryConfigs) {
-        if (CollectionUtils.isEmpty(registryConfigs)) {
-            return this;
-        }
-        registryConfigs.forEach(this::registry);
-        return this;
-    }
-
-
-    // {@link ProtocolConfig} correlative methods
-    public DubboServer protocol(Consumer<ProtocolBuilder> consumerBuilder) {
-        return protocol(DEFAULT_PROTOCOL_ID, consumerBuilder);
-    }
-
-    public DubboServer protocol(String id, Consumer<ProtocolBuilder> consumerBuilder) {
-        ProtocolBuilder builder = createProtocolBuilder(id);
-        consumerBuilder.accept(builder);
-        return protocol(builder.build());
-    }
-
-    public DubboServer protocol(ProtocolConfig protocolConfig) {
-        return protocols(asList(protocolConfig));
-    }
-
-    public DubboServer protocols(List<ProtocolConfig> protocolConfigs) {
-        if (CollectionUtils.isEmpty(protocolConfigs)) {
-            return this;
-        }
-        configManager.addProtocols(protocolConfigs);
-        return this;
-    }
-
-    // {@link ServiceConfig} correlative methods
-    public <S> DubboServer service(Consumer<ServiceBuilder<S>> consumerBuilder) {
-        return service(DEFAULT_SERVICE_ID, consumerBuilder);
-    }
-
-    public <S> DubboServer service(String id, Consumer<ServiceBuilder<S>> consumerBuilder) {
-        ServiceBuilder builder = createServiceBuilder(id);
-        consumerBuilder.accept(builder);
-        return service(builder.build());
-    }
-
-    public DubboServer service(ServiceConfig<?> serviceConfig) {
-        configManager.addService(serviceConfig);
-        return this;
-    }
-
-    public DubboServer services(List<ServiceConfig> serviceConfigs) {
-        if (CollectionUtils.isEmpty(serviceConfigs)) {
-            return this;
-        }
-        serviceConfigs.forEach(configManager::addService);
-        return this;
-    }
-
-    // {@link Reference} correlative methods
-    public <S> DubboServer reference(Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        return reference(DEFAULT_REFERENCE_ID, consumerBuilder);
-    }
-
-    public <S> DubboServer reference(String id, Consumer<ReferenceBuilder<S>> consumerBuilder) {
-        ReferenceBuilder builder = createReferenceBuilder(id);
-        consumerBuilder.accept(builder);
-        return reference(builder.build());
-    }
-
-    public DubboServer reference(ReferenceConfig<?> referenceConfig) {
-        configManager.addReference(referenceConfig);
-        return this;
-    }
-
-    public DubboServer references(List<ReferenceConfig> referenceConfigs) {
-        if (CollectionUtils.isEmpty(referenceConfigs)) {
-            return this;
-        }
-
-        referenceConfigs.forEach(configManager::addReference);
-        return this;
-    }
-
-    // {@link ProviderConfig} correlative methods
-    public DubboServer provider(Consumer<ProviderBuilder> builderConsumer) {
-        return provider(DEFAULT_PROVIDER_ID, builderConsumer);
-    }
-
-    public DubboServer provider(String id, Consumer<ProviderBuilder> builderConsumer) {
-        ProviderBuilder builder = createProviderBuilder(id);
-        builderConsumer.accept(builder);
-        return provider(builder.build());
-    }
-
-    public DubboServer provider(ProviderConfig providerConfig) {
-        return providers(asList(providerConfig));
-    }
-
-    public DubboServer providers(List<ProviderConfig> providerConfigs) {
-        if (CollectionUtils.isEmpty(providerConfigs)) {
-            return this;
-        }
-
-        providerConfigs.forEach(configManager::addProvider);
-        return this;
-    }
-
-    // {@link ConsumerConfig} correlative methods
-    public DubboServer consumer(Consumer<ConsumerBuilder> builderConsumer) {
-        return consumer(DEFAULT_CONSUMER_ID, builderConsumer);
-    }
-
-    public DubboServer consumer(String id, Consumer<ConsumerBuilder> builderConsumer) {
-        ConsumerBuilder builder = createConsumerBuilder(id);
-        builderConsumer.accept(builder);
-        return consumer(builder.build());
-    }
-
-    public DubboServer consumer(ConsumerConfig consumerConfig) {
-        return consumers(asList(consumerConfig));
-    }
-
-    public DubboServer consumers(List<ConsumerConfig> consumerConfigs) {
-        if (CollectionUtils.isEmpty(consumerConfigs)) {
-            return this;
-        }
-
-        consumerConfigs.forEach(configManager::addConsumer);
-        return this;
-    }
-
-    // {@link ConfigCenterConfig} correlative methods
-    public DubboServer configCenter(ConfigCenterConfig configCenterConfig) {
-        return configCenters(asList(configCenterConfig));
-    }
-
-    public DubboServer configCenters(List<ConfigCenterConfig> configCenterConfigs) {
-        if (CollectionUtils.isEmpty(configCenterConfigs)) {
-            return this;
-        }
-        configManager.addConfigCenters(configCenterConfigs);
-        return this;
-    }
-
-    public DubboServer monitor(MonitorConfig monitor) {
-        configManager.setMonitor(monitor);
-        return this;
-    }
-
-    public DubboServer metrics(MetricsConfig metrics) {
-        configManager.setMetrics(metrics);
-        return this;
-    }
-
-    public DubboServer module(ModuleConfig module) {
-        configManager.setModule(module);
-        return this;
-    }
-
-    public DubboServer ssl(SslConfig sslConfig) {
-        configManager.setSsl(sslConfig);
-        return this;
-    }
-
-    public DubboServer cache(ReferenceConfigCache cache) {
-        this.cache = cache;
-        return this;
-    }
-
-    public ReferenceConfigCache getCache() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-        return cache;
     }
 
 
@@ -724,7 +434,6 @@ public class DubboServer extends GenericEventListener {
                 .filter(this::isUsedRegistryAsMetadataCenter)
                 .map(this::registryAsMetadataCenter)
                 .forEach(configManager::addMetadataReport);
-
     }
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
@@ -1003,35 +712,7 @@ public class DubboServer extends GenericEventListener {
         destroy();
         return this;
     }
-    /* serve for builder apis, begin */
 
-    private ApplicationBuilder createApplicationBuilder(String name) {
-        return new ApplicationBuilder().name(name);
-    }
-
-    private RegistryBuilder createRegistryBuilder(String id) {
-        return new RegistryBuilder().id(id);
-    }
-
-    private ProtocolBuilder createProtocolBuilder(String id) {
-        return new ProtocolBuilder().id(id);
-    }
-
-    private ServiceBuilder createServiceBuilder(String id) {
-        return new ServiceBuilder().id(id);
-    }
-
-    private ReferenceBuilder createReferenceBuilder(String id) {
-        return new ReferenceBuilder().id(id);
-    }
-
-    private ProviderBuilder createProviderBuilder(String id) {
-        return new ProviderBuilder().id(id);
-    }
-
-    private ConsumerBuilder createConsumerBuilder(String id) {
-        return new ConsumerBuilder().id(id);
-    }
     /* serve for builder apis, end */
 
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
@@ -1187,9 +868,6 @@ public class DubboServer extends GenericEventListener {
 
     private void exportService(ServiceConfigBase sc) {
         if (sc instanceof ServiceConfig) {
-            if(!configManager.getServices().contains(sc)){
-                service((ServiceConfig)sc);
-            }
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
@@ -1217,9 +895,6 @@ public class DubboServer extends GenericEventListener {
     private void referService(ReferenceConfigBase rc) {
         if (cache == null) {
             cache = ReferenceConfigCache.getCache();
-        }
-        if(!configManager.getReferences().contains(rc)){
-            reference((ReferenceConfig)rc);
         }
         if (rc instanceof ReferenceConfig) {
             if (rc.shouldInit()) {
@@ -1405,7 +1080,6 @@ public class DubboServer extends GenericEventListener {
     private void executeMutually(Runnable runnable) {
         try {
             lock.lock();
-
             runnable.run();
         } finally {
             lock.unlock();

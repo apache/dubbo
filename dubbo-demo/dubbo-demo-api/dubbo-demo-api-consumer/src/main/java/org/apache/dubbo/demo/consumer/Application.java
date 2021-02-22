@@ -30,8 +30,7 @@ public class Application {
         if (isClassic(args)) {
             runWithRefer();
         } else {
-//            runWithBootstrap();
-            runWithDubboServer();
+            runWithBootstrap();
         }
     }
 
@@ -69,28 +68,6 @@ public class Application {
         DemoService service = reference.get();
         String message = service.sayHello("dubbo");
         System.out.println(message);
-    }
-
-    private static void runWithDubboServer() {
-        ReferenceConfig<DemoService> reference = new ReferenceConfig<>();
-        reference.setInterface(DemoService.class);
-        reference.setGeneric("true");
-
-        DubboServer dubboServer = DubboServer.getInstance();
-        dubboServer.application(new ApplicationConfig("dubbo-demo-api-consumer"))
-                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
-                .reference(reference)
-                .start();
-
-        DemoService demoService = ReferenceConfigCache.getCache().get(reference);
-        String message = demoService.sayHello("dubbo");
-        System.out.println(message);
-
-        // generic invoke
-        GenericService genericService = (GenericService) demoService;
-        Object genericInvokeResult = genericService.$invoke("sayHello", new String[] { String.class.getName() },
-                new Object[] { "dubbo generic invoke" });
-        System.out.println(genericInvokeResult);
     }
 
 }

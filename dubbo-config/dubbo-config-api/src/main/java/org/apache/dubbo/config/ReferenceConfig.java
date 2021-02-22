@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
 import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
@@ -143,7 +144,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     private final ServiceRepository repository;
 
-    private DubboServer dubboServer;
+    private DubboBootstrap dubboBootstrap;
 
     /**
      * The service names that the Dubbo interface subscribed.
@@ -220,7 +221,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             init();
         }
         //Add one Boolean and throw
-        if (!dubboServer.isStarted()) {
+        if (!dubboBootstrap.isStarted()) {
             throw new IllegalStateException("The DubboServer has not been started!");
         }
         return ref;
@@ -252,10 +253,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
-        if (dubboServer == null) {
-            dubboServer = DubboServer.getInstance();
-            dubboServer.initialize();
-            dubboServer.reference(this);
+        if (dubboBootstrap == null) {
+            dubboBootstrap = DubboBootstrap.getInstance();
+            dubboBootstrap.initialize();
+            dubboBootstrap.reference(this);
         }
     }
     public synchronized void initByDubboServer() {
@@ -539,12 +540,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
-    public DubboServer getDubboServer() {
-        return dubboServer;
+    public DubboBootstrap getDubboBootstrap() {
+        return dubboBootstrap;
     }
 
-    public void setBootstrap(DubboServer dubboServer) {
-        this.dubboServer = dubboServer;
+    public void setBootstrap(DubboBootstrap dubboBootstrap) {
+        this.dubboBootstrap = dubboBootstrap;
     }
 
     private void postProcessConfig() {

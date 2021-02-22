@@ -18,6 +18,8 @@ package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -65,7 +68,7 @@ public class AbstractMetadataReportFactoryTest {
 
                 @Override
                 public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier,
-                                               Collection<String> urls) {
+                                               Set<String> urls) {
 
                 }
 
@@ -80,11 +83,31 @@ public class AbstractMetadataReportFactoryTest {
                 }
 
                 @Override
+                public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+
+                }
+
+                @Override
+                public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
+                    return null;
+                }
+
+                @Override
+                public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+                    return null;
+                }
+
+                @Override
+                public void registerServiceAppMapping(String serviceKey, String application, URL url) {
+
+                }
+
+                @Override
                 public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map serviceParameterMap) {
                     store.put(consumerMetadataIdentifier.getIdentifierKey(), JSON.toJSONString(serviceParameterMap));
                 }
 
-                @Override
+//                @Override
                 public void close() throws Exception {
 
                 }

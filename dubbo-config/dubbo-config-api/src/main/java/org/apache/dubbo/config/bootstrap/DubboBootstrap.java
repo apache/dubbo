@@ -16,21 +16,11 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
-import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
-import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MetricsConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -51,25 +41,14 @@ import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.dubboserver.DubboServer;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.event.GenericEventListener;
-import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
-import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
-import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
-import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 /**
  * See {@link ApplicationModel} and {@link ExtensionLoader} for why this class is designed to be singleton.
@@ -95,17 +74,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     public static final String DEFAULT_CONSUMER_ID = "CONSUMER#DEFAULT";
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private static volatile DubboBootstrap instance;
-
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     private final ConfigManager configManager;
 
     private final DubboServer dubboServer;
-
-    private final Environment environment;
 
     private ReferenceConfigCache cache;
 
@@ -125,24 +98,10 @@ public class DubboBootstrap extends GenericEventListener {
 
     private DubboBootstrap() {
         configManager = ApplicationModel.getConfigManager();
-        environment = ApplicationModel.getEnvironment();
 
         //Is this the best way to get the singleton instance
         dubboServer = DubboServer.getInstance();
 
-    }
-
-    private boolean isOnlyRegisterProvider() {
-        Boolean registerConsumer = getApplication().getRegisterConsumer();
-        return registerConsumer == null || !registerConsumer;
-    }
-
-    private String getMetadataType() {
-        String type = getApplication().getMetadataType();
-        if (StringUtils.isEmpty(type)) {
-            type = DEFAULT_METADATA_STORAGE_TYPE;
-        }
-        return type;
     }
 
     public DubboBootstrap metadataReport(MetadataReportConfig metadataReportConfig) {
@@ -158,8 +117,6 @@ public class DubboBootstrap extends GenericEventListener {
         configManager.addMetadataReports(metadataReportConfigs);
         return this;
     }
-
-    // {@link ApplicationConfig} correlative methods
 
     /**
      * Set the name of application
@@ -247,7 +204,6 @@ public class DubboBootstrap extends GenericEventListener {
         registryConfigs.forEach(this::registry);
         return this;
     }
-
 
     // {@link ProtocolConfig} correlative methods
     public DubboBootstrap protocol(Consumer<ProtocolBuilder> consumerBuilder) {
@@ -414,162 +370,6 @@ public class DubboBootstrap extends GenericEventListener {
         return cache;
     }
 
-
-    /**
-     * For compatibility purpose, use registry as the default config center when
-     * there's no config center specified explicitly and
-     * useAsConfigCenter of registryConfig is null or true
-     */
-    private void useRegistryAsConfigCenterIfNecessary() {
-        // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
-        if (environment.getDynamicConfiguration().isPresent()) {
-            return;
-        }
-
-        if (CollectionUtils.isNotEmpty(configManager.getConfigCenters())) {
-            return;
-        }
-
-        configManager
-                .getDefaultRegistries()
-                .stream()
-                .filter(this::isUsedRegistryAsConfigCenter)
-                .map(this::registryAsConfigCenter)
-                .forEach(configManager::addConfigCenter);
-    }
-
-    private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
-                DynamicConfigurationFactory.class);
-    }
-
-    private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
-        String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "config-center-" + protocol + "-" + port;
-        ConfigCenterConfig cc = new ConfigCenterConfig();
-        cc.setId(id);
-        if (cc.getParameters() == null) {
-            cc.setParameters(new HashMap<>());
-        }
-        if (registryConfig.getParameters() != null) {
-            cc.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
-        }
-        cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-        cc.setProtocol(protocol);
-        cc.setPort(port);
-        cc.setGroup(registryConfig.getGroup());
-        cc.setAddress(getRegistryCompatibleAddress(registryConfig));
-        cc.setNamespace(registryConfig.getGroup());
-        cc.setUsername(registryConfig.getUsername());
-        cc.setPassword(registryConfig.getPassword());
-        if (registryConfig.getTimeout() != null) {
-            cc.setTimeout(registryConfig.getTimeout().longValue());
-        }
-        cc.setHighestPriority(false);
-        return cc;
-    }
-
-
-    private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
-        return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
-                MetadataReportFactory.class);
-    }
-
-    /**
-     * Is used the specified registry as a center infrastructure
-     *
-     * @param registryConfig       the {@link RegistryConfig}
-     * @param usedRegistryAsCenter the configured value on
-     * @param centerType           the type name of center
-     * @param extensionClass       an extension class of a center infrastructure
-     * @return
-     * @since 2.7.8
-     */
-    private boolean isUsedRegistryAsCenter(RegistryConfig registryConfig, Supplier<Boolean> usedRegistryAsCenter,
-                                           String centerType,
-                                           Class<?> extensionClass) {
-        final boolean supported;
-
-        Boolean configuredValue = usedRegistryAsCenter.get();
-        if (configuredValue != null) { // If configured, take its value.
-            supported = configuredValue.booleanValue();
-        } else {                       // Or check the extension existence
-            String protocol = registryConfig.getProtocol();
-            supported = supportsExtension(extensionClass, protocol);
-            if (logger.isInfoEnabled()) {
-                logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
-                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
-            }
-        }
-
-        if (logger.isInfoEnabled()) {
-            logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
-                    supported ? "used" : "not used", centerType));
-        }
-        return supported;
-    }
-
-    /**
-     * Supports the extension with the specified class and name
-     *
-     * @param extensionClass the {@link Class} of extension
-     * @param name           the name of extension
-     * @return if supports, return <code>true</code>, or <code>false</code>
-     * @since 2.7.8
-     */
-    private boolean supportsExtension(Class<?> extensionClass, String name) {
-        if (isNotEmpty(name)) {
-            ExtensionLoader extensionLoader = getExtensionLoader(extensionClass);
-            return extensionLoader.hasExtension(name);
-        }
-        return false;
-    }
-
-    private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
-        String protocol = registryConfig.getProtocol();
-        Integer port = registryConfig.getPort();
-        String id = "metadata-center-" + protocol + "-" + port;
-        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-        metadataReportConfig.setId(id);
-        if (metadataReportConfig.getParameters() == null) {
-            metadataReportConfig.setParameters(new HashMap<>());
-        }
-        if (registryConfig.getParameters() != null) {
-            metadataReportConfig.getParameters().putAll(registryConfig.getParameters()); // copy the parameters
-        }
-        metadataReportConfig.getParameters().put(CLIENT_KEY, registryConfig.getClient());
-        metadataReportConfig.setGroup(registryConfig.getGroup());
-        metadataReportConfig.setAddress(getRegistryCompatibleAddress(registryConfig));
-        metadataReportConfig.setUsername(registryConfig.getUsername());
-        metadataReportConfig.setPassword(registryConfig.getPassword());
-        metadataReportConfig.setTimeout(registryConfig.getTimeout());
-        return metadataReportConfig;
-    }
-
-    private String getRegistryCompatibleAddress(RegistryConfig registryConfig) {
-        String registryAddress = registryConfig.getAddress();
-        String[] addresses = REGISTRY_SPLIT_PATTERN.split(registryAddress);
-        if (ArrayUtils.isEmpty(addresses)) {
-            throw new IllegalStateException("Invalid registry address found.");
-        }
-        String address = addresses[0];
-        // since 2.7.8
-        // Issue : https://github.com/apache/dubbo/issues/6476
-        StringBuilder metadataAddressBuilder = new StringBuilder();
-        URL url = URL.valueOf(address);
-        String protocolFromAddress = url.getProtocol();
-        if (isEmpty(protocolFromAddress)) {
-            // If the protocol from address is missing, is like :
-            // "dubbo.registry.address = 127.0.0.1:2181"
-            String protocolFromConfig = registryConfig.getProtocol();
-            metadataAddressBuilder.append(protocolFromConfig).append("://");
-        }
-        metadataAddressBuilder.append(address);
-        return metadataAddressBuilder.toString();
-    }
-
-
     /* serve for builder apis, begin */
 
     private ApplicationBuilder createApplicationBuilder(String name) {
@@ -607,76 +407,13 @@ public class DubboBootstrap extends GenericEventListener {
      * @return {@link DubboBootstrap}
      */
     public DubboBootstrap addEventListener(EventListener<?> listener) {
-        eventDispatcher.addEventListener(listener);
+        dubboServer.addEventListener(listener);
         return this;
     }
 
     public ApplicationConfig getApplication() {
-        ApplicationConfig application = configManager
-                .getApplication()
-                .orElseGet(() -> {
-                    ApplicationConfig applicationConfig = new ApplicationConfig();
-                    configManager.setApplication(applicationConfig);
-                    return applicationConfig;
-                });
-
-        if (!application.isRefreshed()) {
-            application.refresh();
-        }
-        return application;
+        return dubboServer.getApplication();
     }
-
-    private MonitorConfig getMonitor() {
-        MonitorConfig monitor = configManager
-                .getMonitor()
-                .orElseGet(() -> {
-                    MonitorConfig monitorConfig = new MonitorConfig();
-                    configManager.setMonitor(monitorConfig);
-                    return monitorConfig;
-                });
-
-        monitor.refresh();
-        return monitor;
-    }
-
-    private MetricsConfig getMetrics() {
-        MetricsConfig metrics = configManager
-                .getMetrics()
-                .orElseGet(() -> {
-                    MetricsConfig metricsConfig = new MetricsConfig();
-                    configManager.setMetrics(metricsConfig);
-                    return metricsConfig;
-                });
-        metrics.refresh();
-        return metrics;
-    }
-
-    private ModuleConfig getModule() {
-        ModuleConfig module = configManager
-                .getModule()
-                .orElseGet(() -> {
-                    ModuleConfig moduleConfig = new ModuleConfig();
-                    configManager.setModule(moduleConfig);
-                    return moduleConfig;
-                });
-
-        module.refresh();
-        return module;
-    }
-
-    private SslConfig getSsl() {
-        SslConfig ssl = configManager
-                .getSsl()
-                .orElseGet(() -> {
-                    SslConfig sslConfig = new SslConfig();
-                    configManager.setSsl(sslConfig);
-                    return sslConfig;
-                });
-
-        ssl.refresh();
-        return ssl;
-    }
-
 
     //DubboServer related
 
