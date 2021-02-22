@@ -20,11 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
@@ -46,7 +48,7 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-public class NacosServiceDiscovery implements ServiceDiscovery {
+public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -70,6 +72,7 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
+        super.register(serviceInstance);
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.registerInstance(instance.getServiceName(), group, instance);
@@ -79,8 +82,12 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         // TODO: Nacos should support
-        unregister(serviceInstance);
-        register(serviceInstance);
+        if (this.serviceInstance == null) {
+            register(serviceInstance);
+        } else {
+            unregister(serviceInstance);
+            register(serviceInstance);
+        }
     }
 
     @Override
@@ -112,10 +119,16 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
-            service.subscribe(listener.getServiceNames(), e -> { // Register Nacos EventListener
-                if (e instanceof NamingEvent) {
-                    NamingEvent event = (NamingEvent) e;
-                    handleEvent(event, listener);
+            listener.getServiceNames().forEach(serviceName -> {
+                try {
+                    service.subscribe(serviceName, e -> { // Register Nacos EventListener
+                        if (e instanceof NamingEvent) {
+                            NamingEvent event = (NamingEvent) e;
+                            handleEvent(event, listener);
+                        }
+                    });
+                } catch (NacosException e) {
+                    e.printStackTrace();
                 }
             });
         });
