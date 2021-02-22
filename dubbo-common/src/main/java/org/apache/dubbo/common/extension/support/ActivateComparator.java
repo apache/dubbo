@@ -27,12 +27,12 @@ import java.util.Comparator;
 /**
  * OrderComparator
  */
-public class ActivateComparator implements Comparator<Class> {
+public class ActivateComparator implements Comparator<Object> {
 
-    public static final Comparator<Class> COMPARATOR = new ActivateComparator();
+    public static final Comparator<Object> COMPARATOR = new ActivateComparator();
 
     @Override
-    public int compare(Class o1, Class o2) {
+    public int compare(Object o1, Object o2) {
         if (o1 == null && o2 == null) {
             return 0;
         }
@@ -46,15 +46,15 @@ public class ActivateComparator implements Comparator<Class> {
             return 0;
         }
 
-        Class<?> inf = findSpi(o1);
+        Class<?> inf = findSpi(o1.getClass());
 
-        ActivateInfo a1 = parseActivate(o1);
-        ActivateInfo a2 = parseActivate(o2);
+        ActivateInfo a1 = parseActivate(o1.getClass());
+        ActivateInfo a2 = parseActivate(o2.getClass());
 
         if ((a1.applicableToCompare() || a2.applicableToCompare()) && inf != null) {
             ExtensionLoader<?> extensionLoader = ExtensionLoader.getExtensionLoader(inf);
             if (a1.applicableToCompare()) {
-                String n2 = extensionLoader.getExtensionName(o2);
+                String n2 = extensionLoader.getExtensionName(o2.getClass());
                 if (a1.isLess(n2)) {
                     return -1;
                 }
@@ -65,7 +65,7 @@ public class ActivateComparator implements Comparator<Class> {
             }
 
             if (a2.applicableToCompare()) {
-                String n1 = extensionLoader.getExtensionName(o1);
+                String n1 = extensionLoader.getExtensionName(o1.getClass());
                 if (a2.isLess(n1)) {
                     return 1;
                 }

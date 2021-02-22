@@ -37,7 +37,18 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
@@ -64,9 +75,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PRE
  * </ul>
  *
  * @see <a href="http://java.sun.com/j2se/1.5.0/docs/guide/jar/jar.html#Service%20Provider">Service Provider in Java 5</a>
- * @see org.apache.dubbo.common.extension.SPI
- * @see org.apache.dubbo.common.extension.Adaptive
- * @see org.apache.dubbo.common.extension.Activate
+ * @see SPI
+ * @see Adaptive
+ * @see Activate
  */
 public class ExtensionLoader<T> {
 
@@ -205,7 +216,7 @@ public class ExtensionLoader<T> {
      * @param url url
      * @param key url parameter key which used to get extension point names
      * @return extension list which are activated.
-     * @see #getActivateExtension(org.apache.dubbo.common.URL, String, String)
+     * @see #getActivateExtension(URL, String, String)
      */
     public List<T> getActivateExtension(URL url, String key) {
         return getActivateExtension(url, key, null);
@@ -217,7 +228,7 @@ public class ExtensionLoader<T> {
      * @param url    url
      * @param values extension point names
      * @return extension list which are activated
-     * @see #getActivateExtension(org.apache.dubbo.common.URL, String[], String)
+     * @see #getActivateExtension(URL, String[], String)
      */
     public List<T> getActivateExtension(URL url, String[] values) {
         return getActivateExtension(url, values, null);
@@ -230,7 +241,7 @@ public class ExtensionLoader<T> {
      * @param key   url parameter key which used to get extension point names
      * @param group group
      * @return extension list which are activated.
-     * @see #getActivateExtension(org.apache.dubbo.common.URL, String[], String)
+     * @see #getActivateExtension(URL, String[], String)
      */
     public List<T> getActivateExtension(URL url, String key, String group) {
         String value = url.getParameter(key);
@@ -244,13 +255,10 @@ public class ExtensionLoader<T> {
      * @param values extension point names
      * @param group  group
      * @return extension list which are activated
-     * @see org.apache.dubbo.common.extension.Activate
+     * @see Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
         List<T> activateExtensions = new ArrayList<>();
-        // solve the bug of using @SPI's wrapper method to report a null pointer exception.
-        // refer to https://github.com/apache/dubbo/issues/7176 link for details.
-        TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
@@ -273,12 +281,10 @@ public class ExtensionLoader<T> {
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(activateValue, url)) {
-                    activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
+                    activateExtensions.add(getExtension(name));
                 }
             }
-            if(!activateExtensionsMap.isEmpty()){
-                activateExtensions.addAll(activateExtensionsMap.values());
-            }
+            activateExtensions.sort(ActivateComparator.COMPARATOR);
         }
         List<T> loadedExtensions = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
