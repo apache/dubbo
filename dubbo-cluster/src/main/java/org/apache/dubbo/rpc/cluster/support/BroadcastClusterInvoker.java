@@ -27,7 +27,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
-import java.text.Format;
 import java.util.List;
 
 /**
