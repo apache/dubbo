@@ -24,6 +24,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import java.io.File;
 import java.util.TreeSet;
@@ -43,6 +44,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * {@link FileSystemDynamicConfiguration} Test
  */
+// Test often failed on Github Actions Platform because of file system on Azure
+@DisabledIfEnvironmentVariable(named = "DISABLE_FILE_SYSTEM_TEST", matches = "true")
 public class FileSystemDynamicConfigurationTest {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());

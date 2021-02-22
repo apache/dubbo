@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,9 +30,7 @@ import org.apache.dubbo.remoting.etcd.StateListener;
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
-import io.etcd.jetcd.CloseableClient;
 import io.etcd.jetcd.KeyValue;
-import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.kv.GetResponse;
@@ -39,6 +38,8 @@ import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.support.CloseableClient;
+import io.etcd.jetcd.support.Observers;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
@@ -112,7 +113,7 @@ public class JEtcdClientWrapper {
 
     private volatile boolean cancelKeepAlive = false;
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;

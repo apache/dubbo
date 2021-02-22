@@ -3680,8 +3680,6 @@ public class DemoService {
     public boolean equals(timeOut_result that) {
       if (that == null)
         return false;
-      if (this == that)
-        return true;
 
       return true;
     }
@@ -3930,8 +3928,6 @@ public class DemoService {
     public boolean equals(customException_args that) {
       if (that == null)
         return false;
-      if (this == that)
-        return true;
 
       return true;
     }

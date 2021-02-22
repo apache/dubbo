@@ -37,6 +37,8 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -70,10 +72,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
@@ -177,10 +182,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public synchronized void export() {
-        if (!shouldExport()) {
-            return;
-        }
-
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
@@ -196,6 +197,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());
 
+        if (!shouldExport()) {
+            return;
+        }
+
         if (shouldDelay()) {
             DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
@@ -206,6 +211,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     public void exported() {
+        List<URL> exportedURLs = this.getExportedUrls();
+        exportedURLs.forEach(url -> {
+            Map<String, String> parameters = getApplication().getParameters();
+            ServiceNameMapping.getExtension(parameters != null ? parameters.get(MAPPING_KEY) : null).map(url);
+        });
         // dispatch a ServiceConfigExportedEvent since 2.7.4
         dispatch(new ServiceConfigExportedEvent(this));
     }
@@ -340,6 +350,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         AbstractConfig.appendParameters(map, provider);
         AbstractConfig.appendParameters(map, protocolConfig);
         AbstractConfig.appendParameters(map, this);
+        MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
+        if (metadataReportConfig != null && metadataReportConfig.isValid()) {
+            map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
+        }
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
@@ -417,7 +431,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         /**
          * Here the token value configured by the provider is used to assign the value to ServiceConfig#token
          */
-        if(ConfigUtils.isEmpty(token) && provider != null) {
+        if (ConfigUtils.isEmpty(token) && provider != null) {
             token = provider.getToken();
         }
 
@@ -494,6 +508,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
                     exporters.add(exporter);
                 }
+
+                MetadataUtils.publishServiceDefinition(url);
             }
         }
         this.urls.add(url);
@@ -690,7 +706,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }

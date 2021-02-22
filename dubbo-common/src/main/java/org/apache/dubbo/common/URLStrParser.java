@@ -159,7 +159,7 @@ public final class URLStrParser {
      */
     public static URL parseEncodedStr(String encodedURLStr) {
         Map<String, String> parameters = null;
-        int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
+        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F");// '?'
         if (pathEndIdx >= 0) {
             parameters = parseEncodedParams(encodedURLStr, pathEndIdx + 3);
         } else {

@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.TEST_ENVIRONMENT;
@@ -158,6 +159,13 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean registerConsumer;
 
     private String repository;
+
+    private Boolean publishInterface;
+
+    /**
+     * Metadata Service, used in Service Discovery
+     */
+    private Integer metadataServicePort;
 
     public ApplicationConfig() {
     }
@@ -445,6 +453,24 @@ public class ApplicationConfig extends AbstractConfig {
         this.repository = repository;
     }
 
+    @Parameter(key = REGISTRY_PUBLISH_INTERFACE_KEY)
+    public Boolean getPublishInterface() {
+        return publishInterface;
+    }
+
+    public void setPublishInterface(Boolean publishInterface) {
+        this.publishInterface = publishInterface;
+    }
+
+    @Parameter(key = "metadata-service-port")
+    public Integer getMetadataServicePort() {
+        return metadataServicePort;
+    }
+
+    public void setMetadataServicePort(Integer metadataServicePort) {
+        this.metadataServicePort = metadataServicePort;
+    }
+
     @Override
     public void refresh() {
         super.refresh();
@@ -464,7 +490,13 @@ public class ApplicationConfig extends AbstractConfig {
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
-                    parameters.putAll(extraParameters);
+                    extraParameters.forEach((key, value) -> {
+                        String prefix = this.getPrefix() + ".";
+                        if (key.startsWith(prefix)) {
+                            key = key.substring(prefix.length());
+                        }
+                        parameters.put(key, value);
+                    });
                 }
             }
         }
