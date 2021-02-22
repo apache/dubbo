@@ -27,15 +27,18 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
+import java.text.Format;
 import java.util.List;
 
 /**
  * BroadcastClusterInvoker
- *
  */
 public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(BroadcastClusterInvoker.class);
+    private static final String BROADCAST_FAIL_PERCENT_KEY = "broadcast.fail.percent";
+    private static final int MAX_BROADCAST_FAIL_PERCENT = 100;
+    private static final int MIN_BROADCAST_FAIL_PERCENT = 0;
 
     public BroadcastClusterInvoker(Directory<T> directory) {
         super(directory);
@@ -51,48 +54,62 @@ public class BroadcastClusterInvoker<T> extends AbstractClusterInvoker<T> {
         URL url = getUrl();
         // The value range of broadcast.fail.threshold must be 0～100.
         // 100 means that an exception will be thrown last, and 0 means that as long as an exception occurs, it will be thrown.
-        int broadcastFailPercent = url.getParameter("broadcast.fail.percent", 100);
+        // see https://github.com/apache/dubbo/pull/7174
+        int broadcastFailPercent = url.getParameter(BROADCAST_FAIL_PERCENT_KEY, MAX_BROADCAST_FAIL_PERCENT);
 
-        int failThresholdIndex = invokers.size() * broadcastFailPercent / 100;
+        if (broadcastFailPercent < MIN_BROADCAST_FAIL_PERCENT || broadcastFailPercent > MAX_BROADCAST_FAIL_PERCENT) {
+            logger.info(String.format("The value corresponding to the broadcast.fail.percent parameter must be between 0 and 100. " +
+                    "The current setting is %s, which is reset to 100.", broadcastFailPercent));
+            broadcastFailPercent = MAX_BROADCAST_FAIL_PERCENT;
+        }
+
+        int failThresholdIndex = invokers.size() * broadcastFailPercent / MAX_BROADCAST_FAIL_PERCENT;
         int failIndex = 0;
         for (Invoker<T> invoker : invokers) {
             try {
                 result = invoker.invoke(invocation);
-                if(null != result && result.hasException()){
+                if (null != result && result.hasException()) {
                     Throwable resultException = result.getException();
-                    if(null != resultException){
+                    if (null != resultException) {
                         exception = getRpcException(result.getException());
-                        if(failIndex == failThresholdIndex){
+                        logger.warn(exception.getMessage(), exception);
+                        if (failIndex == failThresholdIndex) {
                             break;
-                        }else{
-                            logger.warn(exception.getMessage(), exception);
+                        } else {
                             failIndex++;
                         }
                     }
                 }
             } catch (Throwable e) {
                 exception = getRpcException(e);
-                if(failIndex == failThresholdIndex){
+                logger.warn(exception.getMessage(), exception);
+                if (failIndex == failThresholdIndex) {
                     break;
-                }else{
-                    logger.warn(exception.getMessage(), exception);
+                } else {
                     failIndex++;
                 }
             }
         }
 
         if (exception != null) {
+            if (failIndex == failThresholdIndex) {
+                logger.debug(
+                        String.format("The number of BroadcastCluster call failures has reached the threshold %s", failThresholdIndex));
+            } else {
+                logger.debug(String.format("The number of BroadcastCluster call failures has not reached the threshold %s, fail size is %s",
+                        failIndex));
+            }
             throw exception;
         }
 
         return result;
     }
 
-    private RpcException getRpcException(Throwable throwable){
+    private RpcException getRpcException(Throwable throwable) {
         RpcException rpcException = null;
-        if(throwable instanceof RpcException){
+        if (throwable instanceof RpcException) {
             rpcException = (RpcException) throwable;
-        }else{
+        } else {
             rpcException = new RpcException(throwable.getMessage(), throwable);
         }
         return rpcException;
