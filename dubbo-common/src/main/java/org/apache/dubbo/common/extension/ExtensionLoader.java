@@ -16,21 +16,13 @@
  */
 package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.context.Lifecycle;
-import org.apache.dubbo.common.extension.support.ActivateComparator;
-import org.apache.dubbo.common.extension.support.WrapperComparator;
-import org.apache.dubbo.common.lang.Prioritized;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.Holder;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import static java.util.Arrays.asList;
+import static java.util.Collections.sort;
+import static java.util.ServiceLoader.load;
+import static java.util.stream.StreamSupport.stream;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -48,18 +40,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.sort;
-import static java.util.ServiceLoader.load;
-import static java.util.stream.StreamSupport.stream;
-import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.context.Lifecycle;
+import org.apache.dubbo.common.extension.support.ActivateComparator;
+import org.apache.dubbo.common.extension.support.WrapperComparator;
+import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.Holder;
+import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 
 /**
  * {@link org.apache.dubbo.rpc.model.ApplicationModel}, {@code DubboBootstrap} and this class are
@@ -258,6 +259,7 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
+    	TreeMap<Class, T> activateExtensionsMaps = new TreeMap<>(ActivateComparator.COMPARATOR);
         List<T> activateExtensions = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
@@ -281,10 +283,11 @@ public class ExtensionLoader<T> {
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(activateValue, url)) {
-                    activateExtensions.add(getExtension(name));
+                	activateExtensionsMaps.put(getExtensionClasses().get(name), getExtension(name));
                 }
             }
-            activateExtensions.sort(ActivateComparator.COMPARATOR);
+            if (!activateExtensionsMaps.isEmpty())
+				activateExtensions = new ArrayList<>(activateExtensionsMaps.values());
         }
         List<T> loadedExtensions = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {

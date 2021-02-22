@@ -1,0 +1,3 @@
+dog=org.apache.dubbo.common.extension.wrapper.impl.DogHelloSPI
+wrapper=org.apache.dubbo.common.extension.wrapper.impl.WrapperHelloSPI
+human=org.apache.dubbo.common.extension.wrapper.impl.HumanHelloSPI
