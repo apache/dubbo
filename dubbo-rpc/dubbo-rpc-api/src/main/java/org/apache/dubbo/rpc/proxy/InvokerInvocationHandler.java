@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -38,6 +39,17 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private ConsumerModel consumerModel;
     private URL url;
     private String protocolServiceKey;
+
+    public static Field stackTraceField;
+
+    static {
+        try {
+            stackTraceField = Throwable.class.getDeclaredField("stackTrace");
+            stackTraceField.setAccessible(true);
+        } catch (NoSuchFieldException e) {
+            // ignore
+        }
+    }
 
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
