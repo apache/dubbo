@@ -149,7 +149,7 @@ public interface CommonConstants {
     /**
      * Default timeout value in milliseconds for server shutdown
      */
-    int DEFAULT_SERVER_SHUTDOWN_TIMEOUT = 3000;
+    int DEFAULT_SERVER_SHUTDOWN_TIMEOUT = 10000;
 
     String SIDE_KEY = "side";
 

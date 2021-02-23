@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Phaser;
 
 import static java.util.Collections.sort;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
@@ -35,6 +36,15 @@ public class ShutdownHookCallbacks {
     public static final ShutdownHookCallbacks INSTANCE = new ShutdownHookCallbacks();
 
     private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
+
+    /**
+     * This variable is used to make sure that the asynchronous thread can be executed correctly
+     * in the case of graceful shutdown.
+     * <br/><br/>
+     * When you have a thread that must be run asynchronously when shutting down.
+     * You can register the phaser before the thread run, and unregister this when the thread is finished.
+     */
+    public static final Phaser SHUTDOWN_PHASER = new Phaser(1);
 
     ShutdownHookCallbacks() {
         loadCallbacks();
@@ -68,5 +78,8 @@ public class ShutdownHookCallbacks {
 
     public void callback() {
         getCallbacks().forEach(callback -> execute(callback::callback));
+
+        // Waiting for all threads to finish.
+        SHUTDOWN_PHASER.arriveAndAwaitAdvance();
     }
 }

@@ -26,6 +26,8 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
+import static org.apache.dubbo.common.lang.ShutdownHookCallbacks.SHUTDOWN_PHASER;
+
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
  * and {@link ContextClosedEvent} raised
@@ -64,6 +66,9 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private void onContextClosedEvent(ContextClosedEvent event) {
         dubboBootstrap.stop();
+
+        // Waiting for all threads to finish.
+        SHUTDOWN_PHASER.arriveAndAwaitAdvance();
     }
 
     @Override

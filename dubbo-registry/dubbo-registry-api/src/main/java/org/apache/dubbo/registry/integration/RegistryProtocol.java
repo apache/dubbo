@@ -57,9 +57,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
@@ -89,6 +91,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.lang.ShutdownHookCallbacks.SHUTDOWN_PHASER;
 import static org.apache.dubbo.common.utils.UrlUtils.classifyUrls;
 import static org.apache.dubbo.registry.Constants.CONFIGURATORS_SUFFIX;
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
@@ -741,6 +744,8 @@ public class RegistryProtocol implements Protocol {
      */
     private class ExporterChangeableWrapper<T> implements Exporter<T> {
 
+        private final ExecutorService executor = newSingleThreadExecutor(new NamedThreadFactory("Exporter-Unexport", true));
+
         private final Invoker<T> originInvoker;
         private Exporter<T> exporter;
         private URL subscribeUrl;
@@ -769,6 +774,7 @@ public class RegistryProtocol implements Protocol {
         @Override
         public void unexport() {
             if (unexported.compareAndSet(false, true)) {
+                SHUTDOWN_PHASER.register();
                 String key = getCacheKey(this.originInvoker);
                 bounds.remove(key);
 
@@ -788,17 +794,21 @@ public class RegistryProtocol implements Protocol {
                     logger.warn(t.getMessage(), t);
                 }
 
-                try {
-                    int timeout = ConfigurationUtils.getServerShutdownTimeout();
-                    if (timeout > 0) {
-                        logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
-                                "Usually, this is called when you use dubbo API");
-                        Thread.sleep(timeout);
+                executor.submit(() -> {
+                    try {
+                        int timeout = ConfigurationUtils.getServerShutdownTimeout();
+                        if (timeout > 0) {
+                            logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
+                                    "Usually, this is called when you use dubbo API");
+                            Thread.sleep(timeout);
+                        }
+                        exporter.unexport();
+                    } catch (Throwable t) {
+                        logger.warn(t.getMessage(), t);
+                    } finally {
+                        SHUTDOWN_PHASER.arriveAndDeregister();
                     }
-                    exporter.unexport();
-                } catch (Throwable t) {
-                    logger.warn(t.getMessage(), t);
-                }
+                });
             }
         }
 
