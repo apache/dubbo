@@ -66,7 +66,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
             dynamicConfiguration.publishConfig(key, ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {
                 logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",
-                        group, serviceInterface, group));
+                        group, serviceInterface));
             }
         });
     }

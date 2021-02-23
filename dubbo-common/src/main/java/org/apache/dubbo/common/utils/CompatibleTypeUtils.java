@@ -111,17 +111,23 @@ public class CompatibleTypeUtils {
                             + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
             }
-            if (type == java.time.LocalDateTime.class || type == java.time.LocalDate.class
-                    || type == java.time.LocalTime.class) {
-
-                LocalDateTime localDateTime = LocalDateTime.parse(string);
-                if (type == java.time.LocalDate.class) {
-                    return localDateTime.toLocalDate();
+            if (type == java.time.LocalDateTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
                 }
-                if (type == java.time.LocalTime.class) {
-                    return localDateTime.toLocalTime();
+                return LocalDateTime.parse(string);
+            }
+            if (type == java.time.LocalDate.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
                 }
-                return localDateTime;
+                return java.time.LocalDate.parse(string);
+            }
+            if (type == java.time.LocalTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
+                }
+                return LocalDateTime.parse(string).toLocalTime();
             }
             if (type == Class.class) {
                 try {

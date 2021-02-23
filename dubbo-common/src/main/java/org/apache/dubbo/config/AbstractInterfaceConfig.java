@@ -312,6 +312,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
+    protected boolean notHasSelfRegistryProperty() {
+        return CollectionUtils.isEmpty(registries) && StringUtils.isEmpty(registryIds);
+    }
+
     public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
         if (interfaceConfig != null) {
             if (application == null) {
@@ -320,15 +324,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (module == null) {
                 setModule(interfaceConfig.getModule());
             }
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(interfaceConfig.getRegistries());
+                setRegistryIds(interfaceConfig.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(interfaceConfig.getMonitor());
             }
         }
         if (module != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(module.getRegistries());
             }
             if (monitor == null) {
@@ -336,8 +341,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         if (application != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(application.getRegistries());
+                setRegistryIds(application.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(application.getMonitor());
@@ -346,10 +352,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
     
     protected void computeValidRegistryIds() {
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
-                setRegistryIds(getApplication().getRegistryIds());
-            }
+        if (application != null && notHasSelfRegistryProperty()) {
+            setRegistries(application.getRegistries());
+            setRegistryIds(application.getRegistryIds());
         }
     }
 
@@ -451,11 +456,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.layer = layer;
     }
 
+    /**
+     * Always use the global ApplicationConfig
+     */
     public ApplicationConfig getApplication() {
-        if (application != null) {
+        ApplicationConfig globalApplication = ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        if (globalApplication == null) {
             return application;
         }
-        return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        if (application != null && !StringUtils.isEquals(application.getName(), globalApplication.getName())) {
+            return application;
+        }
+        return globalApplication;
     }
 
     @Deprecated
