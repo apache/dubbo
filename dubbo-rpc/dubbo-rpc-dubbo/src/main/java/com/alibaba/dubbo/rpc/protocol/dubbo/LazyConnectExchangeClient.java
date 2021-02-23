@@ -62,15 +62,17 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
 
     private void initClient() throws RemotingException {
-        if (client != null)
+        if (client != null) {
             return;
+        }
         if (logger.isInfoEnabled()) {
             logger.info("Lazy connect to " + url);
         }
         connectLock.lock();
         try {
-            if (client != null)
+            if (client != null) {
                 return;
+            }
             this.client = Exchangers.connect(url, requestHandler);
         } finally {
             connectLock.unlock();
@@ -162,22 +164,21 @@ final class LazyConnectExchangeClient implements ExchangeClient {
 
     @Override
     public boolean isClosed() {
-        if (client != null)
-            return client.isClosed();
-        else
-            return true;
+        return (null != client) ? client.isClosed() : false;
     }
 
     @Override
     public void close() {
-        if (client != null)
+        if (client != null) {
             client.close();
+        }
     }
 
     @Override
     public void close(int timeout) {
-        if (client != null)
+        if (client != null) {
             client.close(timeout);
+        }
     }
 
     @Override

@@ -43,7 +43,7 @@ public class DubboInvokerAvilableTest {
 
     private final static Logger logger = LoggerFactory.getLogger(DubboInvokerAvilableTest.class);
 
-    private static DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    private static DubboProtocol protocol;
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @BeforeClass
@@ -52,6 +52,7 @@ public class DubboInvokerAvilableTest {
 
     @Before
     public void setUp() throws Exception {
+        protocol = new DubboProtocol();
     }
 
     @Test
