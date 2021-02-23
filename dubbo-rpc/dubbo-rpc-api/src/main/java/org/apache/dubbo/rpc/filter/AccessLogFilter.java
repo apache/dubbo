@@ -103,7 +103,8 @@ public class AccessLogFilter implements Filter {
         try {
             String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
-                AccessLogData logData = buildAccessLogData(invoker, inv);
+                AccessLogData logData = AccessLogData.newLogData(); 
+                logData.buildAccessLogData(invoker, inv);
                 log(accessLogKey, logData);
             }
         } catch (Throwable t) {
@@ -164,18 +165,6 @@ public class AccessLogFilter implements Filter {
             }
             writer.flush();
         }
-    }
-
-    private AccessLogData buildAccessLogData(Invoker<?> invoker, Invocation inv) {
-        AccessLogData logData = AccessLogData.newLogData();
-        logData.setServiceName(invoker.getInterface().getName());
-        logData.setMethodName(inv.getMethodName());
-        logData.setVersion(invoker.getUrl().getParameter(VERSION_KEY));
-        logData.setGroup(invoker.getUrl().getParameter(GROUP_KEY));
-        logData.setInvocationTime(new Date());
-        logData.setTypes(inv.getParameterTypes());
-        logData.setArguments(inv.getArguments());
-        return logData;
     }
 
     private void processWithServiceLogger(Set<AccessLogData> logSet) {
