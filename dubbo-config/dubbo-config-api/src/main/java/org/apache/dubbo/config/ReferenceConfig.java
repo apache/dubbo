@@ -199,18 +199,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized T get() {
-        beforeInitByDubboServer();
-        initByDubboServer();
-        return ref;
-    }
-
-    public synchronized void beforeInitByDubboServer(){
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
         if (ref == null) {
             init();
         }
+
+        return ref;
     }
 
     public synchronized T getByBean() {
@@ -222,7 +218,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         //Add one Boolean and throw
         if (!dubboBootstrap.isStarted()) {
-            throw new IllegalStateException("The DubboServer has not been started!");
+            throw new IllegalStateException("The dubboBootstrap has not been started!");
         }
         return ref;
     }
@@ -257,12 +253,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             dubboBootstrap = DubboBootstrap.getInstance();
             dubboBootstrap.initialize();
             dubboBootstrap.reference(this);
-        }
-    }
-    public synchronized void initByDubboServer() {
-
-        if (initialized) {
-            return;
         }
 
         checkAndUpdateSubConfigs();

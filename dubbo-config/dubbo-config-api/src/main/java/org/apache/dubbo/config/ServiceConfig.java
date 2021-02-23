@@ -188,12 +188,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @Override
     public synchronized void export() {
-        beforeExportByDubboServer();
-        exportByDubboServer();
-    }
-
-
-    public synchronized void beforeExportByDubboServer() {
         if (!shouldExport() || exported) {
             return;
         }
@@ -203,15 +197,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             dubboBootstrap.initialize();
             dubboBootstrap.service(this);
         }
-
-    }
-
-    public synchronized void exportByDubboServer() {
-
-        if (!shouldExport() || exported) {
-            return;
-        }
-
 
         checkAndUpdateSubConfigs();
 
