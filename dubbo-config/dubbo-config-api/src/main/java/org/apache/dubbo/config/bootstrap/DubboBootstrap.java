@@ -519,6 +519,9 @@ public class DubboBootstrap extends GenericEventListener {
         dubboServer.stop();
         return this;
     }
+    public DubboServer getDubboServer(){
+        return this.dubboServer;
+    }
 
     public void destroy() {
         dubboServer.destroy();
