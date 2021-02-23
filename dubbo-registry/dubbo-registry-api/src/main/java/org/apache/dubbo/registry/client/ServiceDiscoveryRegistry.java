@@ -304,7 +304,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         serviceListener.setUrl(url);
         listener.addServiceListener(serviceListener);
-        serviceListener.addListenerAndNotify(protocolServiceKey, listener);
+        serviceListener.addListenerAndNotify(serviceListener.getServiceUrl().keySet(), listener);
         registerServiceInstancesChangedListener(url, serviceListener);
     }
 
