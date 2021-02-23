@@ -72,4 +72,11 @@ class StatItem {
                 .toString();
     }
 
+    public int getRate() {
+        return rate;
+    }
+
+    public long getInterval() {
+        return interval;
+    }
 }
