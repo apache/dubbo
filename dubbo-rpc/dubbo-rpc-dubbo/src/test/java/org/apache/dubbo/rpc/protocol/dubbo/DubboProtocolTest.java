@@ -37,6 +37,7 @@ import org.apache.dubbo.rpc.service.EchoService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -108,6 +109,7 @@ public class DubboProtocolTest {
         assertEquals(echo.$echo(1234), 1234);
     }
 
+    @Disabled("Mina has been moved to a separate project")
     @Test
     public void testDubboProtocolWithMina() throws Exception {
         DemoService service = new DemoServiceImpl();
