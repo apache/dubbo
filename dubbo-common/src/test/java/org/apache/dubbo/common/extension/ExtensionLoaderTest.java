@@ -374,7 +374,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.ext7.InitErrorExt"));
-            assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
+            assertThat(expected.getMessage(), containsString("java.lang.ExceptionInInitializerError"));
         }
     }
 

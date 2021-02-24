@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import java.nio.charset.StandardCharsets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -112,7 +113,7 @@ public class JEtcdClientWrapper {
 
     private volatile boolean cancelKeepAlive = false;
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;

@@ -16,6 +16,17 @@
  */
 package org.apache.dubbo.registry.sofa;
 
+import com.alipay.sofa.registry.client.api.Publisher;
+import com.alipay.sofa.registry.client.api.RegistryClientConfig;
+import com.alipay.sofa.registry.client.api.Subscriber;
+import com.alipay.sofa.registry.client.api.model.RegistryType;
+import com.alipay.sofa.registry.client.api.model.UserData;
+import com.alipay.sofa.registry.client.api.registration.PublisherRegistration;
+import com.alipay.sofa.registry.client.api.registration.SubscriberRegistration;
+import com.alipay.sofa.registry.client.provider.DefaultRegistryClient;
+import com.alipay.sofa.registry.client.provider.DefaultRegistryClientConfigBuilder;
+import com.alipay.sofa.registry.core.model.ScopeEnum;
+import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -29,18 +40,6 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.RpcException;
 
-import com.alipay.sofa.registry.client.api.Publisher;
-import com.alipay.sofa.registry.client.api.RegistryClientConfig;
-import com.alipay.sofa.registry.client.api.Subscriber;
-import com.alipay.sofa.registry.client.api.model.RegistryType;
-import com.alipay.sofa.registry.client.api.model.UserData;
-import com.alipay.sofa.registry.client.api.registration.PublisherRegistration;
-import com.alipay.sofa.registry.client.api.registration.SubscriberRegistration;
-import com.alipay.sofa.registry.client.provider.DefaultRegistryClient;
-import com.alipay.sofa.registry.client.provider.DefaultRegistryClientConfigBuilder;
-import com.alipay.sofa.registry.core.model.ScopeEnum;
-import com.google.gson.Gson;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.ADDRESS_WAIT_TIME_KEY;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_DATA_CENTER;
 import static org.apache.dubbo.registry.sofa.SofaRegistryConstants.LOCAL_REGION;
+
 
 public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
     private static final Logger LOGGER = LoggerFactory.getLogger(SofaRegistryServiceDiscovery.class);
