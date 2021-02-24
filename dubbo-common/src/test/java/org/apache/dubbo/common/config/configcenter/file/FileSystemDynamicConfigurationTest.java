@@ -17,29 +17,38 @@
 package org.apache.dubbo.common.config.configcenter.file;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 
 import java.io.File;
+import java.util.TreeSet;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static java.util.Arrays.asList;
 import static org.apache.commons.io.FileUtils.deleteQuietly;
 import static org.apache.dubbo.common.URL.valueOf;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link FileSystemDynamicConfiguration} Test
  */
+// Test often failed on Github Actions Platform because of file system on Azure
+@DisabledIfEnvironmentVariable(named = "DISABLE_FILE_SYSTEM_TEST", matches = "true")
 public class FileSystemDynamicConfigurationTest {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private FileSystemDynamicConfiguration configuration;
 
@@ -53,11 +62,11 @@ public class FileSystemDynamicConfigurationTest {
         rootDirectory.mkdirs();
         URL url = valueOf("dubbo://127.0.0.1:20880").addParameter(CONFIG_CENTER_DIR_PARAM_NAME, rootDirectory.getAbsolutePath());
         configuration = new FileSystemDynamicConfiguration(url);
-        deleteQuietly(configuration.getRootDirectory());
     }
 
     @AfterEach
     public void destroy() throws Exception {
+        deleteQuietly(configuration.getRootDirectory());
         configuration.close();
     }
 
@@ -73,9 +82,6 @@ public class FileSystemDynamicConfigurationTest {
         assertEquals(ThreadPoolExecutor.class, configuration.getWorkersThreadPool().getClass());
         assertEquals(1, (configuration.getWorkersThreadPool()).getCorePoolSize());
         assertEquals(1, (configuration.getWorkersThreadPool()).getMaximumPoolSize());
-        assertNotNull(configuration.getWatchEventsLoopThreadPool());
-        assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getCorePoolSize());
-        assertEquals(1, (configuration.getWatchEventsLoopThreadPool()).getMaximumPoolSize());
 
         if (configuration.isBasedPoolingWatchService()) {
             assertEquals(2, configuration.getDelay());
@@ -103,7 +109,7 @@ public class FileSystemDynamicConfigurationTest {
 
             processedEvent.set(true);
             assertEquals(KEY, event.getKey());
-            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
+            logger.info(String.format("[%s] " + event + "\n", Thread.currentThread().getName()));
         });
 
 
@@ -127,7 +133,7 @@ public class FileSystemDynamicConfigurationTest {
         configuration.addListener("test", "test", event -> {
             processedEvent.set(true);
             assertEquals("test", event.getKey());
-            System.out.printf("[%s] " + event + "\n", Thread.currentThread().getName());
+            logger.info(String.format("[%s] " + event + "\n", Thread.currentThread().getName()));
         });
         processedEvent.set(false);
         configuration.publishConfig("test", "test", "TEST");
@@ -141,10 +147,36 @@ public class FileSystemDynamicConfigurationTest {
 
 
         processedEvent.set(false);
-        File keyFile = configuration.configFile(KEY, DEFAULT_GROUP);
+        configuration.getRootDirectory();
+        File keyFile = new File(KEY, DEFAULT_GROUP);
         FileUtils.deleteQuietly(keyFile);
         while (!processedEvent.get()) {
             Thread.sleep(1 * 1000L);
         }
+    }
+
+    @Test
+    public void testRemoveConfig() throws Exception {
+
+        assertTrue(configuration.publishConfig(KEY, DEFAULT_GROUP, "A"));
+
+        assertEquals("A", FileUtils.readFileToString(configuration.configFile(KEY, DEFAULT_GROUP), configuration.getEncoding()));
+
+        assertTrue(configuration.removeConfig(KEY, DEFAULT_GROUP));
+
+        assertFalse(configuration.configFile(KEY, DEFAULT_GROUP).exists());
+
+    }
+
+    @Test
+    public void testGetConfigKeys() throws Exception {
+
+        assertTrue(configuration.publishConfig("A", DEFAULT_GROUP, "A"));
+
+        assertTrue(configuration.publishConfig("B", DEFAULT_GROUP, "B"));
+
+        assertTrue(configuration.publishConfig("C", DEFAULT_GROUP, "C"));
+
+        assertEquals(new TreeSet(asList("A", "B", "C")), configuration.getConfigKeys(DEFAULT_GROUP));
     }
 }

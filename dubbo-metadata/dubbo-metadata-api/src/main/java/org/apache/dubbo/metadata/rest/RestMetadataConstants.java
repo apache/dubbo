@@ -16,6 +16,11 @@
  */
 package org.apache.dubbo.metadata.rest;
 
+import java.lang.annotation.Annotation;
+
+import static org.apache.dubbo.common.utils.ClassUtils.getClassLoader;
+import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
+
 /**
  * The REST Metadata Constants definition interface
  *
@@ -108,5 +113,33 @@ public interface RestMetadataConstants {
          * The annotation class name of @RequestParam
          */
         String REQUEST_PARAM_ANNOTATION_CLASS_NAME = "org.springframework.web.bind.annotation.RequestParam";
+
+        /**
+         * The class of @Controller
+         *
+         * @since 2.7.9
+         */
+        Class<? extends Annotation> CONTROLLER_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(CONTROLLER_ANNOTATION_CLASS_NAME, getClassLoader());
+
+        /**
+         * The class of @RequestMapping
+         *
+         * @since 2.7.9
+         */
+        Class<? extends Annotation> REQUEST_MAPPING_ANNOTATION_CLASS = (Class<? extends Annotation>) resolveClass(REQUEST_MAPPING_ANNOTATION_CLASS_NAME, getClassLoader());
+
+        /**
+         * The annotation class name of AnnotatedElementUtils
+         *
+         * @since 2.7.9
+         */
+        String ANNOTATED_ELEMENT_UTILS_CLASS_NAME = "org.springframework.core.annotation.AnnotatedElementUtils";
+
+        /**
+         * The class of AnnotatedElementUtils
+         *
+         * @since 2.7.9
+         */
+        Class<?> ANNOTATED_ELEMENT_UTILS_CLASS = resolveClass(ANNOTATED_ELEMENT_UTILS_CLASS_NAME, getClassLoader());
     }
 }

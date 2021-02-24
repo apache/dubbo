@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.lang.reflect.Field;
+import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -32,7 +33,7 @@ import java.util.function.Function;
  *     <li>AsyncRpcResult is the object that is actually passed in the call chain</li>
  *     <li>AppResponse only simply represents the business result</li>
  * </ul>
- *
+ * <p>
  *  The relationship between them can be described as follow, an abstraction of the definition of AsyncRpcResult:
  *  <pre>
  *  {@code
@@ -71,15 +72,7 @@ public class AppResponse implements Result {
         if (exception != null) {
             // fix issue#619
             try {
-                // get Throwable class
-                Class clazz = exception.getClass();
-                while (!clazz.getName().equals(Throwable.class.getName())) {
-                    clazz = clazz.getSuperclass();
-                }
-                // get stackTrace value
-                Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
-                Object stackTrace = stackTraceField.get(exception);
+                Object stackTrace = InvokerInvocationHandler.stackTraceField.get(exception);
                 if (stackTrace == null) {
                     exception.setStackTrace(new StackTraceElement[0]);
                 }
@@ -230,6 +223,12 @@ public class AppResponse implements Result {
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    public void clear() {
+        this.result = null;
+        this.exception = null;
+        this.attachments.clear();
     }
 
     @Override

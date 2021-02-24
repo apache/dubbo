@@ -19,8 +19,11 @@ package org.apache.dubbo.registry.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
+import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -29,7 +32,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
@@ -37,6 +39,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.DubboInvoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,7 +64,7 @@ public class RegistryProtocolTest {
     }
 
     final String service = DemoService.class.getName() + ":1.0.0";
-    final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer";
+    final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer&register.ip=127.0.0.1";
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -72,7 +75,17 @@ public class RegistryProtocolTest {
     @BeforeEach
     public void setUp() {
         ApplicationModel.setApplication("RegistryProtocolTest");
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
+        configManager.setApplication(applicationConfig);
+        ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
+
+    @AfterEach
+    public void reset() {
+        ApplicationModel.getConfigManager().destroy();
+    }
+
 
     @Test
     public void testDefaultPort() {
@@ -84,7 +97,7 @@ public class RegistryProtocolTest {
     public void testExportUrlNull() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             RegistryProtocol registryProtocol = getRegistryProtocol();
-            registryProtocol.setCluster(new FailfastCluster());
+//          registryProtocol.setCluster(new FailfastCluster());
 
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
             registryProtocol.setProtocol(dubboProtocol);
@@ -97,7 +110,7 @@ public class RegistryProtocolTest {
     @Test
     public void testExport() {
         RegistryProtocol registryProtocol = getRegistryProtocol();
-        registryProtocol.setCluster(new FailfastCluster());
+//        registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();

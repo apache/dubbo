@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ReplierDispatcher;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +32,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -54,13 +59,13 @@ public class ReplierDispatcherTest {
         ReplierDispatcher dispatcher = new ReplierDispatcher();
         dispatcher.addReplier(RpcMessage.class, new RpcMessageHandler());
         dispatcher.addReplier(Data.class, (channel, msg) -> new StringMessage("hello world"));
-        exchangeServer = Exchangers.bind(URL.valueOf("dubbo://localhost:" + port), dispatcher);
+        exchangeServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000"), dispatcher);
     }
 
 
     @Test
     public void testDataPackage() throws Exception {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("dubbo://localhost:" + port));
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=60000"));
         Random random = new Random();
         for (int i = 5; i < 100; i++) {
             StringBuilder sb = new StringBuilder();
@@ -91,7 +96,7 @@ public class ReplierDispatcherTest {
     }
 
     void clientExchangeInfo(int port) throws Exception {
-        ExchangeChannel client = Exchangers.connect(URL.valueOf("dubbo://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=5000"));
+        ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?" + CommonConstants.TIMEOUT_KEY + "=5000"));
         clients.put(Thread.currentThread().getName(), client);
         MockResult result = (MockResult) client.request(new RpcMessage(DemoService.class.getName(), "plus", new Class<?>[]{int.class, int.class}, new Object[]{55, 25})).get();
         Assertions.assertEquals(result.getResult(), 80);

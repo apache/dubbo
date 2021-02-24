@@ -394,7 +394,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
 
         final ScheduledExecutorService retryExecutor = Executors.newScheduledThreadPool(0, new NamedThreadFactory("DubboMetadataReportRetryTimer", true));
         volatile ScheduledFuture retryScheduledFuture;
-        AtomicInteger retryCounter = new AtomicInteger(0);
+        final AtomicInteger retryCounter = new AtomicInteger(0);
         // retry task schedule period
         long retryPeriod;
         // if no failed report, wait how many times to run retry task.

@@ -169,9 +169,10 @@ public class MethodConfig extends AbstractMethodConfig {
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = name;
+//        }
     }
 
     public Integer getStat() {

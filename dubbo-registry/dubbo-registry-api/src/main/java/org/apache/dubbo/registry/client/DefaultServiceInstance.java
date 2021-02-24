@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.metadata.MetadataInfo;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 
 /**
  * The default implementation of {@link ServiceInstance}.
@@ -42,6 +46,11 @@ public class DefaultServiceInstance implements ServiceInstance {
     private boolean healthy;
 
     private Map<String, String> metadata = new HashMap<>();
+
+    private transient String address;
+    private transient MetadataInfo serviceMetadata;
+    // used at runtime
+    private transient Map<String, String> extendParams = new HashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -99,6 +108,18 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    public String getAddress() {
+        if (address == null) {
+            address = getAddress(host, port);
+        }
+        return address;
+    }
+
+    private static String getAddress(String host, int port) {
+        return port <= 0 ? host : host + ':' + port;
+    }
+
+    @Override
     public boolean isEnabled() {
         return enabled;
     }
@@ -121,27 +142,68 @@ public class DefaultServiceInstance implements ServiceInstance {
         return metadata;
     }
 
+    @Override
+    public Map<String, String> getExtendParams() {
+        return extendParams;
+    }
+
+    @Override
+    public Map<String, String> getAllParams() {
+        Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
+        allParams.putAll(metadata);
+        allParams.putAll(extendParams);
+        return allParams;
+    }
+
     public void setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
     }
 
+    public MetadataInfo getServiceMetadata() {
+        return serviceMetadata;
+    }
+
+    public void setServiceMetadata(MetadataInfo serviceMetadata) {
+        this.serviceMetadata = serviceMetadata;
+    }
+
+    @Override
+    public InstanceAddressURL toURL() {
+        return new InstanceAddressURL(this, serviceMetadata);
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DefaultServiceInstance)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DefaultServiceInstance)) {
+            return false;
+        }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
-        return isEnabled() == that.isEnabled() &&
-                isHealthy() == that.isHealthy() &&
-                Objects.equals(getId(), that.getId()) &&
-                Objects.equals(getServiceName(), that.getServiceName()) &&
+        boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
-                Objects.equals(getPort(), that.getPort()) &&
-                Objects.equals(getMetadata(), that.getMetadata());
+                Objects.equals(getPort(), that.getPort());
+        for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
+            if (entry.getKey().equals(REVISION_KEY)) {
+                continue;
+            }
+            equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+        }
+
+        return equals;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getServiceName(), getHost(), getPort(), isEnabled(), isHealthy(), getMetadata());
+        int result = Objects.hash(getServiceName(), getHost(), getPort());
+        for (Map.Entry<String, String> entry : this.getMetadata().entrySet()) {
+            if (entry.getKey().equals(REVISION_KEY)) {
+                continue;
+            }
+            result = 31 * result + (entry.getValue() == null ? 0 : entry.getValue().hashCode());
+        }
+        return result;
     }
 
     @Override

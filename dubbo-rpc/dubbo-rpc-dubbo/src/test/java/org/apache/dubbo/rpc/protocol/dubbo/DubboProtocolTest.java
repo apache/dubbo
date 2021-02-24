@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized;
@@ -35,6 +36,8 @@ import org.apache.dubbo.rpc.service.EchoService;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -54,6 +57,12 @@ public class DubboProtocolTest {
     @AfterAll
     public static void after() {
         ProtocolUtils.closeAll();
+        ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+    }
+
+    @BeforeAll
+    public static void setup() {
+        ApplicationModel.getServiceRepository().registerService(DemoService.class);
     }
 
     @Test
@@ -86,7 +95,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
                 3000L)));
         // test netty client
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
         System.out.println(service.stringLength(buf.toString()));
@@ -100,6 +109,7 @@ public class DubboProtocolTest {
         assertEquals(echo.$echo(1234), 1234);
     }
 
+    @Disabled("Mina has been moved to a separate project")
     @Test
     public void testDubboProtocolWithMina() throws Exception {
         DemoService service = new DemoServiceImpl();
@@ -124,7 +134,7 @@ public class DubboProtocolTest {
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
                 3000L)));
         // test netty client
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
         System.out.println(service.stringLength(buf.toString()));
@@ -148,6 +158,9 @@ public class DubboProtocolTest {
 //                3000L)));
 
         RemoteService remote = new RemoteServiceImpl();
+
+        ApplicationModel.getServiceRepository().registerService(RemoteService.class);
+
         int port = NetUtils.getAvailablePort();
         protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));
         remote = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName()).addParameter("timeout",

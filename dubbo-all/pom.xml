@@ -544,6 +544,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-failover</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Transitive dependencies -->
         <dependency>
@@ -569,6 +576,10 @@
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
         </dependency>
 
         <!-- Temporarily add this part to exclude transitive dependency -->
@@ -680,6 +691,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-consul</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-etcd</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-failover</include>
                                     <include>org.apache.dubbo:dubbo-serialization-native-hession</include>
                                 </includes>
                             </artifactSet>
@@ -855,6 +867,12 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.report.MetadataReportFactory
                                     </resource>
                                 </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.store.failover.FailoverCondition
+                                    </resource>
+                                </transformer>
                                 <!-- @since 2.7.5 -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
@@ -964,6 +982,24 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataResolver
+                                    </resource>
+                                </transformer>
+
+                                <!-- @since 2.7.7 -->
+
+                                <!-- 'dubbo-common' module -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/services/org.apache.dubbo.common.extension.LoadingStrategy
+                                    </resource>
+                                </transformer>
+
+                                <!-- @since 2.7.8 -->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
                                     </resource>
                                 </transformer>
 

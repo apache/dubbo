@@ -324,9 +324,7 @@ public class CollectionUtils {
 
         try {
             return one.containsAll(another);
-        } catch (ClassCastException unused) {
-            return false;
-        } catch (NullPointerException unused) {
+        } catch (ClassCastException | NullPointerException unused) {
             return false;
         }
     }

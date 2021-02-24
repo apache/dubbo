@@ -137,7 +137,7 @@ public class ConditionRouterTest {
 
     @Test
     public void testRoute_methodRoute() {
-        Invocation invocation = new RpcInvocation("getFoo", "com.foo.BarService", new Class<?>[0], new Object[0]);
+        Invocation invocation = new RpcInvocation("getFoo", "com.foo.BarService", "", new Class<?>[0], new Object[0]);
         // More than one methods, mismatch
         Router router = new ConditionRouterFactory().getRouter(getRouteUrl("methods=getFoo => host = 1.2.3.4"));
         boolean matchWhen = ((ConditionRouter) router).matchWhen(

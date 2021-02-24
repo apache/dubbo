@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public class RpcContextTest {
 
@@ -141,6 +139,7 @@ public class RpcContextTest {
 
         map.keySet().forEach(context::remove);
         Assertions.assertNull(context.get("_11"));
+        RpcContext.removeContext();
     }
 
     @Test
@@ -157,6 +156,7 @@ public class RpcContextTest {
 
         rpcContext.stopAsync();
         Assertions.assertTrue(rpcContext.isAsyncStarted());
+        RpcContext.removeContext();
     }
 
     @Test

@@ -34,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import org.apache.dubbo.rpc.cluster.router.tag.model.TagRuleParser;
 
-import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -193,6 +192,18 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
+        boolean filter = false;
+        for (int i = 0; i < invokers.size(); ++i) {
+            Invoker<T> invoker = invokers.get(i);
+            if (!predicate.test(invoker)) {
+                filter = true;
+                break;
+            }
+        }
+        if (!filter) {
+            return invokers;
+        }
+
         return invokers.stream()
                 .filter(predicate)
                 .collect(Collectors.toList());
@@ -215,8 +226,6 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
                 if ((ANYHOST_VALUE + ":" + port).equals(address)) {
                     return true;
                 }
-            } catch (UnknownHostException e) {
-                logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             } catch (Exception e) {
                 logger.error("The format of ip address is invalid in tag route. Address :" + address, e);
             }

@@ -25,11 +25,13 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,10 +70,10 @@ public class URLTest {
 
     private void assertURLStrDecoder(URL url) {
         String fullURLStr = url.toFullString();
-        URL newUrl =  URLStrParser.parseEncodedStr(URL.encode(fullURLStr));
+        URL newUrl = URLStrParser.parseEncodedStr(URL.encode(fullURLStr));
         assertEquals(URL.valueOf(fullURLStr), newUrl);
 
-        URL newUrl2 =  URLStrParser.parseDecodedStr(fullURLStr);
+        URL newUrl2 = URLStrParser.parseDecodedStr(fullURLStr);
         assertEquals(URL.valueOf(fullURLStr), newUrl2);
     }
 
@@ -873,5 +875,48 @@ public class URLTest {
 
         url = URL.valueOf("dubbo://10.20.130.230:20880/path");
         assertURLStrDecoder(url);
+    }
+
+
+    /**
+     * Test {@link URL#getParameters(Predicate)} method
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testGetParameters() {
+        URL url = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&group=group&version=1.0.0");
+        Map<String, String> parameters = url.getParameters(i -> "version".equals(i));
+        String version = parameters.get("version");
+        assertEquals(1, parameters.size());
+        assertEquals("1.0.0", version);
+    }
+
+    @Test
+    public void testGetParameter() {
+        URL url = URL.valueOf("http://127.0.0.1:8080/path?i=1&b=false");
+        assertEquals(Integer.valueOf(1), url.getParameter("i", Integer.class));
+        assertEquals(Boolean.FALSE, url.getParameter("b", Boolean.class));
+    }
+
+    @Test
+    public void testEquals() {
+        URL url1 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
+        URL url2 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertEquals(url1, url2);
+
+        URL url3 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url2, url3);
+
+        URL url4 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url3, url4);
     }
 }

@@ -51,7 +51,7 @@ public class RpcUtilsTest {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
         Map<String, Object> attachments = new HashMap<>();
         attachments.put("aa", "bb");
-        Invocation inv = new RpcInvocation("test", "DemoService", new Class[]{}, new String[]{}, attachments);
+        Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{}, attachments);
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         long id1 = RpcUtils.getInvocationId(inv);
         RpcUtils.attachInvocationIdIfAsync(url, inv);
@@ -68,7 +68,7 @@ public class RpcUtilsTest {
     @Test
     public void testAttachInvocationIdIfAsync_sync() {
         URL url = URL.valueOf("dubbo://localhost/");
-        Invocation inv = new RpcInvocation("test", "DemoService", new Class[]{}, new String[]{});
+        Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertNull(RpcUtils.getInvocationId(inv));
     }
@@ -80,7 +80,7 @@ public class RpcUtilsTest {
     @Test
     public void testAttachInvocationIdIfAsync_nullAttachments() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true");
-        Invocation inv = new RpcInvocation("test", "DemoService", new Class[]{}, new String[]{});
+        Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertTrue(RpcUtils.getInvocationId(inv) >= 0L);
     }
@@ -92,7 +92,7 @@ public class RpcUtilsTest {
     @Test
     public void testAttachInvocationIdIfAsync_forceNotAttache() {
         URL url = URL.valueOf("dubbo://localhost/?test.async=true&" + AUTO_ATTACH_INVOCATIONID_KEY + "=false");
-        Invocation inv = new RpcInvocation("test", "DemoService", new Class[]{}, new String[]{});
+        Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertNull(RpcUtils.getInvocationId(inv));
     }
@@ -104,7 +104,7 @@ public class RpcUtilsTest {
     @Test
     public void testAttachInvocationIdIfAsync_forceAttache() {
         URL url = URL.valueOf("dubbo://localhost/?" + AUTO_ATTACH_INVOCATIONID_KEY + "=true");
-        Invocation inv = new RpcInvocation("test", "DemoService", new Class[]{}, new String[]{});
+        Invocation inv = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{});
         RpcUtils.attachInvocationIdIfAsync(url, inv);
         assertNotNull(RpcUtils.getInvocationId(inv));
     }
@@ -117,30 +117,30 @@ public class RpcUtilsTest {
         given(invoker.getUrl()).willReturn(URL.valueOf("test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
         // void sayHello(String name);
-        RpcInvocation inv = new RpcInvocation("sayHello", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation("sayHello", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         Class<?> returnType = RpcUtils.getReturnType(inv);
         Assertions.assertNull(returnType);
 
         //String echo(String text);
-        RpcInvocation inv1 = new RpcInvocation("echo", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation("echo", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         Class<?> returnType1 = RpcUtils.getReturnType(inv1);
         Assertions.assertNotNull(returnType1);
         Assertions.assertEquals(String.class, returnType1);
 
         //int getSize(String[] strs);
-        RpcInvocation inv2 = new RpcInvocation("getSize", serviceName, new Class<?>[]{String[].class}, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation("getSize", serviceName, "", new Class<?>[]{String[].class}, null, null, invoker, null);
         Class<?> returnType2 = RpcUtils.getReturnType(inv2);
         Assertions.assertNotNull(returnType2);
         Assertions.assertEquals(int.class, returnType2);
 
         //Person getPerson(Person person);
-        RpcInvocation inv3 = new RpcInvocation("getPerson", serviceName, new Class<?>[]{Person.class}, null, null, invoker, null);
+        RpcInvocation inv3 = new RpcInvocation("getPerson", serviceName, "", new Class<?>[]{Person.class}, null, null, invoker, null);
         Class<?> returnType3 = RpcUtils.getReturnType(inv3);
         Assertions.assertNotNull(returnType3);
         Assertions.assertEquals(Person.class, returnType3);
 
         //List<String> testReturnType1(String str);
-        RpcInvocation inv4 = new RpcInvocation("testReturnType1", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv4 = new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         Class<?> returnType4 = RpcUtils.getReturnType(inv4);
         Assertions.assertNotNull(returnType4);
         Assertions.assertEquals(List.class, returnType4);
@@ -154,7 +154,7 @@ public class RpcUtilsTest {
         Invoker invoker = mock(Invoker.class);
         given(invoker.getUrl()).willReturn(URL.valueOf("test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
 
-        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         Type[] types = RpcUtils.getReturnTypes(inv);
         Assertions.assertNotNull(types);
         Assertions.assertEquals(2, types.length);
@@ -162,7 +162,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(String.class, types[1]);
         Assertions.assertArrayEquals(types, inv.getReturnTypes());
 
-        RpcInvocation inv1 = new RpcInvocation("testReturnType1", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv1 = new RpcInvocation("testReturnType1", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types1 = RpcUtils.getReturnTypes(inv1);
         Assertions.assertNotNull(types1);
         Assertions.assertEquals(2, types1.length);
@@ -170,7 +170,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(demoServiceClass.getMethod("testReturnType1", String.class).getGenericReturnType(), types1[1]);
         Assertions.assertArrayEquals(types1, inv1.getReturnTypes());
 
-        RpcInvocation inv2 = new RpcInvocation("testReturnType2", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation("testReturnType2", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types2 = RpcUtils.getReturnTypes(inv2);
         Assertions.assertNotNull(types2);
         Assertions.assertEquals(2, types2.length);
@@ -178,7 +178,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(String.class, types2[1]);
         Assertions.assertArrayEquals(types2, inv2.getReturnTypes());
 
-        RpcInvocation inv3 = new RpcInvocation("testReturnType3", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv3 = new RpcInvocation("testReturnType3", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types3 = RpcUtils.getReturnTypes(inv3);
         Assertions.assertNotNull(types3);
         Assertions.assertEquals(2, types3.length);
@@ -187,7 +187,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(((ParameterizedType) genericReturnType3).getActualTypeArguments()[0], types3[1]);
         Assertions.assertArrayEquals(types3, inv3.getReturnTypes());
 
-        RpcInvocation inv4 = new RpcInvocation("testReturnType4", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv4 = new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types4 = RpcUtils.getReturnTypes(inv4);
         Assertions.assertNotNull(types4);
         Assertions.assertEquals(2, types4.length);
@@ -195,7 +195,7 @@ public class RpcUtilsTest {
         Assertions.assertNull(types4[1]);
         Assertions.assertArrayEquals(types4, inv4.getReturnTypes());
 
-        RpcInvocation inv5 = new RpcInvocation("testReturnType5", serviceName, new Class<?>[]{String.class}, null, null, invoker, null);
+        RpcInvocation inv5 = new RpcInvocation("testReturnType5", serviceName, "", new Class<?>[]{String.class}, null, null, invoker, null);
         java.lang.reflect.Type[] types5 = RpcUtils.getReturnTypes(inv5);
         Assertions.assertNotNull(types5);
         Assertions.assertEquals(2, types5.length);
@@ -212,7 +212,7 @@ public class RpcUtilsTest {
         Invoker invoker = mock(Invoker.class);
 
         // void sayHello(String name);
-        RpcInvocation inv1 = new RpcInvocation("sayHello", serviceName,
+        RpcInvocation inv1 = new RpcInvocation("sayHello", serviceName, "",
                 new Class<?>[]{String.class}, null, null, invoker, null);
         Class<?>[] parameterTypes1 = RpcUtils.getParameterTypes(inv1);
         Assertions.assertNotNull(parameterTypes1);
@@ -220,12 +220,12 @@ public class RpcUtilsTest {
         Assertions.assertEquals(String.class, parameterTypes1[0]);
 
         //long timestamp();
-        RpcInvocation inv2 = new RpcInvocation("timestamp", serviceName, null, null, null, invoker, null);
+        RpcInvocation inv2 = new RpcInvocation("timestamp", serviceName, "", null, null, null, invoker, null);
         Class<?>[] parameterTypes2 = RpcUtils.getParameterTypes(inv2);
         Assertions.assertEquals(0, parameterTypes2.length);
 
         //Type enumlength(Type... types);
-        RpcInvocation inv3 = new RpcInvocation("enumlength", serviceName,
+        RpcInvocation inv3 = new RpcInvocation("enumlength", serviceName, "",
                 new Class<?>[]{Type.class, Type.class}, null, null, invoker, null);
         Class<?>[] parameterTypes3 = RpcUtils.getParameterTypes(inv3);
         Assertions.assertNotNull(parameterTypes3);
@@ -234,7 +234,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(Type.class, parameterTypes3[1]);
 
         //byte getbyte(byte arg);
-        RpcInvocation inv4 = new RpcInvocation("getbyte", serviceName,
+        RpcInvocation inv4 = new RpcInvocation("getbyte", serviceName, "",
                 new Class<?>[]{byte.class}, null, null, invoker, null);
         Class<?>[] parameterTypes4 = RpcUtils.getParameterTypes(inv4);
         Assertions.assertNotNull(parameterTypes4);
@@ -242,7 +242,7 @@ public class RpcUtilsTest {
         Assertions.assertEquals(byte.class, parameterTypes4[0]);
 
         //void $invoke(String s1, String s2);
-        RpcInvocation inv5 = new RpcInvocation("$invoke", serviceName,
+        RpcInvocation inv5 = new RpcInvocation("$invoke", serviceName, "",
                 new Class<?>[]{String.class, String[].class},
                 new Object[]{"method", new String[]{"java.lang.String", "void", "java.lang.Object"}},
                 null, invoker, null);
@@ -265,7 +265,7 @@ public class RpcUtilsTest {
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
 
-        RpcInvocation inv1 = new RpcInvocation(methodName, serviceName,
+        RpcInvocation inv1 = new RpcInvocation(methodName, serviceName, "",
                 new Class<?>[]{String.class}, null, null, invoker, null);
         String actual = RpcUtils.getMethodName(inv1);
         Assertions.assertNotNull(actual);
@@ -283,7 +283,7 @@ public class RpcUtilsTest {
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
 
-        RpcInvocation inv = new RpcInvocation("$invoke", serviceName,
+        RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
                 new Class<?>[]{String.class, String[].class},
                 new Object[]{method, new String[]{"java.lang.String", "void", "java.lang.Object"}},
                 null, invoker, null);
@@ -300,7 +300,7 @@ public class RpcUtilsTest {
         String serviceName = demoServiceClass.getName();
         Invoker invoker = mock(Invoker.class);
 
-        RpcInvocation inv = new RpcInvocation("$invoke", serviceName,
+        RpcInvocation inv = new RpcInvocation("$invoke", serviceName, "",
                 new Class<?>[]{String.class, String[].class, Object[].class},
                 new Object[]{"method", new String[]{}, args},
                 null, invoker, null);

@@ -27,7 +27,6 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -218,6 +217,15 @@ public interface ServiceDiscovery extends Prioritized {
     }
 
     /**
+     * unsubscribe to instances change event.
+     * @param listener
+     * @throws IllegalArgumentException
+     */
+    default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws IllegalArgumentException {
+    }
+
+    /**
      * Dispatch the {@link ServiceInstancesChangedEvent}
      *
      * @param serviceName the name of service whose service instances have been changed
@@ -247,7 +255,7 @@ public interface ServiceDiscovery extends Prioritized {
      * @param serviceName      the name of service whose service instances have been changed
      * @param serviceInstances the service instances have been changed
      */
-    default void dispatchServiceInstancesChangedEvent(String serviceName, Collection<ServiceInstance> serviceInstances) {
+    default void dispatchServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
         dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 
@@ -261,6 +269,14 @@ public interface ServiceDiscovery extends Prioritized {
     }
 
     // ==================================================================================== //
+
+//    String getKey(URL exportedURL);
+
+    default URL getUrl() {
+        return null;
+    }
+
+    ServiceInstance getLocalInstance();
 
     /**
      * A human-readable description of the implementation
