@@ -21,8 +21,6 @@ import com.alibaba.nacos.api.common.Constants;
 import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -118,8 +116,6 @@ public class NacosRegistry extends FailbackRegistry {
      * {@link ScheduledExecutorService} lookup Nacos service names(only for Dubbo-OPS)
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final NamingService namingService;
 
