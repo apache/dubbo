@@ -42,16 +42,29 @@ public abstract class AbstractCodec implements Codec2 {
     private static final String SERVER_SIDE = "server";
 
     protected static void checkPayload(Channel channel, long size) throws IOException {
+        int payload = getPayload(channel);
+        boolean overPayload = isOverPayload(payload, size);
+        if (overPayload) {
+            ExceedPayloadLimitException e = new ExceedPayloadLimitException(
+                    "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
+            logger.error(e);
+            throw e;
+        }
+    }
+
+    protected static int getPayload(Channel channel) {
         int payload = Constants.DEFAULT_PAYLOAD;
         if (channel != null && channel.getUrl() != null) {
             payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
         }
+        return payload;
+    }
+
+    protected static boolean isOverPayload(int payload, long size) {
         if (payload > 0 && size > payload) {
-            ExceedPayloadLimitException e = new ExceedPayloadLimitException(
-                "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
-            logger.error(e);
-            throw e;
+            return true;
         }
+        return false;
     }
 
     protected Serialization getSerialization(Channel channel) {
@@ -59,7 +72,7 @@ public abstract class AbstractCodec implements Codec2 {
     }
 
     protected boolean isClientSide(Channel channel) {
-        String side = (String)channel.getAttribute(SIDE_KEY);
+        String side = (String) channel.getAttribute(SIDE_KEY);
         if (CLIENT_SIDE.equals(side)) {
             return true;
         } else if (SERVER_SIDE.equals(side)) {
@@ -68,11 +81,11 @@ public abstract class AbstractCodec implements Codec2 {
             InetSocketAddress address = channel.getRemoteAddress();
             URL url = channel.getUrl();
             boolean isClient = url.getPort() == address.getPort()
-                && NetUtils.filterLocalHost(url.getIp()).equals(
-                NetUtils.filterLocalHost(address.getAddress()
-                    .getHostAddress()));
+                    && NetUtils.filterLocalHost(url.getIp()).equals(
+                    NetUtils.filterLocalHost(address.getAddress()
+                            .getHostAddress()));
             channel.setAttribute(SIDE_KEY, isClient ? CLIENT_SIDE
-                : SERVER_SIDE);
+                    : SERVER_SIDE);
             return isClient;
         }
     }

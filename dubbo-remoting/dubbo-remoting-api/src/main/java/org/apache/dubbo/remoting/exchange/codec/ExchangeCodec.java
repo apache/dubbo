@@ -109,6 +109,14 @@ public class ExchangeCodec extends TelnetCodec {
 
         // get data length.
         int len = Bytes.bytes2int(header, 12);
+
+        // When receiving response, how to exceed the length, then directly construct a response to the client.
+        // see more detail from https://github.com/apache/dubbo/issues/7021.
+        Object obj = finishRespWhenOverPayload(channel, len, header);
+        if (null != obj) {
+            return obj;
+        }
+
         checkPayload(channel, len);
 
         int tt = len + HEADER_LENGTH;
@@ -157,7 +165,8 @@ public class ExchangeCodec extends TelnetCodec {
                             // heart beat response data is always null;
                             data = null;
                         } else {
-                            data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                            data = decodeEventData(channel,
+                                    CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
                         }
                     } else {
                         data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(id));
@@ -187,7 +196,8 @@ public class ExchangeCodec extends TelnetCodec {
                         // heart beat response data is always null;
                         data = null;
                     } else {
-                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                        data = decodeEventData(channel,
+                                CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
                     }
                 } else {
                     data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
@@ -291,10 +301,10 @@ public class ExchangeCodec extends TelnetCodec {
 
             // encode response data or error message.
             if (status == Response.OK) {
-                if(res.isHeartbeat()){
+                if (res.isHeartbeat()) {
                     // heartbeat response data is always null
                     bos.write(CodecSupport.getNullBytesOf(serialization));
-                }else {
+                } else {
                     ObjectOutput out = serialization.serialize(channel.getUrl(), bos);
                     if (res.isEvent()) {
                         encodeEventData(channel, out, res.getResult());
@@ -476,5 +486,26 @@ public class ExchangeCodec extends TelnetCodec {
         encodeResponseData(out, data);
     }
 
-
+    private Object finishRespWhenOverPayload(Channel channel, long size, byte[] header) {
+        int payload = getPayload(channel);
+        boolean overPayload = isOverPayload(payload, size);
+        if (overPayload) {
+            long reqId = Bytes.bytes2long(header, 4);
+            byte flag = header[2];
+            if ((flag & FLAG_REQUEST) == 0) {
+                Response res = new Response(reqId);
+                if ((flag & FLAG_EVENT) != 0) {
+                    res.setEvent(true);
+                }
+                // get status.
+                byte status = header[3];
+                res.setStatus(Response.CLIENT_ERROR);
+                String errorMsg = "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel;
+                logger.error(errorMsg);
+                res.setErrorMessage(errorMsg);
+                return res;
+            }
+        }
+        return null;
+    }
 }

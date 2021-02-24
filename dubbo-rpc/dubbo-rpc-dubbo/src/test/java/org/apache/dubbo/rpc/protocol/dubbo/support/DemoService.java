@@ -65,5 +65,7 @@ public interface DemoService {
 
     String getPerson(Man man);
 
+    byte[] download(int size);
+
     String getRemoteApplicationName();
 }

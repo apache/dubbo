@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,14 +51,16 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public int getSize(String[] strs) {
-        if (strs == null)
+        if (strs == null) {
             return -1;
+        }
         return strs.length;
     }
 
     public int getSize(Object[] os) {
-        if (os == null)
+        if (os == null) {
             return -1;
+        }
         return os.length;
     }
 
@@ -67,8 +70,9 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Type enumlength(Type... types) {
-        if (types.length == 0)
+        if (types.length == 0) {
             return Type.Lower;
+        }
         return types[0];
     }
 
@@ -120,6 +124,13 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public String getPerson(Man man) {
         return man.getName();
+    }
+
+    @Override
+    public byte[] download(int size) {
+        byte[] bytes = new byte[size];
+        Arrays.fill(bytes, (byte) 0);
+        return bytes;
     }
 
     @Override

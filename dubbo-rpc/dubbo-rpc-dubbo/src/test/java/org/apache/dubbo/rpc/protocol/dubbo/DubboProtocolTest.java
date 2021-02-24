@@ -43,7 +43,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  * <code>ProxiesTest</code>
@@ -68,22 +71,44 @@ public class DubboProtocolTest {
     public void testDemoProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L)));
-        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
+                        3000L)));
+        assertEquals(service.getSize(new String[] {"", "", ""}), 3);
+    }
+
+    @Test
+    public void testPayloadOverException() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("payload", 10 * 1024)));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+                        6000L).addParameter("payload", 160)));
+        try {
+            service.download(300);
+            fail();
+        } catch (Exception expected) {
+            assertThat(expected.getMessage(), containsString("Data length too large"));
+        }
+
     }
 
     @Test
     public void testDubboProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
-                3000L)));
-        assertEquals(service.enumlength(new Type[]{}), Type.Lower);
+        protocol.export(
+                proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+                        3000L)));
+        assertEquals(service.enumlength(new Type[] {}), Type.Lower);
         assertEquals(service.getSize(null), -1);
-        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+        assertEquals(service.getSize(new String[] {"", "", ""}), 3);
         Map<String, String> map = new HashMap<String, String>();
         map.put("aa", "bb");
         Set<String> set = service.keys(map);
@@ -91,17 +116,20 @@ public class DubboProtocolTest {
         assertEquals(set.iterator().next(), "aa");
         service.invoke("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "", "invoke");
 
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
-                3000L)));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
+                        3000L)));
         // test netty client
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < 1024 * 32 + 32; i++)
+        for (int i = 0; i < 1024 * 32 + 32; i++) {
             buf.append('A');
+        }
         System.out.println(service.stringLength(buf.toString()));
 
         // cast to EchoService
-        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
-                3000L)));
+        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=netty").addParameter("timeout",
+                        3000L)));
         assertEquals(echo.$echo(buf.toString()), buf.toString());
         assertEquals(echo.$echo("test"), "test");
         assertEquals(echo.$echo("abcdefg"), "abcdefg");
@@ -112,13 +140,16 @@ public class DubboProtocolTest {
     public void testDubboProtocolWithMina() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.SERVER_KEY, "mina")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.CLIENT_KEY, "mina").addParameter("timeout",
-                3000L)));
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.SERVER_KEY, "mina")));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter(Constants.CLIENT_KEY, "mina")
+                        .addParameter("timeout",
+                                3000L)));
         for (int i = 0; i < 10; i++) {
-            assertEquals(service.enumlength(new Type[]{}), Type.Lower);
+            assertEquals(service.enumlength(new Type[] {}), Type.Lower);
             assertEquals(service.getSize(null), -1);
-            assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+            assertEquals(service.getSize(new String[] {"", "", ""}), 3);
         }
         Map<String, String> map = new HashMap<String, String>();
         map.put("aa", "bb");
@@ -129,17 +160,20 @@ public class DubboProtocolTest {
             service.invoke("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "", "invoke");
         }
 
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
-                3000L)));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
+                        3000L)));
         // test netty client
         StringBuilder buf = new StringBuilder();
-        for (int i = 0; i < 1024 * 32 + 32; i++)
+        for (int i = 0; i < 1024 * 32 + 32; i++) {
             buf.append('A');
+        }
         System.out.println(service.stringLength(buf.toString()));
 
         // cast to EchoService
-        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
-                3000L)));
+        EchoService echo = proxy.getProxy(protocol.refer(EchoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?client=mina").addParameter("timeout",
+                        3000L)));
         for (int i = 0; i < 10; i++) {
             assertEquals(echo.$echo(buf.toString()), buf.toString());
             assertEquals(echo.$echo("test"), "test");
@@ -160,9 +194,11 @@ public class DubboProtocolTest {
         ApplicationModel.getServiceRepository().registerService(RemoteService.class);
 
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(remote, RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));
-        remote = proxy.getProxy(protocol.refer(RemoteService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName()).addParameter("timeout",
-                3000L)));
+        protocol.export(proxy.getInvoker(remote, RemoteService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName())));
+        remote = proxy.getProxy(protocol.refer(RemoteService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + RemoteService.class.getName()).addParameter("timeout",
+                        3000L)));
 
 //        service.sayHello("world");
 
@@ -179,12 +215,15 @@ public class DubboProtocolTest {
     public void testPerm() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L)));
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
+                        3000L)));
         long start = System.currentTimeMillis();
-        for (int i = 0; i < 1000; i++)
-            service.getSize(new String[]{"", "", ""});
+        for (int i = 0; i < 1000; i++) {
+            service.getSize(new String[] {"", "", ""});
+        }
         System.out.println("take:" + (System.currentTimeMillis() - start));
     }
 
@@ -192,14 +231,17 @@ public class DubboProtocolTest {
     public void testNonSerializedParameter() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L)));
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
+                        3000L)));
         try {
             service.nonSerializedParameter(new NonSerialized());
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+            Assertions.assertTrue(e.getMessage()
+                    .contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
 
@@ -207,14 +249,17 @@ public class DubboProtocolTest {
     public void testReturnNonSerialized() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
-        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
-        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
-                3000L)));
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange")));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
+                        3000L)));
         try {
             service.returnNonSerialized();
             Assertions.fail();
         } catch (RpcException e) {
-            Assertions.assertTrue(e.getMessage().contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
+            Assertions.assertTrue(e.getMessage()
+                    .contains("org.apache.dubbo.rpc.protocol.dubbo.support.NonSerialized must implement java.io.Serializable"));
         }
     }
 
