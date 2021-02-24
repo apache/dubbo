@@ -21,12 +21,12 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
-@Cmd(name = "ready",summary = "Judge if service has started? ")
+@Cmd(name = "ready", summary = "Judge if service has started?")
 public class Ready implements BaseCommand {
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {
-        return DubboBootstrap.getInstance().isReady() ? "true" : "false";
+        return String.valueOf(DubboBootstrap.getInstance().isReady());
     }
 
 }

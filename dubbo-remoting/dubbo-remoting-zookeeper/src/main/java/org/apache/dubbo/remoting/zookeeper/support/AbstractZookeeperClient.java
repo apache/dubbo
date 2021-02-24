@@ -101,7 +101,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
         stateListeners.remove(listener);
     }
 
-    public Set<StateListener> getSessionListeners() {
+    public Set<StateListener> getStateListeners() {
         return stateListeners;
     }
 
@@ -147,8 +147,8 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     protected void stateChanged(int state) {
-        for (StateListener sessionListener : getSessionListeners()) {
-            sessionListener.stateChanged(state);
+        for (StateListener stateListener : getStateListeners()) {
+            stateListener.stateChanged(state);
         }
     }
 
