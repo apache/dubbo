@@ -136,7 +136,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     public ReferenceConfig() {
         super();
         this.repository = ApplicationModel.getServiceRepository();
-        dubboBootstrap = DubboBootstrap.getInstance();
     }
 
     public ReferenceConfig(Reference reference) {
@@ -206,27 +205,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
-        if (destroyed) {
-            return;
-        }
-        destroyed = true;
-        try {
-            invoker.destroy();
-        } catch (Throwable t) {
-            logger.warn("Unexpected error occured when destroy invoker of ReferenceConfig(" + url + ").", t);
-        }
-        invoker = null;
-        ref = null;
-
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
-        dispatch(new ReferenceConfigDestroyedEvent(this));
+        getDubboBootstrap().getDubboServer().destroy4ReferenceConfig(this);
     }
 
     public synchronized void init() {
-        dubboBootstrap.getDubboServer().init4ReferenceConfig(this);
+        getDubboBootstrap().getDubboServer().init4ReferenceConfig(this);
     }
 
     public void checkInvokerAvailable() throws IllegalStateException {
@@ -343,6 +326,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     public DubboBootstrap getDubboBootstrap() {
+        if (dubboBootstrap == null) {
+            dubboBootstrap = DubboBootstrap.getInstance();
+            dubboBootstrap.initialize();
+        }
         return dubboBootstrap;
     }
 
@@ -396,5 +383,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public static ProxyFactory getProxyFactory() {
         return PROXY_FACTORY;
+    }
+
+    public boolean isDestroyed() {
+        return this.destroyed;
+    }
+
+    public void setDestroyed(boolean destroyed) {
+        this.destroyed = destroyed;
     }
 }
