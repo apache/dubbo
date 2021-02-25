@@ -66,6 +66,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final InetSocketAddress remote;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
+    private final ChannelFuture initConnectFuture;
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
@@ -76,7 +77,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         this.closeFuture = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.remote = getConnectAddress();
         final Bootstrap bootstrap = open();
-        bootstrap.connect();
+        this.initConnectFuture = bootstrap.connect();
     }
 
     public static Connection getConnectionFromChannel(Channel channel) {
@@ -124,7 +125,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     @Override
     public String toString() {
-        return "(Ref=" + ReferenceCountUtil.refCnt(this) + ",local="+(getChannel()==null?null:getChannel().localAddress())+",remote="+getRemote();
+        return "(Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" + (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
     }
 
     public void onGoaway(Channel channel) {
@@ -143,6 +144,9 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         }
     }
 
+    public void connectSync(){
+        this.initConnectFuture.awaitUninterruptibly();
+    }
     public boolean isAvailable() {
         final Channel channel = getChannel();
         return channel != null && channel.isActive();

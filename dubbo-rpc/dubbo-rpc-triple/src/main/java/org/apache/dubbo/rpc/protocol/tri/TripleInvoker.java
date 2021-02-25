@@ -100,6 +100,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
 
+            connection.connectSync();
+
             if (!connection.isAvailable()) {
                 Response response = new Response(req.getId(), req.getVersion());
                 response.setStatus(Response.CHANNEL_INACTIVE);
