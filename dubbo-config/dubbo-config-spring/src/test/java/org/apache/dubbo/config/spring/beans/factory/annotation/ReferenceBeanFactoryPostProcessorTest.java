@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
@@ -5,10 +21,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.api.DemoService;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -19,7 +35,6 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -31,7 +46,7 @@ public class ReferenceBeanFactoryPostProcessorTest {
 
     private AnnotationConfigApplicationContext context;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         context = new AnnotationConfigApplicationContext();
         registerApplicationConfig();
@@ -51,7 +66,7 @@ public class ReferenceBeanFactoryPostProcessorTest {
                 .addFirst(new MapPropertySource("newmap", map));
     }
 
-    @After
+    @AfterEach
     public void tearDown() {
         context.close();
     }
@@ -65,8 +80,8 @@ public class ReferenceBeanFactoryPostProcessorTest {
         context.refresh();
         context.start();
         TestAutowiredConfig testAutowiredConfig = context.getBean(TestAutowiredConfig.class);
-        Assert.assertNotNull(testAutowiredConfig);
-        Assert.assertNotNull(testAutowiredConfig.getDemoService());
+        Assertions.assertNotNull(testAutowiredConfig);
+        Assertions.assertNotNull(testAutowiredConfig.getDemoService());
     }
 
     @Test
@@ -78,8 +93,8 @@ public class ReferenceBeanFactoryPostProcessorTest {
         context.refresh();
         context.start();
         TestResourceConfig testResourceConfig = context.getBean(TestResourceConfig.class);
-        Assert.assertNotNull(testResourceConfig);
-        Assert.assertNotNull(testResourceConfig.getDemoService());
+        Assertions.assertNotNull(testResourceConfig);
+        Assertions.assertNotNull(testResourceConfig.getDemoService());
     }
 
     @Test
@@ -93,7 +108,7 @@ public class ReferenceBeanFactoryPostProcessorTest {
         });
         String expectedMessage = "Exception";
         String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(expectedMessage));
+        Assertions.assertTrue(actualMessage.contains(expectedMessage));
     }
     
     static class TestReferenceConfig{
