@@ -181,7 +181,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
             Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
@@ -195,6 +194,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             if (invokerUrls.isEmpty()) {
                 return;
             }
+            this.forbidden = false; // Allow to access
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
             /**
