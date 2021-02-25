@@ -199,6 +199,11 @@ public class PojoUtilsTest {
         assertArrayObject(new Float[]{37F, -39F, 123456.7F});
 
         assertArrayObject(new Double[]{37D, -39D, 123456.7D});
+
+        assertObject(new int[][]{{37, -39, 12456}});
+        assertObject(new Integer[][][]{{{37, -39, 12456}}});
+
+        assertArrayObject(new Integer[]{37, -39, 12456});
     }
 
     @Test
