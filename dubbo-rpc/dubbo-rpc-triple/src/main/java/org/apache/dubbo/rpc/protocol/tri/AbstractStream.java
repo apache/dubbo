@@ -161,7 +161,7 @@ public abstract class AbstractStream implements Stream {
                 if (v instanceof String) {
                     trailers.addObject(key, v);
                 } else if (v instanceof byte[]) {
-                    trailers.addObject(key + "-bin", TripleUtil.encodeBase64((byte[]) v));
+                    trailers.add(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
                 }
             } else {
                 if (v instanceof String || serializeType == null) {

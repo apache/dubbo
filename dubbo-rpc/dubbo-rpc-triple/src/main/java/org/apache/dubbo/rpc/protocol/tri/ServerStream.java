@@ -213,17 +213,22 @@ public class ServerStream extends AbstractStream implements Stream {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         final List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
-        if (methods == null || methods.isEmpty()) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                    .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
-            return null;
-        }
-        if (methods.size() == 1) {
-            this.methodDescriptor = methods.get(0);
-            setNeedWrap(TripleUtil.needWrapper(this.methodDescriptor.getParameterClasses()));
-        } else {
-            // can not determine which one to invoke when same protobuf method name is used, force wrap it
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+            this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
             setNeedWrap(true);
+        } else {
+            if (methods == null || methods.isEmpty()) {
+                responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                        .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
+                return null;
+            }
+            if (methods.size() == 1) {
+                this.methodDescriptor = methods.get(0);
+                setNeedWrap(TripleUtil.needWrapper(this.methodDescriptor.getParameterClasses()));
+            } else {
+                // can not determine which one to invoke when same protobuf method name is used, force wrap it
+                setNeedWrap(true);
+            }
         }
         if (isNeedWrap()) {
             loadFromURL(getUrl());
@@ -236,9 +241,7 @@ public class ServerStream extends AbstractStream implements Stream {
             if (isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
                 setSerializeType(req.getSerializeType());
-                if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
-                    this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
-                } else {
+                if (this.methodDescriptor == null) {
                     String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
                     for (MethodDescriptor method : methods) {
                         if (Arrays.equals(method.getCompatibleParamSignatures(), paramTypes)) {
@@ -269,7 +272,6 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
-        attachments.put(TripleConstant.TRI_CHANNEL_CTX_KEY, ctx);
         inv.setObjectAttachments(attachments);
         return inv;
     }
