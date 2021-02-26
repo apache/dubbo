@@ -48,7 +48,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private volatile String rawRule;
 
     public MigrationRuleListener() {
-        Optional<DynamicConfiguration> optional =  ApplicationModel.getEnvironment().getDynamicConfiguration();
+        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
 
         if (optional.isPresent()) {
             this.configuration = optional.orElseGet(null);
@@ -57,7 +57,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
 
             rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
-            if (StringUtils.isEmpty(rawRule)) {
+            if (StringUtils.isBlank(rawRule)) {
                 rawRule = INIT;
             }
 
