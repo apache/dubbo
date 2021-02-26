@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -51,7 +52,7 @@ public class BaseServiceMetadataTest {
         assertEquals(BaseServiceMetadata.groupFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"), "group1");
         assertEquals(BaseServiceMetadata.interfaceFromServiceKey("group1/org.apache.dubbo.common.TestInterface:1.0.0"), "org.apache.dubbo.common.TestInterface");
 
-        assertNull(BaseServiceMetadata.versionFromServiceKey(""));
+        assertEquals(DEFAULT_VERSION, BaseServiceMetadata.versionFromServiceKey(""));
         assertNull(BaseServiceMetadata.groupFromServiceKey(""));
         assertEquals(BaseServiceMetadata.interfaceFromServiceKey(""), "");
 
