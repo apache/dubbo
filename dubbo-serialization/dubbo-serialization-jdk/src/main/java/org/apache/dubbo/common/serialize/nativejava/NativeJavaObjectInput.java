@@ -19,6 +19,7 @@ package org.apache.dubbo.common.serialize.nativejava;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.SerialDetector;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -33,7 +34,7 @@ public class NativeJavaObjectInput implements ObjectInput {
     private final ObjectInputStream inputStream;
 
     public NativeJavaObjectInput(InputStream is) throws IOException {
-        this(new ObjectInputStream(is));
+        this(new SerialDetector(is));
     }
 
     protected NativeJavaObjectInput(ObjectInputStream is) {
