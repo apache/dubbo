@@ -169,7 +169,7 @@ public final class URLStrParser {
         }
 
         // check cache
-        protocol = URLItemCache.checkProtocol(protocol);
+        protocol = URLItemCache.intern(protocol);
         path = URLItemCache.checkPath(path);
 
         return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);

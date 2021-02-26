@@ -87,6 +87,10 @@ public interface ServiceInstance extends Serializable {
 
     SortedMap<String, String> getSortedMetadata();
 
+    String getRegistryCluster();
+
+    void setRegistryCluster(String registryCluster);
+
     Map<String, String> getExtendParams();
 
     Map<String, String> getAllParams();

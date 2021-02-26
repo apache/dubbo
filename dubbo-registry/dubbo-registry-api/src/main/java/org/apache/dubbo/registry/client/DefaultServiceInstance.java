@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import com.alibaba.fastjson.JSON;
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.util.HashMap;
 import java.util.List;
@@ -51,12 +52,13 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private boolean healthy;
 
-    private Map<String, String> metadata = new HashMap<>();
+    private Map<String, String> metadata = new UnifiedMap<>();
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
     // used at runtime
-    private transient Map<String, String> extendParams = new HashMap<>();
+    private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
+    private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
 
     public DefaultServiceInstance() {
@@ -70,6 +72,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.healthy = other.healthy;
         this.metadata = other.metadata;
         this.serviceMetadata = other.serviceMetadata;
+        this.registryCluster = other.registryCluster;
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
         this.address = null;
@@ -173,7 +176,19 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    public String getRegistryCluster() {
+        return registryCluster;
+    }
+
+    public void setRegistryCluster(String registryCluster) {
+        this.registryCluster = registryCluster;
+    }
+
+    @Override
     public Map<String, String> getExtendParams() {
+        if (extendParams == null) {
+            extendParams = new HashMap<>();
+        }
         return extendParams;
     }
 
@@ -193,10 +208,14 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public Map<String, String> getAllParams() {
-        Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
-        allParams.putAll(metadata);
-        allParams.putAll(extendParams);
-        return allParams;
+        if (extendParams == null) {
+            return metadata;
+        } else {
+            Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
+            allParams.putAll(metadata);
+            allParams.putAll(extendParams);
+            return allParams;
+        }
     }
 
     public void setMetadata(Map<String, String> metadata) {
