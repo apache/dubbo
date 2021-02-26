@@ -43,6 +43,7 @@
                 <exclude>**/*.ipr</exclude>
                 <exclude>**/*.iws</exclude>
                 <exclude>**/cobertura.ser</exclude>
+                <exclude>**/invalid_data.ser</exclude>
                 <exclude>**/*.log</exclude>
                 <exclude>release.properties</exclude>
                 <exclude>**/*.xml.*</exclude>
