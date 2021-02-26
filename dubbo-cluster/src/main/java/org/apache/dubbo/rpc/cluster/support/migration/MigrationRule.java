@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.cluster.support.migration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -56,33 +57,41 @@ public class MigrationRule {
     }
 
     public static MigrationRule parse(String rawRule) {
-        if (null == configuration) {
-            return getMigrationRule(null);
+        try {
+            if (null == configuration) {
+                return getMigrationRule(null);
+            }
+
+            if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
+                String step = (String) configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
+                return getMigrationRule(step);
+            }
+
+            Constructor constructor = new Constructor(MigrationRule.class);
+            Yaml yaml = new Yaml(constructor);
+            return yaml.load(rawRule);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Failed to parse the rawRule:" + rawRule, e);
         }
 
-        if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
-            String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
-            return getMigrationRule(step);
-
-        }
-
-        Constructor constructor = new Constructor(MigrationRule.class);
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawRule);
     }
 
     public static MigrationRule queryRule() {
         if (null == configuration) {
             return getMigrationRule(null);
         }
-
         String rawRule = configuration.getConfig(MigrationRule.RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
         return parse(rawRule);
     }
 
-    private  static MigrationRule getMigrationRule(String step) {
+    private static MigrationRule getMigrationRule(String step) {
         MigrationRule rule = new MigrationRule();
-        rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST.name() : step));
+        try {
+            rule.setStep(StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST : Enum.valueOf(MigrationStep.class, step));
+        } catch (IllegalArgumentException ignore) {
+            //if step is invalid, use APPLICATION_FIRST.
+            rule.setStep(MigrationStep.APPLICATION_FIRST);
+        }
         return rule;
     }
 }
