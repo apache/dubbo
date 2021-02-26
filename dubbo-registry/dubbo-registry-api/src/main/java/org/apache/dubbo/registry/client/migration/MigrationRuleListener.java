@@ -53,7 +53,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (optional.isPresent()) {
             this.configuration = optional.get();
 
-            logger.info("Listening for migration rules on dataId-" + MigrationRule.RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
+            logger.info("Listening for migration rules on dataId:" + MigrationRule.RULE_KEY + " group:" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
             configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
 
             rawRule = configuration.getConfig(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
@@ -74,12 +74,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
+        //If the content is null, mean the rule is deleted, use dynamicConfig DUBBO_SERVICEDISCOVERY_MIGRATION_KEY.
         String content = event.getContent();
-        if (StringUtils.isBlank(content)) {
-            logger.warn("Received empty migration rule, will ignore.");
-            return;
-        }
-        if (rawRule.equals(content)) {
+        if (contentIsRepeat(content)) {
             return;
         }
         rawRule = content;
@@ -88,6 +85,14 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.doMigrate(rawRule));
         }
+    }
+
+    private boolean contentIsRepeat(String content) {
+        if (rawRule == null) {
+            return content == null;
+        }
+        return rawRule.equals(content);
+
     }
 
     @Override
