@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -216,7 +217,10 @@ public class ServerStream extends AbstractStream implements Stream {
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
             this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
             setNeedWrap(true);
-        } else {
+        } else if("$echo".equals(methodName)) {
+            this.methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);
+            setNeedWrap(true);
+        }else{
             if (methods == null || methods.isEmpty()) {
                 responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                         .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
