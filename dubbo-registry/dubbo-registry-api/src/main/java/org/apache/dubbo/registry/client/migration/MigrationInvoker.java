@@ -55,7 +55,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private MigrationRule rule;
 
-    private boolean migrationMultiRegsitry;
+    private boolean migrationMultiRegistry;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -82,7 +82,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
-        this.migrationMultiRegsitry = url.getParameter("MIGRATION_MULTI_REGSITRY", RegistryConstants.MIGRATION_MULTI_REGSITRY);
+        this.migrationMultiRegistry = url.getParameter("MIGRATION_MULTI_REGISTRY", RegistryConstants.MIGRATION_MULTI_REGISTRY);
     }
 
     public ClusterInvoker<T> getInvoker() {
@@ -290,7 +290,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
 
-            if (migrationMultiRegsitry) {
+            if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
                     this.setAddressChanged();
                 });
@@ -299,7 +299,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void clearListener(ClusterInvoker<T> invoker) {
-        if (migrationMultiRegsitry) {
+        if (migrationMultiRegistry) {
             return;
         }
 
@@ -327,7 +327,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
 
-            if (migrationMultiRegsitry) {
+            if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
                     this.setAddressChanged();
                 });
@@ -383,8 +383,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     @Override
-    public boolean isMigrationMultiRegsitry() {
-        return migrationMultiRegsitry;
+    public boolean isMigrationMultiRegistry() {
+        return migrationMultiRegistry;
     }
 
 }
