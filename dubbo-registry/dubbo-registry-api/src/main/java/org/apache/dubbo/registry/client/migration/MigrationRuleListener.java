@@ -74,14 +74,16 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
-        rawRule = event.getContent();
-        if (StringUtils.isEmpty(rawRule)) {
+        String content = event.getContent();
+        if (StringUtils.isBlank(content)) {
             logger.warn("Received empty migration rule, will ignore.");
             return;
         }
-
-        logger.info("Using the following migration rule to migrate:");
-        logger.info(rawRule);
+        if (rawRule.equals(content)) {
+            return;
+        }
+        rawRule = content;
+        logger.info("Using the migration rule [" + rawRule + "] to migrate.");
 
         if (CollectionUtils.isNotEmpty(listeners)) {
             listeners.forEach(listener -> listener.doMigrate(rawRule));
@@ -94,7 +96,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public synchronized  void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
+    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL url) {
         MigrationInvoker<?> migrationInvoker = (MigrationInvoker<?>) invoker;
 
         MigrationRuleHandler<?> migrationListener = new MigrationRuleHandler<>(migrationInvoker);
