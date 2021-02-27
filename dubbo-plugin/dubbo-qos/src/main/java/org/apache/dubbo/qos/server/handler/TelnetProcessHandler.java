@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
-import io.netty.channel.Channel;
-import io.netty.handler.timeout.IdleStateEvent;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -65,18 +63,6 @@ public class TelnetProcessHandler extends SimpleChannelInboundHandler<String> {
                 ctx.writeAndFlush(QosConstants.BR_STR + QosProcessHandler.PROMPT);
                 log.error("execute commandContext got exception " + commandContext, ex);
             }
-        }
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        // server will close channel when server don't receive any request from client util timeout.
-        if (evt instanceof IdleStateEvent) {
-            Channel channel = ctx.channel();
-            log.info("IdleStateEvent triggered, close channel " + channel);
-            channel.close();
-        } else {
-            super.userEventTriggered(ctx, evt);
         }
     }
 
