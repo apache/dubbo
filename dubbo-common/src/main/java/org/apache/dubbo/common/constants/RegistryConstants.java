@@ -116,7 +116,7 @@ public interface RegistryConstants {
 
     String INIT = "INIT";
 
-    String MIGRATION_MULTI_REGISTRY = "migration-multi-registry";
+    String MIGRATION_MULTI_REGISTRY = "MIGRATION_MULTI_REGISTRY";
 
     String LOADBALANCE_AMONG_REGISTRIES = "random";
 }
