@@ -25,8 +25,8 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
 @ChannelHandler.Sharable
-public class IdleEventHandler extends ChannelDuplexHandler {
-    private static final Logger log = LoggerFactory.getLogger(IdleEventHandler.class);
+public class TelnetIdleEventHandler extends ChannelDuplexHandler {
+    private static final Logger log = LoggerFactory.getLogger(TelnetIdleEventHandler.class);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
