@@ -82,7 +82,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
-        this.migrationMultiRegistry = url.getParameter("MIGRATION_MULTI_REGISTRY", RegistryConstants.MIGRATION_MULTI_REGISTRY);
+        this.migrationMultiRegistry = url.getParameter(RegistryConstants.MIGRATION_MULTI_REGISTRY, false);
     }
 
     public ClusterInvoker<T> getInvoker() {
@@ -140,7 +140,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void doReSubscribe(ClusterInvoker<T> invoker, URL newSubscribeUrl) {
-        DynamicDirectory<T> directory = (DynamicDirectory<T>)invoker.getDirectory();
+        DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
@@ -243,7 +243,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged.set(true);
         if (logger.isDebugEnabled()) {
-            logger.info(invoker.getDirectory().getAllInvokers() == null ? "null" :invoker.getDirectory().getAllInvokers().size() + "");
+            logger.info(invoker.getDirectory().getAllInvokers() == null ? "null" : invoker.getDirectory().getAllInvokers().size() + "");
         }
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
@@ -353,7 +353,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding interface addresses, total address size " + (null == invoker.getDirectory().getAllInvokers() ? "null": invoker.getDirectory().getAllInvokers().size()));
+                logger.debug("Discarding interface addresses, total address size " + (null == invoker.getDirectory().getAllInvokers() ? "null" : invoker.getDirectory().getAllInvokers().size()));
             }
             invoker.getDirectory().discordAddresses();
         }
