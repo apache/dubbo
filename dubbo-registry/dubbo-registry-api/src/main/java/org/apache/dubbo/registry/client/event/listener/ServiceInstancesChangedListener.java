@@ -67,14 +67,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
 
-    private final Set<String> serviceNames;
-    private final ServiceDiscovery serviceDiscovery;
-    private URL url;
-    private Map<String, NotifyListener> listeners;
+    protected final Set<String> serviceNames;
+    protected final ServiceDiscovery serviceDiscovery;
+    protected URL url;
+    protected Map<String, NotifyListener> listeners;
 
     private Map<String, List<ServiceInstance>> allInstances;
 
-    private Map<String, List<URL>> serviceUrls;
+    private Map<String, Object> serviceUrls;
 
     private Map<String, MetadataInfo> revisionToMetadata;
 
@@ -112,8 +112,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<ServiceInfo, Set<String>> localServiceToRevisions = new HashMap<>();
-        Map<String, Map<Set<String>, List<URL>>> protocolRevisionsToUrls = new HashMap<>();
-        Map<String, List<URL>> newServiceUrls = new HashMap<>();//TODO
+        Map<String, Map<Set<String>, Object>> protocolRevisionsToUrls = new HashMap<>();
+        Map<String, Object> newServiceUrls = new HashMap<>();//TODO
         Map<String, MetadataInfo> newRevisionToMetadata = new HashMap<>();
 
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
@@ -151,27 +151,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         localServiceToRevisions.forEach((serviceInfo, revisions) -> {
             String protocol = serviceInfo.getProtocol();
-            Map<Set<String>, List<URL>> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> {
+            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> {
                 return new HashMap<>();
             });
-            List<URL> urls = revisionsToUrls.get(revisions);
+            Object urls = revisionsToUrls.get(revisions);
             if (urls != null) {
                 newServiceUrls.put(serviceInfo.getMatchKey(), urls);
             } else {
-                urls = new ArrayList<>();
-                for (String r : revisions) {
-                    for (ServiceInstance i : revisionToInstances.get(r)) {
-                        // different protocols may have ports specified in meta
-                        if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
-                            DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
-                            if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
-                                urls.add(((DefaultServiceInstance)i).copy(endpoint).toURL());
-                                break;
-                            }
-                        }
-                        urls.add(i.toURL());
-                    }
-                }
+                urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
                 revisionsToUrls.put(revisions, urls);
                 newServiceUrls.put(serviceInfo.getMatchKey(), urls);
             }
@@ -183,7 +170,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
-        List<URL> urls = this.serviceUrls.get(serviceKey);
+        List<URL> urls = getAddresses(serviceKey);
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
@@ -197,7 +184,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     public List<URL> getUrls(String serviceKey) {
-        return toUrlsWithEmpty(serviceUrls.get(serviceKey));
+        return toUrlsWithEmpty(getAddresses(serviceKey));
     }
 
     /**
@@ -241,7 +228,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return serviceNames.contains(event.getServiceName());
     }
 
-    private boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
+    protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
         String appName = event.getServiceName();
         List<ServiceInstance> appInstances = event.getServiceInstances();
 
@@ -261,7 +248,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return false;
     }
 
-    private boolean hasEmptyMetadata(Map<String, MetadataInfo> revisionToMetadata) {
+    protected boolean hasEmptyMetadata(Map<String, MetadataInfo> revisionToMetadata) {
         if (revisionToMetadata == null) {
             return false;
         }
@@ -275,7 +262,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return result;
     }
 
-    private MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
+    protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
         if (metadata == null) {
             if (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)) {
@@ -299,7 +286,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return metadata;
     }
 
-    private Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
+    protected Map<ServiceInfo, Set<String>> parseMetadata(String revision, MetadataInfo metadata, Map<ServiceInfo, Set<String>> localServiceToRevisions) {
         Map<String, ServiceInfo> serviceInfos = metadata.getServices();
         for (Map.Entry<String, ServiceInfo> entry : serviceInfos.entrySet()) {
             Set<String> set = localServiceToRevisions.computeIfAbsent(entry.getValue(), k -> new TreeSet<>());
@@ -309,7 +296,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return localServiceToRevisions;
     }
 
-    private MetadataInfo getMetadataInfo(ServiceInstance instance) {
+    protected MetadataInfo getMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
@@ -335,16 +322,39 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return metadataInfo;
     }
 
-    private void notifyAddressChanged() {
+    protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
+        List<URL> urls;
+        urls = new ArrayList<>();
+        for (String r : revisions) {
+            for (ServiceInstance i : revisionToInstances.get(r)) {
+                // different protocols may have ports specified in meta
+                if (ServiceInstanceMetadataUtils.hasEndpoints(i)) {
+                    DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
+                    if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
+                        urls.add(((DefaultServiceInstance) i).copy(endpoint).toURL());
+                        break;
+                    }
+                }
+                urls.add(i.toURL());
+            }
+        }
+        return urls;
+    }
+
+    protected List<URL> getAddresses(String serviceProtocolKey) {
+        return (List<URL>) serviceUrls.get(serviceProtocolKey);
+    }
+
+    protected void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(serviceUrls.get(key));
+            List<URL> urls = toUrlsWithEmpty(getAddresses(key));
             logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });
     }
 
-    private List<URL> toUrlsWithEmpty(List<URL> urls) {
+    protected List<URL> toUrlsWithEmpty(List<URL> urls) {
         if (urls == null) {
             urls = Collections.emptyList();
         }
