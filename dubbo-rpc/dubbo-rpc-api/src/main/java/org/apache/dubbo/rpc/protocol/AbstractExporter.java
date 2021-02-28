@@ -57,6 +57,13 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
         }
         unexported = true;
         getInvoker().destroy();
+        afterUnExport();
+    }
+
+    /**
+     * subclasses need to override this method to destroy resources.
+     */
+    public void afterUnExport() {
     }
 
     @Override
