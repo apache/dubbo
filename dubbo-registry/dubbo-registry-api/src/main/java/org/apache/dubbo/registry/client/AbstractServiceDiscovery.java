@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.registry.client;
 
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
+import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.resetInstanceUpdateKey;
+
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     protected ServiceInstance serviceInstance;
@@ -28,10 +31,26 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
+        register0(serviceInstance);
     }
+
+    /**
+     * It should be implement in kinds of service discovers.
+     */
+    public abstract void register0(ServiceInstance serviceInstance);
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
+        if (!isInstanceUpdated(serviceInstance)) {
+            return;
+        }
         this.serviceInstance = serviceInstance;
+        update0(serviceInstance);
+        resetInstanceUpdateKey(serviceInstance);
     }
+
+    /**
+     * It should be implement in kinds of service discovers.
+     */
+    public abstract void update0(ServiceInstance serviceInstance);
 }

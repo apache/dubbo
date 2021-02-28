@@ -188,7 +188,7 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void register0(ServiceInstance serviceInstance) {
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
         client.agentServiceRegister(consulService, aclToken);
@@ -209,7 +209,7 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void update0(ServiceInstance serviceInstance) {
         // TODO
         // client.catalogRegister(buildCatalogService(serviceInstance));
     }
