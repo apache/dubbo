@@ -17,9 +17,6 @@
 package org.apache.dubbo.registry.nacos;
 
 
-import com.alibaba.nacos.api.common.Constants;
-import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
-import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
@@ -29,14 +26,17 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -554,7 +554,7 @@ public class NacosRegistry extends FailbackRegistry {
         URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
-        newURL = appendNacosPreservedMetaKey(newURL);
+        newURL = newURL.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(getUrl()));
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();
@@ -562,31 +562,6 @@ public class NacosRegistry extends FailbackRegistry {
         instance.setPort(port);
         instance.setMetadata(new HashMap<>(newURL.getParameters()));
         return instance;
-    }
-
-    private URL appendNacosPreservedMetaKey(URL url) {
-        URL registryUrl = getUrl();
-        if (registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE) != null) {
-            url = url.addParameter(PreservedMetadataKeys.REGISTER_SOURCE,
-                    registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE));
-        }
-        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT) != null) {
-            url = url.addParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT,
-                    registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT));
-        }
-        if (registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT) != null) {
-            url = url.addParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT,
-                    registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT));
-        }
-        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL) != null) {
-            url = url.addParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL,
-                    registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL));
-        }
-        if (registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR) != null) {
-            url = url.addParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR,
-                    registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR));
-        }
-        return url;
     }
 
     private NacosServiceName createServiceName(URL url) {
