@@ -69,6 +69,10 @@ public class RemoteMetadataServiceImpl {
                 if (metadataReport == null) {
                     metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
                 }
+                logger.info("Publishing metadata to " + metadataReport.getClass().getSimpleName());
+                if (logger.isDebugEnabled()) {
+                    logger.debug(metadataInfo.toString());
+                }
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
                 metadataInfo.markReported();
             }

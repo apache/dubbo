@@ -14,15 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.multicast;
+package org.apache.dubbo.metadata.store.failover;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 
-public class MulticastServiceDiscoveryFactory implements ServiceDiscoveryFactory {
+public class MockAllFailoverCondition extends MockLocalFailoverCondition {
+
     @Override
-    public ServiceDiscovery getServiceDiscovery(URL registryURL) {
-        return new MulticastServiceDiscovery();
+    public boolean shouldRegister(URL url) {
+        return true;
+    }
+
+    @Override
+    public boolean isLocalDataCenter(URL url) {
+        // we don't care about local datacenter first.
+        return false;
     }
 }

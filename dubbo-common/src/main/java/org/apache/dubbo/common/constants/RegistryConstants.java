@@ -59,10 +59,9 @@ public interface RegistryConstants {
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
 
-    String REGISTRY_DUPLICATE_KEY = "duplicate";
+    String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
 
-    String ENABLE_REGISTRY_DIRECTORY_AUTO_MIGRATION = "enable-auto-migration";
-
+    String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
     /**
      * The parameter key of Dubbo Registry type
      *
@@ -114,4 +113,10 @@ public interface RegistryConstants {
     String ZONE_KEY = "zone";
 
     String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
+
+    String INIT = "INIT";
+
+    boolean MIGRATION_MULTI_REGSITRY = false;
+
+    String LOADBALANCE_AMONG_REGISTRIES = "random";
 }

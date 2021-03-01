@@ -69,7 +69,7 @@ public class WebserviceProtocolTest {
         System.out.println(object);
         assertEquals("webservice://127.0.0.1:" + port + "/org.apache.dubbo.rpc.protocol.webservice.DemoService:invoke", object);
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < 1024 * 32 + 32; i++)
             buf.append('A');
         assertEquals(32800, service.stringLength(buf.toString()));

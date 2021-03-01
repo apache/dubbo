@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.MetadataChangeListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -77,8 +76,6 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> exportedServiceURLs = new ConcurrentSkipListMap<>();
     ConcurrentMap<String, MetadataInfo> metadataInfos;
     final Semaphore metadataSemaphore = new Semaphore(1);
-    String serviceDiscoveryMetadata;
-    ConcurrentMap<String, MetadataChangeListener> metadataChangeListenerMap = new ConcurrentHashMap<>();
 
     // ==================================================================================== //
 
@@ -209,22 +206,6 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return null;
     }
 
-    @Override
-    public void exportServiceDiscoveryMetadata(String metadata) {
-        this.serviceDiscoveryMetadata = metadata;
-    }
-
-    @Override
-    public Map<String, MetadataChangeListener> getMetadataChangeListenerMap() {
-        return metadataChangeListenerMap;
-    }
-
-    @Override
-    public String getAndListenServiceDiscoveryMetadata(String consumerId, MetadataChangeListener listener) {
-        metadataChangeListenerMap.put(consumerId, listener);
-        return serviceDiscoveryMetadata;
-    }
-
     public void blockUntilUpdated() {
         try {
             metadataSemaphore.acquire();
@@ -310,4 +291,5 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             return o1.toFullString().compareTo(o2.toFullString());
         }
     }
+
 }
