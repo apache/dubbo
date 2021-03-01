@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
@@ -74,6 +75,7 @@ public class AbstractClusterInvokerTest {
     StaticDirectory<IHelloService> dic;
     RpcInvocation invocation = new RpcInvocation();
     URL url = URL.valueOf("registry://localhost:9090/org.apache.dubbo.rpc.cluster.support.AbstractClusterInvokerTest.IHelloService?refer=" + URL.encode("application=abstractClusterInvokerTest"));
+    URL consumerUrl = URL.valueOf("dubbo://localhost?application=abstractClusterInvokerTest&refer=application%3DabstractClusterInvokerTest");
 
     Invoker<IHelloService> invoker1;
     Invoker<IHelloService> invoker2;
@@ -251,15 +253,16 @@ public class AbstractClusterInvokerTest {
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
-        return URLBuilder.from(url)
-                .setHost(queryMap.get("register.ip"))
+        String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
+        String path = queryMap.get(PATH_KEY);
+        String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
+
+        URL consumerUrlFrom = this.url
+                .setHost(host)
                 .setPort(0)
-                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
-                .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
-                .clearParameters()
-                .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
-                .build();
+                .setProtocol(consumedProtocol)
+                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+        return consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
     }
 
     @Test
