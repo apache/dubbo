@@ -44,6 +44,8 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,7 +55,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -300,7 +301,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
+        Map<URL, Invoker<T>> newUrlInvokerMap = new UnifiedMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
