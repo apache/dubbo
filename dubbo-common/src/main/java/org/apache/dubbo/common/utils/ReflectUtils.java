@@ -31,6 +31,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
@@ -154,8 +155,8 @@ public final class ReflectUtils {
     }
 
     public static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
+        while (cls.isArray()) {
+            cls = cls.getComponentType();
         }
         return isPrimitive(cls);
     }
@@ -1198,6 +1199,9 @@ public final class ReflectUtils {
                 Type actualArgType = ((ParameterizedType) genericReturnType).getActualTypeArguments()[0];
                 if (actualArgType instanceof ParameterizedType) {
                     returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
+                    genericReturnType = actualArgType;
+                } else if (actualArgType instanceof TypeVariable) {
+                    returnType = (Class<?>) ((TypeVariable<?>) actualArgType).getBounds()[0];
                     genericReturnType = actualArgType;
                 } else {
                     returnType = (Class<?>) actualArgType;
