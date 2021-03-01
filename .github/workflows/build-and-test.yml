@@ -55,7 +55,7 @@ jobs:
       - name: "Build Dubbo Spring Boot with Maven"
         run: |
           cd ./dubbo-spring-boot-project
-          ./mvnw --batch-mode --no-transfer-progress  clean install -Drevision=$REVISION -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          ./mvnw --batch-mode --no-transfer-progress  clean install -Drevision=${{ steps.dubbo-version.outputs.version }} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
 
   unit-test:
     needs: [build-source]
