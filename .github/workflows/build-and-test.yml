@@ -49,7 +49,8 @@ jobs:
       - name: "Build Dubbo Spring Boot with Maven"
         run: |
           cd ./dubbo-spring-boot-project
-          ./mvnw --batch-mode --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          ./mvnw --batch-mode --no-transfer-progress  clean install -Drevision=$REVISION -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
       - name: "Calculate Dubbo Version"
         id: dubbo-version
         run: |
