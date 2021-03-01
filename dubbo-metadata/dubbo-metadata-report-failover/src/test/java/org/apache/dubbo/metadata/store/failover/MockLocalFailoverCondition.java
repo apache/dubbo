@@ -14,25 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.metadata.store.failover;
 
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.common.URL;
 
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener {
+/**
+ * @author yiji@apache.org
+ */
+public class MockLocalFailoverCondition implements FailoverCondition {
+
     @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
-
+    public boolean shouldRegister(URL url) {
+        // we just register same datacenter.
+        return isLocalDataCenter(url);
     }
 
     @Override
-    public void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker) {
-
+    public boolean shouldQuery(URL url) {
+        // we want read any metadata report server.
+        return true;
     }
 
     @Override
-    public void onDestroy() {
-
+    public boolean isLocalDataCenter(URL url) {
+        // we mock current datacenter is `127.0.0.1:2181`
+        String current = "127.0.0.1:2181";
+        return url.getBackupAddress().contains(current);
     }
+
 }

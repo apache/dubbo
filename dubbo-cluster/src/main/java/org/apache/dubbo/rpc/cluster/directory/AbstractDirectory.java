@@ -40,7 +40,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 /**
  * Abstract implementation of Directory: Invoker list returned from this Directory's list method have been filtered by Routers
- *
  */
 public abstract class AbstractDirectory<T> implements Directory<T> {
 
@@ -59,10 +58,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected RouterChain<T> routerChain;
 
     public AbstractDirectory(URL url) {
-        this(url, null);
+        this(url, null, false);
     }
 
-    public AbstractDirectory(URL url, RouterChain<T> routerChain) {
+    public AbstractDirectory(URL url, boolean isUrlFromRegistry) {
+        this(url, null, isUrlFromRegistry);
+    }
+
+    public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -72,8 +75,13 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         this.consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
         this.url = url.removeParameter(REFER_KEY).removeParameter(MONITOR_KEY);
 
-        this.consumerUrl = this.url.setProtocol(consumedProtocol).setPath(path == null ? queryMap.get(INTERFACE_KEY) : path).addParameters(queryMap)
-                .removeParameter(MONITOR_KEY);
+        URL consumerUrlFrom = this.url.setProtocol(consumedProtocol)
+                .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+        if (isUrlFromRegistry) {
+            // reserve parameters if url is already a consumer url
+            consumerUrlFrom = consumerUrlFrom.clearParameters();
+        }
+        this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
 
         setRouterChain(routerChain);
     }
@@ -121,6 +129,11 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     @Override
     public void destroy() {
         destroyed = true;
+    }
+
+    @Override
+    public void discordAddresses() {
+        // do nothing by default
     }
 
     protected abstract List<Invoker<T>> doList(Invocation invocation) throws RpcException;

@@ -81,10 +81,13 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        super.update(serviceInstance);
         // TODO: Nacos should support
-        unregister(serviceInstance);
-        register(serviceInstance);
+        if (this.serviceInstance == null) {
+            register(serviceInstance);
+        } else {
+            unregister(serviceInstance);
+            register(serviceInstance);
+        }
     }
 
     @Override
@@ -134,11 +137,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public URL getUrl() {
         return registryURL;
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return null;
     }
 
     private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
