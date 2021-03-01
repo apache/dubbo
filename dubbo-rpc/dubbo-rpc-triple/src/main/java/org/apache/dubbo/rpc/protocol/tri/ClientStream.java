@@ -47,6 +47,8 @@ import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -162,8 +164,8 @@ public class ClientStream extends AbstractStream implements Stream {
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
-        streamChannel.write(new DefaultHttp2DataFrame(out, true));
-
+        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
+        streamChannel.write(data);
     }
 
     public void halfClose() {

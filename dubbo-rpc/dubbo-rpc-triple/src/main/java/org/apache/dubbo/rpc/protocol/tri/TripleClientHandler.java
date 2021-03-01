@@ -26,6 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
 
@@ -52,6 +53,9 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else if (msg instanceof Http2GoAwayFrame) {
             final ConnectionHandler connectionHandler = ctx.pipeline().get(ConnectionHandler.class);
             connectionHandler.onGoAway(ctx.channel());
+            ReferenceCountUtil.release(msg);
+        } else {
+            ReferenceCountUtil.release(msg);
         }
     }
 
