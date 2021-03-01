@@ -88,7 +88,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     protected ServiceInstancesChangedListener serviceListener;
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
-        super(url);
+        super(url, true);
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
