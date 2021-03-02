@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
@@ -40,11 +42,20 @@ public class MethodDescriptor {
     private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
+    private boolean noPubStream;
 
     public MethodDescriptor(Method method) {
         this.method = method;
-        this.parameterClasses = method.getParameterTypes();
-        this.returnClass = method.getReturnType();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
+            this.parameterClasses = new Class<?>[]{(Class<?>)((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
+            this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+            noPubStream = true;
+        } else {
+            this.parameterClasses = method.getParameterTypes();
+            this.returnClass = method.getReturnType();
+            noPubStream = false;
+        }
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
@@ -52,6 +63,14 @@ public class MethodDescriptor {
                 .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
+    }
+
+    public boolean isNoPubStream() {
+        return noPubStream;
+    }
+
+    private static boolean isStreamType(Class<?> clz) {
+        return StreamObserver.class.isAssignableFrom(clz);
     }
 
     public boolean matchParams (String params) {

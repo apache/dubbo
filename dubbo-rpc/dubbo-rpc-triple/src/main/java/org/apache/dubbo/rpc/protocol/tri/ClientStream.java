@@ -188,7 +188,7 @@ public class ClientStream extends AbstractStream implements Stream {
             onError(status);
             return;
         }
-        final InputStream data = getData();
+        final InputStream data = pollData();
         if (data == null) {
             responseErr(getCtx(), MISSING_RESP);
             return;
