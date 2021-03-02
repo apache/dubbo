@@ -20,8 +20,12 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -74,6 +78,13 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
         super.channelRead(ctx, msg.content());
+        ResponseObserverProcessor processor = ctx.channel().attr(TripleUtil.SERVER_STREAM_PROCESSOR_KEY).get();
+        if (processor != null) {
+            processor.getStream().onData(ctx);
+            if (msg.isEndStream()) {
+                processor.onComplete();
+            }
+        }
         if (msg.isEndStream()) {
             final ServerStream serverStream = TripleUtil.getServerStream(ctx);
             // stream already closed;
@@ -146,12 +157,41 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
 
+        boolean isNoPubStream = false;
+        for (MethodDescriptor methodDescriptor : descriptor.getMethods(methodName)) {
+            if (methodDescriptor.isNoPubStream()) {
+                isNoPubStream = true;
+            }
+        }
 
-        final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, methodName, ctx);
-        serverStream.onHeaders(headers);
-        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
-        if (msg.isEndStream()) {
-            serverStream.halfClose();
+        if (isNoPubStream) {
+            final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, methodName, ctx);
+            // 往netty写数据，server impl.onNext
+            StreamOutboundWriter streamOutboundWriter = new StreamOutboundWriter(serverStream);
+            RpcInvocation inv = new RpcInvocation();//streamOutboundWriter
+            inv.setArguments(new Object[] {streamOutboundWriter});
+            inv.setMethodName(methodName);
+            inv.setServiceName(serviceName);
+            inv.setTargetServiceUniqueName(serviceName);
+            inv.setParameterTypes(new Class[] {StreamObserver.class});
+            inv.setReturnTypes(new Class[] {StreamObserver.class});
+            Result result = delegateInvoker.invoke(inv);
+            final StreamObserver<Object> resp = (StreamObserver<Object>)result.get().getValue();
+            ResponseObserverProcessor processor = new ResponseObserverProcessor(ctx, serverStream, resp);
+            ctx.channel().attr(TripleUtil.SERVER_STREAM_PROCESSOR_KEY).set(processor);
+
+            serverStream.onHeaders(headers);
+            ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
+            if (msg.isEndStream()) {
+                serverStream.halfClose();
+            }
+        } else {
+            final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, methodName, ctx);
+            serverStream.onHeaders(headers);
+            ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
+            if (msg.isEndStream()) {
+                serverStream.halfClose();
+            }
         }
     }
 }
