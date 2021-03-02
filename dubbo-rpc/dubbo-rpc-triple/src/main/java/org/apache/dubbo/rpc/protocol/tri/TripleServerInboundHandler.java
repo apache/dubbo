@@ -25,8 +25,9 @@ public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         final ServerStream serverStream = TripleUtil.getServerStream(ctx);
+        final ByteBuf buffer = (ByteBuf) msg;
         if (serverStream != null) {
-            serverStream.onData(new ByteBufInputStream((ByteBuf) msg));
+            serverStream.onData(new ByteBufInputStream(buffer,buffer.readableBytes(),true));
         }
     }
 }

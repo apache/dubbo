@@ -190,7 +190,8 @@ public class ServerStream extends AbstractStream implements Stream {
                     convertAttachment(trailers, attachments);
                 }
                 ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                ctx.write(new DefaultHttp2DataFrame(buf));
+                final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
+                ctx.write(data);
                 ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
             } catch (Throwable e) {
                 LOGGER.warn("Exception processing triple message", e);

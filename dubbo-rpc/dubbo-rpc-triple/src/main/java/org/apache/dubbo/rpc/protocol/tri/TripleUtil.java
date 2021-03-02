@@ -159,7 +159,9 @@ public class TripleUtil {
         String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
         try {
             final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            return serialization.deserialize(url, serializeType, wrap.getType(), bais);
+            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
+            bais.close();
+            return ret;
         } catch (Exception e) {
             throw new RuntimeException("Failed to unwrap resp", e);
         }
@@ -190,6 +192,7 @@ public class TripleUtil {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             multipleSerialization.serialize(url, serializeType, desc.getReturnClass().getName(), resp, bos);
             builder.setData(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
             return builder.build();
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack wrapper req", e);
@@ -199,6 +202,7 @@ public class TripleUtil {
     public static <T> T unpack(InputStream is, Class<T> clz) {
         try {
             final T req = (T) pbSerialization.deserialize(is, clz);
+            is.close();
             return req;
         } catch (IOException e) {
             throw new RuntimeException("Failed to unpack req", e);
