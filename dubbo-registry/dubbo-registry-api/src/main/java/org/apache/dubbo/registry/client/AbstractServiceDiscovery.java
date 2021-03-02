@@ -29,7 +29,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public final void register(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
         doRegister(serviceInstance);
     }
@@ -40,7 +40,7 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     public abstract void doRegister(ServiceInstance serviceInstance);
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public final void update(ServiceInstance serviceInstance) throws RuntimeException {
         if (!isInstanceUpdated(serviceInstance)) {
             return;
         }
