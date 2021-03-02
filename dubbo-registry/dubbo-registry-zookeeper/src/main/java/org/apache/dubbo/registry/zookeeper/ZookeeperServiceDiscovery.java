@@ -209,7 +209,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return rootPath + "/" + serviceName;
     }
 
-    public CuratorFramework getCuratorFramework() {
+    protected CuratorFramework getCuratorFramework() {
         return curatorFramework;
     }
 }
