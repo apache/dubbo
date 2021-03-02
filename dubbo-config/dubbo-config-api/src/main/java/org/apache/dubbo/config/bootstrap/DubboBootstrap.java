@@ -869,7 +869,6 @@ public class DubboBootstrap extends GenericEventListener {
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
      */
     private void initMetadataService() {
-        startMetadataCenter();
         this.metadataService = getDefaultExtension();
         this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
     }
@@ -1269,7 +1268,7 @@ public class DubboBootstrap extends GenericEventListener {
                     destroyRegistries();
                     DubboShutdownHook.destroyProtocols();
                     destroyServiceDiscoveries();
-
+                    destroyExecutorRepository();
                     clear();
                     shutdown();
                     release();
@@ -1280,6 +1279,10 @@ public class DubboBootstrap extends GenericEventListener {
                 destroyLock.unlock();
             }
         }
+    }
+
+    private void destroyExecutorRepository() {
+        ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
     private void destroyRegistries() {

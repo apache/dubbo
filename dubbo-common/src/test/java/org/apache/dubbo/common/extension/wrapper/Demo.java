@@ -14,14 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.common.extension.wrapper;
 
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.apache.dubbo.common.extension.SPI;
 
-public class ApplicationProvider2 {
-    public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("spring/dubbo-provider-zk.xml");
-        context.start();
-        System.in.read();
-    }
+@SPI("demo")
+public interface Demo {
+    String echo(String msg);
 }

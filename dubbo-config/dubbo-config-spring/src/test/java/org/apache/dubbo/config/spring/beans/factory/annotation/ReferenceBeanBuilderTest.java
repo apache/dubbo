@@ -70,7 +70,7 @@ public class ReferenceBeanBuilderTest {
             timeout = 3, cache = "cache", filter = {"echo", "generic", "accesslog"},
             listener = {"deprecated"}, parameters = {"n1=v1  ", "n2 = v2 ", "  n3 =   v3  "},
             application = "application",
-            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"},
+            module = "module", consumer = "consumer", monitor = "monitor", registry = {},
             // @since 2.7.3
             id = "reference",
             // @since 2.7.8

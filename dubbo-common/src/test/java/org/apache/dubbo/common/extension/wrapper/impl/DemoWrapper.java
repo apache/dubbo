@@ -14,16 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.common.extension.wrapper.impl;
 
-import org.apache.dubbo.demo.GreetingService;
+import org.apache.dubbo.common.extension.Wrapper;
+import org.apache.dubbo.common.extension.wrapper.Demo;
 
-/**
- *
- */
-public class GreetingServiceImpl implements GreetingService {
-    @Override
-    public String hello() {
-        return "Greetings from provider2!";
+@Wrapper(matches = {"demo"}, mismatches = "demo2")
+public class DemoWrapper implements Demo {
+    private Demo demo;
+
+    public DemoWrapper(Demo demo) {
+        this.demo = demo;
+    }
+
+    public String echo(String msg) {
+        return demo.echo(msg);
     }
 }

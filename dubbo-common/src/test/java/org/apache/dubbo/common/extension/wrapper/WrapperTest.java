@@ -14,21 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.demo.provider;
+package org.apache.dubbo.common.extension.wrapper;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.metadata.MetadataParamsFilter;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Activate
-public class ServiceDemoMetadataParamsFilter implements MetadataParamsFilter {
-    @Override
-    public String[] serviceParamsIncluded() {
-        return new String[] {"serviceKey1", "serviceKey2"};
-    }
+/**
+ * {@link org.apache.dubbo.common.extension.Wrapper} Test
+ *
+ * @since 2.7.5
+ */
+public class WrapperTest {
 
-    @Override
-    public String[] instanceParamsIncluded() {
-        return new String[] {"instance1", "instance2"};
+    @Test
+    public void testWrapper() {
+        Demo demoWrapper = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo");
+        assertTrue(demoWrapper instanceof DemoWrapper);
+        Demo demoWrapper2 = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo2");
+        assertTrue(demoWrapper2 instanceof DemoWrapper2);
     }
 }

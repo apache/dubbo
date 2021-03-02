@@ -14,7 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common;
+package org.apache.dubbo.common.extension.wrapper.impl;
 
-public class ConfigurationURL extends URL {
+import org.apache.dubbo.common.extension.wrapper.Demo;
+
+public class DemoImpl implements Demo {
+    @Override
+    public String echo(String msg) {
+        return msg;
+    }
 }
