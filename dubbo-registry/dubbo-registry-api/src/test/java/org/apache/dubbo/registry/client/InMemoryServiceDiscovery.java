@@ -80,7 +80,7 @@ public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
         String serviceName = serviceInstance.getServiceName();
         List<ServiceInstance> serviceInstances = repository.computeIfAbsent(serviceName, s -> new LinkedList<>());
         if (!serviceInstances.contains(serviceInstance)) {
@@ -89,7 +89,7 @@ public class InMemoryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
         unregister(serviceInstance);
         register(serviceInstance);
     }

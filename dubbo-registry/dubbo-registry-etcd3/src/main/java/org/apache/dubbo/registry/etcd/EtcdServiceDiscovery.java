@@ -100,7 +100,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
         try {
             String path = toPath(serviceInstance);
 //            etcdClient.createEphemeral(path);
@@ -124,7 +124,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
         try {
             String path = toPath(serviceInstance);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));

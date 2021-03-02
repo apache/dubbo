@@ -71,12 +71,12 @@ public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update(serviceInstance));
     }
 

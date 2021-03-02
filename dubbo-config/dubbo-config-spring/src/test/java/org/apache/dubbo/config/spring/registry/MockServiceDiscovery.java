@@ -38,12 +38,12 @@ public class MockServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
 
     }
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
 
     }
 

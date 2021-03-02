@@ -134,7 +134,7 @@ public class FileSystemServiceDiscovery extends AbstractServiceDiscovery impleme
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
         String content = toJSONString(serviceInstance);
@@ -168,7 +168,7 @@ public class FileSystemServiceDiscovery extends AbstractServiceDiscovery impleme
 
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
         register(serviceInstance);
     }
 

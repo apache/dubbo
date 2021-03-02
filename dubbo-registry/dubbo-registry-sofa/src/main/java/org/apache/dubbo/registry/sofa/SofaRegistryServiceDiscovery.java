@@ -102,7 +102,7 @@ public class SofaRegistryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register0(ServiceInstance serviceInstance) {
+    public void doRegister(ServiceInstance serviceInstance) {
         SofaRegistryInstance sofaRegistryInstance = new SofaRegistryInstance(serviceInstance.getId(), serviceInstance.getHost(), serviceInstance.getPort(), serviceInstance.getServiceName(), serviceInstance.getMetadata());
         Publisher publisher = publishers.get(serviceInstance.getServiceName());
         this.serviceInstance = serviceInstance;
@@ -118,7 +118,7 @@ public class SofaRegistryServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void update0(ServiceInstance serviceInstance) {
+    public void doUpdate(ServiceInstance serviceInstance) {
         register(serviceInstance);
     }
 

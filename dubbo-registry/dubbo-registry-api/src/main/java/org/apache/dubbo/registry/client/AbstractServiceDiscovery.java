@@ -31,13 +31,13 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public void register(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
-        register0(serviceInstance);
+        doRegister(serviceInstance);
     }
 
     /**
      * It should be implement in kinds of service discovers.
      */
-    public abstract void register0(ServiceInstance serviceInstance);
+    public abstract void doRegister(ServiceInstance serviceInstance);
 
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
@@ -45,12 +45,12 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
             return;
         }
         this.serviceInstance = serviceInstance;
-        update0(serviceInstance);
+        doUpdate(serviceInstance);
         resetInstanceUpdateKey(serviceInstance);
     }
 
     /**
      * It should be implement in kinds of service discovers.
      */
-    public abstract void update0(ServiceInstance serviceInstance);
+    public abstract void doUpdate(ServiceInstance serviceInstance);
 }
