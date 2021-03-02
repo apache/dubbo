@@ -51,7 +51,7 @@ public abstract class AbstractExporter<T> implements Exporter<T> {
     }
 
     @Override
-    public void unexport() {
+    final public void unexport() {
         if (unexported) {
             return;
         }
