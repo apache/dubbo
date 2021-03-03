@@ -33,6 +33,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.ChannelPromise;
+import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
@@ -66,18 +68,17 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final InetSocketAddress remote;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
-    private final ChannelFuture initConnectFuture;
+    private final ChannelPromise initPromise;
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
         url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
         this.url = url;
         this.protocol = ExtensionLoader.getExtensionLoader(WireProtocol.class).getExtension(url.getProtocol());
-        this.connectTimeout = url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT);
+        this.connectTimeout = Math.max(3000, url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
         this.closeFuture = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.remote = getConnectAddress();
-        final Bootstrap bootstrap = open();
-        this.initConnectFuture = bootstrap.connect();
+        this.initPromise = connect();
     }
 
     public static Connection getConnectionFromChannel(Channel channel) {
@@ -89,7 +90,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
 
-    public Bootstrap open() {
+    public ChannelPromise connect() {
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -98,8 +99,8 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 .remoteAddress(getConnectAddress())
                 .channel(socketChannelClass());
 
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, Math.max(3000, connectTimeout));
-        final ConnectionHandler connectionHandler = new ConnectionHandler(bootstrap, TIMER);
+        final ConnectionHandler connectionHandler = new ConnectionHandler(this,bootstrap, TIMER);
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
             @Override
@@ -116,7 +117,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 // TODO support Socks5
             }
         });
-        return bootstrap;
+        return connectionHandler.connect();
     }
 
     public Channel getChannel() {
@@ -139,14 +140,16 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     public void onConnected(Channel channel) {
         this.channel.set(channel);
         channel.attr(CONNECTION).set(this);
+        this.initPromise.trySuccess();
         if (logger.isInfoEnabled()) {
             logger.info(String.format("Connection:%s connected ", this));
         }
     }
 
-    public void connectSync(){
-        this.initConnectFuture.awaitUninterruptibly();
+    public void connectSync() {
+        this.initPromise.awaitUninterruptibly(this.connectTimeout);
     }
+
     public boolean isAvailable() {
         final Channel channel = getChannel();
         return channel != null && channel.isActive();
