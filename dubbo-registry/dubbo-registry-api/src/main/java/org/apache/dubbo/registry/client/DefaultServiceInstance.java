@@ -40,13 +40,11 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private static final long serialVersionUID = 1149677083747278100L;
 
-    private String id;
-
     private String serviceName;
 
     private String host;
 
-    private Integer port;
+    private int port;
 
     private boolean enabled;
 
@@ -76,14 +74,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
         this.address = null;
-        this.id = null;
     }
 
-    public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
+    public DefaultServiceInstance(String serviceName, String host, Integer port) {
         if (port != null && port.intValue() < 1) {
             throw new IllegalArgumentException("The port must be greater than zero!");
         }
-        this.id = id;
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
@@ -91,16 +87,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.healthy = true;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, Integer port) {
-        this(host + ":" + port, serviceName, host, port);
-    }
-
     public DefaultServiceInstance(String serviceName) {
         this.serviceName = serviceName;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public void setServiceName(String serviceName) {
@@ -109,11 +97,6 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public void setHost(String host) {
         this.host = host;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
@@ -126,12 +109,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         return host;
     }
 
-    public void setPort(Integer port) {
+    public void setPort(int port) {
         this.port = port;
     }
 
     @Override
-    public Integer getPort() {
+    public int getPort() {
         return port;
     }
 
@@ -202,7 +185,6 @@ public class DefaultServiceInstance implements ServiceInstance {
     public DefaultServiceInstance copy(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
-        copyOfInstance.setId(copyOfInstance.getAddress());
         return copyOfInstance;
     }
 
@@ -268,7 +250,6 @@ public class DefaultServiceInstance implements ServiceInstance {
     @Override
     public String toString() {
         return "DefaultServiceInstance{" +
-                "id='" + id + '\'' +
                 ", serviceName='" + serviceName + '\'' +
                 ", host='" + host + '\'' +
                 ", port=" + port +
