@@ -92,7 +92,8 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setVersion(Version.getProtocolVersion());
             req.setTwoWay(true);
             req.setData(inv);
-            this.connection.init();
+
+            connection.connectSync();
 
             DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
@@ -100,6 +101,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
+
 
             if (!connection.isAvailable()) {
                 Response response = new Response(req.getId(), req.getVersion());

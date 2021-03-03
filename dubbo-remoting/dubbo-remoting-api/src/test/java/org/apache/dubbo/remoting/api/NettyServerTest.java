@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.dubbo.registry;
+package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
-import org.mockito.Mockito;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.RemotingException;
 
-public class SimpleRegistryFactory implements RegistryFactory {
-    static Registry registry = Mockito.mock(Registry.class);
-    @Override
-    public Registry getRegistry(URL url) {
-        return registry;
+public class NettyServerTest {
+
+    public static void main(String[] args) throws RemotingException {
+        URL url = new URL("transport", "localhost", 8898,
+                new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
+
+        final PortUnificationServer server = new PortUnificationServer(url);
+        System.out.println(server.isBound());
     }
 }

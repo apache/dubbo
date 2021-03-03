@@ -66,11 +66,22 @@ public class CustomizedLoaderClassPath implements ClassPath {
         if (cl == null) {
             return null;        // not found
         } else {
-            InputStream result = cl.getResourceAsStream(cname);
-            if (result == null && (cl != this.getClass().getClassLoader())) {
-                return this.getClass().getClassLoader().getResourceAsStream(cname);
+            InputStream result;
+
+            if (classname.startsWith("org.apache.dubbo") && cl != this.getClass().getClassLoader()) {
+                result = this.getClass().getClassLoader().getResourceAsStream(cname);
+                if (result != null) {
+                    return result;
+                } else {
+                    return cl.getResourceAsStream(cname);
+                }
+            } else {
+                result = cl.getResourceAsStream(cname);
+                if (result == null && (cl != this.getClass().getClassLoader())) {
+                    return this.getClass().getClassLoader().getResourceAsStream(cname);
+                }
+                return result;
             }
-            return result;
         }
     }
 
@@ -87,11 +98,22 @@ public class CustomizedLoaderClassPath implements ClassPath {
         if (cl == null) {
             return null;        // not found
         } else {
-            URL url = cl.getResource(cname);
-            if (url == null && (cl != this.getClass().getClassLoader())) {
-                return this.getClass().getClassLoader().getResource(cname);
+            URL url;
+
+            if (classname.startsWith("org.apache.dubbo") && cl != this.getClass().getClassLoader()) {
+                url = this.getClass().getClassLoader().getResource(cname);
+                if (url != null) {
+                    return url;
+                } else {
+                    return cl.getResource(cname);
+                }
+            } else {
+                url = cl.getResource(cname);
+                if (url == null && (cl != this.getClass().getClassLoader())) {
+                    return this.getClass().getClassLoader().getResource(cname);
+                }
+                return url;
             }
-            return url;
         }
     }
 

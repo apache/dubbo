@@ -163,91 +163,91 @@ public class URLAddress implements Serializable {
 
     public static URLAddress parse(String rawAddress, String defaultProtocol, boolean encoded) {
         try {
+            String decodeStr = rawAddress;
             if (encoded) {
-                rawAddress = URLDecoder.decode(rawAddress, "UTF-8");
+                decodeStr = URLDecoder.decode(rawAddress, "UTF-8");
             }
 
-            boolean isPathAddress = !Character.isDigit(rawAddress.charAt(0));
+            boolean isPathAddress = !Character.isDigit(decodeStr.charAt(0));
             if (isPathAddress) {
-                return createPathURLAddress(rawAddress, defaultProtocol);
+                return createPathURLAddress(decodeStr, rawAddress, defaultProtocol);
             }
-            return createURLAddress(rawAddress, defaultProtocol);
+            return createURLAddress(decodeStr, rawAddress, defaultProtocol);
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }
 
-    private static URLAddress createURLAddress(String rawAddress, String defaultProtocol) {
+    private static URLAddress createURLAddress(String decodeStr, String rawAddress, String defaultProtocol) {
         String host = null;
         int port = 0;
 
-        int i = rawAddress.lastIndexOf(':');
-        if (i >= 0 && i < rawAddress.length() - 1) {
-            if (rawAddress.lastIndexOf('%') > i) {
+        int i = decodeStr.lastIndexOf(':');
+        if (i >= 0 && i < decodeStr.length() - 1) {
+            if (decodeStr.lastIndexOf('%') > i) {
                 // ipv6 address with scope id
                 // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
                 // see https://howdoesinternetwork.com/2013/ipv6-zone-id
                 // ignore
             } else {
-                port = Integer.parseInt(rawAddress.substring(i + 1));
-                host = rawAddress.substring(0, i);
+                port = Integer.parseInt(decodeStr.substring(i + 1));
+                host = decodeStr.substring(0, i);
             }
         } else {
-            host = rawAddress;
+            host = decodeStr;
         }
 
         return new URLAddress(host, port, rawAddress);
     }
 
-    private static PathURLAddress createPathURLAddress(String rawAddress, String defaultProtocol) {
+    private static PathURLAddress createPathURLAddress(String decodeStr, String rawAddress, String defaultProtocol) {
         String protocol = defaultProtocol;
-        String copyOfRawAddress = rawAddress;
         String path = null, username = null, password = null, host = null;
         int port = 0;
-        int i = rawAddress.indexOf("://");
+        int i = decodeStr.indexOf("://");
         if (i >= 0) {
             if (i == 0) {
-                throw new IllegalStateException("url missing protocol: \"" + rawAddress + "\"");
+                throw new IllegalStateException("url missing protocol: \"" + decodeStr + "\"");
             }
-            protocol = rawAddress.substring(0, i);
-            rawAddress = rawAddress.substring(i + 3);
+            protocol = decodeStr.substring(0, i);
+            decodeStr = decodeStr.substring(i + 3);
         } else {
             // case: file:/path/to/file.txt
-            i = rawAddress.indexOf(":/");
+            i = decodeStr.indexOf(":/");
             if (i >= 0) {
                 if (i == 0) {
-                    throw new IllegalStateException("url missing protocol: \"" + rawAddress + "\"");
+                    throw new IllegalStateException("url missing protocol: \"" + decodeStr + "\"");
                 }
-                protocol = rawAddress.substring(0, i);
-                rawAddress = rawAddress.substring(i + 1);
+                protocol = decodeStr.substring(0, i);
+                decodeStr = decodeStr.substring(i + 1);
             }
         }
 
-        i = rawAddress.indexOf('/');
+        i = decodeStr.indexOf('/');
         if (i >= 0) {
-            path = rawAddress.substring(i + 1);
-            rawAddress = rawAddress.substring(0, i);
+            path = decodeStr.substring(i + 1);
+            decodeStr = decodeStr.substring(0, i);
         }
-        i = rawAddress.lastIndexOf('@');
+        i = decodeStr.lastIndexOf('@');
         if (i >= 0) {
-            username = rawAddress.substring(0, i);
+            username = decodeStr.substring(0, i);
             int j = username.indexOf(':');
             if (j >= 0) {
                 password = username.substring(j + 1);
                 username = username.substring(0, j);
             }
-            rawAddress = rawAddress.substring(i + 1);
+            decodeStr = decodeStr.substring(i + 1);
         }
-        i = rawAddress.lastIndexOf(':');
-        if (i >= 0 && i < rawAddress.length() - 1) {
-            if (rawAddress.lastIndexOf('%') > i) {
+        i = decodeStr.lastIndexOf(':');
+        if (i >= 0 && i < decodeStr.length() - 1) {
+            if (decodeStr.lastIndexOf('%') > i) {
                 // ipv6 address with scope id
                 // e.g. fe80:0:0:0:894:aeec:f37d:23e1%en0
                 // see https://howdoesinternetwork.com/2013/ipv6-zone-id
                 // ignore
             } else {
-                port = Integer.parseInt(rawAddress.substring(i + 1));
-                host = rawAddress.substring(0, i);
+                port = Integer.parseInt(decodeStr.substring(i + 1));
+                host = decodeStr.substring(0, i);
             }
         }
 
@@ -255,6 +255,6 @@ public class URLAddress implements Serializable {
         protocol = URLItemCache.checkProtocol(protocol);
         path = URLItemCache.checkPath(path);
 
-        return new PathURLAddress(protocol, username, password, path, host, port, copyOfRawAddress);
+        return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.directory;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -60,10 +59,14 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
     protected final Map<String, String> queryMap;
 
     public AbstractDirectory(URL url) {
-        this(url, null);
+        this(url, null, false);
     }
 
-    public AbstractDirectory(URL url, RouterChain<T> routerChain) {
+    public AbstractDirectory(URL url, boolean isUrlFromRegistry) {
+        this(url, null, isUrlFromRegistry);
+    }
+
+    public AbstractDirectory(URL url, RouterChain<T> routerChain, boolean isUrlFromRegistry) {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }
@@ -78,23 +81,24 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             this.queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
         }
 
-        if (consumerUrl == null && queryMap != null) {
-            this.consumerUrl = turnRegistryUrlToConsumerUrl(url, queryMap);
+        if (consumerUrl == null) {
+            String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
+            String path = queryMap.get(PATH_KEY);
+            String consumedProtocol = this.queryMap.get(PROTOCOL_KEY) == null ? DUBBO : this.queryMap.get(PROTOCOL_KEY);
+
+            URL consumerUrlFrom = this.url
+                    .setHost(host)
+                    .setPort(0)
+                    .setProtocol(consumedProtocol)
+                    .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
+            if (isUrlFromRegistry) {
+                // reserve parameters if url is already a consumer url
+                consumerUrlFrom = consumerUrlFrom.clearParameters();
+            }
+            this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
         }
 
         setRouterChain(routerChain);
-    }
-
-    private URL turnRegistryUrlToConsumerUrl(URL url, Map<String, String> queryMap) {
-        return URLBuilder.from(url)
-                .setHost(queryMap.get("register.ip"))
-                .setPort(0)
-                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
-                .setPath(queryMap.get(PATH_KEY) != null ? queryMap.get(PATH_KEY) : queryMap.get(INTERFACE_KEY))
-                .clearParameters()
-                .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
-                .build();
     }
 
     @Override

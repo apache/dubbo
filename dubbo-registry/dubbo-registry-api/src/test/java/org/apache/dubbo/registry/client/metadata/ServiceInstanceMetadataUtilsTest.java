@@ -38,27 +38,30 @@ public class ServiceInstanceMetadataUtilsTest {
     private static URL url = URL.valueOf("dubbo://192.168.0.102:20880/org.apache.dubbo.metadata.MetadataService?&anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20880&default.deprecated=false&default.dynamic=false&default.register=true&deprecated=false&dubbo=2.0.2&dynamic=false&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=org.apache.dubbo.metadata.MetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=58350&register=true&release=2.7.1&revision=1.0.0&side=provider&timestamp=1557928573174&version=1.0.0");
     private static URL url2 = URL.valueOf("rest://192.168.0.102:20880/org.apache.dubbo.metadata.MetadataService?&anyhost=true&application=spring-cloud-alibaba-dubbo-provider&bind.ip=192.168.0.102&bind.port=20880&default.deprecated=false&default.dynamic=false&default.register=true&deprecated=false&dubbo=2.0.2&dynamic=false&generic=false&group=spring-cloud-alibaba-dubbo-provider&interface=org.apache.dubbo.metadata.MetadataService&methods=getAllServiceKeys,getServiceRestMetadata,getExportedURLs,getAllExportedURLs&pid=58350&register=true&release=2.7.1&revision=1.0.0&side=provider&timestamp=1557928573174&version=1.0.0");
 
-    private static final String VALUE = "{\"version\":\"1.0.0\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"port\":\"20880\"}";
+    private static final String VALUE_URL = "{\"version\":\"1.0.0\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"port\":\"20880\",\"protocol\":\"dubbo\"}";
+    private static final String VALUE_URL2 = "{\"version\":\"1.0.0\",\"dubbo\":\"2.0.2\",\"release\":\"2.7.1\",\"port\":\"20880\",\"protocol\":\"rest\"}";
+
     @Test
     public void testMetadataServiceURLParameters() {
 
         List<URL> urls = Arrays.asList(url, url2);
 
-        String parameter = ServiceInstanceMetadataUtils.getMetadataServiceParameter(url);
-
-        JSONObject jsonObject = JSON.parseObject(parameter);
-
         urls.forEach(url -> {
-            JSONObject map = jsonObject.getJSONObject(url.getProtocol());
+            String parameter = ServiceInstanceMetadataUtils.getMetadataServiceParameter(url);
+
+            JSONObject jsonObject = JSON.parseObject(parameter);
+
             for (Map.Entry<String, String> param : url.getParameters().entrySet()) {
-                String value = map.getString(param.getKey());
+                String value = jsonObject.getString(param.getKey());
                 if (value != null) {
                     assertEquals(param.getValue(), value);
                 }
             }
+
         });
 
-        assertEquals(VALUE, parameter);
+        assertEquals(ServiceInstanceMetadataUtils.getMetadataServiceParameter(url), VALUE_URL);
+        assertEquals(ServiceInstanceMetadataUtils.getMetadataServiceParameter(url2), VALUE_URL2);
     }
 
     @Test

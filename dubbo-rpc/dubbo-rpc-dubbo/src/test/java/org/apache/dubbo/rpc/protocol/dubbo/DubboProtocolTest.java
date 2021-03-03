@@ -20,9 +20,15 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.Directory;
+import org.apache.dubbo.rpc.cluster.support.FailfastCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
@@ -37,8 +43,11 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -224,7 +233,19 @@ public class DubboProtocolTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange").addParameter("timeout",
                 3000L).addParameter("application", "consumer");
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
-        service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals(service.getRemoteApplicationName(), "consumer");
+        Invoker<DemoService> invoker = protocol.refer(DemoService.class, url);
+
+        Invocation invocation = new RpcInvocation("getRemoteApplicationName", DemoService.class.getName(), "", new Class<?>[0], new Object[0]);
+        List<Invoker<DemoService>> invokers = Arrays.asList(invoker);
+        Directory<DemoService> dic = Mockito.mock(Directory.class);
+        Mockito.when(dic.list(invocation)).thenReturn(invokers);
+        Mockito.when(dic.getUrl()).thenReturn(url);
+        Mockito.when(dic.getConsumerUrl()).thenReturn(url);
+
+        FailfastCluster cluster = new FailfastCluster();
+        Invoker<DemoService> clusterInvoker = cluster.join(dic);
+        Result result = clusterInvoker.invoke(invocation);
+        Thread.sleep(10);
+        assertEquals(result.getValue(), "consumer");
     }
 }

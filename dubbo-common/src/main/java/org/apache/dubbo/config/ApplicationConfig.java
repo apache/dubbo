@@ -44,6 +44,7 @@ import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
 import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.config.Constants.DEVELOPMENT_ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.PRODUCTION_ENVIRONMENT;
@@ -165,6 +166,8 @@ public class ApplicationConfig extends AbstractConfig {
     private Boolean enableFileCache;
 
     private Boolean publishInterface;
+
+    private Boolean publishInstance;
 
     /**
      * The preferred protocol(name) of this application
@@ -488,6 +491,15 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setPublishInterface(Boolean publishInterface) {
         this.publishInterface = publishInterface;
+    }
+
+    @Parameter(key = REGISTRY_PUBLISH_INSTANCE_KEY)
+    public Boolean getPublishInstance() {
+        return publishInstance;
+    }
+
+    public void setPublishInstance(Boolean publishInstance) {
+        this.publishInstance = publishInstance;
     }
 
     @Parameter(excluded = true, key="application-protocol")

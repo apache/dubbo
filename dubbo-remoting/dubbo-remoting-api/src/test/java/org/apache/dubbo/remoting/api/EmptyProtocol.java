@@ -14,16 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.remoting.api;
 
-package org.apache.dubbo.registry;
+import io.netty.channel.ChannelPipeline;
+import io.netty.handler.ssl.SslContext;
 
-import org.apache.dubbo.common.URL;
-import org.mockito.Mockito;
-
-public class SimpleRegistryFactory implements RegistryFactory {
-    static Registry registry = Mockito.mock(Registry.class);
+public class EmptyProtocol implements WireProtocol {
     @Override
-    public Registry getRegistry(URL url) {
-        return registry;
+    public ProtocolDetector detector() {
+        return null;
+    }
+
+    @Override
+    public void configServerPipeline(ChannelPipeline pipeline,SslContext sslContext) {
+
+    }
+
+    @Override
+    public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
+
+    }
+
+    @Override
+    public void close() {
+
     }
 }

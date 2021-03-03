@@ -37,20 +37,20 @@ public class RegistryFactoryWrapperTest {
         URL url = URL.valueOf("dubbo://localhost:8081/simple.service");
         registry.register(url);
 
-        Mockito.verify(listener1, Mockito.times(1)).onRegister(url, null);
-        Mockito.verify(listener2, Mockito.times(1)).onRegister(url, null);
+        Mockito.verify(listener1, Mockito.times(1)).onRegister(url, SimpleRegistryFactory.registry);
+        Mockito.verify(listener2, Mockito.times(1)).onRegister(url, SimpleRegistryFactory.registry);
 
         registry.unregister(url);
-        Mockito.verify(listener1, Mockito.times(1)).onUnregister(url, null);
-        Mockito.verify(listener2, Mockito.times(1)).onUnregister(url, null);
+        Mockito.verify(listener1, Mockito.times(1)).onUnregister(url, SimpleRegistryFactory.registry);
+        Mockito.verify(listener2, Mockito.times(1)).onUnregister(url, SimpleRegistryFactory.registry);
 
         registry.subscribe(url, Mockito.mock(NotifyListener.class));
-        Mockito.verify(listener1, Mockito.times(1)).onSubscribe(url, null);
-        Mockito.verify(listener2, Mockito.times(1)).onSubscribe(url, null);
+        Mockito.verify(listener1, Mockito.times(1)).onSubscribe(url, SimpleRegistryFactory.registry);
+        Mockito.verify(listener2, Mockito.times(1)).onSubscribe(url, SimpleRegistryFactory.registry);
 
         registry.unsubscribe(url, Mockito.mock(NotifyListener.class));
-        Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url, null);
-        Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url, null);
+        Mockito.verify(listener1, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
+        Mockito.verify(listener2, Mockito.times(1)).onUnsubscribe(url, SimpleRegistryFactory.registry);
     }
 
 }

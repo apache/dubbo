@@ -1,22 +1,19 @@
 /*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- *  * Licensed to the Apache Software Foundation (ASF) under one or more
- *  * contributor license agreements.  See the NOTICE file distributed with
- *  * this work for additional information regarding copyright ownership.
- *  * The ASF licenses this file to You under the Apache License, Version 2.0
- *  * (the "License"); you may not use this file except in compliance with
- *  * the License.  You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -37,6 +34,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -192,7 +190,8 @@ public class ServerStream extends AbstractStream implements Stream {
                     convertAttachment(trailers, attachments);
                 }
                 ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                ctx.write(new DefaultHttp2DataFrame(buf));
+                final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
+                ctx.write(data);
                 ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
             } catch (Throwable e) {
                 LOGGER.warn("Exception processing triple message", e);
@@ -216,17 +215,25 @@ public class ServerStream extends AbstractStream implements Stream {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         final List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodName);
-        if (methods == null || methods.isEmpty()) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                    .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
-            return null;
-        }
-        if (methods.size() == 1) {
-            this.methodDescriptor = methods.get(0);
-            setNeedWrap(TripleUtil.needWrapper(this.methodDescriptor.getParameterClasses()));
-        } else {
-            // can not determine which one to invoke when same protobuf method name is used, force wrap it
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+            this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
             setNeedWrap(true);
+        } else if("$echo".equals(methodName)) {
+            this.methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);
+            setNeedWrap(true);
+        }else{
+            if (methods == null || methods.isEmpty()) {
+                responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                        .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));
+                return null;
+            }
+            if (methods.size() == 1) {
+                this.methodDescriptor = methods.get(0);
+                setNeedWrap(TripleUtil.needWrapper(this.methodDescriptor.getParameterClasses()));
+            } else {
+                // can not determine which one to invoke when same protobuf method name is used, force wrap it
+                setNeedWrap(true);
+            }
         }
         if (isNeedWrap()) {
             loadFromURL(getUrl());
@@ -239,9 +246,7 @@ public class ServerStream extends AbstractStream implements Stream {
             if (isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(getData(), TripleWrapper.TripleRequestWrapper.class);
                 setSerializeType(req.getSerializeType());
-                if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
-                    this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
-                } else {
+                if (this.methodDescriptor == null) {
                     String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
                     for (MethodDescriptor method : methods) {
                         if (Arrays.equals(method.getCompatibleParamSignatures(), paramTypes)) {
@@ -272,7 +277,6 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
-        attachments.put(TripleConstant.TRI_CHANNEL_CTX_KEY, ctx);
         inv.setObjectAttachments(attachments);
         return inv;
     }

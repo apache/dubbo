@@ -95,10 +95,13 @@ public interface Constants {
      * The key name for reference URL in register center
      */
     String REFER_KEY = "refer";
+
     /**
      * The key name for export URL in register center
      */
     String EXPORT_KEY = "export";
+
+    String PEER_KEY = "peer";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
 }
