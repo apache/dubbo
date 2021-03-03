@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
@@ -64,6 +65,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private void onContextClosedEvent(ContextClosedEvent event) {
         dubboBootstrap.stop();
+        DubboShutdownHook.getDubboShutdownHook().doDestroy();
     }
 
     @Override
