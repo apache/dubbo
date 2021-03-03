@@ -47,8 +47,6 @@ import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 
 import java.io.IOException;
 import java.io.InputStream;

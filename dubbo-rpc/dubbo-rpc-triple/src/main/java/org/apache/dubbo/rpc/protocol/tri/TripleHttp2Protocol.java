@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2FrameCodec;
