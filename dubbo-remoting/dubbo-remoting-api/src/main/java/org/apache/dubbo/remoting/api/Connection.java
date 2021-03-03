@@ -34,7 +34,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
