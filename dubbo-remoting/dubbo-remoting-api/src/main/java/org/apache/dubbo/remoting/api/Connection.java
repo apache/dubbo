@@ -34,7 +34,6 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.DefaultChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
@@ -99,7 +98,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 .remoteAddress(getConnectAddress())
                 .channel(socketChannelClass());
 
-        final ConnectionHandler connectionHandler = new ConnectionHandler(this,bootstrap, TIMER);
+        final ConnectionHandler connectionHandler = new ConnectionHandler(this, bootstrap, TIMER);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 

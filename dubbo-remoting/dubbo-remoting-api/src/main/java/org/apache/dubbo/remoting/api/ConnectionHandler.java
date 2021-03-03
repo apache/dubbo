@@ -51,7 +51,8 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         this.timer = timer;
 
     }
-    public ChannelPromise connect(){
+
+    public ChannelPromise connect() {
         final ChannelFuture init = bootstrap.connect();
         final DefaultChannelPromise promise = new DefaultChannelPromise(init.channel());
         init.addListener(future -> {
