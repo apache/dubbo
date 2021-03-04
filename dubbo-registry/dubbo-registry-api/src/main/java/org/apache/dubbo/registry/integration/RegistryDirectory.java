@@ -463,7 +463,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (deleted != null) {
             for (URL url : deleted) {
                 if (url != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(url);
+                    Invoker<T> invoker = oldUrlInvokerMap.get(url);
                     if (invoker != null) {
                         try {
                             invoker.destroy();
@@ -540,10 +540,14 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
+            try {
+                for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
+                    if (entry.getValue().isAvailable()) {
+                        return true;
+                    }
                 }
+            }catch (Throwable throwable){
+                return true;
             }
         }
         return false;
