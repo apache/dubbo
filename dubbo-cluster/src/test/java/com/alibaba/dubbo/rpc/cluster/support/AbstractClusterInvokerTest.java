@@ -33,7 +33,6 @@ import com.alibaba.dubbo.rpc.cluster.filter.DemoService;
 import com.alibaba.dubbo.rpc.cluster.loadbalance.LeastActiveLoadBalance;
 import com.alibaba.dubbo.rpc.cluster.loadbalance.RandomLoadBalance;
 import com.alibaba.dubbo.rpc.cluster.loadbalance.RoundRobinLoadBalance;
-
 import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
