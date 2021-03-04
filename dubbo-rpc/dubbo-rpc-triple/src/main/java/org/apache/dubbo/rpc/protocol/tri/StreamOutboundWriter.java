@@ -1,6 +1,5 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
-
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -15,8 +14,8 @@ public class StreamOutboundWriter implements StreamObserver<Object> {
     }
 
     @Override
-    public void onNext(Object o) {
-        stream.writeObjectOut(o);
+    public void onNext(Object o) throws Exception {
+        stream.write(o, null);
     }
 
     @Override

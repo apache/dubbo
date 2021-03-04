@@ -25,7 +25,7 @@ public interface Stream {
 
     void onHeaders(Http2Headers headers);
 
-    void onData(InputStream in);
+    void onData(InputStream in) throws Exception;
 
     void onError(GrpcStatus status);
 

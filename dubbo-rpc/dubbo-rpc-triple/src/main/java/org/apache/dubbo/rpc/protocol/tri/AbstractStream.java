@@ -116,14 +116,15 @@ public abstract class AbstractStream implements Stream {
     }
 
     @Override
-    public void onData(InputStream in) {
-        //if (data != null) {
-        //    responseErr(ctx, TOO_MANY_DATA);
-        //    return;
-        //}
-
-        this.datas.add(in);
+    public void onData(InputStream in) throws Exception {
+        //TODO requestN n>1 notify onNext(request)
+        if (false) {
+            this.datas.add(in);
+        } else {
+            onSingleMessage(in);
+        }
     }
+    protected abstract void onSingleMessage(InputStream in) throws Exception;
 
     public void onHeaders(Http2Headers headers) {
         if (this.headers == null) {

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -55,7 +56,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-    public static final AttributeKey<ResponseObserverProcessor> SERVER_STREAM_PROCESSOR_KEY = AttributeKey.newInstance("tri_server_stream_processor");
+    public static final AttributeKey<StreamObserver<Object>> SERVER_STREAM_PROCESSOR_KEY = AttributeKey.newInstance("tri_server_stream_processor");
     public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();

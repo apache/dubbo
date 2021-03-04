@@ -16,8 +16,12 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import com.google.protobuf.Message;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.service.EchoService;
+import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -42,7 +46,8 @@ public class MethodDescriptor {
     private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
-    private boolean noPubStream;
+    private final boolean stream;
+    private final boolean needWrap;
 
     public MethodDescriptor(Method method) {
         this.method = method;
@@ -50,11 +55,11 @@ public class MethodDescriptor {
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{(Class<?>)((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
             this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-            noPubStream = true;
+            stream = true;
         } else {
             this.parameterClasses = method.getParameterTypes();
             this.returnClass = method.getReturnType();
-            noPubStream = false;
+            stream = false;
         }
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
@@ -63,10 +68,28 @@ public class MethodDescriptor {
                 .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
+        this.needWrap = needWrap();
     }
 
-    public boolean isNoPubStream() {
-        return noPubStream;
+    public boolean isStream() {
+        return stream;
+    }
+
+    private boolean needWrap() {
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+            return true;
+        } else if ("$echo".equals(methodName)) {
+            return true;
+        } else {
+            if (parameterClasses.length != 1) {
+                return true;
+            }
+            return !Message.class.isAssignableFrom(parameterClasses[0]);
+        }
+    }
+
+    public boolean isNeedWrap() {
+        return needWrap;
     }
 
     private static boolean isStreamType(Class<?> clz) {
