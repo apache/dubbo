@@ -35,6 +35,7 @@ import java.io.Writer;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class IOUtilsTest {
     @Rule
@@ -107,7 +108,7 @@ public class IOUtilsTest {
     public void testWriteLines() throws Exception {
         IOUtils.writeLines(os, new String[]{TEXT});
         ByteArrayOutputStream bos = (ByteArrayOutputStream) os;
-        assertThat(new String(bos.toByteArray()), equalTo(TEXT + "\n"));
+        assertTrue(new String(bos.toByteArray()).contains(TEXT + "\n"));
     }
 
     @Test
