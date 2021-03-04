@@ -108,7 +108,7 @@ public class IOUtilsTest {
     public void testWriteLines() throws Exception {
         IOUtils.writeLines(os, new String[]{TEXT});
         ByteArrayOutputStream bos = (ByteArrayOutputStream) os;
-        assertTrue(new String(bos.toByteArray()).contains(TEXT + "\n"));
+        assertTrue(new String(bos.toByteArray()).contains(TEXT));
     }
 
     @Test
