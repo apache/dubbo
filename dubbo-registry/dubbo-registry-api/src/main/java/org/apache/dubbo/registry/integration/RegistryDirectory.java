@@ -450,9 +450,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         // check deleted invoker
         List<URL> deleted = null;
         if (oldUrlInvokerMap != null) {
-            Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
             for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newInvokers.contains(entry.getValue())) {
+                if (!newUrlInvokerMap.containsKey(entry.getKey())) {
                     if (deleted == null) {
                         deleted = new ArrayList<>();
                     }
