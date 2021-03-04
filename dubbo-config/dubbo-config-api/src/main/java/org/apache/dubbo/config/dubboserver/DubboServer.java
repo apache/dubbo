@@ -157,7 +157,7 @@ public class DubboServer extends GenericEventListener {
 
     private static volatile DubboServer instance;
 
-    private final DubboBootstrap dubboBootstrap;
+    private static volatile DubboBootstrap dubboBootstrap;
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
@@ -215,14 +215,16 @@ public class DubboServer extends GenericEventListener {
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboServer is designed to be singleton.
      */
-    public static DubboServer getInstance(DubboBootstrap dubboBootstrap) {
+    public static DubboServer getInstance() {
         if (instance == null) {
             synchronized (DubboServer.class) {
                 if (instance == null) {
-                    instance = new DubboServer(dubboBootstrap);
+                    instance = new DubboServer();
                 }
             }
+            dubboBootstrap = DubboBootstrap.getInstance();
         }
+
         return instance;
     }
 
@@ -230,7 +232,7 @@ public class DubboServer extends GenericEventListener {
         return dubboBootstrap.getApplication();
     }
 
-    private DubboServer(DubboBootstrap dubboBootstrap) {
+    private DubboServer() {
         configManager = ApplicationModel.getConfigManager();
 
         DubboShutdownHook.getDubboShutdownHook().register();
@@ -240,8 +242,6 @@ public class DubboServer extends GenericEventListener {
                 DubboServer.this.destroy();
             }
         });
-
-        this.dubboBootstrap = dubboBootstrap;
     }
 
     public void unRegisterShutdownHook() {
@@ -479,7 +479,7 @@ public class DubboServer extends GenericEventListener {
         }
 
         //use local variables to resonate with init() copied from ReferenceConfig
-        DubboBootstrap dubboBootstrap = referenceConfig.getDubboBootstrap();
+//        DubboBootstrap dubboBootstrap = referenceConfig.getDubboBootstrap();
         if (dubboBootstrap == null) {
             dubboBootstrap = DubboBootstrap.getInstance();
             dubboBootstrap.initialize();
@@ -1050,13 +1050,13 @@ public class DubboServer extends GenericEventListener {
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
-                    sc.export();
+                    export4ServiceConfig((ServiceConfig)sc);
                     exportedServices.add(sc);
                 });
                 asyncExportingFutures.add(future);
                 serviceConfigBase2AsyncExportingFutures.put(sc, future);
             } else {
-                sc.export();
+                export4ServiceConfig((ServiceConfig)sc);
                 exportedServices.add(sc);
             }
         }

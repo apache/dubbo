@@ -109,11 +109,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     private static volatile DubboBootstrap instance;
 
+    private static volatile DubboServer dubboServer;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ConfigManager configManager;
-
-    private final DubboServer dubboServer;
 
     private final Environment environment;
 
@@ -129,6 +129,8 @@ public class DubboBootstrap extends GenericEventListener {
                     instance = new DubboBootstrap();
                 }
             }
+            //Is this the best way to get the singleton instance
+            dubboServer = DubboServer.getInstance();
         }
         return instance;
     }
@@ -137,8 +139,6 @@ public class DubboBootstrap extends GenericEventListener {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
 
-        //Is this the best way to get the singleton instance
-        dubboServer = DubboServer.getInstance(this);
 
     }
 
