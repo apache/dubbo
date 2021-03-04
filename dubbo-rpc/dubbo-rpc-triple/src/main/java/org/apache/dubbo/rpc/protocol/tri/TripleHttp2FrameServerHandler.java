@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -52,14 +53,15 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextErro
 
 public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2FrameServerHandler.class);
-    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
+    private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
+        .getDefaultExtension();
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
-            onHeadersRead(ctx, (Http2HeadersFrame) msg);
+            onHeadersRead(ctx, (Http2HeadersFrame)msg);
         } else if (msg instanceof Http2DataFrame) {
-            onDataRead(ctx, (Http2DataFrame) msg);
+            onDataRead(ctx, (Http2DataFrame)msg);
         } else if (msg instanceof Http2Frame) {
             // ignored
             ReferenceCountUtil.release(msg);
@@ -74,10 +76,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             LOGGER.warn("Exception in processing triple message", cause);
         }
         if (cause instanceof TripleRpcException) {
-            TripleUtil.responseErr(ctx, ((TripleRpcException) cause).getStatus());
+            TripleUtil.responseErr(ctx, ((TripleRpcException)cause).getStatus());
         } else {
             TripleUtil.responseErr(ctx, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Provider's error:\n" + cause.getMessage()));
+                .withDescription("Provider's error:\n" + cause.getMessage()));
         }
     }
 
@@ -94,8 +96,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     }
 
     private Invoker<?> getInvoker(Http2Headers headers, String serviceName) {
-        final String version = headers.contains(TripleConstant.SERVICE_VERSION) ? headers.get(TripleConstant.SERVICE_VERSION).toString() : null;
-        final String group = headers.contains(TripleConstant.SERVICE_GROUP) ? headers.get(TripleConstant.SERVICE_GROUP).toString() : null;
+        final String version = headers.contains(TripleConstant.SERVICE_VERSION) ? headers.get(
+            TripleConstant.SERVICE_VERSION).toString() : null;
+        final String group = headers.contains(TripleConstant.SERVICE_GROUP) ? headers.get(TripleConstant.SERVICE_GROUP)
+            .toString() : null;
         final String key = URL.buildKey(serviceName, group, version);
         Invoker<?> invoker = PATH_RESOLVER.resolve(key);
         if (invoker == null) {
@@ -108,33 +112,38 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         final Http2Headers headers = msg.headers();
 
         if (!HttpMethod.POST.asciiName().contentEquals(headers.method())) {
-            responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(), GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+            responsePlainTextError(ctx, HttpResponseStatus.METHOD_NOT_ALLOWED.code(),
+                GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription(String.format("Method '%s' is not supported", headers.method())));
             return;
         }
 
         if (headers.path() == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
+            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
+                GrpcStatus.fromCode(Code.UNIMPLEMENTED.code).withDescription("Expected path but is missing"));
             return;
         }
 
         final String path = headers.path().toString();
         if (path.charAt(0) != '/') {
-            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(), GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
+            responsePlainTextError(ctx, HttpResponseStatus.NOT_FOUND.code(),
+                GrpcStatus.fromCode(Code.UNIMPLEMENTED.code)
                     .withDescription(String.format("Expected path to start with /: %s", path)));
             return;
         }
 
         final CharSequence contentType = HttpUtil.getMimeType(headers.get(HttpHeaderNames.CONTENT_TYPE));
         if (contentType == null) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
+            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL.code)
                     .withDescription("Content-Type is missing from the request"));
             return;
         }
 
         final String contentString = contentType.toString();
         if (!TripleUtil.supportContentType(contentString)) {
-            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(), GrpcStatus.fromCode(Code.INTERNAL.code)
+            responsePlainTextError(ctx, HttpResponseStatus.UNSUPPORTED_MEDIA_TYPE.code(),
+                GrpcStatus.fromCode(Code.INTERNAL.code)
                     .withDescription(String.format("Content-Type '%s' is not supported", contentString)));
             return;
         }
@@ -146,37 +155,33 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         final Invoker<?> delegateInvoker = getInvoker(headers, serviceName);
         if (delegateInvoker == null) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            responseErr(ctx,
+                GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         final ServiceDescriptor descriptor = repo.lookupService(delegateInvoker.getUrl().getServiceKey());
         if (descriptor == null) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            responseErr(ctx,
+                GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
 
-        MethodDescriptor md=null;
+        MethodDescriptor md = null;
         List<MethodDescriptor> methodDescriptors = descriptor.getMethods(methodName);
         if (methodDescriptors.size() != 1) {
-            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+            responseErr(ctx,
+                GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
         md = methodDescriptors.get(0);
 
         if (md.isStream()) {
             final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, md, ctx);
-            // 往netty写数据，server impl.onNext
-            StreamOutboundWriter streamOutboundWriter = new StreamOutboundWriter(serverStream);
-            RpcInvocation inv = new RpcInvocation();//streamOutboundWriter
-            inv.setArguments(new Object[] {streamOutboundWriter});
-            inv.setMethodName(methodName);
-            inv.setServiceName(serviceName);
-            inv.setTargetServiceUniqueName(serviceName);
-            inv.setParameterTypes(new Class[] {StreamObserver.class});
-            inv.setReturnTypes(new Class[] {StreamObserver.class});
+            Invocation inv = serverStream.buildInvocation();
             Result result = delegateInvoker.invoke(inv);
-            final StreamObserver<Object> resp = (StreamObserver<Object>)result.get().getValue();
+            final StreamObserver<Object> resp = new ServerInboundObserver(
+                (StreamObserver<Object>)result.get().getValue(), md);
             ctx.channel().attr(TripleUtil.SERVER_STREAM_PROCESSOR_KEY).set(resp);
 
             serverStream.onHeaders(headers);

@@ -72,6 +72,7 @@ public class ServerStream extends AbstractStream implements Stream {
     private final ProviderModel providerModel;
     private MethodDescriptor md;
     private volatile boolean headerSent = false;
+    private ServerInboundObserver observer;
 
 
     public ServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
@@ -87,13 +88,8 @@ public class ServerStream extends AbstractStream implements Stream {
     @Override
     protected void onSingleMessage(InputStream in) throws Exception {
         if(md.isStream()){
-            final Object[] resp = decodeRequestMessage(in);
             final StreamObserver<Object> observer = ctx.channel().attr(TripleUtil.SERVER_STREAM_PROCESSOR_KEY).get();
-            // TODO do not support multiple arguments for stream
-            if (resp.length >= 1) {
-                return;
-            }
-            observer.onNext(resp);
+            observer.onNext(in);
         }
     }
 
@@ -231,7 +227,7 @@ public class ServerStream extends AbstractStream implements Stream {
     }
 
 
-    private Invocation buildInvocation() {
+    public Invocation buildInvocation() {
         final List<MethodDescriptor> methods = serviceDescriptor.getMethods(md.getMethodName());
         if (methods == null || methods.isEmpty()) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
@@ -255,37 +251,28 @@ public class ServerStream extends AbstractStream implements Stream {
 
         InputStream is = pollData();
         try {
-            inv.setArguments(decodeRequestMessage(is));
+            if (providerModel != null) {
+                ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
+            }
+
+            inv.setArguments(observer.decodeRequestMessage(is));
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
         inv.setMethodName(md.getMethodName());
         inv.setServiceName(serviceDescriptor.getServiceName());
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-        inv.setParameterTypes(md.getParameterClasses());
-        inv.setReturnTypes(md.getReturnTypes());
+        if (md.isStream()) {
+            StreamOutboundWriter streamOutboundWriter = new StreamOutboundWriter(this);
+            inv.setParameterTypes(new Class[] {StreamObserver.class});
+            inv.setReturnTypes(new Class[] {StreamObserver.class});
+        } else {
+            inv.setParameterTypes(md.getParameterClasses());
+            inv.setReturnTypes(md.getReturnTypes());
+        }
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
         inv.setObjectAttachments(attachments);
         return inv;
-    }
-
-    private Object[] decodeRequestMessage(InputStream is) {
-        if (providerModel != null) {
-            ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
-        }
-        if (isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(is, TripleWrapper.TripleRequestWrapper.class);
-            setSerializeType(req.getSerializeType());
-            String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
-            if (!Arrays.equals(this.md.getCompatibleParamSignatures(), paramTypes)) {
-                //todo error
-            }
-            final Object[] arguments = TripleUtil.unwrapReq(getUrl(), req, getMultipleSerialization());
-            return arguments;
-        } else {
-            final Object req = TripleUtil.unpack(pollData(), md.getParameterClasses()[0]);
-            return new Object[]{req};
-        }
     }
 
     public void onComplete() {
