@@ -203,5 +203,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
     public void incrementAndGetCount() {
         referenceCount.incrementAndGet();
     }
+
+    public int getCount(){
+        return referenceCount.get();
+    }
 }
 
