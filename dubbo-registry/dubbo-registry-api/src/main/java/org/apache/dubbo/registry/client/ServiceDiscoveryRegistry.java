@@ -323,26 +323,22 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceToAppsMapping.put(protocolServiceKey, serviceNamesKey);
 
         // register ServiceInstancesChangedListener
-        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
-                k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
-        serviceListener.setUrl(url);
-        listener.addServiceListener(serviceListener);
-
-        serviceListener.addListener(protocolServiceKey, listener);
-        registerServiceInstancesChangedListener(url, serviceListener);
-
-
-        serviceNames.forEach(serviceName -> {
-            List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-            if (CollectionUtils.isNotEmpty(serviceInstances)) {
-                serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
-            } else {
-                logger.info("getInstances by serviceName=" + serviceName + " is empty, waiting for serviceListener callback. url=" + url);
-            }
+        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey, k -> {
+            ServiceInstancesChangedListener serviceInstancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+            serviceInstancesChangedListener.setUrl(url);
+            serviceNames.forEach(serviceName -> {
+                List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+                if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                    serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                }
+            });
+            return serviceInstancesChangedListener;
         });
 
-        listener.notify(serviceListener.getUrls(protocolServiceKey));
-
+        serviceListener.setUrl(url);
+        listener.addServiceListener(serviceListener);
+        serviceListener.addListenerAndNotify(protocolServiceKey, listener);
+        registerServiceInstancesChangedListener(url, serviceListener);
     }
 
     /**

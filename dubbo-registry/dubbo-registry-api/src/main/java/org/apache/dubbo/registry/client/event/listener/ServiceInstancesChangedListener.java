@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client.event.listener;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -185,6 +186,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
         return metadataInfo;
+    }
+
+    public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
+        this.listeners.put(serviceKey, listener);
+        List<URL> urls = this.serviceUrls.get(serviceKey);
+        if (CollectionUtils.isNotEmpty(urls)) {
+            listener.notify(urls);
+        }
     }
 
     private void notifyAddressChanged() {
