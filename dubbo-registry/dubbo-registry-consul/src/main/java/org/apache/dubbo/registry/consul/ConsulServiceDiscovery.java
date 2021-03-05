@@ -77,8 +77,6 @@ import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
  */
 public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
-
     private static final String QUERY_TAG = "consul_query_tag";
     private static final String REGISTER_TAG = "consul_register_tag";
 

@@ -1,6 +1,7 @@
 # Apache Dubbo Project
 
 [![Build Status](https://github.com/apache/dubbo/workflows/Build%20and%20Test/badge.svg?branch=master)](https://github.com/apache/dubbo/actions/workflows/build-and-test.yml?query=branch%3Amaster+)
+[![Build Status](https://api.travis-ci.com/apache/dubbo.svg?branch=master)](https://travis-ci.com/github/apache/dubbo)
 [![Codecov](https://codecov.io/gh/apache/dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 ![Maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![License](https://img.shields.io/github/license/alibaba/dubbo.svg)

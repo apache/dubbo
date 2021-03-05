@@ -46,6 +46,14 @@
             <artifactId>embedded-consul</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- Could be removed once embedded-consul:2.2.1 is released
+             See https://github.com/pszymczyk/embedded-consul/pull/114
+             -->
+            <groupId>org.codehaus.groovy</groupId>
+            <artifactId>groovy-xml</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
