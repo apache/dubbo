@@ -18,15 +18,13 @@ package com.alibaba.dubbo.rpc.cluster.router.tag;
 
 import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
-import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.dubbo.rpc.RpcInvocation;
 import com.alibaba.dubbo.rpc.cluster.Router;
-import com.alibaba.dubbo.rpc.cluster.RouterFactory;
 import com.alibaba.dubbo.rpc.cluster.router.MockInvoker;
-
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -43,6 +41,12 @@ public class TagRouterTest {
 
     @Before
     public void setUp() throws Exception {
+        RpcContext.getContext().clearAttachments();
+    }
+
+    @After
+    public void after() {
+        RpcContext.getContext().clearAttachments();
     }
 
     @Test
@@ -70,6 +74,7 @@ public class TagRouterTest {
         Assert.assertFalse(filteredInvokers.contains(yellowInvoker));
         Assert.assertFalse(filteredInvokers.contains(blueInvoker));
         Assert.assertFalse(filteredInvokers.contains(defaultInvoker));
+
     }
 
     @Test
