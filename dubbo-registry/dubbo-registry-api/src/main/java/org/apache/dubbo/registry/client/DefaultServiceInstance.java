@@ -174,8 +174,12 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DefaultServiceInstance)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DefaultServiceInstance)) {
+            return false;
+        }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
         boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
@@ -184,7 +188,7 @@ public class DefaultServiceInstance implements ServiceInstance {
             if (entry.getKey().equals(REVISION_KEY)) {
                 continue;
             }
-            equals = equals && !entry.getValue().equals(that.getMetadata().get(entry.getKey()));
+            equals = equals && entry.getValue().equals(that.getMetadata().get(entry.getKey()));
         }
 
         return equals;

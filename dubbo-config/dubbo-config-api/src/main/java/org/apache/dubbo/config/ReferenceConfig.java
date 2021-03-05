@@ -231,9 +231,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             return;
         }
 
+
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            bootstrap.init();
+            bootstrap.initialize();
         }
 
         checkAndUpdateSubConfigs();
@@ -423,11 +424,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs(consumer);
-        if (consumer != null) {
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(consumer.getRegistryIds());
-            }
-        }
         // get consumer's global configuration
         checkDefault();
 
@@ -452,12 +448,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
-        //init serivceMetadata
-        serviceMetadata.setVersion(getVersion());
-        serviceMetadata.setGroup(getGroup());
-        serviceMetadata.setDefaultGroup(getGroup());
+        initServiceMetadata(consumer);
         serviceMetadata.setServiceType(getActualInterface());
-        serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 

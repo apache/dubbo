@@ -151,7 +151,7 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         verifyInvokerUrlGeneration(consumerConf, consumerConfTable);
     }
 
-    @Test
+    //@Test
     public void refConfUrlTest() {
         verifyInvokerUrlGeneration(refConf, refConfTable);
     }
