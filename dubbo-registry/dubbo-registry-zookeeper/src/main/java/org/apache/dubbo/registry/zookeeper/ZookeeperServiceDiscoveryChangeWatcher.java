@@ -60,7 +60,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
             if (shouldKeepWatching()) {
                 listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
                 zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
-                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+//                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
             }
         }
     }

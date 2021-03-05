@@ -18,9 +18,9 @@ package org.apache.dubbo.registry.multiple;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
@@ -51,11 +52,26 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
             if (key.startsWith(REGISTRY_PREFIX_KEY)) {
                 URL url = URL.valueOf(registryURL.getParameter(key)).addParameter(CommonConstants.APPLICATION_KEY, applicationName)
                         .addParameter("registry-type", "service");
-                ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
-                serviceDiscovery.initialize(url);
-                serviceDiscoveries.put(key, serviceDiscovery);
+                if (!contains(serviceDiscoveries, url)) {
+                    ServiceDiscovery serviceDiscovery = ServiceDiscoveryFactory.getExtension(url).getServiceDiscovery(url);
+                    serviceDiscovery.initialize(url);
+                    serviceDiscoveries.put(key, serviceDiscovery);
+                }
             }
         }
+    }
+
+    private boolean contains(Map<String, ServiceDiscovery> serviceDiscoveries, URL url) {
+        if (CollectionUtils.isEmptyMap(serviceDiscoveries)) {
+            return false;
+        }
+
+        for (Map.Entry<String, ServiceDiscovery> entry : serviceDiscoveries.entrySet()) {
+            if (entry.getValue().getUrl().equals(url)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -86,15 +102,21 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.unregister(serviceInstance));
     }
 
-    @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        MultiServiceInstancesChangedListener multiListener = new MultiServiceInstancesChangedListener(listener);
+        MultiServiceInstancesChangedListener multiListener = (MultiServiceInstancesChangedListener) listener;
 
         for (String registryKey : serviceDiscoveries.keySet()) {
-            SingleServiceInstancesChangedListener singleListener = new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscoveries.get(registryKey), multiListener);
-            multiListener.putSingleListener(registryKey, singleListener);
-            serviceDiscoveries.get(registryKey).addServiceInstancesChangedListener(singleListener);
+            ServiceDiscovery serviceDiscovery = serviceDiscoveries.get(registryKey);
+            SingleServiceInstancesChangedListener singleListener = multiListener.getAndComputeIfAbsent(registryKey, k -> {
+                return new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscovery, multiListener);
+            });
+            serviceDiscovery.addServiceInstancesChangedListener(singleListener);
         }
+    }
+
+    @Override
+    public ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new MultiServiceInstancesChangedListener(serviceNames, this);
     }
 
     @Override
@@ -102,7 +124,7 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
 
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
-            Page<ServiceInstance> serviceInstancePage =  serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
+            Page<ServiceInstance> serviceInstancePage = serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
             serviceInstanceList.addAll(serviceInstancePage.getData());
         }
 
@@ -123,37 +145,40 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         return serviceInstance;
     }
 
-    protected  static class MultiServiceInstancesChangedListener  implements ConditionalEventListener<ServiceInstancesChangedEvent> {
-        private final ServiceInstancesChangedListener sourceListener;
-        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap = new ConcurrentHashMap<>();
+    protected static class MultiServiceInstancesChangedListener extends ServiceInstancesChangedListener {
+        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap;
 
-        public MultiServiceInstancesChangedListener(ServiceInstancesChangedListener sourceListener) {
-            this.sourceListener = sourceListener;
-        }
-
-        @Override
-        public boolean accept(ServiceInstancesChangedEvent event) {
-            return sourceListener.getServiceNames().contains(event.getServiceName());
+        public MultiServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
+            super(serviceNames, serviceDiscovery);
+            this.singleListenerMap = new ConcurrentHashMap<>();
         }
 
         @Override
         public void onEvent(ServiceInstancesChangedEvent event) {
-            List<ServiceInstance> serviceInstances = new ArrayList<>();
-            for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
-                if (null != singleListener.event && null != singleListener.event.getServiceInstances()) {
-                    for (ServiceInstance serviceInstance: singleListener.event.getServiceInstances()) {
-                        if (!serviceInstances.contains(serviceInstance)) {
-                            serviceInstances.add(serviceInstance);
+            if (event instanceof SingleServiceInstancesChangedListener.SingleServiceInstancesChangedEvent) {
+                List<ServiceInstance> serviceInstances = new ArrayList<>();
+                for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
+                    if (null != singleListener.event && null != singleListener.event.getServiceInstances()) {
+                        for (ServiceInstance serviceInstance : singleListener.event.getServiceInstances()) {
+                            if (!serviceInstances.contains(serviceInstance)) {
+                                serviceInstances.add(serviceInstance);
+                            }
                         }
                     }
                 }
-            }
 
-            sourceListener.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
+                super.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
+            } else {
+                super.onEvent(event);
+            }
         }
 
         public void putSingleListener(String registryKey, SingleServiceInstancesChangedListener singleListener) {
             singleListenerMap.put(registryKey, singleListener);
+        }
+
+        public SingleServiceInstancesChangedListener getAndComputeIfAbsent(String registryKey, Function<String, SingleServiceInstancesChangedListener> func) {
+            return singleListenerMap.computeIfAbsent(registryKey, func);
         }
     }
 
@@ -170,7 +195,17 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         public void onEvent(ServiceInstancesChangedEvent event) {
             this.event = event;
             if (multiListener != null) {
-                multiListener.onEvent(event);
+                multiListener.onEvent(new SingleServiceInstancesChangedEvent(event));
+            }
+        }
+
+        static class SingleServiceInstancesChangedEvent extends ServiceInstancesChangedEvent {
+            public SingleServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
+                this(event.getServiceName(), event.getServiceInstances());
+            }
+
+            public SingleServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
+                super(serviceName, serviceInstances);
             }
         }
     }

@@ -216,8 +216,13 @@ public interface ServiceDiscovery extends Prioritized {
             throws NullPointerException, IllegalArgumentException {
     }
 
+    default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new ServiceInstancesChangedListener(serviceNames, this);
+    }
+
     /**
      * unsubscribe to instances change event.
+     *
      * @param listener
      * @throws IllegalArgumentException
      */
