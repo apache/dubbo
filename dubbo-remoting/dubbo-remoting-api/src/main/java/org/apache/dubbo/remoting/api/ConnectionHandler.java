@@ -31,6 +31,7 @@ import io.netty.channel.DefaultChannelPromise;
 import io.netty.util.AttributeKey;
 import io.netty.util.Timer;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 @ChannelHandler.Sharable
@@ -43,6 +44,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     private final Timer timer;
     private final Bootstrap bootstrap;
     private final Connection connection;
+    private final Semaphore permit = new Semaphore(1);
     private volatile long lastReconnect;
 
     public ConnectionHandler(Connection connection, Bootstrap bootstrap, Timer timer) {
@@ -105,7 +107,9 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
             ctx.fireChannelInactive();
             return;
         }
-        tryReconnect(connection);
+        if (connection.getChannel() == null || connection.getChannel().equals(ctx.channel())) {
+            tryReconnect(connection);
+        }
         ctx.fireChannelInactive();
     }
 
@@ -115,7 +119,7 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
                 if (log.isInfoEnabled()) {
                     log.info(String.format("Connection %s inactive, schedule fast reconnect", connection));
                 }
-                reconnect(connection, 1);
+                reconnect(connection, 4);
             } else {
                 if (log.isInfoEnabled()) {
                     log.info(String.format("Connection %s inactive, schedule normal reconnect", connection));
@@ -134,11 +138,14 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         }
 
         int nextAttempt = Math.min(BACKOFF_CAP, attempts + 1);
-        timer.newTimeout(timeout1 -> tryReconnect(connection, nextAttempt), timeout, TimeUnit.MILLISECONDS);
+        if (permit.tryAcquire()) {
+            timer.newTimeout(timeout1 -> tryReconnect(connection, nextAttempt), timeout, TimeUnit.MILLISECONDS);
+        }
     }
 
 
     private void tryReconnect(final Connection connection, final int nextAttempt) {
+        permit.release();
 
         if (connection.isClosed() || bootstrap.config().group().isShuttingDown()) {
             return;
@@ -162,7 +169,11 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
             if (future.isSuccess()) {
                 final Channel channel = future.channel();
                 if (!connection.isClosed()) {
-                    connection.onConnected(channel);
+                    if (connection.getChannel() == null || !connection.getChannel().isActive()) {
+                        connection.onConnected(channel);
+                    } else {
+                        channel.close();
+                    }
                 } else {
                     channel.close();
                 }
