@@ -20,18 +20,18 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Map;
 
@@ -40,7 +40,7 @@ import java.util.Map;
  *
  * @since 2.7.7
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
                 ServiceAnnotationTestConfiguration2.class,
@@ -50,14 +50,15 @@ import java.util.Map;
         "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
         "packagesToScan = ${provider.package}",
 })
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceClassPostProcessorTest {
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @After
+    @BeforeEach
     public void tearDown() {
         ApplicationModel.reset();
     }
@@ -76,19 +77,19 @@ public class ServiceClassPostProcessorTest {
 
         Map<String, HelloService> helloServicesMap = beanFactory.getBeansOfType(HelloService.class);
 
-        Assert.assertEquals(2, helloServicesMap.size());
+        Assertions.assertEquals(2, helloServicesMap.size());
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 
-        Assert.assertEquals(2, serviceBeansMap.size());
+        Assertions.assertEquals(2, serviceBeansMap.size());
 
         Map<String, ServiceClassPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceClassPostProcessor.class);
 
-        Assert.assertEquals(2, beanPostProcessorsMap.size());
+        Assertions.assertEquals(2, beanPostProcessorsMap.size());
 
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor"));
-        Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor2"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor"));
+        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor2"));
 
     }
 
@@ -97,11 +98,11 @@ public class ServiceClassPostProcessorTest {
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 
-        Assert.assertEquals(2, serviceBeansMap.size());
+        Assertions.assertEquals(2, serviceBeansMap.size());
 
         ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
 
-        Assert.assertNotNull(demoServiceBean.getMethods());
+        Assertions.assertNotNull(demoServiceBean.getMethods());
 
     }
 

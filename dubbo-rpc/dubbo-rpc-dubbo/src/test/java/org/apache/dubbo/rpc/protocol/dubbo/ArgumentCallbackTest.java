@@ -109,9 +109,10 @@ public class ArgumentCallbackTest {
     @Test
     public void TestCallbackNormalWithBindPort() throws Exception {
         initOrResetUrl(1, 10000000);
-        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY,"7653");
+        int port = NetUtils.getAvailablePort();
+        consumerUrl = serviceURL.addParameter(Constants.BIND_PORT_KEY, port);
         initOrResetService();
-       
+
         final AtomicInteger count = new AtomicInteger(0);
 
         demoProxy.xxx(new IDemoCallback() {
@@ -316,12 +317,12 @@ public class ArgumentCallbackTest {
             Thread t = new Thread(new Runnable() {
                 public void run() {
                     for (int i = 0; i < runs; i++) {
-                        String ret = callback.yyy("server invoke callback : arg:" + System.currentTimeMillis());
-                        System.out.println("callback result is :" + ret);
                         try {
+                            String ret = callback.yyy("server invoke callback : arg:" + System.currentTimeMillis());
+                            System.out.println("callback result is :" + ret);
                             Thread.sleep(sleep);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        } catch (Exception e) {
+                            // ignore daemon thread error
                         }
                     }
                 }
@@ -355,7 +356,6 @@ public class ArgumentCallbackTest {
                                         try {
                                             callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
                                         } catch (Exception e) {
-                                            e.printStackTrace();
                                             callbacks.remove(callback);
                                         }
                                     }

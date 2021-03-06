@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceMetadata;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,21 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private static final long serialVersionUID = -1559314110797223229L;
 
+    /**
+     * The interface name of the exported service
+     */
+    protected String interfaceName;
+    /**
+     * The remote service version the customer/provider side will reference
+     */
+    protected String version;
+
+    /**
+     * The remote service group the customer/provider side will reference
+     */
+    protected String group;
+    
+    protected ServiceMetadata serviceMetadata;
     /**
      * Local impl class name for the service interface
      */
@@ -280,6 +296,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     RegistryConfig registryConfig = new RegistryConfig();
                     registryConfig.refresh();
                     registryConfigs.add(registryConfig);
+                } else {
+                    registryConfigs = new ArrayList<>(registryConfigs);
                 }
                 setRegistries(registryConfigs);
             }
@@ -310,6 +328,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     }
 
+    protected boolean notHasSelfRegistryProperty() {
+        return CollectionUtils.isEmpty(registries) && StringUtils.isEmpty(registryIds);
+    }
+
     public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
         if (interfaceConfig != null) {
             if (application == null) {
@@ -318,15 +340,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (module == null) {
                 setModule(interfaceConfig.getModule());
             }
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(interfaceConfig.getRegistries());
+                setRegistryIds(interfaceConfig.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(interfaceConfig.getMonitor());
             }
         }
         if (module != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(module.getRegistries());
             }
             if (monitor == null) {
@@ -334,8 +357,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             }
         }
         if (application != null) {
-            if (registries == null) {
+            if (notHasSelfRegistryProperty()) {
                 setRegistries(application.getRegistries());
+                setRegistryIds(application.getRegistryIds());
             }
             if (monitor == null) {
                 setMonitor(application.getMonitor());
@@ -344,10 +368,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
     
     protected void computeValidRegistryIds() {
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getApplication() != null && StringUtils.isNotEmpty(getApplication().getRegistryIds())) {
-                setRegistryIds(getApplication().getRegistryIds());
-            }
+        if (application != null && notHasSelfRegistryProperty()) {
+            setRegistries(application.getRegistries());
+            setRegistryIds(application.getRegistryIds());
         }
     }
 
@@ -449,11 +472,18 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.layer = layer;
     }
 
+    /**
+     * Always use the global ApplicationConfig
+     */
     public ApplicationConfig getApplication() {
-        if (application != null) {
+        ApplicationConfig globalApplication = ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        if (globalApplication == null) {
             return application;
         }
-        return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        if (application != null && !StringUtils.isEquals(application.getName(), globalApplication.getName())) {
+            return application;
+        }
+        return globalApplication;
     }
 
     @Deprecated
@@ -682,5 +712,47 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     public SslConfig getSslConfig() {
         return ApplicationModel.getConfigManager().getSsl().orElse(null);
+    }
+    
+    public void initServiceMetadata(AbstractInterfaceConfig interfaceConfig) {
+        serviceMetadata.setVersion(getVersion(interfaceConfig));
+        serviceMetadata.setGroup(getGroup(interfaceConfig));
+        serviceMetadata.setDefaultGroup(getGroup(interfaceConfig));
+        serviceMetadata.setServiceInterfaceName(getInterface());
+    }
+    
+    public String getGroup(AbstractInterfaceConfig interfaceConfig) {
+        return StringUtils.isEmpty(this.group) ? (interfaceConfig != null ? interfaceConfig.getGroup() : this.group) : this.group;
+    }
+
+    public String getVersion(AbstractInterfaceConfig interfaceConfig) {
+        return StringUtils.isEmpty(this.version) ? (interfaceConfig != null ? interfaceConfig.getVersion() : this.version) : this.version;
+    }
+    
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+    
+    public String getInterface() {
+        return interfaceName;
+    }
+    
+    public void setInterface(String interfaceName) {
+        this.interfaceName = interfaceName;
+//         if (StringUtils.isEmpty(id)) {
+//             id = interfaceName;
+//         }
     }
 }

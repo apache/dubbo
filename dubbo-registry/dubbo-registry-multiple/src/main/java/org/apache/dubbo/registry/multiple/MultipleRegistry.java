@@ -118,7 +118,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public boolean isAvailable() {
-        boolean available = serviceRegistries.isEmpty() ? true : false;
+        boolean available = serviceRegistries.isEmpty();
         for (Registry serviceRegistry : serviceRegistries.values()) {
             if (serviceRegistry.isAvailable()) {
                 available = true;
@@ -128,7 +128,7 @@ public class MultipleRegistry extends AbstractRegistry {
             return false;
         }
 
-        available = referenceRegistries.isEmpty() ? true : false;
+        available = referenceRegistries.isEmpty();
         for (Registry referenceRegistry : referenceRegistries.values()) {
             if (referenceRegistry.isAvailable()) {
                 available = true;

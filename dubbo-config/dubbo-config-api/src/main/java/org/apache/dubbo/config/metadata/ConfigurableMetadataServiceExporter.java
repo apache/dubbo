@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -24,15 +26,12 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
-import org.apache.dubbo.metadata.MetadataServiceType;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
-import static java.util.EnumSet.allOf;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
@@ -50,41 +49,56 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
  * @see ConfigManager
  * @since 2.7.5
  */
-public class ConfigurableMetadataServiceExporter extends AbstractMetadataServiceExporter {
+public class ConfigurableMetadataServiceExporter implements MetadataServiceExporter {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private final MetadataService metadataService;
 
     private volatile ServiceConfig<MetadataService> serviceConfig;
 
-    public ConfigurableMetadataServiceExporter() {
-        super(DEFAULT_METADATA_STORAGE_TYPE, MAX_PRIORITY, allOf(MetadataServiceType.class));
+    public ConfigurableMetadataServiceExporter(MetadataService metadataService) {
+        this.metadataService = metadataService;
     }
 
     @Override
-    protected void doExport() throws Exception {
+    public ConfigurableMetadataServiceExporter export() {
 
-        ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
-        serviceConfig.setApplication(getApplicationConfig());
-        serviceConfig.setRegistries(getRegistries());
-        serviceConfig.setProtocol(generateMetadataProtocol());
-        serviceConfig.setInterface(MetadataService.class);
-        serviceConfig.setRef(metadataService);
-        serviceConfig.setGroup(getApplicationConfig().getName());
-        serviceConfig.setVersion(metadataService.version());
+        if (!isExported()) {
 
-        // export
-        serviceConfig.export();
+            ServiceConfig<MetadataService> serviceConfig = new ServiceConfig<>();
+            serviceConfig.setApplication(getApplicationConfig());
+            serviceConfig.setRegistries(getRegistries());
+            serviceConfig.setProtocol(generateMetadataProtocol());
+            serviceConfig.setInterface(MetadataService.class);
+            serviceConfig.setRef(metadataService);
+            serviceConfig.setGroup(getApplicationConfig().getName());
+            serviceConfig.setVersion(metadataService.version());
 
-        if (logger.isInfoEnabled()) {
-            logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            // export
+            serviceConfig.export();
+
+            if (logger.isInfoEnabled()) {
+                logger.info("The MetadataService exports urls : " + serviceConfig.getExportedUrls());
+            }
+
+            this.serviceConfig = serviceConfig;
+
+        } else {
+            if (logger.isWarnEnabled()) {
+                logger.warn("The MetadataService has been exported : " + serviceConfig.getExportedUrls());
+            }
         }
 
-        this.serviceConfig = serviceConfig;
+        return this;
     }
 
     @Override
-    protected void doUnexport() throws Exception {
-        if (serviceConfig != null) {
+    public ConfigurableMetadataServiceExporter unexport() {
+        if (isExported()) {
             serviceConfig.unexport();
         }
+        return this;
     }
 
     @Override
@@ -94,11 +108,6 @@ public class ConfigurableMetadataServiceExporter extends AbstractMetadataService
 
     public boolean isExported() {
         return serviceConfig != null && serviceConfig.isExported();
-    }
-
-    @Override
-    public int getPriority() {
-        return MAX_PRIORITY;
     }
 
     private ApplicationConfig getApplicationConfig() {
