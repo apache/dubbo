@@ -438,6 +438,13 @@ public class ReflectUtilsTest {
         Assertions.assertEquals("S", types6[1].getTypeName());
     }
 
+    @Test
+    public void testCheckZeroArgConstructor() {
+        assertTrue(ReflectUtils.checkZeroArgConstructor(String.class));
+        assertTrue(ReflectUtils.checkZeroArgConstructor(Bar.class));
+        assertFalse(ReflectUtils.checkZeroArgConstructor(Foo4.class));
+    }
+
     public interface TypeClass<T extends String, S> {
 
         CompletableFuture<String> getFuture();
@@ -539,6 +546,19 @@ public class ReflectUtilsTest {
         @Override
         public Foo1 hello(Foo2 foo2) {
             return null;
+        }
+    }
+
+
+    static class Foo4 {
+        public Foo4(int i) {
+
+        }
+    }
+
+    static class Bar {
+        private Bar() {
+
         }
     }
 

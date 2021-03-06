@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -150,7 +151,7 @@ public class RegistryDirectoryTest {
                 "foo=bar&" + REGISTER_IP_KEY + "=10.20.30.40&" + INTERFACE_KEY + "=" + service);
         RegistryDirectory reg = getRegistryDirectory(url);
         Field field = reg.getClass().getSuperclass().getSuperclass().getDeclaredField("queryMap");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         Map<String, String> queryMap = (Map<String, String>) field.get(reg);
         Assertions.assertEquals("bar", queryMap.get("foo"));
         URL expected = url.setProtocol(DUBBO_PROTOCOL).clearParameters()
