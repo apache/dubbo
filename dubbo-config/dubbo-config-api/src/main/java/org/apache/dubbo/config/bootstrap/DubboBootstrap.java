@@ -172,7 +172,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
-    private AtomicBoolean ready = new AtomicBoolean(true);
+    private AtomicBoolean ready = new AtomicBoolean(false);
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
