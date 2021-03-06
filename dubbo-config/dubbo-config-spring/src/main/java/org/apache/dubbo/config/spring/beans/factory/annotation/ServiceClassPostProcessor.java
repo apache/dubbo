@@ -24,6 +24,7 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 
@@ -67,6 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
@@ -122,6 +124,9 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+
+        // @since 2.7.5
+        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME, DubboBootstrapApplicationListener.class);
 
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
