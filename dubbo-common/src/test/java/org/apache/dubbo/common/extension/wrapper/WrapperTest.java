@@ -14,32 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.dubbo;
+package org.apache.dubbo.common.extension.wrapper;
 
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
+import org.junit.jupiter.api.Test;
 
-import java.util.Map;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * DubboExporter
+ * {@link org.apache.dubbo.common.extension.Wrapper} Test
+ *
+ * @since 2.7.5
  */
-public class DubboExporter<T> extends AbstractExporter<T> {
+public class WrapperTest {
 
-    private final String key;
-
-    private final Map<String, Exporter<?>> exporterMap;
-
-    public DubboExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
+    @Test
+    public void testWrapper() {
+        Demo demoWrapper = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo");
+        assertTrue(demoWrapper instanceof DemoWrapper);
+        Demo demoWrapper2 = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo2");
+        assertTrue(demoWrapper2 instanceof DemoWrapper2);
     }
-
-    @Override
-    public void afterUnExport() {
-        exporterMap.remove(key);
-    }
-
 }
