@@ -27,9 +27,11 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -162,5 +164,25 @@ public class NacosNamingServiceUtils {
         } else {
             properties.setProperty(propertyName, defaultValue);
         }
+    }
+
+    public static Map<String, String> getNacosPreservedParam(URL registryUrl) {
+        Map<String, String> map = new HashMap<>();
+        if (registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE) != null) {
+            map.put(PreservedMetadataKeys.REGISTER_SOURCE, registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT) != null) {
+            map.put(PreservedMetadataKeys.HEART_BEAT_TIMEOUT, registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT) != null) {
+            map.put(PreservedMetadataKeys.IP_DELETE_TIMEOUT, registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL) != null) {
+            map.put(PreservedMetadataKeys.HEART_BEAT_INTERVAL, registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR) != null) {
+            map.put(PreservedMetadataKeys.INSTANCE_ID_GENERATOR, registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR));
+        }
+        return map;
     }
 }

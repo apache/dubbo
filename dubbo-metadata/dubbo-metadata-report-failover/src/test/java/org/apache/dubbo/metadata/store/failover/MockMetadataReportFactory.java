@@ -14,7 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common;
+package org.apache.dubbo.metadata.store.failover;
 
-public class ConfigurationURL extends URL {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
+
+public class MockMetadataReportFactory extends AbstractMetadataReportFactory {
+
+    @Override
+    protected MetadataReport createMetadataReport(URL url) {
+        return new MockMetadataReport(url);
+    }
+
 }

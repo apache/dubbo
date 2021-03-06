@@ -217,6 +217,15 @@ public interface ServiceDiscovery extends Prioritized {
     }
 
     /**
+     * unsubscribe to instances change event.
+     * @param listener
+     * @throws IllegalArgumentException
+     */
+    default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws IllegalArgumentException {
+    }
+
+    /**
      * Dispatch the {@link ServiceInstancesChangedEvent}
      *
      * @param serviceName the name of service whose service instances have been changed
