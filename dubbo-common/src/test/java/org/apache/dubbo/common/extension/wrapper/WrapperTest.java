@@ -14,24 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common.extension.wrapper;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper;
+import org.apache.dubbo.common.extension.wrapper.impl.DemoWrapper2;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * The annotated class will only work as a wrapper when the condition matches.
+ * {@link org.apache.dubbo.common.extension.Wrapper} Test
+ *
+ * @since 2.7.5
  */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Wrapper {
+public class WrapperTest {
 
-    /**
-     * the extension names that need to be wrapped.
-     */
-    String[] matches() default {};
-
-    /**
-     * the extension names that need to be excluded.
-     */
-    String[] mismatches() default {};
+    @Test
+    public void testWrapper() {
+        Demo demoWrapper = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo");
+        assertTrue(demoWrapper instanceof DemoWrapper);
+        Demo demoWrapper2 = ExtensionLoader.getExtensionLoader(Demo.class).getExtension("demo2");
+        assertTrue(demoWrapper2 instanceof DemoWrapper2);
+    }
 }
