@@ -34,6 +34,7 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
+            appendPreservedParam(instance);
             service.registerInstance(instance.getServiceName(), group, instance);
         });
     }
@@ -144,5 +146,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
         dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+    }
+
+    private void appendPreservedParam(Instance instance) {
+        Map<String, String> preservedParam = NacosNamingServiceUtils.getNacosPreservedParam(getUrl());
+        instance.getMetadata().putAll(preservedParam);
     }
 }
