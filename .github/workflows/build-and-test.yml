@@ -42,6 +42,12 @@ jobs:
         with:
           path: ~/.m2/repository/org/apache/dubbo
           key: ${{ runner.os }}-dubbo-snapshot-${{ github.sha }}
+      - name: "Calculate Dubbo Version"
+        id: dubbo-version
+        run: |
+          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
+          echo "::set-output name=version::$REVISION"
+          echo "dubbo version: $REVISION"
       - name: "Build Dubbo with Maven"
         run: |
           cd ./dubbo
@@ -49,13 +55,7 @@ jobs:
       - name: "Build Dubbo Spring Boot with Maven"
         run: |
           cd ./dubbo-spring-boot-project
-          ./mvnw --batch-mode --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
-      - name: "Calculate Dubbo Version"
-        id: dubbo-version
-        run: |
-          REVISION=`awk '/<revision>[^<]+<\/revision>/{gsub(/<revision>|<\/revision>/,"",$1);print $1;exit;}' ./dubbo/pom.xml`
-          echo "::set-output name=version::$REVISION"
-          echo "dubbo version: $REVISION"
+          ./mvnw --batch-mode --no-transfer-progress  clean install -Drevision=${{ steps.dubbo-version.outputs.version }} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
 
   unit-test:
     needs: [build-source]

@@ -165,17 +165,18 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public void publishServiceDefinition(URL providerUrl) {
         try {
-            String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
-            if (StringUtils.isNotEmpty(interfaceName)
-                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
-                Class interfaceClass = Class.forName(interfaceName);
-                ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                Gson gson = new Gson();
-                String data = gson.toJson(serviceDefinition);
-                serviceDefinitions.put(providerUrl.getServiceKey(), data);
-                return;
+            if(!ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))){
+                String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
+                if (StringUtils.isNotEmpty(interfaceName)) {
+                    Class interfaceClass = Class.forName(interfaceName);
+                    ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
+                    Gson gson = new Gson();
+                    String data = gson.toJson(serviceDefinition);
+                    serviceDefinitions.put(providerUrl.getServiceKey(), data);
+                    return;
+                }
+                logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
             }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
         } catch (ClassNotFoundException e) {
             //ignore error
             logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
