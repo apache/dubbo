@@ -181,10 +181,11 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
         String path = buildServicePath(serviceName);
         try {
-            curatorFramework.create().forPath(path);
+            curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
+
                 logger.debug(e);
             }
         } catch (Exception e) {
