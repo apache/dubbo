@@ -14,24 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common.extension.wrapper.impl;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.apache.dubbo.common.extension.Wrapper;
+import org.apache.dubbo.common.extension.wrapper.Demo;
 
-/**
- * The annotated class will only work as a wrapper when the condition matches.
- */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Wrapper {
+@Wrapper(matches = {"demo2"}, mismatches = {"demo"})
+public class DemoWrapper2 implements Demo {
+    private Demo demo;
 
-    /**
-     * the extension names that need to be wrapped.
-     */
-    String[] matches() default {};
+    public DemoWrapper2(Demo demo) {
+        this.demo = demo;
+    }
 
-    /**
-     * the extension names that need to be excluded.
-     */
-    String[] mismatches() default {};
+    public String echo(String msg) {
+        return demo.echo(msg);
+    }
 }

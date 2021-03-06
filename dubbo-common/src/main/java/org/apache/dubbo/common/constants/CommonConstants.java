@@ -364,4 +364,6 @@ public interface CommonConstants {
     String SENTINEL_REDIS = "sentinel";
 
     String CLUSTER_REDIS = "cluster";
+
+    String DEFAULT_VERSION = "0.0.0";
 }
