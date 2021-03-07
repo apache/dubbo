@@ -1404,4 +1404,8 @@ public class DubboBootstrap extends GenericEventListener {
         ssl.refresh();
         return ssl;
     }
+    
+    public void setReady(boolean ready) {
+        this.ready.set(ready);
+    }
 }
