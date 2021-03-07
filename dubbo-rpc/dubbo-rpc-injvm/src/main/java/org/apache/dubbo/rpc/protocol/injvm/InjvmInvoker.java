@@ -62,7 +62,6 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         }
         RpcContext.getContext().setRemoteAddress(LOCALHOST_VALUE, 0);
         // Solve local exposure, the server opens the token, and the client call fails.
-        // see https://github.com/apache/dubbo/issues/7024
         URL serverURL = exporter.getInvoker().getUrl();
         boolean serverHasToken = serverURL.hasParameter(Constants.TOKEN_KEY);
         if (serverHasToken) {
