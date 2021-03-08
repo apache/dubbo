@@ -130,6 +130,9 @@ public abstract class AbstractStream implements Stream {
         Map<String, Object> attachments = new HashMap<>();
         for (Map.Entry<CharSequence, CharSequence> header : headers) {
             String key = header.getKey().toString();
+            if(Http2Headers.PseudoHeaderName.isPseudoHeader(key)){
+                continue;
+            }
 
             if (ENABLE_ATTACHMENT_WRAP) {
                 if (key.endsWith("-tw-bin") && key.length() > 7) {
@@ -156,6 +159,9 @@ public abstract class AbstractStream implements Stream {
     protected void convertAttachment(Http2Headers trailers, Map<String, Object> attachments) throws IOException {
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
+            if(Http2Headers.PseudoHeaderName.isPseudoHeader(key)){
+                continue;
+            }
             final Object v = entry.getValue();
             if (!ENABLE_ATTACHMENT_WRAP) {
                 if (v instanceof String) {
