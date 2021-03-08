@@ -260,13 +260,10 @@ public class ServiceDiscoveryRegistry implements Registry {
     public void doSubscribe(URL url, NotifyListener listener) {
         writableMetadataService.subscribeURL(url);
 
-        boolean check = url.getParameter(CHECK_KEY, false);
         Set<String> serviceNames = getServices(url, listener);
 
         if (CollectionUtils.isEmpty(serviceNames)) {
-            if (check) {
-                throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-            }
+            logger.warn("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
             return;
         }
 
