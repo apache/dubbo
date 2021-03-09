@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.url.component.param;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -24,16 +25,16 @@ import java.util.Map;
 /**
  * In lower case
  */
-public class FixedParamValue implements ParamValue{
+public class FixedParamValue implements ParamValue {
     private final String[] values;
-    private final Map<String,Integer> val2Index;
+    private final Map<String, Integer> val2Index;
 
-    public FixedParamValue(String[] values) {
-        if(values.length == 0) {
+    public FixedParamValue(String... values) {
+        if (values.length == 0) {
             throw new IllegalArgumentException("the array size of values should be larger than 0");
         }
         this.values = values;
-        Map<String,Integer> valueMap = new HashMap<>(values.length);
+        Map<String, Integer> valueMap = new HashMap<>(values.length);
         for (int i = 0; i < values.length; i++) {
             if (values[i] != null) {
                 valueMap.put(values[i].toLowerCase(Locale.ROOT), i);
@@ -52,7 +53,13 @@ public class FixedParamValue implements ParamValue{
 
     @Override
     public int getIndex(String value) {
-        return val2Index.get(value.toLowerCase(Locale.ROOT));
+        Integer offset = val2Index.get(value.toLowerCase(Locale.ROOT));
+        if (offset == null) {
+            throw new IllegalArgumentException("unrecognized value " + value
+                    + " , please check if value is illegal. " +
+                    "Permitted values: " + Arrays.asList(values));
+        }
+        return offset;
     }
 
     @Override

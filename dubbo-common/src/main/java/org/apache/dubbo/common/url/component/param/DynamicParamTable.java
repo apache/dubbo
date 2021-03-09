@@ -75,6 +75,9 @@ public final class DynamicParamTable {
         keys.add("version");
         values.add(new DynamicValues(null));
 
+        keys.add("side");
+        values.add(new FixedParamValue("consumer","provider"));
+
         for (int i = 0; i < keys.size(); i++) {
             if (!keys.get(i).isEmpty()) {
                 key2Index.put(keys.get(i), i);
