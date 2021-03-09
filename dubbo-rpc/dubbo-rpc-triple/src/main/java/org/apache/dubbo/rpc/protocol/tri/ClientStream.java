@@ -90,8 +90,8 @@ public class ClientStream extends AbstractStream implements Stream {
         } else {
             response.setErrorMessage(status.cause.getMessage());
         }
-        // TODO map grpc status to response status
-        response.setStatus(Response.BAD_REQUEST);
+        final byte code = GrpcStatus.toDubboStatus(status.code);
+        response.setStatus(code);
         DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
     }
 
