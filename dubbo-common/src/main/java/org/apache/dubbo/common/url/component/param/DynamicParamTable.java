@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public final class DynamicParamTable {
@@ -53,7 +54,7 @@ public final class DynamicParamTable {
     }
 
     public static boolean isDefaultValue(String key, String value) {
-        return value.equals(VALUES.get(getKeyIndex(key)).getN(0));
+        return Objects.equals(value, VALUES.get(getKeyIndex(key)).getN(0));
     }
 
     public static String getValue(int vi, int offset) {
