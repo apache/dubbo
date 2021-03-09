@@ -81,7 +81,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * The nacos configService
      */
-    private final ConfigService configService;
+    private final NacosConfigServiceWrapper configService;
 
     private HttpAgent httpAgent;
 
@@ -97,7 +97,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
-    private ConfigService buildConfigService(URL url) {
+    private NacosConfigServiceWrapper buildConfigService(URL url) {
         ConfigService configService = null;
         try {
             configService = NacosFactory.createConfigService(nacosProperties);
@@ -107,13 +107,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             throw new IllegalStateException(e);
         }
-        return configService;
+        return new NacosConfigServiceWrapper(configService);
     }
 
-    private HttpAgent getHttpAgent(ConfigService configService) {
+    private HttpAgent getHttpAgent(NacosConfigServiceWrapper configService) {
         HttpAgent agent = null;
         try {
-            Field field = configService.getClass().getDeclaredField("agent");
+            Field field = configService.getConfigService().getClass().getDeclaredField("agent");
             field.setAccessible(true);
             agent = (HttpAgent) field.get(configService);
         } catch (Exception e) {

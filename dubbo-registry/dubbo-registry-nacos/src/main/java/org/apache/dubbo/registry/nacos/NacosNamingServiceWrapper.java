@@ -79,6 +79,9 @@ public class NacosNamingServiceWrapper {
      * nacos service name just support `0-9a-zA-Z-._:`, grpc interface is inner interface, need compatible.
      */
     private String handleInnerSymbol(String serviceName) {
+        if (serviceName == null) {
+            return null;
+        }
         return serviceName.replace(INNER_SYMBOL, INNER_COMPATIBLE_SYMBOL);
     }
 }

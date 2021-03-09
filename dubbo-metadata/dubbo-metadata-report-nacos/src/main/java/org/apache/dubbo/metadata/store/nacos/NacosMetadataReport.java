@@ -69,7 +69,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
 
-    private ConfigService configService;
+    private NacosConfigServiceWrapper configService;
 
     /**
      * The group used to store metadata in Nacos
@@ -83,10 +83,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
-    public ConfigService buildConfigService(URL url) {
+    public NacosConfigServiceWrapper buildConfigService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
         try {
-            configService = NacosFactory.createConfigService(nacosProperties);
+            configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getErrMsg(), e);
