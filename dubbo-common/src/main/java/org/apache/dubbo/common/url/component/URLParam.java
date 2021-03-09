@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.StringJoiner;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -213,9 +213,10 @@ public class URLParam implements Serializable {
         @Override
         public Set<String> keySet() {
             Set<String> set = new HashSet<>((int) ((urlParam.VALUE.size() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
-            for (Entry<Integer, Integer> entry : urlParam.VALUE.entrySet()) {
-                if (urlParam.KEY.get(entry.getKey())) {
-                    set.add(DynamicParamTable.getKey(entry.getKey()));
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                set.add(DynamicParamTable.getKey(i));
+                if (i == Integer.MAX_VALUE) {
+                    break;
                 }
             }
             for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
@@ -227,6 +228,19 @@ public class URLParam implements Serializable {
         @Override
         public Collection<String> values() {
             Set<String> set = new HashSet<>((int) ((urlParam.VALUE.size() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                Integer offset = urlParam.VALUE.get(i);
+                if(offset == null) {
+                    set.add(DynamicParamTable.getDefaultValue(i));
+                } else {
+                    set.add(DynamicParamTable.getValue(i, offset));
+
+                }
+                if (i == Integer.MAX_VALUE) {
+                    break;
+                }
+            }
+
             for (Entry<Integer, Integer> entry : urlParam.VALUE.entrySet()) {
                 if (urlParam.KEY.get(entry.getKey())) {
                     set.add(DynamicParamTable.getValue(entry.getKey(), entry.getValue()));
@@ -241,11 +255,20 @@ public class URLParam implements Serializable {
         @Override
         public Set<Entry<String, String>> entrySet() {
             Set<Entry<String, String>> set = new HashSet<>((int) ((urlParam.VALUE.size() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
-            for (Entry<Integer, Integer> entry : urlParam.VALUE.entrySet()) {
-                if (urlParam.KEY.get(entry.getKey())) {
-                    set.add(new Node(DynamicParamTable.getKey(entry.getKey()), DynamicParamTable.getValue(entry.getKey(), entry.getValue())));
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                Integer offset = urlParam.VALUE.get(i);
+                String value;
+                if(offset == null) {
+                    value = DynamicParamTable.getDefaultValue(i);
+                } else {
+                    value = DynamicParamTable.getValue(i, offset);
+                }
+                set.add(new Node(DynamicParamTable.getKey(i), value));
+                if (i == Integer.MAX_VALUE) {
+                    break;
                 }
             }
+
             for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
                 set.add(new Node(entry.getKey(), entry.getValue()));
             }
@@ -279,16 +302,14 @@ public class URLParam implements Serializable {
     }
 
     public URLParam addParameter(String key, String value) {
-        if (StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
         return addParameters(Collections.singletonMap(key, value));
     }
 
     public URLParam addParameterIfAbsent(String key, String value) {
-        if (StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
         if (hasParameter(key)) {
@@ -332,13 +353,14 @@ public class URLParam implements Serializable {
     }
 
     public URLParam addParametersIfAbsent(Map<String, String> parameters) {
+        if (CollectionUtils.isEmptyMap(parameters)) {
+            return this;
+        }
+
         return doAddParameters(parameters, true);
     }
 
     public URLParam doAddParameters(Map<String, String> parameters, boolean skipIfPresent) {
-        if (CollectionUtils.isEmptyMap(parameters)) {
-            return this;
-        }
         BitSet newKey = null;
         Map<Integer, Integer> newValue = null;
         Map<String, String> newExtraParams = null;
@@ -377,20 +399,26 @@ public class URLParam implements Serializable {
         if (keys == null || keys.length == 0) {
             return this;
         }
-        BitSet newKey = (BitSet) KEY.clone();
+        BitSet newKey = null;
         Map<String, String> newExtraParams = null;
         for (String key : keys) {
             Integer keyIndex = DynamicParamTable.getKeyIndex(key);
-            if (keyIndex == null) {
-                if (EXTRA_PARAMS.containsKey(key)) {
-                    if (newExtraParams == null) {
-                        newExtraParams = new HashMap<>(EXTRA_PARAMS);
-                    }
-                    newExtraParams.remove(key);
+            if (keyIndex != null) {
+                if (newKey == null) {
+                    newKey = (BitSet) KEY.clone();
                 }
-                continue;
+                newKey.clear(keyIndex);
             }
-            newKey.clear(keyIndex);
+            if (EXTRA_PARAMS.containsKey(key)) {
+                if (newExtraParams == null) {
+                    newExtraParams = new HashMap<>(EXTRA_PARAMS);
+                }
+                newExtraParams.remove(key);
+            }
+
+        }
+        if (newKey == null) {
+            newKey = KEY;
         }
         if (newExtraParams == null) {
             newExtraParams = EXTRA_PARAMS;
@@ -420,9 +448,15 @@ public class URLParam implements Serializable {
             return null;
         }
         if (KEY.get(keyIndex)) {
-            String value = DynamicParamTable.getValue(keyIndex, VALUE.get(keyIndex));
+            Integer offset = VALUE.get(keyIndex);
+            String value;
+            if(offset == null) {
+                value = DynamicParamTable.getDefaultValue(keyIndex);
+            } else {
+                value = DynamicParamTable.getValue(keyIndex, offset);
+            }
             if (StringUtils.isEmpty(value)) {
-                return DynamicParamTable.getDefaultValue(keyIndex);
+                return EXTRA_PARAMS.get(key);
             } else {
                 return value;
             }
@@ -445,7 +479,6 @@ public class URLParam implements Serializable {
     public void setTimestamp(long timestamp) {
         this.timestamp = timestamp;
     }
-
 
     @Override
     public boolean equals(Object o) {
@@ -471,25 +504,27 @@ public class URLParam implements Serializable {
         if (StringUtils.isNotEmpty(rawParam)) {
             return rawParam;
         }
-        if (getParameters() == null) {
+        if ((KEY.cardinality() + EXTRA_PARAMS.size()) == 0) {
             return "";
         }
 
-        StringBuilder buf = new StringBuilder();
-        boolean first = true;
-        for (Map.Entry<String, String> entry : new TreeMap<>(getParameters()).entrySet()) {
-            if (StringUtils.isNotEmpty(entry.getKey())) {
-                if (first) {
-                    first = false;
-                } else {
-                    buf.append("&");
-                }
-                buf.append(entry.getKey());
-                buf.append("=");
-                buf.append(entry.getValue() == null ? "" : entry.getValue().trim());
+        StringJoiner stringJoiner = new StringJoiner("&");
+        for (Map.Entry<Integer, Integer> entry : VALUE.entrySet()) {
+            if (KEY.get(entry.getKey())) {
+                String key = DynamicParamTable.getKey(entry.getKey());
+                String value = DynamicParamTable.getValue(entry.getKey(), entry.getValue());
+                value = value == null ? "" : value.trim();
+                stringJoiner.add(String.format("%s=%s", key, value));
             }
         }
-        return buf.toString();
+        for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            value = value == null ? "" : value.trim();
+            stringJoiner.add(String.format("%s=%s", key, value));
+        }
+
+        return stringJoiner.toString();
     }
 
     public static URLParam parse(String rawParam, boolean encoded, Map<String, String> extraParameters) {
