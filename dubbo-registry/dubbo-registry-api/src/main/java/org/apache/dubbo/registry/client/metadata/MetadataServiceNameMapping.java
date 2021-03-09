@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
