@@ -30,7 +30,6 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.ArrayList;
