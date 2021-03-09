@@ -1699,7 +1699,6 @@ class URL implements Serializable {
                     return false;
                 }
             }
-            return true;
         }
 
         if (!StringUtils.isEquals(password, other.password)) {
