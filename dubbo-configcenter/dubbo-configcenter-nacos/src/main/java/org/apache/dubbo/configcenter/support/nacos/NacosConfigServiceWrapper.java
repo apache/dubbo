@@ -22,9 +22,9 @@ import com.alibaba.nacos.api.exception.NacosException;
 
 public class NacosConfigServiceWrapper {
 
-    private static final String INNER_SYMBOL = "$";
+    private static final String INNERCLASS_SYMBOL = "$";
 
-    private static final String INNER_COMPATIBLE_SYMBOL = "___";
+    private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
 
     private ConfigService configService;
 
@@ -60,6 +60,6 @@ public class NacosConfigServiceWrapper {
         if (dataId == null) {
             return null;
         }
-        return dataId.replace(INNER_SYMBOL, INNER_COMPATIBLE_SYMBOL);
+        return dataId.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
     }
 }

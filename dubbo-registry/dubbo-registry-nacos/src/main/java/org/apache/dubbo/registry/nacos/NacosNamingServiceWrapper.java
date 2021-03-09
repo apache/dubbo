@@ -26,9 +26,9 @@ import java.util.List;
 
 public class NacosNamingServiceWrapper {
 
-    private static final String INNER_SYMBOL = "$";
+    private static final String INNERCLASS_SYMBOL = "$";
 
-    private static final String INNER_COMPATIBLE_SYMBOL = "___";
+    private static final String INNERCLASS_COMPATIBLE_SYMBOL = "___";
 
     private NamingService namingService;
 
@@ -82,6 +82,6 @@ public class NacosNamingServiceWrapper {
         if (serviceName == null) {
             return null;
         }
-        return serviceName.replace(INNER_SYMBOL, INNER_COMPATIBLE_SYMBOL);
+        return serviceName.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
     }
 }
