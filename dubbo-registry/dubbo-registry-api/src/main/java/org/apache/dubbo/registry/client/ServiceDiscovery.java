@@ -219,11 +219,16 @@ public interface ServiceDiscovery extends Prioritized {
 
     /**
      * unsubscribe to instances change event.
+     *
      * @param listener
      * @throws IllegalArgumentException
      */
     default void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws IllegalArgumentException {
+    }
+
+    default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new ServiceInstancesChangedListener(serviceNames, this);
     }
 
     /**

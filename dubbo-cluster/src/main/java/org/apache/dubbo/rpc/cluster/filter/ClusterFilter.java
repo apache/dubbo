@@ -14,20 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc.cluster.filter;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.BaseFilter;
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final ClientStream invoker = TripleUtil.getClientStream(ctx);
-        final ByteBuf buffer = (ByteBuf) msg;
-        if (invoker != null) {
-            invoker.onData(new ByteBufInputStream(buffer, buffer.readableBytes(),true));
-        }
-    }
+@SPI
+public interface ClusterFilter extends BaseFilter {
 }

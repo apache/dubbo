@@ -288,6 +288,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private volatile boolean invokersChanged;
 
+    /**
+     * Need to know which invoker change triggered this compare.
+     */
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged = true;
         if (logger.isDebugEnabled()) {
@@ -297,10 +300,14 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            discardInterfaceInvokerAddress(invoker);
+            if (invoker.getDirectory().isNotificationReceived()) {
+                discardInterfaceInvokerAddress(invoker);
+            }
         } else {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
-            discardServiceDiscoveryInvokerAddress(serviceDiscoveryInvoker);
+            if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
+                discardServiceDiscoveryInvokerAddress(serviceDiscoveryInvoker);
+            }
         }
     }
 
@@ -338,8 +345,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
-        } else {
-            ((DynamicDirectory) serviceDiscoveryInvoker.getDirectory()).markInvokersChanged();
         }
     }
 
@@ -352,8 +357,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
 
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
-        } else {
-            ((DynamicDirectory) invoker.getDirectory()).markInvokersChanged();
         }
     }
 

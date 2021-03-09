@@ -88,7 +88,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     protected ServiceInstancesChangedListener serviceListener;
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
-        super(url);
+        super(url, true);
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
@@ -251,20 +251,18 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.invokersChangedListener = listener;
         if (invokersChangedListener != null && invokersChanged) {
             invokersChangedListener.onChange();
-            invokersChanged = false;
         }
     }
 
     protected synchronized void invokersChanged() {
         invokersChanged = true;
-        if (invokersChangedListener != null && invokersChanged) {
+        if (invokersChangedListener != null) {
             invokersChangedListener.onChange();
-            invokersChanged = false;
         }
     }
 
-    public synchronized void markInvokersChanged() {
-        this.invokersChanged = true;
+    public synchronized boolean isNotificationReceived() {
+        return invokersChanged;
     }
 
     protected abstract void destroyAllInvokers();

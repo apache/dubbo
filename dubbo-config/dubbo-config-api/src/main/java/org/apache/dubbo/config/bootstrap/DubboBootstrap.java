@@ -520,6 +520,7 @@ public class DubboBootstrap extends GenericEventListener {
         }
 
         ApplicationModel.initFrameworkExts();
+        
 
         startConfigCenter();
 

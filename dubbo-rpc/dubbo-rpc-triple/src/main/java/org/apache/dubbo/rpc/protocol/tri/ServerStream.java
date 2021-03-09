@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.triple.TripleWrapper;
 
@@ -189,7 +190,8 @@ public class ServerStream extends AbstractStream implements Stream {
                     convertAttachment(trailers, attachments);
                 }
                 ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
-                ctx.write(new DefaultHttp2DataFrame(buf));
+                final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
+                ctx.write(data);
                 ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
             } catch (Throwable e) {
                 LOGGER.warn("Exception processing triple message", e);
@@ -216,7 +218,10 @@ public class ServerStream extends AbstractStream implements Stream {
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
             this.methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
             setNeedWrap(true);
-        } else {
+        } else if("$echo".equals(methodName)) {
+            this.methodDescriptor=repo.lookupMethod(EchoService.class.getName(),methodName);
+            setNeedWrap(true);
+        }else{
             if (methods == null || methods.isEmpty()) {
                 responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                         .withDescription("Method not found:" + methodName + " of service:" + serviceDescriptor.getServiceName()));

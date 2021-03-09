@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.ConditionalEventListener;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -33,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 public class MultipleServiceDiscovery implements ServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
@@ -88,13 +88,20 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        MultiServiceInstancesChangedListener multiListener = new MultiServiceInstancesChangedListener(listener);
+        MultiServiceInstancesChangedListener multiListener = (MultiServiceInstancesChangedListener) listener;
 
         for (String registryKey : serviceDiscoveries.keySet()) {
-            SingleServiceInstancesChangedListener singleListener = new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscoveries.get(registryKey), multiListener);
-            multiListener.putSingleListener(registryKey, singleListener);
-            serviceDiscoveries.get(registryKey).addServiceInstancesChangedListener(singleListener);
+            ServiceDiscovery serviceDiscovery = serviceDiscoveries.get(registryKey);
+            SingleServiceInstancesChangedListener singleListener = multiListener.getAndComputeIfAbsent(registryKey, k -> {
+                return new SingleServiceInstancesChangedListener(listener.getServiceNames(), serviceDiscovery, multiListener);
+            });
+            serviceDiscovery.addServiceInstancesChangedListener(singleListener);
         }
+    }
+
+    @Override
+    public ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
+        return new MultiServiceInstancesChangedListener(serviceNames, this);
     }
 
     @Override
@@ -123,17 +130,12 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
         return serviceInstance;
     }
 
-    protected static class MultiServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
-        private final ServiceInstancesChangedListener sourceListener;
-        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap = new ConcurrentHashMap<>();
+    protected static class MultiServiceInstancesChangedListener extends ServiceInstancesChangedListener {
+        private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap;
 
-        public MultiServiceInstancesChangedListener(ServiceInstancesChangedListener sourceListener) {
-            this.sourceListener = sourceListener;
-        }
-
-        @Override
-        public boolean accept(ServiceInstancesChangedEvent event) {
-            return sourceListener.getServiceNames().contains(event.getServiceName());
+        public MultiServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
+            super(serviceNames, serviceDiscovery);
+            this.singleListenerMap = new ConcurrentHashMap<>();
         }
 
         @Override
@@ -149,11 +151,15 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
                 }
             }
 
-            sourceListener.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
+            super.onEvent(new ServiceInstancesChangedEvent(event.getServiceName(), serviceInstances));
         }
 
         public void putSingleListener(String registryKey, SingleServiceInstancesChangedListener singleListener) {
             singleListenerMap.put(registryKey, singleListener);
+        }
+
+        public SingleServiceInstancesChangedListener getAndComputeIfAbsent(String registryKey, Function<String, SingleServiceInstancesChangedListener> func) {
+            return singleListenerMap.computeIfAbsent(registryKey, func);
         }
     }
 

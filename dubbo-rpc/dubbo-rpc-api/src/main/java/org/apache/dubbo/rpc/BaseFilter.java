@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.rpc;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufInputStream;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+public interface BaseFilter {
+    /**
+     * Make sure call invoker.invoke() in your implementation.
+     */
+    Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
-public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
-    @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        final ClientStream invoker = TripleUtil.getClientStream(ctx);
-        final ByteBuf buffer = (ByteBuf) msg;
-        if (invoker != null) {
-            invoker.onData(new ByteBufInputStream(buffer, buffer.readableBytes(),true));
-        }
+    interface Listener {
+
+        void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation);
+
+        void onError(Throwable t, Invoker<?> invoker, Invocation invocation);
     }
 }

@@ -46,6 +46,7 @@ import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
 import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SERVICE_NAMES_KEY;
@@ -66,20 +67,24 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
+
+        String localRawRule = ApplicationModel.getEnvironment().getLocalMigrationRule();
+        String defaultRawRule = StringUtils.isEmpty(localRawRule) ? INIT : localRawRule;
+
         if (this.configuration != null) {
             logger.info("Listening for migration rules on dataId " + RULE_KEY + ", group " + DUBBO_SERVICEDISCOVERY_MIGRATION);
             configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
 
             String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
             if (StringUtils.isEmpty(rawRule)) {
-                rawRule = INIT;
+                rawRule = defaultRawRule;
             }
             this.rawRule = rawRule;
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("Using default configuration rule because config center is not configured!");
             }
-            rawRule = INIT;
+            rawRule = defaultRawRule;
         }
 //        process(new ConfigChangedEvent(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, rawRule));
     }
@@ -123,7 +128,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
-        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey(), _key -> {
+        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey() + consumerUrl.getParameter(TIMESTAMP_KEY), _key -> {
             return new MigrationRuleHandler<>((MigrationInvoker<?>)invoker, consumerUrl);
         });
 

@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -248,7 +247,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         Invoker<T> invoker = invokers.get(0);
         URL url = invoker.getUrl();
-        String providerApplication = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
+        String providerApplication = url.getRemoteApplication();
 
         if (StringUtils.isEmpty(providerApplication)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +

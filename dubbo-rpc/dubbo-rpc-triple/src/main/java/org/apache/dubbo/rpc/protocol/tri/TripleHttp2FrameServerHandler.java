@@ -36,6 +36,7 @@ import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2Frame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responsePlainTextError;
@@ -52,6 +53,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             onDataRead(ctx, (Http2DataFrame) msg);
         } else if (msg instanceof Http2Frame) {
             // ignored
+            ReferenceCountUtil.release(msg);
         } else {
             super.channelRead(ctx, msg);
         }
