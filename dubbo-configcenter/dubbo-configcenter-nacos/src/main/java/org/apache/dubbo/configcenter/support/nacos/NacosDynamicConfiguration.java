@@ -93,7 +93,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
-        this.httpAgent = getHttpAgent(configService);
+        this.httpAgent = getHttpAgent(configService.getConfigService());
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
@@ -110,10 +110,10 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         return new NacosConfigServiceWrapper(configService);
     }
 
-    private HttpAgent getHttpAgent(NacosConfigServiceWrapper configService) {
+    private HttpAgent getHttpAgent(ConfigService configService) {
         HttpAgent agent = null;
         try {
-            Field field = configService.getConfigService().getClass().getDeclaredField("agent");
+            Field field = configService.getClass().getDeclaredField("agent");
             field.setAccessible(true);
             agent = (HttpAgent) field.get(configService);
         } catch (Exception e) {

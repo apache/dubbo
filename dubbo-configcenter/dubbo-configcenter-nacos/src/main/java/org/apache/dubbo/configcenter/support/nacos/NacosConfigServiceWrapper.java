@@ -38,19 +38,19 @@ public class NacosConfigServiceWrapper {
     }
 
     public void addListener(String dataId, String group, Listener listener) throws NacosException {
-        configService.addListener(handleInnerSymbol(dataId), group, listener);
+        configService.addListener(handleInnerSymbol(dataId), handleInnerSymbol(group), listener);
     }
 
     public String getConfig(String dataId, String group, long timeout) throws NacosException {
-        return configService.getConfig(handleInnerSymbol(dataId), group, timeout);
+        return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), timeout);
     }
 
     public boolean publishConfig(String dataId, String group, String content) throws NacosException {
-        return configService.publishConfig(handleInnerSymbol(dataId), group, content);
+        return configService.publishConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), content);
     }
 
     public boolean removeConfig(String dataId, String group) throws NacosException {
-        return configService.removeConfig(handleInnerSymbol(dataId), group);
+        return configService.removeConfig(handleInnerSymbol(dataId), handleInnerSymbol(group));
     }
 
     /**

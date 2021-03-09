@@ -32,15 +32,15 @@ public class NacosConfigServiceWrapper {
     }
 
     public boolean publishConfig(String dataId, String group, String content) throws NacosException {
-        return configService.publishConfig(handleInnerSymbol(dataId), group, content);
+        return configService.publishConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), content);
     }
 
     public boolean removeConfig(String dataId, String group) throws NacosException {
-        return configService.removeConfig(handleInnerSymbol(dataId), group);
+        return configService.removeConfig(handleInnerSymbol(dataId), handleInnerSymbol(group));
     }
 
     public String getConfig(String dataId, String group, long timeout) throws NacosException {
-        return configService.getConfig(handleInnerSymbol(dataId), group, timeout);
+        return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), timeout);
     }
 
     /**
