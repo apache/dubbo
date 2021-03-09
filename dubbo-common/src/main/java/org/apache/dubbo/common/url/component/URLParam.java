@@ -170,7 +170,7 @@ public class URLParam implements Serializable {
 
         @Override
         public boolean containsValue(Object value) {
-            throw new UnsupportedOperationException();
+            return values().contains(value);
         }
 
         @Override
@@ -212,12 +212,30 @@ public class URLParam implements Serializable {
 
         @Override
         public Set<String> keySet() {
-            throw new UnsupportedOperationException();
+            Set<String> set = new HashSet<>((int) ((urlParam.VALUE.size() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (Entry<Integer, Integer> entry : urlParam.VALUE.entrySet()) {
+                if (urlParam.KEY.get(entry.getKey())) {
+                    set.add(DynamicParamTable.getKey(entry.getKey()));
+                }
+            }
+            for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
+                set.add(entry.getKey());
+            }
+            return set;
         }
 
         @Override
         public Collection<String> values() {
-            throw new UnsupportedOperationException();
+            Set<String> set = new HashSet<>((int) ((urlParam.VALUE.size() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (Entry<Integer, Integer> entry : urlParam.VALUE.entrySet()) {
+                if (urlParam.KEY.get(entry.getKey())) {
+                    set.add(DynamicParamTable.getValue(entry.getKey(), entry.getValue()));
+                }
+            }
+            for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
+                set.add(entry.getValue());
+            }
+            return set;
         }
 
         @Override
