@@ -77,9 +77,7 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
 
     protected String getRegistryCluster(URL url) {
         String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        if (registryCluster == null) {
-            registryCluster = DEFAULT_KEY;
-        }
+
         int i = registryCluster.indexOf(",");
         if (i > 0) {
             registryCluster = registryCluster.substring(0, i);
