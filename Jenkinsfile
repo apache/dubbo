@@ -38,7 +38,7 @@ pipeline {
         stage('Duplicate deploy check') {
             steps {
                 script {
-                    def deployedCommitId = sh(returnStdout: true, script: "curl --silent https://builds.apache.org/job/Apache%20Dubbo/job/${env.JOB_BASE_NAME}/lastSuccessfulBuild/artifact/DEPLOY_COMMIT_ID || true").trim()
+                    def deployedCommitId = sh(returnStdout: true, script: "curl --silent https://ci-builds.apache.org/job/Dubbo/job/${env.JOB_BASE_NAME}/lastSuccessfulBuild/artifact/DEPLOY_COMMIT_ID || true").trim()
                     env.DEPLOYED_COMMIT_ID = deployedCommitId
                     def commitId = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                     env.COMMIT_ID = commitId
