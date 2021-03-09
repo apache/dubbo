@@ -233,6 +233,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return url;
     }
 
+    public ServiceDiscovery getServiceDiscovery() {
+        return serviceDiscovery;
+    }
+
     /**
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
@@ -250,11 +254,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             return false;
         }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceNames(), that.getServiceNames());
+        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(getServiceDiscovery(), that.getServiceDiscovery());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames());
+        return Objects.hash(getClass(), getServiceNames(), getServiceDiscovery());
     }
 }
