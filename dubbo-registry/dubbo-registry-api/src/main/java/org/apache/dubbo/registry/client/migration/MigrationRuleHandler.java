@@ -119,8 +119,10 @@ public class MigrationRuleHandler<T> {
         }
 
         if (step == MigrationStep.APPLICATION_FIRST) {
+            setCurrentStepAndThreshold(step, threshold);
             migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(false);
         } else if (step == MigrationStep.FORCE_APPLICATION) {
+            setCurrentStepAndThreshold(step, threshold);
             migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
         }
     }
