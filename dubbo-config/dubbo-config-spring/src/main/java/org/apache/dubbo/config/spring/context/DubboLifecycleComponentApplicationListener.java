@@ -51,6 +51,9 @@ public class DubboLifecycleComponentApplicationListener extends OnceApplicationC
 
     private List<Lifecycle> lifecycleComponents = emptyList();
 
+    public DubboLifecycleComponentApplicationListener() {
+    }
+
     public DubboLifecycleComponentApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
     }
