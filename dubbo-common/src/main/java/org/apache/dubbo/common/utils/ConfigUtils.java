@@ -30,6 +30,7 @@ import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -327,8 +328,12 @@ public class ConfigUtils {
         StringBuilder stringBuilder = new StringBuilder();
         char[] buffer = new char[10];
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))){
-            while (reader.read(buffer) != -1) {
-                stringBuilder.append(new String(buffer));
+            int n;
+            while ((n = reader.read(buffer)) != -1) {
+                if (n < 10) {
+                    buffer = Arrays.copyOf(buffer, n);
+                }
+                stringBuilder.append(String.valueOf(buffer));
                 buffer = new char[10];
             }
         } catch (IOException e) {
