@@ -567,7 +567,7 @@ public class URLParam implements Serializable {
                 }
             }
         }
-        return new URLParam(keyBit, new HashMap<>(valueMap), new HashMap<>(extraParam), rawParam);
+        return new URLParam(keyBit, valueMap, extraParam, rawParam);
     }
 
 
@@ -580,7 +580,7 @@ public class URLParam implements Serializable {
             for (Map.Entry<String, String> entry : params.entrySet()) {
                 addParameter(keyBit, valueMap, extraParam, entry.getKey(), entry.getValue(), false);
             }
-            return new URLParam(keyBit, new HashMap<>(valueMap), new HashMap<>(extraParam), rawParam);
+            return new URLParam(keyBit, valueMap, extraParam, rawParam);
         } else {
             return EMPTY_PARAM;
         }
