@@ -91,8 +91,8 @@ public interface FilterChainBuilder {
                     } finally {
                         listenableFilter.removeListener(invocation);
                     }
-                } else if (filter instanceof Filter.Listener) {
-                    Filter.Listener listener = (Filter.Listener) filter;
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
                     listener.onError(e, originalInvoker, invocation);
                 }
                 throw e;
@@ -114,8 +114,8 @@ public interface FilterChainBuilder {
                     } finally {
                         listenableFilter.removeListener(invocation);
                     }
-                } else if (filter instanceof Filter.Listener) {
-                    Filter.Listener listener = (Filter.Listener) filter;
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
                     if (t == null) {
                         listener.onResponse(r, originalInvoker, invocation);
                     } else {

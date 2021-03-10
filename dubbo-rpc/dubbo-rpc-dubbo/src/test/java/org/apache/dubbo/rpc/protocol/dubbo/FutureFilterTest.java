@@ -18,11 +18,11 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
@@ -40,7 +40,7 @@ import static org.mockito.Mockito.mock;
  */
 public class FutureFilterTest {
     private static RpcInvocation invocation;
-    private Filter eventFilter = new FutureFilter();
+    private ClusterFilter eventFilter = new FutureFilter();
 
     @BeforeAll
     public static void setUp() {
