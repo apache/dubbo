@@ -49,6 +49,8 @@ public class URLParam implements Serializable {
     private transient Map<String, Map<String, String>> methodParameters;
     private transient long timestamp;
 
+    private final static URLParam EMPTY_PARAM = new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), "");
+
     private URLParam(BitSet key, Map<Integer, Integer> value, Map<String, String> extraParams, String rawParam) {
         this.KEY = key;
         this.VALUE = Collections.unmodifiableMap((value == null ? new HashMap<>() : new HashMap<>(value)));
@@ -427,8 +429,7 @@ public class URLParam implements Serializable {
     }
 
     public URLParam clearParameters() {
-        // TODO cache
-        return new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), "");
+        return EMPTY_PARAM;
     }
 
     public boolean hasParameter(String key) {
@@ -509,12 +510,15 @@ public class URLParam implements Serializable {
         }
 
         StringJoiner stringJoiner = new StringJoiner("&");
-        for (Map.Entry<Integer, Integer> entry : VALUE.entrySet()) {
-            if (KEY.get(entry.getKey())) {
-                String key = DynamicParamTable.getKey(entry.getKey());
-                String value = DynamicParamTable.getValue(entry.getKey(), entry.getValue());
-                value = value == null ? "" : value.trim();
-                stringJoiner.add(String.format("%s=%s", key, value));
+        for (int i = KEY.nextSetBit(0); i >= 0; i = KEY.nextSetBit(i + 1)) {
+            Integer valueIndex = VALUE.get(i);
+            String key = DynamicParamTable.getKey(i);
+            String value = valueIndex == null ?
+                    DynamicParamTable.getDefaultValue(i) : DynamicParamTable.getValue(i, valueIndex);
+            value = value == null ? "" : value.trim();
+            stringJoiner.add(String.format("%s=%s", key, value));
+            if (i == Integer.MAX_VALUE) {
+                break;
             }
         }
         for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
@@ -578,7 +582,7 @@ public class URLParam implements Serializable {
             }
             return new URLParam(keyBit, new HashMap<>(valueMap), new HashMap<>(extraParam), rawParam);
         } else {
-            return new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), rawParam);
+            return EMPTY_PARAM;
         }
     }
 
