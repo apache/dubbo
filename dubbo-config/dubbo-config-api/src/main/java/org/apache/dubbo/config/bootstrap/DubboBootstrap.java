@@ -1174,7 +1174,7 @@ public class DubboBootstrap extends GenericEventListener {
             InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
             localMetadataService.blockUntilUpdated();
             ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MICROSECONDS);
+        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
