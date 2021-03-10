@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-
 import org.apache.dubbo.common.context.Lifecycle;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
