@@ -90,8 +90,8 @@ public class ClientStream extends AbstractStream implements Stream {
         } else {
             response.setErrorMessage(status.cause.getMessage());
         }
-        // TODO map grpc status to response status
-        response.setStatus(Response.BAD_REQUEST);
+        final byte code = GrpcStatus.toDubboStatus(status.code);
+        response.setStatus(code);
         DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
     }
 
@@ -106,6 +106,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) +"m")
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
         final String version = (String) invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
@@ -129,6 +130,8 @@ public class ClientStream extends AbstractStream implements Stream {
         if (attachments != null) {
             convertAttachment(headers, attachments);
         }
+        headers.remove("path");
+        headers.remove("interface");
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
 
@@ -163,7 +166,13 @@ public class ClientStream extends AbstractStream implements Stream {
             ClassLoadUtil.switchContextLoader(tccl);
         }
         final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
-        streamChannel.write(data);
+        streamChannel.write(data).addListener(f->{
+            if(f.isSuccess()){
+                promise.trySuccess();
+            }else{
+                promise.tryFailure(f.cause());
+            }
+        });
     }
 
     public void halfClose() {
