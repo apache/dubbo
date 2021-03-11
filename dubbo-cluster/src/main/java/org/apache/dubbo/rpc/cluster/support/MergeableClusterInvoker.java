@@ -114,7 +114,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         if (resultList.isEmpty()) {
             return AsyncRpcResult.newDefaultAsyncResult(invocation);
         } else if (resultList.size() == 1) {
-            return resultList.iterator().next();
+            return AsyncRpcResult.newDefaultAsyncResult(resultList.get(0).getValue(), invocation);
         }
 
         if (returnType == void.class) {
