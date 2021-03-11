@@ -279,15 +279,16 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
-        attachments.remove("content-type");
         attachments.remove("interface");
-        attachments.remove("tri-service-version");
-        attachments.remove("tri-service-group");
         attachments.remove("serialization");
         attachments.remove("te");
         attachments.remove("path");
-        attachments.remove("grpc-status");
-        attachments.remove("grpc-message");
+        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
+        attachments.remove(TripleConstant.SERVICE_GROUP);
+        attachments.remove(TripleConstant.SERVICE_VERSION);
+        attachments.remove(TripleConstant.MESSAGE_KEY);
+        attachments.remove(TripleConstant.STATUS_KEY);
+        attachments.remove(TripleConstant.TIMEOUT);
         inv.setObjectAttachments(attachments);
         return inv;
     }
