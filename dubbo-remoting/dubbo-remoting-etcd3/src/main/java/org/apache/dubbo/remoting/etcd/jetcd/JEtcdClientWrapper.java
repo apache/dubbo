@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
@@ -604,14 +605,10 @@ public class JEtcdClientWrapper {
     private ManagedChannel newChannel(Client client) {
         try {
             Field connectionField = client.getClass().getDeclaredField("connectionManager");
-            if (!connectionField.isAccessible()) {
-                connectionField.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(connectionField);
             Object connection = connectionField.get(client);
             Method channel = connection.getClass().getDeclaredMethod("getChannel");
-            if (!channel.isAccessible()) {
-                channel.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(channel);
             return (ManagedChannel) channel.invoke(connection);
         } catch (Exception e) {
             throw new RuntimeException("Failed to obtain connection channel from " + url.getBackupAddress(), e);
