@@ -118,7 +118,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
-                System.err.println("aaa " + instance.toString());
                 String revision = getExportedServicesRevision(instance);
                 if (EMPTY_REVISION.equals(revision)) {
                     logger.info("Find instance without valid service metadata: " + instance.getAddress());
