@@ -172,7 +172,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private AtomicBoolean started = new AtomicBoolean(false);
 
-    private AtomicBoolean ready = new AtomicBoolean(true);
+    private AtomicBoolean ready = new AtomicBoolean(false);
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -1174,7 +1174,7 @@ public class DubboBootstrap extends GenericEventListener {
             InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
             localMetadataService.blockUntilUpdated();
             ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MICROSECONDS);
+        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
@@ -1266,7 +1266,7 @@ public class DubboBootstrap extends GenericEventListener {
                     unreferServices();
 
                     destroyRegistries();
-                    DubboShutdownHook.destroyProtocols();
+
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
                     clear();
@@ -1403,5 +1403,9 @@ public class DubboBootstrap extends GenericEventListener {
 
         ssl.refresh();
         return ssl;
+    }
+    
+    public void setReady(boolean ready) {
+        this.ready.set(ready);
     }
 }
