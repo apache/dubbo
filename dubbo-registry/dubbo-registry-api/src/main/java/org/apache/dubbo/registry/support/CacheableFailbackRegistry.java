@@ -121,7 +121,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 newURLs.put(rawProvider, cachedURL);
             }
         } else {
-            newURLs = new HashMap<>((int)(oldURLs.size()/.75 + 1));
+            newURLs = new HashMap<>((int) (oldURLs.size() / .75 + 1));
             // maybe only default , or "env" + default
             for (String rawProvider : providers) {
                 rawProvider = stripOffVariableKeys(rawProvider);
@@ -272,11 +272,20 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     }
 
     protected String[] getVariableKeys() {
-       return VARIABLE_KEYS;
+        return VARIABLE_KEYS;
     }
 
     protected String getDefaultURLProtocol() {
         return DUBBO;
+    }
+
+    /**
+     * This method is for unit test to see if the RemovalTask has completed or not.<br />
+     * <strong>Please do not call this method in other places.</strong>
+     */
+    @Deprecated
+    protected Semaphore getSemaphore() {
+        return semaphore;
     }
 
     protected abstract boolean isMatch(URL subscribeUrl, URL providerUrl);
@@ -285,10 +294,9 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private static class RemovalTask implements Runnable {
         @Override
         public void run() {
-            semaphore.release();
             logger.info("Clearing cached URLs, size " + waitForRemove.size());
             Iterator<Map.Entry<ServiceAddressURL, Long>> it = waitForRemove.entrySet().iterator();
-            while(it.hasNext()) {
+            while (it.hasNext()) {
                 Map.Entry<ServiceAddressURL, Long> entry = it.next();
                 ServiceAddressURL removeURL = entry.getKey();
                 long removeTime = entry.getValue();
@@ -305,6 +313,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                     it.remove();
                 }
             }
+            semaphore.release();
 
             if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
                 // move to next schedule

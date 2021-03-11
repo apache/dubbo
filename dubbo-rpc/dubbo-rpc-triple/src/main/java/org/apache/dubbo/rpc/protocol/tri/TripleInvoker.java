@@ -93,12 +93,15 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setTwoWay(true);
             req.setData(inv);
 
+            connection.connectSync();
+
             DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
+
 
             if (!connection.isAvailable()) {
                 Response response = new Response(req.getId(), req.getVersion());

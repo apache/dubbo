@@ -25,6 +25,7 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2ChannelDuplexHandler;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2PingFrame;
+import io.netty.util.ReferenceCountUtil;
 
 import static org.apache.dubbo.rpc.protocol.tri.GracefulShutdown.GRACEFUL_SHUTDOWN_PING;
 
@@ -44,6 +45,7 @@ public class TripleServerConnectionHandler extends Http2ChannelDuplexHandler {
                 }
             }
         } else if (msg instanceof Http2GoAwayFrame) {
+            ReferenceCountUtil.release(msg);
         } else {
             super.channelRead(ctx, msg);
         }

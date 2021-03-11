@@ -162,8 +162,8 @@ public class ClientStream extends AbstractStream implements Stream {
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
-        streamChannel.write(new DefaultHttp2DataFrame(out, true));
-
+        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
+        streamChannel.write(data);
     }
 
     public void halfClose() {

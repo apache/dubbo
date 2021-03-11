@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -55,7 +56,10 @@ public class MockProviderRpcExceptionTest {
     public void testMockInvokerProviderRpcException() {
         URL url = URL.valueOf("remote://1.2.3.4/" + IHelloRpcService.class.getName());
         url = url.addParameter(MOCK_KEY, "true").addParameter("invoke_return_error", "true")
-                .addParameter(REFER_KEY, "path%3dorg.apache.dubbo.rpc.cluster.support.wrapper.MockProviderRpcExceptionTest%24IHelloRpcService");
+                .addParameter(REFER_KEY,
+                        URL.encode(PATH_KEY + "=" + MockProviderRpcExceptionTest.IHelloRpcService.class.getName()
+                                + "&" + "mock=true"
+                                + "&" + "proxy=jdk"));
         Invoker<IHelloRpcService> cluster = getClusterInvoker(url);
         RpcInvocation invocation = new RpcInvocation();
         invocation.setMethodName("getSomething4");

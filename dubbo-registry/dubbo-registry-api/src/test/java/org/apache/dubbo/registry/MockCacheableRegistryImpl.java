@@ -17,12 +17,23 @@
 package org.apache.dubbo.registry;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceAddressURL;
+import org.apache.dubbo.common.url.component.URLAddress;
+import org.apache.dubbo.common.url.component.URLParam;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.support.CacheableFailbackRegistry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  *
  */
 public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
+
+    private final List<String> children = new ArrayList<>();
 
     public MockCacheableRegistryImpl(URL url) {
         super(url);
@@ -35,7 +46,7 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
     @Override
     protected boolean isMatch(URL subscribeUrl, URL providerUrl) {
-        return false;
+        return UrlUtils.isMatch(subscribeUrl, providerUrl);
     }
 
     @Override
@@ -50,7 +61,16 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener listener) {
-
+        List<URL> res = toUrlsWithoutEmpty(url, children);
+        Semaphore semaphore = getSemaphore();
+        while (semaphore.availablePermits() != 1) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+        listener.notify(res);
     }
 
     @Override
@@ -61,5 +81,29 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
     @Override
     public boolean isAvailable() {
         return false;
+    }
+
+    public void addChildren(URL url) {
+        children.add(URL.encode(url.toFullString()));
+    }
+
+    public List<String> getChildren() {
+        return children;
+    }
+
+    public void clearChildren() {
+        children.clear();
+    }
+
+    public Map<URL, Map<String, ServiceAddressURL>> getStringUrls() {
+        return stringUrls;
+    }
+
+    public Map<String, URLAddress> getStringAddress() {
+        return stringAddress;
+    }
+
+    public Map<String, URLParam> getStringParam() {
+        return stringParam;
     }
 }

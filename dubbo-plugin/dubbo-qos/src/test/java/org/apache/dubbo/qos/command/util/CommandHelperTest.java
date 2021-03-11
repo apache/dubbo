@@ -21,7 +21,11 @@ import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.Live;
 import org.apache.dubbo.qos.command.impl.Ls;
 import org.apache.dubbo.qos.command.impl.Offline;
+import org.apache.dubbo.qos.command.impl.OfflineApp;
+import org.apache.dubbo.qos.command.impl.OfflineInterface;
 import org.apache.dubbo.qos.command.impl.Online;
+import org.apache.dubbo.qos.command.impl.OnlineApp;
+import org.apache.dubbo.qos.command.impl.OnlineInterface;
 import org.apache.dubbo.qos.command.impl.PublishMetadata;
 import org.apache.dubbo.qos.command.impl.Quit;
 import org.apache.dubbo.qos.command.impl.Ready;
@@ -30,6 +34,7 @@ import org.apache.dubbo.qos.command.impl.Version;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -49,9 +54,25 @@ public class CommandHelperTest {
     @Test
     public void testGetAllCommandClass() throws Exception {
         List<Class<?>> classes = CommandHelper.getAllCommandClass();
-        assertThat(classes,
-                containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class,
-                        Live.class, Ready.class, Startup.class, Version.class, PublishMetadata.class));
+
+        // update this list when introduce a new command
+        List<Class<?>> expectedClasses = new LinkedList<>();
+        expectedClasses.add(GreetingCommand.class);
+        expectedClasses.add(Help.class);
+        expectedClasses.add(Live.class);
+        expectedClasses.add(Ls.class);
+        expectedClasses.add(Offline.class);
+        expectedClasses.add(OfflineApp.class);
+        expectedClasses.add(OfflineInterface.class);
+        expectedClasses.add(Online.class);
+        expectedClasses.add(OnlineApp.class);
+        expectedClasses.add(OnlineInterface.class);
+        expectedClasses.add(PublishMetadata.class);
+        expectedClasses.add(Quit.class);
+        expectedClasses.add(Ready.class);
+        expectedClasses.add(Startup.class);
+        expectedClasses.add(Version.class);
+        assertThat(classes, containsInAnyOrder(expectedClasses.toArray(new Class<?>[0])));
     }
 
     @Test
