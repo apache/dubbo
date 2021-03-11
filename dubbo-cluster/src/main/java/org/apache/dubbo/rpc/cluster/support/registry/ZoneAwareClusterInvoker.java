@@ -187,7 +187,7 @@ public class ZoneAwareClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 }
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("step is APPLICATION_FIRST serviceInvokers " + (serviceInvokers.isEmpty() ? "is empty" : "shouldMigrate false") + " get interfaceInvokers");
+                    logger.debug("step is APPLICATION_FIRST " + (serviceInvokers.isEmpty() ? "serviceInvokers is empty" : "shouldMigrate false") + " get interfaceInvokers");
                 }
 
                 return interfaceInvokers;
