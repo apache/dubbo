@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.proxy;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
@@ -45,7 +46,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
     static {
         try {
             stackTraceField = Throwable.class.getDeclaredField("stackTrace");
-            stackTraceField.setAccessible(true);
+            ReflectUtils.makeAccessible(stackTraceField);
         } catch (NoSuchFieldException e) {
             // ignore
         }
