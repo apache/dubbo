@@ -365,5 +365,8 @@ public interface CommonConstants {
 
     String CLUSTER_REDIS = "cluster";
 
+    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
     String DEFAULT_VERSION = "0.0.0";
 }
