@@ -225,7 +225,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private String getConfig(BaseMetadataIdentifier identifier) {
         try {
-            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
+            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);

@@ -14,20 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.kryo.utils;
+package org.apache.dubbo.common;
 
-public abstract class ReflectionUtils {
+import org.apache.dubbo.common.utils.PojoUtils;
+import org.junit.jupiter.api.Test;
 
-    public static boolean checkZeroArgConstructor(Class clazz) {
-        try {
-            clazz.getDeclaredConstructor();
-            return true;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+public class PojoUtilsForNonPublicStaticTest {
+
+    @Test
+    public void testNonPublicStaticClass() {
+        NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
+        PojoUtils.generalize(nonPublicStaticData);
     }
 
-    public static boolean isJdk(Class clazz) {
-        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
+    /**
+     * the static class need is not same package with PojoUtils, so define it here.
+     */
+    static class NonPublicStaticData {
+
+        private String name;
+
+        public NonPublicStaticData(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

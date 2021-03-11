@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.store.failover;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.report.MetadataReport;
@@ -204,7 +205,7 @@ public class FailoverMetadataReportTest {
         try {
             Field reportCache = AbstractMetadataReportFactory.class.getDeclaredField("SERVICE_STORE_MAP");
             if (!reportCache.isAccessible()) {
-                reportCache.setAccessible(true);
+                ReflectUtils.makeAccessible(reportCache);
             }
             Map<String, MetadataReport> serviceStore = (Map<String, MetadataReport>) reportCache.get(factory);
             if (serviceStore != null) {
