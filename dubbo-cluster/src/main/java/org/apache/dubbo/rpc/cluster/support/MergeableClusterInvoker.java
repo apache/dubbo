@@ -20,6 +20,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -33,7 +34,6 @@ import org.apache.dubbo.rpc.cluster.merger.MergerFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -130,9 +130,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
                 throw new RpcException("Can not merge result because missing method [ " + merger + " ] in class [ " +
                         returnType.getName() + " ]");
             }
-            if (!Modifier.isPublic(method.getModifiers())) {
-                method.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(method);
             result = resultList.remove(0).getValue();
             try {
                 if (method.getReturnType() != void.class
