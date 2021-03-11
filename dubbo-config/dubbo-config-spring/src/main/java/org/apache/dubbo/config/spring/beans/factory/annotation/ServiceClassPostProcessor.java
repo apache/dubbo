@@ -289,11 +289,11 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();
 
-        AbstractBeanDefinition serviceBeanDefinition =
-                buildServiceBeanDefinition(service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
-
         // ServiceBean Bean name
         String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
+
+        AbstractBeanDefinition serviceBeanDefinition =
+                buildServiceBeanDefinition(beanName, service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
@@ -376,6 +376,8 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     /**
      * Build the {@link AbstractBeanDefinition Bean Definition}
      *
+     *
+     * @param beanName
      * @param serviceAnnotation
      * @param serviceAnnotationAttributes
      * @param interfaceClass
@@ -383,7 +385,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
      * @return
      * @since 2.7.3
      */
-    private AbstractBeanDefinition buildServiceBeanDefinition(Annotation serviceAnnotation,
+    private AbstractBeanDefinition buildServiceBeanDefinition(String beanName, Annotation serviceAnnotation,
                                                               AnnotationAttributes serviceAnnotationAttributes,
                                                               Class<?> interfaceClass,
                                                               String annotatedServiceBeanName) {
@@ -399,6 +401,8 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
 
+        //set config id, for ConfigManager cache key
+        builder.addPropertyValue("id", beanName);
         // References "ref" property to annotated-@Service Bean
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
         // Set interface

@@ -17,15 +17,14 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -43,16 +42,16 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
 import static org.springframework.util.ReflectionUtils.findField;
 
 /**
- * {@link ReferenceBeanBuilder} Test
+ * {@link ReferenceConfigBuilder} Test
  *
- * @see ReferenceBeanBuilder
+ * @see ReferenceConfigBuilder
  * @see DubboReference
  * @see Reference
  * @since 2.6.4
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
-public class ReferenceBeanBuilderTest {
+@ContextConfiguration(classes = ReferenceConfigBuilderTest.class)
+public class ReferenceConfigBuilderTest {
 
     @DubboReference(
             interfaceClass = CharSequence.class,
@@ -80,7 +79,7 @@ public class ReferenceBeanBuilderTest {
     @Autowired
     private ApplicationContext context;
 
-    @Before
+    @BeforeAll
     public void init() {
         ApplicationModel.reset();
     }
@@ -89,9 +88,9 @@ public class ReferenceBeanBuilderTest {
     public void testBuild() throws Exception {
         DubboReference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), DubboReference.class);
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, false, false);
-        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create(attributes, context);
+        ReferenceConfigBuilder beanBuilder = ReferenceConfigBuilder.create(attributes, context);
         beanBuilder.interfaceClass(CharSequence.class);
-        ReferenceBean referenceBean = beanBuilder.build();
+        ReferenceConfig referenceBean = beanBuilder.build();
         Assert.assertEquals(CharSequence.class, referenceBean.getInterfaceClass());
         Assert.assertEquals("1.0.0", referenceBean.getVersion());
         Assert.assertEquals("TEST_GROUP", referenceBean.getGroup());

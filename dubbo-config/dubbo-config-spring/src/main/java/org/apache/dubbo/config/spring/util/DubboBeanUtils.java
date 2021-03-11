@@ -16,13 +16,22 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
+import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 
@@ -45,6 +54,8 @@ public interface DubboBeanUtils {
      */
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
+        registerInfrastructureBean(registry, ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
                 ReferenceAnnotationBeanPostProcessor.class);
@@ -64,5 +75,49 @@ public interface DubboBeanUtils {
         // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
+
+        registerInfrastructureBean(registry, ReferenceBeanPostProcessor.BEAN_NAME, ReferenceBeanPostProcessor.class);
+
     }
+
+    /**
+     * Call this method in postProcessBeanFactory()
+     * @param registry
+     */
+    static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {
+        // Resolve ${...} placeholders of bean definition with Spring Environment
+        Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
+        // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
+        propertySourcesPlaceholderPropertyValues.put("order", 0);
+        registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
+                PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
+
+    }
+
+    static boolean registerBeanDefinitionIfNotExists(BeanDefinitionRegistry registry, String beanName,
+                                                            Class<?> beanClass, Map<String, Object> extraPropertyValues) {
+        if (registry.containsBeanDefinition(beanName)) {
+            return false;
+        }
+
+        String[] candidates = registry.getBeanDefinitionNames();
+        for (String candidate : candidates) {
+            BeanDefinition beanDefinition = registry.getBeanDefinition(candidate);
+            if (Objects.equals(beanDefinition.getBeanClassName(), beanClass.getName())) {
+                return false;
+            }
+        }
+
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(beanClass).getBeanDefinition();
+        if (extraPropertyValues != null) {
+            for (Map.Entry<String, Object> entry : extraPropertyValues.entrySet()) {
+                beanDefinition.getPropertyValues().add(entry.getKey(), entry.getValue());
+            }
+        }
+
+        registry.registerBeanDefinition(beanName, beanDefinition);
+
+        return true;
+    }
+
 }

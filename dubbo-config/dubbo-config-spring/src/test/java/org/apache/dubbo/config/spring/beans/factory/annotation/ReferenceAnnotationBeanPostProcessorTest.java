@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
@@ -31,6 +33,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
@@ -70,12 +74,12 @@ import static org.junit.Assert.assertTrue;
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    @Before
+    @BeforeAll
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @After
+    @AfterAll
     public void tearDown() {
         ApplicationModel.reset();
     }
@@ -95,6 +99,11 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Bean
     public TestBean testBean() {
         return new TestBean();
+    }
+
+    @Bean(ReferenceBeanManager.BEAN_NAME)
+    public ReferenceBeanManager referenceBeanManager() {
+        return new ReferenceBeanManager();
     }
 
     @Bean(BEAN_NAME)
@@ -135,7 +144,10 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assert.assertNotNull(testBean.getDemoServiceFromParent());
         Assert.assertNotNull(testBean.getDemoService());
         Assert.assertNotNull(testBean.autowiredDemoService);
-        Assert.assertEquals(1, demoServicesMap.size());
+        Assert.assertEquals(3, demoServicesMap.size());
+        Assert.assertNotNull(demoServicesMap.get("demoServiceImpl"));
+        Assert.assertNotNull(demoServicesMap.get("my-reference-bean"));
+        Assert.assertNotNull(demoServicesMap.get("@Reference(url=dubbo://127.0.0.1:12345?version=2.5.7,version=2.5.7) org.apache.dubbo.config.spring.api.DemoService"));
 
         String expectedResult = "Hello,Mercy" + AOP_SUFFIX;
 
@@ -154,78 +166,25 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Assert.assertEquals(expectedResult, myDemoService.sayName("Mercy"));
 
-
-        for (DemoService demoService1 : demoServicesMap.values()) {
-
-            Assert.assertEquals(myDemoService, demoService1);
-
-            Assert.assertEquals(expectedResult, demoService1.sayName("Mercy"));
-        }
-
     }
 
-    /**
-     * Test on {@link ReferenceAnnotationBeanPostProcessor#getReferenceBeans()}
-     */
     @Test
     public void testGetReferenceBeans() {
 
         ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
                 ReferenceAnnotationBeanPostProcessor.class);
 
-        Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
+        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
 
-        Assert.assertEquals(4, referenceBeans.size());
+        Assert.assertEquals(4, referenceBeanMap.size());
 
-        ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
-
-        Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceBean));
-
-    }
-
-    @Test
-    public void testGetInjectedFieldReferenceBeanMap() {
-
-        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
-                ReferenceAnnotationBeanPostProcessor.class);
-
-        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
-                beanPostProcessor.getInjectedFieldReferenceBeanMap();
-
-        Assert.assertEquals(3, referenceBeanMap.size());
-
-        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
-
-            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
-
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedFieldElement",
-                    injectedElement.getClass().getName());
-
+        for (ReferenceBean referenceBean : referenceBeanMap.values()) {
+            ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
+            Assert.assertNotNull(referenceConfig);
+            Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceConfig));
         }
-
     }
 
-    @Test
-    public void testGetInjectedMethodReferenceBeanMap() {
-
-        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
-                ReferenceAnnotationBeanPostProcessor.class);
-
-        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
-                beanPostProcessor.getInjectedMethodReferenceBeanMap();
-
-        Assert.assertEquals(2, referenceBeanMap.size());
-
-        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
-
-            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
-
-            Assert.assertEquals("com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor$AnnotatedMethodElement",
-                    injectedElement.getClass().getName());
-
-        }
-
-    }
 
     //    @Test
     //    public void testModuleInfo() {
@@ -304,17 +263,23 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Test
     public void testReferenceBeansMethodAnnotation() {
 
-        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
-                ReferenceAnnotationBeanPostProcessor.class);
+        ReferenceBeanManager referenceBeanManager = context.getBean(ReferenceBeanManager.BEAN_NAME,
+                ReferenceBeanManager.class);
 
-        Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
+        Collection<ReferenceBean> referenceBeans = referenceBeanManager.getReferences();
 
         Assert.assertEquals(4, referenceBeans.size());
 
-        ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
+        for (ReferenceBean referenceBean : referenceBeans) {
+            ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
+            Assert.assertNotNull(referenceConfig);
+            Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceConfig));
+        }
 
+        ReferenceBean referenceBean = referenceBeanManager.get("helloService");
         if ("helloService".equals(referenceBean.getId())) {
-            Assert.assertNotNull(referenceBean.getMethods());
+            ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
+            Assert.assertNotNull(referenceConfig.getMethods());
         }
     }
 
