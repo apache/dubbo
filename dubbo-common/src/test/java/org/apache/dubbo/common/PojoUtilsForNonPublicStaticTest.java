@@ -14,21 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.PojoUtils;
+import org.junit.jupiter.api.Test;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
+public class PojoUtilsForNonPublicStaticTest {
 
-public class DefaultRegistryClusterIdentifier implements RegistryClusterIdentifier {
-    @Override
-    public String providerKey(URL url) {
-        return url.getParameter(REGISTRY_CLUSTER_KEY, DEFAULT_KEY);
+    @Test
+    public void testNonPublicStaticClass() {
+        NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
+        PojoUtils.generalize(nonPublicStaticData);
     }
 
-    @Override
-    public String consumerKey(URL url) {
-        return url.getParameter(REGISTRY_CLUSTER_KEY);
+    /**
+     * the static class need is not same package with PojoUtils, so define it here.
+     */
+    static class NonPublicStaticData {
+
+        private String name;
+
+        public NonPublicStaticData(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
     }
 }

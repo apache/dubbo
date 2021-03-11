@@ -300,6 +300,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             path = interfaceName;
         }
         doExportUrls();
+        bootstrap.setReady(true);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
