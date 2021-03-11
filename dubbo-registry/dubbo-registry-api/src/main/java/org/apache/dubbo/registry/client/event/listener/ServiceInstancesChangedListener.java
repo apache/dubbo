@@ -253,7 +253,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         }
         boolean result = false;
         for (Map.Entry<String, MetadataInfo> entry : revisionToMetadata.entrySet()) {
-            if (entry.getValue() == null) {
+            if (entry.getValue() == MetadataInfo.EMPTY) {
                 result = true;
                 break;
             }
@@ -263,22 +263,22 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
-        if (metadata == null) {
-            if (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)) {
-                metadata = getMetadataInfo(instance);
-                if (metadata != null) {
-                    logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
-                    failureCounter.set(0);
-                    revisionToMetadata.putIfAbsent(revision, metadata);
-                    parseMetadata(revision, metadata, localServiceToRevisions);
-                } else {
-                    logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                            + ", wait for retry.");
-                    lastFailureTime = System.currentTimeMillis();
-                    failureCounter.incrementAndGet();
-                }
+        if (metadata == null
+                || (metadata == MetadataInfo.EMPTY && (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)))) {
+            metadata = getMetadataInfo(instance);
+
+            if (metadata != MetadataInfo.EMPTY) {
+                logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
+                failureCounter.set(0);
+                revisionToMetadata.putIfAbsent(revision, metadata);
+                parseMetadata(revision, metadata, localServiceToRevisions);
+            } else {
+                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                        + ", wait for retry.");
+                lastFailureTime = System.currentTimeMillis();
+                failureCounter.incrementAndGet();
             }
-        } else if (subInstances.size() == 1) {
+        } else if (metadata != MetadataInfo.EMPTY && subInstances.size() == 1) {
             // "subInstances.size() >= 2" means metadata of this revision has been parsed, ignore
             parseMetadata(revision, metadata, localServiceToRevisions);
         }
@@ -319,6 +319,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
             metadataInfo = null;
+        }
+
+        if (metadataInfo == null) {
+            metadataInfo = MetadataInfo.EMPTY;
         }
         return metadataInfo;
     }
