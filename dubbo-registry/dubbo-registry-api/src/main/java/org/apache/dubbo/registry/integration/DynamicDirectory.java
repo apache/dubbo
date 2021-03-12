@@ -261,7 +261,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
     }
 
-    public synchronized boolean isNotificationReceived() {
+    public boolean isNotificationReceived() {
         return invokersChanged;
     }
 
