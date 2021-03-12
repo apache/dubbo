@@ -60,11 +60,13 @@ public class URLParamTest {
         map.put("aaa", "aaa");
         map.put("bbb", "bbb");
         map.put("version", "2.0");
+        map.put("side", "consumer");
 
         URLParam urlParam1 = URLParam.parse(map);
         Assertions.assertEquals("aaa", urlParam1.getParameter("aaa"));
         Assertions.assertEquals("bbb", urlParam1.getParameter("bbb"));
         Assertions.assertEquals("2.0", urlParam1.getParameter("version"));
+        Assertions.assertEquals("consumer", urlParam1.getParameter("side"));
         Assertions.assertEquals(urlParam1, URLParam.parse(urlParam1.getRawParam()));
 
         map.put("bbb", "ccc");
