@@ -52,7 +52,6 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -260,13 +259,10 @@ public class ServiceDiscoveryRegistry implements Registry {
     public void doSubscribe(URL url, NotifyListener listener) {
         writableMetadataService.subscribeURL(url);
 
-        boolean check = url.getParameter(CHECK_KEY, false);
         Set<String> serviceNames = getServices(url, listener);
 
         if (CollectionUtils.isEmpty(serviceNames)) {
-            if (check) {
-                throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
-            }
+            logger.warn("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
             return;
         }
 
