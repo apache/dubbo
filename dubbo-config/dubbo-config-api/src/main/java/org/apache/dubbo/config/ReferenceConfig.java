@@ -234,6 +234,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
+            // compatible with api call.
+            bootstrap.registries(this.getRegistries());
             bootstrap.initialize();
         }
 
