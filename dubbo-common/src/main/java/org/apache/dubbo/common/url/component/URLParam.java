@@ -547,7 +547,7 @@ public class URLParam implements Serializable {
         Map<String, String> newExtraParams = null;
         for (String key : keys) {
             Integer keyIndex = DynamicParamTable.getKeyIndex(key);
-            if (keyIndex != null) {
+            if (keyIndex != null && KEY.get(keyIndex)) {
                 if (newKey == null) {
                     newKey = (BitSet) KEY.clone();
                 }
