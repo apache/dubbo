@@ -37,14 +37,54 @@ import java.util.StringJoiner;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
+/**
+ * A class which store parameters for {@link URL}
+ * <br/>
+ * Using {@link DynamicParamTable} to compress common keys (i.e. side, version)
+ * <br/>
+ * {@link DynamicParamTable} allow to use only two integer value named `key` and
+ * `value-offset` to find a unique string to string key-pair. Also, `value-offset`
+ * is not required if the real value is the default value.
+ * <br/>
+ * URLParam should operate as Copy-On-Write, each modify actions will return a new Object
+ *
+ * @since 3.0
+ */
 public class URLParam implements Serializable {
     private static final long serialVersionUID = -1985165475234910535L;
 
+    /**
+     * Maximum size of key-pairs requested using array moving to add into URLParam.
+     * If user request like addParameter for only one key-pair, adding value into a array
+     * on moving is more efficient. However when add more than ADD_PARAMETER_ON_MOVE_THRESHOLD
+     * size of key-pairs, recover compressed array back to map can reduce operation count
+     * when putting objects.
+     */
+    private static final int ADD_PARAMETER_ON_MOVE_THRESHOLD = 1;
+
+    /**
+     * the original parameters string, empty if parameters have been modified or init by {@link Map}
+     */
     private final String rawParam;
 
+    /**
+     * using bit to save if index exist even if value is default value
+     */
     private final BitSet KEY;
+
+    /**
+     * using bit to save if value is default value (reduce VALUE size)
+     */
     private final BitSet DEFAULT_KEY;
+
+    /**
+     * a compressed (those key not exist or value is default value are bring removed in this array) array which contains value-offset
+     */
     private final int[] VALUE;
+
+    /**
+     * store extra parameters which key not match in {@link DynamicParamTable}
+     */
     private final Map<String, String> EXTRA_PARAMS;
 
     //cache
@@ -57,6 +97,8 @@ public class URLParam implements Serializable {
         this.KEY = key;
         this.DEFAULT_KEY = new BitSet(KEY.size());
         this.VALUE = new int[value.size()];
+
+        // compress VALUE
         for (int i = key.nextSetBit(0), offset = 0; i >= 0; i = key.nextSetBit(i + 1)) {
             if (value.containsKey(i)) {
                 VALUE[offset++] = value.get(i);
@@ -71,9 +113,9 @@ public class URLParam implements Serializable {
         this.timestamp = System.currentTimeMillis();
     }
 
-    private URLParam(BitSet key, int[] value, Map<String, String> extraParams, String rawParam) {
+    private URLParam(BitSet key, BitSet defaultKey, int[] value, Map<String, String> extraParams, String rawParam) {
         this.KEY = key;
-        this.DEFAULT_KEY = new BitSet(KEY.size());
+        this.DEFAULT_KEY = defaultKey;
 
         this.VALUE = value;
 
@@ -124,6 +166,12 @@ public class URLParam implements Serializable {
         return methodParameters;
     }
 
+    /**
+     * An embedded Map adapt to URLParam
+     * <br/>
+     * copy-on-write mode, urlParam reference will be changed after modify actions.
+     * If wishes to get the result after modify, please use {@link URLParamMap#getUrlParam()}
+     */
     public static class URLParamMap implements Map<String, String> {
         private URLParam urlParam;
 
@@ -243,7 +291,7 @@ public class URLParam implements Serializable {
             for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
                 set.add(entry.getKey());
             }
-            return set;
+            return Collections.unmodifiableSet(set);
         }
 
         @Override
@@ -263,7 +311,7 @@ public class URLParam implements Serializable {
             for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
                 set.add(entry.getValue());
             }
-            return set;
+            return Collections.unmodifiableSet(set);
         }
 
         @Override
@@ -283,7 +331,7 @@ public class URLParam implements Serializable {
             for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
                 set.add(new Node(entry.getKey(), entry.getValue()));
             }
-            return set;
+            return Collections.unmodifiableSet(set);
         }
 
         public URLParam getUrlParam() {
@@ -308,10 +356,22 @@ public class URLParam implements Serializable {
         }
     }
 
+    /**
+     * Get a Map like URLParam
+     *
+     * @return a {@link URLParamMap} adapt to URLParam
+     */
     public Map<String, String> getParameters() {
         return new URLParamMap(this);
     }
 
+    /**
+     * Add parameters to a new URLParam.
+     *
+     * @param key   key
+     * @param value value
+     * @return A new URLParam
+     */
     public URLParam addParameter(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -319,6 +379,13 @@ public class URLParam implements Serializable {
         return addParameters(Collections.singletonMap(key, value));
     }
 
+    /**
+     * Add absent parameters to a new URLParam.
+     *
+     * @param key   key
+     * @param value value
+     * @return A new URLParam
+     */
     public URLParam addParameterIfAbsent(String key, String value) {
         if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
@@ -330,10 +397,11 @@ public class URLParam implements Serializable {
     }
 
     /**
-     * Add parameters to a new url.
+     * Add parameters to a new URLParam.
+     * If key-pair is present, this will cover it.
      *
      * @param parameters parameters in key-value pairs
-     * @return A new URL
+     * @return A new URLParam
      */
     public URLParam addParameters(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
@@ -363,6 +431,12 @@ public class URLParam implements Serializable {
         return doAddParameters(parameters, false);
     }
 
+    /**
+     * Add absent parameters to a new URLParam.
+     *
+     * @param parameters parameters in key-value pairs
+     * @return A new URL
+     */
     public URLParam addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
@@ -371,8 +445,10 @@ public class URLParam implements Serializable {
         return doAddParameters(parameters, true);
     }
 
-    public URLParam doAddParameters(Map<String, String> parameters, boolean skipIfPresent) {
+    private URLParam doAddParameters(Map<String, String> parameters, boolean skipIfPresent) {
+        // lazy init, null if no modify
         BitSet newKey = null;
+        BitSet defaultKey = null;
         int[] newValueArray = null;
         Map<Integer, Integer> newValueMap = null;
         Map<String, String> newExtraParams = null;
@@ -382,6 +458,7 @@ public class URLParam implements Serializable {
             }
             Integer keyIndex = DynamicParamTable.getKeyIndex(entry.getKey());
             if (keyIndex == null) {
+                // entry key is not present in DynamicParamTable, add it to EXTRA_PARAMS
                 if (newExtraParams == null) {
                     newExtraParams = new HashMap<>(EXTRA_PARAMS);
                 }
@@ -392,20 +469,29 @@ public class URLParam implements Serializable {
                 }
                 newKey.set(keyIndex);
 
-                if (parameters.size() > 1) {
-                    //  to Map
+                if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
+                    // recover VALUE back to Map
                     if (newValueMap == null) {
                         newValueMap = recoverCompressedValue();
                     }
                     newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                } else {
-                    newKey.set(keyIndex);
+                } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
+                    // add parameter by moving array
                     newValueArray = addByMove(VALUE, KEY.get(0, keyIndex).cardinality(), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                } else {
+                    // value is default value, add to defaultKey directly
+                    if (defaultKey == null) {
+                        defaultKey = (BitSet) DEFAULT_KEY.clone();
+                    }
+                    defaultKey.set(keyIndex);
                 }
             }
         }
         if (newKey == null) {
             newKey = KEY;
+        }
+        if (defaultKey == null) {
+            defaultKey = DEFAULT_KEY;
         }
         if (newValueArray == null && newValueMap == null) {
             newValueArray = VALUE;
@@ -414,23 +500,10 @@ public class URLParam implements Serializable {
             newExtraParams = EXTRA_PARAMS;
         }
         if (newValueMap == null) {
-            return new URLParam(newKey, newValueArray, newExtraParams, null);
+            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, null);
         } else {
             return new URLParam(newKey, newValueMap, newExtraParams, null);
         }
-    }
-
-    private int[] addByMove(int[] array, int index, int value) {
-        if (index < 0 || index > array.length) {
-            throw new IllegalArgumentException();
-        }
-        int[] result = new int[array.length + 1];
-
-        System.arraycopy(array, 0, result, 0, index);
-        result[index] = value;
-        System.arraycopy(array, index, result, index + 1, array.length - index);
-
-        return result;
     }
 
     private Map<Integer, Integer> recoverCompressedValue() {
@@ -443,11 +516,34 @@ public class URLParam implements Serializable {
         return map;
     }
 
+    private int[] addByMove(int[] array, int index, int value) {
+        if (index < 0 || index > array.length) {
+            throw new IllegalArgumentException();
+        }
+        // copy-on-write
+        int[] result = new int[array.length + 1];
+
+        System.arraycopy(array, 0, result, 0, index);
+        result[index] = value;
+        System.arraycopy(array, index, result, index + 1, array.length - index);
+
+        return result;
+    }
+
+    /**
+     * remove specified parameters in URLParam
+     *
+     * @param keys keys to being removed
+     * @return A new URLParam
+     */
     public URLParam removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
         }
+        // lazy init, null if no modify
         BitSet newKey = null;
+        BitSet defaultKey = null;
+        int[] newValueArray = null;
         Map<String, String> newExtraParams = null;
         for (String key : keys) {
             Integer keyIndex = DynamicParamTable.getKeyIndex(key);
@@ -456,6 +552,21 @@ public class URLParam implements Serializable {
                     newKey = (BitSet) KEY.clone();
                 }
                 newKey.clear(keyIndex);
+                if (DEFAULT_KEY.get(keyIndex)) {
+                    // is default value, remove in DEFAULT_KEY
+                    if (defaultKey == null) {
+                        defaultKey = (BitSet) DEFAULT_KEY.clone();
+                    }
+                    defaultKey.clear(keyIndex);
+                } else {
+                    // which offset is in VALUE array, set value as -1, compress in the end
+                    if (newValueArray == null) {
+                        newValueArray = new int[VALUE.length];
+                        System.arraycopy(VALUE, 0, newValueArray, 0, VALUE.length);
+                    }
+                    // KEY is immutable
+                    newValueArray[KEY.get(0, keyIndex).cardinality()] = -1;
+                }
             }
             if (EXTRA_PARAMS.containsKey(key)) {
                 if (newExtraParams == null) {
@@ -463,21 +574,67 @@ public class URLParam implements Serializable {
                 }
                 newExtraParams.remove(key);
             }
-
+            // ignore if key is absent
         }
         if (newKey == null) {
             newKey = KEY;
         }
+        if (defaultKey == null) {
+            defaultKey = DEFAULT_KEY;
+        }
+        if (newValueArray == null) {
+            newValueArray = VALUE;
+        } else {
+            // remove -1 value
+            newValueArray = compressArray(newValueArray);
+        }
         if (newExtraParams == null) {
             newExtraParams = EXTRA_PARAMS;
         }
-        return new URLParam(newKey, VALUE, newExtraParams, null);
+        if (newKey.cardinality() + newExtraParams.size() == 0) {
+            // empty, directly return cache
+            return EMPTY_PARAM;
+        } else {
+            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, null);
+        }
     }
 
+    private int[] compressArray(int[] array) {
+        int total = 0;
+        for (int i : array) {
+            if (i > -1) {
+                total++;
+            }
+        }
+        if (total == 0) {
+            return new int[0];
+        }
+
+        int[] result = new int[total];
+        for (int i = 0, offset = 0; i < array.length; i++) {
+            // skip if value if less than 0
+            if (array[i] > -1) {
+                result[offset++] = array[i];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * remove all of the parameters in URLParam
+     *
+     * @return An empty URLParam
+     */
     public URLParam clearParameters() {
         return EMPTY_PARAM;
     }
 
+    /**
+     * check if specified key is present in URLParam
+     *
+     * @param key specified key
+     * @return present or not
+     */
     public boolean hasParameter(String key) {
         Integer keyIndex = DynamicParamTable.getKeyIndex(key);
         if (keyIndex == null) {
@@ -486,6 +643,12 @@ public class URLParam implements Serializable {
         return KEY.get(keyIndex);
     }
 
+    /**
+     * get value of specified key in URLParam
+     *
+     * @param key specified key
+     * @return value, null if key is absent
+     */
     public String getParameter(String key) {
         Integer keyIndex = DynamicParamTable.getKeyIndex(key);
         if (keyIndex == null) {
@@ -503,6 +666,8 @@ public class URLParam implements Serializable {
                 value = DynamicParamTable.getValue(keyIndex, offset);
             }
             if (StringUtils.isEmpty(value)) {
+                // Forward compatible, make sure key dynamic increment can work.
+                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
                 return EXTRA_PARAMS.get(key);
             } else {
                 return value;
@@ -516,10 +681,16 @@ public class URLParam implements Serializable {
         return VALUE[arrayOffset];
     }
 
+    /**
+     * get raw string like parameters
+     *
+     * @return raw string like parameters
+     */
     public String getRawParam() {
         if (StringUtils.isNotEmpty(rawParam)) {
             return rawParam;
         } else {
+            // empty if parameters have been modified or init by Map
             return toString();
         }
     }
@@ -542,13 +713,14 @@ public class URLParam implements Serializable {
         }
         URLParam urlParam = (URLParam) o;
         return Objects.equals(KEY, urlParam.KEY)
+                && Objects.equals(DEFAULT_KEY, urlParam.DEFAULT_KEY)
                 && Arrays.equals(VALUE, urlParam.VALUE)
                 && Objects.equals(EXTRA_PARAMS, urlParam.EXTRA_PARAMS);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(KEY, Arrays.hashCode(VALUE), EXTRA_PARAMS);
+        return Objects.hash(KEY, DEFAULT_KEY, Arrays.hashCode(VALUE), EXTRA_PARAMS);
     }
 
     @Override
@@ -578,6 +750,27 @@ public class URLParam implements Serializable {
         return stringJoiner.toString();
     }
 
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     * rawParam field in result will be null while {@link URLParam#getRawParam()} will automatically create it
+     *
+     * @param params params map added into URLParam
+     * @return a new URLParam
+     */
+    public static URLParam parse(Map<String, String> params) {
+        return parse(params, null);
+    }
+
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param rawParam original rawParam string
+     * @param encoded if parameters are URL encoded
+     * @param extraParameters extra parameters to add into URLParam
+     * @return a new URLParam
+     */
     public static URLParam parse(String rawParam, boolean encoded, Map<String, String> extraParameters) {
         Map<String, String> parameters = URLStrParser.parseParams(rawParam, encoded);
         if (CollectionUtils.isNotEmptyMap(extraParameters)) {
@@ -586,10 +779,13 @@ public class URLParam implements Serializable {
         return parse(parameters, rawParam);
     }
 
-    public static URLParam parse(Map<String, String> params) {
-        return parse(params, null);
-    }
-
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param rawParam original rawParam string
+     * @return a new URLParam
+     */
     public static URLParam parse(String rawParam) {
         String[] parts = rawParam.split("&");
 
@@ -617,7 +813,19 @@ public class URLParam implements Serializable {
         return new URLParam(keyBit, valueMap, extraParam, rawParam);
     }
 
-
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param params params map added into URLParam
+     * @param rawParam original rawParam string, directly add to rawParam field,
+     *                 will not effect real key-pairs store in URLParam.
+     *                 Please make sure it can correspond with params or will
+     *                 cause unexpected result when calling {@link URLParam#getRawParam()}
+     *                 and {@link URLParam#toString()} ()}. If you not sure, you can call
+     *                 {@link URLParam#parse(String)} to init.
+     * @return a new URLParam
+     */
     public static URLParam parse(Map<String, String> params, String rawParam) {
         if (CollectionUtils.isNotEmptyMap(params)) {
             BitSet keyBit = new BitSet((int) (params.size() / .75f) + 1);

@@ -133,6 +133,8 @@ public class URLParamTest {
         URLParam urlParam6 = urlParam1.removeParameters("aaa");
         Assertions.assertFalse(urlParam6.hasParameter("aaa"));
 
+        URLParam urlParam7 = URLParam.parse("side=consumer").removeParameters("side");
+        Assertions.assertFalse(urlParam7.hasParameter("side"));
     }
 
     @Test

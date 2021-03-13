@@ -38,6 +38,7 @@ public class DynamicValues implements ParamValue {
             return index;
         } else {
             synchronized (this) {
+                // thread safe
                 if (!value2Index.containsKey(value)) {
                     value2Index.put(value, indexSeq);
                     index2Value.put(indexSeq, value);

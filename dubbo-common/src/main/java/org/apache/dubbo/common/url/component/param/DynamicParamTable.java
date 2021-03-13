@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+/**
+ * Global Param Cache Table
+ */
 public final class DynamicParamTable {
     private static final List<String> KEYS = new CopyOnWriteArrayList<>();
     private static final List<ParamValue> VALUES = new CopyOnWriteArrayList<>();
@@ -54,7 +57,7 @@ public final class DynamicParamTable {
     }
 
     public static boolean isDefaultValue(String key, String value) {
-        return Objects.equals(value, VALUES.get(getKeyIndex(key)).getN(0));
+        return Objects.equals(value, VALUES.get(getKeyIndex(key)).defaultVal());
     }
 
     public static String getValue(int vi, int offset) {
@@ -72,6 +75,7 @@ public final class DynamicParamTable {
         keys.add("");
         values.add(new DynamicValues(null));
 
+        // Cache key and defaultValue
         keys.add("version");
         values.add(new DynamicValues(null));
 
