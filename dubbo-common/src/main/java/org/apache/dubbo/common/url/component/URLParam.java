@@ -93,6 +93,14 @@ public class URLParam implements Serializable {
 
     private final static URLParam EMPTY_PARAM = new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), "");
 
+    private URLParam() {
+        this.rawParam = null;
+        this.KEY = null;
+        this.DEFAULT_KEY = null;
+        this.VALUE = null;
+        this.EXTRA_PARAMS = null;
+    }
+
     private URLParam(BitSet key, Map<Integer, Integer> value, Map<String, String> extraParams, String rawParam) {
         this.KEY = key;
         this.DEFAULT_KEY = new BitSet(KEY.size());
