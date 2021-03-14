@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,12 +31,44 @@ public class ServiceConfigURL extends URL {
     private volatile transient String parameter;
 
     public ServiceConfigURL() {
-        this.attributes = null;
+        this.attributes = new HashMap<>();
     }
 
     public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         super(urlAddress, urlParam);
         this.attributes = (attributes != null ? attributes : new HashMap<>());
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port) {
+        this(protocol, null, null, host, port, null, null, null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
+        this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs), null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, Map<String, String> parameters) {
+        this(protocol, null, null, host, port, null, parameters, null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path) {
+        this(protocol, null, null, host, port, path, null, null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path, String... pairs) {
+        this(protocol, null, null, host, port, path, CollectionUtils.toStringMap(pairs), null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path, Map<String, String> parameters) {
+        this(protocol, null, null, host, port, path, parameters, null);
+    }
+
+    public ServiceConfigURL(String protocol, String username, String password, String host, int port, String path) {
+        this(protocol, username, password, host, port, path, null, null);
+    }
+
+    public ServiceConfigURL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
+        this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs), null);
     }
 
     public ServiceConfigURL(String protocol,
@@ -45,7 +78,7 @@ public class ServiceConfigURL extends URL {
                int port,
                String path,
                Map<String, String> parameters) {
-        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), null);
+        this(protocol, username, password, host, port, path, parameters, null);
     }
 
     public ServiceConfigURL(String protocol,
@@ -56,7 +89,8 @@ public class ServiceConfigURL extends URL {
                             String path,
                             Map<String, String> parameters,
                             Map<String, Object> attributes) {
-        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), attributes);
+        super(protocol, username, password, host, port, path, parameters);
+        this.attributes = (attributes != null ? attributes : new HashMap<>());
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {

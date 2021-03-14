@@ -32,6 +32,30 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 public class DubboServiceAddressURL extends ServiceAddressURL {
     public static final String[] PROVIDER_FIRST_KEYS = new String[]{RELEASE_KEY, DUBBO_VERSION_KEY, METHODS_KEY, TIMESTAMP_KEY, TAG_KEY};
 
+    private ServiceConfigURL overrideURL;
+
+    public DubboServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL, ServiceConfigURL overrideURL) {
+        super(urlAddress, urlParam, consumerURL);
+        this.overrideURL = overrideURL;
+    }
+
+    public DubboServiceAddressURL(String protocol, String host, int port, String path, Map<String, String> parameters, URL consumerURL) {
+        this(protocol, null, null, host, port, path, parameters, consumerURL, null);
+    }
+
+    public DubboServiceAddressURL(String protocol,
+                                  String username,
+                                  String password,
+                                  String host,
+                                  int port,
+                                  String path,
+                                  Map<String, String> parameters,
+                                  URL consumerURL,
+                                  ServiceConfigURL overrideURL) {
+        super(protocol, username, password, host, port, path, parameters, consumerURL);
+        this.overrideURL = overrideURL;
+    }
+
     public static DubboServiceAddressURL valueOf(String rawURL, URL consumerURL) {
         return valueOf(rawURL, consumerURL, null);
     }
@@ -39,13 +63,6 @@ public class DubboServiceAddressURL extends ServiceAddressURL {
     public static DubboServiceAddressURL valueOf(String rawURL, URL consumerURL, ServiceConfigURL overriddenURL) {
         URL url = valueOf(rawURL, true);
         return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, overriddenURL);
-    }
-
-    private ServiceConfigURL overrideURL;
-
-    public DubboServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL, ServiceConfigURL overrideURL) {
-        super(urlAddress, urlParam, consumerURL);
-        this.overrideURL = overrideURL;
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {

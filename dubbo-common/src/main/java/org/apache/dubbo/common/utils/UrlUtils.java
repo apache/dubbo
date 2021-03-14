@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,11 +131,10 @@ public class UrlUtils {
             host = NetUtils.getLocalHost();
         }*/
         if (port <= 0) {
+            changed = true;
             if (defaultPort > 0) {
-                changed = true;
                 port = defaultPort;
             } else {
-                changed = true;
                 port = 9090;
             }
         }
@@ -158,7 +158,7 @@ public class UrlUtils {
             }
         }
         if (changed) {
-            u = new URL(protocol, username, password, host, port, path, parameters);
+            u = new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
         }
         return u;
     }
@@ -575,6 +575,7 @@ public class UrlUtils {
      * @return URL instance
      * @see URL
      */
+    @Deprecated
     public static URL valueOf(String url) {
         if (url == null || (url = url.trim()).length() == 0) {
             throw new IllegalArgumentException("url == null");
@@ -659,7 +660,7 @@ public class UrlUtils {
             host = url;
         }
 
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
     public static boolean isConsumer(URL url) {

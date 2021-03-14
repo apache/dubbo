@@ -37,14 +37,18 @@ public class PathURLAddress extends URLAddress {
     public PathURLAddress(String protocol, String username, String password, String path, String host, int port, String rawAddress) {
         super(host, port, rawAddress);
 
-        this.protocol = protocol;
-        this.username = username;
-        this.password = password;
-
         // trim the beginning "/"
         while (path != null && path.startsWith("/")) {
             path = path.substring(1);
         }
+
+        // check cache
+        protocol = URLItemCache.checkProtocol(protocol);
+        path = URLItemCache.checkPath(path);
+
+        this.protocol = protocol;
+        this.username = username;
+        this.password = password;
         this.path = path;
     }
 

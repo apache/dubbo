@@ -530,12 +530,7 @@ public class NacosRegistry extends FailbackRegistry {
         Map<String, String> metadata = instance.getMetadata();
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);
-        URL url = new URL(protocol,
-                instance.getIp(),
-                instance.getPort(),
-                path,
-                instance.getMetadata());
-        return new DubboServiceAddressURL(url.getUrlAddress(), url.getUrlParam(), consumerURL, null);
+        return new DubboServiceAddressURL(protocol, instance.getIp(), instance.getPort(), path, instance.getMetadata(), consumerURL);
     }
 
     private Instance createInstance(URL url) {

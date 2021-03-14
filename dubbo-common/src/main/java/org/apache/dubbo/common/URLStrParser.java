@@ -168,10 +168,6 @@ public final class URLStrParser {
             host = decodedBody.substring(starIdx, endIdx);
         }
 
-        // check cache
-        protocol = URLItemCache.checkProtocol(protocol);
-        path = URLItemCache.checkPath(path);
-
         return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
