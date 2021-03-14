@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.ConditionalEventListener;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -34,11 +35,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
+public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
-    private ServiceInstance serviceInstance;
     private String applicationName;
 
     @Override
@@ -71,13 +71,12 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update(serviceInstance));
     }
 
@@ -102,7 +101,7 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
 
         List<ServiceInstance> serviceInstanceList = new ArrayList<>();
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
-            Page<ServiceInstance> serviceInstancePage =  serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
+            Page<ServiceInstance> serviceInstancePage = serviceDiscovery.getInstances(serviceName, offset, pageSize, healthyOnly);
             serviceInstanceList.addAll(serviceInstancePage.getData());
         }
 
@@ -118,12 +117,7 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         return services;
     }
 
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
-    }
-
-    protected  static class MultiServiceInstancesChangedListener  implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+    protected static class MultiServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
         private final ServiceInstancesChangedListener sourceListener;
         private final Map<String, SingleServiceInstancesChangedListener> singleListenerMap = new ConcurrentHashMap<>();
 
@@ -141,7 +135,7 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
             List<ServiceInstance> serviceInstances = new ArrayList<>();
             for (SingleServiceInstancesChangedListener singleListener : singleListenerMap.values()) {
                 if (null != singleListener.event && null != singleListener.event.getServiceInstances()) {
-                    for (ServiceInstance serviceInstance: singleListener.event.getServiceInstances()) {
+                    for (ServiceInstance serviceInstance : singleListener.event.getServiceInstances()) {
                         if (!serviceInstances.contains(serviceInstance)) {
                             serviceInstances.add(serviceInstance);
                         }
@@ -157,9 +151,9 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
         }
     }
 
-    protected  static class SingleServiceInstancesChangedListener extends ServiceInstancesChangedListener {
+    protected static class SingleServiceInstancesChangedListener extends ServiceInstancesChangedListener {
         private final MultiServiceInstancesChangedListener multiListener;
-        volatile  ServiceInstancesChangedEvent event;
+        volatile ServiceInstancesChangedEvent event;
 
         public SingleServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery, MultiServiceInstancesChangedListener multiListener) {
             super(serviceNames, serviceDiscovery);
