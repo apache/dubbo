@@ -149,15 +149,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Parameter(excluded = true)
+    @Override
     public boolean isExported() {
         return exported;
     }
 
     @Parameter(excluded = true)
+    @Override
     public boolean isUnexported() {
         return unexported;
     }
 
+    @Override
     public void unexport() {
         if (!exported) {
             return;
@@ -181,6 +184,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
+    @Override
     public synchronized void export() {
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
