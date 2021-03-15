@@ -16,20 +16,17 @@
  */
 package org.apache.dubbo.config.spring.util;
 
-import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
-
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
