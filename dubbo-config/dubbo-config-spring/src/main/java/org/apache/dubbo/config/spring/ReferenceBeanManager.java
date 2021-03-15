@@ -191,6 +191,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                 RuntimeBeanReference consumerRef = (RuntimeBeanReference) value;
                 value = consumerRef.getBeanName();
             }
+            if (value instanceof RuntimeBeanReference) {
+                RuntimeBeanReference beanReference = (RuntimeBeanReference) value;
+                value = applicationContext.getBean(beanReference.getBeanName());
+            }
             referenceProps.put(propertyName, value);
         }
         return referenceProps;
@@ -212,6 +216,11 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                 value = argumentConfigs.toArray(new ArgumentConfig[0]);
             } else if ("parameters".equals(propertyName)) {
                 value = createParameterMap((ManagedMap) value, propertyResolver);
+            }
+
+            if (value instanceof RuntimeBeanReference) {
+                RuntimeBeanReference beanReference = (RuntimeBeanReference) value;
+                value = applicationContext.getBean(beanReference.getBeanName());
             }
             attributes.put(propertyName, value);
         }
