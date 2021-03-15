@@ -23,7 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static java.util.Collections.sort;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_PHASER;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 
 /**
@@ -36,8 +35,6 @@ public class ShutdownHookCallbacks {
     public static final ShutdownHookCallbacks INSTANCE = new ShutdownHookCallbacks();
 
     private final List<ShutdownHookCallback> callbacks = new LinkedList<>();
-
-
 
     ShutdownHookCallbacks() {
         loadCallbacks();
@@ -71,8 +68,5 @@ public class ShutdownHookCallbacks {
 
     public void callback() {
         getCallbacks().forEach(callback -> execute(callback::callback));
-
-        // Waiting for all threads to finish.
-        SHUTDOWN_PHASER.arriveAndAwaitAdvance();
     }
 }
