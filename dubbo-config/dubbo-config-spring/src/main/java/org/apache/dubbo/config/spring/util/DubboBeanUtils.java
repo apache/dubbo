@@ -86,11 +86,15 @@ public interface DubboBeanUtils {
      */
     static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {
         // Resolve ${...} placeholders of bean definition with Spring Environment
-        Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
-        // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
-        propertySourcesPlaceholderPropertyValues.put("order", 0);
-        registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
-                PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
+
+        // If PropertyPlaceholderConfigurer already exists, PropertySourcesPlaceholderConfigurer cannot be registered.
+        // When both of them exist, a conflict will occur, and an exception will be thrown when encountering an unresolved placeholder
+
+//        Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
+//        // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
+//        propertySourcesPlaceholderPropertyValues.put("order", 0);
+//        registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
+//                PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
 
     }
 
