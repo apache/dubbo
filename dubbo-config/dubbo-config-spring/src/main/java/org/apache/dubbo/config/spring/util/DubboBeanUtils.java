@@ -24,9 +24,12 @@ import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPro
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -79,6 +82,7 @@ public interface DubboBeanUtils {
 
     /**
      * Call this method in postProcessBeanFactory()
+     *
      * @param registry
      */
     static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {
@@ -87,26 +91,23 @@ public interface DubboBeanUtils {
         // If PropertyPlaceholderConfigurer already exists, PropertySourcesPlaceholderConfigurer cannot be registered.
         // When both of them exist, a conflict will occur, and an exception will be thrown when encountering an unresolved placeholder
 
-//        Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
-//        // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
-//        propertySourcesPlaceholderPropertyValues.put("order", 0);
-//        registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
-//                PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
-
+        if (!checkBeanExists(registry, PropertyPlaceholderConfigurer.class)) {
+            Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
+            // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
+            propertySourcesPlaceholderPropertyValues.put("order", 0);
+            registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
+                    PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
+        }
     }
 
     static boolean registerBeanDefinitionIfNotExists(BeanDefinitionRegistry registry, String beanName,
-                                                            Class<?> beanClass, Map<String, Object> extraPropertyValues) {
+                                                     Class<?> beanClass, Map<String, Object> extraPropertyValues) {
         if (registry.containsBeanDefinition(beanName)) {
             return false;
         }
 
-        String[] candidates = registry.getBeanDefinitionNames();
-        for (String candidate : candidates) {
-            BeanDefinition beanDefinition = registry.getBeanDefinition(candidate);
-            if (Objects.equals(beanDefinition.getBeanClassName(), beanClass.getName())) {
-                return false;
-            }
+        if (checkBeanExists(registry, beanClass)) {
+            return false;
         }
 
         BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(beanClass).getBeanDefinition();
@@ -119,6 +120,17 @@ public interface DubboBeanUtils {
         registry.registerBeanDefinition(beanName, beanDefinition);
 
         return true;
+    }
+
+    static boolean checkBeanExists(BeanDefinitionRegistry registry, Class<?> beanClass) {
+        String[] candidates = registry.getBeanDefinitionNames();
+        for (String candidate : candidates) {
+            BeanDefinition beanDefinition = registry.getBeanDefinition(candidate);
+            if (Objects.equals(beanDefinition.getBeanClassName(), beanClass.getName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
