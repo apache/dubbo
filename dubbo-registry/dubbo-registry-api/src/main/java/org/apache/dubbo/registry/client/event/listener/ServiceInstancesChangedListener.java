@@ -88,10 +88,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
+        if (logger.isDebugEnabled()) {
+            logger.debug(event.getServiceInstances().toString());
+        }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
         Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
+        Map<String, List<URL>> tmpServiceUrls = new HashMap<>();
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
@@ -108,7 +112,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     metadata = getMetadataInfo(instance);
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
-                        revisionToMetadata.put(revision, getMetadataInfo(instance));
+                        revisionToMetadata.put(revision, metadata);
                     } else {
 
                     }
@@ -123,25 +127,26 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 //                    Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new TreeSet<>());
 //                    set.add(revision);
 //                }
-
-                localServiceToRevisions.forEach((serviceKey, revisions) -> {
-                    List<URL> urls = revisionsToUrls.get(revisions);
-                    if (urls != null) {
-                        serviceUrls.put(serviceKey, urls);
-                    } else {
-                        urls = new ArrayList<>();
-                        for (String r : revisions) {
-                            for (ServiceInstance i : revisionToInstances.get(r)) {
-                                urls.add(i.toURL());
-                            }
-                        }
-                        revisionsToUrls.put(revisions, urls);
-                        serviceUrls.put(serviceKey, urls);
-                    }
-                });
             }
+
+            localServiceToRevisions.forEach((serviceKey, revisions) -> {
+                List<URL> urls = revisionsToUrls.get(revisions);
+                if (urls != null) {
+                    tmpServiceUrls.put(serviceKey, urls);
+                } else {
+                    urls = new ArrayList<>();
+                    for (String r : revisions) {
+                        for (ServiceInstance i : revisionToInstances.get(r)) {
+                            urls.add(i.toURL());
+                        }
+                    }
+                    revisionsToUrls.put(revisions, urls);
+                    tmpServiceUrls.put(serviceKey, urls);
+                }
+            });
         }
 
+        this.serviceUrls = tmpServiceUrls;
         this.notifyAddressChanged();
     }
 
@@ -161,12 +166,18 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
+            if (logger.isDebugEnabled()) {
+                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+            }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+            }
+            if (logger.isDebugEnabled()) {
+                logger.info("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
@@ -192,6 +203,13 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     public void addListener(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
+    }
+
+    public void removeListener(String serviceKey) {
+        listeners.remove(serviceKey);
+        if (listeners.isEmpty()) {
+            serviceDiscovery.removeServiceInstancesChangedListener(this);
+        }
     }
 
     public List<URL> getUrls(String serviceKey) {
@@ -225,8 +243,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceInstancesChangedListener)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceInstancesChangedListener)) {
+            return false;
+        }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
         return Objects.equals(getServiceNames(), that.getServiceNames());
     }
