@@ -189,7 +189,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             // compatible with api call.
-            bootstrap.registries(this.getRegistries());
+            if (null != this.getRegistry()) {
+                bootstrap.registries(this.getRegistries());
+            }
             bootstrap.initialize();
         }
 
