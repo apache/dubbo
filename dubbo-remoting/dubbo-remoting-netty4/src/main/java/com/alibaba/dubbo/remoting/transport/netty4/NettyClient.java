@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.ConfigUtils;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -34,8 +35,10 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.proxy.Socks5ProxyHandler;
 import io.netty.util.concurrent.DefaultThreadFactory;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,6 +49,12 @@ public class NettyClient extends AbstractClient {
     private static final Logger logger = LoggerFactory.getLogger(NettyClient.class);
 
     private static final NioEventLoopGroup nioEventLoopGroup = new NioEventLoopGroup(Constants.DEFAULT_IO_THREADS, new DefaultThreadFactory("NettyClientWorker", true));
+    
+    private static final String SOCKS_PROXY_HOST = "socksProxyHost";
+
+    private static final String SOCKS_PROXY_PORT = "socksProxyPort";
+
+    private static final String DEFAULT_SOCKS_PROXY_PORT = "1080";
 
     private Bootstrap bootstrap;
 
@@ -81,6 +90,12 @@ public class NettyClient extends AbstractClient {
                         .addLast("decoder", adapter.getDecoder())
                         .addLast("encoder", adapter.getEncoder())
                         .addLast("handler", nettyClientHandler);
+                String socksProxyHost = ConfigUtils.getProperty(SOCKS_PROXY_HOST);
+                if(socksProxyHost != null) {
+                    int socksProxyPort = Integer.parseInt(ConfigUtils.getProperty(SOCKS_PROXY_PORT, DEFAULT_SOCKS_PROXY_PORT));
+                    Socks5ProxyHandler socks5ProxyHandler = new Socks5ProxyHandler(new InetSocketAddress(socksProxyHost, socksProxyPort));
+                    ch.pipeline().addFirst(socks5ProxyHandler);
+                }
             }
         });
     }
@@ -156,8 +171,9 @@ public class NettyClient extends AbstractClient {
     @Override
     protected com.alibaba.dubbo.remoting.Channel getChannel() {
         Channel c = channel;
-        if (c == null || !c.isActive())
+        if (c == null || !c.isActive()) {
             return null;
+        }
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
 
