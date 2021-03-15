@@ -39,7 +39,7 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
         if (addresses != null && !addresses.isEmpty()) {
             for (URL serviceURL : addresses) {
 
-                String app = serviceURL.getParameter(APPLICATION_KEY);
+                String app = serviceURL.getRemoteApplication();
                 if (app != null && !app.isEmpty()) {
                     if (appMap.putIfAbsent(app, mark) == null) {
                         MeshRuleManager.subscribeAppRule(app);

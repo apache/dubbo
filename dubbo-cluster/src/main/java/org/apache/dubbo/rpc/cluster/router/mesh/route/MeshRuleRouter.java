@@ -135,7 +135,7 @@ public class MeshRuleRouter implements Router {
             synchronized (this) {
                 if (StringUtils.isEmpty(remoteAppName) && invokers != null && invokers.size() > 0) {
                     for (Invoker invoker : invokers) {
-                        String applicationName = invoker.getUrl().getParameter(APPLICATION_KEY);
+                        String applicationName = invoker.getUrl().getRemoteApplication();
                         if (StringUtils.isNotEmpty(applicationName) && !"unknown".equals(applicationName)) {
                             remoteAppName = applicationName;
                             MeshRuleManager.register(remoteAppName, this);
