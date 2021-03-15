@@ -18,9 +18,11 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -29,6 +31,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.annotation.InjectionMetadata;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
@@ -42,8 +46,10 @@ import org.springframework.util.ObjectUtils;
 import java.beans.PropertyDescriptor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -75,7 +81,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     private final Log logger = LogFactory.getLog(getClass());
 
-    private final ConcurrentMap<String, ReferenceBean<?>> referenceBeanCache =
+    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedFieldReferenceBeanCache =
+            new ConcurrentHashMap<>(CACHE_SIZE);
+
+    private final ConcurrentMap<InjectionMetadata.InjectedElement, ReferenceBean<?>> injectedMethodReferenceBeanCache =
             new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
@@ -103,15 +112,23 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         String[] beanNames = beanFactory.getBeanDefinitionNames();
         for (String beanName : beanNames) {
-            if (!beanFactory.isFactoryBean(beanName)){
-                Class<?> beanType = beanFactory.getType(beanName);
-                if (beanType != null) {
-                    AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
-                    try {
-                        prepareInjection(metadata);
-                    } catch (Exception e) {
-                        logger.warn("Prepare dubbo reference injection element failed", e);
-                    }
+            Class<?> beanType;
+            if (beanFactory.isFactoryBean(beanName)){
+                BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
+                if (isReferenceBean(beanDefinition)) {
+                    continue;
+                }
+                String beanClassName = beanDefinition.getBeanClassName();
+                beanType = ClassUtils.resolveClass(beanClassName, getClassLoader());
+            } else {
+                beanType = beanFactory.getType(beanName);
+            }
+            if (beanType != null) {
+                AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, beanType, null);
+                try {
+                    prepareInjection(metadata);
+                } catch (Exception e) {
+                    logger.warn("Prepare dubbo reference injection element failed", e);
                 }
             }
         }
@@ -155,7 +172,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         return pvs;
     }
 
-    private boolean isReferenceBean(RootBeanDefinition beanDefinition) {
+    private boolean isReferenceBean(BeanDefinition beanDefinition) {
         return ReferenceBean.class.getName().equals(beanDefinition.getBeanClassName());
     }
 
@@ -171,6 +188,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             //associate fieldElement and reference bean
             fieldElement.refKey = referenceBean.getId();
+            injectedFieldReferenceBeanCache.put(fieldElement, referenceBean);
+
         }
 
         for (AnnotatedMethodElement methodElement : metadata.getMethodElements()) {
@@ -183,6 +202,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             //associate fieldElement and reference bean
             methodElement.refKey = referenceBean.getId();
+            injectedMethodReferenceBeanCache.put(methodElement, referenceBean);
         }
     }
 
@@ -210,8 +230,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             //check interfaceClass
             if (attributes.get("interfaceName") == null && attributes.get("interfaceClass") == null) {
                 Class<?> interfaceClass = injectedType;
-                Assert.notNull(interfaceClass, "The injected type of @DubboReference is empty!");
-                Assert.isTrue(interfaceClass.isInterface(), "The 'interfaceClass' of @DubboReference must be an interface!");
+                Assert.isTrue(interfaceClass.isInterface(),
+                        "The class of field or method that was annotated @DubboReference is not an interface!");
                 attributes.put("interfaceClass", interfaceClass);
             }
 
@@ -378,6 +398,36 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     @Override
     public void destroy() throws Exception {
         super.destroy();
-        this.referenceBeanCache.clear();
+        this.injectedFieldReferenceBeanCache.clear();
+        this.injectedMethodReferenceBeanCache.clear();
+    }
+
+    /**
+     * Gets all beans of {@link ReferenceBean}
+     * @deprecated  use {@link ConfigManager#getReferences()} instead
+     */
+    @Deprecated
+    public Collection<ReferenceBean<?>> getReferenceBeans() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Get {@link ReferenceBean} {@link Map} in injected field.
+     *
+     * @return non-null {@link Map}
+     * @since 2.5.11
+     */
+    public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedFieldReferenceBeanMap() {
+        return Collections.unmodifiableMap(injectedFieldReferenceBeanCache);
+    }
+
+    /**
+     * Get {@link ReferenceBean} {@link Map} in injected method.
+     *
+     * @return non-null {@link Map}
+     * @since 2.5.11
+     */
+    public Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> getInjectedMethodReferenceBeanMap() {
+        return Collections.unmodifiableMap(injectedMethodReferenceBeanCache);
     }
 }

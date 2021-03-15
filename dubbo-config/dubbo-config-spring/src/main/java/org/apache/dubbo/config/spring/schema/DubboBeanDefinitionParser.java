@@ -36,11 +36,13 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
+import org.springframework.core.env.Environment;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -139,20 +141,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
         } else if (ConsumerConfig.class.equals(beanClass)) {
             parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
-//        } else if (ReferenceBean.class.equals(beanClass)) {
-            //get interface class
-//            String interfaceClassName = resolveAttribute(element, "interface", parserContext);
-//            String generic = resolveAttribute(element, "generic", parserContext);
-//            //TODO get generic of consumerConfig
-//            ReferenceConfig referenceConfig = new ReferenceConfig();
-//            referenceConfig.setGeneric(generic);
-//            referenceConfig.setInterface(interfaceClassName);
-//            Class interfaceClass = referenceConfig.getInterfaceClass();
-//            //create decorated definition for reference bean, resolving getType of factory bean
-//            GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
-//            targetDefinition.setBeanClass(interfaceClass);
-//            beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+        } else if (ReferenceBean.class.equals(beanClass)) {
+            configReferenceBean(element, parserContext, beanDefinition, null);
         }
+
 
         Map<String, Class> beanPropsMap = beanPropsCache.get(beanClass.getName());
         if (beanPropsMap == null) {
@@ -239,7 +231,30 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if (parameters != null) {
             beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
         }
+
         return beanDefinition;
+    }
+
+    private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {
+        // process interface class
+        String interfaceClassName = resolveAttribute(element, "interface", parserContext);
+        String generic = resolveAttribute(element, "generic", parserContext);
+        if (StringUtils.isBlank(generic) && consumerDefinition != null) {
+            // get generic from consumerConfig
+            generic = (String) consumerDefinition.getPropertyValues().get("generic");
+        }
+        Environment environment = parserContext.getReaderContext().getEnvironment();
+        generic = environment.resolvePlaceholders(generic);
+
+        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceClassName);
+        beanDefinition.getPropertyValues().add("interfaceClass", interfaceClass);
+
+        // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
+        // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
+        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
+        targetDefinition.setBeanClass(interfaceClass);
+        String id = (String) beanDefinition.getPropertyValues().get("id");
+        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
     }
 
     private static void getPropertyMap(Class<?> beanClass, Map<String, Class> beanPropsMap) {
@@ -312,9 +327,14 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                         beanDefinition.getPropertyValues().addPropertyValue("default", "false");
                     }
                 }
-                BeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
-                if (subDefinition != null && StringUtils.isNotEmpty(ref)) {
-                    subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                RootBeanDefinition subDefinition = parse((Element) node, parserContext, beanClass, required);
+                if (subDefinition != null) {
+                    if (StringUtils.isNotEmpty(ref)) {
+                        subDefinition.getPropertyValues().addPropertyValue(property, new RuntimeBeanReference(ref));
+                    }
+                    if (ReferenceBean.class.equals(beanClass)) {
+                        configReferenceBean((Element) node, parserContext, subDefinition, beanDefinition);
+                    }
                 }
             }
         }

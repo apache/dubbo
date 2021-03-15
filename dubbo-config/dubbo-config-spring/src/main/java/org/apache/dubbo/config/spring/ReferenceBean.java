@@ -101,10 +101,14 @@ public class ReferenceBean<T> implements FactoryBean,
     public void afterPropertiesSet() throws Exception {
         if (referenceProps == null) {
             Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
-            ConfigurableListableBeanFactory beanFactory = (ConfigurableListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
+            ConfigurableListableBeanFactory beanFactory = getBeanFactory();
             BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(getId());
             propertyValues = beanDefinition.getPropertyValues();
         }
+    }
+
+    private ConfigurableListableBeanFactory getBeanFactory() {
+        return (ConfigurableListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
     }
 
     @Override
@@ -141,8 +145,7 @@ public class ReferenceBean<T> implements FactoryBean,
         // get interface class
         if (interfaceClass == null) {
             if (referenceProps != null) {
-                //TODO @DubboReference.interfaceClass
-                //TODO check interfaceName and interfaceClass
+                //get interface class name of @DubboReference
                 String interfaceName = (String) referenceProps.get("interfaceName");;
                 if (interfaceName == null) {
                     Class clazz = (Class) referenceProps.get("interfaceClass");
@@ -153,19 +156,24 @@ public class ReferenceBean<T> implements FactoryBean,
                 if (StringUtils.isBlank(interfaceName)) {
                     throw new RuntimeException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
                 }
-                ReferenceConfig referenceConfig = new ReferenceConfig();
-                referenceConfig.setInterface(interfaceName);
-                referenceConfig.setGeneric((Boolean)referenceProps.get("generic"));
-                interfaceClass = referenceConfig.getInterfaceClass();
-            } else if (propertyValues != null) {
-                String interfaceName = (String) propertyValues.get("interface");
-                if (StringUtils.isBlank(interfaceName)) {
-                    throw new RuntimeException("Missing required attribute 'interface' of '<dubbo:reference/>' ");
+
+                //get generic
+                Object genericValue = referenceProps.get("generic");
+                String generic = genericValue!=null? genericValue.toString(): null;
+                String consumer = (String) referenceProps.get("consumer");
+                if (StringUtils.isBlank(generic) && consumer != null) {
+                    // get generic from consumerConfig
+                    BeanDefinition consumerBeanDefinition = getBeanFactory().getMergedBeanDefinition(consumer);
+                    if (consumerBeanDefinition != null) {
+                        generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
+                    }
                 }
-                ReferenceConfig referenceConfig = new ReferenceConfig();
-                referenceConfig.setInterface(interfaceName);
-                referenceConfig.setGeneric((String)propertyValues.get("generic"));
-                interfaceClass = referenceConfig.getInterfaceClass();
+                interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
+            } else if (propertyValues != null) {
+                interfaceClass = (Class) propertyValues.get("interfaceClass");
+                if (interfaceClass == null) {
+                    throw new RuntimeException("The interfaceClass of '<dubbo:reference/>' is not handled correctly");
+                }
             } else {
                 throw new RuntimeException("Required 'referenceProps' or beanDefinition");
             }

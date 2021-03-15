@@ -44,7 +44,6 @@ import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
 import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
-import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
@@ -52,10 +51,10 @@ import static org.springframework.util.StringUtils.commaDelimitedListToStringArr
  *
  * @since 3.0
  */
-public class ReferenceConfigBuilder {
+public class ReferenceBeanBuilder {
 
     // Ignore those fields
-    static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry");
+    static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
 
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -65,9 +64,9 @@ public class ReferenceConfigBuilder {
 
     protected final ClassLoader classLoader;
 
-    protected Class<?> interfaceClass;
+    protected Class<?> defaultInterfaceClass;
 
-    private ReferenceConfigBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
+    private ReferenceBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
         Assert.notNull(applicationContext, "The ApplicationContext must not be null!");
         this.attributes = attributes;
@@ -157,23 +156,33 @@ public class ReferenceConfigBuilder {
     }
 
     private void configureInterface(AnnotationAttributes attributes, ReferenceConfig referenceBean) {
-        if (referenceBean.getInterface() == null && referenceBean.getInterfaceClass() == null) {
-            String generic = referenceBean.getGeneric();
-            if (generic != null && Boolean.parseBoolean(generic)) {
-                // it's a generic reference
-                String interfaceClassName = getAttribute(attributes, "interfaceName");
-                Assert.hasText(interfaceClassName,
-                        "@Reference interfaceName() must be present when reference a generic service!");
+        if (referenceBean.getInterface() == null) {
+
+            Object genericValue = getAttribute(attributes, "generic");
+            String generic = (genericValue != null) ? genericValue.toString() : null;
+            referenceBean.setGeneric(generic);
+
+            String interfaceClassName = getAttribute(attributes, "interfaceName");
+            if (StringUtils.hasText(interfaceClassName)) {
                 referenceBean.setInterface(interfaceClassName);
-                return;
+            } else {
+                Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
+                if (void.class.equals(interfaceClass)) { // default or set void.class for purpose.
+                    interfaceClass = null;
+                }
+                if (interfaceClass != null) {
+                    Assert.isTrue(interfaceClass.isInterface(),
+                            "The interfaceClass of @DubboReference is not an interface: "+interfaceClass.getName());
+                }
+                // Not present 'interfaceClass' attribute, use default injection type of annotated
+                if (interfaceClass == null && defaultInterfaceClass != null) {
+                    interfaceClass = defaultInterfaceClass;
+                    Assert.isTrue(interfaceClass.isInterface(),
+                            "The class of field or method that was annotated @DubboReference is not an interface!");
+                }
+                // Convert to interface class name, InterfaceClass will be determined later
+                referenceBean.setInterface(interfaceClass.getName());
             }
-
-            Class<?> serviceInterfaceClass = resolveServiceInterfaceClass(attributes, interfaceClass);
-
-            Assert.isTrue(serviceInterfaceClass.isInterface(),
-                    "The class of field or method that was annotated @Reference is not an interface!");
-
-            referenceBean.setInterface(serviceInterfaceClass);
         }
     }
 
@@ -208,7 +217,7 @@ public class ReferenceConfigBuilder {
     }
 
     protected void populateBean(AnnotationAttributes attributes, ReferenceConfig referenceBean) {
-        Assert.notNull(interfaceClass, "The interface class must set first!");
+        Assert.notNull(defaultInterfaceClass, "The default interface class must set first!");
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Register CustomEditors for special fields
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
@@ -236,12 +245,12 @@ public class ReferenceConfigBuilder {
 
     }
 
-    public static ReferenceConfigBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {
-        return new ReferenceConfigBuilder(attributes, applicationContext);
+    public static ReferenceBeanBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {
+        return new ReferenceBeanBuilder(attributes, applicationContext);
     }
 
-    public ReferenceConfigBuilder interfaceClass(Class<?> interfaceClass) {
-        this.interfaceClass = interfaceClass;
+    public ReferenceBeanBuilder defaultInterfaceClass(Class<?> interfaceClass) {
+        this.defaultInterfaceClass = interfaceClass;
         return this;
     }
 

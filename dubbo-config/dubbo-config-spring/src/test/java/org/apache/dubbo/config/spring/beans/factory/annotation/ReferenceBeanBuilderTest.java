@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -42,16 +42,16 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
 import static org.springframework.util.ReflectionUtils.findField;
 
 /**
- * {@link ReferenceConfigBuilder} Test
+ * {@link ReferenceBeanBuilder} Test
  *
- * @see ReferenceConfigBuilder
+ * @see ReferenceBeanBuilder
  * @see DubboReference
  * @see Reference
  * @since 2.6.4
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = ReferenceConfigBuilderTest.class)
-public class ReferenceConfigBuilderTest {
+@ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
+public class ReferenceBeanBuilderTest {
 
     @DubboReference(
             interfaceClass = CharSequence.class,
@@ -80,7 +80,7 @@ public class ReferenceConfigBuilderTest {
     @Autowired
     private ApplicationContext context;
 
-    @BeforeAll
+    @BeforeEach
     public void init() {
         ApplicationModel.reset();
     }
@@ -89,8 +89,8 @@ public class ReferenceConfigBuilderTest {
     public void testBuild() throws Exception {
         DubboReference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), DubboReference.class);
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, false, false);
-        ReferenceConfigBuilder beanBuilder = ReferenceConfigBuilder.create(attributes, context);
-        beanBuilder.interfaceClass(CharSequence.class);
+        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create(attributes, context);
+        beanBuilder.defaultInterfaceClass(CharSequence.class);
         ReferenceConfig referenceBean = beanBuilder.build();
         Assert.assertEquals(CharSequence.class, referenceBean.getInterfaceClass());
         Assert.assertEquals("1.0.0", referenceBean.getVersion());

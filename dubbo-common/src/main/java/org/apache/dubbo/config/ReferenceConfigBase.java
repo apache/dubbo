@@ -119,6 +119,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         }
     }
 
+    /**
+     * Get actual interface class of this reference.
+     * The actual service type of remote provider.
+     * @return
+     */
     public Class<?> getActualInterface() {
         Class actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
@@ -131,33 +136,43 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return actualInterface;
     }
 
+    /**
+     * Get proxy interface class of this reference.
+     * The proxy interface class is used to create proxy instance.
+     * @return
+     */
     public Class<?> getInterfaceClass() {
         if (interfaceClass != null) {
             return interfaceClass;
         }
-        if (ProtocolUtils.isGeneric(getGeneric())
-                || (getConsumer() != null && ProtocolUtils.isGeneric(getConsumer().getGeneric()))) {
-            return GenericService.class;
+
+        String generic = getGeneric();
+        if (StringUtils.isBlank(generic) && getConsumer() != null) {
+            generic = getConsumer().getGeneric();
         }
-        try {
-            if (interfaceName != null && interfaceName.length() > 0) {
-                interfaceClass = Class.forName(interfaceName, true, ClassUtils.getClassLoader());
-            }
-        } catch (ClassNotFoundException t) {
-            throw new IllegalStateException(t.getMessage(), t);
-        }
+        interfaceClass = determineInterfaceClass(generic, interfaceName);
 
         return interfaceClass;
     }
 
     /**
-     * @param interfaceClass
-     * @see #setInterface(Class)
-     * @deprecated
+     * Determine the interface of the proxy class
+     * @param generic
+     * @param interfaceName
+     * @return
      */
-    @Deprecated
-    public void setInterfaceClass(Class<?> interfaceClass) {
-        setInterface(interfaceClass);
+    public static Class<?> determineInterfaceClass(String generic, String interfaceName) {
+        if (ProtocolUtils.isGeneric(generic)) {
+            return GenericService.class;
+        }
+        try {
+            if (interfaceName != null && interfaceName.length() > 0) {
+                return Class.forName(interfaceName, true, ClassUtils.getClassLoader());
+            }
+        } catch (ClassNotFoundException t) {
+            throw new IllegalStateException(t.getMessage(), t);
+        }
+        return null;
     }
 
     public String getInterface() {
@@ -166,17 +181,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        // FIXME, add id strategy in ConfigManager
-//        if (StringUtils.isEmpty(id)) {
-//            id = interfaceName;
-//        }
     }
 
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
             throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
         }
-        this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
     }
 

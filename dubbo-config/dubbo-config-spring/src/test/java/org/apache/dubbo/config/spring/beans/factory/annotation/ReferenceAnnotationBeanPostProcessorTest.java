@@ -34,7 +34,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
@@ -48,7 +50,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
@@ -74,12 +78,12 @@ import static org.junit.Assert.assertTrue;
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    @BeforeAll
+    @BeforeEach
     public void setUp() {
         ApplicationModel.reset();
     }
 
-    @AfterAll
+    @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
     }
@@ -131,7 +135,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloService2;
 
     @Test
-    public void test() throws Exception {
+    public void testAop() throws Exception {
 
         assertTrue(context.containsBean("helloService"));
 
@@ -169,19 +173,63 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     }
 
     @Test
-    public void testGetReferenceBeans() {
+    public void testGetInjectedFieldReferenceBeanMap() {
 
         ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
                 ReferenceAnnotationBeanPostProcessor.class);
 
-        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
+                beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assert.assertEquals(4, referenceBeanMap.size());
+        Assert.assertEquals(3, referenceBeanMap.size());
 
-        for (ReferenceBean referenceBean : referenceBeanMap.values()) {
-            ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
-            Assert.assertNotNull(referenceConfig);
-            Assert.assertNotNull(ReferenceConfigCache.getCache().get(referenceConfig));
+        Map<String, Integer> checkingFieldNames = new HashMap<>();
+        checkingFieldNames.put("helloService", 0);
+        checkingFieldNames.put("helloService2", 0);
+        checkingFieldNames.put("demoServiceFromParent", 0);
+
+        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
+
+            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
+            Field field = (Field) injectedElement.getMember();
+            Integer count = checkingFieldNames.get(field.getName());
+            Assert.assertNotNull(count);
+            Assert.assertEquals(0, count.intValue());
+            checkingFieldNames.put(field.getName(), count+1);
+        }
+
+        for (Map.Entry<String, Integer> entry : checkingFieldNames.entrySet()) {
+            Assert.assertEquals("check field element failed: "+entry.getKey(), 1, entry.getValue().intValue());
+        }
+    }
+
+    @Test
+    public void testGetInjectedMethodReferenceBeanMap() {
+
+        ReferenceAnnotationBeanPostProcessor beanPostProcessor = context.getBean(BEAN_NAME,
+                ReferenceAnnotationBeanPostProcessor.class);
+
+        Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
+                beanPostProcessor.getInjectedMethodReferenceBeanMap();
+
+        Assert.assertEquals(2, referenceBeanMap.size());
+
+        Map<String, Integer> checkingMethodNames = new HashMap<>();
+        checkingMethodNames.put("setDemoServiceFromAncestor", 0);
+        checkingMethodNames.put("setDemoService", 0);
+
+        for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
+
+            InjectionMetadata.InjectedElement injectedElement = entry.getKey();
+            java.lang.reflect.Method method = (java.lang.reflect.Method) injectedElement.getMember();
+            Integer count = checkingMethodNames.get(method.getName());
+            Assert.assertNotNull(count);
+            Assert.assertEquals(0, count.intValue());
+            checkingMethodNames.put(method.getName(), count+1);
+        }
+
+        for (Map.Entry<String, Integer> entry : checkingMethodNames.entrySet()) {
+            Assert.assertEquals("check method element failed: "+entry.getKey(), 1, entry.getValue().intValue());
         }
     }
 

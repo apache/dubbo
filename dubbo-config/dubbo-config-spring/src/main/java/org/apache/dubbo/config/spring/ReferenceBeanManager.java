@@ -16,12 +16,14 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceConfigBuilder;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceBeanBuilder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
@@ -48,12 +50,31 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ReferenceBeanManager implements ApplicationContextAware {
     public static final String BEAN_NAME = "dubboReferenceBeanManager";
+    private final Log logger = LogFactory.getLog(getClass());
     private Map<String, ReferenceBean> configMap = new ConcurrentHashMap<>();
     private ApplicationContext applicationContext;
+    private volatile boolean initialized = false;
+
 
     public void addReference(ReferenceBean referenceBean) {
         Assert.notNull(referenceBean.getId(), "The id of ReferenceBean cannot be empty");
-        configMap.put(referenceBean.getId(), referenceBean);
+        //TODO generate reference bean id and unique cache key
+        String key = referenceBean.getId();
+        ReferenceBean oldReferenceBean = configMap.get(key);
+        if (oldReferenceBean != null) {
+            logger.warn("Found duplicated ReferenceBean id: " + key);
+            return;
+        }
+        configMap.put(key, referenceBean);
+
+        // if add reference after prepareReferenceBeans(), should init it immediately.
+        try {
+            if (initialized) {
+                initReferenceBean(referenceBean);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public ReferenceBean get(String id) {
@@ -79,16 +100,30 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         this.applicationContext = applicationContext;
     }
 
+    /**
+     * Initialize all reference beans, call at Dubbo starting
+     * @throws Exception
+     */
     public void prepareReferenceBeans() throws Exception {
+        initialized = true;
         for (ReferenceBean referenceBean : getReferences()) {
-            initReferenceConfig(referenceBean);
+            initReferenceBean(referenceBean);
         }
     }
 
-    private void initReferenceConfig(ReferenceBean referenceBean) throws Exception {
+    /**
+     * NOTE: This method should only call after all dubbo config beans and all property resolvers is loaded.
+     *
+     * @param referenceBean
+     * @throws Exception
+     */
+    private void initReferenceBean(ReferenceBean referenceBean) throws Exception {
+
+        if (referenceBean.getReferenceConfig() != null) {
+            return;
+        }
 
         Environment environment = applicationContext.getEnvironment();
-
         Map<String, Object> referenceProps = referenceBean.getReferenceProps();
         if (referenceProps == null) {
             MutablePropertyValues propertyValues = referenceBean.getPropertyValues();
@@ -102,8 +137,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         resolvePlaceholders(referenceProps, environment);
 
         //create real ReferenceConfig
-        ReferenceConfig referenceConfig = ReferenceConfigBuilder.create(new AnnotationAttributes(new LinkedHashMap<>(referenceProps)), applicationContext)
-                .interfaceClass(referenceBean.getObjectType())
+        ReferenceConfig referenceConfig = ReferenceBeanBuilder.create(new AnnotationAttributes(new LinkedHashMap<>(referenceProps)), applicationContext)
+                .defaultInterfaceClass(referenceBean.getObjectType())
                 .build();
 
         referenceBean.setReferenceConfig(referenceConfig);
