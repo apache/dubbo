@@ -30,6 +30,8 @@ import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_PHASER;
+
 /**
  * The shutdown hook thread to do the clean up stuff.
  * This is a singleton in order to ensure there is only one shutdown hook registered.
@@ -83,6 +85,9 @@ public class DubboShutdownHook extends Thread {
 
     private void callback() {
         callbacks.callback();
+
+        // Waiting for all threads to finish.
+        SHUTDOWN_PHASER.arriveAndAwaitAdvance();
     }
 
     /**
