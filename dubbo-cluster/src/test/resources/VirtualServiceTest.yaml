@@ -1,0 +1,22 @@
+apiVersion: service.dubbo.apache.org/v1alpha1
+kind: VirtualService
+metadata: {name: demo-route}
+spec:
+  dubbo:
+    - routedetail:
+        - match:
+            - sourceLabels: {trafficLabel: xxx}
+          name: xxx-project
+          route:
+            - destination: {host: demo, subset: isolation}
+        - match:
+            - sourceLabels: {trafficLabel: testing-trunk}
+          name: testing-trunk
+          route:
+            - destination: {host: demo, subset: testing-trunk}
+        - name: testing
+          route:
+            - destination: {host: demo, subset: testing}
+      services:
+        - {regex: ccc}
+  hosts: [demo]

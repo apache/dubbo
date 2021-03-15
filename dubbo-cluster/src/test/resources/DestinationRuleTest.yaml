@@ -1,0 +1,14 @@
+apiVersion: service.dubbo.apache.org/v1alpha1
+kind: DestinationRule
+metadata: { name: demo-route }
+spec:
+  host: demo
+  subsets:
+    - labels: { env-sign: xxx, tag1: hello }
+      name: isolation
+    - labels: { env-sign: yyy }
+      name: testing-trunk
+    - labels: { env-sign: zzz }
+      name: testing
+  trafficPolicy:
+    loadBalancer: { simple: ROUND_ROBIN }
