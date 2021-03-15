@@ -61,8 +61,10 @@ public interface MetadataReport {
 
     /**
      * deprecated or need triage
+     *
+     * remove metadata report action with consumer side
      **/
-    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
+//    void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap);
 
     List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 

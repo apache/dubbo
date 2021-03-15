@@ -85,10 +85,10 @@ public class EtcdMetadataReport extends AbstractMetadataReport {
         storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
-    @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        storeMetadata(consumerMetadataIdentifier, value);
-    }
+//    @Override
+//    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
+//        storeMetadata(consumerMetadataIdentifier, value);
+//    }
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {

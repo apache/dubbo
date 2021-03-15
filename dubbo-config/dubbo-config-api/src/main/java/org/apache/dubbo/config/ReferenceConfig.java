@@ -268,10 +268,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // appendParameters(map, consumer, Constants.DEFAULT_KEY);
         AbstractConfig.appendParameters(map, consumer);
         AbstractConfig.appendParameters(map, this);
-        MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
-        if (metadataReportConfig != null && metadataReportConfig.isValid()) {
-            map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
-        }
+        // remove metadata report action with consumer side
+//        MetadataReportConfig metadataReportConfig = getMetadataReportConfig();
+//        if (metadataReportConfig != null && metadataReportConfig.isValid()) {
+//            map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
+//        }
         Map<String, AsyncMethodInfo> attributes = null;
         if (CollectionUtils.isNotEmpty(getMethods())) {
             attributes = new HashMap<>();
@@ -391,9 +392,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (logger.isInfoEnabled()) {
             logger.info("Refer dubbo service " + interfaceClass.getName() + " from url " + invoker.getUrl());
         }
-
-        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
-        MetadataUtils.publishServiceDefinition(consumerURL);
+        // remove metadata report action with consumer side
+//        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.remove(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+//        MetadataUtils.publishServiceDefinition(consumerURL);
 
         // create service proxy
         return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
