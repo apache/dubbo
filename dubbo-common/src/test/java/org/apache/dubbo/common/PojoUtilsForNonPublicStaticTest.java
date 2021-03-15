@@ -14,24 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
+import org.apache.dubbo.common.utils.PojoUtils;
+import org.junit.jupiter.api.Test;
 
-/**
- * The annotated class will only work as a wrapper when the condition matches.
- */
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Wrapper {
+public class PojoUtilsForNonPublicStaticTest {
 
-    /**
-     * the extension names that need to be wrapped.
-     */
-    String[] matches() default {};
+    @Test
+    public void testNonPublicStaticClass() {
+        NonPublicStaticData nonPublicStaticData = new NonPublicStaticData("horizon");
+        PojoUtils.generalize(nonPublicStaticData);
+    }
 
     /**
-     * the extension names that need to be excluded.
+     * the static class need is not same package with PojoUtils, so define it here.
      */
-    String[] mismatches() default {};
+    static class NonPublicStaticData {
+
+        private String name;
+
+        public NonPublicStaticData(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
 }

@@ -27,6 +27,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
+
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
  * <ul>
@@ -56,7 +58,13 @@ public class AppResponse implements Result {
 
     private Map<String, Object> attachments = new HashMap<>();
 
+    private Map<String, Object> attributes = new HashMap<>();
+
     public AppResponse() {
+    }
+
+    public AppResponse(Invocation invocation) {
+        this.setAttribute(INVOCATION_KEY, invocation);
     }
 
     public AppResponse(Object result) {
@@ -203,6 +211,14 @@ public class AppResponse implements Result {
     @Override
     public void setObjectAttachment(String key, Object value) {
         attachments.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     @Override
