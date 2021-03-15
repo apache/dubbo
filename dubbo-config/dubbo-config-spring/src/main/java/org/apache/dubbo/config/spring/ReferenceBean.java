@@ -139,6 +139,15 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
+    /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    public String getGroup() {
+        return referenceConfig.getGroup();
+    }
+
+    public String getVersion() {
+        return referenceConfig.getVersion();
+    }
+
     public Map<String, Object> getReferenceProps() {
         return referenceProps;
     }
