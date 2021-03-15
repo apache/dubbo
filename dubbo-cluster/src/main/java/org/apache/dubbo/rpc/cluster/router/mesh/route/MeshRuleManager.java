@@ -36,7 +36,7 @@ public final class MeshRuleManager {
     private static ConcurrentHashMap<String, MeshAppRuleListener> appRuleListeners = new ConcurrentHashMap<>();
 
     public static void subscribeAppRule(String app) {
-        // 注册 diamond 的监听
+
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener(app);
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
         DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration()
