@@ -72,12 +72,12 @@ public class ServiceConfigURL extends URL {
     }
 
     public ServiceConfigURL(String protocol,
-               String username,
-               String password,
-               String host,
-               int port,
-               String path,
-               Map<String, String> parameters) {
+                            String username,
+                            String password,
+                            String host,
+                            int port,
+                            String path,
+                            Map<String, String> parameters) {
         this(protocol, username, password, host, port, path, parameters, null);
     }
 
