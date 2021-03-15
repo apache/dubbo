@@ -116,6 +116,15 @@ public class ReferenceBean<T> implements FactoryBean,
         // do nothing
     }
 
+    /**
+     * TODO remove get() method
+     * @return
+     */
+    @Deprecated
+    public Object get() {
+        throw new UnsupportedOperationException("Should not call this method");
+    }
+
     public String getId() {
         return id;
     }
