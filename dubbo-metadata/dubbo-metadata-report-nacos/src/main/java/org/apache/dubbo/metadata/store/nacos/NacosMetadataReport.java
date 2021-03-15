@@ -160,10 +160,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         this.storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
-    @Override
-    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-        this.storeMetadata(consumerMetadataIdentifier, value);
-    }
+//    @Override
+//    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
+//        this.storeMetadata(consumerMetadataIdentifier, value);
+//    }
 
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier serviceMetadataIdentifier, URL url) {

@@ -194,7 +194,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         }));
     }
 
-    @Override
+    /*@Override
     public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         this.proxyReports.forEach(holder -> {
             if (shouldRegister(holder.url)) {
@@ -211,7 +211,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
                 }
             }
         });
-    }
+    }*/
 
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
@@ -570,7 +570,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
 
     class MetadataReportHolder {
 
-        final URL            url;
+        final URL url;
         final MetadataReport report;
 
         public MetadataReportHolder(URL url, MetadataReport report) {

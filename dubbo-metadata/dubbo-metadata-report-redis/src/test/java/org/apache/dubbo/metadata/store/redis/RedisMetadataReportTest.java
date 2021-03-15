@@ -128,7 +128,7 @@ public class RedisMetadataReportTest {
         }
     }
 
-    @Test
+    /*@Test
     public void testAsyncStoreConsumer() throws ClassNotFoundException {
         testStoreConsumer(redisMetadataReport, "1.0.0.redis.md.c1", 3000);
     }
@@ -161,7 +161,7 @@ public class RedisMetadataReportTest {
             }
             redisMetadataReport.pool.close();
         }
-    }
+    }*/
 
     private MetadataIdentifier storePrivider(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?paramTest=redisTest&version=" + version + "&application="
@@ -180,7 +180,7 @@ public class RedisMetadataReportTest {
         return providerMetadataIdentifier;
     }
 
-    private MetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
+    /*private MetadataIdentifier storeConsumer(RedisMetadataReport redisMetadataReport, String interfaceName, String version, String group, String application) throws ClassNotFoundException {
         URL url = URL.valueOf("xxx://" + NetUtils.getLocalAddress().getHostName() + ":4444/" + interfaceName + "?version=" + version + "&application="
                 + application + (group == null ? "" : "&group=" + group));
 
@@ -196,7 +196,7 @@ public class RedisMetadataReportTest {
             e.printStackTrace();
         }
         return consumerMetadataIdentifier;
-    }
+    }*/
 
     @Test
     public void testAuthRedisMetadata() throws ClassNotFoundException {
