@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import java.net.NetworkInterface;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Phaser;
 import java.util.regex.Pattern;
 
 public interface CommonConstants {
@@ -311,6 +312,15 @@ public interface CommonConstants {
      * The limit of callback service instances for one interface on every client
      */
     String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
+
+    /**
+     * This variable is used to make sure that the asynchronous thread can be executed correctly
+     * in the case of graceful shutdown.
+     * <br/><br/>
+     * When you have a thread that must be run asynchronously when shutting down.
+     * You can register the phaser before the thread run, and de-register this when the thread is finished.
+     */
+    Phaser SHUTDOWN_PHASER = new Phaser(1);
 
     /**
      * The default limit number for callback service instances

@@ -26,7 +26,7 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
-import static org.apache.dubbo.common.lang.ShutdownHookCallbacks.SHUTDOWN_PHASER;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_PHASER;
 
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
