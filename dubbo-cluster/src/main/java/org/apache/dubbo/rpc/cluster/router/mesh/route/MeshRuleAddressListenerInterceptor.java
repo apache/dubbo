@@ -25,8 +25,6 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
-
 @Activate(order = 670)
 public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
