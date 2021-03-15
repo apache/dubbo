@@ -298,14 +298,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            if (invoker.getDirectory().isNotificationReceived()) {
-                destroyInterfaceInvoker(invoker);
-            }
+            destroyInterfaceInvoker(invoker);
         } else {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
-            if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
-                destroyServiceDiscoveryInvoker(serviceDiscoveryInvoker);
-            }
+            destroyServiceDiscoveryInvoker(serviceDiscoveryInvoker);
         }
     }
 
@@ -315,10 +311,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
         if (serviceDiscoveryInvoker != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+            if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+                }
+                serviceDiscoveryInvoker.destroy();
             }
-            serviceDiscoveryInvoker.destroy();
         }
     }
 
@@ -364,10 +362,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             updateConsumerModel(currentAvailableInvoker, invoker);
         }
         if (invoker != null) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+            if (invoker.getDirectory().isNotificationReceived()) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+                }
+                invoker.destroy();
             }
-            invoker.destroy();
         }
     }
 //
