@@ -26,6 +26,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 
 public class DestinationRuleTest {
@@ -89,9 +90,11 @@ public class DestinationRuleTest {
             if (resultMap.get("kind").equals("DestinationRule")) {
                 DestinationRule destinationRule = yaml2.loadAs(yaml2.dump(result), DestinationRule.class);
                 System.out.println(destinationRule);
+                assertNotNull(destinationRule);
             } else if (resultMap.get("kind").equals("VirtualService")) {
                 VirtualServiceRule virtualServiceRule = yaml2.loadAs(yaml2.dump(result), VirtualServiceRule.class);
                 System.out.println(virtualServiceRule);
+                assertNotNull(virtualServiceRule);
             }
         }
     }

@@ -46,7 +46,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
     }
 
     public void receiveConfigInfo(String configInfo) {
-        logger.info(MessageFormat.format("[MachineRoomAppRule] Received rule for app [{0}]: {1}.",
+        logger.info(MessageFormat.format("[MeshAppRule] Received rule for app [{0}]: {1}.",
                 appName, configInfo));
         try {
 

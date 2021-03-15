@@ -40,7 +40,13 @@ public final class MeshRuleManager {
         MeshAppRuleListener meshAppRuleListener = new MeshAppRuleListener(app);
         String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
         DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration()
-                .orElseThrow(() -> new IllegalStateException("Fail to access dynamic configuration"));
+                .orElseGet(null);
+
+        if (configuration == null) {
+            logger.warn("Doesn't support DynamicConfiguration!");
+            return;
+        }
+
         try {
             String rawConfig = configuration.getConfig(appRuleDataId, GROUP, 5000L);
             if (rawConfig != null) {

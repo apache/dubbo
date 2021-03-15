@@ -35,6 +35,7 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
     @Override
     public List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory) {
+
         if (addresses != null && !addresses.isEmpty()) {
             for (URL serviceURL : addresses) {
 

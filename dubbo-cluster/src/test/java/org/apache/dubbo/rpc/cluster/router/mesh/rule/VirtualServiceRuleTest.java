@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServi
 import org.junit.jupiter.api.Test;
 import org.yaml.snakeyaml.Yaml;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 
 public class VirtualServiceRuleTest {
 
@@ -30,6 +32,7 @@ public class VirtualServiceRuleTest {
         VirtualServiceRule virtualServiceRule = yaml.loadAs(this.getClass().getClassLoader().getResourceAsStream("VirtualServiceTest.yaml"), VirtualServiceRule.class);
 
         System.out.println(virtualServiceRule);
+        assertNotNull(virtualServiceRule);
     }
 
 }
