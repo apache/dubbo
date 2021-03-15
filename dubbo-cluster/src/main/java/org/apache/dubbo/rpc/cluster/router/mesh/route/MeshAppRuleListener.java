@@ -71,11 +71,12 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
             vsDestinationGroupHolder = vsDestinationGroup;
         } catch (Exception e) {
-            logger.error("[MachineRoomAppRule] parse failed: " + configInfo, e);
+            logger.error("[MeshAppRule] parse failed: " + configInfo, e);
         }
         if (vsDestinationGroupHolder != null) {
             eventBus.post(vsDestinationGroupHolder);
         }
+
     }
 
     public void register(MeshRuleRouter subscriber) {

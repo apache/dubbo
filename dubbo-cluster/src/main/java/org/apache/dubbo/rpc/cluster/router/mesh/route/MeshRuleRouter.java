@@ -94,6 +94,7 @@ public class MeshRuleRouter implements Router {
 
             Map<String, List<Invoker<?>>> subsetMapCopy = this.subsetMap;
 
+            //TODO make intersection with invokers
             if (subsetMapCopy != null) {
 
                 do {
