@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import com.google.common.eventbus.Subscribe;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -36,6 +35,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServi
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.destination.DubboRouteDestination;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.match.StringMatch;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.Random;
 
 
-public class MeshRuleRouter implements Router {
+public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     protected int priority = -500;
     protected boolean force = false;
@@ -146,7 +146,6 @@ public class MeshRuleRouter implements Router {
     }
 
 
-    @Subscribe
     public void onRuleChange(VsDestinationGroup vsDestinationGroup) {
         this.vsDestinationGroup = vsDestinationGroup;
         computeSubset();

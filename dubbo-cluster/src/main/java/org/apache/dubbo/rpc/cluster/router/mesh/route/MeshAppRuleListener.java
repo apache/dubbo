@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-import com.google.common.eventbus.EventBus;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.logger.Logger;
@@ -25,6 +24,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
+import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleDispatcher;
 import org.yaml.snakeyaml.Yaml;
 
 import java.text.MessageFormat;
@@ -35,7 +35,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshAppRuleListener.class);
 
-    private final EventBus eventBus = new EventBus();
+    private final VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
 
     private String appName;
 
@@ -74,7 +74,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
             logger.error("[MeshAppRule] parse failed: " + configInfo, e);
         }
         if (vsDestinationGroupHolder != null) {
-            eventBus.post(vsDestinationGroupHolder);
+            vsDestinationGroupRuleDispatcher.post(vsDestinationGroupHolder);
         }
 
     }
@@ -83,20 +83,12 @@ public class MeshAppRuleListener implements ConfigurationListener {
         if (vsDestinationGroupHolder != null) {
             subscriber.onRuleChange(vsDestinationGroupHolder);
         }
-        eventBus.register(subscriber);
+        vsDestinationGroupRuleDispatcher.register(subscriber);
     }
 
     //
     public void unregister(MeshRuleRouter sub) {
-        try {
-            eventBus.unregister(sub);
-        } catch (IllegalArgumentException e) {
-            if (e.getMessage().contains("missing event subscriber")) {
-                // ignored
-                return;
-            }
-            throw e;
-        }
+        vsDestinationGroupRuleDispatcher.unregister(sub);
     }
 
     @Override
