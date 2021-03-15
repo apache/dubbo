@@ -17,10 +17,13 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
+import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
+import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;
@@ -59,6 +62,8 @@ public class ReferenceBean<T> implements FactoryBean,
     private MutablePropertyValues propertyValues;
     //actual reference config
     private ReferenceConfig referenceConfig;
+    private String generic;
+    private String interfaceName;
 
     public ReferenceBean() {
         super();
@@ -118,6 +123,7 @@ public class ReferenceBean<T> implements FactoryBean,
 
     /**
      * TODO remove get() method
+     *
      * @return
      */
     @Deprecated
@@ -150,12 +156,11 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     public Class<?> getInterfaceClass() {
-        //TODO check consumer.generic
         // get interface class
         if (interfaceClass == null) {
             if (referenceProps != null) {
                 //get interface class name of @DubboReference
-                String interfaceName = (String) referenceProps.get("interfaceName");;
+                String interfaceName = (String) referenceProps.get("interfaceName");
                 if (interfaceName == null) {
                     Class clazz = (Class) referenceProps.get("interfaceClass");
                     if (clazz != null) {
@@ -165,10 +170,11 @@ public class ReferenceBean<T> implements FactoryBean,
                 if (StringUtils.isBlank(interfaceName)) {
                     throw new RuntimeException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
                 }
+                this.interfaceName = interfaceName;
 
                 //get generic
                 Object genericValue = referenceProps.get("generic");
-                String generic = genericValue!=null? genericValue.toString(): null;
+                generic = genericValue != null ? genericValue.toString() : null;
                 String consumer = (String) referenceProps.get("consumer");
                 if (StringUtils.isBlank(generic) && consumer != null) {
                     // get generic from consumerConfig
@@ -177,22 +183,36 @@ public class ReferenceBean<T> implements FactoryBean,
                         generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
                     }
                 }
-                interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
             } else if (propertyValues != null) {
-                interfaceClass = (Class) propertyValues.get("interfaceClass");
-                if (interfaceClass == null) {
-                    throw new RuntimeException("The interfaceClass of '<dubbo:reference/>' is not handled correctly");
-                }
+                generic = (String) propertyValues.get("generic");
+                interfaceName = (String) propertyValues.get("interface");
             } else {
                 throw new RuntimeException("Required 'referenceProps' or beanDefinition");
             }
+
+            interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
         }
         return interfaceClass;
     }
 
     private void createReferenceLazyProxy() {
         this.referenceTargetSource = new DubboReferenceLazyInitTargetSource();
-        this.referenceLazyProxy = new ProxyFactory(getInterfaceClass(), referenceTargetSource).getProxy(this.beanClassLoader);
+
+        //set proxy interfaces
+        //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
+        ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.setTargetSource(referenceTargetSource);
+        proxyFactory.addInterface(getInterfaceClass());
+        Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
+        for (Class<?> anInterface : internalInterfaces) {
+            proxyFactory.addInterface(anInterface);
+        }
+        if (ProtocolUtils.isGeneric(generic)){
+            //add actual interface
+            proxyFactory.addInterface(ReflectUtils.forName(interfaceName));
+        }
+
+        this.referenceLazyProxy = proxyFactory.getProxy(this.beanClassLoader);
     }
 
     private Object getCallProxy() throws Exception {

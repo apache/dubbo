@@ -136,12 +136,6 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 beanDefinition.getPropertyValues().addPropertyValue("ref", new BeanDefinitionHolder(classDefinition, id + "Impl"));
             }
 
-        } else if (ProviderConfig.class.equals(beanClass)) {
-            parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
-        } else if (ConsumerConfig.class.equals(beanClass)) {
-            parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
-        } else if (ReferenceBean.class.equals(beanClass)) {
-            configReferenceBean(element, parserContext, beanDefinition, null);
         }
 
 
@@ -231,6 +225,15 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             beanDefinition.getPropertyValues().addPropertyValue("parameters", parameters);
         }
 
+        // post-process after parse attributes
+        if (ProviderConfig.class.equals(beanClass)) {
+            parseNested(element, parserContext, ServiceBean.class, true, "service", "provider", id, beanDefinition);
+        } else if (ConsumerConfig.class.equals(beanClass)) {
+            parseNested(element, parserContext, ReferenceBean.class, false, "reference", "consumer", id, beanDefinition);
+        } else if (ReferenceBean.class.equals(beanClass)) {
+            configReferenceBean(element, parserContext, beanDefinition, null);
+        }
+
         return beanDefinition;
     }
 
@@ -242,11 +245,13 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             // get generic from consumerConfig
             generic = (String) consumerDefinition.getPropertyValues().get("generic");
         }
-        Environment environment = parserContext.getReaderContext().getEnvironment();
-        generic = environment.resolvePlaceholders(generic);
+        if (generic != null) {
+            Environment environment = parserContext.getReaderContext().getEnvironment();
+            generic = environment.resolvePlaceholders(generic);
+            beanDefinition.getPropertyValues().add("generic", generic);
+        }
 
         Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceClassName);
-        beanDefinition.getPropertyValues().add("interfaceClass", interfaceClass);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
