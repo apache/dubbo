@@ -18,8 +18,6 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -66,8 +64,6 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
  * metadata report impl for nacos
  */
 public class NacosMetadataReport extends AbstractMetadataReport {
-
-    private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
 
     private ConfigService configService;
 
