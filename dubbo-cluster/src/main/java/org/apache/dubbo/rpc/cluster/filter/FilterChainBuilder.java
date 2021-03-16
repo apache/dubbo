@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -29,16 +30,27 @@ import org.apache.dubbo.rpc.cluster.Directory;
 
 @SPI("default")
 public interface FilterChainBuilder {
+    /**
+     * build consumer/provider filter chain
+     */
     <T> Invoker<T> buildInvokerChain(final Invoker<T> invoker, String key, String group);
 
+    /**
+     * build consumer cluster filter chain
+     */
     <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> invoker, String key, String group);
 
-    class FilterChainNode<T, TYPE extends Invoker<T>> implements Invoker<T>{
+    /**
+     * Works on provider side
+     * @param <T>
+     * @param <TYPE>
+     */
+    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T>{
         TYPE originalInvoker;
         Invoker<T> nextNode;
-        Filter filter;
+        FILTER filter;
 
-        public FilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, Filter filter) {
+        public FilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             this.originalInvoker = originalInvoker;
             this.nextNode = nextNode;
             this.filter = filter;
@@ -79,8 +91,8 @@ public interface FilterChainBuilder {
                     } finally {
                         listenableFilter.removeListener(invocation);
                     }
-                } else if (filter instanceof Filter.Listener) {
-                    Filter.Listener listener = (Filter.Listener) filter;
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
                     listener.onError(e, originalInvoker, invocation);
                 }
                 throw e;
@@ -102,8 +114,8 @@ public interface FilterChainBuilder {
                     } finally {
                         listenableFilter.removeListener(invocation);
                     }
-                } else if (filter instanceof Filter.Listener) {
-                    Filter.Listener listener = (Filter.Listener) filter;
+                } else if (filter instanceof FILTER.Listener) {
+                    FILTER.Listener listener = (FILTER.Listener) filter;
                     if (t == null) {
                         listener.onResponse(r, originalInvoker, invocation);
                     } else {
@@ -124,8 +136,14 @@ public interface FilterChainBuilder {
         }
     }
 
-    class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>> extends FilterChainNode<T, TYPE> implements ClusterInvoker<T> {
-        public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, Filter filter) {
+    /**
+     * Works on consumer side
+     * @param <T>
+     * @param <TYPE>
+     */
+    class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
+            extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+        public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }
 

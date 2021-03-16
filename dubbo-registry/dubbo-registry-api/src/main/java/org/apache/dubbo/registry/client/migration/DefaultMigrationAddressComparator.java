@@ -39,11 +39,11 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
         if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
-            logger.info("No instance address available, will not migrate.");
+            logger.info("No instance address available, stop compare.");
             return false;
         }
         if (!invoker.hasProxyInvokers()) {
-            logger.info("No interface address available, will migrate.");
+            logger.info("No interface address available, stop compare.");
             return true;
         }
 
