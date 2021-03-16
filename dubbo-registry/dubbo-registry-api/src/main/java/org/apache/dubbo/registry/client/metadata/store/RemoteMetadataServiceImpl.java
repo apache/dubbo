@@ -85,7 +85,7 @@ public class RemoteMetadataServiceImpl {
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
 
-        String registryCluster = instance.getRegistryCluster();
+        String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER_KEY);
 
         checkRemoteConfigured();
 

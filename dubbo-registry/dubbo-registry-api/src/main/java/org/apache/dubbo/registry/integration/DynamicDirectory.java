@@ -251,18 +251,20 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         this.invokersChangedListener = listener;
         if (invokersChangedListener != null && invokersChanged) {
             invokersChangedListener.onChange();
+            invokersChanged = false;
         }
     }
 
     protected synchronized void invokersChanged() {
         invokersChanged = true;
-        if (invokersChangedListener != null) {
+        if (invokersChangedListener != null && invokersChanged) {
             invokersChangedListener.onChange();
+            invokersChanged = false;
         }
     }
 
-    public boolean isNotificationReceived() {
-        return invokersChanged;
+    public synchronized void markInvokersChanged() {
+        this.invokersChanged = true;
     }
 
     protected abstract void destroyAllInvokers();

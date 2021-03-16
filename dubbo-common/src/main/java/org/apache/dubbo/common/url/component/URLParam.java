@@ -21,8 +21,6 @@ import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -265,7 +263,7 @@ public class URLParam implements Serializable {
 
     public static URLParam parse(String rawParam) {
         String[] parts = rawParam.split("&");
-        Map<String, String> parameters = new UnifiedMap<>((int) (parts.length/.75f) + 1);
+        Map<String, String> parameters = new HashMap<>((int) (parts.length/.75f) + 1);
         for (String part : parts) {
             part = part.trim();
             if (part.length() > 0) {

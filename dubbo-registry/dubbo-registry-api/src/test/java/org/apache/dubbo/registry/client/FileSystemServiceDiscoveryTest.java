@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URLBuilder;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.registry.client.DefaultServiceInstanceTest.createInstance;
@@ -30,7 +29,6 @@ import static org.apache.dubbo.registry.client.DefaultServiceInstanceTest.create
  *
  * @since 2.7.5
  */
-@Disabled("FileSystemServiceDiscovery implementation is not stable enough at present")
 public class FileSystemServiceDiscoveryTest {
 
     private FileSystemServiceDiscovery serviceDiscovery;

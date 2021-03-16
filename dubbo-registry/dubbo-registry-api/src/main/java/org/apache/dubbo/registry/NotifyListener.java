@@ -45,8 +45,4 @@ public interface NotifyListener {
     default void addServiceListener(ServiceInstancesChangedListener instanceListener) {
     }
 
-    default URL getConsumerUrl() {
-        return null;
-    }
-
 }

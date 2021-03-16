@@ -224,21 +224,6 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
-        return serviceDiscovery.createListener(serviceNames);
-    }
-
-    @Override
-    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
-        serviceDiscovery.removeServiceInstancesChangedListener(listener);
-    }
-
-    @Override
-    public long getDelay() {
-        return serviceDiscovery.getDelay();
-    }
-
-    @Override
     public URL getUrl() {
         return serviceDiscovery.getUrl();
     }

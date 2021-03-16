@@ -26,7 +26,6 @@ import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.rpc.RpcException;
 
@@ -41,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
@@ -201,28 +199,18 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
             throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.", e);
         }
 
-        CountDownLatch latch = new CountDownLatch(1);
-        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(path, key -> {
-            ZookeeperServiceDiscoveryChangeWatcher tmpWatcher = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, path, latch);
-            try {
-                curatorFramework.getChildren().usingWatcher(tmpWatcher).forPath(path);
-            } catch (KeeperException.NoNodeException e) {
-                // ignored
-                if (logger.isErrorEnabled()) {
-                    logger.error(e.getMessage());
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
+        CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
+                new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
+        try {
+            curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
+        } catch (KeeperException.NoNodeException e) {
+            // ignored
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage());
             }
-            return tmpWatcher;
-        });
-        watcher.addListener(listener);
-        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
-        latch.countDown();
-    }
-
-    public void reRegisterWatcher(ZookeeperServiceDiscoveryChangeWatcher watcher) throws Exception {
-        curatorFramework.getChildren().usingWatcher(watcher).forPath(watcher.getPath());
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private String buildServicePath(String serviceName) {
