@@ -16,14 +16,20 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.rpc.model.ApplicationModel.getExecutorRepository;
 import static org.apache.zookeeper.Watcher.Event.EventType.NodeChildrenChanged;
@@ -37,7 +43,7 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  * @since 2.7.5
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
-    private ServiceInstancesChangedListener listener;
+    private Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
@@ -47,32 +53,50 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final String serviceName;
 
+    private final String path;
+
+    private CountDownLatch latch;
+
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
                                                   String serviceName,
-                                                  ServiceInstancesChangedListener listener) {
+                                                  String path,
+                                                  CountDownLatch latch) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.serviceName = serviceName;
-        this.listener = listener;
+        this.path = path;
+        this.latch = latch;
         this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(), getExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
             @Override
             protected void doNotify(Object rawAddresses) {
-                listener.onEvent((ServiceInstancesChangedEvent)rawAddresses);
+                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent)rawAddresses));
             }
         };
     }
 
     @Override
     public void process(WatchedEvent event) throws Exception {
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+        }
 
         Watcher.Event.EventType eventType = event.getType();
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
             if (shouldKeepWatching()) {
-                notifier.notify(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
-                zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
-                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+                zookeeperServiceDiscovery.reRegisterWatcher(this);
+                List<ServiceInstance> instanceList = zookeeperServiceDiscovery.getInstances(serviceName);
+                notifier.notify(new ServiceInstancesChangedEvent(serviceName, instanceList));
             }
         }
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void addListener(ServiceInstancesChangedListener listener) {
+        listeners.add(listener);
     }
 
     public boolean shouldKeepWatching() {

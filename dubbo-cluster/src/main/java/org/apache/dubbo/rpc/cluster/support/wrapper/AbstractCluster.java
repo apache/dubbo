@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.support.wrapper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -36,6 +37,7 @@ import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_INTERCEPTOR_COMPATIBLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOCATION_INTERCEPTOR_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERCEPTOR_KEY;
@@ -44,15 +46,10 @@ public abstract class AbstractCluster implements Cluster {
 
     private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
 //        AbstractClusterInvoker<T> last = clusterInvoker;
-        AbstractClusterInvoker<T> last = buildInterceptorInvoker(new FilterInvoker<>(clusterInvoker));
-        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
+        AbstractClusterInvoker<T> last = buildInterceptorInvoker(new ClusterFilterInvoker<>(clusterInvoker));
 
-        if (!interceptors.isEmpty()) {
-            for (int i = interceptors.size() - 1; i >= 0; i--) {
-                final ClusterInterceptor interceptor = interceptors.get(i);
-                final AbstractClusterInvoker<T> next = last;
-                last = new InterceptorInvokerNode<>(clusterInvoker, interceptor, next);
-            }
+        if (Boolean.parseBoolean(ConfigurationUtils.getProperty(CLUSTER_INTERCEPTOR_COMPATIBLE_KEY, "false"))) {
+            return build27xCompatibleClusterInterceptors(clusterInvoker, last);
         }
         return last;
     }
@@ -70,11 +67,125 @@ public abstract class AbstractCluster implements Cluster {
         if (CollectionUtils.isEmpty(builders)) {
             return invoker;
         }
-        return new InterceptorInvoker<>(invoker, builders);
+        return new InvocationInterceptorInvoker<>(invoker, builders);
     }
 
     protected abstract <T> AbstractClusterInvoker<T> doJoin(Directory<T> directory) throws RpcException;
 
+    static class ClusterFilterInvoker<T> extends AbstractClusterInvoker<T> {
+        private ClusterInvoker<T> filterInvoker;
+
+        public ClusterFilterInvoker(AbstractClusterInvoker<T> invoker) {
+            List<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
+            if (CollectionUtils.isEmpty(builders)) {
+                filterInvoker = invoker;
+            } else {
+                ClusterInvoker<T> tmpInvoker = invoker;
+                for (FilterChainBuilder builder : builders) {
+                    tmpInvoker = builder.buildClusterInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+                }
+                filterInvoker = tmpInvoker;
+            }
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            return filterInvoker.invoke(invocation);
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return filterInvoker.getDirectory();
+        }
+
+
+
+        @Override
+        public URL getRegistryUrl() {
+            return filterInvoker.getRegistryUrl();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return filterInvoker.isDestroyed();
+        }
+
+        @Override
+        public URL getUrl() {
+            return filterInvoker.getUrl();
+        }
+
+        /**
+         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
+         */
+        @Override
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+           return null;
+        }
+    }
+
+    static class InvocationInterceptorInvoker<T> extends AbstractClusterInvoker<T> {
+        private ClusterInvoker<T> interceptorInvoker;
+
+        public InvocationInterceptorInvoker(AbstractClusterInvoker<T> invoker, List<InvocationInterceptorBuilder> builders) {
+            ClusterInvoker<T> tmpInvoker = invoker;
+            for (InvocationInterceptorBuilder builder : builders) {
+                tmpInvoker = builder.buildClusterInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
+            }
+            interceptorInvoker = tmpInvoker;
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            return interceptorInvoker.invoke(invocation);
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return interceptorInvoker.getDirectory();
+        }
+
+        @Override
+        public URL getRegistryUrl() {
+            return interceptorInvoker.getRegistryUrl();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return interceptorInvoker.isDestroyed();
+        }
+
+        @Override
+        public URL getUrl() {
+            return interceptorInvoker.getUrl();
+        }
+
+        /**
+         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
+         */
+        @Override
+        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
+            return null;
+        }
+    }
+
+    @Deprecated
+    private <T> ClusterInvoker<T> build27xCompatibleClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, AbstractClusterInvoker<T> last) {
+        List<ClusterInterceptor> interceptors = ExtensionLoader.getExtensionLoader(ClusterInterceptor.class).getActivateExtensions();
+
+        if (!interceptors.isEmpty()) {
+            for (int i = interceptors.size() - 1; i >= 0; i--) {
+                final ClusterInterceptor interceptor = interceptors.get(i);
+                final AbstractClusterInvoker<T> next = last;
+                last = new InterceptorInvokerNode<>(clusterInvoker, interceptor, next);
+            }
+        }
+        return last;
+    }
+
+    @Deprecated
     static class InterceptorInvokerNode<T> extends AbstractClusterInvoker<T> {
 
         private AbstractClusterInvoker<T> clusterInvoker;
@@ -150,102 +261,5 @@ public abstract class AbstractCluster implements Cluster {
         }
     }
 
-    static class FilterInvoker<T> extends AbstractClusterInvoker<T> {
-        private ClusterInvoker<T> filterInvoker;
 
-        public FilterInvoker(AbstractClusterInvoker<T> invoker) {
-            List<FilterChainBuilder> builders = ExtensionLoader.getExtensionLoader(FilterChainBuilder.class).getActivateExtensions();
-            if (CollectionUtils.isEmpty(builders)) {
-                filterInvoker = invoker;
-            } else {
-                ClusterInvoker<T> tmpInvoker = invoker;
-                for (FilterChainBuilder builder : builders) {
-                    tmpInvoker = builder.buildClusterInvokerChain(tmpInvoker, REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
-                }
-                filterInvoker = tmpInvoker;
-            }
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            return filterInvoker.invoke(invocation);
-        }
-
-        @Override
-        public Directory<T> getDirectory() {
-            return filterInvoker.getDirectory();
-        }
-
-
-
-        @Override
-        public URL getRegistryUrl() {
-            return filterInvoker.getRegistryUrl();
-        }
-
-        @Override
-        public boolean isDestroyed() {
-            return filterInvoker.isDestroyed();
-        }
-
-        @Override
-        public URL getUrl() {
-            return filterInvoker.getUrl();
-        }
-
-        /**
-         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
-         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
-         */
-        @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-           return null;
-        }
-    }
-
-    static class InterceptorInvoker<T> extends AbstractClusterInvoker<T> {
-        private ClusterInvoker<T> interceptorInvoker;
-
-        public InterceptorInvoker(AbstractClusterInvoker<T> invoker, List<InvocationInterceptorBuilder> builders) {
-            ClusterInvoker<T> tmpInvoker = invoker;
-            for (InvocationInterceptorBuilder builder : builders) {
-                tmpInvoker = builder.buildClusterInterceptorChain(tmpInvoker, INVOCATION_INTERCEPTOR_KEY, CommonConstants.CONSUMER);
-            }
-            interceptorInvoker = tmpInvoker;
-        }
-
-        @Override
-        public Result invoke(Invocation invocation) throws RpcException {
-            return interceptorInvoker.invoke(invocation);
-        }
-
-        @Override
-        public Directory<T> getDirectory() {
-            return interceptorInvoker.getDirectory();
-        }
-
-        @Override
-        public URL getRegistryUrl() {
-            return interceptorInvoker.getRegistryUrl();
-        }
-
-        @Override
-        public boolean isDestroyed() {
-            return interceptorInvoker.isDestroyed();
-        }
-
-        @Override
-        public URL getUrl() {
-            return interceptorInvoker.getUrl();
-        }
-
-        /**
-         * The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
-         * Use ClusterInvoker<T> to replace AbstractClusterInvoker<T> in the future.
-         */
-        @Override
-        protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-            return null;
-        }
-    }
 }

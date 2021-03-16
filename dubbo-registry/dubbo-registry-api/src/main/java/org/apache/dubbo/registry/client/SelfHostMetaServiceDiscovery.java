@@ -207,7 +207,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
     @SuppressWarnings("unchecked")
     public final void fillServiceInstance(DefaultServiceInstance serviceInstance) {
-        String hostId = serviceInstance.getId();
+        String hostId = serviceInstance.getAddress();
         if (metadataMap.containsKey(hostId)) {
             // Use cached metadata.
             // Metadata will be updated by provider callback

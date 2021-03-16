@@ -291,7 +291,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         // register ServiceInstancesChangedListener
         ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey, k -> {
-            ServiceInstancesChangedListener serviceInstancesChangedListener = new ServiceInstancesChangedListener(serviceNames, serviceDiscovery);
+            ServiceInstancesChangedListener serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
             serviceInstancesChangedListener.setUrl(url);
             serviceNames.forEach(serviceName -> {
                 List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
