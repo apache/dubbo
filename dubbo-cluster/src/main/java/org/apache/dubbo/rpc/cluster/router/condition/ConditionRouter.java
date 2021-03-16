@@ -275,6 +275,16 @@ public class ConditionRouter extends AbstractRouter {
         return result;
     }
 
+    /**
+     * analysis the arguments in the rule.
+     * Examples would be like this:
+     * "arguments[0]=1", whenCondition is that the first argument is equal to '1'.
+     * "arguments[1].param=a", whenCondition is that the 'param' attribute in the second argument is equal to 'a'.
+     * "arguments[2].inner.param=b", whenCondition is that the 'param' attribute in the 'inner' attribute of the third argument is equal to 'b'.
+     * @param matchPair
+     * @param invocation
+     * @return
+     */
     public boolean matchArguments(Map.Entry<String, MatchPair> matchPair, Invocation invocation) {
         try {
             // split the rule
