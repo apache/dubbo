@@ -43,11 +43,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     private static final long serialVersionUID = -5864351140409987595L;
 
     /**
-     * The interface name of the reference service
-     */
-    protected String interfaceName;
-
-    /**
      * The interface class of the reference service
      */
     protected Class<?> interfaceClass;
@@ -72,7 +67,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      */
     protected String protocol;
 
-    protected ServiceMetadata serviceMetadata;
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -158,18 +152,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     @Deprecated
     public void setInterfaceClass(Class<?> interfaceClass) {
         setInterface(interfaceClass);
-    }
-
-    public String getInterface() {
-        return interfaceName;
-    }
-
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        // FIXME, add id strategy in ConfigManager
-//        if (StringUtils.isEmpty(id)) {
-//            id = interfaceName;
-//        }
     }
 
     public void setInterface(Class<?> interfaceClass) {
@@ -259,27 +241,19 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
-        super.computeValidRegistryIds();
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
-                setRegistryIds(getConsumer().getRegistryIds());
+        if (consumer != null) {
+            if (notHasSelfRegistryProperty()) {
+                setRegistries(consumer.getRegistries());
+                setRegistryIds(consumer.getRegistryIds());
             }
         }
+
+        super.computeValidRegistryIds();
     }
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
         return URL.buildKey(interfaceName, getGroup(), getVersion());
-    }
-
-    @Override
-    public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? (consumer != null ? consumer.getVersion() : this.version) : this.version;
-    }
-
-    @Override
-    public String getGroup() {
-        return StringUtils.isEmpty(this.group) ? (consumer != null ? consumer.getGroup() : this.group) : this.group;
     }
 
     public abstract T get();

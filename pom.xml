@@ -88,14 +88,14 @@
 
     <properties>
         <!-- Test libs -->
-        <junit_jupiter_version>5.6.0</junit_jupiter_version>
+        <junit_jupiter_version>5.7.1</junit_jupiter_version>
         <hazelcast_version>3.11.1</hazelcast_version>
-        <hamcrest_version>1.3</hamcrest_version>
+        <hamcrest_version>2.2</hamcrest_version>
         <hibernate_validator_version>5.2.4.Final</hibernate_validator_version>
         <el_api_version>2.2.4</el_api_version>
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
-        <mockito_version>2.23.4</mockito_version>
+        <mockito_version>3.8.0</mockito_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -112,21 +112,21 @@
         <file_encoding>UTF-8</file_encoding>
         <!-- Maven plugins -->
         <maven_jar_version>3.2.0</maven_jar_version>
-        <maven_surefire_version>2.22.1</maven_surefire_version>
+        <maven_surefire_version>2.22.2</maven_surefire_version>
         <maven_deploy_version>2.8.2</maven_deploy_version>
-        <maven_compiler_version>3.6.0</maven_compiler_version>
+        <maven_compiler_version>3.8.1</maven_compiler_version>
         <maven_source_version>3.2.1</maven_source_version>
-        <maven_javadoc_version>3.0.1</maven_javadoc_version>
-        <maven_jetty_version>9.4.11.v20180605</maven_jetty_version>
-        <maven_checkstyle_version>3.0.0</maven_checkstyle_version>
-        <maven_jacoco_version>0.8.2</maven_jacoco_version>
-        <maven_flatten_version>1.1.0</maven_flatten_version>
-        <maven_enforce_version>3.0.0-M2</maven_enforce_version>
-        <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
+        <maven_javadoc_version>3.2.0</maven_javadoc_version>
+        <maven_jetty_version>9.4.38.v20210224</maven_jetty_version>
+        <maven_checkstyle_version>3.1.2</maven_checkstyle_version>
+        <maven_jacoco_version>0.8.6</maven_jacoco_version>
+        <maven_flatten_version>1.2.5</maven_flatten_version>
+        <maven_enforce_version>3.0.0-M3</maven_enforce_version>
+        <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.8</revision>
+        <revision>2.7.10-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -180,7 +180,7 @@
         </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
-            <artifactId>hamcrest-all</artifactId>
+            <artifactId>hamcrest</artifactId>
             <version>${hamcrest_version}</version>
             <scope>test</scope>
         </dependency>
@@ -252,7 +252,7 @@
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
                                 <artifactId>checkstyle</artifactId>
-                                <version>8.9</version>
+                                <version>8.41</version>
                             </dependency>
                             <dependency>
                                 <groupId>org.apache.dubbo</groupId>
@@ -395,7 +395,7 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>license-maven-plugin</artifactId>
-                        <version>1.20</version>
+                        <version>2.0.0</version>
                         <executions>
                             <execution>
                                 <id>license-check</id>
@@ -583,6 +583,8 @@
                                 </exclude>
                                 <exclude>.github/**</exclude>
                                 <exclude>compiler/**</exclude>
+                                <!-- exclude mockito extensions spi files -->
+                                <exclude>**/mockito-extensions/*</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -637,11 +639,11 @@
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.22.1</version>
+                    <version>2.22.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.0.0</version>
+                    <version>3.1.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.ops4j.pax.exam</groupId>
@@ -650,7 +652,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>2.10</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <!-- Do NOT upgrade -->
@@ -660,12 +662,12 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>1.10</version>
+                    <version>3.2.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.fusesource.hawtjni</groupId>
                     <artifactId>maven-hawtjni-plugin</artifactId>
-                    <version>1.14</version>
+                    <version>1.15</version>
                 </plugin>
                 <plugin>
                     <groupId>kr.motd.maven</groupId>
@@ -675,7 +677,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>3.2.4</version>
                     <configuration>
                         <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>

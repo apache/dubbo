@@ -43,11 +43,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
@@ -75,7 +77,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.clients = clients;
         // get version.
-        this.version = url.getParameter(VERSION_KEY, "0.0.0");
+        this.version = url.getParameter(VERSION_KEY, DEFAULT_VERSION);
         this.invokers = invokers;
     }
 
@@ -95,6 +97,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         try {
             boolean isOneway = RpcUtils.isOneway(getUrl(), invocation);
             int timeout = calculateTimeout(invocation, methodName);
+            invocation.put(TIMEOUT_KEY, timeout);
             if (isOneway) {
                 boolean isSent = getUrl().getMethodParameter(methodName, Constants.SENT_KEY, false);
                 currentClient.send(inv, isSent);

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 
 import org.junit.jupiter.api.Assertions;
@@ -129,15 +130,9 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
             try {
                 //change recycle time to 1 ms
                 recycleTimeField = RoundRobinLoadBalance.class.getDeclaredField("RECYCLE_PERIOD");
-                recycleTimeField.setAccessible(true);
+                ReflectUtils.makeAccessible(recycleTimeField);
                 recycleTimeField.setInt(RoundRobinLoadBalance.class, 10);
-            } catch (NoSuchFieldException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (SecurityException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalArgumentException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
                 Assertions.assertTrue(true, "getField failed");
             }
         }

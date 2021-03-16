@@ -23,8 +23,8 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -75,7 +75,7 @@ import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
 /**
  * 2019-07-31
  */
-public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
 
@@ -87,7 +87,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
             new NamedThreadFactory("dubbo-service-discovery-consul-notifier", true));
-    private ConsulNotifier notifier;
+    private Map<String, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
     private TtlScheduler ttlScheduler;
     private long checkPassInterval;
     private URL url;
@@ -161,6 +161,11 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         return StringUtils.splitToList(value, COMMA_SEPARATOR_CHAR);
     }
 
+    @Override
+    public URL getUrl() {
+        return url;
+    }
+
     private List<String> getRegisteringTags(URL url) {
         List<String> tags = new ArrayList<>();
         String rawTag = url.getParameter(REGISTER_TAG);
@@ -172,16 +177,18 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void destroy() {
-        if (notifier != null) {
-            notifier.stop();
-        }
-        notifier = null;
+        notifiers.forEach((_k, notifier) -> {
+            if (notifier != null) {
+                notifier.stop();
+            }
+        });
+        notifiers.clear();
         notifierExecutor.shutdownNow();
         ttlScheduler.stop();
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) {
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
         client.agentServiceRegister(consulService, aclToken);
@@ -189,17 +196,20 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        if (notifier == null) {
-            String serviceName = listener.getServiceName();
-            Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
-            Long consulIndex = response.getConsulIndex();
-            notifier = new ConsulNotifier(serviceName, consulIndex);
+        Set<String> serviceNames = listener.getServiceNames();
+        for (String serviceName : serviceNames) {
+            ConsulNotifier notifier = notifiers.get(serviceName);
+            if (notifier == null) {
+                Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+                Long consulIndex = response.getConsulIndex();
+                notifier = new ConsulNotifier(serviceName, consulIndex);
+            }
+            notifierExecutor.execute(notifier);
         }
-        notifierExecutor.execute(notifier);
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         // TODO
         // client.catalogRegister(buildCatalogService(serviceInstance));
     }
@@ -224,8 +234,10 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
         Long consulIndex = response.getConsulIndex();
+        ConsulNotifier notifier = notifiers.get(serviceName);
         if (notifier == null) {
             notifier = new ConsulNotifier(serviceName, consulIndex);
+            notifiers.put(serviceName, notifier);
         }
         return convert(response.getValue());
     }

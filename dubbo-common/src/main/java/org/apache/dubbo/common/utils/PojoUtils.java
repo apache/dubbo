@@ -173,6 +173,7 @@ public class PojoUtils {
         }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
+                ReflectUtils.makeAccessible(method);
                 try {
                     map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history));
                 } catch (Exception e) {
@@ -474,9 +475,7 @@ public class PojoUtils {
                             Method method = getSetterMethod(dest.getClass(), name, value.getClass());
                             Field field = getField(dest.getClass(), name);
                             if (method != null) {
-                                if (!method.isAccessible()) {
-                                    method.setAccessible(true);
-                                }
+                                ReflectUtils.makeAccessible(method);
                                 Type ptype = method.getGenericParameterTypes()[0];
                                 value = realize0(value, method.getParameterTypes()[0], ptype, history);
                                 try {
@@ -503,9 +502,7 @@ public class PojoUtils {
                     if (message instanceof String) {
                         try {
                             Field field = Throwable.class.getDeclaredField("detailMessage");
-                            if (!field.isAccessible()) {
-                                field.setAccessible(true);
-                            }
+                            ReflectUtils.makeAccessible(field);
                             field.set(dest, message);
                         } catch (Exception e) {
                         }
@@ -584,14 +581,10 @@ public class PojoUtils {
                         }
                     }
                 }
-                constructor.setAccessible(true);
+                ReflectUtils.makeAccessible(constructor);
                 Object[] parameters = Arrays.stream(constructor.getParameterTypes()).map(PojoUtils::getDefaultValue).toArray();
                 return constructor.newInstance(parameters);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
@@ -607,8 +600,14 @@ public class PojoUtils {
         if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if ("bool".equals(parameterType.getName())) {
+        if ("boolean".equals(parameterType.getName())) {
             return false;
+        }
+        if ("byte".equals(parameterType.getName())) {
+            return (byte) 0;
+        }
+        if ("short".equals(parameterType.getName())) {
+            return (short) 0;
         }
         return parameterType.isPrimitive() ? 0 : null;
     }
@@ -641,7 +640,7 @@ public class PojoUtils {
         }
         try {
             result = cls.getDeclaredField(fieldName);
-            result.setAccessible(true);
+            ReflectUtils.makeAccessible(result);
         } catch (NoSuchFieldException e) {
             for (Field field : cls.getFields()) {
                 if (fieldName.equals(field.getName()) && ReflectUtils.isPublicInstanceField(field)) {

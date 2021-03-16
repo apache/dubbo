@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -902,11 +903,11 @@ public class AbstractConfigTest {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theEnvironmentField);
             Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
             env.putAll(newenv);
             Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theCaseInsensitiveEnvironmentField);
             Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
             cienv.putAll(newenv);
         } catch (NoSuchFieldException e) {
@@ -915,7 +916,7 @@ public class AbstractConfigTest {
             for (Class cl : classes) {
                 if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
+                    ReflectUtils.makeAccessible(field);
                     Object obj = field.get(env);
                     Map<String, String> map = (Map<String, String>) obj;
                     map.clear();

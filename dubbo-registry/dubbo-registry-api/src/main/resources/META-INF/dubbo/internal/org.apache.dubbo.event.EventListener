@@ -1,4 +1,1 @@
-# "service-instance" has been deprecated since 2.7.8
-# service-instance=org.apache.dubbo.registry.client.event.listener.CustomizableServiceInstanceListener
-
 registry-logging=org.apache.dubbo.registry.client.event.listener.LoggingEventListener

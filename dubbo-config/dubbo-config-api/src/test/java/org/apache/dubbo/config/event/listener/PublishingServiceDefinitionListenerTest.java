@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.event.listener;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
@@ -25,7 +24,8 @@ import org.apache.dubbo.config.bootstrap.EchoServiceImpl;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
 import org.apache.dubbo.metadata.WritableMetadataService;
-import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
+import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
+import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.google.gson.Gson;
@@ -33,14 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
-import static org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder.buildFullDefinition;
-import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
-import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -54,12 +47,13 @@ public class PublishingServiceDefinitionListenerTest {
 
     @BeforeEach
     public void init() {
+        ApplicationModel.reset();
         String metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         ConfigManager configManager = ApplicationModel.getConfigManager();
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
         applicationConfig.setMetadataType(metadataType);
         configManager.setApplication(applicationConfig);
-        this.writableMetadataService = WritableMetadataService.getExtension(metadataType);
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
     @AfterEach
@@ -80,15 +74,8 @@ public class PublishingServiceDefinitionListenerTest {
 
         String serviceDefinition = writableMetadataService.getServiceDefinition(EchoService.class.getName());
 
-        List<URL> exportedUrls = serviceConfig.getExportedUrls();
+        ServiceDefinition serviceDefinitionBuild = ServiceDefinitionBuilder.build(serviceConfig.getInterfaceClass());
 
-        FullServiceDefinition fullServiceDefinition = buildFullDefinition(
-                serviceConfig.getInterfaceClass(),
-                exportedUrls.get(0)
-                        .removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY, TIMESTAMP_KEY)
-                        .getParameters()
-        );
-
-        assertEquals(serviceDefinition, new Gson().toJson(fullServiceDefinition));
+        assertEquals(serviceDefinition, new Gson().toJson(serviceDefinitionBuild));
     }
 }

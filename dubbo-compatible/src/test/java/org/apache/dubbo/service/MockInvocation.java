@@ -56,6 +56,11 @@ public class MockInvocation implements Invocation {
         return null;
     }
 
+    @Override
+    public String getProtocolServiceKey() {
+        return null;
+    }
+
     public String getMethodName() {
         return "echo";
     }

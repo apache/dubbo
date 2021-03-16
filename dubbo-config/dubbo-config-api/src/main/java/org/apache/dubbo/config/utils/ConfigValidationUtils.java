@@ -18,6 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -61,6 +62,8 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -86,8 +89,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -165,6 +171,10 @@ public class ConfigValidationUtils {
      */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
+    public static final String IPV6_START_MARK = "[";
+
+    public static final String IPV6_END_MARK = "]";
+
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
@@ -202,7 +212,33 @@ public class ConfigValidationUtils {
                 }
             }
         }
-        return registryList;
+        return genCompatibleRegistries(registryList, provider);
+    }
+
+    private static List<URL> genCompatibleRegistries(List<URL> registryList, boolean provider) {
+        List<URL> result = new ArrayList<>(registryList.size());
+        registryList.forEach(registryURL -> {
+            result.add(registryURL);
+            if (provider) {
+                // for registries enabled service discovery, automatically register interface compatible addresses.
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())
+                        && registryURL.getParameter(REGISTRY_PUBLISH_INTERFACE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY, false))
+                        && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                    URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
+                            .setProtocol(REGISTRY_PROTOCOL)
+                            .removeParameter(REGISTRY_TYPE_KEY)
+                            .build();
+                    result.add(interfaceCompatibleRegistryURL);
+                }
+            }
+        });
+        return result;
+    }
+
+    private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
+        return registryList.stream().noneMatch(
+                url -> registryType.equals(url.getProtocol()) && registryURL.getBackupAddress().equals(url.getBackupAddress())
+        );
     }
 
     public static URL loadMonitor(AbstractInterfaceConfig interfaceConfig, URL registryURL) {
@@ -434,7 +470,7 @@ public class ConfigValidationUtils {
         if (config != null) {
             String name = config.getName();
             checkName("name", name);
-            checkName(HOST_KEY, config.getHost());
+            checkHost(HOST_KEY, config.getHost());
             checkPathName("contextpath", config.getContextpath());
 
 
@@ -546,6 +582,22 @@ public class ConfigValidationUtils {
 
     public static void checkName(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
+    }
+
+    public static void checkHost(String property, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return;
+        }
+        if (value.startsWith(IPV6_START_MARK) && value.endsWith(IPV6_END_MARK)) {
+            // if the value start with "[" and end with "]", check whether it is IPV6
+            try {
+                InetAddress.getByName(value);
+                return;
+            } catch (UnknownHostException e) {
+                // not a IPv6 string, do nothing, go on to checkName
+            }
+        }
+        checkName(property, value);
     }
 
     public static void checkNameHasSymbol(String property, String value) {

@@ -43,10 +43,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
 
-    /**
-     * The interface name of the exported service
-     */
-    protected String interfaceName;
+
 
     /**
      * The interface class of the exported service
@@ -78,7 +75,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      */
     protected volatile String generic;
 
-    protected ServiceMetadata serviceMetadata;
+
 
     public ServiceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -202,32 +199,35 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void checkProtocol() {
+        if (provider != null && notHasSelfProtocolProperty()) {
+            setProtocols(provider.getProtocols());
+            setProtocolIds(provider.getProtocolIds());
+        }
+
         if (CollectionUtils.isEmpty(protocols) && provider != null) {
             setProtocols(provider.getProtocols());
         }
         convertProtocolIdsToProtocols();
     }
 
+    private boolean notHasSelfProtocolProperty() {
+        return CollectionUtils.isEmpty(protocols) && StringUtils.isEmpty(protocolIds);
+    }
+
     public void completeCompoundConfigs() {
         super.completeCompoundConfigs(provider);
         if (provider != null) {
-            if (protocols == null) {
+            if (notHasSelfProtocolProperty()) {
                 setProtocols(provider.getProtocols());
+                setProtocolIds(provider.getProtocolIds());
             }
             if (configCenter == null) {
                 setConfigCenter(provider.getConfigCenter());
-            }
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(provider.getRegistryIds());
-            }
-            if (StringUtils.isEmpty(protocolIds)) {
-                setProtocolIds(provider.getProtocolIds());
             }
         }
     }
 
     private void convertProtocolIdsToProtocols() {
-        computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
                 List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
@@ -292,9 +292,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setInterface(interfaceClass);
     }
 
-    public String getInterface() {
-        return interfaceName;
-    }
+
 
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
@@ -302,14 +300,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
-    }
-
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        // FIXME, add id strategy in ConfigManager
-//        if (StringUtils.isEmpty(id)) {
-//            id = interfaceName;
-//        }
     }
 
     public T getRef() {
@@ -403,32 +393,16 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return URL.buildKey(interfaceName, getGroup(), getVersion());
     }
 
-    @Override
-    public String getGroup() {
-        return StringUtils.isEmpty(this.group) ? (provider != null ? provider.getGroup() : this.group) : this.group;
-    }
 
-    @Override
-    public String getVersion() {
-        return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
-    }
-
-    private void computeValidProtocolIds() {
-        if (StringUtils.isEmpty(getProtocolIds())) {
-            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolIds())) {
-                setProtocolIds(getProvider().getProtocolIds());
-            }
-        }
-    }
 
     @Override
     protected void computeValidRegistryIds() {
-        super.computeValidRegistryIds();
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryIds())) {
-                setRegistryIds(getProvider().getRegistryIds());
-            }
+        if (provider != null && notHasSelfRegistryProperty()) {
+            setRegistries(provider.getRegistries());
+            setRegistryIds(provider.getRegistryIds());
         }
+
+        super.computeValidRegistryIds();
     }
 
     public abstract void export();

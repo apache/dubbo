@@ -20,6 +20,7 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
@@ -90,6 +91,7 @@ public class DubboInvokerAvilableTest {
     }
 
     @Disabled
+    @Test
     public void test_normal_channel_close_wait_gracefully() throws Exception {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");
@@ -155,7 +157,7 @@ public class DubboInvokerAvilableTest {
 
     private ExchangeClient[] getClients(DubboInvoker<?> invoker) throws Exception {
         Field field = DubboInvoker.class.getDeclaredField("clients");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         ExchangeClient[] clients = (ExchangeClient[]) field.get(invoker);
         Assertions.assertEquals(1, clients.length);
         return clients;

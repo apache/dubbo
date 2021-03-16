@@ -158,9 +158,6 @@ public abstract class Proxy {
                     if (worked.contains(desc) || Modifier.isStatic(method.getModifiers())) {
                         continue;
                     }
-                    if (ics[i].isInterface() && Modifier.isStatic(method.getModifiers())) {
-                        continue;
-                    }
                     worked.add(desc);
 
                     int ix = methods.size();
