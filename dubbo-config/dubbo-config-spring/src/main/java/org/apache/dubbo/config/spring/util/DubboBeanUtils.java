@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.config.spring.DubboConfigInitializationPostProcessor;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
@@ -80,6 +81,7 @@ public interface DubboBeanUtils {
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
         registerInfrastructureBean(registry, ReferenceBeanPostProcessor.BEAN_NAME, ReferenceBeanPostProcessor.class);
+        registerInfrastructureBean(registry, DubboConfigInitializationPostProcessor.BEAN_NAME, DubboConfigInitializationPostProcessor.class);
     }
 
     /**
