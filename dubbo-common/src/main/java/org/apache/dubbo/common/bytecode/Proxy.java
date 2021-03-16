@@ -126,8 +126,12 @@ public abstract class Proxy {
 
                 // get Class by key.
                 Object clazzObj = classCache.get(key);
-                if (clazzObj instanceof Reference<?>) {
-                    Class<?> clazz = (Class<?>) ((Reference<?>) clazzObj).get();
+                if (null == clazzObj || clazzObj instanceof Reference<?>) {
+                    Class<?> clazz = null;
+                    if (clazzObj instanceof Reference<?>) {
+                        clazz = (Class<?>) ((Reference<?>) clazzObj).get();
+                    }
+
                     if (null == clazz) {
                         if (value == PENDING_GENERATION_MARKER) {
                             try {
