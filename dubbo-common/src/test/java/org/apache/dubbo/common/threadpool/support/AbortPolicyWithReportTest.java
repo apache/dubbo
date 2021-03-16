@@ -31,12 +31,7 @@ public class AbortPolicyWithReportTest {
         AbortPolicyWithReport abortPolicyWithReport = new AbortPolicyWithReport("Test", url);
 
         try {
-            abortPolicyWithReport.rejectedExecution(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("hello");
-                }
-            }, (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
+            abortPolicyWithReport.rejectedExecution(() -> System.out.println("hello"), (ThreadPoolExecutor) Executors.newFixedThreadPool(1));
         } catch (RejectedExecutionException rj) {
             // ignore
         }

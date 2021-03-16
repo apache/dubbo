@@ -19,8 +19,6 @@ package org.apache.dubbo.registry.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.URLStrParser;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -60,8 +58,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  *
  */
 public class ZookeeperRegistry extends FailbackRegistry {
-
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperRegistry.class);
 
     private final static String DEFAULT_ROOT = "dubbo";
 

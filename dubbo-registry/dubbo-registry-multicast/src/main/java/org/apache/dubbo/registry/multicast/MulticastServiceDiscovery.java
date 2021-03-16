@@ -17,7 +17,7 @@
 package org.apache.dubbo.registry.multicast;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import java.util.Collections;
@@ -26,9 +26,8 @@ import java.util.Set;
 /**
  * TODO: make multicast protocol support Service Discovery
  */
-public class MulticastServiceDiscovery implements ServiceDiscovery {
+public class MulticastServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
-    private ServiceInstance serviceInstance;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -41,13 +40,13 @@ public class MulticastServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) {
+
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doUpdate(ServiceInstance serviceInstance) {
+
     }
 
     @Override
@@ -63,10 +62,5 @@ public class MulticastServiceDiscovery implements ServiceDiscovery {
     @Override
     public URL getUrl() {
         return registryURL;
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
     }
 }

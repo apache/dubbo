@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
@@ -86,18 +85,18 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         serviceDiscovery.close();
     }
 
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.registerService(build(serviceInstance));
         });
     }
 
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        if (isInstanceUpdated(serviceInstance)) {
-            doInServiceRegistry(serviceDiscovery -> {
-                serviceDiscovery.updateService(build(serviceInstance));
-            });
-        }
+    @Override
+    public void doUpdate(ServiceInstance serviceInstance) {
+        doInServiceRegistry(serviceDiscovery -> {
+            serviceDiscovery.updateService(build(serviceInstance));
+        });
     }
 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
