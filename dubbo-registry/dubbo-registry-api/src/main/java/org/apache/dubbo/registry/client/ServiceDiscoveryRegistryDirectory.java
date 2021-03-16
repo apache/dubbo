@@ -32,9 +32,10 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -152,7 +153,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new UnifiedMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }

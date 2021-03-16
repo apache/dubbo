@@ -65,4 +65,8 @@ public interface Directory<T> extends Node {
     void discordAddresses();
 
     RouterChain<T> getRouterChain();
+
+    default boolean isNotificationReceived() {
+        return false;
+    }
 }
