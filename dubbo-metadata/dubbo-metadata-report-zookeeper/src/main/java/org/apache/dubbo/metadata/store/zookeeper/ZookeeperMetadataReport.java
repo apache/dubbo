@@ -88,11 +88,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
 
-//    @Override
-//    protected void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String value) {
-//        storeMetadata(consumerMetadataIdentifier, value);
-//    }
-
     @Override
     protected void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         zkClient.create(getNodePath(metadataIdentifier), URL.encode(url.toFullString()), false);

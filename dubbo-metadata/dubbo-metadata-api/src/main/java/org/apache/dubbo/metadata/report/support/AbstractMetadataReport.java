@@ -264,35 +264,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    // remove metadata report action with consumer side
-   /* @Override
-    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
-        if (syncReport) {
-            storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap);
-        } else {
-            reportCacheExecutor.execute(() -> storeConsumerMetadataTask(consumerMetadataIdentifier, serviceParameterMap));
-        }
-    }
-    public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
-        try {
-            if (logger.isInfoEnabled()) {
-                logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
-            }
-            allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
-            failedReports.remove(consumerMetadataIdentifier);
-
-            Gson gson = new Gson();
-            String data = gson.toJson(serviceParameterMap);
-            doStoreConsumerMetadata(consumerMetadataIdentifier, data);
-            saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
-        } catch (Exception e) {
-            // retry again. If failed again, throw exception.
-            failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
-            metadataReportRetry.startRetryTask();
-            logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
-        }
-    }*/
-
     @Override
     public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
         if (syncReport) {
@@ -358,11 +329,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             if (PROVIDER_SIDE.equals(item.getKey().getSide())) {
                 this.storeProviderMetadata(item.getKey(), (FullServiceDefinition) item.getValue());
             }
-            //remove metadata report action with consumer side
-//            else if (CONSUMER_SIDE.equals(item.getKey().getSide())) {
-//                this.storeConsumerMetadata(item.getKey(), (Map) item.getValue());
-//            }
-
         }
         return false;
     }
@@ -454,9 +420,6 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     }
 
     protected abstract void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions);
-
-    // remove metadata report action with consumer side
-//    protected abstract void doStoreConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, String serviceParameterString);
 
     protected abstract void doSaveMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 

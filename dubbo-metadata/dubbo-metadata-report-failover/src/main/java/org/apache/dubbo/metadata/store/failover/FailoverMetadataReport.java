@@ -194,25 +194,6 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         }));
     }
 
-    /*@Override
-    public void storeConsumerMetadata(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
-        this.proxyReports.forEach(holder -> {
-            if (shouldRegister(holder.url)) {
-                try {
-                    holder.report.storeConsumerMetadata(consumerMetadataIdentifier, serviceParameterMap);
-                } catch (Exception e) {
-                    if (url.getParameter(CHECK_KEY, true)) {
-                        throw e;
-                    }
-                }
-            } else {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Cancel to store consumer metadata, register is false. url " + holder.url);
-                }
-            }
-        });
-    }*/
-
     @Override
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
         this.proxyReports.forEach(holder -> {
