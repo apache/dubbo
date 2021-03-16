@@ -1662,19 +1662,7 @@ class URL implements Serializable {
         int result = 1;
 
         result = prime * result + ((host == null) ? 0 : host.hashCode());
-        if (parameters != null) {
-            int h = 0;
-            for (String key : parameters.keySet()) {
-                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
-                    continue;
-                }
-
-                h += Objects.hashCode(key) ^ Objects.hashCode(parameters.get(key));
-            }
-
-            result = prime * result + h;
-        }
-
+        result = prime * result + ((parameters == null) ? 0 : parametersHashCode());
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
@@ -1731,6 +1719,19 @@ class URL implements Serializable {
             return false;
         }
         return true;
+    }
+
+    private int parametersHashCode() {
+        int h = 0;
+        for (Map.Entry<String, String> next : parameters.entrySet()) {
+            if (CommonConstants.TIMESTAMP_KEY.equals(next.getKey())) {
+                continue;
+            }
+
+            h += next.hashCode();
+        }
+
+        return h;
     }
 
     public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
