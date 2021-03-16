@@ -30,8 +30,10 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.core.Ordered;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -44,12 +46,19 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * NOTE: Dubbo config beans MUST be initialized after registering all BeanPostProcessors,
  * that is after the AbstractApplicationContext#registerBeanPostProcessors() method.
  */
-public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware {
+public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware, Ordered {
 
     public static String BEAN_NAME = "dubboBeanFactoryPostProcessor";
 
+    /**
+     * This bean post processor should run before seata GlobalTransactionScanner(1024)
+     */
+    @Value("${dubbo.config-initialization-post-processor.order:1000}")
+    private int order = 1000;
+
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
+    private ReferenceBeanManager referenceBeanManager;
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -66,12 +75,26 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        if (bean instanceof ReferenceBean) {
+            ReferenceBean referenceBean = (ReferenceBean) bean;
+            referenceBeanManager.addReference(referenceBean);
+        }
         return bean;
     }
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
+        referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+    }
+
+    @Override
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     private void prepareReferenceBeans(ConfigurableListableBeanFactory beanFactory) throws Exception {
@@ -95,7 +118,9 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
         beansOfTypeIncludingAncestors(beanFactory, MetadataReportConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, MetricsConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, SslConfig.class);
-        beansOfTypeIncludingAncestors(beanFactory, ServiceBean.class);
+
+        //SHOULD NOT init service beans here, avoid conflicts with seata
+        //beansOfTypeIncludingAncestors(beanFactory, ServiceBean.class);
     }
 
 }
