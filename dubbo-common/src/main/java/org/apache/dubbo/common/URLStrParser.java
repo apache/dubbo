@@ -21,9 +21,8 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLItemCache;
 
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
@@ -74,7 +73,7 @@ public final class URLStrParser {
         }
 
         TempBuf tempBuf = DECODE_TEMP_BUF.get();
-        Map<String, String> params = new UnifiedMap<>();
+        Map<String, String> params = new HashMap<>();
         int nameStart = from;
         int valueStart = -1;
         int i;
@@ -170,7 +169,7 @@ public final class URLStrParser {
         }
 
         // check cache
-        protocol = URLItemCache.intern(protocol);
+        protocol = URLItemCache.checkProtocol(protocol);
         path = URLItemCache.checkPath(path);
 
         return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
@@ -234,7 +233,7 @@ public final class URLStrParser {
         }
 
         TempBuf tempBuf = DECODE_TEMP_BUF.get();
-        Map<String, String> params = new UnifiedMap<>();
+        Map<String, String> params = new HashMap<>();
         int nameStart = from;
         int valueStart = -1;
         int i;

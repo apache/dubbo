@@ -85,7 +85,7 @@ public abstract class CuratorFrameworkUtils {
         String host = instance.getAddress();
         int port = instance.getPort();
         ZookeeperInstance zookeeperInstance = instance.getPayload();
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(name, host, port);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getId(), name, host, port);
         serviceInstance.setMetadata(zookeeperInstance.getMetadata());
         return serviceInstance;
     }

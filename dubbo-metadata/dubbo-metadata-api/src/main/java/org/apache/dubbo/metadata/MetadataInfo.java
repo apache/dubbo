@@ -42,8 +42,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPAR
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
 public class MetadataInfo implements Serializable {
-    public static final MetadataInfo EMPTY = new MetadataInfo();
-
     private String app;
     private String revision;
     private Map<String, ServiceInfo> services;
@@ -51,8 +49,6 @@ public class MetadataInfo implements Serializable {
     // used at runtime
     private transient Map<String, String> extendParams;
     private transient AtomicBoolean reported = new AtomicBoolean(false);
-
-    public MetadataInfo() {}
 
     public MetadataInfo(String app) {
         this(app, null, null);

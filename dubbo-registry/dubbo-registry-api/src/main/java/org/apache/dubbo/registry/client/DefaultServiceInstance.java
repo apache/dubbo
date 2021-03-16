@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import com.alibaba.fastjson.JSON;
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,23 +39,24 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private static final long serialVersionUID = 1149677083747278100L;
 
+    private String id;
+
     private String serviceName;
 
     private String host;
 
-    private int port;
+    private Integer port;
 
     private boolean enabled;
 
     private boolean healthy;
 
-    private Map<String, String> metadata = new UnifiedMap<>();
+    private Map<String, String> metadata = new HashMap<>();
 
     private transient String address;
     private transient MetadataInfo serviceMetadata;
     // used at runtime
-    private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
-    private transient Map<String, String> extendParams;
+    private transient Map<String, String> extendParams = new HashMap<>();
     private transient List<Endpoint> endpoints;
 
     public DefaultServiceInstance() {
@@ -70,16 +70,17 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.healthy = other.healthy;
         this.metadata = other.metadata;
         this.serviceMetadata = other.serviceMetadata;
-        this.registryCluster = other.registryCluster;
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
         this.address = null;
+        this.id = null;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, Integer port) {
+    public DefaultServiceInstance(String id, String serviceName, String host, Integer port) {
         if (port != null && port.intValue() < 1) {
             throw new IllegalArgumentException("The port must be greater than zero!");
         }
+        this.id = id;
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
@@ -87,8 +88,16 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.healthy = true;
     }
 
+    public DefaultServiceInstance(String serviceName, String host, Integer port) {
+        this(host + ":" + port, serviceName, host, port);
+    }
+
     public DefaultServiceInstance(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setServiceName(String serviceName) {
@@ -97,6 +106,11 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -109,12 +123,12 @@ public class DefaultServiceInstance implements ServiceInstance {
         return host;
     }
 
-    public void setPort(int port) {
+    public void setPort(Integer port) {
         this.port = port;
     }
 
     @Override
-    public int getPort() {
+    public Integer getPort() {
         return port;
     }
 
@@ -159,19 +173,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
-    public String getRegistryCluster() {
-        return registryCluster;
-    }
-
-    public void setRegistryCluster(String registryCluster) {
-        this.registryCluster = registryCluster;
-    }
-
-    @Override
     public Map<String, String> getExtendParams() {
-        if (extendParams == null) {
-            extendParams = new HashMap<>();
-        }
         return extendParams;
     }
 
@@ -185,19 +187,16 @@ public class DefaultServiceInstance implements ServiceInstance {
     public DefaultServiceInstance copy(Endpoint endpoint) {
         DefaultServiceInstance copyOfInstance = new DefaultServiceInstance(this);
         copyOfInstance.setPort(endpoint.getPort());
+        copyOfInstance.setId(copyOfInstance.getAddress());
         return copyOfInstance;
     }
 
     @Override
     public Map<String, String> getAllParams() {
-        if (extendParams == null) {
-            return metadata;
-        } else {
-            Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
-            allParams.putAll(metadata);
-            allParams.putAll(extendParams);
-            return allParams;
-        }
+        Map<String, String> allParams = new HashMap<>((int) ((metadata.size() + extendParams.size()) / 0.75f + 1));
+        allParams.putAll(metadata);
+        allParams.putAll(extendParams);
+        return allParams;
     }
 
     public void setMetadata(Map<String, String> metadata) {
@@ -250,6 +249,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     @Override
     public String toString() {
         return "DefaultServiceInstance{" +
+                "id='" + id + '\'' +
                 ", serviceName='" + serviceName + '\'' +
                 ", host='" + host + '\'' +
                 ", port=" + port +

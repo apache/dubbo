@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractInvoker.class);
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final Class<T> type;
 

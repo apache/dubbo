@@ -1,2 +1,0 @@
-zone-aware=org.apache.dubbo.rpc.cluster.filter.support.ZoneAwareFilter
-consumercontext=org.apache.dubbo.rpc.cluster.filter.support.ConsumerContextFilter
