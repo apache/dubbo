@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
 import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -51,7 +52,7 @@ public abstract class Proxy {
     private static final String PACKAGE_NAME = Proxy.class.getPackage().getName();
     private static final Map<ClassLoader, Map<String, Object>> PROXY_CACHE_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
     // cache class, avoid PermGen OOM.
-    private static final Map<ClassLoader, Map<String, Class<?>>> PROXY_CLASS_MAP = new WeakHashMap<ClassLoader, Map<String, Class<?>>>();
+    private static final Map<ClassLoader, Map<String, Object>> PROXY_CLASS_MAP = new WeakHashMap<ClassLoader, Map<String, Object>>();
 
     private static final Object PENDING_GENERATION_MARKER = new Object();
 
@@ -106,7 +107,7 @@ public abstract class Proxy {
         // get cache by class loader.
         final Map<String, Object> cache;
         // cache class
-        final Map<String, Class<?>> classCache;
+        final Map<String, Object> classCache;
         synchronized (PROXY_CACHE_MAP) {
             cache = PROXY_CACHE_MAP.computeIfAbsent(cl, k -> new HashMap<>());
             classCache = PROXY_CLASS_MAP.computeIfAbsent(cl, k -> new HashMap<>());
@@ -124,28 +125,31 @@ public abstract class Proxy {
                 }
 
                 // get Class by key.
-                Class<?> clazz = classCache.get(key);
-                if (null == clazz) {
-                    if (value == PENDING_GENERATION_MARKER) {
-                        try {
-                            cache.wait();
-                        } catch (InterruptedException e) {
+                Object clazzObj = classCache.get(key);
+                if (clazzObj instanceof Reference<?>) {
+                    Class<?> clazz = (Class<?>) ((Reference<?>) clazzObj).get();
+                    if (null == clazz) {
+                        if (value == PENDING_GENERATION_MARKER) {
+                            try {
+                                cache.wait();
+                            } catch (InterruptedException e) {
+                            }
+                        } else {
+                            cache.put(key, PENDING_GENERATION_MARKER);
+                            break;
                         }
                     } else {
-                        cache.put(key, PENDING_GENERATION_MARKER);
-                        break;
-                    }
-                } else {
-                    try {
-                        proxy = (Proxy) clazz.newInstance();
-                        return proxy;
-                    } catch (InstantiationException | IllegalAccessException e) {
-                        throw new RuntimeException(e);
-                    } finally {
-                        if (null == proxy) {
-                            cache.remove(key);
-                        } else {
-                            cache.put(key, new WeakReference<Proxy>(proxy));
+                        try {
+                            proxy = (Proxy) clazz.newInstance();
+                            return proxy;
+                        } catch (InstantiationException | IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } finally {
+                            if (null == proxy) {
+                                cache.remove(key);
+                            } else {
+                                cache.put(key, new WeakReference<Proxy>(proxy));
+                            }
                         }
                     }
                 }
@@ -228,7 +232,7 @@ public abstract class Proxy {
             proxy = (Proxy) pc.newInstance();
 
             synchronized (classCache) {
-                classCache.put(key, pc);
+                classCache.put(key, new SoftReference<Class<?>>(pc));
             }
         } catch (RuntimeException e) {
             throw e;
