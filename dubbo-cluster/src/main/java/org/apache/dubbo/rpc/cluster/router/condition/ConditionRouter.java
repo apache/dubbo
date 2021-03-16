@@ -26,8 +26,10 @@ import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.Constants;
 import org.apache.dubbo.rpc.cluster.router.AbstractRouter;
 
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,6 +63,7 @@ public class ConditionRouter extends AbstractRouter {
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
     protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected static Pattern ARGUMENTS_PATTERN = Pattern.compile("arguments\\[([0-9]+)\\]");
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
@@ -230,6 +233,16 @@ public class ConditionRouter extends AbstractRouter {
         boolean result = false;
         for (Map.Entry<String, MatchPair> matchPair : condition.entrySet()) {
             String key = matchPair.getKey();
+
+            if (key.startsWith(Constants.ARGUMENTS)) {
+                if (!matchArguments(matchPair, invocation)) {
+                    return false;
+                } else {
+                    result = true;
+                    continue;
+                }
+            }
+
             String sampleValue;
             //get real invoked method name from invocation
             if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
@@ -260,6 +273,44 @@ public class ConditionRouter extends AbstractRouter {
             }
         }
         return result;
+    }
+
+    public boolean matchArguments(Map.Entry<String, MatchPair> matchPair, Invocation invocation) {
+        try {
+            // split the rule
+            String key = matchPair.getKey();
+            String[] expressArray = key.split("\\.");
+            String argumentExpress = expressArray[0];
+            final Matcher matcher = ARGUMENTS_PATTERN.matcher(argumentExpress);
+            if (!matcher.find()) {
+                return false;
+            }
+
+            //extract the argument index
+            int index = Integer.parseInt(matcher.group(1));
+            if (index < 0 || index > invocation.getArguments().length) {
+                return false;
+            }
+
+            //extract the argument value
+            Object object = invocation.getArguments()[index];
+            for (int i = 1; i < expressArray.length; i++) {
+                if (object == null) {
+                    return false;
+                }
+                Field field = object.getClass().getDeclaredField(expressArray[i]);
+                field.setAccessible(true);
+                object = field.get(object);
+            }
+
+            if (matchPair.getValue().isMatch((String)object, null)) {
+                return true;
+            }
+        } catch (Exception e) {
+            logger.warn("Arguments match failed, matchPair[]" + matchPair + "] invocation[" + invocation + "]", e);
+        }
+
+        return false;
     }
 
     protected static final class MatchPair {
