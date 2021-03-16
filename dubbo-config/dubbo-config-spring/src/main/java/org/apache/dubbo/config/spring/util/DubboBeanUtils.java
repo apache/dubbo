@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.util.HashMap;
@@ -39,6 +42,8 @@ import java.util.Objects;
  * @since 2.7.6
  */
 public interface DubboBeanUtils {
+
+    static final Log log = LogFactory.getLog(DubboBeanUtils.class);
 
     /**
      * Register the common beans
@@ -75,6 +80,7 @@ public interface DubboBeanUtils {
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
         registerInfrastructureBean(registry, ReferenceBeanPostProcessor.BEAN_NAME, ReferenceBeanPostProcessor.class);
+    }
 
     /**
      * Register Infrastructure Bean
