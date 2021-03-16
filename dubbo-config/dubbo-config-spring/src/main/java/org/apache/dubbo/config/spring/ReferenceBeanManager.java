@@ -58,7 +58,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     private volatile boolean initialized = false;
 
 
-    public void addReference(ReferenceBean referenceBean) {
+    public void addReference(ReferenceBean referenceBean) throws Exception {
         Assert.notNull(referenceBean.getId(), "The id of ReferenceBean cannot be empty");
         //TODO generate reference bean id and unique cache key
         String key = referenceBean.getId();
@@ -72,12 +72,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         configMap.put(key, referenceBean);
 
         // if add reference after prepareReferenceBeans(), should init it immediately.
-        try {
-            if (initialized) {
-                initReferenceBean(referenceBean, true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (initialized) {
+            initReferenceBean(referenceBean, true);
         }
     }
 
@@ -188,10 +184,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                 value = methodConfigs.toArray(new MethodConfig[0]);
             } else if ("parameters".equals(propertyName)) {
                 value = createParameterMap((ManagedMap) value, propertyResolver);
-            } else if ("consumer".equals(propertyName)) {
-                //TODO 优化ref bean
-                RuntimeBeanReference consumerRef = (RuntimeBeanReference) value;
-                value = consumerRef.getBeanName();
             }
             if (value instanceof RuntimeBeanReference) {
                 RuntimeBeanReference beanReference = (RuntimeBeanReference) value;
@@ -229,7 +221,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         MethodConfig methodConfig = new MethodConfig();
         DataBinder dataBinder = new DataBinder(methodConfig);
         dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, propertyResolver));
-//        dataBinder.bind(beanDefinition.getPropertyValues());
         return methodConfig;
     }
 

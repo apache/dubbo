@@ -350,7 +350,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         if (injectedObject == null) {
             injectedObject = doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
             // Customized inject-object if necessary
-            injectedObjectsCache.putIfAbsent(cacheKey, injectedObject);
+            injectedObjectsCache.put(cacheKey, injectedObject);
         }
 
         return injectedObject;

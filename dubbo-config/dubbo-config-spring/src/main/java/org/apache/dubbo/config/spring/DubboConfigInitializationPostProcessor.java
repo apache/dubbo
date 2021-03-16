@@ -30,6 +30,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -75,9 +76,13 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-        if (bean instanceof ReferenceBean) {
-            ReferenceBean referenceBean = (ReferenceBean) bean;
-            referenceBeanManager.addReference(referenceBean);
+        try {
+            if (bean instanceof ReferenceBean) {
+                ReferenceBean referenceBean = (ReferenceBean) bean;
+                referenceBeanManager.addReference(referenceBean);
+            }
+        } catch (Exception e) {
+            throw new BeanInitializationException("Initialization reference bean failed", e);
         }
         return bean;
     }

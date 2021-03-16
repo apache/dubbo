@@ -355,7 +355,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     }
 
     private boolean isRemoteReferenceBean(AnnotationAttributes attributes) {
-        //TODO injvm 为空值时是否可以走本地调用？
+        //TODO Can the interface be called locally when injvm is empty? https://github.com/apache/dubbo/issues/6842
         boolean remote = Boolean.FALSE.equals(attributes.get("injvm"));
         return remote;
     }
