@@ -32,6 +32,7 @@ import org.apache.dubbo.remoting.exchange.Response;
 
 import io.netty.channel.Channel;
 
+import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
@@ -204,7 +205,12 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         } else if (res.getStatus() == Response.CLIENT_TIMEOUT || res.getStatus() == Response.SERVER_TIMEOUT) {
             this.completeExceptionally(new TimeoutException(res.getStatus() == Response.SERVER_TIMEOUT, null, connection.getRemote(), res.getErrorMessage()));
         } else {
-            this.completeExceptionally(new RemotingException(null, connection.getRemote(), res.getErrorMessage()));
+            if (connection.getChannel() != null) {
+                final InetSocketAddress local = (InetSocketAddress) connection.getChannel().localAddress();
+                this.completeExceptionally(new RemotingException(local, connection.getRemote(), res.getErrorMessage()));
+            } else {
+                this.completeExceptionally(new RemotingException(null, connection.getRemote(), res.getErrorMessage()));
+            }
         }
 
         // the result is returning, but the caller thread may still waiting

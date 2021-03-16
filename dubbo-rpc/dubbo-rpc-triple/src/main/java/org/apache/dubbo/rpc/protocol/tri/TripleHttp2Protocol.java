@@ -44,6 +44,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
                         .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
                         .initialWindowSize(1048576))
                 .frameLogger(SERVER_LOGGER)
                 .build();
@@ -61,6 +63,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .initialSettings(new Http2Settings()
                         .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
                         .initialWindowSize(1048576))
                 .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(CLIENT_LOGGER)
