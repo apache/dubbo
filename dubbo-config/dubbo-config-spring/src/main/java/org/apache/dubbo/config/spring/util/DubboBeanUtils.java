@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.config.spring.DubboBeanRegistryPostProcessor;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.ReferenceBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
@@ -27,13 +30,12 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 
 /**
  * Dubbo Bean utilities class
@@ -41,6 +43,8 @@ import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
  * @since 2.7.6
  */
 public interface DubboBeanUtils {
+
+    static final Log log = LogFactory.getLog(DubboBeanUtils.class);
 
     /**
      * Register the common beans
@@ -77,7 +81,37 @@ public interface DubboBeanUtils {
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
         registerInfrastructureBean(registry, ReferenceBeanPostProcessor.BEAN_NAME, ReferenceBeanPostProcessor.class);
+        registerInfrastructureBean(registry, DubboBeanRegistryPostProcessor.BEAN_NAME, DubboBeanRegistryPostProcessor.class);
 
+    }
+
+    /**
+     * Register Infrastructure Bean
+     *
+     * @param beanDefinitionRegistry {@link BeanDefinitionRegistry}
+     * @param beanType               the type of bean
+     * @param beanName               the name of bean
+     * @return if it's a first time to register, return <code>true</code>, or <code>false</code>
+     */
+    static boolean registerInfrastructureBean(BeanDefinitionRegistry beanDefinitionRegistry,
+                                                     String beanName,
+                                                     Class<?> beanType) {
+
+        boolean registered = false;
+
+        if (!beanDefinitionRegistry.containsBeanDefinition(beanName)) {
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+            beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            beanDefinitionRegistry.registerBeanDefinition(beanName, beanDefinition);
+            registered = true;
+
+            if (log.isDebugEnabled()) {
+                log.debug("The Infrastructure bean definition [" + beanDefinition
+                        + "with name [" + beanName + "] has been registered.");
+            }
+        }
+
+        return registered;
     }
 
     /**

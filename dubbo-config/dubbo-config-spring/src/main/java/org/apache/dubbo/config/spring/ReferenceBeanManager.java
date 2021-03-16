@@ -64,7 +64,9 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         String key = referenceBean.getId();
         ReferenceBean oldReferenceBean = configMap.get(key);
         if (oldReferenceBean != null) {
-            logger.warn("Found duplicated ReferenceBean id: " + key);
+            if (referenceBean != oldReferenceBean) {
+                logger.warn("Found duplicated ReferenceBean id: " + key);
+            }
             return;
         }
         configMap.put(key, referenceBean);
