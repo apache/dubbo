@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -1659,8 +1660,21 @@ class URL implements Serializable {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
+
         result = prime * result + ((host == null) ? 0 : host.hashCode());
-        result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
+        if (parameters != null) {
+            int h = 0;
+            for (String key : parameters.keySet()) {
+                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
+                    continue;
+                }
+
+                h += Objects.hashCode(key) ^ Objects.hashCode(parameters.get(key));
+            }
+
+            result = prime * result + h;
+        }
+
         result = prime * result + ((password == null) ? 0 : password.hashCode());
         result = prime * result + ((path == null) ? 0 : path.hashCode());
         result = prime * result + port;
