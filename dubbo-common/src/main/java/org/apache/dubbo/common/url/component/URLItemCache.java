@@ -19,14 +19,13 @@ package org.apache.dubbo.common.url.component;
 import org.apache.dubbo.common.utils.LRUCache;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class URLItemCache {
     // thread safe with limited size, by default 1000
     private static final Map<String, String> PARAM_KEY_CACHE = new LRUCache<>(10000);
-    private static final Map<String, String> PARAM_VALUE_CACHE = new LRUCache<>(100000);
+    private static final Map<String, String> PARAM_VALUE_CACHE = new LRUCache<>(50000);
     private static final Map<String, String> PATH_CACHE = new LRUCache<>(10000);
-    private static final Map<String, String> PROTOCOL_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, String> REVISION_CACHE = new LRUCache<>(10000);
 
     public static void putParams(Map<String, String> params, String key, String value) {
         String cachedKey = PARAM_KEY_CACHE.get(key);
@@ -43,17 +42,6 @@ public class URLItemCache {
         params.put(cachedKey, cachedValue);
     }
 
-    public static String checkProtocol(String _protocol) {
-        if (_protocol == null) {
-            return _protocol;
-        }
-        String cachedProtocol = PROTOCOL_CACHE.putIfAbsent(_protocol, _protocol);
-        if (cachedProtocol != null) {
-            return cachedProtocol;
-        }
-        return _protocol;
-    }
-
     public static String checkPath(String _path) {
         if (_path == null) {
             return _path;
@@ -63,5 +51,33 @@ public class URLItemCache {
             return cachedPath;
         }
         return _path;
+    }
+
+    public static String checkRevision(String _revision) {
+        if (_revision == null) {
+            return _revision;
+        }
+        String revision = REVISION_CACHE.putIfAbsent(_revision, _revision);
+        if (revision != null) {
+            return revision;
+        }
+        return _revision;
+    }
+
+    public static String intern(String _protocol) {
+        if (_protocol == null) {
+            return _protocol;
+        }
+        return _protocol.intern();
+    }
+
+    public static void putParamsIntern(Map<String, String> params, String key, String value) {
+        if (key == null || value == null) {
+            params.put(key, value);
+            return;
+        }
+        key = key.intern();
+        value = value.intern();
+        params.put(key, value);
     }
 }

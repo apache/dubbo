@@ -110,7 +110,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     private String getServiceInstanceId(ServiceInstance serviceInstance) {
-        String id = serviceInstance.getId();
+        String id = serviceInstance.getAddress();
         if (StringUtils.isBlank(id)) {
             return serviceInstance.getHost() + "." + serviceInstance.getPort();
         }

@@ -29,13 +29,6 @@ import java.util.SortedMap;
 public interface ServiceInstance extends Serializable {
 
     /**
-     * The id of the registered service instance.
-     *
-     * @return nullable
-     */
-    String getId();
-
-    /**
      * The name of service that current instance belongs to.
      *
      * @return non-null
@@ -54,7 +47,7 @@ public interface ServiceInstance extends Serializable {
      *
      * @return the positive integer if present
      */
-    Integer getPort();
+    int getPort();
 
     String getAddress();
 
@@ -86,6 +79,10 @@ public interface ServiceInstance extends Serializable {
     Map<String, String> getMetadata();
 
     SortedMap<String, String> getSortedMetadata();
+
+    String getRegistryCluster();
+
+    void setRegistryCluster(String registryCluster);
 
     Map<String, String> getExtendParams();
 

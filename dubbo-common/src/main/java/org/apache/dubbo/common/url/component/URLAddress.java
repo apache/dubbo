@@ -252,7 +252,7 @@ public class URLAddress implements Serializable {
         }
 
         // check cache
-        protocol = URLItemCache.checkProtocol(protocol);
+        protocol = URLItemCache.intern(protocol);
         path = URLItemCache.checkPath(path);
 
         return new PathURLAddress(protocol, username, password, path, host, port, rawAddress);
