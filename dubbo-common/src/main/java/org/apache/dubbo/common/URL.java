@@ -18,6 +18,7 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -97,19 +98,19 @@ class URL implements Serializable {
 
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private final String protocol;
+    protected String protocol;
 
-    private final String username;
+    protected String username;
 
-    private final String password;
+    protected String password;
 
     // by default, host to registry
-    private final String host;
+    protected String host;
 
     // by default, port to registry
-    private final int port;
+    protected int port;
 
-    private final String path;
+    protected String path;
 
     private final Map<String, String> parameters;
 
@@ -134,6 +135,7 @@ class URL implements Serializable {
     private volatile transient String string;
 
     private transient String serviceKey;
+    private transient String protocolServiceKey;
 
     private transient String address;
 
@@ -199,10 +201,6 @@ class URL implements Serializable {
                String path,
                Map<String, String> parameters,
                Map<String, Map<String, String>> methodParameters) {
-        if (StringUtils.isEmpty(username)
-                && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
-        }
         this.protocol = protocol;
         this.username = username;
         this.password = password;
@@ -248,6 +246,11 @@ class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
+        // ignore the url content following '#'
+        int poundIndex = url.indexOf('#');
+        if (poundIndex != -1) {
+            url = url.substring(0, poundIndex);
+        }
         int i = url.indexOf('?'); // separator between body and parameters
         if (i >= 0) {
             String[] parts = url.substring(i + 1).split("&");
@@ -448,7 +451,7 @@ class URL implements Serializable {
     }
 
     public URL setUsername(String username) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getPassword() {
@@ -456,7 +459,7 @@ class URL implements Serializable {
     }
 
     public URL setPassword(String password) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAuthority() {
@@ -473,7 +476,7 @@ class URL implements Serializable {
     }
 
     public URL setHost(String host) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     /**
@@ -496,7 +499,7 @@ class URL implements Serializable {
     }
 
     public URL setPort(int port) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public int getPort(int defaultPort) {
@@ -520,7 +523,7 @@ class URL implements Serializable {
         } else {
             host = address;
         }
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getBackupAddress() {
@@ -556,7 +559,7 @@ class URL implements Serializable {
     }
 
     public URL setPath(String path) {
-        return new URL(protocol, username, password, host, port, path, getParameters());
+        return new URL(getProtocol(), username, password, host, port, path, getParameters());
     }
 
     public String getAbsolutePath() {
@@ -586,41 +589,6 @@ class URL implements Serializable {
             }
         }
         return Collections.unmodifiableMap(selectedParameters);
-    }
-
-    public Map<String, Map<String, String>> getMethodParameters() {
-        return methodParameters;
-    }
-
-    public String getParameterAndDecoded(String key) {
-        return getParameterAndDecoded(key, null);
-    }
-
-    public String getParameterAndDecoded(String key, String defaultValue) {
-        return decode(getParameter(key, defaultValue));
-    }
-
-    public String getParameter(String key) {
-        return parameters.get(key);
-    }
-
-    public String getParameter(String key, String defaultValue) {
-        String value = getParameter(key);
-        return StringUtils.isEmpty(value) ? defaultValue : value;
-    }
-
-    public String[] getParameter(String key, String[] defaultValue) {
-        String value = getParameter(key);
-        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
-    }
-
-    public List<String> getParameter(String key, List<String> defaultValue) {
-        String value = getParameter(key);
-        if (StringUtils.isEmpty(value)) {
-            return defaultValue;
-        }
-        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
-        return Arrays.asList(strArray);
     }
 
     /**
@@ -658,7 +626,43 @@ class URL implements Serializable {
         return result;
     }
 
-    private Map<String, Number> getNumbers() {
+
+    public Map<String, Map<String, String>> getMethodParameters() {
+        return methodParameters;
+    }
+
+    public String getParameterAndDecoded(String key) {
+        return getParameterAndDecoded(key, null);
+    }
+
+    public String getParameterAndDecoded(String key, String defaultValue) {
+        return decode(getParameter(key, defaultValue));
+    }
+
+    public String getParameter(String key) {
+        return parameters.get(key);
+    }
+
+    public String getParameter(String key, String defaultValue) {
+        String value = getParameter(key);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public String[] getParameter(String key, String[] defaultValue) {
+        String value = getParameter(key);
+        return StringUtils.isEmpty(value) ? defaultValue : COMMA_SPLIT_PATTERN.split(value);
+    }
+
+    public List<String> getParameter(String key, List<String> defaultValue) {
+        String value = getParameter(key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        String[] strArray = COMMA_SPLIT_PATTERN.split(value);
+        return Arrays.asList(strArray);
+    }
+
+    protected Map<String, Number> getNumbers() {
         // concurrent initialization is tolerant
         if (numbers == null) {
             numbers = new ConcurrentHashMap<>();
@@ -666,7 +670,7 @@ class URL implements Serializable {
         return numbers;
     }
 
-    private Map<String, Map<String, Number>> getMethodNumbers() {
+    protected Map<String, Map<String, Number>> getMethodNumbers() {
         if (methodNumbers == null) { // concurrent initialization is tolerant
             methodNumbers = new ConcurrentHashMap<>();
         }
@@ -850,8 +854,17 @@ class URL implements Serializable {
         return URL.decode(getMethodParameter(method, key, defaultValue));
     }
 
+    public String getMethodParameterStrict(String method, String key) {
+        Map<String, String> keyMap = getMethodParameters().get(method);
+        String value = null;
+        if (keyMap != null) {
+            value = keyMap.get(key);
+        }
+        return value;
+    }
+
     public String getMethodParameter(String method, String key) {
-        Map<String, String> keyMap = methodParameters.get(method);
+        Map<String, String> keyMap = getMethodParameters().get(method);
         String value = null;
         if (keyMap != null) {
             value = keyMap.get(key);
@@ -1041,7 +1054,7 @@ class URL implements Serializable {
             }
             return false;
         }
-        String value = getMethodParameter(method, key);
+        String value = getMethodParameterStrict(method, key);
         return StringUtils.isNotEmpty(value);
     }
 
@@ -1133,7 +1146,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameterIfAbsent(String key, String value) {
@@ -1147,7 +1160,7 @@ class URL implements Serializable {
         Map<String, String> map = new HashMap<>(getParameters());
         map.put(key, value);
 
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addMethodParameter(String method, String key, String value) {
@@ -1162,7 +1175,7 @@ class URL implements Serializable {
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
 
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
+        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
     }
 
     public URL addMethodParameterIfAbsent(String method, String key, String value) {
@@ -1180,7 +1193,7 @@ class URL implements Serializable {
         Map<String, Map<String, String>> methodMap = toMethodParameters(map);
         URL.putMethodParameter(method, key, value, methodMap);
 
-        return new URL(protocol, username, password, host, port, path, map, methodMap);
+        return new URL(getProtocol(), username, password, host, port, path, map, methodMap);
     }
 
     /**
@@ -1216,7 +1229,7 @@ class URL implements Serializable {
 
         Map<String, String> map = new HashMap<>(getParameters());
         map.putAll(parameters);
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParametersIfAbsent(Map<String, String> parameters) {
@@ -1225,7 +1238,7 @@ class URL implements Serializable {
         }
         Map<String, String> map = new HashMap<>(parameters);
         map.putAll(getParameters());
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL addParameters(String... pairs) {
@@ -1275,11 +1288,11 @@ class URL implements Serializable {
         if (map.size() == getParameters().size()) {
             return this;
         }
-        return new URL(protocol, username, password, host, port, path, map);
+        return new URL(getProtocol(), username, password, host, port, path, map);
     }
 
     public URL clearParameters() {
-        return new URL(protocol, username, password, host, port, path, new HashMap<>());
+        return new URL(getProtocol(), username, password, host, port, path, new HashMap<>());
     }
 
     public String getRawParameter(String key) {
@@ -1305,7 +1318,8 @@ class URL implements Serializable {
     }
 
     public Map<String, String> toMap() {
-        Map<String, String> map = new HashMap<>(parameters);
+        Map<String, String> map = null == parameters ? new HashMap<>() : new HashMap<>(parameters);
+
         if (protocol != null) {
             map.put(PROTOCOL_KEY, protocol);
         }
@@ -1516,6 +1530,14 @@ class URL implements Serializable {
         return BaseServiceMetadata.buildServiceKey(path, group, version);
     }
 
+    public String getProtocolServiceKey() {
+        if (protocolServiceKey != null) {
+            return protocolServiceKey;
+        }
+        this.protocolServiceKey = getServiceKey() + ":" + getProtocol();
+        return protocolServiceKey;
+    }
+
     public String toServiceStringWithoutResolving() {
         return buildString(true, false, false, true);
     }
@@ -1666,9 +1688,19 @@ class URL implements Serializable {
             if (other.parameters != null) {
                 return false;
             }
-        } else if (!parameters.equals(other.parameters)) {
+        } else if (!parameters.keySet().equals(other.parameters.keySet())) {
             return false;
+        } else {
+            for (String key : parameters.keySet()) {
+                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
+                    continue;
+                }
+                if (!parameters.get(key).equals(other.parameters.get(key))) {
+                    return false;
+                }
+            }
         }
+
         if (!StringUtils.isEquals(password, other.password)) {
             return false;
         }
@@ -1690,6 +1722,278 @@ class URL implements Serializable {
     public static void putMethodParameter(String method, String key, String value, Map<String, Map<String, String>> methodParameters) {
         Map<String, String> subParameter = methodParameters.computeIfAbsent(method, k -> new HashMap<>());
         subParameter.put(key, value);
+    }
+
+    /* add service scope operations, see InstanceAddressURL */
+    public Map<String, String> getServiceParameters(String service) {
+        return getParameters();
+    }
+
+    public String getServiceParameter(String service, String key) {
+        return getParameter(key);
+    }
+
+    public String getServiceParameter(String service, String key, String defaultValue) {
+        String value = getServiceParameter(service, key);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public int getServiceParameter(String service, String key, int defaultValue) {
+        return getParameter(key, defaultValue);
+    }
+
+    public double getServiceParameter(String service, String key, double defaultValue) {
+        Number n = getServiceNumbers(service).get(key);
+        if (n != null) {
+            return n.doubleValue();
+        }
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        double d = Double.parseDouble(value);
+        getNumbers().put(key, d);
+        return d;
+    }
+
+    public float getServiceParameter(String service, String key, float defaultValue) {
+        Number n = getNumbers().get(key);
+        if (n != null) {
+            return n.floatValue();
+        }
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        float f = Float.parseFloat(value);
+        getNumbers().put(key, f);
+        return f;
+    }
+
+    public long getServiceParameter(String service, String key, long defaultValue) {
+        Number n = getNumbers().get(key);
+        if (n != null) {
+            return n.longValue();
+        }
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        long l = Long.parseLong(value);
+        getNumbers().put(key, l);
+        return l;
+    }
+
+    public short getServiceParameter(String service, String key, short defaultValue) {
+        Number n = getNumbers().get(key);
+        if (n != null) {
+            return n.shortValue();
+        }
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        short s = Short.parseShort(value);
+        getNumbers().put(key, s);
+        return s;
+    }
+
+    public byte getServiceParameter(String service, String key, byte defaultValue) {
+        Number n = getNumbers().get(key);
+        if (n != null) {
+            return n.byteValue();
+        }
+        String value = getServiceParameter(service, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        byte b = Byte.parseByte(value);
+        getNumbers().put(key, b);
+        return b;
+    }
+
+    public char getServiceParameter(String service, String key, char defaultValue) {
+        String value = getServiceParameter(service, key);
+        return StringUtils.isEmpty(value) ? defaultValue : value.charAt(0);
+    }
+
+    public boolean getServiceParameter(String service, String key, boolean defaultValue) {
+        String value = getServiceParameter(service, key);
+        return StringUtils.isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
+    }
+
+    public boolean hasServiceParameter(String service, String key) {
+        String value = getServiceParameter(service, key);
+        return value != null && value.length() > 0;
+    }
+
+    public float getPositiveServiceParameter(String service, String key, float defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        float value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public double getPositiveServiceParameter(String service, String key, double defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        double value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public long getPositiveServiceParameter(String service, String key, long defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        long value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public int getPositiveServiceParameter(String service, String key, int defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        int value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public short getPositiveServiceParameter(String service, String key, short defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        short value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public byte getPositiveServiceParameter(String service, String key, byte defaultValue) {
+        if (defaultValue <= 0) {
+            throw new IllegalArgumentException("defaultValue <= 0");
+        }
+        byte value = getServiceParameter(service, key, defaultValue);
+        return value <= 0 ? defaultValue : value;
+    }
+
+    public String getServiceMethodParameterAndDecoded(String service, String method, String key) {
+        return URL.decode(getServiceMethodParameter(service, method, key));
+    }
+
+    public String getServiceMethodParameterAndDecoded(String service, String method, String key, String defaultValue) {
+        return URL.decode(getServiceMethodParameter(service, method, key, defaultValue));
+    }
+
+    public String getServiceMethodParameterStrict(String service, String method, String key) {
+        return getMethodParameterStrict(method, key);
+    }
+
+    public String getServiceMethodParameter(String service, String method, String key) {
+        return getMethodParameter(method, key);
+    }
+
+    public String getServiceMethodParameter(String service, String method, String key, String defaultValue) {
+        String value = getServiceMethodParameter(service, method, key);
+        return StringUtils.isEmpty(value) ? defaultValue : value;
+    }
+
+    public double getServiceMethodParameter(String service, String method, String key, double defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.doubleValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        double d = Double.parseDouble(value);
+        updateCachedNumber(method, key, d);
+        return d;
+    }
+
+    public float getServiceMethodParameter(String service, String method, String key, float defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.floatValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        float f = Float.parseFloat(value);
+        updateCachedNumber(method, key, f);
+        return f;
+    }
+
+    public long getServiceMethodParameter(String service, String method, String key, long defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.longValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        long l = Long.parseLong(value);
+        updateCachedNumber(method, key, l);
+        return l;
+    }
+
+    public int getServiceMethodParameter(String service, String method, String key, int defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.intValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        int i = Integer.parseInt(value);
+        updateCachedNumber(method, key, i);
+        return i;
+    }
+
+    public short getMethodParameter(String service, String method, String key, short defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.shortValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        short s = Short.parseShort(value);
+        updateCachedNumber(method, key, s);
+        return s;
+    }
+
+    public byte getServiceMethodParameter(String service, String method, String key, byte defaultValue) {
+        Number n = getCachedNumber(method, key);
+        if (n != null) {
+            return n.byteValue();
+        }
+        String value = getServiceMethodParameter(service, method, key);
+        if (StringUtils.isEmpty(value)) {
+            return defaultValue;
+        }
+        byte b = Byte.parseByte(value);
+        updateCachedNumber(method, key, b);
+        return b;
+    }
+
+    public boolean hasServiceMethodParameter(String service, String method, String key) {
+        return hasMethodParameter(method, key);
+    }
+
+    public boolean hasServiceMethodParameter(String service, String method) {
+        return hasMethodParameter(method);
+    }
+
+    protected Map<String, Number> getServiceNumbers(String service) {
+        return getNumbers();
+    }
+
+    protected Map<String, Map<String, Number>> getServiceMethodNumbers(String service) {
+        return getMethodNumbers();
     }
 
 }

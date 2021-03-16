@@ -18,65 +18,33 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.common.lang.Prioritized;
 
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_MAPPING_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH;
+import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.DEFAULT_MAPPING_GROUP;
 
 /**
  * The interface for Dubbo service name Mapping
  *
  * @since 2.7.5
  */
-@SPI("default")
-public interface ServiceNameMapping extends Prioritized {
+@SPI("config")
+public interface ServiceNameMapping {
 
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name
-     *
-     * @param serviceInterface the class name of Dubbo service interface
-     * @param group            the group of Dubbo service interface (optional)
-     * @param version          the version of Dubbo service interface version (optional)
-     * @param protocol         the protocol of Dubbo service interface exported (optional)
-     * @deprecated 2.7.8 This method will be removed since 3.0
      */
-    @Deprecated
-    default void map(String serviceInterface, String group, String version, String protocol) {
-        throw new UnsupportedOperationException("This method has been deprecated and should not be invoked!");
-    }
-
-    /**
-     * Map the specified Dubbo service {@link URL} to current Dubbo service name
-     *
-     * @param exportedURL the {@link URL} that the Dubbo Provider exported
-     * @since 2.7.8
-     */
-    void map(URL exportedURL);
+    void map(URL url);
 
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
      *
-     * @param serviceInterface the class name of Dubbo service interface
-     * @param group            the group of Dubbo service interface (optional)
-     * @param version          the version of Dubbo service interface version (optional)
-     * @param protocol         the protocol of Dubbo service interface exported (optional)
-     * @return non-null {@link Set}
-     * @deprecated 2.7.8 This method will be removed since 3.0
+     * @return
      */
-    @Deprecated
-    default Set<String> get(String serviceInterface, String group, String version, String protocol) {
-        throw new UnsupportedOperationException("This method has been deprecated and should not be invoked!");
-    }
-
-    /**
-     * Get the service names from the subscribed Dubbo service {@link URL}
-     *
-     * @param subscribedURL the {@link URL} that the Dubbo consumer subscribed
-     * @return non-null {@link Set}
-     * @since 2.7.8
-     */
-    Set<String> get(URL subscribedURL);
+    Set<String> getAndListen(URL url, MappingListener mappingListener);
 
     /**
      * Get the default extension of {@link ServiceNameMapping}
@@ -86,5 +54,19 @@ public interface ServiceNameMapping extends Prioritized {
      */
     static ServiceNameMapping getDefaultExtension() {
         return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
+    }
+
+    static ServiceNameMapping getExtension(String name) {
+        return getExtensionLoader(ServiceNameMapping.class).getExtension(name == null ? CONFIG_MAPPING_TYPE : name);
+    }
+
+    static String buildGroup(String serviceInterface, String group, String version, String protocol) {
+        //        the issue : https://github.com/apache/dubbo/issues/4671
+        //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
+        //                .append(KEY_SEPARATOR).append(defaultString(group))
+        //                .append(KEY_SEPARATOR).append(defaultString(version))
+        //                .append(KEY_SEPARATOR).append(defaultString(protocol));
+        //        return groupBuilder.toString();
+        return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 }

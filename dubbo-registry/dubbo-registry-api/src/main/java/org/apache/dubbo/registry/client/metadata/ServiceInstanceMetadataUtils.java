@@ -18,9 +18,14 @@ package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
@@ -37,8 +42,9 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.registry.integration.RegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Utilities class for the {@link ServiceInstance#getMetadata() metadata of the service instance}
@@ -73,17 +79,16 @@ public class ServiceInstanceMetadataUtils {
     /**
      * The property name of The revision for all exported Dubbo services.
      */
-    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.exported-services.revision";
-
-    /**
-     * The property name of The revision for all subscribed Dubbo services.
-     */
-    public static String SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME = "dubbo.subscribed-services.revision";
+    public static String EXPORTED_SERVICES_REVISION_PROPERTY_NAME = "dubbo.metadata.revision";
 
     /**
      * The property name of metadata storage type.
      */
     public static String METADATA_STORAGE_TYPE_PROPERTY_NAME = "dubbo.metadata.storage-type";
+
+    public static String METADATA_CLUSTER_PROPERTY_NAME = "dubbo.metadata.cluster";
+
+    public static String INSTANCE_REVISION_UPDATED_KEY = "dubbo.instance.revision.updated";
 
     /**
      * Get the multiple {@link URL urls'} parameters of {@link MetadataService MetadataService's} Metadata
@@ -153,17 +158,6 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     * The revision for all subscribed Dubbo services from the specified {@link ServiceInstance}.
-     *
-     * @param serviceInstance the specified {@link ServiceInstance}
-     * @return <code>null</code> if not exits
-     */
-    public static String getSubscribedServicesRevision(ServiceInstance serviceInstance) {
-        Map<String, String> metadata = serviceInstance.getMetadata();
-        return metadata.get(SUBSCRIBER_SERVICES_REVISION_PROPERTY_NAME);
-    }
-
-    /**
      * Get metadata's storage type
      *
      * @param registryURL the {@link URL} to connect the registry
@@ -193,6 +187,11 @@ public class ServiceInstanceMetadataUtils {
     public static void setMetadataStorageType(ServiceInstance serviceInstance, String metadataType) {
         Map<String, String> metadata = serviceInstance.getMetadata();
         metadata.put(METADATA_STORAGE_TYPE_PROPERTY_NAME, metadataType);
+    }
+
+    public static String getRemoteCluster(ServiceInstance serviceInstance) {
+        Map<String, String> metadata = serviceInstance.getMetadata();
+        return metadata.get(METADATA_CLUSTER_PROPERTY_NAME);
     }
 
     /**
@@ -238,6 +237,42 @@ public class ServiceInstanceMetadataUtils {
             }
         }
         return null;
+    }
+
+    public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
+        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
+        if (registryCluster == null) {
+            return;
+        }
+        MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
+        if (metadataInfo != null) {
+            String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+            if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
+                instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
+                if (existingInstanceRevision != null) {// skip the first registration.
+                    instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
+                }
+            }
+        }
+    }
+
+    public static boolean isInstanceUpdated(ServiceInstance instance) {
+        return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
+    }
+
+    public static void resetInstanceUpdateKey(ServiceInstance instance) {
+        instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
+    }
+
+    public static void refreshMetadataAndInstance() {
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        remoteMetadataService.publishMetadata(ApplicationModel.getName());
+
+        AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
+            calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
+            // update service instance revision
+            serviceDiscovery.update(serviceDiscovery.getLocalInstance());
+        });
     }
 
     /**

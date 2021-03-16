@@ -21,7 +21,7 @@ import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.annotation.Cmd;
 
-@Cmd(name = "start",summary = "Judge if service has started? ")
+@Cmd(name = "ready",summary = "Judge if service has started? ")
 public class Ready implements BaseCommand {
 
     @Override

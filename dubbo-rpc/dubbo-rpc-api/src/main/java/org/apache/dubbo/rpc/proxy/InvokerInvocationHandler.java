@@ -16,14 +16,18 @@
  */
 package org.apache.dubbo.rpc.proxy;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
@@ -34,10 +38,25 @@ public class InvokerInvocationHandler implements InvocationHandler {
     private static final Logger logger = LoggerFactory.getLogger(InvokerInvocationHandler.class);
     private final Invoker<?> invoker;
     private ConsumerModel consumerModel;
+    private URL url;
+    private String protocolServiceKey;
+
+    public static Field stackTraceField;
+
+    static {
+        try {
+            stackTraceField = Throwable.class.getDeclaredField("stackTrace");
+            ReflectUtils.makeAccessible(stackTraceField);
+        } catch (NoSuchFieldException e) {
+            // ignore
+        }
+    }
 
     public InvokerInvocationHandler(Invoker<?> handler) {
         this.invoker = handler;
-        String serviceKey = invoker.getUrl().getServiceKey();
+        this.url = invoker.getUrl();
+        String serviceKey = this.url.getServiceKey();
+        this.protocolServiceKey = this.url.getProtocolServiceKey();
         if (serviceKey != null) {
             this.consumerModel = ApplicationModel.getConsumerModel(serviceKey);
         }
@@ -62,10 +81,13 @@ public class InvokerInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
-        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args);
+        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), protocolServiceKey, args);
         String serviceKey = invoker.getUrl().getServiceKey();
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
-      
+
+        // invoker.getUrl() returns consumer url.
+        RpcContext.setRpcContext(invoker.getUrl());
+
         if (consumerModel != null) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
             rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
