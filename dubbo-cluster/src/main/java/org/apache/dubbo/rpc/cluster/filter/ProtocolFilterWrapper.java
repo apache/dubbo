@@ -28,9 +28,10 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
+import java.util.Objects;
 
-import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.PEER_KEY;
 
 /**
  * ListenerProtocol
@@ -67,7 +68,11 @@ public class ProtocolFilterWrapper implements Protocol {
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
-        return builder.buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
+        // if it's peer-to-peer url
+        if (!Objects.isNull(url.getAttribute(PEER_KEY))) {
+            return builder.buildInvokerChain(protocol.refer(type, url), SERVICE_FILTER_KEY, CommonConstants.CONSUMER);
+        }
+        return protocol.refer(type, url);
     }
 
     @Override

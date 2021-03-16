@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.filter.support;
+package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
-import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
 import java.util.Map;
 
@@ -40,11 +39,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
  * for consumer invoker.It does it to make the requires info available to execution thread's RpcContext.
  *
- * @see Filter
+ * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
 @Activate(group = CONSUMER, order = -10000)
-public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Listener {
+public class ConsumerContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -77,24 +76,7 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
                                 + invocation.getMethodName() + ", terminate directly."), invocation);
             }
         }
-
-        try {
-            RpcContext.removeServerContext();
-            return invoker.invoke(invocation);
-        } finally {
-            RpcContext.removeContext();
-        }
-    }
-
-    @Override
-    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
-        // pass attachments to result
-        RpcContext.getServerContext().setObjectAttachments(appResponse.getObjectAttachments());
-    }
-
-    @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        return invoker.invoke(invocation);
     }
 
 }

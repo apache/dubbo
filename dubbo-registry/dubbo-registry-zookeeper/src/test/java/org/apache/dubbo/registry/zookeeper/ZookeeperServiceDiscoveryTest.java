@@ -34,6 +34,7 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.INSTANCE_REVISION_UPDATED_KEY;
+import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.generateId;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -103,7 +104,7 @@ public class ZookeeperServiceDiscoveryTest {
     }
 
     private DefaultServiceInstance createServiceInstance(String serviceName, String host, int port) {
-        return new DefaultServiceInstance(serviceName, host, port);
+        return new DefaultServiceInstance(generateId(host, port), serviceName, host, port);
     }
 
 //    @Test

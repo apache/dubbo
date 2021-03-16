@@ -27,9 +27,6 @@ import java.util.List;
 @Activate(order = 0)
 public class DefaultFilterChainBuilder implements FilterChainBuilder {
 
-    /**
-     * build consumer/provider filter chain
-     */
     @Override
     public <T> Invoker<T> buildInvokerChain(final Invoker<T> originalInvoker, String key, String group) {
         Invoker<T> last = originalInvoker;
@@ -46,17 +43,14 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
         return last;
     }
 
-    /**
-     * build consumer cluster filter chain
-     */
     @Override
     public <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> originalInvoker, String key, String group) {
         ClusterInvoker<T> last = originalInvoker;
-        List<ClusterFilter> filters = ExtensionLoader.getExtensionLoader(ClusterFilter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
+        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
-                final ClusterFilter filter = filters.get(i);
+                final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
                 last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
             }

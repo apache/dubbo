@@ -520,7 +520,6 @@ public class DubboBootstrap extends GenericEventListener {
         }
 
         ApplicationModel.initFrameworkExts();
-        
 
         startConfigCenter();
 
@@ -1163,7 +1162,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         // register instance only when at least one service is exported.
-        if (serviceInstance.getPort() > 0) {
+        if (serviceInstance.getPort() != null && serviceInstance.getPort() != -1) {
             publishMetadataToRemote(serviceInstance);
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->

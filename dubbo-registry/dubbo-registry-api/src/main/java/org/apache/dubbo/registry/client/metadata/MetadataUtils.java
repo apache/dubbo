@@ -86,7 +86,7 @@ public class MetadataUtils {
     }
 
     public static String computeKey(ServiceInstance serviceInstance) {
-        return serviceInstance.getServiceName() + "##" + serviceInstance.getAddress() + "##" +
+        return serviceInstance.getServiceName() + "##" + serviceInstance.getId() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
