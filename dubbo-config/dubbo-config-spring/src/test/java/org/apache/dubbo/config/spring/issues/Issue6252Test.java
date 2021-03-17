@@ -16,9 +16,13 @@
  */
 package org.apache.dubbo.config.spring.issues;
 
+import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -35,15 +39,13 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/issue-6252-test.properties")
 public class Issue6252Test {
 
-    @Bean
-    public static ReferenceBean referenceBean() {
-        return new ReferenceBean();
-    }
+    @DubboReference
+    private DemoService demoService;
 
     @Test
     public void test() throws Exception {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
-        context.getBean(ReferenceBean.class);
+        DemoService demoService = context.getBean(DemoService.class);
         context.close();
     }
 

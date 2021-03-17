@@ -18,12 +18,13 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
-
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -44,6 +45,11 @@ import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
  */
 public class AnnotationPropertyValuesAdapterTest {
 
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void test() {
 
@@ -59,7 +65,7 @@ public class AnnotationPropertyValuesAdapterTest {
 
         AnnotationPropertyValuesAdapter propertyValues = new AnnotationPropertyValuesAdapter(reference, mockEnvironment);
 
-        ReferenceBean referenceBean = new ReferenceBean();
+        ReferenceConfig referenceBean = new ReferenceConfig();
 
         DataBinder dataBinder = new DataBinder(referenceBean);
 

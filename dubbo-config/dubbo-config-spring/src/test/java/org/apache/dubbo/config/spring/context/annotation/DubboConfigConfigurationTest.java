@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,7 @@ public class DubboConfigConfigurationTest {
 
     @BeforeEach
     public void before() throws IOException {
+        DubboBootstrap.reset();
 
         context = new AnnotationConfigApplicationContext();
         ResourcePropertySource propertySource = new ResourcePropertySource("META-INF/config.properties");

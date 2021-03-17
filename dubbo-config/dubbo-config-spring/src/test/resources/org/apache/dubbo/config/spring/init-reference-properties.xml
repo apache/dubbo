@@ -15,23 +15,11 @@
   limitations under the License.
   -->
 <beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
        xmlns="http://www.springframework.org/schema/beans"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
-    http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd">
 
-    <!-- current application configuration -->
-    <dubbo:application name="${dubbo.application.name:foo-app}"/>
-
-    <!-- registry center configuration -->
-    <dubbo:registry address="${dubbo.registry.address:foo-address}"/>
-
-    <!-- service protocol configuration -->
-    <dubbo:protocol name="${dubbo.protocol.name:foo-protocol}" port="${dubbo.protocol.port:20881}"/>
-
-    <!-- service configuration -->
-    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3" ref="demoService"/>
-
-    <bean id="demoService" class="org.apache.dubbo.config.spring.impl.DemoServiceImpl"/>
+    <bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer">
+        <property name="location" value="classpath:/META-INF/init-reference.properties"/>
+    </bean>
 
 </beans>
