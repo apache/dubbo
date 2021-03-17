@@ -110,6 +110,8 @@ public interface CommonConstants {
 
     String IO_THREADS_KEY = "iothreads";
 
+    String KEEP_ALIVE_KEY = "keep.alive";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
