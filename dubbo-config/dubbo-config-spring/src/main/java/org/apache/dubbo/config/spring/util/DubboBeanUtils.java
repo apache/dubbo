@@ -16,15 +16,25 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.dubbo.config.spring.DubboConfigInitializationPostProcessor;
+import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
-
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Dubbo Bean utilities class
@@ -32,6 +42,8 @@ import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
  * @since 2.7.6
  */
 public interface DubboBeanUtils {
+
+    static final Log log = LogFactory.getLog(DubboBeanUtils.class);
 
     /**
      * Register the common beans
@@ -44,6 +56,8 @@ public interface DubboBeanUtils {
      * @see DubboBootstrapApplicationListener
      */
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
+
+        registerInfrastructureBean(registry, ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
@@ -64,5 +78,90 @@ public interface DubboBeanUtils {
         // Since 2.7.6 Register DubboConfigDefaultPropertyValueBeanPostProcessor as an infrastructure Bean
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
+
+        registerInfrastructureBean(registry, DubboConfigInitializationPostProcessor.BEAN_NAME, DubboConfigInitializationPostProcessor.class);
     }
+
+    /**
+     * Register Infrastructure Bean
+     *
+     * @param beanDefinitionRegistry {@link BeanDefinitionRegistry}
+     * @param beanType               the type of bean
+     * @param beanName               the name of bean
+     * @return if it's a first time to register, return <code>true</code>, or <code>false</code>
+     */
+    static boolean registerInfrastructureBean(BeanDefinitionRegistry beanDefinitionRegistry,
+                                                     String beanName,
+                                                     Class<?> beanType) {
+
+        boolean registered = false;
+
+        if (!beanDefinitionRegistry.containsBeanDefinition(beanName)) {
+            RootBeanDefinition beanDefinition = new RootBeanDefinition(beanType);
+            beanDefinition.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
+            beanDefinitionRegistry.registerBeanDefinition(beanName, beanDefinition);
+            registered = true;
+
+            if (log.isDebugEnabled()) {
+                log.debug("The Infrastructure bean definition [" + beanDefinition
+                        + "with name [" + beanName + "] has been registered.");
+            }
+        }
+
+        return registered;
+    }
+
+    /**
+     * Call this method in postProcessBeanFactory()
+     *
+     * @param registry
+     */
+    static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {
+        // Resolve ${...} placeholders of bean definition with Spring Environment
+
+        // If PropertyPlaceholderConfigurer already exists, PropertySourcesPlaceholderConfigurer cannot be registered.
+        // When both of them exist, a conflict will occur, and an exception will be thrown when encountering an unresolved placeholder
+
+        if (!checkBeanExists(registry, PropertyPlaceholderConfigurer.class)) {
+            Map<String, Object> propertySourcesPlaceholderPropertyValues = new HashMap<>();
+            // to make sure the default PropertySourcesPlaceholderConfigurer's priority is higher than PropertyPlaceholderConfigurer
+            propertySourcesPlaceholderPropertyValues.put("order", 0);
+            registerBeanDefinitionIfNotExists(registry, PropertySourcesPlaceholderConfigurer.class.getName(),
+                    PropertySourcesPlaceholderConfigurer.class, propertySourcesPlaceholderPropertyValues);
+        }
+    }
+
+    static boolean registerBeanDefinitionIfNotExists(BeanDefinitionRegistry registry, String beanName,
+                                                     Class<?> beanClass, Map<String, Object> extraPropertyValues) {
+        if (registry.containsBeanDefinition(beanName)) {
+            return false;
+        }
+
+        if (checkBeanExists(registry, beanClass)) {
+            return false;
+        }
+
+        BeanDefinition beanDefinition = BeanDefinitionBuilder.genericBeanDefinition(beanClass).getBeanDefinition();
+        if (extraPropertyValues != null) {
+            for (Map.Entry<String, Object> entry : extraPropertyValues.entrySet()) {
+                beanDefinition.getPropertyValues().add(entry.getKey(), entry.getValue());
+            }
+        }
+
+        registry.registerBeanDefinition(beanName, beanDefinition);
+
+        return true;
+    }
+
+    static boolean checkBeanExists(BeanDefinitionRegistry registry, Class<?> beanClass) {
+        String[] candidates = registry.getBeanDefinitionNames();
+        for (String candidate : candidates) {
+            BeanDefinition beanDefinition = registry.getBeanDefinition(candidate);
+            if (Objects.equals(beanDefinition.getBeanClassName(), beanClass.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

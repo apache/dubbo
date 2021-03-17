@@ -161,6 +161,11 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * Put attributes of specify 'config' into 'parameters' argument
+     * @param parameters
+     * @param config
+     */
     @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
@@ -359,6 +364,11 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * Copy attributes from annotation
+     * @param annotationClass
+     * @param annotation
+     */
     protected void appendAnnotation(Class<?> annotationClass, Object annotation) {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
