@@ -256,10 +256,10 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
-        if (contextAttachments != null && contextAttachments.size() != 0) {
-            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
-        }
+//        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+//        if (contextAttachments != null && contextAttachments.size() != 0) {
+//            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
+//        }
 
         List<Invoker<T>> invokers = list(invocation);
         LoadBalance loadbalance = initLoadBalance(invokers, invocation);
