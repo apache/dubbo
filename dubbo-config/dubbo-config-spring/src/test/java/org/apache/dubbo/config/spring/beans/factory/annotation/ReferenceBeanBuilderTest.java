@@ -20,7 +20,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -82,7 +82,7 @@ public class ReferenceBeanBuilderTest {
 
     @BeforeEach
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test

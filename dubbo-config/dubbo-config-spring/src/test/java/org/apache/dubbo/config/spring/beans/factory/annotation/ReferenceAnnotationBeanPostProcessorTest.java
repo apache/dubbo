@@ -19,23 +19,18 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,12 +75,11 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
     }
 
     private static final String AOP_SUFFIX = "(based on AOP)";

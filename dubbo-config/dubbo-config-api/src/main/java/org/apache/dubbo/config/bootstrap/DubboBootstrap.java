@@ -202,6 +202,14 @@ public class DubboBootstrap extends GenericEventListener {
         return instance;
     }
 
+    public static void reset() {
+        if (instance != null) {
+            instance.destroy();
+        }
+        ApplicationModel.reset();
+        instance = null;
+    }
+
     private DubboBootstrap() {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();

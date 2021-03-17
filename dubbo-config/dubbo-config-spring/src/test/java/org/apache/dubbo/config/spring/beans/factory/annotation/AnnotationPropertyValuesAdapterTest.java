@@ -20,9 +20,11 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
@@ -42,6 +44,11 @@ import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
  * @since 2.5.11
  */
 public class AnnotationPropertyValuesAdapterTest {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
 
     @Test
     public void test() {
