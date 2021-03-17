@@ -95,7 +95,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v2
         with:
-          name: "rat-file-${{ matrix.os }}(JDK:${{ matrix.jdk }})"
+          name: "rat-file-${{ matrix.os }}-JDK${{ matrix.jdk }}"
           path: ${{ github.workspace }}/rat.zip
       - name: "Upload coverage to Codecov"
         uses: codecov/codecov-action@v1
