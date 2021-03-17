@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
@@ -356,6 +357,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         migrated = true;
+        FrameworkStatusReporter.reportConsumptionStatus("{\"type\":\"consumption\", \"data\":{\"status\":0}}");
     }
 
 //    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
@@ -408,6 +410,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         updateConsumerModel(currentAvailableInvoker, invoker);
         migrated = true;
+        FrameworkStatusReporter.reportConsumptionStatus("{\"type\":\"consumption\", \"data\":{\"status\":0}}");
     }
 
 //
