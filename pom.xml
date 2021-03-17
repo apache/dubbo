@@ -122,7 +122,7 @@
         <maven_jacoco_version>0.8.2</maven_jacoco_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <maven_enforce_version>3.0.0-M2</maven_enforce_version>
-        <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
+        <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
@@ -280,6 +280,7 @@
                                         **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                        **/org/apache/dubbo/triple/TripleWrapper.java,
                                     </excludes>
                                 </configuration>
                                 <goals>
