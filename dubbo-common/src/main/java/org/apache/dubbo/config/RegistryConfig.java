@@ -182,6 +182,16 @@ public class RegistryConfig extends AbstractConfig {
      */
     private Integer weight;
 
+    private Boolean enable;
+
+    public Boolean isEnable(){
+        return enable;
+    }
+
+    public void setEnable(Boolean enable){
+        this.enable = enable;
+    }
+
     public RegistryConfig() {
     }
 
