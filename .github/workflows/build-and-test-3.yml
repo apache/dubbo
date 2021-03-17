@@ -45,11 +45,11 @@ jobs:
       - name: "Build Dubbo with Maven"
         run: |
           cd ./dubbo
-          ./mvnw --batch-mode -U -e --no-transfer-progress  clean install -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          ./mvnw --batch-mode -U -e --no-transfer-progress clean source:jar install -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
       - name: "Build Dubbo Spring Boot with Maven"
         run: |
           cd ./dubbo-spring-boot-project
-          ./mvnw --batch-mode --no-transfer-progress  clean install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
+          ./mvnw --batch-mode --no-transfer-progress clean source:jar install -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
       - name: "Calculate Dubbo Version"
         id: dubbo-version
         run: |
