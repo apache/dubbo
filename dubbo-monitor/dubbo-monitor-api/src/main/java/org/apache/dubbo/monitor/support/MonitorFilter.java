@@ -117,9 +117,9 @@ public class MonitorFilter implements Filter, Filter.Listener {
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
             URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
-            AbstractMonitorFactory.getMonitors().forEach(monitor -> {
-                monitor.collect(statisticsURL);
-            });
+            if (AbstractMonitorFactory.getMonitors().size() > 0) {
+                AbstractMonitorFactory.getMonitors().stream().findAny().get().collect(statisticsURL);
+            }
         } catch (Throwable t) {
             logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
