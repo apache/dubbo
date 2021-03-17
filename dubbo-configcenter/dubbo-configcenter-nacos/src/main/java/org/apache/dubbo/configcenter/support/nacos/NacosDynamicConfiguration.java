@@ -24,9 +24,9 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.alibaba.nacos.api.NacosFactory;
@@ -90,6 +90,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
      * The map store the key to {@link NacosConfigListener} mapping
      */
     private final ConcurrentMap<String, NacosConfigListener> watchListenerMap;
+
 
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
@@ -293,8 +294,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     private Stream<String> toKeysStream(String content) {
-        Gson gson = new Gson();
-        JsonObject jsonObject = gson.toJsonTree(content).getAsJsonObject();
+        JsonObject jsonObject = GsonUtils.getGson().toJsonTree(content).getAsJsonObject();
         JsonArray pageItems = jsonObject.getAsJsonArray("pageItems");
         return StreamSupport.stream(pageItems.spliterator(), false)
                 .map(object -> (JsonObject) object)

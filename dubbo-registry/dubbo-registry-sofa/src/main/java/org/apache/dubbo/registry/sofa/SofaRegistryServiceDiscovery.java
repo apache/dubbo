@@ -26,12 +26,12 @@ import com.alipay.sofa.registry.client.api.registration.SubscriberRegistration;
 import com.alipay.sofa.registry.client.provider.DefaultRegistryClient;
 import com.alipay.sofa.registry.client.provider.DefaultRegistryClientConfigBuilder;
 import com.alipay.sofa.registry.core.model.ScopeEnum;
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.DefaultPage;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -72,8 +72,6 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
 
     private ServiceInstance serviceInstance;
 
-    private Gson gson = new Gson();
-
     @Override
     public void initialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
@@ -107,11 +105,11 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
         if (null == publisher) {
             PublisherRegistration registration = new PublisherRegistration(serviceInstance.getServiceName());
             registration.setGroup(DEFAULT_GROUP);
-            publisher = registryClient.register(registration, gson.toJson(sofaRegistryInstance));
+            publisher = registryClient.register(registration, GsonUtils.getGson().toJson(sofaRegistryInstance));
 
             publishers.put(serviceInstance.getServiceName(), publisher);
         } else {
-            publisher.republish(gson.toJson(sofaRegistryInstance));
+            publisher.republish(GsonUtils.getGson().toJson(sofaRegistryInstance));
         }
     }
 
@@ -166,7 +164,7 @@ public class SofaRegistryServiceDiscovery implements ServiceDiscovery {
             List<ServiceInstance> serviceInstances = new ArrayList<>(datas.size());
 
             for (String  serviceData : datas) {
-                SofaRegistryInstance sri = gson.fromJson(serviceData, SofaRegistryInstance.class);
+                SofaRegistryInstance sri = GsonUtils.getGson().fromJson(serviceData, SofaRegistryInstance.class);
 
                 DefaultServiceInstance serviceInstance = new DefaultServiceInstance(sri.getId(), dataId, sri.getHost(), sri.getPort());
                 serviceInstance.setMetadata(sri.getMetadata());

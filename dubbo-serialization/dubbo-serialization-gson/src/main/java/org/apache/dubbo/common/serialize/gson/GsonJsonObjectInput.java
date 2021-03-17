@@ -18,6 +18,7 @@
 package org.apache.dubbo.common.serialize.gson;
 
 import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
 
 import com.google.gson.Gson;
@@ -40,7 +41,7 @@ public class GsonJsonObjectInput implements ObjectInput {
 
     public GsonJsonObjectInput(Reader reader) {
         this.reader = new BufferedReader(reader);
-        gson = new Gson();
+        gson = GsonUtils.getGson();
     }
 
     @Override

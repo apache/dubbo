@@ -19,11 +19,7 @@ package org.apache.dubbo.rpc.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.ArrayUtils;
-import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.common.utils.PojoUtils;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.*;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -32,7 +28,6 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 import java.lang.reflect.Constructor;
@@ -67,7 +62,6 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     public static Object parseMockValue(String mock, Type[] returnTypes) throws Exception {
         Object value = null;
-        Gson gson = new Gson();
         if ("empty".equals(mock)) {
             value = ReflectUtils.getEmptyObject(returnTypes != null && returnTypes.length > 0 ? (Class<?>) returnTypes[0] : null);
         } else if ("null".equals(mock)) {
@@ -83,16 +77,16 @@ final public class MockInvoker<T> implements Invoker<T> {
             value = mock;
         } else if (StringUtils.isNumeric(mock, false)) {
             try {
-                value = gson.fromJson(mock,Integer.class);
+                value = GsonUtils.getGson().fromJson(mock,Integer.class);
             } catch (JsonSyntaxException e) {
                 if (e.getCause() instanceof NumberFormatException) {
-                    value = gson.fromJson(mock, Long.class);
+                    value = GsonUtils.getGson().fromJson(mock, Long.class);
                 }
             }
         } else if (mock.startsWith("{")) {
-            value = gson.fromJson(mock, Map.class);
+            value = GsonUtils.getGson().fromJson(mock, Map.class);
         } else if (mock.startsWith("[")) {
-            value = gson.fromJson(mock, List.class);
+            value = GsonUtils.getGson().fromJson(mock, List.class);
         } else {
             value = mock;
         }

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Filter;
@@ -30,8 +31,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-
-import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -83,7 +82,6 @@ public class TraceFilter implements Filter {
                 key = invoker.getInterface().getName();
                 channels = TRACERS.get(key);
             }
-            Gson gson = new Gson();
             if (CollectionUtils.isNotEmpty(channels)) {
                 for (Channel channel : new ArrayList<>(channels)) {
                     if (channel.isConnected()) {
@@ -105,7 +103,7 @@ public class TraceFilter implements Filter {
                                 channel.send("\r\n" + RpcContext.getContext().getRemoteAddress() + " -> "
                                         + invoker.getInterface().getName()
                                         + "." + invocation.getMethodName()
-                                        + "(" + gson.toJson(invocation.getArguments()) + ")" + " -> " + gson.toJson(result.getValue())
+                                        + "(" + GsonUtils.getGson().toJson(invocation.getArguments()) + ")" + " -> " + GsonUtils.getGson().toJson(result.getValue())
                                         + "\r\nelapsed: " + (end - start) + " ms."
                                         + "\r\n\r\n" + prompt);
                             }

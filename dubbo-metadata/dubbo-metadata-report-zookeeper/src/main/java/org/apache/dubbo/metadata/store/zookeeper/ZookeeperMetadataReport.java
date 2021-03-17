@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.metadata.store.zookeeper;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingChangedEvent;
 import org.apache.dubbo.metadata.MappingListener;
@@ -58,8 +58,6 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     private final String root;
 
     final ZookeeperClient zkClient;
-
-    private Gson gson = new Gson();
 
     private Map<String, ChildListener> listenerMap = new ConcurrentHashMap<>();
 
@@ -139,7 +137,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
         String path = getNodePath(identifier);
         if (StringUtils.isBlank(zkClient.getContent(path))) {
-            zkClient.create(path, gson.toJson(metadataInfo), false);
+            zkClient.create(path, GsonUtils.getGson().toJson(metadataInfo), false);
         }
     }
 
@@ -149,14 +147,14 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         if (StringUtils.isBlank(zkClient.getContent(path))) {
             Map<String, String> value = new HashMap<>();
             value.put("timestamp", String.valueOf(System.currentTimeMillis()));
-            zkClient.create(path, gson.toJson(value), false);
+            zkClient.create(path, GsonUtils.getGson().toJson(value), false);
         }
     }
 
     @Override
     public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
         String content = zkClient.getContent(getNodePath(identifier));
-        return gson.fromJson(content, MetadataInfo.class);
+        return GsonUtils.getGson().fromJson(content, MetadataInfo.class);
     }
 
     @Override

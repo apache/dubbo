@@ -19,6 +19,7 @@ package org.apache.dubbo.common.serialize.gson;
 
 import com.google.gson.Gson;
 import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.utils.GsonUtils;
 
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -37,7 +38,7 @@ public class GsonJsonObjectOutput implements ObjectOutput {
     }
 
     public GsonJsonObjectOutput(Writer writer) {
-        this.gson = new Gson();
+        this.gson = GsonUtils.getGson();
         this.writer = new PrintWriter(writer);
     }
 

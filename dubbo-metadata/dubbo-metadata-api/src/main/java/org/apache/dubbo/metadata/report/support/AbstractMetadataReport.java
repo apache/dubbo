@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -30,7 +31,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
@@ -252,8 +252,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             }
             allMetadataReports.put(providerMetadataIdentifier, serviceDefinition);
             failedReports.remove(providerMetadataIdentifier);
-            Gson gson = new Gson();
-            String data = gson.toJson(serviceDefinition);
+            String data = GsonUtils.getGson().toJson(serviceDefinition);
             doStoreProviderMetadata(providerMetadataIdentifier, data);
             saveProperties(providerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
@@ -281,8 +280,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             allMetadataReports.put(consumerMetadataIdentifier, serviceParameterMap);
             failedReports.remove(consumerMetadataIdentifier);
 
-            Gson gson = new Gson();
-            String data = gson.toJson(serviceParameterMap);
+            String data = GsonUtils.getGson().toJson(serviceParameterMap);
             doStoreConsumerMetadata(consumerMetadataIdentifier, data);
             saveProperties(consumerMetadataIdentifier, data, true, !syncReport);
         } catch (Exception e) {
@@ -320,9 +318,9 @@ public abstract class AbstractMetadataReport implements MetadataReport {
     @Override
     public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
         if (syncReport) {
-            doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls));
+            doSaveSubscriberData(subscriberMetadataIdentifier, GsonUtils.getGson().toJson(urls));
         } else {
-            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, new Gson().toJson(urls)));
+            reportCacheExecutor.execute(() -> doSaveSubscriberData(subscriberMetadataIdentifier, GsonUtils.getGson().toJson(urls)));
         }
     }
 
@@ -332,7 +330,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         String content = doGetSubscribedURLs(subscriberMetadataIdentifier);
         Type setType = new TypeToken<SortedSet<String>>() {
         }.getType();
-        return new Gson().fromJson(content, setType);
+        return GsonUtils.getGson().fromJson(content, setType);
     }
 
     String getProtocol(URL url) {

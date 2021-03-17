@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
@@ -77,9 +78,8 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
 
         List<Object> list;
-        Gson gson = new Gson();
         try {
-            list = gson.fromJson("[" + args + "]", new TypeToken<List<Object>>() {}.getType());
+            list = GsonUtils.getGson().fromJson("[" + args + "]", new TypeToken<List<Object>>() {}.getType());
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -136,7 +136,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     }
                     long end = System.currentTimeMillis();
                     buf.append("\r\nresult: ");
-                    buf.append(gson.toJson(result.recreate()));
+                    buf.append(GsonUtils.getGson().toJson(result.recreate()));
                     buf.append("\r\nelapsed: ");
                     buf.append(end - start);
                     buf.append(" ms.");

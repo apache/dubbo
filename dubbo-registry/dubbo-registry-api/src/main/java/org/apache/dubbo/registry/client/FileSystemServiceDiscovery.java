@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfigu
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
@@ -122,11 +123,10 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
-        Gson gson = new Gson();
         return dynamicConfiguration.getConfigKeys(DEFAULT_GROUP)
                 .stream()
                 .map(serviceInstanceId -> dynamicConfiguration.getConfig(serviceInstanceId, serviceName))
-                .map(content -> gson.fromJson(content, DefaultServiceInstance.class))
+                .map(content -> GsonUtils.getGson().fromJson(content, DefaultServiceInstance.class))
                 .collect(Collectors.toList());
     }
 
@@ -145,7 +145,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
         this.serviceInstance = serviceInstance;
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
-        String content = new Gson().toJson(serviceInstance);
+        String content = GsonUtils.getGson().toJson(serviceInstance);
         if (dynamicConfiguration.publishConfig(serviceInstanceId, serviceName, content)) {
             lockFile(serviceInstanceId, serviceName);
         }

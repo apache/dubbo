@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
@@ -66,8 +66,7 @@ public class ConfigParser {
 
     private static List<URL> parseJsonArray(String rawConfig) {
         List<URL> urls = new ArrayList<>();
-        Gson gson = new Gson();
-        List<String> list = gson.fromJson(rawConfig, new TypeToken<List<String>>(){}.getType());
+        List<String> list = GsonUtils.getGson().fromJson(rawConfig, new TypeToken<List<String>>(){}.getType());
         if (!CollectionUtils.isEmpty(list)) {
             list.forEach(u -> urls.add(URL.valueOf(u)));
         }

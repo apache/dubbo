@@ -19,8 +19,6 @@ package org.apache.dubbo.metadata.annotation.processing.rest;
 import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataStorage;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
-import com.google.gson.Gson;
-
 import javax.annotation.processing.ProcessingEnvironment;
 import java.io.IOException;
 import java.util.List;
@@ -42,8 +40,7 @@ public class ServiceRestMetadataStorage {
 
     public void append(Set<ServiceRestMetadata> serviceRestMetadata) throws IOException {
         storage.read(SERVICE_REST_METADATA_RESOURCE_PATH, reader -> {
-            Gson gson = new Gson();
-            return (List) gson.fromJson(reader, getParameterized(List.class, ServiceRestMetadata.class).getType());
+            return (List) GsonUtils.getGson().fromJson(reader, getParameterized(List.class, ServiceRestMetadata.class).getType());
         }).ifPresent(existedMetadata -> {
             // Add all existed ServiceRestMetadata
             serviceRestMetadata.addAll(existedMetadata);

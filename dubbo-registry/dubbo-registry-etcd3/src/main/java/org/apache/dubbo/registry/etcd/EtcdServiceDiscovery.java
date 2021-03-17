@@ -36,8 +36,6 @@ import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.option.OptionUtil;
 import org.apache.dubbo.rpc.RpcException;
 
-import com.google.gson.Gson;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -106,7 +104,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
             this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
 //            etcdClient.createEphemeral(path);
-            etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
+            etcdClient.putEphemeral(path, GsonUtils.getGson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + serviceInstance + " to etcd " + etcdClient.getUrl()
@@ -129,7 +127,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         try {
             String path = toPath(serviceInstance);
-            etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
+            etcdClient.putEphemeral(path, GsonUtils.getGson().toJson(serviceInstance));
             services.add(serviceInstance.getServiceName());
         } catch (Throwable e) {
             throw new RpcException("Failed to register " + serviceInstance + " to etcd " + etcdClient.getUrl()
@@ -169,7 +167,7 @@ public class EtcdServiceDiscovery implements ServiceDiscovery, EventListener<Ser
         }
         List<ServiceInstance> list = new ArrayList<>(children.size());
         for (String child : children) {
-            ServiceInstance serviceInstance = new Gson().fromJson(etcdClient.getKVValue(child), DefaultServiceInstance.class);
+            ServiceInstance serviceInstance = GsonUtils.getGson().fromJson(etcdClient.getKVValue(child), DefaultServiceInstance.class);
             list.add(serviceInstance);
         }
         return list;

@@ -16,13 +16,12 @@
  */
 package org.apache.dubbo.metadata.definition;
 
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.util.ClassUtils;
-
-import com.google.gson.Gson;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -96,8 +95,7 @@ public final class ServiceDefinitionBuilder {
      */
     public static String schema(final Class<?> clazz) {
         ServiceDefinition sd = build(clazz);
-        Gson gson = new Gson();
-        return gson.toJson(sd);
+        return GsonUtils.getGson().toJson(sd);
     }
 
     private ServiceDefinitionBuilder() {
