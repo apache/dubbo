@@ -73,7 +73,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
         // if add reference after prepareReferenceBeans(), should init it immediately.
         if (initialized) {
-            initReferenceBean(referenceBean, true);
+            initReferenceBean(referenceBean);
         }
     }
 
@@ -107,7 +107,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     public void prepareReferenceBeans() throws Exception {
         initialized = true;
         for (ReferenceBean referenceBean : getReferences()) {
-            initReferenceBean(referenceBean, false);
+            initReferenceBean(referenceBean);
         }
     }
 
@@ -117,7 +117,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @param referenceBean
      * @throws Exception
      */
-    private void initReferenceBean(ReferenceBean referenceBean, boolean canCreateProxy) throws Exception {
+    private void initReferenceBean(ReferenceBean referenceBean) throws Exception {
 
         if (referenceBean.getReferenceConfig() != null) {
             return;
@@ -146,10 +146,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         // register ReferenceConfig
         DubboBootstrap.getInstance().reference(referenceConfig);
 
-        //TODO add after DubboBootstrap is started
-        if (canCreateProxy && referenceConfig.shouldInit()) {
-            ReferenceConfigCache.getCache().get(referenceConfig);
-        }
     }
 
     private void resolvePlaceholders(Map<String, Object> referenceProps, PropertyResolver propertyResolver) {
