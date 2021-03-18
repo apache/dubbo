@@ -25,7 +25,6 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceBeanBuilder;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
