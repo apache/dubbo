@@ -80,16 +80,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         return configMap.get(id);
     }
 
-//    public ReferenceBean getOrCreateReference(Map<String, String> referenceProps) {
-//        Integer key = referenceProps.hashCode();
-//        return configMap.computeIfAbsent(key, k -> {
-//            ReferenceBean referenceBean = new ReferenceBean();
-//            referenceBean.setReferenceProps(referenceProps);
-//            //referenceBean.setId();
-//            return referenceBean;
-//        });
-//    }
-
     public Collection<ReferenceBean> getReferences() {
         return configMap.values();
     }
@@ -104,10 +94,16 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @throws Exception
      */
     public void prepareReferenceBeans() throws Exception {
-        initialized = true;
         for (ReferenceBean referenceBean : getReferences()) {
             initReferenceBean(referenceBean);
         }
+
+        // prepare all reference beans
+        Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class, true, false);
+        for (ReferenceBean referenceBean : referenceBeanMap.values()) {
+            initReferenceBean(referenceBean);
+        }
+        initialized = true;
     }
 
     /**
