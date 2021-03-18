@@ -52,7 +52,6 @@
              -->
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-xml</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
