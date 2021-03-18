@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.hamcrest.Matchers;
@@ -38,7 +37,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.dubbo.remoting.Constants.CODEC_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -110,10 +108,12 @@ public class AbstractConfigTest {
     }*/
 
     @Test
-    public void testProtocolConfigCodec2() {
+    public void testValidateProtocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setCodec("exchange");
-        ConfigValidationUtils.checkMultiExtension(Codec2.class, CODEC_KEY, protocolConfig.getCodec());
+        protocolConfig.setName("test");
+        protocolConfig.setHost("host");
+        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
     }
 
     @Test
