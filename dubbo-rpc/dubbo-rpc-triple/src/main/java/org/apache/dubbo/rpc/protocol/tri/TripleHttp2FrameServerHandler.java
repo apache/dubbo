@@ -130,6 +130,10 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
 
         String[] parts = path.split("/");
+        if (parts.length != 3) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Bad path format:" + path));
+            return;
+        }
         String serviceName = parts[1];
         String originalMethodName = parts[2];
         String methodName = Character.toLowerCase(originalMethodName.charAt(0)) + originalMethodName.substring(1);

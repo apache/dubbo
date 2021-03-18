@@ -109,10 +109,9 @@ public class ClientStream extends AbstractStream implements Stream {
                 .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) +"m")
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        final String version = (String) invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
+        final String version = invocation.getInvoker().getUrl().getVersion();
         if (version != null) {
             headers.set(TripleConstant.SERVICE_VERSION, version);
-            invocation.getObjectAttachments().remove(CommonConstants.VERSION_KEY);
         }
 
         final String app = (String) invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
@@ -121,7 +120,7 @@ public class ClientStream extends AbstractStream implements Stream {
             invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
         }
 
-        final String group = (String) invocation.getObjectAttachment(CommonConstants.GROUP_KEY);
+        final String group = invocation.getInvoker().getUrl().getGroup();
         if (group != null) {
             headers.set(TripleConstant.SERVICE_GROUP, group);
             invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
