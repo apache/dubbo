@@ -27,6 +27,7 @@ import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
@@ -35,6 +36,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
@@ -291,17 +293,27 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
      */
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged = true;
-        if (logger.isDebugEnabled()) {
-            logger.info("" + invoker.getDirectory().getAllInvokers().size());
+        if (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed()) {
+            if (this.invoker != null) {
+                this.currentAvailableInvoker = this.invoker;
+                updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
+            }
+            return;
+        } else if (invoker == null || invoker.isDestroyed()) {
+            if (this.serviceDiscoveryInvoker != null) {
+                this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
+                updateConsumerModel(currentAvailableInvoker, invoker);
+            }
+            return;
         }
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            destroyInterfaceInvoker(invoker);
+            discardInterfaceInvokerAddress(invoker);
         } else {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
-            destroyServiceDiscoveryInvoker(serviceDiscoveryInvoker);
+            discardServiceDiscoveryInvokerAddress(serviceDiscoveryInvoker);
         }
     }
 
@@ -310,7 +322,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             this.currentAvailableInvoker = this.invoker;
             updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
-        if (serviceDiscoveryInvoker != null) {
+        if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
             if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
@@ -320,19 +332,19 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
-//    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
-//        if (this.invoker != null) {
-//            this.currentAvailableInvoker = this.invoker;
-//            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
-//        }
-//        if (serviceDiscoveryInvoker != null) {
-//            if (logger.isDebugEnabled()) {
-//                List<Invoker<T>> invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
-//                logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
-//            }
-////            serviceDiscoveryInvoker.getDirectory().discordAddresses();
-//        }
-//    }
+    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
+        if (this.invoker != null) {
+            this.currentAvailableInvoker = this.invoker;
+            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
+        }
+        if (serviceDiscoveryInvoker != null) {
+            if (logger.isDebugEnabled()) {
+                List<Invoker<T>> invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
+                logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
+            }
+//            serviceDiscoveryInvoker.getDirectory().discordAddresses();
+        }
+    }
 
     protected void refreshServiceDiscoveryInvoker() {
         clearListener(serviceDiscoveryInvoker);
@@ -361,7 +373,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
             updateConsumerModel(currentAvailableInvoker, invoker);
         }
-        if (invoker != null) {
+        if (invoker != null && !invoker.isDestroyed()) {
             if (invoker.getDirectory().isNotificationReceived()) {
                 if (logger.isInfoEnabled()) {
                     logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
@@ -370,20 +382,20 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
         }
     }
-//
-//    protected synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
-//        if (this.serviceDiscoveryInvoker != null) {
-//            this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
-//            updateConsumerModel(currentAvailableInvoker, invoker);
-//        }
-//        if (invoker != null) {
-//            if (logger.isDebugEnabled()) {
-//                List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
-//                logger.debug("Discarding interface addresses, total address size " + (invokers == null ? 0 : invokers.size()));
-//            }
-//            //invoker.getDirectory().discordAddresses();
-//        }
-//    }
+
+    protected synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
+        if (this.serviceDiscoveryInvoker != null) {
+            this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
+            updateConsumerModel(currentAvailableInvoker, invoker);
+        }
+        if (invoker != null) {
+            if (logger.isDebugEnabled()) {
+                List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
+                logger.debug("Discarding interface addresses, total address size " + (invokers == null ? 0 : invokers.size()));
+            }
+            //invoker.getDirectory().discordAddresses();
+        }
+    }
 
     private void clearListener(ClusterInvoker<T> invoker) {
         if (invoker == null) return;
