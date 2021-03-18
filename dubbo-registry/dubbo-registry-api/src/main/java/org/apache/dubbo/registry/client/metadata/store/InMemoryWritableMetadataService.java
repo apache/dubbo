@@ -169,8 +169,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 if (StringUtils.isNotEmpty(interfaceName)) {
                     Class interfaceClass = Class.forName(interfaceName);
                     ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                    Gson gson = new Gson();
-                    String data = gson.toJson(serviceDefinition);
+                    String data = GsonUtils.getGson().toJson(serviceDefinition);
                     serviceDefinitions.put(providerUrl.getServiceKey(), data);
                     return;
                 }
