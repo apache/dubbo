@@ -114,7 +114,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         for (String beanName : beanNames) {
             Class<?> beanType;
             if (beanFactory.isFactoryBean(beanName)){
-                BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(beanName);
+                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
                 if (isReferenceBean(beanDefinition)) {
                     continue;
                 }
@@ -253,7 +253,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
                 getBeanFactory().registerSingleton(referenceBeanName, referenceBean);
 
-                referenceBeanManager.addReference(referenceBean);
+                //referenceBeanManager.addReference(referenceBean);
             } catch (Exception e) {
                 throw new Exception("Create dubbo reference bean failed", e);
             }
