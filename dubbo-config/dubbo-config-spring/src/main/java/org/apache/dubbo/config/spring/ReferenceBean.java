@@ -107,7 +107,7 @@ public class ReferenceBean<T> implements FactoryBean,
         if (referenceProps == null) {
             Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
             ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-            BeanDefinition beanDefinition = beanFactory.getMergedBeanDefinition(getId());
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
             propertyValues = beanDefinition.getPropertyValues();
         }
     }
@@ -187,7 +187,7 @@ public class ReferenceBean<T> implements FactoryBean,
                 String consumer = (String) referenceProps.get("consumer");
                 if (StringUtils.isBlank(generic) && consumer != null) {
                     // get generic from consumerConfig
-                    BeanDefinition consumerBeanDefinition = getBeanFactory().getMergedBeanDefinition(consumer);
+                    BeanDefinition consumerBeanDefinition = getBeanFactory().getBeanDefinition(consumer);
                     if (consumerBeanDefinition != null) {
                         generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
                     }

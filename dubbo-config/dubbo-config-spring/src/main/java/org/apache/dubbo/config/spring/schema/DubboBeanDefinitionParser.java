@@ -53,6 +53,7 @@ import java.lang.reflect.Modifier;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -258,6 +259,12 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         targetDefinition.setBeanClass(interfaceClass);
         String id = (String) beanDefinition.getPropertyValues().get("id");
         beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+
+        //mark property value as optional
+        List<PropertyValue> propertyValues = beanDefinition.getPropertyValues().getPropertyValueList();
+        for (PropertyValue propertyValue : propertyValues) {
+            propertyValue.setOptional(true);
+        }
     }
 
     private static void getPropertyMap(Class<?> beanClass, Map<String, Class> beanPropsMap) {
