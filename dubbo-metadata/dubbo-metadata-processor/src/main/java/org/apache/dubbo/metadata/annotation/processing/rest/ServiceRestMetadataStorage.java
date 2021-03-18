@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.metadata.annotation.processing.rest;
 
+import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.metadata.annotation.processing.ClassPathMetadataStorage;
 import org.apache.dubbo.metadata.rest.ServiceRestMetadata;
 
@@ -52,7 +53,7 @@ public class ServiceRestMetadataStorage {
         if (serviceRestMetadata.isEmpty()) {
             return;
         }
-        storage.write(() -> new Gson().toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
+        storage.write(() -> GsonUtils.getGson().toJson(serviceRestMetadata), SERVICE_REST_METADATA_RESOURCE_PATH);
     }
 
 }
