@@ -1,6 +1,6 @@
 # Apache Dubbo Project
 
-[![Build Status](https://travis-ci.com/apache/dubbo.svg?branch=master)](https://travis-ci.com/apache/dubbo)
+[![Build Status](https://github.com/apache/dubbo/workflows/Build%20and%20Test/badge.svg?branch=master)](https://github.com/apache/dubbo/actions/workflows/build-and-test.yml?query=branch%3Amaster+)
 [![codecov](https://codecov.io/gh/apache/dubbo/branch/master/graph/badge.svg)](https://codecov.io/gh/apache/dubbo)
 ![maven](https://img.shields.io/maven-central/v/org.apache.dubbo/dubbo.svg)
 ![license](https://img.shields.io/github/license/alibaba/dubbo.svg)
@@ -33,16 +33,16 @@ The following code snippet comes from [Dubbo Samples](https://github.com/apache/
 
 ```bash
 # git clone https://github.com/apache/dubbo-samples.git
-# cd dubbo-samples/java/dubbo-samples-api
+# cd dubbo-samples/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions:
+There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
 
 ### Maven dependency
 
 ```xml
 <properties>
-    <dubbo.version>2.7.8</dubbo.version>
+    <dubbo.version>2.7.9</dubbo.version>
 </properties>
 
 <dependencies>

@@ -122,7 +122,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
                      * the same cluster may have more than one node.
                      */
                     if (hosts.length > 1) {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         for (int i = 1; i < hosts.length; i++) {
                             if (i > 1) {
                                 buffer.append(",");

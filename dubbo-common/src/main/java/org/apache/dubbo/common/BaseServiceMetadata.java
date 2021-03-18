@@ -18,6 +18,8 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
+
 /**
  * 2019-10-10
  */
@@ -44,7 +46,7 @@ public class BaseServiceMetadata {
     public static String versionFromServiceKey(String serviceKey) {
         int index = serviceKey.indexOf(":");
         if (index == -1) {
-            return null;
+            return DEFAULT_VERSION;
         }
         return serviceKey.substring(index + 1);
     }

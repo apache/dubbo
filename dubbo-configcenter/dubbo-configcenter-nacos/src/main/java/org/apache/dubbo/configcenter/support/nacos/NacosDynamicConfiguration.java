@@ -25,6 +25,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.GsonUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import com.google.gson.JsonArray;
@@ -116,7 +117,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         HttpAgent agent = null;
         try {
             Field field = configService.getClass().getDeclaredField("agent");
-            field.setAccessible(true);
+            ReflectUtils.makeAccessible(field);
             agent = (HttpAgent) field.get(configService);
         } catch (Exception e) {
             throw new IllegalStateException(e);

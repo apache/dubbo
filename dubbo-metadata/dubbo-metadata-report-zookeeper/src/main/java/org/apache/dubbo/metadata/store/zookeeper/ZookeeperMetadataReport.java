@@ -17,8 +17,6 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -52,8 +50,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
  * ZookeeperMetadataReport
  */
 public class ZookeeperMetadataReport extends AbstractMetadataReport {
-
-    private final static Logger logger = LoggerFactory.getLogger(ZookeeperMetadataReport.class);
 
     private final String root;
 
