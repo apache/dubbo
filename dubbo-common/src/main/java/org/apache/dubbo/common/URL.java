@@ -18,7 +18,6 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -56,6 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.convert.Converter.convertIfPossible;
@@ -1693,7 +1693,7 @@ class URL implements Serializable {
             return false;
         } else {
             for (String key : parameters.keySet()) {
-                if (key.equals(CommonConstants.TIMESTAMP_KEY)) {
+                if (key.equals(TIMESTAMP_KEY)) {
                     continue;
                 }
                 if (!parameters.get(key).equals(other.parameters.get(key))) {
@@ -1723,7 +1723,7 @@ class URL implements Serializable {
     private int parametersHashCode() {
         int h = 0;
         for (Map.Entry<String, String> next : parameters.entrySet()) {
-            if (CommonConstants.TIMESTAMP_KEY.equals(next.getKey())) {
+            if (TIMESTAMP_KEY.equals(next.getKey())) {
                 continue;
             }
 
