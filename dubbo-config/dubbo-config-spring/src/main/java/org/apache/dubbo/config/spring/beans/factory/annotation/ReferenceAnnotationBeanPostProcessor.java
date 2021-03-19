@@ -252,8 +252,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
                 beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
                 getBeanFactory().registerSingleton(referenceBeanName, referenceBean);
-
-                //referenceBeanManager.addReference(referenceBean);
+                //cache reference bean, avoid re-inject same element after prepare reference bean
+                referenceBeanManager.addReference(referenceBean);
             } catch (Exception e) {
                 throw new Exception("Create dubbo reference bean failed", e);
             }

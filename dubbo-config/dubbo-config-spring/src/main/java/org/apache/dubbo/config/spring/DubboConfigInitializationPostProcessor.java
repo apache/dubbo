@@ -75,14 +75,6 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
-//        try {
-//            if (bean instanceof ReferenceBean) {
-//                ReferenceBean referenceBean = (ReferenceBean) bean;
-//                referenceBeanManager.addReference(referenceBean);
-//            }
-//        } catch (Exception e) {
-//            throw new BeanInitializationException("Initialization reference bean failed", e);
-//        }
         return bean;
     }
 
