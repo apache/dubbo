@@ -23,6 +23,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.common.utils.FieldUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
@@ -308,12 +309,12 @@ public class ConditionRouter extends AbstractRouter {
                 if (object == null) {
                     return false;
                 }
-                Field field = object.getClass().getDeclaredField(expressArray[i]);
+                Field field = FieldUtils.getDeclaredField(object.getClass(), expressArray[i]);
                 field.setAccessible(true);
                 object = field.get(object);
             }
 
-            if (matchPair.getValue().isMatch((String)object, null)) {
+            if (matchPair.getValue().isMatch(String.valueOf(object), null)) {
                 return true;
             }
         } catch (Exception e) {

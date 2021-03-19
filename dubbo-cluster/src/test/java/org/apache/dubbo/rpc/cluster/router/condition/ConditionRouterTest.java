@@ -23,7 +23,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Router;
 import org.apache.dubbo.rpc.cluster.router.MockInvoker;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -322,7 +321,8 @@ public class ConditionRouterTest {
         invokers.add(invoker2);
         invokers.add(invoker3);
         RpcInvocation invocation = new RpcInvocation();
-        Param p = new Param("a");
+        InnerObject innerObject = new InnerObject("pValue");
+        Param p = new Param("a", 1, innerObject);
         invocation.setArguments(new Object[]{null});
         List<Invoker<String>> fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
         Assertions.assertEquals(3, fileredInvokers.size());
@@ -338,13 +338,42 @@ public class ConditionRouterTest {
         router = new ConditionRouterFactory().getRouter(getRouteUrl("arguments[10].inner = a " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
         fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
         Assertions.assertEquals(3, fileredInvokers.size());
+
+        router = new ConditionRouterFactory().getRouter(getRouteUrl("arguments[0].num = 1 " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
+        Assertions.assertEquals(0, fileredInvokers.size());
+
+        router = new ConditionRouterFactory().getRouter(getRouteUrl("arguments[0].innerObject = {\"proper\":\"pValue\"} " + " => " + " host = 10.20.3.3").addParameter(FORCE_KEY, String.valueOf(true)));
+        fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
+        Assertions.assertEquals(1, fileredInvokers.size());
+    }
+
+    class InnerObject {
+
+        private String proper;
+
+        public InnerObject (String proper) {
+            this.proper = proper;
+        }
+
+        @Override
+        public String toString() {
+            return "{\"proper\":\"" + proper + "\"}";
+        }
+
     }
 
     class Param {
         private String inner;
 
-        public Param(String inner) {
+        private int num;
+
+        private InnerObject innerObject;
+
+        public Param(String inner, int num, InnerObject innerObject) {
             this.inner = inner;
+            this.num = num;
+            this.innerObject = innerObject;
         }
 
         public String getInner() {
@@ -354,6 +383,15 @@ public class ConditionRouterTest {
         public void setInner() {
             this.inner = inner;
         }
+
+        public int getNum() {
+            return num;
+        }
+
+        public void setNum(int num) {
+            this.num = num;
+        }
+
     }
 
 }
