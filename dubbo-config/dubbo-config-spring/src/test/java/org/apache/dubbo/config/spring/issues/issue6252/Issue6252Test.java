@@ -14,18 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.issues;
+package org.apache.dubbo.config.spring.issues.issue6252;
 
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.EmbeddedZooKeeper;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
-import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -36,7 +33,7 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @EnableDubboConfig
-@PropertySource("classpath:/META-INF/issue-6252-test.properties")
+@PropertySource("classpath:/META-INF/issues/issue6252/config.properties")
 public class Issue6252Test {
 
     @DubboReference
@@ -44,9 +41,19 @@ public class Issue6252Test {
 
     @Test
     public void test() throws Exception {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
-        DemoService demoService = context.getBean(DemoService.class);
-        context.close();
+        EmbeddedZooKeeper zookeeper = new EmbeddedZooKeeper(2181, true);
+        zookeeper.start();
+        EmbeddedZooKeeper zookeeper2 = new EmbeddedZooKeeper(2182, true);
+        zookeeper2.start();
+
+        try {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
+            DemoService demoService = context.getBean(DemoService.class);
+            context.close();
+        } finally {
+            zookeeper.stop();
+            zookeeper2.stop();
+        }
     }
 
 }

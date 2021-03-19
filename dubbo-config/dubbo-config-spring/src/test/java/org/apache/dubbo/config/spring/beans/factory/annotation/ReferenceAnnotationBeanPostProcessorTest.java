@@ -24,6 +24,7 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -58,6 +59,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @since 2.5.7
  */
+@EnableDubboConfig
 @RunWith(SpringRunner.class)
 @ContextConfiguration(
         classes = {
@@ -97,16 +99,6 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Bean
     public TestBean testBean() {
         return new TestBean();
-    }
-
-    @Bean(ReferenceBeanManager.BEAN_NAME)
-    public ReferenceBeanManager referenceBeanManager() {
-        return new ReferenceBeanManager();
-    }
-
-    @Bean(BEAN_NAME)
-    public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
-        return new ReferenceAnnotationBeanPostProcessor();
     }
 
     @Autowired

@@ -471,7 +471,7 @@ public class ConfigTest {
     }
 
     // DUBBO-147 find all invoker instances which have been tried from RpcContext
-    //@Test
+    @Test
     public void test_RpcContext_getUrls() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider-long-waiting.xml");
