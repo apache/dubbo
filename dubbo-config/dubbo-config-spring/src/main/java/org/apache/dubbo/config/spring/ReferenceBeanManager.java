@@ -94,13 +94,13 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @throws Exception
      */
     public void prepareReferenceBeans() throws Exception {
-        for (ReferenceBean referenceBean : getReferences()) {
-            initReferenceBean(referenceBean);
-        }
-
         // prepare all reference beans
         Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class, true, false);
         for (ReferenceBean referenceBean : referenceBeanMap.values()) {
+            addReference(referenceBean);
+        }
+
+        for (ReferenceBean referenceBean : getReferences()) {
             initReferenceBean(referenceBean);
         }
         initialized = true;
