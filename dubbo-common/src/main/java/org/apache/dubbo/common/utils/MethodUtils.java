@@ -277,13 +277,8 @@ public interface MethodUtils {
         T value = null;
 
         try {
-            final boolean isAccessible = method.isAccessible();
-
-            if (!isAccessible) {
-                method.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(method);
             value = (T) method.invoke(object, methodParameters);
-            method.setAccessible(isAccessible);
         } catch (Exception e) {
             throw new IllegalArgumentException(e);
         }

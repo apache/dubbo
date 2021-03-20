@@ -61,7 +61,6 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
 
     EtcdClient etcdClient;
     EventDispatcher dispatcher;
-    ServiceInstance serviceInstance;
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -101,9 +100,8 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) {
         try {
-            this.serviceInstance = serviceInstance;
             String path = toPath(serviceInstance);
 //            etcdClient.createEphemeral(path);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));
@@ -126,7 +124,7 @@ public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements Ev
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         try {
             String path = toPath(serviceInstance);
             etcdClient.putEphemeral(path, new Gson().toJson(serviceInstance));

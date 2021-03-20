@@ -343,17 +343,16 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         private final long UNKNOWN_SESSION_ID = -1L;
 
         private long lastSessionId;
-        private URL url;
+        private int timeout;
+        private int sessionExpireMs;
 
         public CuratorConnectionStateListener(URL url) {
-            this.url = url;
+            this.timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
+            this.sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
         }
 
         @Override
         public void stateChanged(CuratorFramework client, ConnectionState state) {
-            int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
-            int sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
-
             long sessionId = UNKNOWN_SESSION_ID;
             try {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();
