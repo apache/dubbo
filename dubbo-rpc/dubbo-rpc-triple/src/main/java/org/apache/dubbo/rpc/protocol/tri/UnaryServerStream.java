@@ -72,11 +72,6 @@ public class UnaryServerStream extends ServerStream implements Stream {
     public void onError(GrpcStatus status) {
     }
 
-    @Override
-    public void write(Object obj, ChannelPromise promise) throws Exception {
-
-    }
-
     public void halfClose() throws Exception {
         if (getData() == null) {
             responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)

@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 
+import io.netty.channel.ChannelPromise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -43,6 +44,7 @@ public abstract class AbstractStream implements Stream {
             .withDescription("Too many data");
     private final ChannelHandlerContext ctx;
     private final URL url;
+    private boolean needWrap;
     private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
@@ -56,9 +58,14 @@ public abstract class AbstractStream implements Stream {
     protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
         this.url = url;
+        this.needWrap = needWrap;
         if (needWrap) {
             loadFromURL(url);
         }
+    }
+
+    public boolean isNeedWrap() {
+        return needWrap;
     }
 
     protected void loadFromURL(URL url) {
@@ -171,4 +178,7 @@ public abstract class AbstractStream implements Stream {
     public void streamCreated(boolean endStream) throws Exception {};
 
     protected void onSingleMessage(InputStream in) throws Exception {}
+
+    @Override
+    public void write(Object obj, ChannelPromise promise) throws Exception {}
 }

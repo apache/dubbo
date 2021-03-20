@@ -87,35 +87,35 @@ public class Processor {
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
     }
 
-    class StreamOutboundWriter implements StreamObserver<Object> {
-
-        private StreamServerStream stream;
-        private final AtomicBoolean canceled = new AtomicBoolean();
-
-        public StreamOutboundWriter(StreamServerStream stream) {
-            this.stream = stream;
-        }
-
-        @Override
-        public void onNext(Object o) throws Exception {
-
-            stream.write(o, null);
-        }
-
-        @Override
-        public void onError(Throwable t) {
-            doCancel();
-        }
-
-        @Override
-        public void onComplete() {
-            stream.onComplete();
-        }
-
-        public void doCancel() {
-            if (canceled.compareAndSet(false, true)) {
-                stream.onComplete();
-            }
-        }
-    }
+    //class StreamOutboundWriter implements StreamObserver<Object> {
+    //
+    //    private StreamServerStream stream;
+    //    private final AtomicBoolean canceled = new AtomicBoolean();
+    //
+    //    public StreamOutboundWriter(StreamServerStream stream) {
+    //        this.stream = stream;
+    //    }
+    //
+    //    @Override
+    //    public void onNext(Object o) throws Exception {
+    //
+    //        stream.write(o, null);
+    //    }
+    //
+    //    @Override
+    //    public void onError(Throwable t) {
+    //        doCancel();
+    //    }
+    //
+    //    @Override
+    //    public void onComplete() {
+    //        stream.onComplete();
+    //    }
+    //
+    //    public void doCancel() {
+    //        if (canceled.compareAndSet(false, true)) {
+    //            stream.onComplete();
+    //        }
+    //    }
+    //}
 }
