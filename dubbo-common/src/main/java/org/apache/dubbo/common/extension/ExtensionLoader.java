@@ -264,6 +264,7 @@ public class ExtensionLoader<T> {
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         // store not match filter.
         Set<String> notMatchFilters = new HashSet<>();
+        Set<String> matchFilters = new HashSet<>();
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
@@ -286,6 +287,7 @@ public class ExtensionLoader<T> {
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(activateValue, url)) {
                     activateExtensions.add(getExtension(name));
+                    matchFilters.add(name);
                 } else {
                     notMatchFilters.add(name);
                 }
@@ -303,11 +305,15 @@ public class ExtensionLoader<T> {
                         loadedExtensions.clear();
                     }
                 } else {
-                    if (!notMatchFilters.contains(name)) {
-                        loadedExtensions.add(getExtension(name));
-                    } else {
-                        logger.info("The specified filter has not yet taken effect because the Activate condition does not match.");
+                    if (notMatchFilters.contains(name)) {
+                        logger.warn(name + " filter that does not meet the Activate condition has been loaded.");
                     }
+                    if (matchFilters.contains(name)) {
+                        logger.warn(name + " filter repeated loading");
+                    } else {
+                        matchFilters.add(name);
+                    }
+                    loadedExtensions.add(getExtension(name));
                 }
             }
         }
