@@ -45,7 +45,6 @@
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
         <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-        <maven-compiler-plugin.version>3.6.0</maven-compiler-plugin.version>
 
     </properties>
 
@@ -183,12 +182,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven-compiler-plugin.version}</version>
+                <version>${maven_compiler_version}</version>
                 <configuration>
+                    <compilerArgs>
+                        <compilerArg>-parameters</compilerArg>
+                    </compilerArgs>
                     <fork>true</fork>
-                    <source>${java.source.version}</source>
-                    <target>${java.target.version}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
+                    <source>${java_source_version}</source>
+                    <target>${java_target_version}</target>
+                    <encoding>${file_encoding}</encoding>
                 </configuration>
             </plugin>
         </plugins>
