@@ -6,15 +6,16 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 public class StreamOutboundWriter implements StreamObserver<Object> {
 
-    private ServerStream stream;
+    private StreamServerStream stream;
     private final AtomicBoolean canceled = new AtomicBoolean();
 
-    public StreamOutboundWriter(ServerStream stream) {
+    public StreamOutboundWriter(StreamServerStream stream) {
         this.stream = stream;
     }
 
     @Override
     public void onNext(Object o) throws Exception {
+
         stream.write(o, null);
     }
 

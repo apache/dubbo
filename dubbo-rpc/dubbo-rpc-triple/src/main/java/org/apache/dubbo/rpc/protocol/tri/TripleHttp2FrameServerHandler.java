@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.dubbo.common.URL;
@@ -88,7 +90,6 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
 
         if (msg.isEndStream()) {
             final ServerStream serverStream = TripleUtil.getServerStream(ctx);
-            // stream already closed;
             if (serverStream != null) {
                 serverStream.halfClose();
             }
@@ -175,29 +176,30 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
         md = methodDescriptors.get(0);
+        if (md == null) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                .withDescription("Method not found:" + md.getMethodName() +
+                    " args:" + Arrays.toString(md.getParameterClasses()) + " of service:" + descriptor.getServiceName()));
+        }
 
+        final List<MethodDescriptor> methods = descriptor.getMethods(md.getMethodName());
+        if (methods == null || methods.isEmpty()) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
+                .withDescription("Method not found:" + md + " of service:" + descriptor.getServiceName()));
+        }
+
+        ServerStream serverStream = null;
         if (md.isStream()) {
-            final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, md, ctx);
-            Invocation inv = serverStream.buildInvocation();
-            Result result = delegateInvoker.invoke(inv);
-            final StreamObserver<Object> resp = new ServerInboundObserver(
-                (StreamObserver<Object>)result.get().getValue(), md);
-            ctx.channel().attr(TripleUtil.SERVER_STREAM_PROCESSOR_KEY).set(resp);
-
-            serverStream.onHeaders(headers);
-            ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
+            serverStream = new StreamServerStream(delegateInvoker, descriptor, md, ctx);
         } else {
             if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
                 md = repo.lookupMethod(GenericService.class.getName(), methodName);
             } else if ("$echo".equals(methodName)) {
                 md = repo.lookupMethod(EchoService.class.getName(), methodName);
             }
-            final ServerStream serverStream = new ServerStream(delegateInvoker, descriptor, md, ctx);
-            serverStream.onHeaders(headers);
-            ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
-            if (msg.isEndStream()) {
-                serverStream.halfClose();
-            }
+            serverStream = new UnaryServerStream(delegateInvoker, descriptor, md, ctx);
         }
+        ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
+        serverStream.streamCreated(msg.isEndStream());
     }
 }

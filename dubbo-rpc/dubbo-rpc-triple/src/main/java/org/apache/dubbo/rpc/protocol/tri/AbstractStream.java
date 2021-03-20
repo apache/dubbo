@@ -36,8 +36,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 
-import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
-
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStream.class);
@@ -48,9 +46,7 @@ public abstract class AbstractStream implements Stream {
     private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
-    private boolean needWrap;
     private Queue<InputStream> datas = new ArrayDeque<>();
-    private InputStream data;
     private String serializeType;
 
     protected AbstractStream(URL url, ChannelHandlerContext ctx) {
@@ -60,7 +56,6 @@ public abstract class AbstractStream implements Stream {
     protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
         this.ctx = ctx;
         this.url = url;
-        this.needWrap = needWrap;
         if (needWrap) {
             loadFromURL(url);
         }
@@ -81,14 +76,6 @@ public abstract class AbstractStream implements Stream {
 
     protected void setSerializeType(String serializeType) {
         this.serializeType = serializeType;
-    }
-
-    protected boolean isNeedWrap() {
-        return needWrap;
-    }
-
-    protected void setNeedWrap(boolean needWrap) {
-        this.needWrap = needWrap;
     }
 
     public ChannelHandlerContext getCtx() {
@@ -124,7 +111,6 @@ public abstract class AbstractStream implements Stream {
             onSingleMessage(in);
         }
     }
-    protected abstract void onSingleMessage(InputStream in) throws Exception;
 
     public void onHeaders(Http2Headers headers) {
         if (this.headers == null) {
@@ -142,7 +128,7 @@ public abstract class AbstractStream implements Stream {
             if (ENABLE_ATTACHMENT_WRAP) {
                 if (key.endsWith("-tw-bin") && key.length() > 7) {
                     try {
-                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(getUrl(), header.getValue(), getMultipleSerialization()));
+                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
                     } catch (Exception e) {
                         LOGGER.error("Failed to parse response attachment key=" + key, e);
                     }
@@ -181,4 +167,8 @@ public abstract class AbstractStream implements Stream {
             }
         }
     }
+
+    public void streamCreated(boolean endStream) throws Exception {};
+
+    protected void onSingleMessage(InputStream in) throws Exception {}
 }

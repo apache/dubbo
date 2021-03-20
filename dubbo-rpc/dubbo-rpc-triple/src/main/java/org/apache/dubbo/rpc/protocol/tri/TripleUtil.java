@@ -56,7 +56,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-    public static final AttributeKey<StreamObserver<Object>> SERVER_STREAM_PROCESSOR_KEY = AttributeKey.newInstance("tri_server_stream_processor");
     public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
     public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
