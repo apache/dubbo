@@ -14,25 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client;
+package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
-public class ServiceDiscoveryRegistryProtocolListener implements RegistryProtocolListener {
-    @Override
-    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
-
-    }
-
-    @Override
-    public void onRefer(RegistryProtocol registryProtocol, Invoker<?> invoker) {
-
-    }
-
-    @Override
-    public void onDestroy() {
-
-    }
+@SPI
+public interface MigrationAddressComparator {
+    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker);
 }

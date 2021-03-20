@@ -17,25 +17,24 @@
 package org.apache.dubbo.registry.nacos;
 
 
-import com.alibaba.nacos.api.common.Constants;
-import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 import org.apache.dubbo.registry.support.FailbackRegistry;
 
+import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.EventListener;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
+import com.google.common.collect.Lists;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -118,8 +117,6 @@ public class NacosRegistry extends FailbackRegistry {
      * {@link ScheduledExecutorService} lookup Nacos service names(only for Dubbo-OPS)
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final NamingService namingService;
 
@@ -232,11 +229,7 @@ public class NacosRegistry extends FailbackRegistry {
      * @return
      */
     private boolean isServiceNamesWithCompatibleMode(final URL url) {
-        if (!isAdminProtocol(url) && createServiceName(url).isConcrete()) {
-            return true;
-        } else {
-            return false;
-        }
+        return !isAdminProtocol(url) && createServiceName(url).isConcrete();
     }
 
     @Override
@@ -324,7 +317,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
         String parameterValue = url.getParameter(parameterName);
-        if (!org.apache.commons.lang3.StringUtils.isBlank(parameterValue)) {
+        if (!StringUtils.isBlank(parameterValue)) {
             target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
         }
     }
@@ -557,6 +550,7 @@ public class NacosRegistry extends FailbackRegistry {
         URL newURL = url.addParameter(CATEGORY_KEY, category);
         newURL = newURL.addParameter(PROTOCOL_KEY, url.getProtocol());
         newURL = newURL.addParameter(PATH_KEY, url.getPath());
+        newURL = newURL.addParameters(NacosNamingServiceUtils.getNacosPreservedParam(getUrl()));
         String ip = url.getHost();
         int port = url.getPort();
         Instance instance = new Instance();

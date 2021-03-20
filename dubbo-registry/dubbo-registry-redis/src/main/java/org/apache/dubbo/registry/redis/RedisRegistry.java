@@ -18,8 +18,6 @@ package org.apache.dubbo.registry.redis;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -77,13 +75,7 @@ import static org.apache.dubbo.registry.Constants.UNREGISTER;
  */
 public class RedisRegistry extends FailbackRegistry {
 
-    private static final Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
-
-    private static final int DEFAULT_REDIS_PORT = 6379;
-
     private final static String DEFAULT_ROOT = "dubbo";
-
-    private static final String REDIS_MASTER_NAME_KEY = "master-name";
 
     private final ScheduledExecutorService expireExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("DubboRegistryExpireTimer", true));
 
@@ -100,8 +92,6 @@ public class RedisRegistry extends FailbackRegistry {
     private final int expirePeriod;
 
     private volatile boolean admin = false;
-
-    private boolean replicate;
 
     public RedisRegistry(URL url) {
         super(url);
@@ -214,21 +204,11 @@ public class RedisRegistry extends FailbackRegistry {
         String key = toCategoryPath(url);
         String value = url.toFullString();
         String expire = String.valueOf(System.currentTimeMillis() + expirePeriod);
-        boolean success = false;
-        RpcException exception = null;
         try {
             redisClient.hset(key, value, expire);
             redisClient.publish(key, REGISTER);
         } catch (Throwable t) {
-            exception = new RpcException("Failed to register service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
-        }
-
-        if (exception != null) {
-            if (success) {
-                logger.warn(exception.getMessage(), exception);
-            } else {
-                throw exception;
-            }
+            throw new RpcException("Failed to register service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -236,22 +216,11 @@ public class RedisRegistry extends FailbackRegistry {
     public void doUnregister(URL url) {
         String key = toCategoryPath(url);
         String value = url.toFullString();
-        RpcException exception = null;
-        boolean success = false;
         try {
             redisClient.hdel(key, value);
             redisClient.publish(key, UNREGISTER);
-            success = true;
         } catch (Throwable t) {
-            exception = new RpcException("Failed to unregister service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
-        }
-
-        if (exception != null) {
-            if (success) {
-                logger.warn(exception.getMessage(), exception);
-            } else {
-                throw exception;
-            }
+            throw new RpcException("Failed to unregister service to redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 
@@ -267,8 +236,6 @@ public class RedisRegistry extends FailbackRegistry {
                 notifier.start();
             }
         }
-        boolean success = false;
-        RpcException exception = null;
         try {
             if (service.endsWith(ANY_VALUE)) {
                 admin = true;
@@ -287,16 +254,8 @@ public class RedisRegistry extends FailbackRegistry {
             } else {
                 doNotify(redisClient.scan(service + PATH_SEPARATOR + ANY_VALUE), url, Collections.singletonList(listener));
             }
-            success = true;
         } catch (Throwable t) {
-            exception = new RpcException("Failed to subscribe service from redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
-        }
-        if (exception != null) {
-            if (success) {
-                logger.warn(exception.getMessage(), exception);
-            } else {
-                throw exception;
-            }
+            throw new RpcException("Failed to subscribe service from redis registry. registry: " + url.getAddress() + ", service: " + url + ", cause: " + t.getMessage(), t);
         }
     }
 

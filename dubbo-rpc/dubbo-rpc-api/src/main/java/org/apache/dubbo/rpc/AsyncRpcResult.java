@@ -94,7 +94,7 @@ public class AsyncRpcResult implements Result {
             if (responseFuture.isDone()) {
                 responseFuture.get().setValue(value);
             } else {
-                AppResponse appResponse = new AppResponse();
+                AppResponse appResponse = new AppResponse(invocation);
                 appResponse.setValue(value);
                 responseFuture.complete(appResponse);
             }
@@ -116,7 +116,7 @@ public class AsyncRpcResult implements Result {
             if (responseFuture.isDone()) {
                 responseFuture.get().setException(t);
             } else {
-                AppResponse appResponse = new AppResponse();
+                AppResponse appResponse = new AppResponse(invocation);
                 appResponse.setException(t);
                 responseFuture.complete(appResponse);
             }
@@ -319,7 +319,7 @@ public class AsyncRpcResult implements Result {
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
         CompletableFuture<AppResponse> future = new CompletableFuture<>();
-        AppResponse result = new AppResponse();
+        AppResponse result = new AppResponse(invocation);
         if (t != null) {
             result.setException(t);
         } else {

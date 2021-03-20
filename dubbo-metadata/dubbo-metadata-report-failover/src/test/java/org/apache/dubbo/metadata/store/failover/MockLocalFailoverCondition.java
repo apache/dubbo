@@ -14,20 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.kryo.utils;
+package org.apache.dubbo.metadata.store.failover;
 
-public abstract class ReflectionUtils {
+import org.apache.dubbo.common.URL;
 
-    public static boolean checkZeroArgConstructor(Class clazz) {
-        try {
-            clazz.getDeclaredConstructor();
-            return true;
-        } catch (NoSuchMethodException e) {
-            return false;
-        }
+/**
+ * @author yiji@apache.org
+ */
+public class MockLocalFailoverCondition implements FailoverCondition {
+
+    @Override
+    public boolean shouldRegister(URL url) {
+        // we just register same datacenter.
+        return isLocalDataCenter(url);
     }
 
-    public static boolean isJdk(Class clazz) {
-        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
+    @Override
+    public boolean shouldQuery(URL url) {
+        // we want read any metadata report server.
+        return true;
     }
+
+    @Override
+    public boolean isLocalDataCenter(URL url) {
+        // we mock current datacenter is `127.0.0.1:2181`
+        String current = "127.0.0.1:2181";
+        return url.getBackupAddress().contains(current);
+    }
+
 }

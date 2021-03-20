@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 public class ReflectUtilsTest {
     @Test
@@ -256,27 +257,25 @@ public class ReflectUtilsTest {
 
     @Test
     public void testGetBeanPropertyFields() throws Exception {
-        Map<String, Field> map = ReflectUtils.getBeanPropertyFields(EmptyClass.class);
+        EmptyClass emptyClass = new EmptyClass();
+        Map<String, Field> map = ReflectUtils.getBeanPropertyFields(emptyClass.getClass());
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
         assertThat(map, hasKey("property"));
         for (Field f : map.values()) {
-            if (!f.isAccessible()) {
-                fail();
-            }
+            assertDoesNotThrow(() -> f.get(emptyClass));
         }
     }
 
     @Test
     public void testGetBeanPropertyReadMethods() throws Exception {
-        Map<String, Method> map = ReflectUtils.getBeanPropertyReadMethods(EmptyClass.class);
+        EmptyClass emptyClass = new EmptyClass();
+        Map<String, Method> map = ReflectUtils.getBeanPropertyReadMethods(emptyClass.getClass());
         assertThat(map.size(), is(2));
         assertThat(map, hasKey("set"));
         assertThat(map, hasKey("property"));
         for (Method m : map.values()) {
-            if (!m.isAccessible()) {
-                fail();
-            }
+            assertDoesNotThrow(() -> m.invoke(emptyClass));
         }
     }
 
@@ -416,18 +415,51 @@ public class ReflectUtilsTest {
         Assertions.assertEquals("java.lang.String", types1[0].getTypeName());
         Assertions.assertEquals("java.lang.String", types1[1].getTypeName());
 
-        Type[] types2 = ReflectUtils.getReturnTypes(clazz.getMethod("getListFuture"));
-        Assertions.assertEquals("java.util.List", types2[0].getTypeName());
-        Assertions.assertEquals("java.util.List<java.lang.String>", types2[1].getTypeName());
+        Type[] types2 = ReflectUtils.getReturnTypes(clazz.getMethod("getT"));
+        Assertions.assertEquals("java.lang.String", types2[0].getTypeName());
+        Assertions.assertEquals("T", types2[1].getTypeName());
+
+        Type[] types3 = ReflectUtils.getReturnTypes(clazz.getMethod("getS"));
+        Assertions.assertEquals("java.lang.Object", types3[0].getTypeName());
+        Assertions.assertEquals("S", types3[1].getTypeName());
+
+        Type[] types4 = ReflectUtils.getReturnTypes(clazz.getMethod("getListFuture"));
+        Assertions.assertEquals("java.util.List", types4[0].getTypeName());
+        Assertions.assertEquals("java.util.List<java.lang.String>", types4[1].getTypeName());
+
+        Type[] types5 = ReflectUtils.getReturnTypes(clazz.getMethod("getGenericWithUpperFuture"));
+        // T extends String, the first arg should be the upper bound of param
+        Assertions.assertEquals("java.lang.String", types5[0].getTypeName());
+        Assertions.assertEquals("T", types5[1].getTypeName());
+
+        Type[] types6 = ReflectUtils.getReturnTypes(clazz.getMethod("getGenericFuture"));
+        // default upper bound is Object
+        Assertions.assertEquals("java.lang.Object", types6[0].getTypeName());
+        Assertions.assertEquals("S", types6[1].getTypeName());
     }
 
-    public interface TypeClass {
+    @Test
+    public void testCheckZeroArgConstructor() {
+        assertTrue(ReflectUtils.checkZeroArgConstructor(String.class));
+        assertTrue(ReflectUtils.checkZeroArgConstructor(Bar.class));
+        assertFalse(ReflectUtils.checkZeroArgConstructor(Foo4.class));
+    }
+
+    public interface TypeClass<T extends String, S> {
 
         CompletableFuture<String> getFuture();
 
         String getString();
 
+        T getT();
+
+        S getS();
+
         CompletableFuture<List<String>> getListFuture();
+
+        CompletableFuture<T> getGenericWithUpperFuture();
+
+        CompletableFuture<S> getGenericFuture();
     }
 
     public static class EmptyClass {
@@ -514,6 +546,19 @@ public class ReflectUtilsTest {
         @Override
         public Foo1 hello(Foo2 foo2) {
             return null;
+        }
+    }
+
+
+    static class Foo4 {
+        public Foo4(int i) {
+
+        }
+    }
+
+    static class Bar {
+        private Bar() {
+
         }
     }
 

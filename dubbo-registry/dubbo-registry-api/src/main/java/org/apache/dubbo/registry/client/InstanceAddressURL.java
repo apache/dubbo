@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
@@ -105,6 +106,8 @@ public class InstanceAddressURL extends URL {
             return getGroup();
         } else if (INTERFACE_KEY.equals(key)) {
             return getServiceInterface();
+        } else if (REMOTE_APPLICATION_KEY.equals(key)) {
+            return instance.getServiceName();
         }
 
         String protocolServiceKey = getProtocolServiceKey();

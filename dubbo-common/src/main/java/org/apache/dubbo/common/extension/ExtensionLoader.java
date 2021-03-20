@@ -599,26 +599,25 @@ public class ExtensionLoader<T> {
     }
 
     private IllegalStateException findException(String name) {
-        for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
-            if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
-                return entry.getValue();
-            }
-        }
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
-
 
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
-            if (i == 1) {
-                buf.append(", possible causes: ");
+            if (entry.getKey().toLowerCase().startsWith(name.toLowerCase())) {
+                if (i == 1) {
+                    buf.append(", possible causes: ");
+                }
+                buf.append("\r\n(");
+                buf.append(i++);
+                buf.append(") ");
+                buf.append(entry.getKey());
+                buf.append(":\r\n");
+                buf.append(StringUtils.toString(entry.getValue()));
             }
+        }
 
-            buf.append("\r\n(");
-            buf.append(i++);
-            buf.append(") ");
-            buf.append(entry.getKey());
-            buf.append(":\r\n");
-            buf.append(StringUtils.toString(entry.getValue()));
+        if (i == 1) {
+            buf.append(", no related exception was found, please check whether related SPI module is missing.");
         }
         return new IllegalStateException(buf.toString());
     }
@@ -847,6 +846,7 @@ public class ExtensionLoader<T> {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
+                String clazz = null;
                 while ((line = reader.readLine()) != null) {
                     final int ci = line.indexOf('#');
                     if (ci >= 0) {
@@ -859,10 +859,12 @@ public class ExtensionLoader<T> {
                             int i = line.indexOf('=');
                             if (i > 0) {
                                 name = line.substring(0, i).trim();
-                                line = line.substring(i + 1).trim();
+                                clazz = line.substring(i + 1).trim();
+                            } else {
+                                clazz = line;
                             }
-                            if (line.length() > 0 && !isExcluded(line, excludedPackages)) {
-                                loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name, overridden);
+                            if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages)) {
+                                loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
                             }
                         } catch (Throwable t) {
                             IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);

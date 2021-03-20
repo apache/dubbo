@@ -14,33 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.kryo;
+package org.apache.dubbo.registry.multiple;
 
-import org.apache.dubbo.common.serialize.kryo.utils.ReflectionUtils;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-
-public class ReflectionUtilsTest {
-
-    @Test
-    public void test() {
-        assertTrue(ReflectionUtils.checkZeroArgConstructor(String.class));
-        assertTrue(ReflectionUtils.checkZeroArgConstructor(Bar.class));
-        assertFalse(ReflectionUtils.checkZeroArgConstructor(Foo.class));
-    }
-
-    static class Foo {
-        public Foo(int i) {
-
-        }
-    }
-
-    static class Bar {
-        private Bar() {
-
-        }
+public class MultipleRegistryServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory  {
+    @Override
+    protected ServiceDiscovery createDiscovery(URL registryURL) {
+        return new MultipleRegistryServiceDiscovery();
     }
 }
