@@ -31,8 +31,6 @@ import org.springframework.core.Ordered;
 
 import java.util.concurrent.CountDownLatch;
 
-import java.util.concurrent.CountDownLatch;
-
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
  * and {@link ContextClosedEvent} raised
@@ -53,11 +51,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
-
     private final DubboBootstrap dubboBootstrap;
-
-    private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
