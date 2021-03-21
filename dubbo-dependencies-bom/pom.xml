@@ -122,7 +122,8 @@
         <fst_version>2.48-jdk-6</fst_version>
         <avro_version>1.8.2</avro_version>
         <apollo_client_version>1.1.1</apollo_client_version>
-        <snakeyaml_version>1.20</snakeyaml_version>
+        <snakeyaml_version>1.28</snakeyaml_version>
+        <jackson_version>2.12.0</jackson_version>
         <commons_lang3_version>3.8.1</commons_lang3_version>
         <protostuff_version>1.5.9</protostuff_version>
 
@@ -526,6 +527,16 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>${snakeyaml_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${jackson_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>

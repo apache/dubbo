@@ -16,40 +16,42 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONValidator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
-import org.yaml.snakeyaml.TypeDescription;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONValidator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 
 /**
  * Config parser
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig) {
+    public static List<URL> parseConfigurators(String rawConfig) throws IOException {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
         if (isJsonArray(rawConfig)) {
             return parseJsonArray(rawConfig);
         }
 
         List<URL> urls = new ArrayList<>();
-        ConfiguratorConfig configuratorConfig = parseObject(rawConfig);
+
+        ObjectMapper om = new ObjectMapper(new YAMLFactory());
+        ConfiguratorConfig configuratorConfig = om.readValue(rawConfig, ConfiguratorConfig.class);
 
         String scope = configuratorConfig.getScope();
         List<ConfigItem> items = configuratorConfig.getConfigs();
@@ -70,16 +72,6 @@ public class ConfigParser {
             list.forEach(u -> urls.add(URL.valueOf(u)));
         }
         return urls;
-    }
-
-    private static <T> T parseObject(String rawConfig) {
-        Constructor constructor = new Constructor(ConfiguratorConfig.class);
-        TypeDescription itemDescription = new TypeDescription(ConfiguratorConfig.class);
-        itemDescription.addPropertyParameters("items", ConfigItem.class);
-        constructor.addTypeDescription(itemDescription);
-
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawConfig);
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {

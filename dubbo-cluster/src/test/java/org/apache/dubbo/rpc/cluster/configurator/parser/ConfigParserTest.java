@@ -175,7 +175,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseURLJsonArrayCompatible() {
+    public void parseURLJsonArrayCompatible() throws IOException {
 
         String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
 
