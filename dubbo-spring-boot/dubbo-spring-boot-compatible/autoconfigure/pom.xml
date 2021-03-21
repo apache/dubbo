@@ -27,7 +27,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-spring-boot-autoconfigure-compatible</artifactId>
-    <name>Apache Dubbo Spring Boot :: Compatible :: Auto-Configure</name>
     <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x Auto-Configure</description>
 
     <dependencies>
@@ -62,12 +61,14 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-common</artifactId>
             <version>${revision}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-spring</artifactId>
             <version>${revision}</version>
+            <optional>true</optional>
         </dependency>
 
         <dependency>

@@ -29,7 +29,6 @@
     <artifactId>dubbo-spring-boot</artifactId>
 
     <packaging>pom</packaging>
-    <name>Apache Dubbo Spring Boot :: Parent</name>
     <description>Apache Dubbo Spring Boot Parent</description>
 
     <modules>
@@ -40,12 +39,8 @@
     </modules>
 
     <properties>
-        <java.source.version>1.8</java.source.version>
-        <java.target.version>1.8</java.target.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
         <dubbo.version>${revision}</dubbo.version>
-        <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
-
     </properties>
 
     <dependencyManagement>
@@ -162,7 +157,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven-jar-plugin.version}</version>
+                <version>${maven_jar_version}</version>
                 <configuration>
                     <archive>
                         <addMavenDescriptor>true</addMavenDescriptor>

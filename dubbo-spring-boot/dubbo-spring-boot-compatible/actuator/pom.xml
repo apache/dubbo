@@ -27,7 +27,6 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>dubbo-spring-boot-actuator-compatible</artifactId>
-    <name>Apache Dubbo Spring Boot :: Compatible :: Actuator</name>
     <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x Actuator</description>
 
     <dependencies>

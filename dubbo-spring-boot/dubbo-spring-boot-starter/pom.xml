@@ -28,7 +28,6 @@
 
     <artifactId>dubbo-spring-boot-starter</artifactId>
     <packaging>jar</packaging>
-    <name>Apache Dubbo Spring Boot :: Starter</name>
     <description>Apache Dubbo Spring Boot Starter</description>
 
 

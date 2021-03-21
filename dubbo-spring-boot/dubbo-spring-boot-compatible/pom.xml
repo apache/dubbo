@@ -28,7 +28,6 @@
 
     <artifactId>dubbo-spring-boot-compatible</artifactId>
     <packaging>pom</packaging>
-    <name>Apache Dubbo Spring Boot :: Compatible</name>
     <description>Apache Dubbo Spring Boot Compatible for Spring Boot 1.x</description>
 
     <properties>
