@@ -71,7 +71,7 @@ public abstract class ServerStream extends AbstractStream implements Stream {
         return invoker;
     }
 
-    protected ServerStream(Invoker<?> invoker, URL url, MethodDescriptor md, ChannelHandlerContext ctx) {
+    protected ServerStream(Invoker<?> invoker, URL url, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
         super(url, ctx);
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         this.providerModel = repo.lookupExportedService(getUrl().getServiceKey());
@@ -80,6 +80,7 @@ public abstract class ServerStream extends AbstractStream implements Stream {
         }
         this.invoker = invoker;
         this.md = md;
+        this.serviceDescriptor = serviceDescriptor;
     }
 
     @Override
@@ -101,21 +102,5 @@ public abstract class ServerStream extends AbstractStream implements Stream {
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
         inv.setObjectAttachments(attachments);
         return inv;
-    }
-
-    protected void writeData(ByteBuf buf, Map<String, Object> attachments) throws IOException {
-        Http2Headers http2Headers = new DefaultHttp2Headers()
-            .status(OK.codeAsText())
-            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-        getCtx().write(new DefaultHttp2HeadersFrame(http2Headers));
-        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
-        getCtx().write(data);
-        final Http2Headers trailers = new DefaultHttp2Headers()
-            .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
-
-        if (attachments != null) {
-            convertAttachment(trailers, attachments);
-        }
-        getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
 }

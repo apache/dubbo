@@ -26,7 +26,6 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -62,10 +61,20 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class UnaryServerStream extends ServerStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnaryServerStream.class);
-
+    private Message message = null;
     public UnaryServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
-        super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), md, ctx);
-        setProcessor(new Processor(this));
+        super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), serviceDescriptor, md, ctx);
+        setProcessor(new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization()));
+    }
+
+    @Override
+    protected void onSingleMessage(InputStream in) throws Exception {
+        if (in == null) {
+            responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
+                .withDescription(MISSING_REQ));
+            return;
+        }
+        message = new Message(getHeaders(), in);
     }
 
     @Override
@@ -73,11 +82,6 @@ public class UnaryServerStream extends ServerStream implements Stream {
     }
 
     public void halfClose() throws Exception {
-        if (getData() == null) {
-            responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
-                    .withDescription(MISSING_REQ));
-            return;
-        }
         ExecutorService executor = null;
         if (getProviderModel() != null) {
             executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
@@ -112,7 +116,7 @@ public class UnaryServerStream extends ServerStream implements Stream {
             ClassLoader tccl = Thread.currentThread().getContextClassLoader();
             invocation.setParameterTypes(getMd().getParameterClasses());
             invocation.setReturnTypes(getMd().getReturnTypes());
-            InputStream is = pollData();
+            InputStream is = message.getIs();
             try {
                 if (getProviderModel() != null) {
                     ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());

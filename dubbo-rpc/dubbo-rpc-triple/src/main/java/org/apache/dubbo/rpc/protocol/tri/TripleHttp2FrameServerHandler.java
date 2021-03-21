@@ -200,6 +200,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             serverStream = new UnaryServerStream(delegateInvoker, descriptor, md, ctx);
         }
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
+        serverStream.onHeaders(headers);
         serverStream.streamCreated(msg.isEndStream());
     }
 }
