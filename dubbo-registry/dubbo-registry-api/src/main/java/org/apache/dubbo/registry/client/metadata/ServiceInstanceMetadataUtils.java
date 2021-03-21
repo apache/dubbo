@@ -28,7 +28,6 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import java.util.ArrayList;
 import java.util.HashMap;

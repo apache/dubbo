@@ -27,7 +27,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
-import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;

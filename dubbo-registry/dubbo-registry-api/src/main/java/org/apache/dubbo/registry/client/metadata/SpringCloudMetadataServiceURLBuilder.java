@@ -21,7 +21,6 @@ import org.apache.dubbo.common.utils.GsonUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
-import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.Collections;
