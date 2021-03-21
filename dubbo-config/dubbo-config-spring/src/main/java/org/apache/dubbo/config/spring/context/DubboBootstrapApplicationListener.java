@@ -19,6 +19,9 @@ package org.apache.dubbo.config.spring.context;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
+import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
@@ -26,13 +29,16 @@ import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
+import java.util.concurrent.CountDownLatch;
+
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
  * and {@link ContextClosedEvent} raised
  *
  * @since 2.7.5
  */
-public class DubboBootstrapApplicationListener extends OnceApplicationContextEventListener implements Ordered {
+public class DubboBootstrapApplicationListener extends OnceApplicationContextEventListener implements Ordered,
+        EventListener<DubboServiceDestroyedEvent> {
 
     /**
      * The bean name of {@link DubboBootstrapApplicationListener}
@@ -41,12 +47,17 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
      */
     public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
 
+    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
+
     private final DubboBootstrap dubboBootstrap;
+
+    private final CountDownLatch countDownLatch = new CountDownLatch(1);
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
         DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
+        eventDispatcher.addEventListener(this);
     }
 
     @Override
@@ -63,11 +74,20 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        dubboBootstrap.stop();
+        try {
+            countDownLatch.await();
+        } catch (InterruptedException e) {
+            log.error("wait for failure", e);
+        }
     }
 
     @Override
     public int getOrder() {
         return LOWEST_PRECEDENCE;
+    }
+
+    @Override
+    public void onEvent(DubboServiceDestroyedEvent event) {
+        countDownLatch.countDown();
     }
 }
