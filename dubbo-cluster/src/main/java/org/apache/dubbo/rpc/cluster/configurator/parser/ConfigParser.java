@@ -219,6 +219,11 @@ public class ConfigParser {
     }
 
     private static boolean isJsonArray(String rawConfig) {
-        return new JsonParser().parse(rawConfig).isJsonArray();
+        try {
+            return new JsonParser().parse(rawConfig).isJsonArray();
+        } catch (Exception e) {
+            // ignore exception and return false
+        }
+        return false;
     }
 }
