@@ -126,10 +126,10 @@ public class ScriptRouter extends AbstractRouter {
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        Bindings bindings = createBindings(invokers, invocation);
-        if (function == null) {
+        if (engine == null || function == null) {
             return invokers;
         }
+        Bindings bindings = createBindings(invokers, invocation);
         return getRoutedInvokers(AccessController.doPrivileged(new PrivilegedAction() {
             @Override
             public Object run() {
@@ -142,6 +142,7 @@ public class ScriptRouter extends AbstractRouter {
                 }
             }
         }, accessControlContext));
+
     }
 
     /**
