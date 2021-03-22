@@ -31,6 +31,6 @@
 
     <bean id="genericService" class="org.apache.dubbo.config.spring.schema.MyGenericService"/>
 
-    <dubbo:service id="demoService" interface="org.apache.dubbo.demo.service.DemoService" generic="true"
+    <dubbo:service id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
                    ref="genericService"/>
 </beans>
