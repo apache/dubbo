@@ -108,6 +108,15 @@ public class AbstractConfigTest {
     }*/
 
     @Test
+    public void testValidateProtocolConfig() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setCodec("exchange");
+        protocolConfig.setName("test");
+        protocolConfig.setHost("host");
+        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+    }
+
+    @Test
     public void testAppendParameters1() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");
@@ -173,12 +182,14 @@ public class AbstractConfigTest {
 
     @Test
     public void checkMultiExtension1() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
     }
 
     @Test
     public void checkMultiExtension2() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
     }
 
     @Test
