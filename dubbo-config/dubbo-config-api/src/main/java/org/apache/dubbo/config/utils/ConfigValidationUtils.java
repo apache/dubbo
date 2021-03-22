@@ -49,7 +49,7 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
@@ -475,7 +475,7 @@ public class ConfigValidationUtils {
 
 
             if (DUBBO_PROTOCOL.equals(name)) {
-                checkMultiExtension(Codec.class, CODEC_KEY, config.getCodec());
+                checkMultiExtension(Codec2.class, CODEC_KEY, config.getCodec());
                 checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
                 checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
                 checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
