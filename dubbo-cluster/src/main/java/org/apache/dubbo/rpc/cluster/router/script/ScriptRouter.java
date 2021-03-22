@@ -83,7 +83,6 @@ public class ScriptRouter extends AbstractRouter {
                 new ProtectionDomain[]{domain});
     }
 
-
     public ScriptRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY);
