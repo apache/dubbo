@@ -51,9 +51,9 @@ import io.netty.util.AsciiString;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
-import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class ClientStream extends AbstractStream implements Stream {
     private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
@@ -62,9 +62,11 @@ public class ClientStream extends AbstractStream implements Stream {
     private final String authority;
     private final Request request;
     private final RpcInvocation invocation;
+    private final Executor callback;
 
-    public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request) {
+    public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request, Executor callback) {
         super(url, ctx, needWrap);
+        this.callback = callback;
         if (needWrap) {
             setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
@@ -106,7 +108,7 @@ public class ClientStream extends AbstractStream implements Stream {
                 .method(HttpMethod.POST.asciiName())
                 .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) +"m")
+                .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) + "m")
                 .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
         final String version = invocation.getInvoker().getUrl().getVersion();
@@ -165,10 +167,10 @@ public class ClientStream extends AbstractStream implements Stream {
             ClassLoadUtil.switchContextLoader(tccl);
         }
         final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
-        streamChannel.write(data).addListener(f->{
-            if(f.isSuccess()){
+        streamChannel.write(data).addListener(f -> {
+            if (f.isSuccess()) {
                 promise.trySuccess();
-            }else{
+            } else {
                 promise.tryFailure(f.cause());
             }
         });
@@ -183,10 +185,7 @@ public class ClientStream extends AbstractStream implements Stream {
             onError(status);
             return;
         }
-        Http2Headers te = getTe();
-        if (te == null) {
-            te = getHeaders();
-        }
+        final Http2Headers te = getTe() == null ? getHeaders() : getTe();
         final Integer code = te.getInt(TripleConstant.STATUS_KEY);
         if (!GrpcStatus.Code.isOk(code)) {
             final GrpcStatus status = GrpcStatus.fromCode(code)
@@ -196,38 +195,40 @@ public class ClientStream extends AbstractStream implements Stream {
         }
         final InputStream data = getData();
         if (data == null) {
-            responseErr(getCtx(), MISSING_RESP);
+            onError(MISSING_RESP);
             return;
         }
-        final Invocation invocation = (Invocation) (request.getData());
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        MethodDescriptor methodDescriptor = repo.lookupMethod(invocation.getServiceName(), invocation.getMethodName());
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            final Object resp;
-            final ConsumerModel model = getConsumerModel(invocation);
-            if (model != null) {
-                ClassLoadUtil.switchContextLoader(model.getClassLoader());
+        callback.execute(() -> {
+            final Invocation invocation = (Invocation) (request.getData());
+            ServiceRepository repo = ApplicationModel.getServiceRepository();
+            MethodDescriptor methodDescriptor = repo.lookupMethod(invocation.getServiceName(), invocation.getMethodName());
+            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+            try {
+                final Object resp;
+                final ConsumerModel model = getConsumerModel(invocation);
+                if (model != null) {
+                    ClassLoadUtil.switchContextLoader(model.getClassLoader());
+                }
+                if (isNeedWrap()) {
+                    final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
+                    resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
+                } else {
+                    resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
+                }
+                Response response = new Response(request.getId(), request.getVersion());
+                final AppResponse result = new AppResponse(resp);
+                result.setObjectAttachments(parseHeadersToMap(te));
+                response.setResult(result);
+                DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
+            } catch (Exception e) {
+                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withCause(e)
+                        .withDescription("Failed to deserialize response");
+                onError(status);
+            } finally {
+                ClassLoadUtil.switchContextLoader(tccl);
             }
-            if (isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-                resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
-            } else {
-                resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
-            }
-            Response response = new Response(request.getId(), request.getVersion());
-            final AppResponse result = new AppResponse(resp);
-            result.setObjectAttachments(parseHeadersToMap(te));
-            response.setResult(result);
-            DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
-        } catch (Exception e) {
-            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(e)
-                    .withDescription("Failed to deserialize response");
-            onError(status);
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
+        });
     }
 
 }
