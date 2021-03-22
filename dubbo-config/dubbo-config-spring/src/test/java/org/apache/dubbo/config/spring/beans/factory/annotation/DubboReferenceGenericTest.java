@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.api.HelloService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +89,11 @@ public class DubboReferenceGenericTest {
         assertEquals("Greeting, Mercy", helloService.sayHello("Mercy"));
     }
 
+    @AfterEach
+    public void cleanupSource(){
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
+    }
 
     static abstract class AbstractServiceManager<S> {
 
