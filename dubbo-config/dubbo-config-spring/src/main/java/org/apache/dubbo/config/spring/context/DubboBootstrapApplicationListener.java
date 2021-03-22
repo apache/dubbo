@@ -30,6 +30,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
@@ -53,6 +54,8 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private final DubboBootstrap dubboBootstrap;
 
+    private final int WAIT_TIME = 60;
+
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
@@ -75,7 +78,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private void onContextClosedEvent(ContextClosedEvent event) {
         try {
-            countDownLatch.await();
+            countDownLatch.await(WAIT_TIME, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             log.error("wait for failure", e);
         }
