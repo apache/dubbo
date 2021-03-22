@@ -371,4 +371,12 @@ public interface CommonConstants {
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
+
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.deserialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.deserialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.deserialize.blockedClassList";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 }
