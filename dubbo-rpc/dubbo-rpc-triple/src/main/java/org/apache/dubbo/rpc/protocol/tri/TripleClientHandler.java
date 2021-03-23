@@ -27,6 +27,9 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.io.IOException;
 
@@ -59,11 +62,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         }
     }
 
-    private void writeRequest(ChannelHandlerContext ctx, final Request req, ChannelPromise promise) throws IOException {
+    private void writeRequest(ChannelHandlerContext ctx, final Request req, ChannelPromise promise) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
-        final boolean needWrapper = TripleUtil.needWrapper(inv.getParameterTypes());
         final URL url = inv.getInvoker().getUrl();
-        ClientStream clientStream = new ClientStream(url, ctx, needWrapper, req);
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
+        ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
         clientStream.write(req, promise);
     }
 }

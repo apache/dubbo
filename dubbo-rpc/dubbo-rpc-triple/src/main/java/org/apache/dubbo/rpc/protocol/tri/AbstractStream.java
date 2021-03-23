@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 
 import io.netty.channel.ChannelPromise;
+import io.netty.util.internal.shaded.org.jctools.queues.MpscChunkedArrayQueue;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -28,6 +29,7 @@ import org.apache.dubbo.config.Constants;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http2.Http2Headers;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +38,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
@@ -44,33 +47,30 @@ public abstract class AbstractStream implements Stream {
             .withDescription("Too many data");
     private final ChannelHandlerContext ctx;
     private final URL url;
-    private boolean needWrap;
+    private final MethodDescriptor md;
     private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
-    private Queue<InputStream> datas = new ArrayDeque<>();
+    private final Queue<InputStream> datas;
     private String serializeType;
 
-    protected AbstractStream(URL url, ChannelHandlerContext ctx) {
-        this(url, ctx, false);
-    }
-
-    protected AbstractStream(URL url, ChannelHandlerContext ctx, boolean needWrap) {
+    protected AbstractStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md) {
         this.ctx = ctx;
         this.url = url;
-        this.needWrap = needWrap;
-        if (needWrap) {
+        this.md = md;
+        this.datas = new MpscChunkedArrayQueue<>(16, 1 << 30);
+        if (md.isNeedWrap()) {
             loadFromURL(url);
         }
-    }
-
-    public boolean isNeedWrap() {
-        return needWrap;
     }
 
     protected void loadFromURL(URL url) {
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, "default");
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
+    }
+
+    public MethodDescriptor getMd() {
+        return md;
     }
 
     public URL getUrl() {
@@ -101,21 +101,21 @@ public abstract class AbstractStream implements Stream {
         return datas.poll();
     }
 
-    public InputStream getData() {
-        return datas.peek();
-    }
-
     public MultipleSerialization getMultipleSerialization() {
         return multipleSerialization;
     }
 
     @Override
-    public void onData(InputStream in) throws Exception {
+    public void onData(InputStream in) {
         //TODO requestN n>1 notify onNext(request)
-        if (false) {
-            this.datas.add(in);
-        } else {
-            onSingleMessage(in);
+        try {
+            if (false) {
+                this.datas.add(in);
+            } else {
+                onSingleMessage(in);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -180,5 +180,5 @@ public abstract class AbstractStream implements Stream {
     protected void onSingleMessage(InputStream in) throws Exception {}
 
     @Override
-    public void write(Object obj, ChannelPromise promise) throws Exception {}
+    public void write(Object obj, ChannelPromise promise) {}
 }

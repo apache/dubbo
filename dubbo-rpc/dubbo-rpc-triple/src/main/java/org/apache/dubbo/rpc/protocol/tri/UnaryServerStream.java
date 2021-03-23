@@ -81,7 +81,7 @@ public class UnaryServerStream extends ServerStream implements Stream {
     public void onError(GrpcStatus status) {
     }
 
-    public void halfClose() throws Exception {
+    public void halfClose() {
         ExecutorService executor = null;
         if (getProviderModel() != null) {
             executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);

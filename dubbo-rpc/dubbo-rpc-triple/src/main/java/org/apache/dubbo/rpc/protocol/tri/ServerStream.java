@@ -47,7 +47,6 @@ public abstract class ServerStream extends AbstractStream implements Stream {
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
         ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
-    private MethodDescriptor md;
     private final Invoker<?> invoker;
     private Processor processor;
 
@@ -63,23 +62,18 @@ public abstract class ServerStream extends AbstractStream implements Stream {
         return providerModel;
     }
 
-    public MethodDescriptor getMd() {
-        return md;
-    }
-
     public Invoker<?> getInvoker() {
         return invoker;
     }
 
     protected ServerStream(Invoker<?> invoker, URL url, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
-        super(url, ctx);
+        super(url, ctx, md);
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         this.providerModel = repo.lookupExportedService(getUrl().getServiceKey());
         if (providerModel != null) {
             ClassLoadUtil.switchContextLoader(providerModel.getServiceInterfaceClass().getClassLoader());
         }
         this.invoker = invoker;
-        this.md = md;
         this.serviceDescriptor = serviceDescriptor;
     }
 
@@ -92,11 +86,11 @@ public abstract class ServerStream extends AbstractStream implements Stream {
 
     protected RpcInvocation buildInvocation() {
         RpcInvocation inv = new RpcInvocation();
-        if (md.isNeedWrap()) {
+        if (getMd().isNeedWrap()) {
             loadFromURL(getUrl());
         }
 
-        inv.setMethodName(md.getMethodName());
+        inv.setMethodName(getMd().getMethodName());
         inv.setServiceName(serviceDescriptor.getServiceName());
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());

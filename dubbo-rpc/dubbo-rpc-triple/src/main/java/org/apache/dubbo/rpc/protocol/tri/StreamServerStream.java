@@ -79,18 +79,19 @@ public class StreamServerStream extends ServerStream implements Stream {
     }
 
     @Override
-    public void write(Object obj, ChannelPromise promise) throws Exception {
+    public void write(Object obj, ChannelPromise promise) {
         final Message message = (Message) obj;
         final ByteBuf buf = getProcessor().encodeResponse(message, getCtx());
-        getCtx().write(new DefaultHttp2DataFrame(buf));
+        getCtx().writeAndFlush(new DefaultHttp2DataFrame(buf));
     }
 
-    public void halfClose() throws Exception {
+    public void halfClose() {
         onComplete();
     }
 
 
     public void onComplete() {
+        // todo 需要判断 header /data/trailers 发送状态 避免异常时发送重复stream导致h2 error
         final Http2Headers trailers = new DefaultHttp2Headers()
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .status(OK.codeAsText())

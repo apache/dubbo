@@ -46,8 +46,7 @@ public class MethodDescriptor {
     private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
-    private final boolean stream;
-    private final boolean needWrap;
+    private final RpcType rpcType;
 
     public MethodDescriptor(Method method) {
         this.method = method;
@@ -55,11 +54,15 @@ public class MethodDescriptor {
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{(Class<?>)((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
             this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
-            stream = true;
+            rpcType = RpcType.STREAM;
         } else {
             this.parameterClasses = method.getParameterTypes();
             this.returnClass = method.getReturnType();
-            stream = false;
+            if (needWrap()) {
+                rpcType = RpcType.UNARY_WRAP;
+            } else {
+                rpcType = RpcType.UNARY_UNWRAP;
+            }
         }
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
@@ -68,11 +71,14 @@ public class MethodDescriptor {
                 .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
-        this.needWrap = needWrap();
     }
 
     public boolean isStream() {
-        return stream;
+        return rpcType.equals(RpcType.STREAM);
+    }
+
+    public boolean isNeedWrap() {
+        return rpcType.equals(RpcType.UNARY_WRAP);
     }
 
     private boolean needWrap() {
@@ -86,10 +92,6 @@ public class MethodDescriptor {
             }
             return !Message.class.isAssignableFrom(parameterClasses[0]);
         }
-    }
-
-    public boolean isNeedWrap() {
-        return needWrap;
     }
 
     private static boolean isStreamType(Class<?> clz) {
@@ -132,4 +134,19 @@ public class MethodDescriptor {
         return generic;
     }
 
+    public enum RpcType {
+
+        UNARY_WRAP(0),
+
+        UNARY_UNWRAP(1),
+
+        STREAM(1);
+
+        private final int value;
+
+        RpcType(int value) {
+            this.value = value;
+        }
+
+    }
 }

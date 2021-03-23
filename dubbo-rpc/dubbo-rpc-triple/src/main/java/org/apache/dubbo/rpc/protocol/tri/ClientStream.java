@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -65,9 +66,9 @@ public class ClientStream extends AbstractStream implements Stream {
     private final Request request;
     private final RpcInvocation invocation;
 
-    public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request) {
-        super(url, ctx, needWrap);
-        if (needWrap) {
+    public ClientStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md, Request request) {
+        super(url, ctx, md);
+        if (md.isNeedWrap()) {
             setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
         this.authority = url.getAddress();
@@ -98,7 +99,7 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     @Override
-    public void write(Object obj, ChannelPromise promise) throws IOException {
+    public void write(Object obj, ChannelPromise promise) {
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
         final Http2StreamChannel streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
 
@@ -128,8 +129,13 @@ public class ClientStream extends AbstractStream implements Stream {
             invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         }
         final Map<String, Object> attachments = invocation.getObjectAttachments();
-        if (attachments != null) {
-            convertAttachment(headers, attachments);
+        try {
+            if (attachments != null) {
+                convertAttachment(headers, attachments);
+            }
+        } catch (IOException e) {
+            //todo
+            e.printStackTrace();
         }
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
@@ -155,7 +161,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            if (isNeedWrap()) {
+            if (getMd().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
                 out = TripleUtil.pack(getCtx(), wrap);
             } else {
@@ -194,8 +200,7 @@ public class ClientStream extends AbstractStream implements Stream {
             return;
         }
         final Invocation invocation = (Invocation) (request.getData());
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        MethodDescriptor methodDescriptor = repo.lookupMethod(invocation.getServiceName(), invocation.getMethodName());
+
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             final Object resp;
@@ -203,11 +208,11 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            if (isNeedWrap()) {
+            if (getMd().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
                 resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
             } else {
-                resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
+                resp = TripleUtil.unpack(data, getMd().getReturnClass());
             }
             Response response = new Response(request.getId(), request.getVersion());
             final AppResponse result = new AppResponse(resp);

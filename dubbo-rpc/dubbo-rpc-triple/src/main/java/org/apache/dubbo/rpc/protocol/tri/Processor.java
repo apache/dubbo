@@ -18,11 +18,11 @@ import org.apache.dubbo.triple.TripleWrapper;
 // metadata + is -> object
 // object -> is
 public class Processor {
-    private ServerStream serverStream;
-    private MethodDescriptor md;
+    private final ServerStream serverStream;
+    private final MethodDescriptor md;
+    private final MultipleSerialization multipleSerialization;
+    private final URL url;
     private String serializeType;
-    private MultipleSerialization multipleSerialization;
-    private URL url;
 
     public Processor(ServerStream serverStream, MethodDescriptor md, URL url, String serializeType,
         MultipleSerialization multipleSerialization) {

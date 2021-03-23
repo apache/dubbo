@@ -3,8 +3,8 @@ package org.apache.dubbo.rpc.protocol.tri;
 import java.io.InputStream;
 
 public class Message {
-    private Object headers;
-    private InputStream is;
+    private final Object headers;
+    private final InputStream is;
 
     public Message(Object headers, InputStream is) {
         this.headers = headers;

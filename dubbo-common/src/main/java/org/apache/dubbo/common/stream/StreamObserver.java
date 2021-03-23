@@ -1,9 +1,9 @@
 package org.apache.dubbo.common.stream;
 
 public interface StreamObserver<T> {
-    void onNext(T var1) throws Exception;
+    void onNext(T data);
 
-    void onError(Throwable var1);
+    void onError(Throwable throwable);
 
     void onComplete();
 }

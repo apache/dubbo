@@ -6,7 +6,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 public class StreamOutboundWriter implements StreamObserver<Object> {
 
-    private StreamServerStream stream;
+    private final StreamServerStream stream;
     private final AtomicBoolean canceled = new AtomicBoolean();
 
     public StreamOutboundWriter(StreamServerStream stream) {
@@ -14,9 +14,14 @@ public class StreamOutboundWriter implements StreamObserver<Object> {
     }
 
     @Override
-    public void onNext(Object o) throws Exception {
+    public void onNext(Object o) {
 
-        stream.write(o, null);
+        try {
+            stream.write(o, null);
+        } catch (Exception e) {
+            // todo error
+            e.printStackTrace();
+        }
     }
 
     @Override

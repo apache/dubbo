@@ -29,7 +29,7 @@ public interface Stream {
 
     void onError(GrpcStatus status);
 
-    void write(Object obj, ChannelPromise promise) throws Exception;
+    void write(Object obj, ChannelPromise promise);
 
-    void halfClose() throws Exception;
+    void halfClose();
 }
