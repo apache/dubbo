@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
@@ -77,9 +76,7 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
 
     protected String getRegistryCluster(URL url) {
         String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
-        if (registryCluster == null) {
-            registryCluster = DEFAULT_KEY;
-        }
+
         int i = registryCluster.indexOf(",");
         if (i > 0) {
             registryCluster = registryCluster.substring(0, i);

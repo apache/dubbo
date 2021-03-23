@@ -160,7 +160,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
      * @return
      */
     private <T> List<Invoker<T>> filterUsingStaticTag(List<Invoker<T>> invokers, URL url, Invocation invocation) {
-        List<Invoker<T>> result = invokers;
+        List<Invoker<T>> result;
         // Dynamic param
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
                 invocation.getAttachment(TAG_KEY);
@@ -188,19 +188,11 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.valueOf(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
-        boolean filter = false;
-        for (int i = 0; i < invokers.size(); ++i) {
-            Invoker<T> invoker = invokers.get(i);
-            if (!predicate.test(invoker)) {
-                filter = true;
-                break;
-            }
-        }
-        if (!filter) {
+        if (invokers.stream().allMatch(predicate)) {
             return invokers;
         }
 

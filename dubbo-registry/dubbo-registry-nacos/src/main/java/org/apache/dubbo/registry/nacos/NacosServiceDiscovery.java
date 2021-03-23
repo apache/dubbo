@@ -72,8 +72,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             appendPreservedParam(instance);
@@ -82,8 +81,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        // TODO: Nacos should support
+    public void doUpdate(ServiceInstance serviceInstance) {
         if (this.serviceInstance == null) {
             register(serviceInstance);
         } else {

@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class URLTest {
@@ -918,5 +919,86 @@ public class URLTest {
                 "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
                 "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
         assertNotEquals(url3, url4);
+    }
+
+    @Test
+    public void testHashcode() {
+        URL url1 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
+        URL url2 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertEquals(url1.hashCode(), url2.hashCode());
+
+        URL url3 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url2.hashCode(), url3.hashCode());
+
+        URL url4 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url3.hashCode(), url4.hashCode());
+    }
+
+    @Test
+    public void testEqualsWithPassword() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@4321@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithPath() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path2?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithPort() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20881/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithProtocol() {
+        URL url1 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("file://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithUser() {
+        URL url1 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min2:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
     }
 }

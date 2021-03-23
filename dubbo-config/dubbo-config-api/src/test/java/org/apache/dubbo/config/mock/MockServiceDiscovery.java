@@ -17,15 +17,15 @@
 package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class MockServiceDiscovery implements ServiceDiscovery {
+public class MockServiceDiscovery extends AbstractServiceDiscovery {
+
     private URL registryURL;
-    private ServiceInstance serviceInstance;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -38,13 +38,13 @@ public class MockServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) {
+
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doUpdate(ServiceInstance serviceInstance) {
+
     }
 
     @Override
@@ -60,10 +60,5 @@ public class MockServiceDiscovery implements ServiceDiscovery {
     @Override
     public URL getUrl() {
         return registryURL;
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
     }
 }
