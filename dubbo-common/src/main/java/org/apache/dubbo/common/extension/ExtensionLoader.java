@@ -306,7 +306,7 @@ public class ExtensionLoader<T> {
                     }
                 } else {
                     if (notMatchFilters.contains(name)) {
-                        logger.warn(name + " filter that does not meet the Activate condition has been loaded.");
+                        logger.warn(name + " filter that does not meet the loaded condition has been loaded.");
                     }
                     if (matchFilters.contains(name)) {
                         logger.warn(name + " filter repeated loading");
