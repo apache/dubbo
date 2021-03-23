@@ -282,12 +282,12 @@ public class ExtensionLoader<T> {
                 } else {
                     continue;
                 }
-                if (isMatchGroup(group, activateGroup)
-                        && !names.contains(name)
-                        && !names.contains(REMOVE_VALUE_PREFIX + name)
-                        && isActive(activateValue, url)) {
-                    activateExtensions.add(getExtension(name));
-                    matchFilters.add(name);
+                if (isMatchGroup(group, activateGroup) && isActive(activateValue, url)) {
+                    if (!names.contains(name)
+                            && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                        activateExtensions.add(getExtension(name));
+                        matchFilters.add(name);
+                    }
                 } else {
                     notMatchFilters.add(name);
                 }
