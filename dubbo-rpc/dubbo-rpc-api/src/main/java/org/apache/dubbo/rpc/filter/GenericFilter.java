@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -35,6 +36,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -71,7 +73,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                     args = new Object[params.length];
                 }
 
-                if(types == null) {
+                if (types == null) {
                     types = new String[params.length];
                 }
 
@@ -90,6 +92,15 @@ public class GenericFilter implements Filter, Filter.Listener {
                         || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    Configuration configuration = ApplicationModel.getEnvironment().getDynamicGlobalConfiguration();
+                    if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
+                        throw new IllegalStateException("Trigger the safety barrier! " +
+                                "Native Java Serializer is not allowed by default." +
+                                "This means currently maybe being attacking by others. " +
+                                "If it is triggered by mistake, " +
+                                "please set `dubbo.security.serialize.generic.native-java-enable` enable in configuration!");
+                    }
+
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
@@ -205,7 +216,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                             GENERIC_SERIALIZATION_PROTOBUF +
                             "] serialize result failed.", e);
                 }
-            } else if(ProtocolUtils.isGenericReturnRawResult(generic)) {
+            } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {
                 return;
             } else {
                 appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));

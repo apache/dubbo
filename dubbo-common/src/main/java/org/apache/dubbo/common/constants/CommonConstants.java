@@ -372,11 +372,13 @@ public interface CommonConstants {
 
     String DEFAULT_VERSION = "0.0.0";
 
-    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.deserialize.blockAllClassExceptAllow";
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
 
-    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.deserialize.allowedClassList";
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
 
-    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.deserialize.blockedClassList";
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
     String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 }
