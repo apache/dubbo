@@ -357,6 +357,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         migrated = true;
+        // invoker 接口 版本 dataId
+        // 分组
+        // ApplicationModel.getName()
+        // 状态 未迁移 0
         FrameworkStatusReporter.reportConsumptionStatus("{\"type\":\"consumption\", \"data\":{\"status\":0}}");
     }
 
@@ -410,6 +414,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         updateConsumerModel(currentAvailableInvoker, invoker);
         migrated = true;
+        // invoker 接口 版本 dataId
+        // 分组
+        // ApplicationModel.getName()
+        // 状态 已迁移 1
         FrameworkStatusReporter.reportConsumptionStatus("{\"type\":\"consumption\", \"data\":{\"status\":0}}");
     }
 

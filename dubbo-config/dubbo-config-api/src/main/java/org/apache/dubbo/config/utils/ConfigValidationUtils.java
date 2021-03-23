@@ -250,11 +250,21 @@ public class ConfigValidationUtils {
                     }
                 }
 
-                FrameworkStatusReporter.reportRegistrationStatus("{\"type\":\"registration\", \"data\":{\"status\":0}}");
             } else {
                 result.add(registryURL);
             }
         });
+
+//        application;
+//
+//        result.size() == 2; SERVICE_REGISTRY_PROTOCOL + Registry 双注册
+//        result.size() == 1; SERVICE_REGISTRY_PROTOCOL 应用
+//        result.size() == 1; Registry 接口
+       // group
+//
+//        ip 与 meta 保持一致
+
+        FrameworkStatusReporter.reportRegistrationStatus("{\"type\":\"registration\", \"data\":{\"status\":0}}");
         return result;
     }
 
