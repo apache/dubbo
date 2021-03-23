@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -62,6 +63,12 @@ public class ServiceAnnotationBeanPostProcessorTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Autowired

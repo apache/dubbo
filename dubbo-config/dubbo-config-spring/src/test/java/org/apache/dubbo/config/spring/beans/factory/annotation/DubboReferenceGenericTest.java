@@ -90,7 +90,7 @@ public class DubboReferenceGenericTest {
     }
 
     @AfterEach
-    public void cleanupSource(){
+    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
     }
