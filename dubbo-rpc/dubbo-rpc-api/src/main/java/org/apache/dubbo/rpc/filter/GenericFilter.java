@@ -25,6 +25,8 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -56,6 +58,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener {
+    private static final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -94,11 +97,14 @@ public class GenericFilter implements Filter, Filter.Listener {
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
-                        throw new RpcException("Trigger the safety barrier! " +
+                        String notice = "Trigger the safety barrier! " +
                                 "Native Java Serializer is not allowed by default." +
                                 "This means currently maybe being attacking by others. " +
-                                "If it is triggered by mistake, " +
-                                "please set `dubbo.security.serialize.generic.native-java-enable` enable in configuration!");
+                                "If you are sure this is a mistake, " +
+                                "please set `" + CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE + "` enable in configuration! " +
+                                "Before doing so, please make sure you have configure JEP290 to prevent serialization attack.";
+                        logger.error(notice);
+                        throw new RpcException(new IllegalStateException(notice));
                     }
 
                     for (int i = 0; i < args.length; i++) {

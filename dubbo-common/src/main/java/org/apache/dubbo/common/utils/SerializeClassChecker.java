@@ -114,8 +114,9 @@ public class SerializeClassChecker {
                 "Catch not allowed serialize class. " +
                 "Class name: " + name + " . " +
                 "This means currently maybe being attacking by others." +
-                "If it is triggered by mistake, " +
-                "please add this class name to `dubbo.deserialize.allowedClassList` as a system environment property.";
+                "If you are sure this is a mistake, " +
+                "please add this class name to `" + CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST +
+                "` as a system environment property.";
         logger.error(notice);
         throw new IllegalArgumentException(notice);
     }
