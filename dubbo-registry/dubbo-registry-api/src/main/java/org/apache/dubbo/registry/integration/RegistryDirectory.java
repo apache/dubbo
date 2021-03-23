@@ -43,7 +43,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +51,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DISABLED_KEY;
@@ -291,7 +291,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
      * @return invokers
      */
     private Map<URL, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<URL, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        Map<URL, Invoker<T>> newUrlInvokerMap = new ConcurrentHashMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
@@ -450,9 +450,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         // check deleted invoker
         List<URL> deleted = null;
         if (oldUrlInvokerMap != null) {
-            Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
             for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newInvokers.contains(entry.getValue())) {
+                if (!newUrlInvokerMap.containsKey(entry.getKey())) {
                     if (deleted == null) {
                         deleted = new ArrayList<>();
                     }
@@ -464,7 +463,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (deleted != null) {
             for (URL url : deleted) {
                 if (url != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.remove(url);
+                    Invoker<T> invoker = oldUrlInvokerMap.get(url);
                     if (invoker != null) {
                         try {
                             invoker.destroy();
@@ -541,10 +540,14 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Invoker<T> invoker : new ArrayList<>(localUrlInvokerMap.values())) {
-                if (invoker.isAvailable()) {
-                    return true;
+            try {
+                for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
+                    if (entry.getValue().isAvailable()) {
+                        return true;
+                    }
                 }
+            }catch (Throwable throwable){
+                return true;
             }
         }
         return false;
