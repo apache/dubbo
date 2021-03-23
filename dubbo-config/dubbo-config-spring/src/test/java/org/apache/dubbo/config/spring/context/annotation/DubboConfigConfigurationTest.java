@@ -53,13 +53,9 @@ public class DubboConfigConfigurationTest {
 
     @AfterEach
     public void after() {
-        context.close();
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
+        context.close();
     }
 
     @Test

@@ -27,6 +27,7 @@ import org.apache.dubbo.config.RegistryConfig;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
@@ -47,16 +48,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class EnableDubboConfigTest {
 
+    private AnnotationConfigApplicationContext context = null;
+
+    @BeforeEach
+    public void setUp() {
+        context = new AnnotationConfigApplicationContext();
+    }
+
     @AfterEach
     public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
+        context.close();
     }
 
     @Test
     public void testSingle() {
 
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestConfig.class);
         context.refresh();
 
@@ -93,14 +101,11 @@ public class EnableDubboConfigTest {
         // asserts aliases
         assertFalse(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
         assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
-
-        context.close();
     }
 
     @Test
     public void testMultiple() {
 
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.register(TestMultipleConfig.class);
         context.refresh();
 
@@ -125,9 +130,6 @@ public class EnableDubboConfigTest {
         // asserts aliases
         assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
         assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
-
-        context.close();
-
     }
 
     @EnableDubboConfig

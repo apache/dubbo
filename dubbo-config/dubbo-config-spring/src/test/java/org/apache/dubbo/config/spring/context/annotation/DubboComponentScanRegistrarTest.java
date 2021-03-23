@@ -42,26 +42,27 @@ import static org.springframework.core.annotation.AnnotationUtils.findAnnotation
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboComponentScanRegistrarTest {
 
+    private AnnotationConfigApplicationContext providerContext;
+    private AnnotationConfigApplicationContext consumerContext;
+
     @BeforeEach
     public void setUp() {
         ApplicationModel.reset();
+        providerContext = new AnnotationConfigApplicationContext();
+        consumerContext = new AnnotationConfigApplicationContext();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
+        ApplicationModel.reset();
+        providerContext.close();
+        consumerContext.close();
     }
 
     @Test
     public void test() {
-
-        AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
 
         providerContext.register(ProviderConfiguration.class);
 
@@ -80,8 +81,6 @@ public class DubboComponentScanRegistrarTest {
 
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
-
-        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 
         consumerContext.register(ConsumerConfiguration.class);
 
@@ -126,10 +125,6 @@ public class DubboComponentScanRegistrarTest {
         value = demoService.sayName("Mercy");
 
         Assertions.assertEquals("Hello,Mercy", value);
-
-        providerContext.close();
-        consumerContext.close();
-
 
     }
 
