@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.context.properties;
 
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,6 +48,12 @@ public class DefaultDubboConfigBinderTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Autowired

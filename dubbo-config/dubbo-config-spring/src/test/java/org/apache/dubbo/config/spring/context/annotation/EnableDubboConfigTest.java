@@ -18,12 +18,14 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -44,6 +46,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class EnableDubboConfigTest {
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
+    }
 
     @Test
     public void testSingle() {

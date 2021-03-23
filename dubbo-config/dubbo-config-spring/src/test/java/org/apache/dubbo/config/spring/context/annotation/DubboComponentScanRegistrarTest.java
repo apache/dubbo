@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.ConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
@@ -49,6 +50,12 @@ public class DubboComponentScanRegistrarTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Test

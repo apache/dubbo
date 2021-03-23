@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +43,12 @@ public class MultipleServicesWithMethodConfigsTest {
 
     @Autowired
     private ApplicationContext applicationContext;
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
+    }
 
     @Test
     public void test() {

@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -53,6 +54,12 @@ public class DubboConfigConfigurationTest {
     @AfterEach
     public void after() {
         context.close();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Test

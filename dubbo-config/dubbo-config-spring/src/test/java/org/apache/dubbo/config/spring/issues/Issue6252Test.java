@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.config.spring.issues;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -47,6 +49,12 @@ public class Issue6252Test {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
         context.getBean(ReferenceBean.class);
         context.close();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
 }

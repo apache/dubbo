@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
@@ -57,6 +58,12 @@ public class DubboNamespaceHandlerTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Configuration

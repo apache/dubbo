@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.status;
 
 import org.apache.dubbo.common.status.Status;
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
@@ -61,6 +62,12 @@ public class DataSourceStatusCheckerTest {
     @AfterEach
     public void tearDown() throws Exception {
         Mockito.reset(applicationContext);
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Test

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import org.apache.dubbo.config.DubboShutdownHook;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -71,6 +72,12 @@ public class SpringExtensionFactoryTest {
         SpringExtensionFactory.clearContexts();
         context1.close();
         context2.close();
+    }
+
+    @AfterEach
+    public void cleanupSource() {
+        DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
+        dubboShutdownHook.run();
     }
 
     @Bean("bean1")
