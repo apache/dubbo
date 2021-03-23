@@ -152,7 +152,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return "";
     }
 
-    // Issue: https://github.com/apache/dubbo/issues/6763.
     // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
     private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
