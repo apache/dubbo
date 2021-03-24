@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -38,11 +39,18 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Logger logger = LoggerFactory.getLogger(MigrationInvoker.class);
+    public static final String MIGRATION_DESTROY_INTERVAL = "dubbo.application.migration.destroy.interval";
+    public static final int DEFAULT_INTERVAL = 120000;
+    private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+    private static long destroyInterval = ConfigurationUtils.getSystemConfiguration().getInt(MIGRATION_DESTROY_INTERVAL, DEFAULT_INTERVAL);
 
     private URL url;
     private URL consumerUrl;
@@ -50,6 +58,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Registry registry;
     private Class<T> type;
     private RegistryProtocol registryProtocol;
+
+    private volatile ScheduledFuture<?> invokerDestroyStatus;
 
     private volatile ClusterInvoker<T> invoker;
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
@@ -293,7 +303,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
      */
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged = true;
-        //如果任一invoker列表為零，则延迟比对
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
@@ -308,7 +317,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
 //            clearListener(this.serviceDiscoveryInvoker);
-//            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
+            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
         if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
             if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
@@ -323,9 +332,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
-//            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
+            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
-        if (serviceDiscoveryInvoker != null) {
+        if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
             if (logger.isDebugEnabled()) {
                 List<Invoker<T>> invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
                 logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
@@ -360,7 +369,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
 //            clearListener(this.serviceDiscoveryInvoker);
-//            updateConsumerModel(currentAvailableInvoker, invoker);
+            updateConsumerModel(currentAvailableInvoker, invoker);
         }
         if (invoker != null && !invoker.isDestroyed()) {
             if (invoker.getDirectory().isNotificationReceived()) {
@@ -375,14 +384,24 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     protected synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
-//            updateConsumerModel(currentAvailableInvoker, invoker);
+            updateConsumerModel(currentAvailableInvoker, invoker);
         }
-        if (invoker != null) {
+        if (invoker != null && !invoker.isDestroyed()) {
             if (logger.isDebugEnabled()) {
                 List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
                 logger.debug("Discarding interface addresses, total address size " + (invokers == null ? 0 : invokers.size()));
             }
             invoker.getDirectory().discordAddresses();
+//            if (invokerDestroyStatus == null) {
+//                invokerDestroyStatus = executorService.schedule(new InvokerDestroyTask(), destroyInterval, TimeUnit.MILLISECONDS);
+//            }
+        }
+    }
+
+    private static class InvokerDestroyTask implements Runnable {
+        @Override
+        public void run() {
+
         }
     }
 
@@ -412,9 +431,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             if (workingInvoker != null) {
                 consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", workingInvoker);
             }
-//            if (backInvoker != null) {
-//                consumerModel.getServiceMetadata().addAttribute("backupClusterInvoker", backInvoker);
-//            }
+            if (backInvoker != null) {
+                consumerModel.getServiceMetadata().addAttribute("backupClusterInvoker", backInvoker);
+            }
         }
     }
 }

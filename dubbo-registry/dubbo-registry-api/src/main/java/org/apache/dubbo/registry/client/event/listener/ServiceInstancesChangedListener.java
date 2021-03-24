@@ -71,11 +71,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     protected URL url;
     protected Map<String, NotifyListener> listeners;
 
-    private Map<String, List<ServiceInstance>> allInstances;
+    protected Map<String, List<ServiceInstance>> allInstances;
 
-    private Map<String, Object> serviceUrls;
+    protected Map<String, Object> serviceUrls;
 
-    private Map<String, MetadataInfo> revisionToMetadata;
+    protected Map<String, MetadataInfo> revisionToMetadata;
 
     private volatile long lastRefreshTime;
     private volatile long lastFailureTime;
@@ -169,7 +169,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
-        List<URL> urls = getAddresses(serviceKey);
+        List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
@@ -180,10 +180,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         if (listeners.isEmpty()) {
             serviceDiscovery.removeServiceInstancesChangedListener(this);
         }
-    }
-
-    public List<URL> getUrls(String serviceKey) {
-        return toUrlsWithEmpty(getAddresses(serviceKey));
     }
 
     /**
@@ -346,14 +342,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return urls;
     }
 
-    protected List<URL> getAddresses(String serviceProtocolKey) {
+    protected List<URL> getAddresses(String serviceProtocolKey, URL consumerURL) {
         return (List<URL>) serviceUrls.get(serviceProtocolKey);
     }
 
     protected void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(getAddresses(key));
+            List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
             logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });
