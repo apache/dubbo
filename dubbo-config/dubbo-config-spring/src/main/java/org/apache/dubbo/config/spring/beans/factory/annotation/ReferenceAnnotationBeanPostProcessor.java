@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Reference;
@@ -31,15 +33,23 @@ import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.AnnotationAttributes;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
@@ -56,7 +66,9 @@ import static org.springframework.util.StringUtils.hasText;
  * @since 2.5.7
  */
 public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBeanPostProcessor implements
-        ApplicationContextAware {
+        ApplicationContextAware, ApplicationListener {
+
+    private static final Logger logger = LoggerFactory.getLogger(ReferenceAnnotationBeanPostProcessor.class);
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -78,6 +90,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             new ConcurrentHashMap<>(CACHE_SIZE);
 
     private ApplicationContext applicationContext;
+
+    private static Map<String, TreeSet<String>> referencedBeanNameIdx = new HashMap<>();
 
     /**
      * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
@@ -130,6 +144,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
          * The name of bean that is declared by {@link Reference @Reference} annotation injection
          */
         String referenceBeanName = getReferenceBeanName(attributes, injectedType);
+
+        referencedBeanNameIdx.computeIfAbsent(referencedBeanName, k -> new TreeSet<String>()).add(referenceBeanName);
 
         ReferenceBean referenceBean = buildReferenceBeanIfAbsent(referenceBeanName, attributes, injectedType);
 
@@ -212,9 +228,26 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (!attributes.isEmpty()) {
             beanNameBuilder.append('(');
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                String value;
+                if (entry.getValue().getClass().isArray()) {
+                    String[] entryValues = (String[]) entry.getValue();
+                    if ("parameters".equals(entry.getKey())) {
+                        // parameters spec is {key1,value1,key2,value2}
+                        ArrayList<String> kvList = new ArrayList<>();
+                        for (int i = 0; i < entryValues.length / 2 * 2; i = i + 2) {
+                            kvList.add(entryValues[i] + "=" + entryValues[i + 1]);
+                        }
+                        value = kvList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
+                    } else {
+                        //other spec is {string1,string2,string3}
+                        value = Arrays.stream(entryValues).sorted().collect(Collectors.joining(",", "[", "]"));
+                    }
+                } else {
+                    value = String.valueOf(entry.getValue());
+                }
                 beanNameBuilder.append(entry.getKey())
                         .append('=')
-                        .append(entry.getValue())
+                        .append(value)
                         .append(',');
             }
             // replace the latest "," to be ")"
@@ -343,5 +376,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         this.referenceBeanCache.clear();
         this.injectedFieldReferenceBeanCache.clear();
         this.injectedMethodReferenceBeanCache.clear();
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (event instanceof ContextRefreshedEvent) {
+            referencedBeanNameIdx.entrySet().stream().filter(e -> e.getValue().size() > 1).forEach(e -> {
+                String logText = e.getValue().stream().collect(Collectors.joining("\r\n  ", e.getKey() + " has more than 1 reference instances, there are:\r\n  ", ""));
+                logger.warn(logText);
+            });
+        }
     }
 }
