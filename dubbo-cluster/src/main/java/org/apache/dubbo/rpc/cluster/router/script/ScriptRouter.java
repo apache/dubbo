@@ -70,10 +70,10 @@ public class ScriptRouter extends AbstractRouter {
 
     private CompiledScript function;
 
-    AccessControlContext accessControlContext;
+    private AccessControlContext accessControlContext;
 
     {
-        //just give permission of reflect to access member.
+        //Just give permission of reflect to access member.
         Permissions perms = new Permissions();
         perms.add(new RuntimePermission("accessDeclaredMembers"));
         // Cast to Certificate[] required because of ambiguity:
