@@ -50,7 +50,7 @@ public class StreamServerStream extends ServerStream implements Stream {
 
 
     @Override
-    public void streamCreated(boolean endStream, Promise promise) throws Exception {
+    public void streamCreated(Object msg, Promise promise) throws Exception {
         RpcInvocation inv = buildInvocation();
         inv.setArguments(new Object[]{new StreamOutboundWriter(this)});
         inv.setParameterTypes(new Class[] {StreamObserver.class});
