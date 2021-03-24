@@ -24,10 +24,10 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONValidator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import org.yaml.snakeyaml.TypeDescription;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -42,16 +42,14 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig) throws IOException {
+    public static List<URL> parseConfigurators(String rawConfig) {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
         if (isJsonArray(rawConfig)) {
             return parseJsonArray(rawConfig);
         }
 
         List<URL> urls = new ArrayList<>();
-
-        ObjectMapper om = new ObjectMapper(new YAMLFactory());
-        ConfiguratorConfig configuratorConfig = om.readValue(rawConfig, ConfiguratorConfig.class);
+        ConfiguratorConfig configuratorConfig = parseObject(rawConfig);
 
         String scope = configuratorConfig.getScope();
         List<ConfigItem> items = configuratorConfig.getConfigs();
@@ -72,6 +70,16 @@ public class ConfigParser {
             list.forEach(u -> urls.add(URL.valueOf(u)));
         }
         return urls;
+    }
+
+    private static <T> T parseObject(String rawConfig) {
+        Constructor constructor = new Constructor(ConfiguratorConfig.class);
+        TypeDescription itemDescription = new TypeDescription(ConfiguratorConfig.class);
+        itemDescription.addPropertyParameters("items", ConfigItem.class);
+        constructor.addTypeDescription(itemDescription);
+
+        Yaml yaml = new Yaml(constructor);
+        return yaml.load(rawConfig);
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {

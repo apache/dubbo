@@ -26,8 +26,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 @Disabled("FIXME This is not a formal UT")
 public class TagRouterTest {
     private static CuratorFramework client;
@@ -78,7 +76,7 @@ public class TagRouterTest {
      * </pre>
      */
     @Test
-    public void tagRouterRuleParseTest() throws IOException {
+    public void tagRouterRuleParseTest(){
         String tagRouterRuleConfig = "---\n" +
                 "force: false\n" +
                 "runtime: true\n" +

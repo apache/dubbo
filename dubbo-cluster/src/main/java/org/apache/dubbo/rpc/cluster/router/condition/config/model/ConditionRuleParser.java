@@ -18,10 +18,8 @@ package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-
-import java.io.IOException;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 /**
  * %YAML1.2
@@ -39,9 +37,11 @@ import java.io.IOException;
  */
 public class ConditionRuleParser {
 
-    public static ConditionRouterRule parse(String rawRule) throws IOException {
-        ObjectMapper om = new ObjectMapper(new YAMLFactory());
-        ConditionRouterRule rule = om.readValue(rawRule, ConditionRouterRule.class);
+    public static ConditionRouterRule parse(String rawRule) {
+        Constructor constructor = new Constructor(ConditionRouterRule.class);
+
+        Yaml yaml = new Yaml(constructor);
+        ConditionRouterRule rule = yaml.load(rawRule);
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getConditions())) {
             rule.setValid(false);
