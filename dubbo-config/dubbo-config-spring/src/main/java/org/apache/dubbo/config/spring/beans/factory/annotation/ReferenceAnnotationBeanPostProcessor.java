@@ -382,8 +382,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
             referencedBeanNameIdx.entrySet().stream().filter(e -> e.getValue().size() > 1).forEach(e -> {
-                String logText = e.getValue().stream().collect(Collectors.joining("\r\n  ", e.getKey() + " has more than 1 reference instances, there are:\r\n  ", ""));
-                logger.warn(logText);
+                String logPrefix = e.getKey() + " has " + e.getValue().size() + " reference instances, there are: ";
+                logger.warn(e.getValue().stream().collect(Collectors.joining(", ", logPrefix, "")));
             });
         }
     }
