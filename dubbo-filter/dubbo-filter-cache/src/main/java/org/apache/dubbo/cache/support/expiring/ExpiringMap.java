@@ -85,7 +85,8 @@ public class ExpiringMap<K, V> implements Map<K, V> {
         ExpiryObject object = delegateMap.get(key);
         if (object != null) {
             long timeIdle = System.currentTimeMillis() - object.getLastAccessTime();
-            if (timeIdle >= expireThread.getTimeToLive() * 1000) {
+            int timeToLive = expireThread.getTimeToLive();
+            if (timeToLive > 0 && timeIdle >= timeToLive * 1000) {
                 delegateMap.remove(object.getKey());
                 return null;
             }
