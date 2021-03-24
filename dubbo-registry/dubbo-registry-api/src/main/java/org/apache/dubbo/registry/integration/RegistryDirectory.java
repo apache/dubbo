@@ -152,7 +152,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return "";
     }
 
-    private void refreshOverrideAndInvoker(List<URL> urls) {
+    // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
+    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         refreshInvoker(urls);
