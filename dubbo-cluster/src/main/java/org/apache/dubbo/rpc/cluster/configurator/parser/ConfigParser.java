@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.BeanUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
@@ -24,9 +25,8 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONValidator;
-import org.yaml.snakeyaml.TypeDescription;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig) {
+    public static List<URL> parseConfigurators(String rawConfig) throws Exception {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
         if (isJsonArray(rawConfig)) {
             return parseJsonArray(rawConfig);
@@ -72,14 +72,10 @@ public class ConfigParser {
         return urls;
     }
 
-    private static <T> T parseObject(String rawConfig) {
-        Constructor constructor = new Constructor(ConfiguratorConfig.class);
-        TypeDescription itemDescription = new TypeDescription(ConfiguratorConfig.class);
-        itemDescription.addPropertyParameters("items", ConfigItem.class);
-        constructor.addTypeDescription(itemDescription);
-
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawConfig);
+    private static <T> T parseObject(String rawConfig) throws Exception {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawConfig);
+        return (T) BeanUtils.mapToBean(map, ConfiguratorConfig.class);
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
@@ -147,7 +143,7 @@ public class ConfigParser {
             sb.append("&side=");
             sb.append(item.getSide());
         }
-        Map<String, String> parameters = item.getParameters();
+        Map<String, Object> parameters = item.getParameters();
         if (CollectionUtils.isEmptyMap(parameters)) {
             throw new IllegalStateException("Invalid configurator rule, please specify at least one parameter " +
                     "you want to change in the rule.");

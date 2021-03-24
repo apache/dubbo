@@ -16,10 +16,13 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
+import org.apache.dubbo.common.utils.BeanUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+
+import java.util.Map;
 
 /**
  * %YAML1.2
@@ -37,11 +40,10 @@ import org.yaml.snakeyaml.constructor.Constructor;
  */
 public class ConditionRuleParser {
 
-    public static ConditionRouterRule parse(String rawRule) {
-        Constructor constructor = new Constructor(ConditionRouterRule.class);
-
-        Yaml yaml = new Yaml(constructor);
-        ConditionRouterRule rule = yaml.load(rawRule);
+    public static ConditionRouterRule parse(String rawRule) throws Exception {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        ConditionRouterRule rule = BeanUtils.mapToBean(map, ConditionRouterRule.class);
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getConditions())) {
             rule.setValid(false);
