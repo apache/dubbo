@@ -105,7 +105,7 @@ public class EmbeddedApolloJunit5 implements BeforeAllCallback, AfterAllCallback
     }
 
     /**
-     * 合并用户对namespace的修改
+     * Incorporate user modifications to namespace
      */
     private Map<String, String> mergeOverriddenProperties(String namespace, Map<String, String> configurations) {
         if (addedOrModifiedPropertiesOfNamespace.containsKey(namespace)) {
