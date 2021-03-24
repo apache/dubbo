@@ -140,7 +140,7 @@
         <log4j2_version>2.11.1</log4j2_version>
         <commons_io_version>2.6</commons_io_version>
 
-        <embedded_redis_version>0.9.0</embedded_redis_version>
+        <embedded_redis_version>0.10.0</embedded_redis_version>
 
         <!-- Eureka -->
         <eureka.version>1.9.12</eureka.version>
