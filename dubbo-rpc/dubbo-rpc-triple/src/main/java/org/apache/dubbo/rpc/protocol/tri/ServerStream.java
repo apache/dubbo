@@ -26,6 +26,8 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
+import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -78,8 +80,9 @@ public abstract class ServerStream extends AbstractStream implements Stream {
     }
 
     @Override
-    public void streamCreated(boolean endStream) throws Exception {
-        if (endStream) {
+    public void streamCreated(Object msg, Promise promise) throws Exception {
+        Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame)msg;
+        if (http2HeadersFrame.isEndStream()) {
             halfClose();
         }
     }

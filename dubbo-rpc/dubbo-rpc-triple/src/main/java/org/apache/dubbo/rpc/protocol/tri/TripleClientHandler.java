@@ -17,8 +17,13 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionHandler;
 import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -67,7 +72,24 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
-        ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
-        clientStream.write(req, promise);
+        if (!methodDescriptor.isStream()) {
+            ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream.write(req, promise);
+        } else {
+            StreamObserver responseOBServer = (StreamObserver)inv.getArguments()[0];
+            ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            StreamObserver writer = new StreamOutboundWriter(clientStream);
+
+            Response response = new Response(req.getId(), req.getVersion());
+            final AppResponse result = new AppResponse(writer);
+            response.setResult(result);
+            DefaultFuture2.received(Connection.getConnectionFromChannel(ctx.channel()), response);
+            try {
+                clientStream.streamCreated(null, promise);
+                clientStream.setObserver(responseOBServer);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

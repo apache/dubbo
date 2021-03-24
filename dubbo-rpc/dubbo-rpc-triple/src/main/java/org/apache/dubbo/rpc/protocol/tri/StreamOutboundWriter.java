@@ -6,10 +6,10 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 public class StreamOutboundWriter implements StreamObserver<Object> {
 
-    private final StreamServerStream stream;
+    private final AbstractStream stream;
     private final AtomicBoolean canceled = new AtomicBoolean();
 
-    public StreamOutboundWriter(StreamServerStream stream) {
+    public StreamOutboundWriter(AbstractStream stream) {
         this.stream = stream;
     }
 
@@ -31,12 +31,12 @@ public class StreamOutboundWriter implements StreamObserver<Object> {
 
     @Override
     public void onComplete() {
-        stream.onComplete();
+        stream.halfClose();
     }
 
     public void doCancel() {
         if (canceled.compareAndSet(false, true)) {
-            stream.onComplete();
+            stream.halfClose();
         }
     }
 }

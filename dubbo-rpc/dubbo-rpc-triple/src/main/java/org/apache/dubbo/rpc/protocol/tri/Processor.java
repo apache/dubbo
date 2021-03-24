@@ -12,21 +12,22 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
 // metadata + is -> object
 // object -> is
 public class Processor {
-    private final ServerStream serverStream;
+    private final AbstractStream stream;
     private final MethodDescriptor md;
     private final MultipleSerialization multipleSerialization;
     private final URL url;
     private String serializeType;
 
-    public Processor(ServerStream serverStream, MethodDescriptor md, URL url, String serializeType,
+    public Processor(AbstractStream stream, MethodDescriptor md, URL url, String serializeType,
         MultipleSerialization multipleSerialization) {
-        this.serverStream = serverStream;
+        this.stream = stream;
         this.md = md;
         this.url = url;
         this.serializeType = serializeType;
@@ -34,14 +35,11 @@ public class Processor {
     }
 
     public void onSingleMessage(InputStream in) throws Exception {
-        if (serverStream instanceof StreamServerStream) {
-            StreamServerStream stream = (StreamServerStream)serverStream;
             final Object[] resp = decodeRequestMessage(in);
             if (resp.length > 1) {
                 return;
             }
             stream.getObserver().onNext(resp[0]);
-        }
 
     }
 
@@ -62,6 +60,18 @@ public class Processor {
         }
     }
 
+    public Object decodeResponseMessage(InputStream is) {
+        final Object resp;
+        if (md.isNeedWrap()) {
+            final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(is, TripleWrapper.TripleResponseWrapper.class);
+            resp = TripleUtil.unwrapResp(url, message, multipleSerialization);
+        } else {
+            resp = TripleUtil.unpack(is, md.getReturnClass());
+        }
+        return resp;
+    }
+
+
     public ByteBuf encodeResponse(Object value, ChannelHandlerContext ctx) {
         final Message message;
         final ByteBuf buf;
@@ -73,5 +83,17 @@ public class Processor {
         }
         buf = TripleUtil.pack(ctx, message);
         return buf;
+    }
+
+    public ByteBuf encodeRequest(RpcInvocation invocation, ChannelHandlerContext ctx) {
+        final ByteBuf out;
+
+        if (md.isNeedWrap()) {
+            final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(url, invocation, multipleSerialization);
+            out = TripleUtil.pack(ctx, wrap);
+        } else {
+            out = TripleUtil.pack(ctx, invocation.getArguments()[0]);
+        }
+        return out;
     }
 }

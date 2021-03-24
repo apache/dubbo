@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -43,23 +44,20 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class StreamServerStream extends ServerStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamServerStream.class);
 
-    private StreamObserver<Object> observer;
-
-
     public StreamServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
         super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), serviceDescriptor, md, ctx);
     }
 
 
     @Override
-    public void streamCreated(boolean endStream) throws Exception {
+    public void streamCreated(boolean endStream, Promise promise) throws Exception {
         RpcInvocation inv = buildInvocation();
         inv.setArguments(new Object[]{new StreamOutboundWriter(this)});
         inv.setParameterTypes(new Class[] {StreamObserver.class});
         inv.setReturnTypes(new Class[] {StreamObserver.class});
 
         Result result = getInvoker().invoke(inv);
-        observer = (StreamObserver<Object>)result.get().getValue();
+        setObserver((StreamObserver<Object>)result.get().getValue());
         setProcessor(new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization()));
         final Http2Headers headers = new DefaultHttp2Headers()
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
@@ -97,9 +95,5 @@ public class StreamServerStream extends ServerStream implements Stream {
             .status(OK.codeAsText())
             .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
         getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
-    }
-
-    public StreamObserver<Object> getObserver() {
-        return observer;
     }
 }

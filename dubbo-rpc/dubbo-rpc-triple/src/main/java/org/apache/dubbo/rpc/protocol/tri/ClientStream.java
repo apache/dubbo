@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
@@ -65,6 +67,9 @@ public class ClientStream extends AbstractStream implements Stream {
     private final String authority;
     private final Request request;
     private final RpcInvocation invocation;
+    private Http2StreamChannel streamChannel;
+    private Processor processor;
+    private Message message;
 
     public ClientStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md, Request request) {
         super(url, ctx, md);
@@ -74,6 +79,7 @@ public class ClientStream extends AbstractStream implements Stream {
         this.authority = url.getAddress();
         this.request = request;
         this.invocation = (RpcInvocation) request.getData();
+        processor = new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization());
     }
 
     public static ConsumerModel getConsumerModel(Invocation invocation) {
@@ -99,17 +105,17 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     @Override
-    public void write(Object obj, ChannelPromise promise) {
+    public void streamCreated(Object msg, Promise promise) throws Exception {
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
-        final Http2StreamChannel streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+        streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
 
         Http2Headers headers = new DefaultHttp2Headers()
-                .authority(authority)
-                .scheme(SCHEME)
-                .method(HttpMethod.POST.asciiName())
-                .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+            .authority(authority)
+            .scheme(SCHEME)
+            .method(HttpMethod.POST.asciiName())
+            .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
         final String version = (String) invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
         if (version != null) {
@@ -143,8 +149,8 @@ public class ClientStream extends AbstractStream implements Stream {
 
         TripleUtil.setClientStream(streamChannel, this);
         streamChannel.pipeline().addLast(responseHandler)
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-                .addLast(new TripleClientInboundHandler());
+            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
+            .addLast(new TripleClientInboundHandler());
         streamChannel.write(frame).addListener(future -> {
             if (!future.isSuccess()) {
                 if (future.cause() instanceof Http2NoMoreStreamIdsException) {
@@ -153,6 +159,15 @@ public class ClientStream extends AbstractStream implements Stream {
                 promise.setFailure(future.cause());
             }
         });
+    }
+
+    @Override
+    public void write(Object obj, ChannelPromise promise) {
+        // todo
+        final boolean endStream = !getMd().isStream();
+        // todo
+        TripleUtil.setClientStream(streamChannel, this);
+
         final ByteBuf out;
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -161,16 +176,11 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            if (getMd().isNeedWrap()) {
-                final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
-                out = TripleUtil.pack(getCtx(), wrap);
-            } else {
-                out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
-            }
+            out = processor.encodeRequest(invocation, getCtx());
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
-        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
+        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, endStream);
         streamChannel.write(data);
     }
 
@@ -194,7 +204,7 @@ public class ClientStream extends AbstractStream implements Stream {
             onError(status);
             return;
         }
-        final InputStream data = pollData();
+        final InputStream data = message.getIs();
         if (data == null) {
             responseErr(getCtx(), MISSING_RESP);
             return;
@@ -208,12 +218,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            if (getMd().isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-                resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
-            } else {
-                resp = TripleUtil.unpack(data, getMd().getReturnClass());
-            }
+            resp = processor.decodeResponseMessage(data);
             Response response = new Response(request.getId(), request.getVersion());
             final AppResponse result = new AppResponse(resp);
             result.setObjectAttachments(parseHeadersToMap(te));
@@ -231,5 +236,10 @@ public class ClientStream extends AbstractStream implements Stream {
 
     @Override
     protected void onSingleMessage(InputStream in) throws Exception {
+        if (getMd().isStream()) {
+            processor.onSingleMessage(in);
+        } else {
+            message = new Message(getHeaders(), in);
+        }
     }
 }

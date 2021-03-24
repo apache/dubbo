@@ -18,12 +18,14 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 
 import io.netty.channel.ChannelPromise;
+import io.netty.util.concurrent.Promise;
 import io.netty.util.internal.shaded.org.jctools.queues.MpscChunkedArrayQueue;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
 
@@ -53,6 +55,7 @@ public abstract class AbstractStream implements Stream {
     private Http2Headers te;
     private final Queue<InputStream> datas;
     private String serializeType;
+    private StreamObserver<Object> observer;
 
     protected AbstractStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md) {
         this.ctx = ctx;
@@ -95,10 +98,6 @@ public abstract class AbstractStream implements Stream {
 
     public Http2Headers getTe() {
         return te;
-    }
-
-    public InputStream pollData() {
-        return datas.poll();
     }
 
     public MultipleSerialization getMultipleSerialization() {
@@ -175,10 +174,18 @@ public abstract class AbstractStream implements Stream {
         }
     }
 
-    public void streamCreated(boolean endStream) throws Exception {};
+    public void streamCreated(Object msg, Promise promise) throws Exception {};
 
     protected void onSingleMessage(InputStream in) throws Exception {}
 
     @Override
     public void write(Object obj, ChannelPromise promise) {}
+
+    public StreamObserver getObserver() {
+        return observer;
+    }
+
+    public void setObserver(StreamObserver<Object> observer) {
+        this.observer = observer;
+    }
 }
