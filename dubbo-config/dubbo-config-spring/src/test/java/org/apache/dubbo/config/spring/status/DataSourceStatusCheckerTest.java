@@ -62,10 +62,6 @@ public class DataSourceStatusCheckerTest {
     @AfterEach
     public void tearDown() throws Exception {
         Mockito.reset(applicationContext);
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
     }

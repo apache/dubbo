@@ -56,10 +56,6 @@ public class SpringStatusCheckerTest {
     public void tearDown() throws Exception {
         SpringExtensionFactory.clearContexts();
         Mockito.reset(applicationContext);
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
     }

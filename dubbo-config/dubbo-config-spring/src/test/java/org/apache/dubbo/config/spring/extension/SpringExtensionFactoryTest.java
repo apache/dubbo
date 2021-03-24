@@ -70,14 +70,10 @@ public class SpringExtensionFactoryTest {
     @AfterEach
     public void destroy() {
         SpringExtensionFactory.clearContexts();
-        context1.close();
-        context2.close();
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
+        context1.close();
+        context2.close();
     }
 
     @Bean("bean1")

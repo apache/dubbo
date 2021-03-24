@@ -49,10 +49,6 @@ public class GenericServiceTest {
     @AfterEach
     public void tearDown() {
         ApplicationModel.reset();
-    }
-
-    @AfterEach
-    public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
     }

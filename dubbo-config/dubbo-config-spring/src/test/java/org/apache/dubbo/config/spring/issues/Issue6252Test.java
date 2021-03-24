@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +40,8 @@ import org.springframework.test.annotation.DirtiesContext;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class Issue6252Test {
 
+    private AnnotationConfigApplicationContext context = null;
+
     @Bean
     public static ReferenceBean referenceBean() {
         return new ReferenceBean();
@@ -46,15 +49,18 @@ public class Issue6252Test {
 
     @Test
     public void test() throws Exception {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
         context.getBean(ReferenceBean.class);
-        context.close();
     }
 
+    @BeforeEach
+    public void setUp(){
+        context = new AnnotationConfigApplicationContext(Issue6252Test.class);
+    }
     @AfterEach
     public void cleanupSource() {
         DubboShutdownHook dubboShutdownHook = DubboShutdownHook.getDubboShutdownHook();
         dubboShutdownHook.run();
+        context.close();
     }
 
 }
