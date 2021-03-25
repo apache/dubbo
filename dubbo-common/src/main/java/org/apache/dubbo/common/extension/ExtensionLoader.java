@@ -631,7 +631,7 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
-                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.getDeclaredConstructor().newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
             injectExtension(instance);

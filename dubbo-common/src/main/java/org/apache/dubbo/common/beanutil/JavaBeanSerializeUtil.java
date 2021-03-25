@@ -318,7 +318,7 @@ public final class JavaBeanSerializeUtil {
             }
         }
         if (method != null) {
-            method.setAccessible(true);
+            ReflectUtils.makeAccessible(method);
         }
         return method;
     }
@@ -341,14 +341,14 @@ public final class JavaBeanSerializeUtil {
                 constructorArgs[i] = getConstructorArg(paramTypes[i]);
             }
             try {
-                constructor.setAccessible(true);
+                ReflectUtils.makeAccessible(constructor);
                 return constructor.newInstance(constructorArgs);
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
                 LogHelper.warn(logger, e.getMessage(), e);
             }
         }
 
-        return cl.newInstance();
+        return cl.getDeclaredConstructor().newInstance();
     }
 
     public static Object getConstructorArg(Class<?> cl) {

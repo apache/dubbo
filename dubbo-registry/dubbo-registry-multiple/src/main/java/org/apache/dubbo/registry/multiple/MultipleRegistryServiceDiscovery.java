@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.event.ConditionalEventListener;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -35,11 +36,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
+public class MultipleRegistryServiceDiscovery extends AbstractServiceDiscovery {
     public static final String REGISTRY_PREFIX_KEY = "child.";
     private final Map<String, ServiceDiscovery> serviceDiscoveries = new ConcurrentHashMap<>();
     private URL registryURL;
-    private ServiceInstance serviceInstance;
     private String applicationName;
 
     @Override
@@ -72,13 +72,12 @@ public class MultipleRegistryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
+    public void doRegister(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.register(serviceInstance));
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         serviceDiscoveries.values().forEach(serviceDiscovery -> serviceDiscovery.update(serviceInstance));
     }
 
