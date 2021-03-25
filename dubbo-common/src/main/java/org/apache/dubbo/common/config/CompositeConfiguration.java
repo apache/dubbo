@@ -38,6 +38,9 @@ public class CompositeConfiguration implements Configuration {
      */
     private List<Configuration> configList = new LinkedList<Configuration>();
 
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    private boolean dynamicIncluded;
+
     public CompositeConfiguration() {
         this(null, null);
     }
@@ -58,6 +61,14 @@ public class CompositeConfiguration implements Configuration {
         }
     }
 
+    public void setDynamicIncluded(boolean dynamicIncluded) {
+        this.dynamicIncluded = dynamicIncluded;
+    }
+
+    //FIXME, consider change configList to SortedMap to replace this boolean status.
+    public boolean isDynamicIncluded() {
+        return dynamicIncluded;
+    }
     /**
      * 缓存配置信息
      * @param configuration

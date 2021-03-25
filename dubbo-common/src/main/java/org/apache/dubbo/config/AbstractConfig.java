@@ -417,12 +417,13 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * 将prefix加入parameters对应的key中
-     * @param parameters
-     * @param prefix
-     * @return
+     *      * 将prefix加入parameters对应的key中
+     * @param parameters the raw parameters
+     * @param prefix     the prefix
+     * @return the parameters whose raw key will replace "-" to "."
+     * @revised 2.7.8 "private" to be "protected"
      */
-    private static Map<String, String> convert(Map<String, String> parameters, String prefix) {
+    protected static Map<String, String> convert(Map<String, String> parameters, String prefix) {
         if (parameters == null || parameters.isEmpty()) {
             return Collections.emptyMap();
         }

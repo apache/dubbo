@@ -37,7 +37,8 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -68,10 +69,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -184,10 +185,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * 导出服务
      */
     public synchronized void export() {
-        if (!shouldExport()) {
-            return;
-        }
-
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
@@ -198,17 +195,17 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
          * 懒得看
          */
         checkAndUpdateSubConfigs();
-
-        //init serviceMetadata
         /**
          * 初始化
          */
-        serviceMetadata.setVersion(getVersion());
-        serviceMetadata.setGroup(getGroup());
-        serviceMetadata.setDefaultGroup(getGroup());
+        initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
-        serviceMetadata.setServiceInterfaceName(getInterface());
         serviceMetadata.setTarget(getRef());
+        serviceMetadata.generateServiceKey();
+
+        if (!shouldExport()) {
+            return;
+        }
 
 
         if (shouldDelay()) {
@@ -240,6 +237,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * 分发事件
      */
     public void exported() {
+        List<URL> exportedURLs = this.getExportedUrls();
+        exportedURLs.forEach(url -> {
+            Map<String, String> parameters = getApplication().getParameters();
+            ServiceNameMapping.getExtension(parameters != null ? parameters.get(MAPPING_KEY) : null).map(url);
+        });
         // dispatch a ServiceConfigExportedEvent since 2.7.4
         //ServiceNameMappingListener处理  将当前sc放入ServiceConfigExportedEvent
         dispatch(new ServiceConfigExportedEvent(this));
@@ -357,6 +359,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
          * 导出
          */
         doExportUrls();
+        bootstrap.setReady(true);
     }
 
     /**
@@ -402,8 +405,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
              * 以path为key  再次存储serviceDescriptor
              */
             repository.registerService(pathKey, interfaceClass);
-            // TODO, uncomment this line once service key is unified
-            serviceMetadata.setServiceKey(pathKey);
             /**
              * 导出服务
              * 导出服务
@@ -535,7 +536,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         /**
          * Here the token value configured by the provider is used to assign the value to ServiceConfig#token
          */
-        if(ConfigUtils.isEmpty(token) && provider != null) {
+        if (ConfigUtils.isEmpty(token) && provider != null) {
             token = provider.getToken();
         }
 
@@ -661,22 +662,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
                     exporters.add(exporter);
                 }
+
                 /**
-                 * @since 2.7.0
-                 * ServiceData Store
+                 * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
+                 *
+                 * 将已导出服务的配置信息  存储到配置中心
+                 * MetadataService不写入
+                 * org.apache.dubbo.demo.GreetingService:::provider:dubbo-demo-annotation-provider
                  */
-                //remote
-                WritableMetadataService metadataService = WritableMetadataService.getExtension(url.getParameter(METADATA_KEY, DEFAULT_METADATA_STORAGE_TYPE));
-                if (metadataService != null) {
-                    /**
-                     * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
-                     *
-                     * 将已导出服务的配置信息  存储到配置中心
-                     * MetadataService不写入
-                     * org.apache.dubbo.demo.GreetingService:::provider:dubbo-demo-annotation-provider
-                     */
-                    metadataService.publishServiceDefinition(url);
-                }
+                MetadataUtils.publishServiceDefinition(url);
             }
         }
         this.urls.add(url);
@@ -954,7 +948,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors =ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }

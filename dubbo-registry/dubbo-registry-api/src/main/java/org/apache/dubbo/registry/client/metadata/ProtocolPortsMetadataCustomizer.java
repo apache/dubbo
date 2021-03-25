@@ -26,8 +26,6 @@ import org.apache.dubbo.rpc.Protocol;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 
 /**
@@ -40,10 +38,9 @@ public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomize
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        // 获取dubbo.metadata.storage-type   默认local
-        String metadataStoredType = getMetadataStorageType(serviceInstance);
         // 获取WritableMetadataService对应实现
-        WritableMetadataService writableMetadataService = getExtension(metadataStoredType);
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+
         // 获取本地元数据中心中对外暴露服务的协议以及端口号
         Map<String, Integer> protocols = new HashMap<>();
         writableMetadataService.getExportedURLs()

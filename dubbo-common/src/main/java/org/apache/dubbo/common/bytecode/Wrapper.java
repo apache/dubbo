@@ -113,12 +113,11 @@ public abstract class Wrapper {
         if (c == Object.class) {
             return OBJECT_WRAPPER;
         }
-
         /**
          * 从缓存中获取 Wrapper 实例
          * 缓存未命中，创建 Wrapper
          */
-        return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
+        return WRAPPER_MAP.computeIfAbsent(c, Wrapper::makeWrapper);
     }
 
     /**
@@ -176,14 +175,14 @@ public abstract class Wrapper {
                 int len = m.getParameterTypes().length;
                 c3.append(" && ").append(" $3.length == ").append(len);
 
-                boolean override = false;
+                boolean overload = false;
                 for (Method m2 : methods) {
                     if (m != m2 && m.getName().equals(m2.getName())) {
-                        override = true;
+                        overload = true;
                         break;
                     }
                 }
-                if (override) {
+                if (overload) {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
                             c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
@@ -236,7 +235,7 @@ public abstract class Wrapper {
             }
         }
         c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
+        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class " + c.getName() + ".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
@@ -273,7 +272,7 @@ public abstract class Wrapper {
             for (Method m : ms.values()) {
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
             }
-            return (Wrapper) wc.newInstance();
+            return (Wrapper) wc.getDeclaredConstructor().newInstance();
         } catch (RuntimeException e) {
             throw e;
         } catch (Throwable e) {

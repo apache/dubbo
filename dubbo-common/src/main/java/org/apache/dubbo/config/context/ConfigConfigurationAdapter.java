@@ -39,7 +39,7 @@ public class ConfigConfigurationAdapter implements Configuration {
          * 获取config对应的metadata
          */
         Map<String, String> configMetadata = config.getMetaData();
-        metaData = new HashMap<>(configMetadata.size());
+        metaData = new HashMap<>(configMetadata.size(), 1.0f);
         /**
          * 将prefix和id加入configMetadata对应的key中
          */

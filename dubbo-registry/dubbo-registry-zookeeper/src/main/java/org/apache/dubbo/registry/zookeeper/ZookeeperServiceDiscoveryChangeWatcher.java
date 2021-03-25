@@ -18,6 +18,7 @@ package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
@@ -34,15 +35,20 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  * @since 2.7.5
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
+    private ServiceInstancesChangedListener listener;
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
+
+    private boolean keepWatching = true;
 
     private final String serviceName;
 
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
-                                                  String serviceName) {
+                                                  String serviceName,
+                                                  ServiceInstancesChangedListener listener) {
         this.zookeeperServiceDiscovery = zookeeperServiceDiscovery;
         this.serviceName = serviceName;
+        this.listener = listener;
     }
 
     @Override
@@ -51,7 +57,19 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         Watcher.Event.EventType eventType = event.getType();
 
         if (NodeChildrenChanged.equals(eventType) || NodeDataChanged.equals(eventType)) {
-            zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+            if (shouldKeepWatching()) {
+                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, zookeeperServiceDiscovery.getInstances(serviceName)));
+                zookeeperServiceDiscovery.registerServiceWatcher(serviceName, listener);
+                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent(serviceName);
+            }
         }
+    }
+
+    public boolean shouldKeepWatching() {
+        return keepWatching;
+    }
+
+    public void stopWatching() {
+        this.keepWatching = false;
     }
 }

@@ -17,8 +17,6 @@
 package org.apache.dubbo.metadata.store.redis;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -53,7 +51,6 @@ import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
 public class RedisMetadataReport extends AbstractMetadataReport {
 
     private final static String REDIS_DATABASE_KEY = "database";
-    private final static Logger logger = LoggerFactory.getLogger(RedisMetadataReport.class);
 
     JedisPool pool;
     Set<HostAndPort> jedisClusterNodes;

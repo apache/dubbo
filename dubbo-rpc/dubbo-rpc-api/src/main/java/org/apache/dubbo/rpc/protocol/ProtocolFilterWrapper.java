@@ -23,12 +23,9 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.List;
@@ -58,84 +55,7 @@ public class ProtocolFilterWrapper implements Protocol {
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
-                final Invoker<T> next = last;
-                last = new Invoker<T>() {
-
-                    @Override
-                    public Class<T> getInterface() {
-                        return invoker.getInterface();
-                    }
-
-                    @Override
-                    public URL getUrl() {
-                        return invoker.getUrl();
-                    }
-
-                    @Override
-                    public boolean isAvailable() {
-                        return invoker.isAvailable();
-                    }
-
-                    @Override
-                    public Result invoke(Invocation invocation) throws RpcException {
-                        Result asyncResult;
-                        try {
-                            asyncResult = filter.invoke(next, invocation);
-                        } catch (Exception e) {
-                            if (filter instanceof ListenableFilter) {
-                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
-                                try {
-                                    Filter.Listener listener = listenableFilter.listener(invocation);
-                                    if (listener != null) {
-                                        listener.onError(e, invoker, invocation);
-                                    }
-                                } finally {
-                                    listenableFilter.removeListener(invocation);
-                                }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
-                                listener.onError(e, invoker, invocation);
-                            }
-                            throw e;
-                        } finally {
-
-                        }
-                        return asyncResult.whenCompleteWithContext((r, t) -> {
-                            if (filter instanceof ListenableFilter) {
-                                ListenableFilter listenableFilter = ((ListenableFilter) filter);
-                                Filter.Listener listener = listenableFilter.listener(invocation);
-                                try {
-                                    if (listener != null) {
-                                        if (t == null) {
-                                            listener.onResponse(r, invoker, invocation);
-                                        } else {
-                                            listener.onError(t, invoker, invocation);
-                                        }
-                                    }
-                                } finally {
-                                    listenableFilter.removeListener(invocation);
-                                }
-                            } else if (filter instanceof Filter.Listener) {
-                                Filter.Listener listener = (Filter.Listener) filter;
-                                if (t == null) {
-                                    listener.onResponse(r, invoker, invocation);
-                                } else {
-                                    listener.onError(t, invoker, invocation);
-                                }
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void destroy() {
-                        invoker.destroy();
-                    }
-
-                    @Override
-                    public String toString() {
-                        return invoker.toString();
-                    }
-                };
+                last = new FilterNode<T>(invoker, last, filter);
             }
         }
 

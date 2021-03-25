@@ -50,7 +50,11 @@ import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
 
 /**
  * ConditionRouter
- *
+ * It supports the conditional routing configured by "override://", in 2.6.x,
+ * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
+ * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
+ * and {@link org.apache.dubbo.rpc.cluster.router.condition.config.AppRouter}
+ * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
 public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";

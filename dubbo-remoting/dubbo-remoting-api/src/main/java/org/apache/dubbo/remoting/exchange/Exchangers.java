@@ -114,7 +114,7 @@ public class Exchangers {
         if (handler == null) {
             throw new IllegalArgumentException("handler == null");
         }
-        url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
+//        url = url.addParameterIfAbsent(Constants.CODEC_KEY, "exchange");
         /**
          * HeaderExchanger
          */

@@ -19,10 +19,16 @@ package org.apache.dubbo.metadata.report;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
 
 /**
@@ -32,51 +38,61 @@ public class MetadataReportInstance {
 
     private static AtomicBoolean init = new AtomicBoolean(false);
 
-    private static MetadataReport metadataReport;
+    private static final Map<String, MetadataReport> metadataReports = new HashMap<>();
 
     /**
      * 初始化
      * @param metadataReportURL
      */
-    public static void init(URL metadataReportURL) {
+    public static void init(MetadataReportConfig config) {
         if (init.get()) {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
+        URL url = config.toUrl();
         /**
          * metadataReportURL对应得protocol属性为metadata
          */
-        if (METADATA_REPORT_KEY.equals(metadataReportURL.getProtocol())) {
+        if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
             /**
              * metadataReportURL对应得metadata属性
              */
-            String protocol = metadataReportURL.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
+            String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             /**
              * 重置protocol属性  移除metadata属性
              */
-            metadataReportURL = URLBuilder.from(metadataReportURL)
+            url = URLBuilder.from(url)
                     .setProtocol(protocol)
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
-
+        url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getApplicationConfig().getName());
+        String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
+//        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
+//                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
         /**
          * 根据metadataReportURL  获取对应得实现
          */
-        metadataReport = metadataReportFactory.getMetadataReport(metadataReportURL);
+        metadataReports.put(relatedRegistryId, metadataReportFactory.getMetadataReport(url));
         init.set(true);
     }
 
-    public static MetadataReport getMetadataReport() {
-        return getMetadataReport(false);
-    }
-
-    public static MetadataReport getMetadataReport(boolean checked) {
+    public static Map<String, MetadataReport> getMetadataReports(boolean checked) {
         if (checked) {
             checkInit();
         }
+        return metadataReports;
+    }
+
+    public static MetadataReport getMetadataReport(String registryKey) {
+        checkInit();
+        MetadataReport metadataReport = metadataReports.get(registryKey);
+        if (metadataReport == null) {
+            metadataReport = metadataReports.values().iterator().next();
+        }
         return metadataReport;
     }
+
 
     private static void checkInit() {
         if (!init.get()) {

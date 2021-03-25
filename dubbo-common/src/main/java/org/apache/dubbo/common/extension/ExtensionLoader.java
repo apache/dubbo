@@ -627,26 +627,25 @@ public class ExtensionLoader<T> {
     }
 
     private IllegalStateException findException(String name) {
-        for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
-            if (entry.getKey().toLowerCase().contains(name.toLowerCase())) {
-                return entry.getValue();
-            }
-        }
         StringBuilder buf = new StringBuilder("No such extension " + type.getName() + " by name " + name);
-
 
         int i = 1;
         for (Map.Entry<String, IllegalStateException> entry : exceptions.entrySet()) {
-            if (i == 1) {
-                buf.append(", possible causes: ");
+            if (entry.getKey().toLowerCase().startsWith(name.toLowerCase())) {
+                if (i == 1) {
+                    buf.append(", possible causes: ");
+                }
+                buf.append("\r\n(");
+                buf.append(i++);
+                buf.append(") ");
+                buf.append(entry.getKey());
+                buf.append(":\r\n");
+                buf.append(StringUtils.toString(entry.getValue()));
             }
+        }
 
-            buf.append("\r\n(");
-            buf.append(i++);
-            buf.append(") ");
-            buf.append(entry.getKey());
-            buf.append(":\r\n");
-            buf.append(StringUtils.toString(entry.getValue()));
+        if (i == 1) {
+            buf.append(", no related exception was found, please check whether related SPI module is missing.");
         }
         return new IllegalStateException(buf.toString());
     }
@@ -661,8 +660,7 @@ public class ExtensionLoader<T> {
         try {
             T instance = (T) EXTENSION_INSTANCES.get(clazz);
             if (instance == null) {
-                // 通过反射创建实例
-                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.newInstance());
+                EXTENSION_INSTANCES.putIfAbsent(clazz, clazz.getDeclaredConstructor().newInstance());
                 instance = (T) EXTENSION_INSTANCES.get(clazz);
             }
             // 向实例中注入依赖
@@ -898,6 +896,7 @@ public class ExtensionLoader<T> {
         try {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(resourceURL.openStream(), StandardCharsets.UTF_8))) {
                 String line;
+                String clazz = null;
                 // 按行读取配置内容
                 while ((line = reader.readLine()) != null) {
                     // 定位 # 字符
@@ -914,11 +913,13 @@ public class ExtensionLoader<T> {
                             if (i > 0) {
                                 // 以等于号 = 为界，截取键与值
                                 name = line.substring(0, i).trim();
-                                line = line.substring(i + 1).trim();
+                                clazz = line.substring(i + 1).trim();
+                            } else {
+                                clazz = line;
                             }
-                            if (line.length() > 0 && !isExcluded(line, excludedPackages)) {
+                            if (StringUtils.isNotEmpty(clazz) && !isExcluded(clazz, excludedPackages)) {
                                 // 加载类，并通过 loadClass 方法对类进行缓存
-                                loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name, overridden);
+                                loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
                             }
                         } catch (Throwable t) {
                             IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
