@@ -48,8 +48,9 @@ public class BeanUtilsTest {
         l2.add(ll2);
         map.put("l2", l2);
 
-        Map<String, String> m1 = new HashMap<>();
+        Map<String, Object> m1 = new HashMap<>();
         m1.put("k", "v");
+        m1.put("k1", 1);
         map.put("m1", m1);
 
         Bean1 bean1 = BeanUtils.mapToBean(map, Bean1.class);
@@ -65,6 +66,7 @@ public class BeanUtilsTest {
         assertNotNull(bean1.getM1());
         assertTrue(bean1.getM1().containsKey("k"));
         assertEquals(bean1.getM1().get("k"), "v");
+        assertEquals(bean1.getM1().get("k1"), "1");
     }
 
     static class Bean1 {

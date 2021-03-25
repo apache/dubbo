@@ -22,12 +22,18 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.lang.reflect.WildcardType;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.apache.dubbo.common.utils.ClassUtils.isAssignableFrom;
 
 public class BeanUtils {
+
+    private static final List<Class<?>> CAN_BE_STRING = Arrays.asList(Byte.class, Short.class, Integer.class,
+            Long.class, Float.class, Double.class, Boolean.class, Character.class);
 
     /**
      * convert map to a specific class instance
@@ -75,6 +81,9 @@ public class BeanUtils {
     private static Object convertClassType(Object mapObject, Class<?> type) throws InstantiationException, IllegalAccessException {
         if (type.isPrimitive() || isAssignableFrom(type, mapObject.getClass())) {
             return mapObject;
+        } else if (Objects.equals(type, String.class) && CAN_BE_STRING.contains(mapObject.getClass())) {
+            // auto convert specified type to string
+            return mapObject.toString();
         } else if (mapObject instanceof Map) {
             return mapToBean((Map<String, Object>) mapObject, type);
         } else {

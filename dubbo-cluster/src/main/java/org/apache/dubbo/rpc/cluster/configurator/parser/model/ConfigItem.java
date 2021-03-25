@@ -34,7 +34,7 @@ public class ConfigItem {
     private List<String> providerAddresses;
     private List<String> services;
     private List<String> applications;
-    private Map<String, Object> parameters;
+    private Map<String, String> parameters;
     private String side;
 
     public String getType() {
@@ -85,11 +85,11 @@ public class ConfigItem {
         this.providerAddresses = providerAddresses;
     }
 
-    public Map<String, Object> getParameters() {
+    public Map<String, String> getParameters() {
         return parameters;
     }
 
-    public void setParameters(Map<String, Object> parameters) {
+    public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
     }
 
