@@ -229,7 +229,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             beanNameBuilder.append('(');
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 String value;
-                if (entry.getValue().getClass().isArray()) {
+                if (isStringArray(entry.getValue())) {
                     String[] entryValues = (String[]) entry.getValue();
                     if ("parameters".equals(entry.getKey())) {
                         // parameters spec is {key1,value1,key2,value2}
@@ -257,6 +257,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanNameBuilder.append(" ").append(interfaceClass.getName());
 
         return beanNameBuilder.toString();
+    }
+
+    private boolean isStringArray(Object value) {
+        return value.getClass().isArray() && value.getClass().getComponentType() == String.class;
     }
 
     /**
