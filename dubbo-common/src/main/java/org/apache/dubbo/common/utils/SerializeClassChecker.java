@@ -100,6 +100,12 @@ public class SerializeClassChecker {
         INSTANCE = null;
     }
 
+    /**
+     * Check if a class is in block list, using prefix match
+     *
+     * @throws IllegalArgumentException if class is blocked
+     * @param name class name ( all are convert to lower case )
+     */
     public void validateClass(String name) {
         name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
