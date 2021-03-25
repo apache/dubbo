@@ -167,7 +167,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, path, k, latch));
+                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, path, k));
+                    if (zkListener instanceof RegistryChildListenerImpl) {
+                        ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                    }
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
@@ -291,8 +294,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
         private long lastExecuteTime;
         private CountDownLatch latch;
 
-        public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
-            this.latch = latch;
+        public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener) {
             notifier = new RegistryNotifier(ZookeeperRegistry.this.getDelay()) {
                 @Override
                 public void notify(Object rawAddresses) {
@@ -318,6 +320,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     ZookeeperRegistry.this.notify(consumerUrl, listener, ZookeeperRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
                 }
             };
+        }
+
+        public void setLatch(CountDownLatch latch) {
+            this.latch = latch;
         }
 
         @Override
