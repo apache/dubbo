@@ -23,7 +23,6 @@ import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.DataListener;
 import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.StateListener;
-import org.apache.dubbo.remoting.zookeeper.SyncChildListener;
 import org.apache.dubbo.remoting.zookeeper.support.AbstractZookeeperClient;
 
 import org.apache.curator.framework.CuratorFramework;
@@ -47,7 +46,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
@@ -292,17 +290,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             }
 
             if (childListener != null) {
-                if (childListener instanceof SyncChildListener) {
-                    Lock lock = ((SyncChildListener) childListener).getLock();
-                    lock.lock();
-                    try {
-                        childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
-                    } finally {
-                        lock.unlock();
-                    }
-                } else {
-                    childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
-                }
+                childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
             }
         }
 
