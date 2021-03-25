@@ -21,6 +21,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.annotation.ReferenceAnnotationUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -40,8 +41,6 @@ import org.springframework.core.annotation.AnnotationAttributes;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -229,19 +228,10 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             beanNameBuilder.append('(');
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
                 String value;
-                if (isStringArray(entry.getValue())) {
-                    String[] entryValues = (String[]) entry.getValue();
-                    if ("parameters".equals(entry.getKey())) {
-                        // parameters spec is {key1,value1,key2,value2}
-                        ArrayList<String> kvList = new ArrayList<>();
-                        for (int i = 0; i < entryValues.length / 2 * 2; i = i + 2) {
-                            kvList.add(entryValues[i] + "=" + entryValues[i + 1]);
-                        }
-                        value = kvList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
-                    } else {
-                        //other spec is {string1,string2,string3}
-                        value = Arrays.stream(entryValues).sorted().collect(Collectors.joining(",", "[", "]"));
-                    }
+                if (isArrayOf(entry.getValue(), String.class)) {
+                    value = ReferenceAnnotationUtils.generateArrayEntryString(entry);
+                } else if (isArrayOf(entry.getValue(), org.apache.dubbo.config.annotation.Method.class)) {
+                    value = ReferenceAnnotationUtils.generateMethodsString((org.apache.dubbo.config.annotation.Method[]) entry.getValue());
                 } else {
                     value = String.valueOf(entry.getValue());
                 }
@@ -259,8 +249,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         return beanNameBuilder.toString();
     }
 
-    private boolean isStringArray(Object value) {
-        return value.getClass().isArray() && value.getClass().getComponentType() == String.class;
+    private boolean isArrayOf(Object value, Class type) {
+        return value.getClass().isArray() && value.getClass().getComponentType() == type;
     }
 
     /**
