@@ -123,6 +123,13 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference
     private HelloService helloService2;
 
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"})
+    private HelloService helloServiceWithArray1;
+
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"})
+    private HelloService helloServiceWithArray2;
+
+
     @Test
     public void test() throws Exception {
 
@@ -177,7 +184,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(4, referenceBeans.size());
+        Assertions.assertEquals(5, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -194,7 +201,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(5, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -311,7 +318,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(4, referenceBeans.size());
+        Assertions.assertEquals(5, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
