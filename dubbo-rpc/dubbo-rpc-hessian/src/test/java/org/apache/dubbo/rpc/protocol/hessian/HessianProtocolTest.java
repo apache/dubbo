@@ -88,7 +88,8 @@ public class HessianProtocolTest {
     @Test
     public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
         // temporary enable native java generic serialize
-        System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+        String pre = System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+
         HessianServiceImpl server = new HessianServiceImpl();
         Assertions.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -113,7 +114,8 @@ public class HessianProtocolTest {
         Assertions.assertEquals("Hello, haha", objectInput.readObject());
         invoker.destroy();
         exporter.unexport();
-        System.clearProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
+
+        System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, pre);
     }
 
     @Test

@@ -77,7 +77,7 @@ public class GenericFilterTest {
     @Test
     public void testInvokeWithJavaException() throws Exception {
         // temporary enable native java generic serialize
-        System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+        String pre = System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
         Assertions.assertThrows(RpcException.class, () -> {
             Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -98,7 +98,7 @@ public class GenericFilterTest {
 
             genericFilter.invoke(invoker, invocation);
         });
-        System.clearProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
+        System.setProperty(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, pre);
     }
 
     @Test
