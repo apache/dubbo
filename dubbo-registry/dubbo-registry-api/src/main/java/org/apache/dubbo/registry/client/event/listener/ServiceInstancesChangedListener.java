@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -81,6 +82,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private volatile long lastFailureTime;
     private volatile AtomicInteger failureCounter = new AtomicInteger(0);
     private Semaphore retryPermission;
+    private volatile ScheduledFuture<?> retryFuture;
 
     private ScheduledExecutorService scheduler;
 
@@ -138,7 +140,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
-                scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
+                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
             logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
@@ -360,6 +362,20 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             urls = Collections.emptyList();
         }
         return urls;
+    }
+
+    /**
+     * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
+     */
+    public void destroy() {
+        if (CollectionUtils.isEmptyMap(listeners)) {
+            allInstances.clear();
+            serviceUrls.clear();
+            revisionToMetadata.clear();
+            if (retryFuture != null && !retryFuture.isDone()) {
+                retryFuture.cancel(true);
+            }
+        }
     }
 
     @Override
