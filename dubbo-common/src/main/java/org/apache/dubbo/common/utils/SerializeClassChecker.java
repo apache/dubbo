@@ -23,8 +23,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class SerializeClassChecker {
     private static final Logger logger = LoggerFactory.getLogger(SerializeClassChecker.class);
@@ -37,6 +38,9 @@ public class SerializeClassChecker {
 
     private final Object CACHE = new Object();
     private final LFUCache<String, Object> CLASS_ALLOW_LFU_CACHE = new LFUCache<>();
+    private final LFUCache<String, Object> CLASS_BLOCK_LFU_CACHE = new LFUCache<>();
+
+    private final AtomicLong counter = new AtomicLong(0);
 
     private SerializeClassChecker() {
         String blockAllClassExceptAllow = System.getProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "false");
@@ -62,8 +66,8 @@ public class SerializeClassChecker {
             logger.error("Failed to load blocked class list! Will ignore default blocked list.", e);
         }
 
-        String allowedClassList = System.getProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, "").trim();
-        String blockedClassList = System.getProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, "").trim();
+        String allowedClassList = System.getProperty(CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST, "").trim().toLowerCase(Locale.ROOT);
+        String blockedClassList = System.getProperty(CommonConstants.CLASS_DESERIALIZE_BLOCKED_LIST, "").trim().toLowerCase(Locale.ROOT);
 
         if (StringUtils.isNotEmpty(allowedClassList)) {
             String[] classStrings = allowedClassList.trim().split(",");
@@ -88,9 +92,22 @@ public class SerializeClassChecker {
         return INSTANCE;
     }
 
+    /**
+     * For ut only
+     */
+    @Deprecated
+    protected static void clearInstance() {
+        INSTANCE = null;
+    }
+
     public void validateClass(String name) {
+        name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
             return;
+        }
+
+        if (CACHE == CLASS_BLOCK_LFU_CACHE.get(name)) {
+            error(name);
         }
 
         for (String allowedPrefix : CLASS_DESERIALIZE_ALLOWED_SET) {
@@ -102,6 +119,7 @@ public class SerializeClassChecker {
 
         for (String blockedPrefix : CLASS_DESERIALIZE_BLOCKED_SET) {
             if (BLOCK_ALL_CLASS_EXCEPT_ALLOW || name.startsWith(blockedPrefix)) {
+                CLASS_BLOCK_LFU_CACHE.put(name, CACHE);
                 error(name);
             }
         }
@@ -117,13 +135,10 @@ public class SerializeClassChecker {
                 "If you are sure this is a mistake, " +
                 "please add this class name to `" + CommonConstants.CLASS_DESERIALIZE_ALLOWED_LIST +
                 "` as a system environment property.";
-        logger.error(notice);
+        if (counter.incrementAndGet() % 1000 == 0 || counter.get() < 100) {
+            logger.error(notice);
+        }
         throw new IllegalArgumentException(notice);
-    }
-
-    public static void main(String[] args) {
-        SerializeClassChecker instance = SerializeClassChecker.getInstance();
-        instance.validateClass(Collection.class.getName());
     }
 
 }
