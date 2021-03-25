@@ -42,11 +42,10 @@ public class BeanUtils {
      * @param cls the specified class
      * @param <T> the type of {@code cls}
      * @return class instance declare in param {@code cls}
-     * @throws IllegalAccessException if the instance creation is failed
-     * @throws InstantiationException if the instance creation is failed
+     * @throws ReflectiveOperationException if the instance creation is failed
      */
-    public static <T> T mapToBean(Map<String, Object> map, Class<T> cls) throws IllegalAccessException, InstantiationException {
-        T instance = cls.newInstance();
+    public static <T> T mapToBean(Map<String, Object> map, Class<T> cls) throws ReflectiveOperationException {
+        T instance = cls.getDeclaredConstructor().newInstance();
         Map<String, Field> beanPropertyFields = ReflectUtils.getBeanPropertyFields(cls);
         for (Map.Entry<String, Field> entry : beanPropertyFields.entrySet()) {
             String name = entry.getKey();
@@ -64,7 +63,7 @@ public class BeanUtils {
         return instance;
     }
 
-    private static Object getFieldObject(Object mapObject, Type fieldType) throws InstantiationException, IllegalAccessException {
+    private static Object getFieldObject(Object mapObject, Type fieldType) throws ReflectiveOperationException {
         if (fieldType instanceof Class<?>) {
             return convertClassType(mapObject, (Class<?>) fieldType);
         } else if (fieldType instanceof ParameterizedType) {
@@ -78,7 +77,7 @@ public class BeanUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object convertClassType(Object mapObject, Class<?> type) throws InstantiationException, IllegalAccessException {
+    private static Object convertClassType(Object mapObject, Class<?> type) throws ReflectiveOperationException {
         if (type.isPrimitive() || isAssignableFrom(type, mapObject.getClass())) {
             return mapObject;
         } else if (Objects.equals(type, String.class) && CAN_BE_STRING.contains(mapObject.getClass())) {
@@ -94,7 +93,7 @@ public class BeanUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object convertParameterizedType(Object mapObject, ParameterizedType type) throws IllegalAccessException, InstantiationException {
+    private static Object convertParameterizedType(Object mapObject, ParameterizedType type) throws ReflectiveOperationException {
         Type rawType = type.getRawType();
         if (!isAssignableFrom((Class<?>) rawType, mapObject.getClass())) {
             return null;
@@ -102,7 +101,7 @@ public class BeanUtils {
 
         Type[] actualTypeArguments = type.getActualTypeArguments();
         if (isAssignableFrom(Map.class, (Class<?>) rawType)) {
-            Map<Object, Object> map = (Map<Object, Object>) mapObject.getClass().newInstance();
+            Map<Object, Object> map = (Map<Object, Object>) mapObject.getClass().getDeclaredConstructor().newInstance();
             for (Map.Entry<Object, Object> entry : ((Map<Object, Object>) mapObject).entrySet()) {
                 Object key = getFieldObject(entry.getKey(), actualTypeArguments[0]);
                 Object value = getFieldObject(entry.getValue(), actualTypeArguments[1]);
@@ -111,7 +110,7 @@ public class BeanUtils {
 
             return map;
         } else if (isAssignableFrom(Collection.class, (Class<?>) rawType)) {
-            Collection<Object> collection = (Collection<Object>) mapObject.getClass().newInstance();
+            Collection<Object> collection = (Collection<Object>) mapObject.getClass().getDeclaredConstructor().newInstance();
             for (Object m : (Iterable<?>) mapObject) {
                 Object ele = getFieldObject(m, actualTypeArguments[0]);
                 collection.add(ele);
