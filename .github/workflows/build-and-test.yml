@@ -24,11 +24,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           path: dubbo
-      - uses: actions/checkout@v2
-        with:
-          repository: 'apache/dubbo-spring-boot-project'
-          ref: ${{env.DUBBO_SPRING_BOOT_REF}}
-          path: dubbo-spring-boot-project
       - uses: actions/setup-java@v1
         with:
           java-version: 8
@@ -52,10 +47,6 @@ jobs:
         run: |
           cd ./dubbo
           ./mvnw --batch-mode -U -e --no-transfer-progress clean source:jar install -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
-      - name: "Build Dubbo Spring Boot with Maven"
-        run: |
-          cd ./dubbo-spring-boot-project
-          ./mvnw --batch-mode --no-transfer-progress  clean install -Drevision=${{ steps.dubbo-version.outputs.version }} -Dmaven.test.skip=true -Dmaven.test.skip.exec=true
 
   unit-test:
     needs: [build-source]
@@ -80,7 +71,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
       - name: "Test with Maven with Integration Tests"
-        timeout-minutes: 30
+        timeout-minutes: 40
         if: ${{ startsWith( matrix.os, 'ubuntu') }}
         run: ./mvnw --batch-mode -U -e --no-transfer-progress clean test verify -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true
       - name: "Test with Maven without Integration Tests"
