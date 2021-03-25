@@ -18,6 +18,7 @@ package org.apache.dubbo.config.annotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,9 +44,9 @@ public class ReferenceAnnotationUtils {
         if (methods.length == 0) {
             return null;
         }
-        StringBuilder methodNameBuilder = new StringBuilder("[");
+        List<String> methodList = new ArrayList<>();
         for (Method method : methods) {
-            methodNameBuilder.append("@Method(");
+            StringBuilder methodNameBuilder = new StringBuilder("@Method(");
             trimAppend(methodNameBuilder, "name", method.name());
             trimAppend(methodNameBuilder, "timeout", method.timeout());
             trimAppend(methodNameBuilder, "retries", method.retries());
@@ -64,27 +65,25 @@ public class ReferenceAnnotationUtils {
             trimAppend(methodNameBuilder, "merger", method.merger());
             trimAppend(methodNameBuilder, "arguments", generateArgumentsString(method.arguments()));
             methodNameBuilder.setCharAt(methodNameBuilder.lastIndexOf(","), ')');
-            methodNameBuilder.append(",");
+            methodList.add(methodNameBuilder.toString());
         }
-        methodNameBuilder.setCharAt(methodNameBuilder.lastIndexOf(","), ']');
-        return methodNameBuilder.toString();
+        return methodList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
     }
 
     private static String generateArgumentsString(Argument[] arguments) {
         if (arguments.length == 0) {
             return null;
         }
-        StringBuilder argumentStringBuilder = new StringBuilder("[");
+        List<String> argumentList = new ArrayList<>();
         for (Argument argument : arguments) {
-            argumentStringBuilder.append("@Argument(");
+            StringBuilder argumentStringBuilder = new StringBuilder("@Argument(");
             trimAppend(argumentStringBuilder, "index", argument.index());
             trimAppend(argumentStringBuilder, "type", argument.type());
             trimAppend(argumentStringBuilder, "callback", argument.callback());
             argumentStringBuilder.setCharAt(argumentStringBuilder.lastIndexOf(","), ')');
-            argumentStringBuilder.append(",");
+            argumentList.add(argumentStringBuilder.toString());
         }
-        argumentStringBuilder.setCharAt(argumentStringBuilder.lastIndexOf(","), ']');
-        return argumentStringBuilder.toString();
+        return argumentList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
     }
 
     private static void trimAppend(StringBuilder builder, String name, Object value) {
