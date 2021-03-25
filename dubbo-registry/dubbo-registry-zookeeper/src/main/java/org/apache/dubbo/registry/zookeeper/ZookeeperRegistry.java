@@ -172,7 +172,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k));
+                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
                     if (zkListener instanceof RegistryChildListenerImpl) {
                         ((RegistryChildListenerImpl) zkListener).setLatch(latch);
                     }
@@ -322,16 +322,17 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
         private URL url;
 
-        private CountDownLatch latch;
-
         private NotifyListener listener;
 
-        public RegistryChildListenerImpl(URL url, NotifyListener listener) {
+        private CountDownLatch latch;
+
+        RegistryChildListenerImpl(URL url, NotifyListener listener, CountDownLatch latch) {
             this.url = url;
             this.listener = listener;
+            this.latch = latch;
         }
 
-        public void setLatch(CountDownLatch latch) {
+        void setLatch(CountDownLatch latch) {
             this.latch = latch;
         }
 
