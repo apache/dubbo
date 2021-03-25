@@ -385,6 +385,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 String logPrefix = e.getKey() + " has " + e.getValue().size() + " reference instances, there are: ";
                 logger.warn(e.getValue().stream().collect(Collectors.joining(", ", logPrefix, "")));
             });
+            referencedBeanNameIdx.clear();
         }
     }
 }
