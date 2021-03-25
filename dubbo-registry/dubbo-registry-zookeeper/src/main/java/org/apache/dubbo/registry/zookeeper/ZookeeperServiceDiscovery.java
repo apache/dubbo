@@ -16,20 +16,21 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableConsumer;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.KeeperException;
 
 import java.util.Iterator;
@@ -192,10 +193,18 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
             throw new IllegalStateException("registerServiceWatcher create path=" + path + " fail.", e);
         }
 
+        CuratorWatcher prev = watcherCaches.get(path);
         CuratorWatcher watcher = watcherCaches.computeIfAbsent(path, key ->
                 new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, listener));
         try {
-            curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
+            List<String> addresses = curatorFramework.getChildren().usingWatcher(watcher).forPath(path);
+            // notify instance changed first time,
+            // in the multi-registry scenario,
+            // we need to merge pushed instances
+            if ((prev == null || watcher != prev)
+                    && CollectionUtils.isNotEmpty(addresses)) {
+                listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
+            }
         } catch (KeeperException.NoNodeException e) {
             // ignored
             if (logger.isErrorEnabled()) {
