@@ -30,9 +30,9 @@ import org.apache.dubbo.spring.boot.actuate.endpoint.DubboShutdownEndpoint;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,7 +82,7 @@ import java.util.function.Supplier;
                 "management.endpoints.web.exposure.include = *",
         })
 @EnableAutoConfiguration
-@Tag("Test")
+@Ignore
 public class DubboEndpointAnnotationAutoConfigurationTest {
 
     @Autowired
