@@ -70,10 +70,6 @@ public class TripleUtil {
         channel.attr(TripleUtil.CLIENT_STREAM_KEY).set(clientStream);
     }
 
-    public static void setClientStream(ChannelHandlerContext ctx, ClientStream clientStream) {
-        setClientStream(ctx.channel(), clientStream);
-    }
-
     public static ClientStream getClientStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
     }
@@ -94,7 +90,7 @@ public class TripleUtil {
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .setInt(TripleConstant.STATUS_KEY, status.code.code)
                 .set(TripleConstant.MESSAGE_KEY, getErrorMsg(status));
-        ctx.write(new DefaultHttp2HeadersFrame(trailers, true));
+        ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
 
     public static String getErrorMsg(GrpcStatus status) {
@@ -102,7 +98,8 @@ public class TripleUtil {
         if (status.cause == null) {
             msg = status.description;
         } else {
-            msg = StringUtils.toString(status.description, status.cause);
+            String placeHolder = status.description == null ? "" : status.description;
+            msg = StringUtils.toString(placeHolder, status.cause);
         }
         return percentEncode(msg);
     }
@@ -206,10 +203,11 @@ public class TripleUtil {
             return req;
         } catch (IOException e) {
             throw new RuntimeException("Failed to unpack req", e);
-        }finally {
+        } finally {
             closeQuietly(is);
         }
     }
+
     private static void closeQuietly(Closeable c) {
         if (c != null) {
             try {
@@ -271,14 +269,6 @@ public class TripleUtil {
 
     public static byte[] encodeBase64(byte[] in) {
         return BASE64_ENCODER.encode(in);
-    }
-
-    public static byte[] decodeBase64(byte[] in) {
-        return BASE64_DECODER.decode(in);
-    }
-
-    public static byte[] decodeBase64(String in) {
-        return BASE64_DECODER.decode(in.getBytes(StandardCharsets.UTF_8));
     }
 
     public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization) throws InvalidProtocolBufferException {

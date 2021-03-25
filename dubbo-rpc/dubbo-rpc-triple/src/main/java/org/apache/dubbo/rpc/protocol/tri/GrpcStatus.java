@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.remoting.exchange.Response;
+
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
  */
 
 public class GrpcStatus {
-    public static final GrpcStatus OK = new GrpcStatus(Code.OK, null, "OK");
     public final Code code;
     public final Throwable cause;
     public final String description;
@@ -40,6 +41,41 @@ public class GrpcStatus {
         return new GrpcStatus(code, null, null);
     }
 
+    public static byte toDubboStatus(Code code) {
+        byte status;
+        switch (code) {
+            case OK:
+                status = Response.OK;
+                break;
+            case UNKNOWN:
+                status = Response.SERVICE_ERROR;
+                break;
+            case DEADLINE_EXCEEDED:
+                status = Response.SERVER_TIMEOUT;
+                break;
+            case RESOURCE_EXHAUSTED:
+                status = Response.SERVER_THREADPOOL_EXHAUSTED_ERROR;
+                break;
+            case UNIMPLEMENTED:
+                status = Response.SERVICE_NOT_FOUND;
+                break;
+            case INVALID_ARGUMENT:
+                status = Response.BAD_REQUEST;
+                break;
+            case INTERNAL:
+                status = Response.SERVER_ERROR;
+                break;
+            case UNAVAILABLE:
+            case DATA_LOSS:
+                status = Response.CHANNEL_INACTIVE;
+                break;
+            default:
+                status = Response.CLIENT_ERROR;
+                break;
+        }
+        return status;
+    }
+
     public GrpcStatus withCause(Throwable cause) {
         return new GrpcStatus(this.code, cause, this.description);
     }
@@ -54,12 +90,21 @@ public class GrpcStatus {
 
     enum Code {
         OK(0),
+        CANCELLED(1),
         UNKNOWN(2),
+        INVALID_ARGUMENT(3),
         DEADLINE_EXCEEDED(4),
         NOT_FOUND(5),
+        ALREADY_EXISTS(6),
+        PERMISSION_DENIED(7),
         RESOURCE_EXHAUSTED(8),
+        FAILED_PRECONDITION(9),
+        ABORTED(10),
+        OUT_OF_RANGE(11),
         UNIMPLEMENTED(12),
-        INTERNAL(13);
+        INTERNAL(13),
+        UNAVAILABLE(14),
+        DATA_LOSS(15);
 
         final int code;
 
@@ -70,6 +115,7 @@ public class GrpcStatus {
         public static boolean isOk(Integer status) {
             return status == OK.code;
         }
+
 
         public static Code fromCode(int code) {
             for (Code value : Code.values()) {

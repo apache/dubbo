@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractInvoker.class);
 
     private final Class<T> type;
 
@@ -145,6 +145,11 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             invocation.addObjectAttachmentsIfAbsent(attachment);
         }
 
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        if (contextAttachments != null && contextAttachments.size() != 0) {
+            invocation.addObjectAttachmentsIfAbsent(contextAttachments);
+        }
+
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
@@ -170,7 +175,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult.getResponseFuture()));
+        RpcContext.getContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
 
         waitForResultIfSync(asyncResult, invocation);
         return asyncResult;
