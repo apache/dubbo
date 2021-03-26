@@ -249,7 +249,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         beanNameBuilder.append(" ").append(interfaceClass.getName());
-        System.out.println("----" + beanNameBuilder.toString());
+
         return beanNameBuilder.toString();
     }
 
