@@ -324,7 +324,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
         private NotifyListener listener;
 
-        private CountDownLatch latch;
+        private volatile CountDownLatch latch;
 
         RegistryChildListenerImpl(URL url, NotifyListener listener, CountDownLatch latch) {
             this.url = url;
