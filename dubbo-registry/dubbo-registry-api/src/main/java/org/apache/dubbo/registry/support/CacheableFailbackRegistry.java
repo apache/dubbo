@@ -135,6 +135,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 }
                 newURLs.put(rawProvider, cachedURL);
             }
+            newURLs.putAll(oldURLs);
         }
 
         stringUrls.put(consumer, newURLs);
