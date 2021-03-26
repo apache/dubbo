@@ -170,6 +170,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(key = SUBSCRIBED_SERVICE_NAMES_KEY)
     public String getServices() {
         return services;
@@ -181,6 +182,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @return the String {@link List} presenting the Dubbo interface subscribed
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(excluded = true)
     public Set<String> getSubscribedServices() {
         return splitToSet(getServices(), COMMA_SEPARATOR_CHAR);
