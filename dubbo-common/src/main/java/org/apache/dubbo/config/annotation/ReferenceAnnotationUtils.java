@@ -18,6 +18,7 @@ package org.apache.dubbo.config.annotation;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,26 +47,25 @@ public class ReferenceAnnotationUtils {
         }
         List<String> methodList = new ArrayList<>();
         for (Method method : methods) {
-            StringBuilder methodNameBuilder = new StringBuilder("@Method(");
-            trimAppend(methodNameBuilder, "name", method.name());
-            trimAppend(methodNameBuilder, "timeout", method.timeout());
-            trimAppend(methodNameBuilder, "retries", method.retries());
-            trimAppend(methodNameBuilder, "loadbalance", method.loadbalance());
-            trimAppend(methodNameBuilder, "async", method.async());
-            trimAppend(methodNameBuilder, "actives", method.actives());
-            trimAppend(methodNameBuilder, "executes", method.executes());
-            trimAppend(methodNameBuilder, "deprecated", method.deprecated());
-            trimAppend(methodNameBuilder, "sticky", method.sticky());
-            trimAppend(methodNameBuilder, "isReturn", method.isReturn());
-            trimAppend(methodNameBuilder, "oninvoke", method.oninvoke());
-            trimAppend(methodNameBuilder, "onreturn", method.onreturn());
-            trimAppend(methodNameBuilder, "onthrow", method.onthrow());
-            trimAppend(methodNameBuilder, "cache", method.cache());
-            trimAppend(methodNameBuilder, "validation", method.validation());
-            trimAppend(methodNameBuilder, "merger", method.merger());
-            trimAppend(methodNameBuilder, "arguments", generateArgumentsString(method.arguments()));
-            methodNameBuilder.setCharAt(methodNameBuilder.lastIndexOf(","), ')');
-            methodList.add(methodNameBuilder.toString());
+            Map<String, Object> methodMap = new HashMap<>();
+            methodMap.put("name", method.name());
+            methodMap.put("timeout", method.timeout());
+            methodMap.put("retries", method.retries());
+            methodMap.put("loadbalance", method.loadbalance());
+            methodMap.put("async", method.async());
+            methodMap.put("actives", method.actives());
+            methodMap.put("executes", method.executes());
+            methodMap.put("deprecated", method.deprecated());
+            methodMap.put("sticky", method.sticky());
+            methodMap.put("isReturn", method.isReturn());
+            methodMap.put("oninvoke", method.oninvoke());
+            methodMap.put("onreturn", method.onreturn());
+            methodMap.put("onthrow", method.onthrow());
+            methodMap.put("cache", method.cache());
+            methodMap.put("validation", method.validation());
+            methodMap.put("merger", method.merger());
+            methodMap.put("arguments", generateArgumentsString(method.arguments()));
+            methodList.add(convertToString(methodMap, "@Method("));
         }
         return methodList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
     }
@@ -76,19 +76,20 @@ public class ReferenceAnnotationUtils {
         }
         List<String> argumentList = new ArrayList<>();
         for (Argument argument : arguments) {
-            StringBuilder argumentStringBuilder = new StringBuilder("@Argument(");
-            trimAppend(argumentStringBuilder, "index", argument.index());
-            trimAppend(argumentStringBuilder, "type", argument.type());
-            trimAppend(argumentStringBuilder, "callback", argument.callback());
-            argumentStringBuilder.setCharAt(argumentStringBuilder.lastIndexOf(","), ')');
-            argumentList.add(argumentStringBuilder.toString());
+            Map<String, Object> argMap = new HashMap<>();
+            argMap.put("index", argument.index());
+            argMap.put("type", argument.type());
+            argMap.put("callback", argument.callback());
+            argumentList.add(convertToString(argMap, "@Argument("));
         }
         return argumentList.stream().sorted().collect(Collectors.joining(",", "[", "]"));
     }
 
-    private static void trimAppend(StringBuilder builder, String name, Object value) {
-        if (value != null && String.valueOf(value).length() > 0) {
-            builder.append(name).append("=").append(value).append(",");
-        }
+    private static String convertToString(Map<String, Object> map, String prefix) {
+        return map.entrySet().stream()
+                .filter(e -> e.getValue() != null && String.valueOf(e.getValue()).length() > 0)
+                .map(e -> e.getKey() + "=" + e.getValue())
+                .sorted()
+                .collect(Collectors.joining(",", prefix, ")"));
     }
 }
