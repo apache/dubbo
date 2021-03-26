@@ -235,7 +235,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             for (String key : sortedAttrKeys) {
                 Object value = attributes.get(key);
                 //handle method array, generic array
-                if (value!=null && value.getClass().isArray()) {
+                if (value != null && value.getClass().isArray()) {
                     Object[] array = ObjectUtils.toObjectArray(value);
                     value = Arrays.toString(array);
                 }
@@ -252,7 +252,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         return beanNameBuilder.toString();
     }
-    
+
     /**
      * Is Local Service bean or not?
      *
