@@ -37,6 +37,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private final ServiceDiscovery serviceDiscovery;
     private final String registryId;
     private URL url;
-    private Map<String, List<NotifyListener>> listeners;
+    private Map<String, Set<NotifyListener>> listeners;
 
     private Map<String, List<ServiceInstance>> allInstances;
 
@@ -205,7 +206,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     public void addListener(String serviceKey, NotifyListener listener) {
-        this.listeners.computeIfAbsent(serviceKey, k -> new ArrayList<>()).add(listener);
+        this.listeners.computeIfAbsent(serviceKey, k -> new HashSet<>()).add(listener);
     }
 
     public void removeListener(String serviceKey) {
