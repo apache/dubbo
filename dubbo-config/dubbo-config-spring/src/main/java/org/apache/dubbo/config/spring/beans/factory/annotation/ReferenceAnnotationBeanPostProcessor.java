@@ -252,11 +252,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         return beanNameBuilder.toString();
     }
-
-    private boolean isArrayOf(Object value, Class type) {
-        return value.getClass().isArray() && value.getClass().getComponentType() == type;
-    }
-
+    
     /**
      * Is Local Service bean or not?
      *
