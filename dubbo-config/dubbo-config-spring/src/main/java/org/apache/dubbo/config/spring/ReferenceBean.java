@@ -142,10 +142,13 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    @Deprecated
     public String getGroup() {
         Object version = propertyValues.get(CommonConstants.GROUP_KEY);
-        return version == null ? null : String.valueOf(version);    }
+        return version == null ? null : String.valueOf(version);
+    }
 
+    @Deprecated
     public String getVersion() {
         Object version = propertyValues.get(CommonConstants.VERSION_KEY);
         return version == null ? null : String.valueOf(version);
