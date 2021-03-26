@@ -16,33 +16,33 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONValidator;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
 
-import org.yaml.snakeyaml.TypeDescription;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONValidator;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.RegistryConstants.APP_DYNAMIC_CONFIGURATORS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
 
 /**
  * Config parser
  */
 public class ConfigParser {
 
-    public static List<URL> parseConfigurators(String rawConfig) {
+    public static List<URL> parseConfigurators(String rawConfig) throws Exception {
         // compatible url JsonArray, such as [ "override://xxx", "override://xxx" ]
         if (isJsonArray(rawConfig)) {
             return parseJsonArray(rawConfig);
@@ -72,14 +72,10 @@ public class ConfigParser {
         return urls;
     }
 
-    private static <T> T parseObject(String rawConfig) {
-        Constructor constructor = new Constructor(ConfiguratorConfig.class);
-        TypeDescription itemDescription = new TypeDescription(ConfiguratorConfig.class);
-        itemDescription.addPropertyParameters("items", ConfigItem.class);
-        constructor.addTypeDescription(itemDescription);
-
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawConfig);
+    private static <T> T parseObject(String rawConfig) throws Exception {
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawConfig);
+        return (T) PojoUtils.mapToPojo(map, ConfiguratorConfig.class);
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
