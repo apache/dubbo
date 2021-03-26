@@ -292,7 +292,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     private class RegistryChildListenerImpl implements ChildListener {
         private RegistryNotifier notifier;
         private long lastExecuteTime;
-        private CountDownLatch latch;
+        private volatile CountDownLatch latch;
 
         public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
