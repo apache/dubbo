@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config.model;
 
-import org.apache.dubbo.common.utils.BeanUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PojoUtils;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -43,7 +43,7 @@ public class ConditionRuleParser {
     public static ConditionRouterRule parse(String rawRule) throws Exception {
         Yaml yaml = new Yaml(new SafeConstructor());
         Map<String, Object> map = yaml.load(rawRule);
-        ConditionRouterRule rule = BeanUtils.mapToBean(map, ConditionRouterRule.class);
+        ConditionRouterRule rule = PojoUtils.mapToPojo(map, ConditionRouterRule.class);
         rule.setRawRule(rawRule);
         if (CollectionUtils.isEmpty(rule.getConditions())) {
             rule.setValid(false);

@@ -17,8 +17,8 @@
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.BeanUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
@@ -75,7 +75,7 @@ public class ConfigParser {
     private static <T> T parseObject(String rawConfig) throws Exception {
         Yaml yaml = new Yaml(new SafeConstructor());
         Map<String, Object> map = yaml.load(rawConfig);
-        return (T) BeanUtils.mapToBean(map, ConfiguratorConfig.class);
+        return (T) PojoUtils.mapToPojo(map, ConfiguratorConfig.class);
     }
 
     private static List<URL> serviceItemToUrls(ConfigItem item, ConfiguratorConfig config) {
