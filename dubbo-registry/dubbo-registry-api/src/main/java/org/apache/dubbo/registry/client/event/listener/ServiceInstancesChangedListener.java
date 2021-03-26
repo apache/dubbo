@@ -61,6 +61,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private final Set<String> serviceNames;
     private final ServiceDiscovery serviceDiscovery;
+    private final String registryId;
     private URL url;
     private Map<String, NotifyListener> listeners;
 
@@ -73,6 +74,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
+        this.registryId = serviceDiscovery.getUrl().getParameter("id");
         this.listeners = new HashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
@@ -233,8 +235,8 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return url;
     }
 
-    public ServiceDiscovery getServiceDiscovery() {
-        return serviceDiscovery;
+    public String getRegistryId() {
+        return registryId;
     }
 
     /**
@@ -254,11 +256,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             return false;
         }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(getServiceDiscovery(), that.getServiceDiscovery());
+        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(getRegistryId(), that.getRegistryId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames(), getServiceDiscovery());
+        return Objects.hash(getClass(), getServiceNames(), getRegistryId());
     }
 }
