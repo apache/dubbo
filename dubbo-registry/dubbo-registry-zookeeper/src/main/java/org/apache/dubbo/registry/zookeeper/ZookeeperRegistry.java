@@ -168,6 +168,9 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                     ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, path, k, latch));
+                    if (zkListener instanceof RegistryChildListenerImpl) {
+                        ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                    }
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
@@ -318,6 +321,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     ZookeeperRegistry.this.notify(consumerUrl, listener, ZookeeperRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
                 }
             };
+        }
+
+        public void setLatch(CountDownLatch latch) {
+            this.latch = latch;
         }
 
         @Override
