@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -24,6 +25,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;
@@ -140,12 +142,16 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    @Deprecated
     public String getGroup() {
-        return referenceConfig.getGroup();
+        Object version = propertyValues.get(CommonConstants.GROUP_KEY);
+        return version == null ? null : String.valueOf(version);
     }
 
+    @Deprecated
     public String getVersion() {
-        return referenceConfig.getVersion();
+        Object version = propertyValues.get(CommonConstants.VERSION_KEY);
+        return version == null ? null : String.valueOf(version);
     }
 
     public Map<String, Object> getReferenceProps() {
@@ -216,7 +222,7 @@ public class ReferenceBean<T> implements FactoryBean,
         for (Class<?> anInterface : internalInterfaces) {
             proxyFactory.addInterface(anInterface);
         }
-        if (ProtocolUtils.isGeneric(generic)){
+        if (ProtocolUtils.isGeneric(generic)) {
             //add actual interface
             proxyFactory.addInterface(ReflectUtils.forName(interfaceName));
         }
