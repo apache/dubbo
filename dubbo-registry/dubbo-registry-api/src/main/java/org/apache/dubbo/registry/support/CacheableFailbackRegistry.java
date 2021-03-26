@@ -57,6 +57,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_SCRIPT_PROTOCOL;
 import static org.apache.dubbo.common.url.component.DubboServiceAddressURL.PROVIDER_FIRST_KEYS;
 
 /**
@@ -165,7 +166,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             urls = new ArrayList<>(1);
         } else {
             String rawProvider = providers.iterator().next();
-            if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL)) {
+            if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL) || rawProvider.startsWith(ROUTE_SCRIPT_PROTOCOL)) {
                 urls = toConfiguratorsWithoutEmpty(consumer, providers);
             } else {
                 urls = toUrlsWithoutEmpty(consumer, providers);
