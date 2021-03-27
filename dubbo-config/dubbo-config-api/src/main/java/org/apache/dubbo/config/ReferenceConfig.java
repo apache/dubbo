@@ -170,6 +170,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(key = SUBSCRIBED_SERVICE_NAMES_KEY)
     public String getServices() {
         return services;
@@ -181,6 +182,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @return the String {@link List} presenting the Dubbo interface subscribed
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(excluded = true)
     public Set<String> getSubscribedServices() {
         return splitToSet(getServices(), COMMA_SEPARATOR_CHAR);
@@ -424,11 +426,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs(consumer);
-        if (consumer != null) {
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(consumer.getRegistryIds());
-            }
-        }
         // get consumer's global configuration
         checkDefault();
 
@@ -453,12 +450,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
-        //init serivceMetadata
-        serviceMetadata.setVersion(getVersion());
-        serviceMetadata.setGroup(getGroup());
-        serviceMetadata.setDefaultGroup(getGroup());
+        initServiceMetadata(consumer);
         serviceMetadata.setServiceType(getActualInterface());
-        serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 

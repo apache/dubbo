@@ -285,7 +285,14 @@ public @interface DubboReference {
     /**
      * @return The service names that the Dubbo interface subscribed
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
+     * @deprecated using {@link DubboReference#providedBy()}
      * @since 2.7.8
      */
     String[] services() default {};
+
+    /**
+     * declares which app or service this interface belongs to
+     * @see RegistryConstants#PROVIDED_BY
+     */
+    String[] providedBy() default {};
 }

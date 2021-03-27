@@ -18,8 +18,6 @@ package org.apache.dubbo.registry.redis;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -76,8 +74,6 @@ import static org.apache.dubbo.registry.Constants.UNREGISTER;
  * RedisRegistry
  */
 public class RedisRegistry extends FailbackRegistry {
-
-    private static final Logger logger = LoggerFactory.getLogger(RedisRegistry.class);
 
     private final static String DEFAULT_ROOT = "dubbo";
 

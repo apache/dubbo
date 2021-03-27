@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.lang.reflect.Method;
@@ -184,7 +185,7 @@ public class ProviderModel {
         methodsToExport = serviceInterfaceClass.getMethods();
 
         for (Method method : methodsToExport) {
-            method.setAccessible(true);
+            ReflectUtils.makeAccessible(method);
 
             List<ProviderMethodModel> methodModels = methods.get(method.getName());
             if (methodModels == null) {
