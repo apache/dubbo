@@ -19,12 +19,11 @@ package org.apache.dubbo.rpc.cluster.support.migration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.util.Optional;
-
-import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 public class MigrationRule {
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION_KEY = "dubbo.application.service-discovery.migration";
@@ -64,7 +63,7 @@ public class MigrationRule {
             return getMigrationRule(null);
         }
 
-        if (StringUtils.isBlank(rawRule) || INIT.equals(rawRule)) {
+        if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
             String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
             return getMigrationRule(step);
         }
