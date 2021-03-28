@@ -67,7 +67,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATT
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDDEN_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -133,8 +133,8 @@ public class RegistryProtocol implements Protocol {
     private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();
-    //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
-    //providerurl <--> exporter
+    // To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
+    // providerurl <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
     protected RegistryFactory registryFactory;
@@ -143,12 +143,12 @@ public class RegistryProtocol implements Protocol {
     private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
     private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
 
-    //Filter the parameters that do not need to be output in url(Starting with .)
-    private static String[] getFilteredKeys(URL url) {
+    // get the parameters which shouldn't been displayed in url string(Starting with .)
+    private static String[] getHiddenKeys(URL url) {
         Map<String, String> params = url.getParameters();
         if (CollectionUtils.isNotEmptyMap(params)) {
             return params.keySet().stream()
-                    .filter(k -> k.startsWith(HIDE_KEY_PREFIX))
+                    .filter(k -> k.startsWith(HIDDEN_KEY_PREFIX))
                     .toArray(String[]::new);
         } else {
             return new String[0];
@@ -176,11 +176,6 @@ public class RegistryProtocol implements Protocol {
         return overrideListeners;
     }
 
-    private void register(URL registryUrl, URL registeredProviderUrl) {
-        Registry registry = registryFactory.getRegistry(registryUrl);
-        registry.register(registeredProviderUrl);
-    }
-
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
         ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
@@ -204,7 +199,7 @@ public class RegistryProtocol implements Protocol {
         overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
-        //export invoker
+        // export invoker
         final ExporterChangeableWrapper<T> exporter = doLocalExport(originInvoker, providerUrl);
 
         // url to registry
@@ -214,7 +209,7 @@ public class RegistryProtocol implements Protocol {
         // decide if we need to delay publish
         boolean register = providerUrl.getParameter(REGISTER_KEY, true);
         if (register) {
-            register(registryUrl, registeredProviderUrl);
+            registry.register(registeredProviderUrl);
         }
 
         // register stated url on provider model
@@ -377,7 +372,7 @@ public class RegistryProtocol implements Protocol {
     private URL getUrlToRegistry(final URL providerUrl, final URL registryUrl) {
         //The address you see at the registry
         if (!registryUrl.getParameter(SIMPLIFIED_KEY, false)) {
-            return providerUrl.removeParameters(getFilteredKeys(providerUrl)).removeParameters(
+            return providerUrl.removeParameters(getHiddenKeys(providerUrl)).removeParameters(
                     MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE, QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY,
                     INTERFACES);
         } else {
@@ -553,8 +548,8 @@ public class RegistryProtocol implements Protocol {
         return protocol.getServers();
     }
 
-    //Merge the urls of configurators
-    private static URL getConfigedInvokerUrl(List<Configurator> configurators, URL url) {
+    // merge the urls of configurators
+    private static URL getConfiguredInvokerUrl(List<Configurator> configurators, URL url) {
         if (configurators != null && configurators.size() > 0) {
             for (Configurator configurator : configurators) {
                 url = configurator.configure(url);
@@ -662,9 +657,9 @@ public class RegistryProtocol implements Protocol {
             //The current, may have been merged many times
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
-            URL newUrl = getConfigedInvokerUrl(configurators, currentUrl);
-            newUrl = getConfigedInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
-            newUrl = getConfigedInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
+            URL newUrl = getConfiguredInvokerUrl(configurators, currentUrl);
+            newUrl = getConfiguredInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
+            newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                     .getConfigurators(), newUrl);
             if (!currentUrl.equals(newUrl)) {
                 RegistryProtocol.this.reExport(originInvoker, newUrl);
@@ -702,7 +697,7 @@ public class RegistryProtocol implements Protocol {
         }
 
         private <T> URL overrideUrl(URL providerUrl) {
-            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+            return RegistryProtocol.getConfiguredInvokerUrl(configurators, providerUrl);
         }
 
         @Override
@@ -725,7 +720,7 @@ public class RegistryProtocol implements Protocol {
          * @return
          */
         private <T> URL overrideUrl(URL providerUrl) {
-            return RegistryProtocol.getConfigedInvokerUrl(configurators, providerUrl);
+            return RegistryProtocol.getConfiguredInvokerUrl(configurators, providerUrl);
         }
 
         @Override
