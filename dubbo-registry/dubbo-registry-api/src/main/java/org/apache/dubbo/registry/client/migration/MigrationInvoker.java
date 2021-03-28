@@ -112,10 +112,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
             setListener(invoker, () -> {
-                this.compareAddresses(invoker, serviceDiscoveryInvoker);
+                this.compareAddresses(serviceDiscoveryInvoker, invoker);
             });
             setListener(serviceDiscoveryInvoker, () -> {
-                this.compareAddresses(invoker, serviceDiscoveryInvoker);
+                this.compareAddresses(serviceDiscoveryInvoker, invoker);
             });
         } else {
             refreshServiceDiscoveryInvoker();
