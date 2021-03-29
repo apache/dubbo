@@ -177,7 +177,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     public void removeListener(String serviceKey) {
         listeners.remove(serviceKey);
+        logger.info("Interface listener of interface " + serviceKey + " removed.");
         if (listeners.isEmpty()) {
+            logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
             serviceDiscovery.removeServiceInstancesChangedListener(this);
         }
     }
