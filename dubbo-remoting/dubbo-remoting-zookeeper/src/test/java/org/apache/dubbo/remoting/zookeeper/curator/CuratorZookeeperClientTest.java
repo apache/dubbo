@@ -183,12 +183,14 @@ public class CuratorZookeeperClientTest {
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNotNull(valueFromCache);
 
-        curatorClient.getClient().setData().forPath(path + "/d.json", "sdsdf".getBytes());
-        curatorClient.getClient().setData().forPath(path + "/d.json", "dfsasf".getBytes());
+        Thread.sleep(100);
+        curatorClient.getClient().setData().forPath(path + "/d.json", "foo".getBytes());
+        Thread.sleep(100);
+        curatorClient.getClient().setData().forPath(path + "/d.json", "bar".getBytes());
         curatorClient.delete(path + "/d.json");
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
         Thread.sleep(2000L);
-        Assertions.assertTrue(4L <= atomicInteger.get());
+        Assertions.assertTrue(3L <= atomicInteger.get());
     }
 }
