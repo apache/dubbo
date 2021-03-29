@@ -48,7 +48,7 @@ public class MigrationRuleHandler<T> {
 
         migrationInvoker.setMigrationRule(rule);
 
-        if (migrationInvoker.isMigrationMultiRegsitry()) {
+        if (migrationInvoker.isMigrationMultiRegistry()) {
             if (migrationInvoker.isServiceInvoker()) {
                 migrationInvoker.refreshServiceDiscoveryInvoker();
             } else {
