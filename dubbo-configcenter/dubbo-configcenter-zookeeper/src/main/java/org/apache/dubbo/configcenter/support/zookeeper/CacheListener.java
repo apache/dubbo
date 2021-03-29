@@ -37,7 +37,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
  */
 
 public class CacheListener implements DataListener {
-    private static final int MIN_PATH_DEPTH = 5;
 
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
     private String rootPath;

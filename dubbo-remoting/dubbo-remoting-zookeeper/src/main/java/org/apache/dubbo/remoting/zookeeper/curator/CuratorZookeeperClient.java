@@ -222,8 +222,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl treeCacheListener) {
-        this.addTargetDataListener(path, treeCacheListener, null);
+    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl nodeCacheListener) {
+        this.addTargetDataListener(path, nodeCacheListener, null);
     }
 
     @Override
@@ -241,7 +241,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
             nodeCache.start();
         } catch (Exception e) {
-            throw new IllegalStateException("Add treeCache listener for path:" + path, e);
+            throw new IllegalStateException("Add nodeCache listener for path:" + path, e);
         }
     }
 
