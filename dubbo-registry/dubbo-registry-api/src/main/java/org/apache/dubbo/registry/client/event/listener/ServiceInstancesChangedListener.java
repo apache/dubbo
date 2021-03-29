@@ -263,7 +263,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         MetadataInfo metadata = revisionToMetadata.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
-            logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster());
+            logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
         }
 
         if (metadata == null
@@ -315,7 +315,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
-            logger.info("Metadata " + metadataInfo.toString());
+            logger.info("Metadata " + metadataInfo);
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
             metadataInfo = null;
