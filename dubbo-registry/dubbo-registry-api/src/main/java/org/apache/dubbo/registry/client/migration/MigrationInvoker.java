@@ -387,13 +387,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 //        }
 //    }
 
-    private static class InvokerDestroyTask implements Runnable {
-        @Override
-        public void run() {
-
-        }
-    }
-
     private void clearListener(ClusterInvoker<T> invoker) {
         if (invoker == null) return;
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();

@@ -106,7 +106,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      */
     @Override
     public boolean isNotificationReceived() {
-        return serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
+        return serviceListener.isDestroyed()
+                || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {

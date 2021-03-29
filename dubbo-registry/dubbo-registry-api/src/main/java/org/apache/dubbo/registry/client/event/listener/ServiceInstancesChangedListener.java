@@ -51,6 +51,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
@@ -71,11 +72,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     protected final ServiceDiscovery serviceDiscovery;
     protected URL url;
     protected Map<String, NotifyListener> listeners;
+    protected AtomicBoolean destroyed = new AtomicBoolean(false);
 
     protected Map<String, List<ServiceInstance>> allInstances;
-
     protected Map<String, Object> serviceUrls;
-
     protected Map<String, MetadataInfo> revisionToMetadata;
 
     private volatile long lastRefreshTime;
@@ -83,8 +83,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private volatile AtomicInteger failureCounter = new AtomicInteger(0);
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
-
-    private ScheduledExecutorService scheduler;
+    private static ScheduledExecutorService scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
 
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
@@ -94,7 +93,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
         retryPermission = new Semaphore(1);
-        this.scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
     }
 
     /**
@@ -136,7 +134,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             }
         }
 
-        logger.info(newRevisionToMetadata.size() + " unique revisions. ");
+        logger.info(newRevisionToMetadata.size() + " unique revisions: " + newRevisionToMetadata.keySet());
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
@@ -261,18 +259,22 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
+
+        if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster());
+        }
+
         if (metadata == null
                 || (metadata == MetadataInfo.EMPTY && (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)))) {
             metadata = getMetadataInfo(instance);
 
             if (metadata != MetadataInfo.EMPTY) {
-                logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                 failureCounter.set(0);
                 revisionToMetadata.putIfAbsent(revision, metadata);
                 parseMetadata(revision, metadata, localServiceToRevisions);
             } else {
                 logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                        + ", wait for retry.");
+                        + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
                 lastFailureTime = System.currentTimeMillis();
                 failureCounter.incrementAndGet();
             }
@@ -311,9 +313,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
-            if (logger.isDebugEnabled()) {
-                logger.info("Metadata " + metadataInfo.toString());
-            }
+            logger.info("Metadata " + metadataInfo.toString());
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
             metadataInfo = null;
@@ -368,14 +368,20 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
     public void destroy() {
-        if (CollectionUtils.isEmptyMap(listeners)) {
-            allInstances.clear();
-            serviceUrls.clear();
-            revisionToMetadata.clear();
-            if (retryFuture != null && !retryFuture.isDone()) {
-                retryFuture.cancel(true);
+        if (destroyed.compareAndSet(false, true)) {
+            if (CollectionUtils.isEmptyMap(listeners)) {
+                allInstances.clear();
+                serviceUrls.clear();
+                revisionToMetadata.clear();
+                if (retryFuture != null && !retryFuture.isDone()) {
+                    retryFuture.cancel(true);
+                }
             }
         }
+    }
+
+    public boolean isDestroyed() {
+        return destroyed.get();
     }
 
     @Override
