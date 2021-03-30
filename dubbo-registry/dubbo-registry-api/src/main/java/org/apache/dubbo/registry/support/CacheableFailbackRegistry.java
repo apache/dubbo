@@ -164,6 +164,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         List<URL> urls;
         if (CollectionUtils.isEmpty(providers)) {
             urls = new ArrayList<>(1);
+            // clear cache on empty notification: unsubscribe or provider offline
+            stringUrls.remove(consumer);
         } else {
             String rawProvider = providers.iterator().next();
             if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL) || rawProvider.startsWith(ROUTE_SCRIPT_PROTOCOL)) {

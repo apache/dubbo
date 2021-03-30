@@ -33,6 +33,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
@@ -93,7 +94,11 @@ public class RemoteMetadataServiceImpl {
         if (metadataReport == null) {
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
         }
-        return metadataReport.getAppMetadata(identifier, instance.getExtendParams());
+        Map<String, String> params = new HashMap<>(instance.getExtendParams());
+        if (instance.getRegistryCluster() != null && !instance.getRegistryCluster().equalsIgnoreCase(params.get(REGISTRY_CLUSTER_KEY))) {
+            params.put(REGISTRY_CLUSTER_KEY, instance.getRegistryCluster());
+        }
+        return metadataReport.getAppMetadata(identifier, params);
     }
 
     private void checkRemoteConfigured() {
