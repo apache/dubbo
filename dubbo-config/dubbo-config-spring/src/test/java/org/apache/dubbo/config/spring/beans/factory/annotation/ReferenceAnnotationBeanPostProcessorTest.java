@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
@@ -129,11 +130,17 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"})
     private HelloService helloServiceWithArray2;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = @Method(name = "sayHello", timeout = 100))
-    private HelloService helloServiceWithArray3;
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
+    private HelloService helloServiceWithMethod1;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = @Method(name = "sayHello", timeout = 100))
-    private HelloService helloServiceWithArray4;
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
+    private HelloService helloServiceWithMethod2;
+
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String")})})
+    private HelloService helloServiceWithArgument1;
+
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String")})})
+    private HelloService helloServiceWithArgument2;
 
     @Test
     public void test() throws Exception {
@@ -189,7 +196,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(6, referenceBeans.size());
+        Assertions.assertEquals(7, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -206,7 +213,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assertions.assertEquals(7, referenceBeanMap.size());
+        Assertions.assertEquals(9, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -323,7 +330,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(6, referenceBeans.size());
+        Assertions.assertEquals(7, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
