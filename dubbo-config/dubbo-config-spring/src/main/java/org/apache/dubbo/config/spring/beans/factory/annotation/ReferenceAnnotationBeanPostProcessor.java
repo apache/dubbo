@@ -43,6 +43,7 @@ import org.springframework.util.ObjectUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -230,7 +231,13 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (!attributes.isEmpty()) {
             beanNameBuilder.append('(');
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                String value = convertAttribute(entry.getValue());
+                String value;
+                if ("parameters".equals(entry.getKey())) {
+                    ArrayList<String> pairs = getParameterPairs(entry);
+                    value = convertAttribute(pairs.stream().sorted().toArray());
+                } else {
+                    value = convertAttribute(entry.getValue());
+                }
                 beanNameBuilder.append(entry.getKey())
                         .append('=')
                         .append(value)
@@ -243,6 +250,16 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanNameBuilder.append(" ").append(interfaceClass.getName());
 
         return beanNameBuilder.toString();
+    }
+
+    private ArrayList<String> getParameterPairs(Map.Entry<String, Object> entry) {
+        String[] entryValues = (String[]) entry.getValue();
+        ArrayList<String> pairs = new ArrayList<>();
+        // parameters spec is {key1,value1,key2,value2}
+        for (int i = 0; i < entryValues.length / 2 * 2; i = i + 2) {
+            pairs.add(entryValues[i] + "=" + entryValues[i + 1]);
+        }
+        return pairs;
     }
 
     private String convertAttribute(Object obj) {

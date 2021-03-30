@@ -124,18 +124,25 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference
     private HelloService helloService2;
 
+    // Instance 1
+    @Reference(check = false, parameters = {"a", "2", "b", "1"}, filter = {"echo"})
+    private HelloService helloServiceWithArray0;
+
+    // Instance 2
     @Reference(check = false, parameters = {"a", "1", "b", "2"}, filter = {"echo"})
     private HelloService helloServiceWithArray1;
 
     @Reference(parameters = {"b", "2", "a", "1"}, filter = {"echo"}, check = false)
     private HelloService helloServiceWithArray2;
 
+    // Instance 3
     @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod1;
 
     @Reference(parameters = {"a", "1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod2;
 
+    // Instance 4
     @Reference(parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")}, timeout = 100)}, check = false)
     private HelloService helloServiceWithArgument1;
 
@@ -196,7 +203,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(7, referenceBeans.size());
+        Assertions.assertEquals(8, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -213,7 +220,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assertions.assertEquals(9, referenceBeanMap.size());
+        Assertions.assertEquals(10, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -330,7 +337,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(7, referenceBeans.size());
+        Assertions.assertEquals(8, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
