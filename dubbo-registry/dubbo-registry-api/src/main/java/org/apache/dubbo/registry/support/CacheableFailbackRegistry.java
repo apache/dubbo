@@ -55,9 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_SEPARATOR_ENCODED;
 import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.OVERRIDE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_SCRIPT_PROTOCOL;
+import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.url.component.DubboServiceAddressURL.PROVIDER_FIRST_KEYS;
 
 /**
@@ -138,9 +136,43 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             }
         }
 
+        evictUrlForConsumer(consumer);
         stringUrls.put(consumer, newURLs);
 
-        // destroy used urls
+        return new ArrayList<>(newURLs.values());
+    }
+
+    protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
+        List<URL> urls = new ArrayList<>(1);
+        boolean isProviderPath = path.endsWith(PROVIDERS_CATEGORY);
+        if (isProviderPath) {
+            if (CollectionUtils.isNotEmpty(providers)) {
+                urls = toUrlsWithoutEmpty(consumer, providers);
+            } else {
+                // clear cache on empty notification: unsubscribe or provider offline
+                evictUrlForConsumer(consumer);
+            }
+        } else {
+            if (CollectionUtils.isNotEmpty(providers)) {
+                urls = toConfiguratorsWithoutEmpty(consumer, providers);
+            }
+        }
+
+        if (urls.isEmpty()) {
+            int i = path.lastIndexOf(PATH_SEPARATOR);
+            String category = i < 0 ? path : path.substring(i + 1);
+            URL empty = URLBuilder.from(consumer)
+                    .setProtocol(EMPTY_PROTOCOL)
+                    .addParameter(CATEGORY_KEY, category)
+                    .build();
+            urls.add(empty);
+        }
+
+        return urls;
+    }
+
+    private void evictUrlForConsumer(URL consumer) {
+        Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(consumer);
         try {
             if (oldURLs != null && oldURLs.size() > 0) {
                 Long currentTimestamp = System.currentTimeMillis();
@@ -156,34 +188,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         } catch (Exception e) {
             logger.warn("Failed to evict url for " + consumer, e);
         }
-
-        return new ArrayList<>(newURLs.values());
-    }
-
-    protected List<URL> toUrlsWithEmpty(URL consumer, String path, Collection<String> providers) {
-        List<URL> urls;
-        if (CollectionUtils.isEmpty(providers)) {
-            urls = new ArrayList<>(1);
-            // clear cache on empty notification: unsubscribe or provider offline
-            stringUrls.remove(consumer);
-        } else {
-            String rawProvider = providers.iterator().next();
-            if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL) || rawProvider.startsWith(ROUTE_SCRIPT_PROTOCOL)) {
-                urls = toConfiguratorsWithoutEmpty(consumer, providers);
-            } else {
-                urls = toUrlsWithoutEmpty(consumer, providers);
-            }
-        }
-        if (urls.isEmpty()) {
-            int i = path.lastIndexOf(PATH_SEPARATOR);
-            String category = i < 0 ? path : path.substring(i + 1);
-            URL empty = URLBuilder.from(consumer)
-                    .setProtocol(EMPTY_PROTOCOL)
-                    .addParameter(CATEGORY_KEY, category)
-                    .build();
-            urls.add(empty);
-        }
-        return urls;
     }
 
     protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {
