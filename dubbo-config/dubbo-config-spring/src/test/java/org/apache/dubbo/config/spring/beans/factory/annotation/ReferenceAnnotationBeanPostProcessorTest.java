@@ -136,10 +136,10 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod2;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String")})})
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")})})
     private HelloService helloServiceWithArgument1;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String")})})
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
     private HelloService helloServiceWithArgument2;
 
     @Test
