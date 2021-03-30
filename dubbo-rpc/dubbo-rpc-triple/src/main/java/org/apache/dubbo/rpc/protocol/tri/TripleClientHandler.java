@@ -29,6 +29,7 @@ import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
+import java.util.concurrent.Executor;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
@@ -39,11 +40,6 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             super.write(ctx, msg, promise);
         }
-    }
-
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        super.close(ctx, promise);
     }
 
     @Override
@@ -63,7 +59,8 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final boolean needWrapper = TripleUtil.needWrapper(inv.getParameterTypes());
         final URL url = inv.getInvoker().getUrl();
-        ClientStream clientStream = new ClientStream(url, ctx, needWrapper, req);
+        final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
+        ClientStream clientStream = new ClientStream(url, ctx, needWrapper, req,callback);
         clientStream.write(req, promise);
     }
 }

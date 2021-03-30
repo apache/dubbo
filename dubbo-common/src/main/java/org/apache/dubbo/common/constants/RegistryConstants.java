@@ -55,6 +55,8 @@ public interface RegistryConstants {
 
     String ROUTE_PROTOCOL = "route";
 
+    String ROUTE_SCRIPT_PROTOCOL = "script";
+
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";

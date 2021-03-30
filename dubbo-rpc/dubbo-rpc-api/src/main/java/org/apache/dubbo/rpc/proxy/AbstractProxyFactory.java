@@ -79,6 +79,10 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         return getProxy(invoker, interfaces.toArray(new Class<?>[0]));
     }
 
+    public static Class<?>[] getInternalInterfaces() {
+        return INTERNAL_INTERFACES.clone();
+    }
+
     public abstract <T> T getProxy(Invoker<T> invoker, Class<?>[] types);
 
 }

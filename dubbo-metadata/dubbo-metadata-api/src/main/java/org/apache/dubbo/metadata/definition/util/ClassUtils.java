@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.metadata.definition.util;
 
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -125,7 +123,7 @@ public final class ClassUtils {
 
             sb.append(".");
 
-            if (ownerType instanceof ParameterizedTypeImpl) {
+            if (ownerType instanceof ParameterizedType) {
                 // Find simple name of nested type by removing the
                 // shared prefix with owner.
                 sb.append(rawType.getName().replace(((Class) ((ParameterizedType) ownerType).getRawType()).getName() + "$",
