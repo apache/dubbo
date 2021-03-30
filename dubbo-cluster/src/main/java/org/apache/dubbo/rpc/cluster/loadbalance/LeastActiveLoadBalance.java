@@ -41,7 +41,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         // Number of invokers
         int length = invokers.size();
         // The least active value of all invokers
-        int leastActive = -1;
+        int leastActive = Integer.MAX_VALUE;
         // The number of invokers having the same least active value (leastActive)
         int leastCount = 0;
         // The index of invokers having the same least active value (leastActive)
@@ -50,8 +50,6 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
         int[] weights = new int[length];
         // The sum of the warmup weights of all the least active invokers
         int totalWeight = 0;
-        // The weight of the first least active invoker
-        int firstWeight = 0;
         // Every least active invoker has the same weight value?
         boolean sameWeight = true;
 
@@ -66,7 +64,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             // save for later use
             weights[i] = afterWarmup;
             // If it is the first invoker or the active number of the invoker is less than the current least active number
-            if (leastActive == -1 || active < leastActive) {
+            if (active < leastActive) {
                 // Reset the active number of the current invoker to the least active number
                 leastActive = active;
                 // Reset the number of least active invokers
@@ -75,8 +73,6 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 leastIndexes[0] = i;
                 // Reset totalWeight
                 totalWeight = afterWarmup;
-                // Record the weight the first least active invoker
-                firstWeight = afterWarmup;
                 // Each invoke has the same weight (only one invoker here)
                 sameWeight = true;
                 // If current invoker's active value equals with leaseActive, then accumulating.
@@ -86,7 +82,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
                 // Accumulate the total weight of the least active invoker
                 totalWeight += afterWarmup;
                 // If every invoker has the same weight?
-                if (sameWeight && afterWarmup != firstWeight) {
+                if (sameWeight && totalWeight != leastCount * afterWarmup) {
                     sameWeight = false;
                 }
             }
@@ -103,8 +99,7 @@ public class LeastActiveLoadBalance extends AbstractLoadBalance {
             // Return a invoker based on the random value.
             for (int i = 0; i < leastCount; i++) {
                 int leastIndex = leastIndexes[i];
-                offsetWeight -= weights[leastIndex];
-                if (offsetWeight < 0) {
+                if (offsetWeight < weights[leastIndex]) {
                     return invokers.get(leastIndex);
                 }
             }

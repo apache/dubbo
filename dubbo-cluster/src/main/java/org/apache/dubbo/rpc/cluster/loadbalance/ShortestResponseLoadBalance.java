@@ -50,8 +50,6 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance {
         int[] weights = new int[length];
         // The sum of the warmup weights of all the shortest response  invokers
         int totalWeight = 0;
-        // The weight of the first shortest response invokers
-        int firstWeight = 0;
         // Every shortest response invoker has the same weight value?
         boolean sameWeight = true;
 
@@ -71,13 +69,12 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance {
                 shortestCount = 1;
                 shortestIndexes[0] = i;
                 totalWeight = afterWarmup;
-                firstWeight = afterWarmup;
                 sameWeight = true;
             } else if (estimateResponse == shortestResponse) {
                 shortestIndexes[shortestCount++] = i;
                 totalWeight += afterWarmup;
                 if (sameWeight && i > 0
-                        && afterWarmup != firstWeight) {
+                        && totalWeight != afterWarmup * shortestCount) {
                     sameWeight = false;
                 }
             }
@@ -89,8 +86,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance {
             int offsetWeight = ThreadLocalRandom.current().nextInt(totalWeight);
             for (int i = 0; i < shortestCount; i++) {
                 int shortestIndex = shortestIndexes[i];
-                offsetWeight -= weights[shortestIndex];
-                if (offsetWeight < 0) {
+                if (offsetWeight < weights[shortestIndex]) {
                     return invokers.get(shortestIndex);
                 }
             }
