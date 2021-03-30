@@ -24,6 +24,8 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+
 public class MigrationRule {
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION_KEY = "dubbo.application.service-discovery.migration";
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP = "MIGRATION";
@@ -60,7 +62,7 @@ public class MigrationRule {
             return getMigrationRule(null);
         }
 
-        if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
+        if (StringUtils.isBlank(rawRule) || INIT.equals(rawRule)) {
             String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
             return getMigrationRule(step);
 
