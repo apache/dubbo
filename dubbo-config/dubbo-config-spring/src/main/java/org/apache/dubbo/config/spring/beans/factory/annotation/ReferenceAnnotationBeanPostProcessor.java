@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
-import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.DubboReference;
@@ -27,6 +26,7 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 
 import com.alibaba.spring.beans.factory.annotation.AbstractAnnotationBeanPostProcessor;
+import com.alibaba.spring.util.AnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;

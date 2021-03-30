@@ -136,7 +136,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference(parameters = {"a", "1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod2;
 
-    @Reference(parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")})}, check = false)
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello",  arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")},timeout = 100)}, check = false)
     private HelloService helloServiceWithArgument1;
 
     @Reference(check = false, filter = {"echo"}, parameters = {"a", "1"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
