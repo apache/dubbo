@@ -73,8 +73,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance {
             } else if (estimateResponse == shortestResponse) {
                 shortestIndexes[shortestCount++] = i;
                 totalWeight += afterWarmup;
-                if (sameWeight && i > 0
-                        && totalWeight != afterWarmup * shortestCount) {
+                if (sameWeight && totalWeight != afterWarmup * shortestCount) {
                     sameWeight = false;
                 }
             }
