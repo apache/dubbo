@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
@@ -140,6 +141,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
+        if (!checkMigratingConditionMatch(consumerUrl)) {
+            fallbackToInterfaceInvoker();
+            return;
+        }
         if (!forceMigrate) {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
@@ -155,6 +160,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                 this.destroyInterfaceInvoker(this.invoker, true);
             });
         }
+    }
+
+    private boolean checkMigratingConditionMatch(URL consumerUrl) {
+        Set<PreMigratingConditionChecker> checkers = ExtensionLoader.getExtensionLoader(PreMigratingConditionChecker.class).getSupportedExtensionInstances();
+        if (CollectionUtils.isNotEmpty(checkers)) {
+            PreMigratingConditionChecker checker = checkers.iterator().next();
+            return checker.checkCondition(consumerUrl);
+        }
+        return true;
     }
 
     @Override
