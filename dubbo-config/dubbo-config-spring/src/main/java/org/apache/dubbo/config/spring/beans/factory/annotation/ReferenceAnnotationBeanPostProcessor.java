@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Reference;
-import org.apache.dubbo.config.annotation.ReferenceAnnotationUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
@@ -38,9 +38,12 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.util.ObjectUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -227,14 +230,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (!attributes.isEmpty()) {
             beanNameBuilder.append('(');
             for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-                String value;
-                if (isArrayOf(entry.getValue(), String.class)) {
-                    value = ReferenceAnnotationUtils.generateArrayEntryString(entry);
-                } else if (isArrayOf(entry.getValue(), org.apache.dubbo.config.annotation.Method.class)) {
-                    value = ReferenceAnnotationUtils.generateMethodsString((org.apache.dubbo.config.annotation.Method[]) entry.getValue());
-                } else {
-                    value = String.valueOf(entry.getValue());
-                }
+                String value = convertAttribute(entry.getValue());
                 beanNameBuilder.append(entry.getKey())
                         .append('=')
                         .append(value)
@@ -249,8 +245,26 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         return beanNameBuilder.toString();
     }
 
-    private boolean isArrayOf(Object value, Class type) {
-        return value.getClass().isArray() && value.getClass().getComponentType() == type;
+    private String convertAttribute(Object obj) {
+        if (obj == null) {
+            return null;
+        }
+        if (obj instanceof Annotation) {
+            AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes((Annotation) obj, true);
+            for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+                entry.setValue(convertAttribute(entry.getValue()));
+            }
+            return String.valueOf(attributes);
+        } else if (obj.getClass().isArray()) {
+            Object[] array = ObjectUtils.toObjectArray(obj);
+            String[] newArray = new String[array.length];
+            for (int i = 0; i < array.length; i++) {
+                newArray[i] = convertAttribute(array[i]);
+            }
+            return Arrays.toString(Arrays.stream(newArray).sorted().toArray());
+        } else {
+            return String.valueOf(obj);
+        }
     }
 
     /**

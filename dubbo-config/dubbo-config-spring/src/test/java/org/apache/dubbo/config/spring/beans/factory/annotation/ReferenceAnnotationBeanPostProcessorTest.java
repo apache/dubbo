@@ -127,19 +127,19 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"})
     private HelloService helloServiceWithArray1;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"})
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, check = false)
     private HelloService helloServiceWithArray2;
 
     @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod1;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100)})
     private HelloService helloServiceWithMethod2;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")})})
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")})}, check = false)
     private HelloService helloServiceWithArgument1;
 
-    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
+    @Reference(check = false, filter = {"echo"}, parameters = {"a", "1"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
     private HelloService helloServiceWithArgument2;
 
     @Test
