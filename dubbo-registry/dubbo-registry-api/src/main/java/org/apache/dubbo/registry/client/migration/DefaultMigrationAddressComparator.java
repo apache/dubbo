@@ -16,17 +16,11 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
-
-import java.util.List;
 
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMigrationAddressComparator.class);
@@ -38,48 +32,48 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
 
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
-        if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
-            logger.info("No instance address available, stop compare.");
-            return false;
-        }
-        if (!invoker.hasProxyInvokers()) {
-            logger.info("No interface address available, stop compare.");
-            return true;
-        }
-
-        List<Invoker<T>> invokers1 = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
-        List<Invoker<T>> invokers2 = invoker.getDirectory().getAllInvokers();
-
-        int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
-        int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
-
-        String rawThreshold = null;
-        String serviceKey = invoker.getUrl().getDisplayServiceKey();
-        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey, localMetadataService.getCachedMapping(invoker.getUrl()));
-        if (configedThreshold != null && configedThreshold >= 0) {
-            rawThreshold = String.valueOf(configedThreshold);
-        }
-        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
-        float threshold;
-        try {
-            threshold = Float.parseFloat(rawThreshold);
-        } catch (Exception e) {
-            logger.error("Invalid migration threshold " + rawThreshold);
-            threshold = DEFAULT_THREAD;
-        }
-
-        logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
-
-        if (newAddressSize != 0 && oldAddressSize == 0) {
-            return true;
-        }
-        if (newAddressSize == 0 && oldAddressSize == 0) {
-            return false;
-        }
-
-        if (((float) newAddressSize / (float) oldAddressSize) >= threshold) {
-            return true;
-        }
+//        if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
+//            logger.info("No instance address available, stop compare.");
+//            return false;
+//        }
+//        if (!invoker.hasProxyInvokers()) {
+//            logger.info("No interface address available, stop compare.");
+//            return true;
+//        }
+//
+//        List<Invoker<T>> invokers1 = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
+//        List<Invoker<T>> invokers2 = invoker.getDirectory().getAllInvokers();
+//
+//        int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
+//        int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
+//
+//        String rawThreshold = null;
+//        String serviceKey = invoker.getUrl().getDisplayServiceKey();
+//        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey, localMetadataService.getCachedMapping(invoker.getUrl()));
+//        if (configedThreshold != null && configedThreshold >= 0) {
+//            rawThreshold = String.valueOf(configedThreshold);
+//        }
+//        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
+//        float threshold;
+//        try {
+//            threshold = Float.parseFloat(rawThreshold);
+//        } catch (Exception e) {
+//            logger.error("Invalid migration threshold " + rawThreshold);
+//            threshold = DEFAULT_THREAD;
+//        }
+//
+//        logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
+//
+//        if (newAddressSize != 0 && oldAddressSize == 0) {
+//            return true;
+//        }
+//        if (newAddressSize == 0 && oldAddressSize == 0) {
+//            return false;
+//        }
+//
+//        if (((float) newAddressSize / (float) oldAddressSize) >= threshold) {
+//            return true;
+//        }
         return false;
     }
 }
