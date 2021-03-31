@@ -45,6 +45,10 @@ public interface CommonConstants {
 
     String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
 
+    String DUBBO_MIGRATION_KEY = "dubbo.migration.file";
+
+    String DEFAULT_DUBBO_MIGRATION_FILE = "dubbo-migration.yaml";
+
     String ANY_VALUE = "*";
 
     /**
@@ -375,5 +379,7 @@ public interface CommonConstants {
 
     String CACHE_CLEAR_TASK_INTERVAL = "dubbo.application.url.cache.task.interval";
     String CACHE_CLEAR_WAITING_THRESHOLD = "dubbo.application.url.cache.clear.waiting";
+
+    String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
 
 }

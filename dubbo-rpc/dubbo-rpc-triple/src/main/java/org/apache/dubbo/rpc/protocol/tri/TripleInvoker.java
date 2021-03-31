@@ -101,6 +101,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
             result.setExecutor(executor);
+            inv.put("callback.executor",executor );
 
 
             if (!connection.isAvailable()) {

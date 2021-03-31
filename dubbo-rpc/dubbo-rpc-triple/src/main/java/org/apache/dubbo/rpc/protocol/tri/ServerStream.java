@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -183,12 +184,12 @@ public class ServerStream extends AbstractStream implements Stream {
                     ClassLoadUtil.switchContextLoader(tccl);
                 }
 
-                final Http2Headers trailers = new DefaultHttp2Headers()
-                        .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
+                final Http2Headers trailers = new DefaultHttp2Headers();
                 final Map<String, Object> attachments = response.getObjectAttachments();
                 if (attachments != null) {
                     convertAttachment(trailers, attachments);
                 }
+                trailers.setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
                 ctx.write(new DefaultHttp2HeadersFrame(http2Headers));
                 final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
                 ctx.write(data);
@@ -206,6 +207,7 @@ public class ServerStream extends AbstractStream implements Stream {
         };
 
         future.whenComplete(onComplete);
+        RpcContext.removeContext();
     }
 
 
@@ -277,6 +279,16 @@ public class ServerStream extends AbstractStream implements Stream {
         inv.setParameterTypes(methodDescriptor.getParameterClasses());
         inv.setReturnTypes(methodDescriptor.getReturnTypes());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
+        attachments.remove("interface");
+        attachments.remove("serialization");
+        attachments.remove("te");
+        attachments.remove("path");
+        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
+        attachments.remove(TripleConstant.SERVICE_GROUP);
+        attachments.remove(TripleConstant.SERVICE_VERSION);
+        attachments.remove(TripleConstant.MESSAGE_KEY);
+        attachments.remove(TripleConstant.STATUS_KEY);
+        attachments.remove(TripleConstant.TIMEOUT);
         inv.setObjectAttachments(attachments);
         return inv;
     }

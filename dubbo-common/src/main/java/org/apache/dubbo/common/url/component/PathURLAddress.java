@@ -43,7 +43,7 @@ public class PathURLAddress extends URLAddress {
         }
 
         // check cache
-        protocol = URLItemCache.checkProtocol(protocol);
+        protocol = URLItemCache.intern(protocol);
         path = URLItemCache.checkPath(path);
 
         this.protocol = protocol;

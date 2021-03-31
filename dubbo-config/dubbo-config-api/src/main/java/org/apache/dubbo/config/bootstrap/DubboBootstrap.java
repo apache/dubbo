@@ -202,6 +202,14 @@ public class DubboBootstrap extends GenericEventListener {
         return instance;
     }
 
+    public static void reset() {
+        if (instance != null) {
+            instance.destroy();
+        }
+        ApplicationModel.reset();
+        instance = null;
+    }
+
     private DubboBootstrap() {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
@@ -520,6 +528,7 @@ public class DubboBootstrap extends GenericEventListener {
         }
 
         ApplicationModel.initFrameworkExts();
+        
 
         startConfigCenter();
 
@@ -1150,19 +1159,27 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
 
-        doRegisterServiceInstance(serviceInstance);
+        try {
+            doRegisterServiceInstance(serviceInstance);
+        } catch (Exception e) {
+            logger.error("Register instance error", e);
+        }
 
         // scheduled task for updating Metadata and ServiceInstance
         executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
             InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
             localMetadataService.blockUntilUpdated();
-            ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            try {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            } catch (Exception e) {
+                logger.error("Refresh instance and metadata error", e);
+            }
         }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         // register instance only when at least one service is exported.
-        if (serviceInstance.getPort() != null && serviceInstance.getPort() != -1) {
+        if (serviceInstance.getPort() > 0) {
             publishMetadataToRemote(serviceInstance);
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->

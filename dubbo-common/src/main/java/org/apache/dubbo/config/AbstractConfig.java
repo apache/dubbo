@@ -36,6 +36,7 @@ import javax.annotation.PostConstruct;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -160,6 +161,11 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * Put attributes of specify 'config' into 'parameters' argument
+     * @param parameters
+     * @param config
+     */
     @Deprecated
     protected static void appendAttributes(Map<String, Object> parameters, Object config) {
         appendAttributes(parameters, config, null);
@@ -336,7 +342,7 @@ public abstract class AbstractConfig implements Serializable {
             String value = entry.getValue();
             result.put(pre + key, value);
             // For compatibility, key like "registry-type" will has a duplicate key "registry.type"
-            if (key.contains("-")) {
+            if (Arrays.binarySearch(Constants.DOT_COMPATIBLE_KEYS, key) != -1) {
                 result.put(pre + key.replace('-', '.'), value);
             }
         }
@@ -358,6 +364,11 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    /**
+     * Copy attributes from annotation
+     * @param annotationClass
+     * @param annotation
+     */
     protected void appendAnnotation(Class<?> annotationClass, Object annotation) {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
