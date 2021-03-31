@@ -124,6 +124,7 @@ public abstract class AbstractStream implements Stream {
         } else if (te == null) {
             this.te = headers;
         }
+        //todo
     }
 
     protected Map<String, Object> parseHeadersToMap(Http2Headers headers) {
@@ -187,5 +188,17 @@ public abstract class AbstractStream implements Stream {
 
     public void setObserver(StreamObserver<Object> observer) {
         this.observer = observer;
+    }
+
+    @Override
+    public void onNext(Object data) {
+    }
+
+    @Override
+    public void onError(Throwable throwable) {
+    }
+
+    @Override
+    public void onCompleted() {
     }
 }

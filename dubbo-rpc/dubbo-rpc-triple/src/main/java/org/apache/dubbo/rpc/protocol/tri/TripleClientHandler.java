@@ -72,24 +72,25 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
+        ClientStream clientStream;
         if (!methodDescriptor.isStream()) {
-            ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
-            clientStream.write(req, promise);
+            clientStream = new ClientStream(url, ctx, methodDescriptor, req);
         } else {
             StreamObserver responseOBServer = (StreamObserver)inv.getArguments()[0];
-            ClientStream clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream.setObserver(responseOBServer);
             StreamObserver writer = new StreamOutboundWriter(clientStream);
-
             Response response = new Response(req.getId(), req.getVersion());
             final AppResponse result = new AppResponse(writer);
             response.setResult(result);
             DefaultFuture2.received(Connection.getConnectionFromChannel(ctx.channel()), response);
-            try {
-                clientStream.streamCreated(null, promise);
-                clientStream.setObserver(responseOBServer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        }
+
+        try {
+            clientStream.streamCreated(null, promise);
+            clientStream.write(req, promise);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

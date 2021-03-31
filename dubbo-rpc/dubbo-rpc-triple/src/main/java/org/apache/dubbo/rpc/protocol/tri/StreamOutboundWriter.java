@@ -17,7 +17,7 @@ public class StreamOutboundWriter implements StreamObserver<Object> {
     public void onNext(Object o) {
 
         try {
-            stream.write(o, null);
+            stream.onNext(o);
         } catch (Exception e) {
             // todo error
             e.printStackTrace();
@@ -30,8 +30,8 @@ public class StreamOutboundWriter implements StreamObserver<Object> {
     }
 
     @Override
-    public void onComplete() {
-        stream.halfClose();
+    public void onCompleted() {
+        stream.onCompleted();
     }
 
     public void doCancel() {

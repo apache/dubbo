@@ -35,11 +35,12 @@ public class Processor {
     }
 
     public void onSingleMessage(InputStream in) throws Exception {
-            final Object[] resp = decodeRequestMessage(in);
-            if (resp.length > 1) {
-                return;
-            }
-            stream.getObserver().onNext(resp[0]);
+        // todo executor
+        final Object[] resp = decodeRequestMessage(in);
+        if (resp.length > 1) {
+            return;
+        }
+        stream.getObserver().onNext(resp[0]);
 
     }
 

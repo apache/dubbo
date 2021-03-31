@@ -27,6 +27,7 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -41,7 +42,7 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-public class StreamServerStream extends ServerStream implements Stream {
+public class StreamServerStream extends ServerStream  {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamServerStream.class);
 
     public StreamServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
@@ -51,6 +52,8 @@ public class StreamServerStream extends ServerStream implements Stream {
 
     @Override
     public void streamCreated(Object msg, Promise promise) throws Exception {
+        // todo onheaders
+        Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame)msg;
         RpcInvocation inv = buildInvocation();
         inv.setArguments(new Object[]{new StreamOutboundWriter(this)});
         inv.setParameterTypes(new Class[] {StreamObserver.class});
@@ -63,7 +66,7 @@ public class StreamServerStream extends ServerStream implements Stream {
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .status(OK.codeAsText())
             .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
-        getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
+        getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(headers, http2HeadersFrame.isEndStream()));
     }
 
     @Override
@@ -84,12 +87,17 @@ public class StreamServerStream extends ServerStream implements Stream {
     }
 
     public void halfClose() {
-        onComplete();
+        getObserver().onCompleted();
     }
 
+    @Override
+    public void onNext(Object object) {
+        write(object, null);
+    }
 
-    public void onComplete() {
+    public void onCompleted() {
         // todo 需要判断 header /data/trailers 发送状态 避免异常时发送重复stream导致h2 error
+
         final Http2Headers trailers = new DefaultHttp2Headers()
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .status(OK.codeAsText())

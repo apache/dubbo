@@ -18,10 +18,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2Headers;
+import org.apache.dubbo.common.stream.StreamObserver;
 
 import java.io.InputStream;
 
-public interface Stream {
+public interface Stream extends StreamObserver {
 
     void onHeaders(Http2Headers headers);
 

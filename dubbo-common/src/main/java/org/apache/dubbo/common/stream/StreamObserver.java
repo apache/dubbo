@@ -5,5 +5,5 @@ public interface StreamObserver<T> {
 
     void onError(Throwable throwable);
 
-    void onComplete();
+    void onCompleted();
 }
