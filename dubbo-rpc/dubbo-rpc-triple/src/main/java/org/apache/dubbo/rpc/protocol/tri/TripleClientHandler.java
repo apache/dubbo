@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.api.Connection;
@@ -25,25 +31,18 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
-
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
-import java.io.IOException;
+import static org.apache.dubbo.remoting.exchange.Response.CLIENT_ERROR;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Request) {
-            writeRequest(ctx, (Request) msg, promise);
+            writeRequest(ctx, (Request)msg, promise);
         } else {
             super.write(ctx, msg, promise);
         }
@@ -68,7 +67,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     }
 
     private void writeRequest(ChannelHandlerContext ctx, final Request req, ChannelPromise promise) {
-        final RpcInvocation inv = (RpcInvocation) req.getData();
+        final RpcInvocation inv = (RpcInvocation)req.getData();
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
@@ -76,21 +75,15 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (!methodDescriptor.isStream()) {
             clientStream = new ClientStream(url, ctx, methodDescriptor, req);
         } else {
-            StreamObserver responseOBServer = (StreamObserver)inv.getArguments()[0];
+            StreamObserver<Object> responseOBServer = (StreamObserver<Object>)inv.getArguments()[0];
             clientStream = new ClientStream(url, ctx, methodDescriptor, req);
             clientStream.setObserver(responseOBServer);
-            StreamObserver writer = new StreamOutboundWriter(clientStream);
+            StreamObserver<Object> writer = new StreamOutboundWriter(clientStream);
             Response response = new Response(req.getId(), req.getVersion());
             final AppResponse result = new AppResponse(writer);
             response.setResult(result);
             DefaultFuture2.received(Connection.getConnectionFromChannel(ctx.channel()), response);
         }
-
-        try {
-            clientStream.streamCreated(null, promise);
-            clientStream.write(req, promise);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        clientStream.streamCreated(req, promise);
     }
 }

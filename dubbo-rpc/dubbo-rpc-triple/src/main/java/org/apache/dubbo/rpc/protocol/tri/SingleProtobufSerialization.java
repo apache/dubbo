@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
@@ -24,17 +30,10 @@ import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 public class SingleProtobufSerialization {
     private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     private static final ExtensionRegistryLite globalRegistry =
-            ExtensionRegistryLite.getEmptyRegistry();
+        ExtensionRegistryLite.getEmptyRegistry();
     private final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> marshallers = new ConcurrentHashMap<>();
 
     @SuppressWarnings("all")
@@ -44,7 +43,7 @@ public class SingleProtobufSerialization {
             return defaultInst;
         }
         try {
-            defaultInst = (Message) clz.getMethod("getDefaultInstance").invoke(null);
+            defaultInst = (Message)clz.getMethod("getDefaultInstance").invoke(null);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Create default protobuf instance failed ", e);
         }
@@ -55,7 +54,7 @@ public class SingleProtobufSerialization {
     @SuppressWarnings("all")
     public static <T> Parser<T> getParser(Class<T> clz) {
         Message defaultInst = defaultInst(clz);
-        return (Parser<T>) defaultInst.getParserForType();
+        return (Parser<T>)defaultInst.getParserForType();
     }
 
     public Object deserialize(InputStream in, Class<?> clz) throws IOException {
@@ -67,7 +66,7 @@ public class SingleProtobufSerialization {
     }
 
     public int serialize(Object obj, OutputStream os) throws IOException {
-        final MessageLite msg = (MessageLite) obj;
+        final MessageLite msg = (MessageLite)obj;
         msg.writeTo(os);
         return msg.getSerializedSize();
     }
@@ -86,14 +85,14 @@ public class SingleProtobufSerialization {
 
         @SuppressWarnings("unchecked")
         SingleMessageMarshaller(Class<T> clz) {
-            this.defaultInstance = (T) defaultInst(clz);
-            this.parser = (Parser<T>) defaultInstance.getParserForType();
+            this.defaultInstance = (T)defaultInst(clz);
+            this.parser = (Parser<T>)defaultInstance.getParserForType();
         }
 
         @SuppressWarnings("unchecked")
         public Class<T> getMessageClass() {
             // Precisely T since protobuf doesn't let messages extend other messages.
-            return (Class<T>) defaultInstance.getClass();
+            return (Class<T>)defaultInstance.getClass();
         }
 
         public T getMessagePrototype() {

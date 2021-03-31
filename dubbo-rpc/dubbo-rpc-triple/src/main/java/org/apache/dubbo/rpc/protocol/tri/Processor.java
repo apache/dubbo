@@ -1,11 +1,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.io.InputStream;
-import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
@@ -34,7 +30,7 @@ public class Processor {
         this.multipleSerialization = multipleSerialization;
     }
 
-    public void onSingleMessage(InputStream in) throws Exception {
+    public void onSingleMessage(InputStream in) {
         // todo executor
         final Object[] resp = decodeRequestMessage(in);
         if (resp.length > 1) {
@@ -51,7 +47,7 @@ public class Processor {
             this.serializeType = req.getSerializeType();
             String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
             if (!Arrays.equals(this.md.getCompatibleParamSignatures(), paramTypes)) {
-                //todo error
+                throw new IllegalArgumentException("paramTypes is not ");
             }
             final Object[] arguments = TripleUtil.unwrapReq(url, req, multipleSerialization);
             return arguments;
@@ -64,14 +60,14 @@ public class Processor {
     public Object decodeResponseMessage(InputStream is) {
         final Object resp;
         if (md.isNeedWrap()) {
-            final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(is, TripleWrapper.TripleResponseWrapper.class);
+            final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(is,
+                TripleWrapper.TripleResponseWrapper.class);
             resp = TripleUtil.unwrapResp(url, message, multipleSerialization);
         } else {
             resp = TripleUtil.unpack(is, md.getReturnClass());
         }
         return resp;
     }
-
 
     public ByteBuf encodeResponse(Object value, ChannelHandlerContext ctx) {
         final Message message;

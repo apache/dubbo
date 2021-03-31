@@ -17,8 +17,6 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
@@ -34,27 +32,19 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.handler.codec.http2.Http2HeadersFrame;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-import org.apache.dubbo.rpc.service.EchoService;
-import org.apache.dubbo.rpc.service.GenericService;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
@@ -62,13 +52,16 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 public class UnaryServerStream extends ServerStream implements Stream {
     private static final Logger LOGGER = LoggerFactory.getLogger(UnaryServerStream.class);
     private Message message = null;
-    public UnaryServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
-        super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), serviceDescriptor, md, ctx);
+
+    public UnaryServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md,
+        ChannelHandlerContext ctx) {
+        super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), serviceDescriptor, md,
+            ctx);
         setProcessor(new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization()));
     }
 
     @Override
-    protected void onSingleMessage(InputStream in) throws Exception {
+    protected void onSingleMessage(InputStream in) {
         if (in == null) {
             responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
                 .withDescription(MISSING_REQ));
@@ -78,13 +71,22 @@ public class UnaryServerStream extends ServerStream implements Stream {
     }
 
     @Override
+    public void streamCreated(Object msg, ChannelPromise promise) {
+        Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame)msg;
+        if (http2HeadersFrame.isEndStream()) {
+            halfClose();
+        }
+    }
+
+    @Override
     public void onError(GrpcStatus status) {
     }
 
     public void halfClose() {
         ExecutorService executor = null;
         if (getProviderModel() != null) {
-            executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(CommonConstants.THREADPOOL_KEY);
+            executor = (ExecutorService)getProviderModel().getServiceMetadata().getAttribute(
+                CommonConstants.THREADPOOL_KEY);
         }
         if (executor == null) {
             executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
@@ -98,12 +100,12 @@ public class UnaryServerStream extends ServerStream implements Stream {
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             responseErr(getCtx(), GrpcStatus.fromCode(Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Provider's thread pool is full"));
+                .withDescription("Provider's thread pool is full"));
         } catch (Throwable t) {
             LOGGER.error("Provider submit request to thread pool error ", t);
             responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Provider's error"));
+                .withCause(t)
+                .withDescription("Provider's error"));
         }
     }
 
@@ -129,7 +131,8 @@ public class UnaryServerStream extends ServerStream implements Stream {
 
         } catch (Throwable t) {
             LOGGER.warn("Exception processing triple message", t);
-            responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed:" + t.getMessage()));
+            responseErr(getCtx(),
+                GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed:" + t.getMessage()));
             return;
         }
         if (invocation == null) {
@@ -149,20 +152,20 @@ public class UnaryServerStream extends ServerStream implements Stream {
                     }
                     return;
                 }
-                AppResponse response = (AppResponse) appResult;
+                AppResponse response = (AppResponse)appResult;
                 if (response.hasException()) {
                     final Throwable exception = response.getException();
                     if (exception instanceof TripleRpcException) {
-                        responseErr(getCtx(), ((TripleRpcException) exception).getStatus());
+                        responseErr(getCtx(), ((TripleRpcException)exception).getStatus());
                     } else {
                         responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN)
-                                .withCause(exception));
+                            .withCause(exception));
                     }
                     return;
                 }
                 Http2Headers http2Headers = new DefaultHttp2Headers()
-                        .status(OK.codeAsText())
-                        .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+                    .status(OK.codeAsText())
+                    .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                 getCtx().write(new DefaultHttp2HeadersFrame(http2Headers));
 
                 ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -186,17 +189,16 @@ public class UnaryServerStream extends ServerStream implements Stream {
             } catch (Throwable e) {
                 LOGGER.warn("Exception processing triple message", e);
                 if (e instanceof TripleRpcException) {
-                    responseErr(getCtx(), ((TripleRpcException) e).getStatus());
+                    responseErr(getCtx(), ((TripleRpcException)e).getStatus());
                 } else {
                     responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN)
-                            .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                            .withCause(e));
+                        .withDescription("Exception occurred in provider's execution:" + e.getMessage())
+                        .withCause(e));
                 }
             }
         };
 
         future.whenComplete(onComplete);
     }
-
 
 }

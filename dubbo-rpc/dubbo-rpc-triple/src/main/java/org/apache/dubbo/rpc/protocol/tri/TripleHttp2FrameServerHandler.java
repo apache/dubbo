@@ -16,25 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -47,6 +29,17 @@ import io.netty.handler.codec.http2.Http2Frame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.util.ReferenceCountUtil;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
@@ -168,27 +161,27 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
 
-        MethodDescriptor md = null;
         List<MethodDescriptor> methodDescriptors = descriptor.getMethods(methodName);
         if (methodDescriptors.size() != 1) {
             responseErr(ctx,
                 GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
-        md = methodDescriptors.get(0);
+        MethodDescriptor md = methodDescriptors.get(0);
         if (md == null) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                .withDescription("Method not found:" + md.getMethodName() +
-                    " args:" + Arrays.toString(md.getParameterClasses()) + " of service:" + descriptor.getServiceName()));
+                .withDescription("Method not found:" + md + " of service:" + descriptor.getServiceName()));
+            return;
         }
 
         final List<MethodDescriptor> methods = descriptor.getMethods(md.getMethodName());
         if (methods == null || methods.isEmpty()) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
                 .withDescription("Method not found:" + md + " of service:" + descriptor.getServiceName()));
+            return;
         }
 
-        ServerStream serverStream = null;
+        ServerStream serverStream;
         if (md.isStream()) {
             serverStream = new StreamServerStream(delegateInvoker, descriptor, md, ctx);
         } else {
@@ -202,6 +195,5 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(serverStream);
         serverStream.onHeaders(headers);
         serverStream.streamCreated(msg, null);
-        //todo
     }
 }

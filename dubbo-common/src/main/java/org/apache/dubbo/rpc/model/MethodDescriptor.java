@@ -20,8 +20,6 @@ import com.google.protobuf.Message;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.rpc.service.EchoService;
-import org.apache.dubbo.rpc.service.GenericService;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -37,7 +35,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 public class MethodDescriptor {
     private final Method method;
     //    private final boolean isCallBack;
-//    private final boolean isFuture;
+    //    private final boolean isFuture;
     private final String paramDesc;
     // duplicate filed as paramDesc, but with different format.
     private final String[] compatibleParamSignatures;
@@ -52,8 +50,10 @@ public class MethodDescriptor {
         this.method = method;
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
-            this.parameterClasses = new Class<?>[]{(Class<?>)((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
-            this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0]).getActualTypeArguments()[0];
+            this.parameterClasses = new Class<?>[] {
+                (Class<?>)((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[0]};
+            this.returnClass = (Class<?>)((ParameterizedType)method.getGenericParameterTypes()[0])
+                .getActualTypeArguments()[0];
             rpcType = RpcType.STREAM;
         } else {
             this.parameterClasses = method.getParameterTypes();
@@ -67,8 +67,8 @@ public class MethodDescriptor {
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
-                .map(Class::getName)
-                .toArray(String[]::new);
+            .map(Class::getName)
+            .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
@@ -98,7 +98,7 @@ public class MethodDescriptor {
         return StreamObserver.class.isAssignableFrom(clz);
     }
 
-    public boolean matchParams (String params) {
+    public boolean matchParams(String params) {
         return paramDesc.equalsIgnoreCase(params);
     }
 
@@ -135,18 +135,8 @@ public class MethodDescriptor {
     }
 
     public enum RpcType {
-
-        UNARY_WRAP(0),
-
-        UNARY_UNWRAP(1),
-
-        STREAM(1);
-
-        private final int value;
-
-        RpcType(int value) {
-            this.value = value;
-        }
-
+        UNARY_WRAP,
+        UNARY_UNWRAP,
+        STREAM;
     }
 }

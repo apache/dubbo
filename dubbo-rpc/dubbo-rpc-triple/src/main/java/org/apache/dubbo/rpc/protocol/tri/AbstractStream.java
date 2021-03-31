@@ -16,9 +16,16 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Queue;
 
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.util.concurrent.Promise;
+import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.internal.shaded.org.jctools.queues.MpscChunkedArrayQueue;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -28,32 +35,21 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-public abstract class AbstractStream implements Stream {
-    public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(ConfigUtils.getProperty("triple.attachment", "false"));
+public abstract class AbstractStream<T> implements Stream<T> {
+    public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
+        ConfigUtils.getProperty("triple.attachment", "false"));
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractStream.class);
     private static final GrpcStatus TOO_MANY_DATA = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-            .withDescription("Too many data");
+        .withDescription("Too many data");
     private final ChannelHandlerContext ctx;
     private final URL url;
     private final MethodDescriptor md;
+    private final Queue<InputStream> datas;
     private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
-    private final Queue<InputStream> datas;
     private String serializeType;
     private StreamObserver<Object> observer;
 
@@ -69,7 +65,8 @@ public abstract class AbstractStream implements Stream {
 
     protected void loadFromURL(URL url) {
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, "default");
-        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(value);
+        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(
+            value);
     }
 
     public MethodDescriptor getMd() {
@@ -106,16 +103,7 @@ public abstract class AbstractStream implements Stream {
 
     @Override
     public void onData(InputStream in) {
-        //TODO requestN n>1 notify onNext(request)
-        try {
-            if (false) {
-                this.datas.add(in);
-            } else {
-                onSingleMessage(in);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        onSingleMessage(in);
     }
 
     public void onHeaders(Http2Headers headers) {
@@ -124,7 +112,6 @@ public abstract class AbstractStream implements Stream {
         } else if (te == null) {
             this.te = headers;
         }
-        //todo
     }
 
     protected Map<String, Object> parseHeadersToMap(Http2Headers headers) {
@@ -135,7 +122,8 @@ public abstract class AbstractStream implements Stream {
             if (ENABLE_ATTACHMENT_WRAP) {
                 if (key.endsWith("-tw-bin") && key.length() > 7) {
                     try {
-                        attachments.put(key.substring(0, key.length() - 7), TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
+                        attachments.put(key.substring(0, key.length() - 7),
+                            TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
                     } catch (Exception e) {
                         LOGGER.error("Failed to parse response attachment key=" + key, e);
                     }
@@ -154,15 +142,21 @@ public abstract class AbstractStream implements Stream {
         return attachments;
     }
 
-    protected void convertAttachment(Http2Headers trailers, Map<String, Object> attachments) throws IOException {
+    protected void convertAttachment(Http2Headers trailers, Map<String, Object> attachments) {
         for (Map.Entry<String, Object> entry : attachments.entrySet()) {
             final String key = entry.getKey().toLowerCase(Locale.ROOT);
             final Object v = entry.getValue();
+            convertSingleAttachment(trailers, key, v);
+        }
+    }
+
+    private void convertSingleAttachment(Http2Headers trailers, String key, Object v) {
+        try {
             if (!ENABLE_ATTACHMENT_WRAP) {
                 if (v instanceof String) {
                     trailers.addObject(key, v);
                 } else if (v instanceof byte[]) {
-                    trailers.add(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
+                    trailers.add(key + "-bin", TripleUtil.encodeBase64ASCII((byte[])v));
                 }
             } else {
                 if (v instanceof String || serializeType == null) {
@@ -172,33 +166,23 @@ public abstract class AbstractStream implements Stream {
                     trailers.add(key + "-tw-bin", encoded);
                 }
             }
+        } catch (IOException e) {
+            // todo log
         }
     }
 
-    public void streamCreated(Object msg, Promise promise) throws Exception {};
+    protected void streamCreated(Object msg, ChannelPromise promise) {}
 
-    protected void onSingleMessage(InputStream in) throws Exception {}
+    protected void onSingleMessage(InputStream in) {}
 
     @Override
     public void write(Object obj, ChannelPromise promise) {}
 
-    public StreamObserver getObserver() {
+    protected StreamObserver<Object> getObserver() {
         return observer;
     }
 
-    public void setObserver(StreamObserver<Object> observer) {
+    protected void setObserver(StreamObserver<Object> observer) {
         this.observer = observer;
-    }
-
-    @Override
-    public void onNext(Object data) {
-    }
-
-    @Override
-    public void onError(Throwable throwable) {
-    }
-
-    @Override
-    public void onCompleted() {
     }
 }

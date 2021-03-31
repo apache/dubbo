@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -41,14 +48,6 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
-import io.netty.channel.ChannelFuture;
-
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -64,25 +63,26 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  */
 public class TripleInvoker<T> extends AbstractInvoker<T> {
 
-    private static final ConnectionManager CONNECTION_MANAGER = ExtensionLoader.getExtensionLoader(ConnectionManager.class).getExtension("multiple");
+    private static final ConnectionManager CONNECTION_MANAGER = ExtensionLoader.getExtensionLoader(
+        ConnectionManager.class).getExtension("multiple");
     private final Connection connection;
     private final ReentrantLock destroyLock = new ReentrantLock();
 
     private final Set<Invoker<?>> invokers;
 
-
     public TripleInvoker(Class<T> serviceType, URL url, Set<Invoker<?>> invokers) throws RemotingException {
-        super(serviceType, url, new String[]{INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
+        super(serviceType, url, new String[] {INTERFACE_KEY, GROUP_KEY, TOKEN_KEY});
         this.invokers = invokers;
         this.connection = CONNECTION_MANAGER.connect(url);
     }
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
-        RpcInvocation inv = (RpcInvocation) invocation;
+        RpcInvocation inv = (RpcInvocation)invocation;
         final String methodName = RpcUtils.getMethodName(invocation);
         inv.setAttachment(PATH_KEY, getUrl().getPath());
-        inv.setAttachment(Constants.SERIALIZATION_KEY, getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        inv.setAttachment(Constants.SERIALIZATION_KEY,
+            getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         try {
             int timeout = calculateTimeout(invocation, methodName);
             invocation.put(TIMEOUT_KEY, timeout);
@@ -94,7 +94,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
             req.setData(inv);
 
             DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
-            final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse) obj);
+            final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse)obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
             AsyncRpcResult result = new AsyncRpcResult(respFuture, inv);
@@ -123,9 +123,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
             return result;
         } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION, "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
+                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         } catch (RemotingException e) {
-            throw new RpcException(RpcException.NETWORK_EXCEPTION, "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl() + ", cause: " + e.getMessage(), e);
+            throw new RpcException(RpcException.NETWORK_EXCEPTION,
+                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+                    + ", cause: " + e.getMessage(), e);
         }
     }
 
@@ -169,13 +173,13 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         Object countdown = RpcContext.getContext().get(TIME_COUNTDOWN_KEY);
         int timeout;
         if (countdown == null) {
-            timeout = (int) RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getContext(), DEFAULT_TIMEOUT);
+            timeout = (int)RpcUtils.getTimeout(getUrl(), methodName, RpcContext.getContext(), DEFAULT_TIMEOUT);
             if (getUrl().getParameter(ENABLE_TIMEOUT_COUNTDOWN_KEY, false)) {
                 invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout); // pass timeout to remote server
             }
         } else {
-            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countdown;
-            timeout = (int) timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown)countdown;
+            timeout = (int)timeoutCountDown.timeRemaining(TimeUnit.MILLISECONDS);
             invocation.setObjectAttachment(TIMEOUT_ATTACHMENT_KEY, timeout);// pass timeout to remote server
         }
         return timeout;

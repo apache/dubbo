@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.List;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
-
-import java.util.List;
 
 public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecodeState> {
     private static final int RESERVED_MASK = 0xFE;
@@ -42,24 +42,24 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                 int type = in.readByte();
                 if ((type & RESERVED_MASK) != 0) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("gRPC frame header malformed: reserved bits not zero")
-                            .asException();
+                        .withDescription("gRPC frame header malformed: reserved bits not zero")
+                        .asException();
                 }
                 // compression is not supported yet
                 // TODO support it
                 compressedFlag = (type & COMPRESSED_FLAG_MASK) != 0;
                 if (compressedFlag) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Compression is not supported ")
-                            .asException();
+                        .withDescription("Compression is not supported ")
+                        .asException();
                 }
 
                 len = in.readInt();
                 if (len < 0 || len > maxDataSize) {
                     throw GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                            .withDescription(String.format("gRPC message exceeds maximum size %d: %d",
-                                    maxDataSize, len))
-                            .asException();
+                        .withDescription(String.format("gRPC message exceeds maximum size %d: %d",
+                            maxDataSize, len))
+                        .asException();
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
@@ -73,6 +73,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
     }
 
     enum GrpcDecodeState {
-        HEADER, PAYLOAD
+        HEADER,
+        PAYLOAD
     }
 }

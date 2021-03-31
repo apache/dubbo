@@ -16,12 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;
-
-import java.util.concurrent.ConcurrentHashMap;
 
 public class TriplePathResolver implements PathResolver {
     private static final Logger logger = LoggerFactory.getLogger(TriplePathResolver.class);

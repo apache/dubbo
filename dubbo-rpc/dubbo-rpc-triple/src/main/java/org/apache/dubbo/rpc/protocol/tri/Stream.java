@@ -16,21 +16,27 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.io.InputStream;
+
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.stream.StreamObserver;
 
-import java.io.InputStream;
-
-public interface Stream extends StreamObserver {
+public interface Stream<T> extends StreamObserver<T> {
 
     void onHeaders(Http2Headers headers);
 
-    void onData(InputStream in) throws Exception;
+    void onData(InputStream in);
 
     void onError(GrpcStatus status);
 
     void write(Object obj, ChannelPromise promise);
 
     void halfClose();
+
+    default void onNext(Object data) {}
+
+    default void onError(Throwable throwable) {}
+
+    default void onCompleted() {}
 }

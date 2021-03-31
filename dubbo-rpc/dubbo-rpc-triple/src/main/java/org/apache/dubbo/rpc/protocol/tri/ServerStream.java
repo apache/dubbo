@@ -16,18 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.IOException;
 import java.util.Map;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2HeadersFrame;
-import io.netty.util.concurrent.Promise;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
@@ -38,37 +29,19 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
-import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
-public abstract class ServerStream extends AbstractStream implements Stream {
-    protected ServiceDescriptor serviceDescriptor;
+public abstract class ServerStream<T> extends AbstractStream<T> implements Stream<T> {
     protected static final String TOO_MANY_REQ = "Too many requests";
     protected static final String MISSING_REQ = "Missing request";
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
         ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
     private final Invoker<?> invoker;
+    protected ServiceDescriptor serviceDescriptor;
     private Processor processor;
 
-    public void setProcessor(Processor processor) {
-        this.processor = processor;
-    }
-
-    public Processor getProcessor() {
-        return processor;
-    }
-
-    public ProviderModel getProviderModel() {
-        return providerModel;
-    }
-
-    public Invoker<?> getInvoker() {
-        return invoker;
-    }
-
-    protected ServerStream(Invoker<?> invoker, URL url, ServiceDescriptor serviceDescriptor, MethodDescriptor md, ChannelHandlerContext ctx) {
+    protected ServerStream(Invoker<?> invoker, URL url, ServiceDescriptor serviceDescriptor, MethodDescriptor md,
+        ChannelHandlerContext ctx) {
         super(url, ctx, md);
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         this.providerModel = repo.lookupExportedService(getUrl().getServiceKey());
@@ -79,12 +52,20 @@ public abstract class ServerStream extends AbstractStream implements Stream {
         this.serviceDescriptor = serviceDescriptor;
     }
 
-    @Override
-    public void streamCreated(Object msg, Promise promise) throws Exception {
-        Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame)msg;
-        if (http2HeadersFrame.isEndStream()) {
-            halfClose();
-        }
+    public Processor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(Processor processor) {
+        this.processor = processor;
+    }
+
+    public ProviderModel getProviderModel() {
+        return providerModel;
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
     }
 
     protected RpcInvocation buildInvocation() {

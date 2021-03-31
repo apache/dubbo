@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.ArrayList;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -31,8 +33,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
-import java.util.ArrayList;
-
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
@@ -42,9 +42,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
-    private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class).getDefaultExtension();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-
+    private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class)
+        .getDefaultExtension();
+    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+        .getDefaultExtension();
 
     @Override
     public int getDefaultPort() {
@@ -79,7 +80,7 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         TripleInvoker<T> invoker;
         try {
-            url = ExecutorUtil.setThreadName(url,"DubboClientHandler");
+            url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
             url = url.addParameterIfAbsent(THREADPOOL_KEY, DEFAULT_CLIENT_THREADPOOL);
             executorRepository.createExecutorIfAbsent(url);
             invoker = new TripleInvoker<>(type, url, invokers);

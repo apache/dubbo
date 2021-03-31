@@ -16,18 +16,17 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
 
     public TripleHttp2ClientResponseHandler() {
         super(false);
@@ -37,16 +36,19 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         super.userEventTriggered(ctx, evt);
         if (evt instanceof Http2GoAwayFrame) {
+            Http2GoAwayFrame event = (Http2GoAwayFrame)evt;
             ctx.close();
+            logger.debug(
+                "Event triggered, event name is: " + event.name() + ", last stream id is: " + event.lastStreamId());
         }
     }
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Http2StreamFrame msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
-            onHeadersRead(ctx, (Http2HeadersFrame) msg);
+            onHeadersRead(ctx, (Http2HeadersFrame)msg);
         } else if (msg instanceof Http2DataFrame) {
-            onDataRead(ctx, (Http2DataFrame) msg);
+            onDataRead(ctx, (Http2DataFrame)msg);
         } else {
             super.channelRead(ctx, msg);
         }
@@ -64,9 +66,11 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         final ClientStream clientStream = TripleUtil.getClientStream(ctx);
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(cause);
+            .withCause(cause);
         clientStream.onError(status);
         ctx.close();
+        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
+            + status.description);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {

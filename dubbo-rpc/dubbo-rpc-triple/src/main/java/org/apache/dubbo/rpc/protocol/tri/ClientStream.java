@@ -16,24 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.util.concurrent.Promise;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.config.annotation.Method;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
-import org.apache.dubbo.triple.TripleWrapper;
+import java.io.InputStream;
+import java.util.Map;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -50,42 +34,50 @@ import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 
 public class ClientStream extends AbstractStream implements Stream {
     private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-            .withDescription("Missing Response");
+        .withDescription("Missing Response");
     private static final AsciiString SCHEME = AsciiString.of("http");
     private final String authority;
     private final Request request;
     private final RpcInvocation invocation;
     private Http2StreamChannel streamChannel;
-    private Processor processor;
+    private final Processor processor;
     private Message message;
 
     public ClientStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md, Request request) {
         super(url, ctx, md);
         if (md.isNeedWrap()) {
-            setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
+            setSerializeType(
+                (String)((RpcInvocation)(request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
         }
         this.authority = url.getAddress();
         this.request = request;
-        this.invocation = (RpcInvocation) request.getData();
+        this.invocation = (RpcInvocation)request.getData();
         processor = new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization());
     }
 
     public static ConsumerModel getConsumerModel(Invocation invocation) {
         Object o = invocation.get(CONSUMER_MODEL);
         if (o instanceof ConsumerModel) {
-            return (ConsumerModel) o;
+            return (ConsumerModel)o;
         }
         String serviceKey = invocation.getInvoker().getUrl().getServiceKey();
         return ApplicationModel.getConsumerModel(serviceKey);
@@ -105,9 +97,11 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     @Override
-    public void streamCreated(Object msg, Promise promise) throws Exception {
+    public void streamCreated(Object msg, ChannelPromise promise) {
+
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+        TripleUtil.setClientStream(streamChannel, this);
 
         Http2Headers headers = new DefaultHttp2Headers()
             .authority(authority)
@@ -117,35 +111,29 @@ public class ClientStream extends AbstractStream implements Stream {
             .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
             .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        final String version = (String) invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
+        final String version = (String)invocation.getObjectAttachment(CommonConstants.VERSION_KEY);
         if (version != null) {
             headers.set(TripleConstant.SERVICE_VERSION, version);
             invocation.getObjectAttachments().remove(CommonConstants.VERSION_KEY);
         }
 
-        final String app = (String) invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
+        final String app = (String)invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
         if (app != null) {
             headers.set(TripleConstant.CONSUMER_APP_NAME_KEY, app);
             invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
         }
 
-        final String group = (String) invocation.getObjectAttachment(CommonConstants.GROUP_KEY);
+        final String group = (String)invocation.getObjectAttachment(CommonConstants.GROUP_KEY);
         if (group != null) {
             headers.set(TripleConstant.SERVICE_GROUP, group);
             invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         }
         final Map<String, Object> attachments = invocation.getObjectAttachments();
-        try {
-            if (attachments != null) {
-                convertAttachment(headers, attachments);
-            }
-        } catch (IOException e) {
-            //todo
-            e.printStackTrace();
+        if (attachments != null) {
+            convertAttachment(headers, attachments);
         }
         DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
-
 
         TripleUtil.setClientStream(streamChannel, this);
         streamChannel.pipeline().addLast(responseHandler)
@@ -159,15 +147,13 @@ public class ClientStream extends AbstractStream implements Stream {
                 promise.setFailure(future.cause());
             }
         });
+
+        write(msg, promise);
     }
 
     @Override
     public void write(Object obj, ChannelPromise promise) {
-        // todo
         final boolean endStream = !getMd().isStream();
-        // todo
-        TripleUtil.setClientStream(streamChannel, this);
-
         final ByteBuf out;
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -181,7 +167,7 @@ public class ClientStream extends AbstractStream implements Stream {
             ClassLoadUtil.switchContextLoader(tccl);
         }
         final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, endStream);
-        streamChannel.write(data);
+        streamChannel.write(data, promise);
     }
 
     public void halfClose() {
@@ -189,7 +175,7 @@ public class ClientStream extends AbstractStream implements Stream {
         if (HttpResponseStatus.OK.code() != httpCode) {
             final Integer code = getHeaders().getInt(TripleConstant.STATUS_KEY);
             final GrpcStatus status = GrpcStatus.fromCode(code)
-                    .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
+                .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
             onError(status);
             return;
         }
@@ -200,7 +186,7 @@ public class ClientStream extends AbstractStream implements Stream {
         final Integer code = te.getInt(TripleConstant.STATUS_KEY);
         if (!GrpcStatus.Code.isOk(code)) {
             final GrpcStatus status = GrpcStatus.fromCode(code)
-                    .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
+                .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
             onError(status);
             return;
         }
@@ -209,7 +195,7 @@ public class ClientStream extends AbstractStream implements Stream {
             responseErr(getCtx(), MISSING_RESP);
             return;
         }
-        final Invocation invocation = (Invocation) (request.getData());
+        final Invocation invocation = (Invocation)(request.getData());
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
@@ -226,8 +212,8 @@ public class ClientStream extends AbstractStream implements Stream {
             DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
         } catch (Exception e) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(e)
-                    .withDescription("Failed to deserialize response");
+                .withCause(e)
+                .withDescription("Failed to deserialize response");
             onError(status);
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
@@ -235,7 +221,7 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     @Override
-    protected void onSingleMessage(InputStream in) throws Exception {
+    protected void onSingleMessage(InputStream in)  {
         if (getMd().isStream()) {
             processor.onSingleMessage(in);
         } else {
