@@ -26,12 +26,13 @@ import org.apache.dubbo.remoting.http.support.AbstractHttpServer;
 
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 
 import java.io.File;
 
-import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_THREADS;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.remoting.Constants.ACCEPTS_KEY;
 
 public class TomcatHttpServer extends AbstractHttpServer {
@@ -49,25 +50,24 @@ public class TomcatHttpServer extends AbstractHttpServer {
         DispatcherServlet.addHttpHandler(url.getPort(), handler);
         String baseDir = new File(System.getProperty("java.io.tmpdir")).getAbsolutePath();
         tomcat = new Tomcat();
+
+        Connector connector = tomcat.getConnector();
+        connector.setPort(url.getPort());
+        connector.setProperty("maxThreads", String.valueOf(url.getParameter(THREADS_KEY, DEFAULT_THREADS)));
+        connector.setProperty("maxConnections", String.valueOf(url.getParameter(ACCEPTS_KEY, -1)));
+        connector.setProperty("URIEncoding", "UTF-8");
+        connector.setProperty("connectionTimeout", "60000");
+        connector.setProperty("maxKeepAliveRequests", "-1");
+
         tomcat.setBaseDir(baseDir);
         tomcat.setPort(url.getPort());
-        tomcat.getConnector().setProperty(
-                "maxThreads", String.valueOf(url.getParameter(THREADS_KEY, DEFAULT_THREADS)));
-//        tomcat.getConnector().setProperty(
-//                "minSpareThreads", String.valueOf(url.getParameter(Constants.THREADS_KEY, Constants.DEFAULT_THREADS)));
-
-        tomcat.getConnector().setProperty(
-                "maxConnections", String.valueOf(url.getParameter(ACCEPTS_KEY, -1)));
-
-        tomcat.getConnector().setProperty("URIEncoding", "UTF-8");
-        tomcat.getConnector().setProperty("connectionTimeout", "60000");
-
-        tomcat.getConnector().setProperty("maxKeepAliveRequests", "-1");
-        tomcat.getConnector().setProtocol("org.apache.coyote.http11.Http11NioProtocol");
 
         Context context = tomcat.addContext("/", baseDir);
         Tomcat.addServlet(context, "dispatcher", new DispatcherServlet());
-        context.addServletMapping("/*", "dispatcher");
+        // Issue : https://github.com/apache/dubbo/issues/6418
+        // addServletMapping method will be removed since Tomcat 9
+        // context.addServletMapping("/*", "dispatcher");
+        context.addServletMappingDecoded("/*", "dispatcher");
         ServletManager.getInstance().addServletContext(url.getPort(), context.getServletContext());
 
         // tell tomcat to fail on startup failures.

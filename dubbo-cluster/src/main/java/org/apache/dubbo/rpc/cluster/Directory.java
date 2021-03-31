@@ -51,4 +51,8 @@ public interface Directory<T> extends Node {
 
     URL getConsumerUrl();
 
+    boolean isDestroyed();
+
+    void discordAddresses();
+
 }

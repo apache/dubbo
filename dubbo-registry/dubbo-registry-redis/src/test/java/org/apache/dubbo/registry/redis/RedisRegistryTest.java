@@ -26,6 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.embedded.RedisServer;
 import redis.embedded.RedisServerBuilder;
 
@@ -36,6 +37,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class RedisRegistryTest {
 
@@ -80,7 +82,7 @@ public class RedisRegistryTest {
 
     @Test
     public void testAnyHost() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        assertThrows(IllegalStateException.class, () -> {
             URL errorUrl = URL.valueOf("multicast://0.0.0.0/");
             new RedisRegistryFactory().createRegistry(errorUrl);
         });
@@ -112,7 +114,7 @@ public class RedisRegistryTest {
         assertThat(redisRegistry.isAvailable(), is(true));
 
         redisRegistry.destroy();
-        assertThat(redisRegistry.isAvailable(), is(false));
+        assertThrows(JedisConnectionException.class, () -> redisRegistry.isAvailable());
     }
 
     @Test
@@ -120,7 +122,8 @@ public class RedisRegistryTest {
         URL url = URL.valueOf("redis://redisOne:8880").addParameter(BACKUP_KEY, "redisTwo:8881");
         Registry registry = new RedisRegistryFactory().createRegistry(url);
 
-        assertThat(registry.isAvailable(), is(false));
+        Registry finalRegistry = registry;
+        assertThrows(JedisConnectionException.class, () -> finalRegistry.isAvailable());
 
         url = URL.valueOf(this.registryUrl.toFullString()).addParameter(BACKUP_KEY, "redisTwo:8881");
         registry = new RedisRegistryFactory().createRegistry(url);

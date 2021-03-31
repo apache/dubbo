@@ -24,21 +24,26 @@ import com.alibaba.fastjson.JSON;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.lang.String.valueOf;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HIDE_KEY_PREFIX;
+import static org.apache.dubbo.common.constants.CommonConstants.HIDDEN_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SEPARATOR_REGEX;
 import static org.apache.dubbo.common.constants.CommonConstants.UNDERLINE_SEPARATOR;
@@ -60,6 +65,8 @@ public final class StringUtils {
     private static final Pattern PARAMETERS_PATTERN = Pattern.compile("^\\[((\\s*\\{\\s*[\\w_\\-\\.]+\\s*:\\s*.+?\\s*\\}\\s*,?\\s*)+)\\s*\\]$");
     private static final Pattern PAIR_PARAMETERS_PATTERN = Pattern.compile("^\\{\\s*([\\w-_\\.]+)\\s*:\\s*(.+)\\s*\\}$");
     private static final int PAD_LIMIT = 8192;
+    private static final byte[] HEX2B;
+
 
     /**
      * @since 2.7.5
@@ -87,6 +94,33 @@ public final class StringUtils {
     public static final char HYPHEN_CHAR = '-';
 
     public static final String HYPHEN = valueOf(HYPHEN_CHAR);
+
+    static {
+        HEX2B = new byte[128];
+        Arrays.fill(HEX2B, (byte) -1);
+        HEX2B['0'] = (byte) 0;
+        HEX2B['1'] = (byte) 1;
+        HEX2B['2'] = (byte) 2;
+        HEX2B['3'] = (byte) 3;
+        HEX2B['4'] = (byte) 4;
+        HEX2B['5'] = (byte) 5;
+        HEX2B['6'] = (byte) 6;
+        HEX2B['7'] = (byte) 7;
+        HEX2B['8'] = (byte) 8;
+        HEX2B['9'] = (byte) 9;
+        HEX2B['A'] = (byte) 10;
+        HEX2B['B'] = (byte) 11;
+        HEX2B['C'] = (byte) 12;
+        HEX2B['D'] = (byte) 13;
+        HEX2B['E'] = (byte) 14;
+        HEX2B['F'] = (byte) 15;
+        HEX2B['a'] = (byte) 10;
+        HEX2B['b'] = (byte) 11;
+        HEX2B['c'] = (byte) 12;
+        HEX2B['d'] = (byte) 13;
+        HEX2B['e'] = (byte) 14;
+        HEX2B['f'] = (byte) 15;
+    }
 
     private StringUtils() {
     }
@@ -670,6 +704,45 @@ public final class StringUtils {
     }
 
     /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar) {
+        return splitToSet(value, separatorChar, false);
+    }
+
+    /**
+     * Split the specified value to be a {@link Set}
+     *
+     * @param value         the content to be split
+     * @param separatorChar a char to separate
+     * @param trimElements  require to trim the elements or not
+     * @return non-null read-only {@link Set}
+     * @since 2.7.8
+     */
+    public static Set<String> splitToSet(String value, char separatorChar, boolean trimElements) {
+        List<String> values = splitToList(value, separatorChar);
+        int size = values.size();
+
+        if (size < 1) { // empty condition
+            return emptySet();
+        }
+
+        if (!trimElements) { // Do not require to trim the elements
+            return new LinkedHashSet(values);
+        }
+
+        return unmodifiableSet(values
+                .stream()
+                .map(String::trim)
+                .collect(LinkedHashSet::new, Set::add, Set::addAll));
+    }
+
+    /**
      * join string.
      *
      * @param array String array.
@@ -767,7 +840,7 @@ public final class StringUtils {
     }
 
     public static String getQueryStringValue(String qs, String key) {
-        Map<String, String> map = StringUtils.parseQueryString(qs);
+        Map<String, String> map = parseQueryString(qs);
         return map.get(key);
     }
 
@@ -867,7 +940,7 @@ public final class StringUtils {
     }
 
     public static String toURLKey(String key) {
-        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDE_KEY_PREFIX);
+        return key.toLowerCase().replaceAll(SEPARATOR_REGEX, HIDDEN_KEY_PREFIX);
     }
 
     public static String toOSStyleKey(String key) {
@@ -999,5 +1072,38 @@ public final class StringUtils {
             }
         }
         return parameters;
+    }
+
+    public static int decodeHexNibble(final char c) {
+        // Character.digit() is not used here, as it addresses a larger
+        // set of characters (both ASCII and full-width latin letters).
+        byte[] hex2b = HEX2B;
+        return c < hex2b.length ? hex2b[c] : -1;
+    }
+
+    /**
+     * Decode a 2-digit hex byte from within a string.
+     */
+    public static byte decodeHexByte(CharSequence s, int pos) {
+        int hi = decodeHexNibble(s.charAt(pos));
+        int lo = decodeHexNibble(s.charAt(pos + 1));
+        if (hi == -1 || lo == -1) {
+            throw new IllegalArgumentException(String.format(
+                    "invalid hex byte '%s' at index %d of '%s'", s.subSequence(pos, pos + 2), pos, s));
+        }
+        return (byte) ((hi << 4) + lo);
+    }
+
+    /**
+     * Create the common-delimited {@link String} by one or more {@link String} members
+     *
+     * @param one    one {@link String}
+     * @param others others {@link String}
+     * @return <code>null</code> if <code>one</code> or <code>others</code> is <code>null</code>
+     * @since 2.7.8
+     */
+    public static String toCommaDelimitedString(String one, String... others) {
+        String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
+        return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
     }
 }

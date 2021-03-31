@@ -24,14 +24,18 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
@@ -61,11 +65,20 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
      * @return all registries
      */
     public static Collection<Registry> getRegistries() {
-        return Collections.unmodifiableCollection(REGISTRIES.values());
+        return Collections.unmodifiableCollection(new LinkedList<>(REGISTRIES.values()));
     }
 
     public static Registry getRegistry(String key) {
         return REGISTRIES.get(key);
+    }
+
+    public static List<ServiceDiscovery> getServiceDiscoveries() {
+        return AbstractRegistryFactory.getRegistries()
+                .stream()
+                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
+                .map(registry -> (ServiceDiscoveryRegistry) registry)
+                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -96,12 +109,21 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
-    @Override
-    public Registry getRegistry(URL url) {
+    private Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
             LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
                     "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
+        }
+        return null;
+    }
+
+    @Override
+    public Registry getRegistry(URL url) {
+
+        Registry defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+        if (null != defaultNopRegistry) {
+            return defaultNopRegistry;
         }
 
         url = URLBuilder.from(url)
@@ -113,6 +135,13 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
+            // double check
+            // fix https://github.com/apache/dubbo/issues/7265.
+            defaultNopRegistry = getDefaultNopRegistryIfDestroyed();
+            if (null != defaultNopRegistry) {
+                return defaultNopRegistry;
+            }
+
             Registry registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;

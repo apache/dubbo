@@ -1,4 +1,4 @@
-package org.apache.dubbo.rpc.protocol.grpc;/*
+/*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
@@ -14,10 +14,9 @@ package org.apache.dubbo.rpc.protocol.grpc;/*
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
@@ -44,8 +43,6 @@ import java.util.concurrent.ConcurrentMap;
  *
  */
 public class GrpcProtocol extends AbstractProxyProtocol {
-
-    private static final Logger logger = LoggerFactory.getLogger(GrpcProtocol.class);
 
     public final static int DEFAULT_PORT = 50051;
 

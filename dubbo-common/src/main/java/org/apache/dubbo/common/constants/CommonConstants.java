@@ -17,7 +17,10 @@
 
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.common.URL;
+
 import java.net.NetworkInterface;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Pattern;
 
@@ -42,6 +45,11 @@ public interface CommonConstants {
 
     String ANY_VALUE = "*";
 
+    /**
+     * @since 2.7.8
+     */
+    char COMMA_SEPARATOR_CHAR = ',';
+
     String COMMA_SEPARATOR = ",";
 
     String DOT_SEPARATOR = ".";
@@ -51,6 +59,8 @@ public interface CommonConstants {
     String PATH_SEPARATOR = "/";
 
     String PROTOCOL_SEPARATOR = "://";
+
+    String PROTOCOL_SEPARATOR_ENCODED = URL.encode(PROTOCOL_SEPARATOR);
 
     String REGISTRY_SEPARATOR = "|";
 
@@ -63,6 +73,8 @@ public interface CommonConstants {
     Pattern SEMICOLON_SPLIT_PATTERN = Pattern.compile("\\s*[;]+\\s*");
 
     Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
+
+    Pattern COLON_SPLIT_PATTERN = Pattern.compile("\\s*[:]+\\s*");
 
     String DEFAULT_PROXY = "javassist";
 
@@ -98,6 +110,8 @@ public interface CommonConstants {
 
     String IO_THREADS_KEY = "iothreads";
 
+    String KEEP_ALIVE_KEY = "keep.alive";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
@@ -106,17 +120,25 @@ public interface CommonConstants {
 
     int DEFAULT_TIMEOUT = 1000;
 
+    // used by invocation attachments to transfer timeout from Consumer to Provider.
+    // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
+    String TIMEOUT_ATTACHMENT_KEY = "_TO";
+
+    String TIME_COUNTDOWN_KEY = "timeout-countdown";
+
+    String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
+
     String REMOVE_VALUE_PREFIX = "-";
 
-    String PROPERTIES_CHAR_SEPERATOR = "-";
+    String PROPERTIES_CHAR_SEPARATOR = "-";
 
     String UNDERLINE_SEPARATOR = "_";
 
     String SEPARATOR_REGEX = "_|-";
 
-    String GROUP_CHAR_SEPERATOR = ":";
+    String GROUP_CHAR_SEPARATOR = ":";
 
-    String HIDE_KEY_PREFIX = ".";
+    String HIDDEN_KEY_PREFIX = ".";
 
     String DOT_REGEX = "\\.";
 
@@ -171,9 +193,23 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
+    String MAPPING_KEY = "mapping-type";
+
+    String CONFIG_MAPPING_TYPE = "config";
+
+    String METADATA_MAPPING_TYPE = "metadata";
+
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    /**
+     * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
+     * {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}.
+     *
+     * @since 2.7.8
+     */
+    String COMPOSITE_METADATA_STORAGE_TYPE = "composite";
 
     /**
      * Consumer side 's proxy class
@@ -185,6 +221,7 @@ public interface CommonConstants {
      */
     String $INVOKE = "$invoke";
     String $INVOKE_ASYNC = "$invokeAsync";
+    String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
      * package version in the manifest
@@ -302,4 +339,46 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String SERVICE_PATH_PREFIX = "service.path.prefix";
+
+    String PROTOCOL_SERVER_SERVLET = "servlet";
+
+    String PROTOCOL_SERVER = "server";
+
+    /**
+     * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String SERVICE_NAME_MAPPING_PROPERTIES_FILE_KEY = "service-name-mapping.properties-path";
+
+    /**
+     * The default class path of the ServiceNameMapping {@link Properties} file
+     *
+     * @since 2.7.8
+     */
+    String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String REDIS_CLIENT_KEY = "redis-client";
+
+    String MONO_REDIS = "mono";
+
+    String SENTINEL_REDIS = "sentinel";
+
+    String CLUSTER_REDIS = "cluster";
+
+    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    String DEFAULT_VERSION = "0.0.0";
+
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 }

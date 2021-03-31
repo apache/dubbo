@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
@@ -35,7 +36,7 @@ import java.util.List;
 import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.INVOCATION_NEED_MOCK;
 
-public class MockClusterInvoker<T> implements Invoker<T> {
+public class MockClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(MockClusterInvoker.class);
 
@@ -55,6 +56,16 @@ public class MockClusterInvoker<T> implements Invoker<T> {
 
     public URL getRegistryUrl() {
         return directory.getUrl();
+    }
+
+    @Override
+    public Directory<T> getDirectory() {
+        return directory;
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return directory.isDestroyed();
     }
 
     @Override
@@ -151,7 +162,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
     /**
      * Return MockInvoker
      * Contract：
-     * directory.list() will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
+     * directory.list() will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
      * if directory.list() returns more than one mock invoker, only one of them will be used.
      *
      * @param invocation
@@ -163,7 +174,7 @@ public class MockClusterInvoker<T> implements Invoker<T> {
         if (invocation instanceof RpcInvocation) {
             //Note the implicit contract (although the description is added to the interface declaration, but extensibility is a problem. The practice placed in the attachment needs to be improved)
             ((RpcInvocation) invocation).setAttachment(INVOCATION_NEED_MOCK, Boolean.TRUE.toString());
-            //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is present in invocation, otherwise, a list of mock invokers will return.
+            //directory will return a list of normal invokers if Constants.INVOCATION_NEED_MOCK is absent or not true in invocation, otherwise, a list of mock invokers will return.
             try {
                 invokers = directory.list(invocation);
             } catch (RpcException e) {

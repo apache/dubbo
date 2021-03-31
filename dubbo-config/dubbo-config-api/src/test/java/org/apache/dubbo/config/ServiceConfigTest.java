@@ -160,6 +160,7 @@ public class ServiceConfigTest {
 
         assertThat(service2.getExportedUrls(), hasSize(1));
         assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+        TestProxyFactory.count = 0;
     }
 
 
@@ -239,21 +240,21 @@ public class ServiceConfigTest {
         });
     }
 
-    @Test
-    public void testMock() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceConfig service = new ServiceConfig();
-            service.setMock("true");
-        });
-    }
-
-    @Test
-    public void testMock2() throws Exception {
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            ServiceConfig service = new ServiceConfig();
-            service.setMock(true);
-        });
-    }
+//    @Test
+//    public void testMock() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceConfig service = new ServiceConfig();
+//            service.setMock("true");
+//        });
+//    }
+//
+//    @Test
+//    public void testMock2() throws Exception {
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            ServiceConfig service = new ServiceConfig();
+//            service.setMock(true);
+//        });
+//    }
 
     @Test
     public void testApplicationInUrl() {
