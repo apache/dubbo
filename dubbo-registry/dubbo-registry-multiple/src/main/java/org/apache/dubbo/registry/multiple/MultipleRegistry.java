@@ -71,7 +71,7 @@ public class MultipleRegistry extends AbstractRegistry {
         this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
         init();
         checkApplicationName(this.applicationName);
-        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
+        // This urls contain parameter and it do not inherit from the parameter of url in MultipleRegistry
 
         Map<String, Registry> registryMap = new HashMap<>();
         if (initServiceRegistry) {

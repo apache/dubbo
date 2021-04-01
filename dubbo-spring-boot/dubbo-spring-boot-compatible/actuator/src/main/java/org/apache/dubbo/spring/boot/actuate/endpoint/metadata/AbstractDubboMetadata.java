@@ -43,7 +43,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
 import static org.springframework.util.ClassUtils.isPrimitiveOrWrapper;
 
 /**
- * Abstract Dubbo Meatadata
+ * Abstract Dubbo Metadata
  *
  * @since 2.7.0
  */

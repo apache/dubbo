@@ -180,7 +180,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 logger.info("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
-            logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
+            logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
             metadataInfo = null;
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }

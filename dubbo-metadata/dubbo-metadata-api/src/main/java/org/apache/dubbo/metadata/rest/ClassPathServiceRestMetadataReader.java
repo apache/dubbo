@@ -41,14 +41,14 @@ import static org.apache.dubbo.metadata.rest.RestMetadataConstants.SERVICE_REST_
  */
 public class ClassPathServiceRestMetadataReader implements ServiceRestMetadataReader {
 
-    private final String serviceRestMetadataJsonResoucePath;
+    private final String serviceRestMetadataJsonResourcePath;
 
     public ClassPathServiceRestMetadataReader() {
         this(SERVICE_REST_METADATA_RESOURCE_PATH);
     }
 
-    public ClassPathServiceRestMetadataReader(String serviceRestMetadataJsonResoucePath) {
-        this.serviceRestMetadataJsonResoucePath = serviceRestMetadataJsonResoucePath;
+    public ClassPathServiceRestMetadataReader(String serviceRestMetadataJsonResourcePath) {
+        this.serviceRestMetadataJsonResourcePath = serviceRestMetadataJsonResourcePath;
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ClassPathServiceRestMetadataReader implements ServiceRestMetadataRe
         ClassLoader classLoader = getClass().getClassLoader();
 
         execute(() -> {
-            Enumeration<URL> resources = classLoader.getResources(serviceRestMetadataJsonResoucePath);
+            Enumeration<URL> resources = classLoader.getResources(serviceRestMetadataJsonResourcePath);
             Gson gson = new Gson();
             while (resources.hasMoreElements()) {
                 URL resource = resources.nextElement();
