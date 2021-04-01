@@ -381,4 +381,13 @@ public interface CommonConstants {
     String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
     String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
+
+    /**
+     *  Interface configuration item
+     * @since 2.7.10
+     */
+    String ON_CONNECT_KEY = "onconnect";
+
+    String ON_DISCONNECT_KEY = "ondisconnect";
 }
