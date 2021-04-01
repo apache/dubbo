@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
@@ -47,15 +46,17 @@ public class ReferenceBean<T> implements FactoryBean,
 
     private transient ApplicationContext applicationContext;
     private ClassLoader beanClassLoader;
-    private DubboReferenceLazyInitTargetSource referenceTargetSource;
-    private Object referenceLazyProxy;
+    private DubboReferenceLazyInitTargetSource lazyTargetSource;
+    private Object lazyProxy;
     /**
      * The interface class of the reference service
      */
     protected Class<?> interfaceClass;
 
-    //beanName
+    // beanName
     protected String id;
+    // unique cache key
+    private String key;
     //from annotation attributes
     private Map<String, Object> referenceProps;
     //from bean definition
@@ -67,10 +68,6 @@ public class ReferenceBean<T> implements FactoryBean,
 
     public ReferenceBean() {
         super();
-    }
-
-    public ReferenceBean(Map<String, Object> referenceProps) {
-        this.referenceProps = referenceProps;
     }
 
     @Override
@@ -85,10 +82,10 @@ public class ReferenceBean<T> implements FactoryBean,
 
     @Override
     public Object getObject() {
-        if (referenceLazyProxy == null) {
-            createReferenceLazyProxy();
+        if (lazyProxy == null) {
+            createLazyProxy();
         }
-        return referenceLazyProxy;
+        return lazyProxy;
     }
 
     @Override
@@ -104,12 +101,20 @@ public class ReferenceBean<T> implements FactoryBean,
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (referenceProps == null) {
-            Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
-            ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+        Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
+        ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+        if (beanDefinition.hasAttribute("referenceProps")) {
+            referenceProps = (Map<String, Object>) beanDefinition.getAttribute("referenceProps");
+        } else {
             propertyValues = beanDefinition.getPropertyValues();
         }
+        this.generic = (String) beanDefinition.getAttribute("generic");
+        this.interfaceName = (String) beanDefinition.getAttribute("interfaceName");
+        this.interfaceClass = (Class<?>) beanDefinition.getAttribute("interfaceClass");
+
+        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        referenceBeanManager.addReference(this);
     }
 
     private ConfigurableListableBeanFactory getBeanFactory() {
@@ -121,14 +126,9 @@ public class ReferenceBean<T> implements FactoryBean,
         // do nothing
     }
 
-    /**
-     * TODO remove get() method
-     *
-     * @return
-     */
     @Deprecated
     public Object get() {
-        throw new UnsupportedOperationException("Should not call this method");
+        return referenceConfig.get();
     }
 
     public String getId() {
@@ -139,6 +139,14 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
+    public String getGeneric() {
+        return generic;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
     /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public String getGroup() {
         return referenceConfig.getGroup();
@@ -146,6 +154,10 @@ public class ReferenceBean<T> implements FactoryBean,
 
     public String getVersion() {
         return referenceConfig.getVersion();
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public Map<String, Object> getReferenceProps() {
@@ -160,57 +172,31 @@ public class ReferenceBean<T> implements FactoryBean,
         return referenceConfig;
     }
 
-    public void setReferenceConfig(ReferenceConfig referenceConfig) {
+    public void setKeyAndReferenceConfig(String key, ReferenceConfig referenceConfig) {
+        this.key = key;
         this.referenceConfig = referenceConfig;
+
+        //If the 'init' attribute is not set, the default value is false
+        Object init = referenceConfig.isInit();
+        if (init == null) {
+            referenceConfig.setInit(false);
+        }
     }
 
     public Class<?> getInterfaceClass() {
-        // get interface class
-        if (interfaceClass == null) {
-            if (referenceProps != null) {
-                //get interface class name of @DubboReference
-                String interfaceName = (String) referenceProps.get("interfaceName");
-                if (interfaceName == null) {
-                    Class clazz = (Class) referenceProps.get("interfaceClass");
-                    if (clazz != null) {
-                        interfaceName = clazz.getName();
-                    }
-                }
-                if (StringUtils.isBlank(interfaceName)) {
-                    throw new RuntimeException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
-                }
-                this.interfaceName = interfaceName;
-
-                //get generic
-                Object genericValue = referenceProps.get("generic");
-                generic = genericValue != null ? genericValue.toString() : null;
-                String consumer = (String) referenceProps.get("consumer");
-                if (StringUtils.isBlank(generic) && consumer != null) {
-                    // get generic from consumerConfig
-                    BeanDefinition consumerBeanDefinition = getBeanFactory().getBeanDefinition(consumer);
-                    if (consumerBeanDefinition != null) {
-                        generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
-                    }
-                }
-            } else if (propertyValues != null) {
-                generic = (String) propertyValues.get("generic");
-                interfaceName = (String) propertyValues.get("interface");
-            } else {
-                throw new RuntimeException("Required 'referenceProps' or beanDefinition");
-            }
-
-            interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
-        }
         return interfaceClass;
     }
 
-    private void createReferenceLazyProxy() {
-        this.referenceTargetSource = new DubboReferenceLazyInitTargetSource();
+    /**
+     * create lazy proxy for reference
+     */
+    private void createLazyProxy() {
+        this.lazyTargetSource = new DubboReferenceLazyInitTargetSource();
 
         //set proxy interfaces
         //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
         ProxyFactory proxyFactory = new ProxyFactory();
-        proxyFactory.setTargetSource(referenceTargetSource);
+        proxyFactory.setTargetSource(lazyTargetSource);
         proxyFactory.addInterface(getInterfaceClass());
         Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
         for (Class<?> anInterface : internalInterfaces) {
@@ -221,7 +207,7 @@ public class ReferenceBean<T> implements FactoryBean,
             proxyFactory.addInterface(ReflectUtils.forName(interfaceName));
         }
 
-        this.referenceLazyProxy = proxyFactory.getProxy(this.beanClassLoader);
+        this.lazyProxy = proxyFactory.getProxy(this.beanClassLoader);
     }
 
     private Object getCallProxy() throws Exception {

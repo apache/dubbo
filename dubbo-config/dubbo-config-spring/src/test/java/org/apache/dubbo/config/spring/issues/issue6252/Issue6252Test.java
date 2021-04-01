@@ -17,10 +17,11 @@
 package org.apache.dubbo.config.spring.issues.issue6252;
 
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.dubbo.config.spring.EmbeddedZooKeeper;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
@@ -36,23 +37,23 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/issues/issue6252/config.properties")
 public class Issue6252Test {
 
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
     @DubboReference
     private DemoService demoService;
 
     @Test
     public void test() throws Exception {
-        EmbeddedZooKeeper zookeeper = new EmbeddedZooKeeper(2181, true);
-        zookeeper.start();
-        EmbeddedZooKeeper zookeeper2 = new EmbeddedZooKeeper(2182, true);
-        zookeeper2.start();
+        ZooKeeperServer.start();
 
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
         try {
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
             DemoService demoService = context.getBean(DemoService.class);
-            context.close();
         } finally {
-            zookeeper.stop();
-            zookeeper2.stop();
+            context.close();
         }
     }
 

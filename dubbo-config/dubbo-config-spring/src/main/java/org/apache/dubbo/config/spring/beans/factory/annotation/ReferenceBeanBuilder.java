@@ -28,6 +28,7 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -93,7 +94,7 @@ public class ReferenceBeanBuilder {
 
         populateBean(attributes, configBean);
 
-        configureRegistryConfigs(configBean);
+        //configureRegistryConfigs(configBean);
 
         configureMonitorConfig(configBean);
 
@@ -116,10 +117,10 @@ public class ReferenceBeanBuilder {
     private void configureRegistryConfigs(ReferenceConfig configBean) {
 
         String[] registryConfigBeanIds = getAttribute(attributes, "registry");
-
-        List<RegistryConfig> registryConfigs = getBeans(applicationContext, registryConfigBeanIds, RegistryConfig.class);
-
-        configBean.setRegistries(registryConfigs);
+        if (registryConfigBeanIds != null) {
+            List<RegistryConfig> registryConfigs = getBeans(applicationContext, registryConfigBeanIds, RegistryConfig.class);
+            configBean.setRegistries(registryConfigs);
+        }
 
     }
 
@@ -217,7 +218,15 @@ public class ReferenceBeanBuilder {
     }
 
     protected void populateBean(AnnotationAttributes attributes, ReferenceConfig referenceBean) {
-        Assert.notNull(defaultInterfaceClass, "The default interface class must set first!");
+        Assert.notNull(defaultInterfaceClass, "The default interface class cannot be empty!");
+        if (!attributes.containsKey("interfaceClass") && !attributes.containsKey("interfaceName")) {
+            Assert.isTrue(defaultInterfaceClass.isInterface(),
+                    "The class of field or method that was annotated @DubboReference is not an interface!");
+            attributes.put("interfaceClass", defaultInterfaceClass);
+        }
+
+        ReferenceBeanManager.convertReferenceProps(attributes);
+
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Register CustomEditors for special fields
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));

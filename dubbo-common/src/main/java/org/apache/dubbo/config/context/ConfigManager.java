@@ -521,6 +521,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
         if (existedConfig != null && !config.equals(existedConfig)) {
             if (configWarnLogEnabled) {
+                //TODO throw exception
                 if (logger.isWarnEnabled()) {
                     String type = config.getClass().getSimpleName();
                     logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +

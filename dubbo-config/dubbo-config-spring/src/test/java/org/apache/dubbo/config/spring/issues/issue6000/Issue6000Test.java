@@ -16,10 +16,16 @@
  */
 package org.apache.dubbo.config.spring.issues.issue6000;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.EmbeddedZooKeeper;
+import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.issues.issue6000.adubbo.HelloDubbo;
-import org.junit.Assert;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -28,6 +34,7 @@ import org.springframework.context.annotation.PropertySource;
 
 /**
  * The test-case for https://github.com/apache/dubbo/issues/6000
+ * Autowired a ReferenceBean failed in some situation in Spring enviroment
  */
 @Configuration
 @EnableDubbo
@@ -35,24 +42,32 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/issues/issue6000/config.properties")
 public class Issue6000Test {
 
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+    }
     @Test
     public void test() throws Exception {
-        EmbeddedZooKeeper zookeeper = new EmbeddedZooKeeper(2181, true);
-        zookeeper.start();
+        ZooKeeperServer.start();
 
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6000Test.class);
         try {
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6000Test.class);
 
             HelloDubbo helloDubbo = context.getBean(HelloDubbo.class);
             String result = helloDubbo.sayHello("dubbo");
             System.out.println(result);
 
-            context.close();
         } catch (Exception e){
             String s = e.toString();
-            Assert.assertTrue(s.startsWith("org.apache.dubbo.rpc.RpcException: No provider available from registry 127.0.0.1:2181 for service org.apache.dubbo.config.spring.api.HelloService:1.0.0"));
+            Assertions.assertTrue(s.contains("No provider available"), s);
+            Assertions.assertTrue(s.contains("org.apache.dubbo.config.spring.api.HelloService:1.0.0"), s);
         } finally {
-            zookeeper.stop();
+            context.close();
         }
     }
 

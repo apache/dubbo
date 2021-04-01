@@ -45,14 +45,11 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -62,35 +59,35 @@ import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
  * ConfigTest
  */
-@Ignore
 public class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSpringExtensionInject() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/spring-extension-inject.xml");
         ctx.start();
@@ -110,7 +107,7 @@ public class ConfigTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/service-class.xml");
         ctx.start();
         try {
-            DemoService demoService = refer("dubbo://127.0.0.1:30887");
+            DemoService demoService = refer("dubbo://127.0.0.1:20887");
             String hello = demoService.sayName("hello");
             assertEquals("welcome:hello", hello);
         } finally {
@@ -120,6 +117,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testServiceAnnotation() {
         AnnotationConfigApplicationContext providerContext = new AnnotationConfigApplicationContext();
         providerContext.register(ProviderConfiguration.class);
@@ -175,6 +173,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testToString() {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
         reference.setApplication(new ApplicationConfig("consumer"));
@@ -189,6 +188,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testForks() {
         ReferenceConfig<DemoService> reference = new ReferenceConfig<DemoService>();
         reference.setApplication(new ApplicationConfig("consumer"));
@@ -217,6 +217,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testMultiProtocolDefault() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-protocol-default.xml");
         ctx.start();
@@ -231,6 +232,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testMultiProtocolError() {
         try {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-protocol-error.xml");
@@ -243,6 +245,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testMultiProtocolRegister() {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4547, registryService);
@@ -261,6 +264,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testMultiRegistry() {
         SimpleRegistryService registryService1 = new SimpleRegistryService();
         Exporter<RegistryService> exporter1 = SimpleRegistryExporter.export(4545, registryService1);
@@ -284,6 +288,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testDelayFixedTime() throws Exception {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
@@ -308,6 +313,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testDelayOnInitialized() throws Exception {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
@@ -338,6 +344,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testAutowireAndAOP() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
                 resourcePath + "/demo-provider.xml",
@@ -471,6 +478,7 @@ public class ConfigTest {
     }
 
     // DUBBO-147 find all invoker instances which have been tried from RpcContext
+    @Disabled("waiting-to-fix")
     @Test
     public void test_RpcContext_getUrls() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(
@@ -502,6 +510,7 @@ public class ConfigTest {
 
     // BUG: DUBBO-846 in version 2.0.9, config retry="false" on provider's method doesn't work
     @Test
+    @Disabled("waiting-to-fix")
     public void test_retrySettingFail() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-long-waiting.xml");
         providerContext.start();
@@ -533,6 +542,7 @@ public class ConfigTest {
     // BuG: DUBBO-146 Provider doesn't have exception output, and consumer has timeout error when serialization fails
     // for example, object transported on the wire doesn't implement Serializable
     @Test
+    @Disabled("waiting-to-fix")
     public void test_returnSerializationFail() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/demo-provider-UnserializableBox.xml");
         providerContext.start();
@@ -559,6 +569,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testXmlOverrideProperties() throws Exception {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/xml-override-properties.xml");
         providerContext.start();
@@ -580,6 +591,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testApiOverrideProperties() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("api-override-properties");
@@ -624,6 +636,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideProtocol() throws Exception {
         System.setProperty("dubbo.protocol.port", "20812");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
@@ -639,6 +652,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideMultiProtocol() throws Exception {
         System.setProperty("dubbo.protocol.dubbo.port", "20814");
         System.setProperty("dubbo.protocol.rmi.port", "10914");
@@ -659,6 +673,7 @@ public class ConfigTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideXmlDefault() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
         System.setProperty("dubbo.application.owner", "sysowner");
@@ -687,6 +702,7 @@ public class ConfigTest {
 
     @SuppressWarnings("unchecked")
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideXml() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
         System.setProperty("dubbo.application.owner", "sysowner");
@@ -719,6 +735,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideReferenceConfig() throws Exception {
         System.setProperty("dubbo.reference.retries", "5");
 
@@ -747,6 +764,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideApiDefault() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
         System.setProperty("dubbo.application.owner", "sysowner");
@@ -780,6 +798,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideApi() throws Exception {
         System.setProperty("dubbo.application.name", "sysover");
         System.setProperty("dubbo.application.owner", "sysowner");
@@ -830,6 +849,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideProperties() throws Exception {
         String portString = System.getProperty("dubbo.protocol.port");
         System.clearProperty("dubbo.protocol.port");
@@ -878,6 +898,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     @SuppressWarnings("unchecked")
     public void testCustomizeParameter() throws Exception {
         ClassPathXmlApplicationContext context =
@@ -890,6 +911,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testPath() throws Exception {
         ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
         service.setPath("a/b$c");
@@ -902,10 +924,12 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testAnnotation() {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
         try {
+            System.setProperty("provider.version", "1.2");
             ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/annotation-provider.xml");
             providerContext.start();
             try {
@@ -924,13 +948,13 @@ public class ConfigTest {
                 providerContext.close();
             }
         } finally {
+            System.clearProperty("provider.version");
             exporter.unexport();
         }
     }
 
     @Test
     public void testDubboProtocolPortOverride() throws Exception {
-        String dubboPort = System.getProperty("dubbo.protocol.dubbo.port");
         int port = 55555;
         System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
@@ -959,11 +983,9 @@ public class ConfigTest {
                     .service(service)
                     .start();
 
-            Assert.assertEquals(port, service.getExportedUrls().get(0).getPort());
+            assertEquals(port, service.getExportedUrls().get(0).getPort());
         } finally {
-            if (StringUtils.isNotEmpty(dubboPort)) {
-                System.setProperty("dubbo.protocol.dubbo.port", dubboPort);
-            }
+            System.clearProperty("dubbo.protocol.dubbo.port");
             if (bootstrap != null) {
                 bootstrap.stop();
             }
@@ -971,6 +993,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix")
     public void testProtocolRandomPort() throws Exception {
         ServiceConfig<DemoService> demoService = null;
         ServiceConfig<HelloService> helloService = null;
@@ -1008,7 +1031,7 @@ public class ConfigTest {
         try {
             bootstrap.start();
 
-            Assert.assertEquals(demoService.getExportedUrls().get(0).getPort(),
+            assertEquals(demoService.getExportedUrls().get(0).getPort(),
                     helloService.getExportedUrls().get(0).getPort());
         } finally {
             bootstrap.stop();
@@ -1035,7 +1058,7 @@ public class ConfigTest {
                 .reference(ref);
         try {
             bootstrap.start();
-            Assert.fail();
+            fail();
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -1059,7 +1082,7 @@ public class ConfigTest {
             Collection<Registry> collection = MockRegistryFactory.getCachedRegistry();
             MockRegistry registry = (MockRegistry) collection.iterator().next();
             URL url = registry.getRegistered().get(0);
-            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
+            assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
             MockRegistryFactory.cleanCachedRegistry();
             bootstrap.stop();
@@ -1073,9 +1096,9 @@ public class ConfigTest {
             ctx.start();
             ServiceConfig serviceConfig = (ServiceConfig) ctx.getBean("dubboDemoService");
             URL url = (URL) serviceConfig.getExportedUrls().get(0);
-            Assert.assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
+            assertEquals(GENERIC_SERIALIZATION_BEAN, url.getParameter(GENERIC_KEY));
         } finally {
-            ctx.destroy();
+            ctx.close();
         }
     }
 }

@@ -71,7 +71,9 @@ public @interface DubboReference {
 
     /**
      * When enable, prefer to call local service in the same JVM if it's present, default value is true
+     * @deprecated using scope="local" or scope="remote" instead
      */
+    @Deprecated
     boolean injvm() default true;
 
     /**
@@ -129,14 +131,14 @@ public @interface DubboReference {
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
-    int connections() default 0;
+    int connections() default -1;
 
     /**
      * The callback instance limit peer connection
      * <p>
      * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default 0;
+    int callbacks() default -1;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -163,7 +165,7 @@ public @interface DubboReference {
      * <p>
      * see Constants#DEFAULT_RETRIES
      */
-    int retries() default 2;
+    int retries() default -1;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
@@ -180,7 +182,7 @@ public @interface DubboReference {
     /**
      * Maximum active requests allowed, default value is 0
      */
-    int actives() default 0;
+    int actives() default -1;
 
     /**
      * Whether the async request has already been sent, the default value is false
@@ -200,7 +202,7 @@ public @interface DubboReference {
     /**
      * Timeout value for service invocation, default value is 0
      */
-    int timeout() default 0;
+    int timeout() default -1;
 
     /**
      * Specify cache implementation for service invocation, legal values include: lru, threadlocal, jcache
@@ -296,4 +298,11 @@ public @interface DubboReference {
      * @see RegistryConstants#PROVIDED_BY
      */
     String[] providedBy() default {};
+
+    /**
+     * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_LOCAL
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
+     */
+    String scope() default "";
 }

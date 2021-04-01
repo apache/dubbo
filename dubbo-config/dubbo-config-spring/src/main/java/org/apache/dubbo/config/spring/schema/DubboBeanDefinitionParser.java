@@ -201,7 +201,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 }
                                 reference = new RuntimeBeanReference(value);
                             }
-                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                            if (reference != null) {
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                            }
                         }
                     }
                 }
@@ -239,7 +241,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {
         // process interface class
-        String interfaceClassName = resolveAttribute(element, "interface", parserContext);
+        String interfaceName = resolveAttribute(element, "interface", parserContext);
         String generic = resolveAttribute(element, "generic", parserContext);
         if (StringUtils.isBlank(generic) && consumerDefinition != null) {
             // get generic from consumerConfig
@@ -251,7 +253,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             beanDefinition.getPropertyValues().add("generic", generic);
         }
 
-        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceClassName);
+        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
+        beanDefinition.setAttribute("generic", generic);
+        beanDefinition.setAttribute("interfaceName", interfaceName);
+        beanDefinition.setAttribute("interfaceClass", interfaceClass);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()

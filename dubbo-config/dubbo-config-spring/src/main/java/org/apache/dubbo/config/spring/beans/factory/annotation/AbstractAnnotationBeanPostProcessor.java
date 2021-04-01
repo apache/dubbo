@@ -26,7 +26,6 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -35,7 +34,6 @@ import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcess
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
@@ -65,7 +63,7 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractAnnotationBeanPostProcessor extends
-        InstantiationAwareBeanPostProcessorAdapter implements MergedBeanDefinitionPostProcessor, PriorityOrdered,
+        InstantiationAwareBeanPostProcessorAdapter implements MergedBeanDefinitionPostProcessor, Ordered,
         BeanFactoryAware, BeanClassLoaderAware, EnvironmentAware, DisposableBean {
 
     private final static int CACHE_SIZE = Integer.getInteger("", 32);
@@ -85,10 +83,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
     private ClassLoader classLoader;
 
-    /**
-     * make sure higher priority than {@link AutowiredAnnotationBeanPostProcessor}
-     */
-    private int order = Ordered.LOWEST_PRECEDENCE - 3;
+    private int order = Ordered.LOWEST_PRECEDENCE;
 
     /**
      * @param annotationTypes the multiple types of {@link Annotation annotations}
@@ -136,7 +131,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             try {
                 prepareInjection(metadata);
             } catch (Exception e) {
-                logger.warn("Prepare injection of @"+getAnnotationType().getSimpleName()+" failed", e);
+                logger.error("Prepare injection of @"+getAnnotationType().getSimpleName()+" failed", e);
             }
         }
     }
@@ -343,18 +338,18 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
     protected Object getInjectedObject(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        AnnotatedInjectElement injectedElement) throws Exception {
 
-        String cacheKey = buildInjectedObjectCacheKey(attributes, bean, beanName, injectedType, injectedElement);
+//        String cacheKey = buildInjectedObjectCacheKey(attributes, bean, beanName, injectedType, injectedElement);
+//
+//        Object injectedObject = injectedObjectsCache.get(cacheKey);
+//
+//        if (injectedObject == null) {
+//            injectedObject = doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
+//            // Customized inject-object if necessary
+//            injectedObjectsCache.put(cacheKey, injectedObject);
+//        }
+//        return injectedObject;
 
-        Object injectedObject = injectedObjectsCache.get(cacheKey);
-
-        if (injectedObject == null) {
-            injectedObject = doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
-            // Customized inject-object if necessary
-            injectedObjectsCache.put(cacheKey, injectedObject);
-        }
-
-        return injectedObject;
-
+        return doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
     }
 
     /**
@@ -401,9 +396,9 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
      * @param injectedElement {@link AnnotatedInjectElement}
      * @return Bean cache key
      */
-    protected abstract String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
-                                                          Class<?> injectedType,
-                                                          AnnotatedInjectElement injectedElement);
+//    protected abstract String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
+//                                                          Class<?> injectedType,
+//                                                          AnnotatedInjectElement injectedElement);
 
     /**
      * {@link Annotation Annotated} {@link InjectionMetadata} implementation
@@ -437,7 +432,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
         protected final AnnotationAttributes attributes;
 
-        protected volatile String refKey;
+        protected volatile Object injectedObject;
 
         protected AnnotatedInjectElement(Member member, PropertyDescriptor pd, AnnotationAttributes attributes) {
             super(member, pd);
@@ -464,6 +459,15 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         public Class<?> getInjectedType() {
             return getResourceType();
         }
+
+        public String getPropertyName() {
+            if (member instanceof Field) {
+                Field field = (Field) member;
+                return field.getName();
+            }
+            // If it is method element, using propertyName of PropertyDescriptor
+            return pd.getName();
+        }
     }
 
     protected class AnnotatedMethodElement extends AnnotatedInjectElement {
@@ -484,6 +488,5 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             super(field, null, attributes);
             this.field = field;
         }
-
     }
 }

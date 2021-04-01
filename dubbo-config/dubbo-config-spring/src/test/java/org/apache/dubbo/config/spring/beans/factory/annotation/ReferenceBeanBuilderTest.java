@@ -17,28 +17,29 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.junit.Assert;
-import org.junit.Test;
+import org.apache.dubbo.config.spring.api.HelloService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.springframework.core.annotation.AnnotationUtils.findAnnotation;
+import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 import static org.springframework.util.ReflectionUtils.findField;
 
 /**
@@ -49,18 +50,18 @@ import static org.springframework.util.ReflectionUtils.findField;
  * @see Reference
  * @since 2.6.4
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
+@DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class ReferenceBeanBuilderTest {
 
     @DubboReference(
-            interfaceClass = CharSequence.class,
-            interfaceName = "java.lang.CharSequence",
+            interfaceClass = HelloService.class,
             version = "1.0.0", group = "TEST_GROUP", url = "dubbo://localhost:12345",
-            client = "client", generic = true, injvm = true,
+            client = "client", generic = false, injvm = true,
             check = false, init = false, lazy = true,
             stubevent = true, reconnect = "reconnect", sticky = true,
-            proxy = "javassist", stub = "java.lang.CharSequence", cluster = "failover",
+            proxy = "javassist", stub = "org.apache.dubbo.config.spring.api.HelloService", cluster = "failover",
             connections = 3, callbacks = 1, onconnect = "onconnect", ondisconnect = "ondisconnect",
             owner = "owner", layer = "layer", retries = 1,
             loadbalance = "random", async = true, actives = 3,
@@ -68,7 +69,7 @@ public class ReferenceBeanBuilderTest {
             timeout = 3, cache = "cache", filter = {"echo", "generic", "accesslog"},
             listener = {"deprecated"}, parameters = {"n1=v1  ", "n2 = v2 ", "  n3 =   v3  "},
             application = "application",
-            module = "module", consumer = "consumer", monitor = "monitor", registry = {"registry"},
+            module = "module", consumer = "consumer", monitor = "monitor", registry = {"myregistry"},
             // @since 2.7.3
             id = "reference",
             // @since 2.7.8
@@ -88,59 +89,60 @@ public class ReferenceBeanBuilderTest {
     @Test
     public void testBuild() throws Exception {
         DubboReference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), DubboReference.class);
-        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, false, false);
-        ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder.create(attributes, context);
-        beanBuilder.defaultInterfaceClass(CharSequence.class);
-        ReferenceConfig referenceBean = beanBuilder.build();
-        Assert.assertEquals(CharSequence.class, referenceBean.getInterfaceClass());
-        Assert.assertEquals("1.0.0", referenceBean.getVersion());
-        Assert.assertEquals("TEST_GROUP", referenceBean.getGroup());
-        Assert.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
-        Assert.assertEquals("client", referenceBean.getClient());
-        Assert.assertEquals(true, referenceBean.isGeneric());
-        Assert.assertTrue(referenceBean.isInjvm());
-        Assert.assertEquals(false, referenceBean.isCheck());
-        Assert.assertFalse(referenceBean.isInit());
-        Assert.assertEquals(true, referenceBean.getLazy());
-        Assert.assertEquals(true, referenceBean.getStubevent());
-        Assert.assertEquals("reconnect", referenceBean.getReconnect());
-        Assert.assertEquals(true, referenceBean.getSticky());
-        Assert.assertEquals("javassist", referenceBean.getProxy());
-        Assert.assertEquals("java.lang.CharSequence", referenceBean.getStub());
-        Assert.assertEquals("failover", referenceBean.getCluster());
-        Assert.assertEquals(Integer.valueOf(3), referenceBean.getConnections());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getCallbacks());
-        Assert.assertEquals("onconnect", referenceBean.getOnconnect());
-        Assert.assertEquals("ondisconnect", referenceBean.getOndisconnect());
-        Assert.assertEquals("owner", referenceBean.getOwner());
-        Assert.assertEquals("layer", referenceBean.getLayer());
-        Assert.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
-        Assert.assertEquals("random", referenceBean.getLoadbalance());
-        Assert.assertEquals(true, referenceBean.isAsync());
-        Assert.assertEquals(Integer.valueOf(3), referenceBean.getActives());
-        Assert.assertEquals(true, referenceBean.getSent());
-        Assert.assertEquals("mock", referenceBean.getMock());
-        Assert.assertEquals("validation", referenceBean.getValidation());
-        Assert.assertEquals(Integer.valueOf(3), referenceBean.getTimeout());
-        Assert.assertEquals("cache", referenceBean.getCache());
-        Assert.assertEquals("echo,generic,accesslog", referenceBean.getFilter());
-        Assert.assertEquals("deprecated", referenceBean.getListener());
-        Assert.assertEquals("reference", referenceBean.getId());
-        Assert.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
-        Assert.assertEquals("service1,service2,service3", referenceBean.getProvidedBy());
+        AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, true);
+        ReferenceConfig referenceBean = ReferenceBeanBuilder.create(attributes, context)
+                .defaultInterfaceClass(HelloService.class)
+                .build();
+        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals("org.apache.dubbo.config.spring.api.HelloService", referenceBean.getInterface());
+        Assertions.assertEquals("1.0.0", referenceBean.getVersion());
+        Assertions.assertEquals("TEST_GROUP", referenceBean.getGroup());
+        Assertions.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
+        Assertions.assertEquals("client", referenceBean.getClient());
+        Assertions.assertEquals(null, referenceBean.isGeneric());
+        Assertions.assertEquals(null, referenceBean.isInjvm());
+        Assertions.assertEquals(false, referenceBean.isCheck());
+        Assertions.assertEquals(null, referenceBean.isInit());
+        Assertions.assertEquals(true, referenceBean.getLazy());
+        Assertions.assertEquals(true, referenceBean.getStubevent());
+        Assertions.assertEquals("reconnect", referenceBean.getReconnect());
+        Assertions.assertEquals(true, referenceBean.getSticky());
+        Assertions.assertEquals("javassist", referenceBean.getProxy());
+        Assertions.assertEquals("org.apache.dubbo.config.spring.api.HelloService", referenceBean.getStub());
+        Assertions.assertEquals("failover", referenceBean.getCluster());
+        Assertions.assertEquals(Integer.valueOf(3), referenceBean.getConnections());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getCallbacks());
+        Assertions.assertEquals("onconnect", referenceBean.getOnconnect());
+        Assertions.assertEquals("ondisconnect", referenceBean.getOndisconnect());
+        Assertions.assertEquals("owner", referenceBean.getOwner());
+        Assertions.assertEquals("layer", referenceBean.getLayer());
+        Assertions.assertEquals(Integer.valueOf(1), referenceBean.getRetries());
+        Assertions.assertEquals("random", referenceBean.getLoadbalance());
+        Assertions.assertEquals(true, referenceBean.isAsync());
+        Assertions.assertEquals(Integer.valueOf(3), referenceBean.getActives());
+        Assertions.assertEquals(true, referenceBean.getSent());
+        Assertions.assertEquals("mock", referenceBean.getMock());
+        Assertions.assertEquals("validation", referenceBean.getValidation());
+        Assertions.assertEquals(Integer.valueOf(3), referenceBean.getTimeout());
+        Assertions.assertEquals("cache", referenceBean.getCache());
+        Assertions.assertEquals("echo,generic,accesslog", referenceBean.getFilter());
+        Assertions.assertEquals("deprecated", referenceBean.getListener());
+        Assertions.assertEquals("reference", referenceBean.getId());
+        Assertions.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
+        Assertions.assertEquals("service1,service2,service3", referenceBean.getProvidedBy());
+        Assertions.assertEquals("myregistry", referenceBean.getRegistryIds());
 
         // parameters
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("n1", "v1");
         parameters.put("n2", "v2");
         parameters.put("n3", "v3");
-        Assert.assertEquals(parameters, referenceBean.getParameters());
+        Assertions.assertEquals(parameters, referenceBean.getParameters());
 
         // Asserts Null fields
         Assertions.assertThrows(IllegalStateException.class, () -> referenceBean.getApplication());
-        Assert.assertNull(referenceBean.getModule());
-        Assert.assertNull(referenceBean.getConsumer());
-        Assert.assertNull(referenceBean.getMonitor());
-        Assert.assertEquals(Collections.emptyList(), referenceBean.getRegistries());
+        Assertions.assertNull(referenceBean.getModule());
+        Assertions.assertNull(referenceBean.getConsumer());
+        Assertions.assertNull(referenceBean.getMonitor());
     }
 }
