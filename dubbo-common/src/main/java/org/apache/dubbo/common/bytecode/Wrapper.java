@@ -172,8 +172,8 @@ public abstract class Wrapper {
                 int len = m.getParameterTypes().length;
                 c3.append(" && ").append(" $3.length == ").append(len);
 
-                boolean override = sameNameMethodCount.get(m.getName()) > 1;
-                if (override) {
+                boolean overload = sameNameMethodCount.get(m.getName()) > 1;
+                if (overload) {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
                             c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
