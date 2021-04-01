@@ -115,7 +115,7 @@ public class WrapperTest {
     }
 
     @Test
-    public void testOverrideMethod() throws Exception {
+    public void testOverloadMethod() throws Exception {
         Wrapper w = Wrapper.getWrapper(I2.class);
         assertEquals(2, w.getMethodNames().length);
 
