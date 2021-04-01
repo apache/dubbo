@@ -219,7 +219,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         try {
             invoker.destroy();
         } catch (Throwable t) {
-            logger.warn("Unexpected error occured when destroy invoker of ReferenceConfig(" + url + ").", t);
+            logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
         invoker = null;
         ref = null;

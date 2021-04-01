@@ -78,7 +78,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         if (protocol == null || !ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).hasExtension(protocol)) {
             throw new IllegalArgumentException(
                     "No '" + protocol
-                            + "' medata report extension found, please check if metadata report module dependencies are included.");
+                            + "' metadata report extension found, please check if metadata report module dependencies are included.");
         }
 
         List<URL> urls = new ArrayList<>();
