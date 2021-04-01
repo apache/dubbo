@@ -154,7 +154,7 @@ public abstract class Wrapper {
         // get all public method.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
-            Map<String, Integer> sameNameMethodCount = new HashMap<>();
+            Map<String, Integer> sameNameMethodCount = new HashMap<>((int) (methods.length / 0.75f) + 1);
             for (Method m : methods) {
                 sameNameMethodCount.compute(m.getName(),
                         (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
