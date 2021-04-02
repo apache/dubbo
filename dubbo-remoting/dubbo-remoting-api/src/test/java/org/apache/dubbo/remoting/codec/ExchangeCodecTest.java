@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -190,8 +189,11 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         try {
             Channel channel = getServerSideChannel(url);
             ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(request);
-            codec.decode(channel, buffer);
-            fail();
+            Object obj = codec.decode(channel, buffer);
+
+            Assertions.assertTrue(obj instanceof Response);
+            Assertions.assertTrue(((Response) obj).getErrorMessage().startsWith(
+                    "Data length too large: " + Bytes.bytes2int(new byte[]{1, 1, 1, 1})));
         } catch (IOException expected) {
             Assertions.assertTrue(expected.getMessage().startsWith("Data length too large: " + Bytes.bytes2int(new byte[]{1, 1, 1, 1})));
         }
