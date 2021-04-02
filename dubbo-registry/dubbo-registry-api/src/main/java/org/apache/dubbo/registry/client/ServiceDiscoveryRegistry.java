@@ -327,7 +327,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceListener.addListener(protocolServiceKey, listener);
         registerServiceInstancesChangedListener(url, serviceListener);
 
-
+        // FIXME: This will cause redundant duplicate notifications
         serviceNames.forEach(serviceName -> {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             if (CollectionUtils.isNotEmpty(serviceInstances)) {
