@@ -28,7 +28,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
@@ -105,7 +104,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        DubboBeanUtils.registerBeansIfNotExists(beanDefinitionRegistry);
 
         String[] beanNames = beanFactory.getBeanDefinitionNames();
         for (String beanName : beanNames) {

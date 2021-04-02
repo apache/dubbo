@@ -212,6 +212,12 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         return beanNameBuilder.toString();
     }
 
+//    public void verifyReferenceKey(String referenceKey) {
+//        if (referenceKey != null && referenceKey.contains("${")) {
+//            throw new IllegalStateException("Reference key contains unresolved placeholders ${..}");
+//        }
+//    }
+
     private Map<String, String> convertParameterPairs(String[] pairArray) {
         Map<String, String> map = new TreeMap<>();
         // parameters spec is {key1,value1,key2,value2}
@@ -325,7 +331,36 @@ public class ReferenceBeanManager implements ApplicationContextAware {
             referenceProps = toReferenceProps(propertyValues, environment);
         }
 
+        //resolve placeholders
+        //resolvePlaceholders(referenceProps, environment);
         return referenceProps;
+    }
+
+    private void resolvePlaceholders(Map<String, Object> referenceProps, PropertyResolver propertyResolver) {
+        for (Map.Entry<String, Object> entry : referenceProps.entrySet()) {
+            Object value = entry.getValue();
+            if (value == null) {
+                continue;
+            }
+            if (value instanceof String) {
+                String valueToResovle = (String) value;
+                entry.setValue(propertyResolver.resolveRequiredPlaceholders(valueToResovle));
+            } else if (value instanceof String[]) {
+                String[] strings = (String[]) value;
+                for (int i = 0; i < strings.length; i++) {
+                    strings[i] = propertyResolver.resolveRequiredPlaceholders(strings[i]);
+                }
+                entry.setValue(strings);
+            } else if (value instanceof List) {
+                List list = (List) value;
+                //TODO
+            } else if (value instanceof Map) {
+                Map map = (Map) value;
+                //TODO
+            } else if (value.getClass().isArray()) {
+                //TODO
+            }
+        }
     }
 
     /**

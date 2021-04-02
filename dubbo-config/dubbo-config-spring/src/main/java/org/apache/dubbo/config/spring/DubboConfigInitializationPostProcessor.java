@@ -48,7 +48,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  */
 public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware, Ordered {
 
-    public static String BEAN_NAME = "dubboBeanFactoryPostProcessor";
+    public static String BEAN_NAME = "dubboConfigInitializationPostProcessor";
 
     /**
      * This bean post processor should run before seata GlobalTransactionScanner(1024)
