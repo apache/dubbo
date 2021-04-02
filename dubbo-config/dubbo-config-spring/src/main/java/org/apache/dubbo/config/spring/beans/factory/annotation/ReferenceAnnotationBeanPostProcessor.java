@@ -59,8 +59,17 @@ import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBea
 import static org.springframework.util.StringUtils.hasText;
 
 /**
- * {@link org.springframework.beans.factory.config.BeanPostProcessor} implementation
- * that Consumer service {@link Reference} annotated fields
+ * <p>
+ * Step 1:
+ * The purpose of implementing {@link BeanFactoryPostProcessor} is to scan the registration reference bean definition earlier,
+ * so that it can be shared with the xml bean configuration.
+ * </p>
+ *
+ * <p>
+ * Step 2:
+ * By implementing {@link org.springframework.beans.factory.config.InstantiationAwareBeanPostProcessor},
+ * inject the reference bean instance into the fields and setter methods which annotated with {@link DubboReference}.
+ * </p>
  *
  * @see DubboReference
  * @see Reference
