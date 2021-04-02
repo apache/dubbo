@@ -194,14 +194,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                 continue;
             }
             Object value = attributes.get(key);
-
-            //Specially convert @DubboReference attribute name/value to ReferenceConfig property
-            // String[] registry => String registryIds
-//            if ("registry".equals(key)) {
-//                key = "registryIds";
-//                value = StringUtils.join((String[]) value, ",");
-//            }
-
             value = convertAttribute(key, value);
 
             beanNameBuilder.append(key)
@@ -333,25 +325,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
             referenceProps = toReferenceProps(propertyValues, environment);
         }
 
-        //resolve placeholders
-        resolvePlaceholders(referenceProps, environment);
         return referenceProps;
-    }
-
-    private void resolvePlaceholders(Map<String, Object> referenceProps, PropertyResolver propertyResolver) {
-        for (Map.Entry<String, Object> entry : referenceProps.entrySet()) {
-            Object value = entry.getValue();
-            if (value instanceof String) {
-                String valueToResovle = (String) value;
-                entry.setValue(propertyResolver.resolvePlaceholders(valueToResovle));
-            } else if (value instanceof String[]) {
-                String[] strings = (String[]) value;
-                for (int i = 0; i < strings.length; i++) {
-                    strings[i] = propertyResolver.resolvePlaceholders(strings[i]);
-                }
-                entry.setValue(strings);
-            }
-        }
     }
 
     /**

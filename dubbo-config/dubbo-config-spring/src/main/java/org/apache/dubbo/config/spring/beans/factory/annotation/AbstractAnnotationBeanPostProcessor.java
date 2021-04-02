@@ -138,13 +138,13 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
     @Override
     public PropertyValues postProcessPropertyValues(
-            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeanCreationException {
+            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
 
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
             metadata.inject(bean, beanName, pvs);
-        } catch (BeanCreationException ex) {
+        } catch (BeansException ex) {
             throw ex;
         } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of @" + getAnnotationType().getSimpleName()
@@ -254,6 +254,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         if (InjectionMetadata.needsRefresh(metadata, clazz)) {
             synchronized (this.injectionMetadataCache) {
                 metadata = this.injectionMetadataCache.get(cacheKey);
+
                 if (InjectionMetadata.needsRefresh(metadata, clazz)) {
                     if (metadata != null) {
                         metadata.clear(pvs);
@@ -405,6 +406,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
      */
     protected class AnnotatedInjectionMetadata extends InjectionMetadata {
 
+        private Class<?> targetClass;
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements;
@@ -412,6 +414,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         public AnnotatedInjectionMetadata(Class<?> targetClass, Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements,
                                           Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements) {
             super(targetClass, combine(fieldElements, methodElements));
+            this.targetClass = targetClass;
             this.fieldElements = fieldElements;
             this.methodElements = methodElements;
         }
@@ -422,6 +425,18 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
         public Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> getMethodElements() {
             return methodElements;
+        }
+
+        @Override
+        protected boolean needsRefresh(Class<?> clazz) {
+            if (this.targetClass == clazz) {
+                return false;
+            }
+            //IGNORE Spring CGLIB enhanced class
+            if (targetClass.isAssignableFrom(clazz) &&  clazz.getName().contains("$$EnhancerBySpringCGLIB$$")) {
+                return false;
+            }
+            return true;
         }
     }
 

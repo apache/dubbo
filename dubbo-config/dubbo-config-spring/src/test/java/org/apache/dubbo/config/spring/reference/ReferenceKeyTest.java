@@ -14,25 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.reference;
 
 import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
+import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.core.annotation.AnnotationAttributes;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-public class ReferenceBeanManagerTest {
+public class ReferenceKeyTest {
 
     private ReferenceBeanManager referenceBeanManager = new ReferenceBeanManager();
 
@@ -95,6 +104,74 @@ public class ReferenceBeanManagerTest {
 
     }
 
+    @Test
+    public void testConfig2() {
+        try {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration2.class);
+            context.start();
+            Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+            Assertions.fail("Reference bean check failed");
+        } catch (BeansException e) {
+            Assertions.assertTrue(e.getMessage().contains("Already exists another reference bean with the same bean name and type but difference attributes"), getStackTrace(e));
+        }
+    }
+
+    @Test
+    public void testConfig3() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration3.class);
+        context.start();
+        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertNotNull(referenceBeanMap.get("&demoService#2"));
+
+        ConsumerConfiguration3 consumerConfiguration3 = context.getBean(ConsumerConfiguration3.class);
+        Assertions.assertEquals(consumerConfiguration3.demoService, consumerConfiguration3.helloService);
+    }
+
+    @Test
+    public void testConfig4() {
+        try {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
+            context.start();
+            Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+            Assertions.fail("Reference bean check failed");
+        } catch (BeansException e) {
+            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean id demoService"), getStackTrace(e));
+        }
+    }
+
+    @Test
+    public void testConfig5() {
+        try {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration5.class);
+            context.start();
+            Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+            Assertions.fail("Reference bean check failed");
+        } catch (BeansException e) {
+            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean id demoService"), getStackTrace(e));
+        }
+    }
+
+    @Test
+    public void testConfig6() {
+        try {
+            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration6.class);
+            context.start();
+            Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+            Assertions.fail("Reference bean check failed");
+        } catch (BeansException e) {
+            String checkString = "Already exists another bean definition with the same bean name, but cannot rename the reference bean name";
+            Assertions.assertTrue(e.getMessage().contains(checkString), getStackTrace(e));
+        }
+    }
+
+
+    private String getStackTrace(Throwable ex) {
+        StringWriter stringWriter = new StringWriter();
+        ex.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString();
+    }
+
     private String getReferenceKey(String fieldName) throws NoSuchFieldException {
         AnnotationAttributes attributes = getAnnotationAttributes(fieldName);
         ReferenceBeanManager.convertReferenceProps(attributes);
@@ -153,7 +230,7 @@ public class ReferenceBeanManagerTest {
             "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
     static class ConsumerConfiguration {
 
-        // same as xml config
+        //both are reference beans, same as xml config
         @DubboReference(group = "demo", version = "1.2.3", consumer="my-consumer", init=false,
                 methods={@Method(arguments={@Argument(callback=true, index=0)}, name="sayName", parameters={"access-token", "my-token", "b", "2"}, retries=0)},
                 parameters={"connec.timeout", "1000"},
@@ -164,4 +241,70 @@ public class ReferenceBeanManagerTest {
                 url="dubbo://127.0.0.1:20813")
         private DemoService demoService;
     }
+
+
+    @Configuration
+    @ImportResource({"classpath:/org/apache/dubbo/config/spring/init-reference-keys.xml",
+            "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
+    static class ConsumerConfiguration2 {
+
+        //both are reference beans, same bean name and type, but difference attributes from xml config
+        @DubboReference(group = "demo", version = "1.2.3", consumer="my-consumer", init=false,
+                scope="local",
+                timeout=100)
+        private DemoService demoService;
+    }
+
+    @Configuration
+    @ImportResource({"classpath:/org/apache/dubbo/config/spring/init-reference-keys.xml",
+            "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
+    static class ConsumerConfiguration3 {
+
+        //both are reference beans, same bean name but difference interface type
+        @DubboReference(group = "demo", version = "1.2.3", consumer="my-consumer", init=false,
+                url="dubbo://127.0.0.1:20813")
+        private HelloService demoService;
+
+        @Autowired
+        private HelloService helloService;
+    }
+
+    @Configuration
+    @ImportResource({"classpath:/org/apache/dubbo/config/spring/init-reference-keys.xml",
+            "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
+    static class ConsumerConfiguration4 {
+
+        //not reference bean: same bean name and type
+        @Bean
+        public DemoService demoService() {
+            return new DemoServiceImpl();
+        }
+    }
+
+    @Configuration
+    @ImportResource({"classpath:/org/apache/dubbo/config/spring/init-reference-keys.xml",
+            "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
+    static class ConsumerConfiguration5 {
+
+        //not reference bean: same bean name but difference type
+        @Bean
+        public HelloService demoService() {
+            return new HelloServiceImpl();
+        }
+    }
+
+    @Configuration
+    @ImportResource({"classpath:/org/apache/dubbo/config/spring/init-reference-keys.xml",
+            "classpath:/org/apache/dubbo/config/spring/init-reference-properties.xml"})
+    static class ConsumerConfiguration6 {
+
+        //both are reference beans, same bean name but difference interface type, fixed bean name
+        @DubboReference(id = "demoService", group = "demo", version = "1.2.3", consumer="my-consumer", init=false,
+                url="dubbo://127.0.0.1:20813")
+        private HelloService demoService;
+
+//        @Autowired
+//        private HelloService helloService;
+    }
+
 }
