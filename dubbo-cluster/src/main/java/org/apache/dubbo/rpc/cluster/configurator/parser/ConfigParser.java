@@ -96,7 +96,10 @@ public class ConfigParser {
 
             List<String> apps = item.getApplications();
             if (CollectionUtils.isNotEmpty(apps)) {
-                apps.forEach(app -> urls.add(URL.valueOf(urlBuilder.append("&application=").append(app).toString())));
+                apps.forEach(app -> {
+                    StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
+                    urls.add(URL.valueOf(tmpUrlBuilder.append("&application=").append(app).toString()));
+                });
             } else {
                 urls.add(URL.valueOf(urlBuilder.toString()));
             }
@@ -119,17 +122,18 @@ public class ConfigParser {
                 services.add("*");
             }
             for (String s : services) {
-                urlBuilder.append(appendService(s));
-                urlBuilder.append(toParameterString(item));
+                StringBuilder tmpUrlBuilder = new StringBuilder(urlBuilder);
+                tmpUrlBuilder.append(appendService(s));
+                tmpUrlBuilder.append(toParameterString(item));
 
-                urlBuilder.append("&application=").append(config.getKey());
+                tmpUrlBuilder.append("&application=").append(config.getKey());
 
-                parseEnabled(item, config, urlBuilder);
+                parseEnabled(item, config, tmpUrlBuilder);
 
-                urlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
-                urlBuilder.append("&configVersion=").append(config.getConfigVersion());
+                tmpUrlBuilder.append("&category=").append(APP_DYNAMIC_CONFIGURATORS_CATEGORY);
+                tmpUrlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
-                urls.add(URL.valueOf(urlBuilder.toString()));
+                urls.add(URL.valueOf(tmpUrlBuilder.toString()));
             }
         }
         return urls;
