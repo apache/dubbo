@@ -46,15 +46,19 @@ public class CacheListener implements DataListener {
     }
 
     public void addListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = this.keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
+        Set<ConfigurationListener> listeners = keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
         listeners.add(configurationListener);
     }
 
     public void removeListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = this.keyListeners.get(key);
+        Set<ConfigurationListener> listeners = keyListeners.get(key);
         if (listeners != null) {
             listeners.remove(configurationListener);
         }
+    }
+
+    public Set<ConfigurationListener> getConfigurationListeners(String key) {
+        return keyListeners.get(key);
     }
 
     /**

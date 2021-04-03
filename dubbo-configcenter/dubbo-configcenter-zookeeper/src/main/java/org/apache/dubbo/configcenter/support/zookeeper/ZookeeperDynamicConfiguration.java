@@ -19,11 +19,13 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -100,6 +102,9 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
         cacheListener.removeListener(pathKey, listener);
-        zkClient.removeDataListener(pathKey, cacheListener);
+        Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
+        if (CollectionUtils.isNotEmpty(configurationListeners)) {
+            zkClient.removeDataListener(pathKey, cacheListener);
+        }
     }
 }
