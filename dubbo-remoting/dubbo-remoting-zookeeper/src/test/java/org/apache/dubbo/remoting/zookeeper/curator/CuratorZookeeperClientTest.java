@@ -171,7 +171,7 @@ public class CuratorZookeeperClientTest {
         String valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertEquals(value, valueFromCache);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
-        curatorClient.addTargetDataListener(path + "/d.json", new CuratorZookeeperClient.CuratorWatcherImpl() {
+        curatorClient.addTargetDataListener(path + "/d.json", new CuratorZookeeperClient.NodeCacheListenerImpl() {
 
             @Override
             public void nodeChanged() throws Exception {

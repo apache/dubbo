@@ -50,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
+public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.NodeCacheListenerImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
@@ -217,17 +217,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected CuratorZookeeperClient.CuratorWatcherImpl createTargetDataListener(String path, DataListener listener) {
-        return new CuratorWatcherImpl(client, listener, path);
+    protected CuratorZookeeperClient.NodeCacheListenerImpl createTargetDataListener(String path, DataListener listener) {
+        return new NodeCacheListenerImpl(client, listener, path);
     }
 
     @Override
-    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl nodeCacheListener) {
+    protected void addTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
         this.addTargetDataListener(path, nodeCacheListener, null);
     }
 
     @Override
-    protected void addTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl nodeCacheListener, Executor executor) {
+    protected void addTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener, Executor executor) {
         try {
             NodeCache nodeCache = new NodeCache(client, path);
             if (nodeCacheMap.putIfAbsent(path, nodeCache) != null) {
@@ -246,7 +246,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected void removeTargetDataListener(String path, CuratorZookeeperClient.CuratorWatcherImpl nodeCacheListener) {
+    protected void removeTargetDataListener(String path, CuratorZookeeperClient.NodeCacheListenerImpl nodeCacheListener) {
         NodeCache nodeCache = nodeCacheMap.get(path);
         if (nodeCache != null) {
             nodeCache.getListenable().removeListener(nodeCacheListener);
@@ -259,22 +259,47 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         listener.unwatch();
     }
 
-    static class CuratorWatcherImpl implements CuratorWatcher, NodeCacheListener {
+    static class NodeCacheListenerImpl implements NodeCacheListener {
+
+        private CuratorFramework client;
+
+        private volatile DataListener dataListener;
+
+        private String path;
+
+        protected NodeCacheListenerImpl() {
+        }
+
+        public NodeCacheListenerImpl(CuratorFramework client, DataListener dataListener, String path) {
+            this.client = client;
+            this.dataListener = dataListener;
+            this.path = path;
+        }
+
+        @Override
+        public void nodeChanged() throws Exception {
+            ChildData childData = nodeCacheMap.get(path).getCurrentData();
+            String content = null;
+            EventType eventType;
+            if (childData == null) {
+                eventType = EventType.NodeDeleted;
+            } else {
+                content = new String(childData.getData(), CHARSET);
+                eventType = EventType.NodeDataChanged;
+            }
+            dataListener.dataChanged(path, content, eventType);
+        }
+    }
+
+    static class CuratorWatcherImpl implements CuratorWatcher {
 
         private CuratorFramework client;
         private volatile ChildListener childListener;
-        private volatile DataListener dataListener;
         private String path;
 
         public CuratorWatcherImpl(CuratorFramework client, ChildListener listener, String path) {
             this.client = client;
             this.childListener = listener;
-            this.path = path;
-        }
-
-        public CuratorWatcherImpl(CuratorFramework client, DataListener dataListener, String path) {
-            this.client = client;
-            this.dataListener = dataListener;
             this.path = path;
         }
 
@@ -296,20 +321,6 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (childListener != null) {
                 childListener.childChanged(path, client.getChildren().usingWatcher(this).forPath(path));
             }
-        }
-
-        @Override
-        public void nodeChanged() throws Exception {
-            ChildData childData = nodeCacheMap.get(path).getCurrentData();
-            String content = null;
-            EventType eventType;
-            if (childData == null) {
-                eventType = EventType.NodeDeleted;
-            } else {
-                content = new String(childData.getData(), CHARSET);
-                eventType = EventType.NodeDataChanged;
-            }
-            dataListener.dataChanged(path, content, eventType);
         }
     }
 
