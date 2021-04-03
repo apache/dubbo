@@ -118,6 +118,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         return null;
     }
 
+    public static Registry getDefaultNopRegistryIfNotSupportServiceDiscovery() {
+        return DEFAULT_NOP_REGISTRY;
+    }
+
     @Override
     public Registry getRegistry(URL url) {
 
