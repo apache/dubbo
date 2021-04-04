@@ -65,10 +65,11 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
     @Override
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        try{
+        try {
             registry = registryFactory.getRegistry(super.getRegistryUrl(url));
-        }catch (IllegalStateException e){
-            logger.warn("do not support service discovery, automatically switch to interface-level service discovery.");
+        } catch (IllegalStateException e) {
+            String protocol = url.getProtocol();
+            logger.warn(protocol + " do not support service discovery, automatically switch to interface-level service discovery.");
             registry = AbstractRegistryFactory.getDefaultNopRegistryIfNotSupportServiceDiscovery();
         }
 
@@ -77,7 +78,8 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
     }
 
     @Override
-    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry,
+                                                        Class<T> type, URL url, URL consumerUrl) {
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
         return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
