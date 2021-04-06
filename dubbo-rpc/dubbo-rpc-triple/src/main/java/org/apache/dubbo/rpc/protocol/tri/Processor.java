@@ -12,8 +12,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
-// metadata + is -> object
-// object -> is
 public class Processor {
     private final AbstractStream stream;
     private final MethodDescriptor md;

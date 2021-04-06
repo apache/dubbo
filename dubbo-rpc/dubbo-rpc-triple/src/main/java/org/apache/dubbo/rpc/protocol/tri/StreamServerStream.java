@@ -17,9 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.io.InputStream;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -52,8 +50,6 @@ import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
 public class StreamServerStream extends ServerStream {
     private static final Logger LOGGER = LoggerFactory.getLogger(StreamServerStream.class);
 
-    private AtomicBoolean canceled = new AtomicBoolean(false);
-
     public StreamServerStream(Invoker<?> invoker, ServiceDescriptor serviceDescriptor, MethodDescriptor md,
         ChannelHandlerContext ctx) {
         super(invoker, ExecutorUtil.setThreadName(invoker.getUrl(), "DubboPUServerHandler"), serviceDescriptor, md,
@@ -61,7 +57,7 @@ public class StreamServerStream extends ServerStream {
     }
 
     @Override
-    public void streamCreated(Object msg, ChannelPromise promise)  {
+    public void streamCreated(Object msg, ChannelPromise promise) {
         Http2HeadersFrame http2HeadersFrame = (Http2HeadersFrame)msg;
         RpcInvocation inv = buildInvocation();
         inv.setArguments(new Object[] {new StreamOutboundWriter(this)});
@@ -85,8 +81,11 @@ public class StreamServerStream extends ServerStream {
 
                 AppResponse response = (AppResponse)appResult;
                 setObserver((StreamObserver<Object>)response.getValue());
-            }catch (Exception e) {
-
+            } catch (Exception e) {
+                LOGGER.error("Provider submit request to thread pool error ", e);
+                responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
+                    .withCause(t)
+                    .withDescription("Provider's error"));
             }
         };
 
@@ -125,9 +124,19 @@ public class StreamServerStream extends ServerStream {
         write(object, null);
     }
 
+    public void onCompleted() {
+        if (getCanceled().compareAndSet(false, true)) {
+            final Http2Headers trailers = new DefaultHttp2Headers()
+                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+                .status(OK.codeAsText())
+                .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
+            getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
+        }
+    }
+
     @Override
     public void onError(Throwable throwable) {
-        if (canceled.compareAndSet(false, true)) {
+        if (getCanceled().compareAndSet(false, true)) {
             if (throwable instanceof TimeoutException) {
                 responseErr(getCtx(), GrpcStatus.fromCode(Code.DEADLINE_EXCEEDED).withCause(throwable));
             } else if (throwable instanceof TripleRpcException) {
@@ -136,16 +145,6 @@ public class StreamServerStream extends ServerStream {
                 responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN)
                     .withCause(throwable));
             }
-        }
-    }
-
-    public void onCompleted() {
-        if (canceled.compareAndSet(false, true)) {
-            final Http2Headers trailers = new DefaultHttp2Headers()
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .status(OK.codeAsText())
-                .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
-            getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
         }
     }
 }

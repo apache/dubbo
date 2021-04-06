@@ -35,8 +35,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
-import static org.apache.dubbo.remoting.exchange.Response.CLIENT_ERROR;
-
 public class TripleClientHandler extends ChannelDuplexHandler {
 
     @Override
@@ -74,9 +72,13 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         ClientStream clientStream;
         if (!methodDescriptor.isStream()) {
             clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream.streamCreated(req, promise);
+            clientStream.writeInvocation(promise);
         } else {
             StreamObserver<Object> responseOBServer = (StreamObserver<Object>)inv.getArguments()[0];
             clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream.streamCreated(req, promise);
+
             clientStream.setObserver(responseOBServer);
             StreamObserver<Object> writer = new StreamOutboundWriter(clientStream);
             Response response = new Response(req.getId(), req.getVersion());
@@ -84,6 +86,6 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             response.setResult(result);
             DefaultFuture2.received(Connection.getConnectionFromChannel(ctx.channel()), response);
         }
-        clientStream.streamCreated(req, promise);
+
     }
 }

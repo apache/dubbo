@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -52,6 +53,8 @@ public abstract class AbstractStream<T> implements Stream<T> {
     private Http2Headers te;
     private String serializeType;
     private StreamObserver<Object> observer;
+    private Processor processor;
+    private final AtomicBoolean canceled = new AtomicBoolean(false);
 
     protected AbstractStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md) {
         this.ctx = ctx;
@@ -67,6 +70,18 @@ public abstract class AbstractStream<T> implements Stream<T> {
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, "default");
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class).getExtension(
             value);
+    }
+
+    public Processor getProcessor() {
+        return processor;
+    }
+
+    public void setProcessor(Processor processor) {
+        this.processor = processor;
+    }
+
+    protected AtomicBoolean getCanceled() {
+        return canceled;
     }
 
     public MethodDescriptor getMd() {
@@ -174,9 +189,6 @@ public abstract class AbstractStream<T> implements Stream<T> {
     protected void streamCreated(Object msg, ChannelPromise promise) {}
 
     protected void onSingleMessage(InputStream in) {}
-
-    @Override
-    public void write(Object obj, ChannelPromise promise) {}
 
     protected StreamObserver<Object> getObserver() {
         return observer;

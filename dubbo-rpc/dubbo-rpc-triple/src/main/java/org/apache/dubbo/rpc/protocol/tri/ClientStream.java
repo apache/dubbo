@@ -59,7 +59,6 @@ public class ClientStream extends AbstractStream implements Stream {
     private final Request request;
     private final RpcInvocation invocation;
     private Http2StreamChannel streamChannel;
-    private final Processor processor;
     private Message message;
 
     public ClientStream(URL url, ChannelHandlerContext ctx, MethodDescriptor md, Request request) {
@@ -71,7 +70,7 @@ public class ClientStream extends AbstractStream implements Stream {
         this.authority = url.getAddress();
         this.request = request;
         this.invocation = (RpcInvocation)request.getData();
-        processor = new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization());
+        setProcessor(new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization()));
     }
 
     public static ConsumerModel getConsumerModel(Invocation invocation) {
@@ -147,12 +146,14 @@ public class ClientStream extends AbstractStream implements Stream {
                 promise.setFailure(future.cause());
             }
         });
-
-        write(msg, promise);
     }
 
     @Override
-    public void write(Object obj, ChannelPromise promise) {
+    public void onNext(Object data) {
+        write(data, null);
+    }
+
+    public void writeInvocation(ChannelPromise promise) {
         final boolean endStream = !getMd().isStream();
         final ByteBuf out;
 
@@ -162,12 +163,12 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            out = processor.encodeRequest(invocation, getCtx());
+            out = getProcessor().encodeRequest(invocation, getCtx());
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
         }
         final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, endStream);
-        streamChannel.write(data, promise);
+        streamChannel.writeAndFlush(data, promise);
     }
 
     public void halfClose() {
@@ -204,7 +205,7 @@ public class ClientStream extends AbstractStream implements Stream {
             if (model != null) {
                 ClassLoadUtil.switchContextLoader(model.getClassLoader());
             }
-            resp = processor.decodeResponseMessage(data);
+            resp = getProcessor().decodeResponseMessage(data);
             Response response = new Response(request.getId(), request.getVersion());
             final AppResponse result = new AppResponse(resp);
             result.setObjectAttachments(parseHeadersToMap(te));
@@ -221,11 +222,24 @@ public class ClientStream extends AbstractStream implements Stream {
     }
 
     @Override
-    protected void onSingleMessage(InputStream in)  {
+    protected void onSingleMessage(InputStream in) {
         if (getMd().isStream()) {
-            processor.onSingleMessage(in);
+            getProcessor().onSingleMessage(in);
         } else {
             message = new Message(getHeaders(), in);
         }
+    }
+
+    public void onCompleted() {
+        if (getCanceled().compareAndSet(false, true)) {
+            streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true));
+        }
+    }
+
+    @Override
+    public void write(Object obj, ChannelPromise promise) {
+        final com.google.protobuf.Message message = (com.google.protobuf.Message)obj;
+        final ByteBuf buf = getProcessor().encodeResponse(message, getCtx());
+        streamChannel.write(new DefaultHttp2DataFrame(buf));
     }
 }

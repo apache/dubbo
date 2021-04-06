@@ -24,15 +24,15 @@ import org.apache.dubbo.common.stream.StreamObserver;
 
 public interface Stream<T> extends StreamObserver<T> {
 
-    void onHeaders(Http2Headers headers);
+    default void onHeaders(Http2Headers headers) {}
 
-    void onData(InputStream in);
+    default void onData(InputStream in) {}
 
-    void onError(GrpcStatus status);
+    default void onError(GrpcStatus status) {}
 
-    void write(Object obj, ChannelPromise promise);
+    default void write(Object obj, ChannelPromise promise) {}
 
-    void halfClose();
+    default void halfClose() {}
 
     default void onNext(Object data) {}
 
