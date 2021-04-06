@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,9 +58,13 @@ public class MulticastRegistryTest {
      */
     @Test
     public void testUrlError() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            URL errorUrl = URL.valueOf("multicast://mullticast/");
-            new MulticastRegistry(errorUrl);
+        Assertions.assertThrows(UnknownHostException.class, () -> {
+            try {
+                URL errorUrl = URL.valueOf("multicast://mullticast.local/");
+                new MulticastRegistry(errorUrl);
+            } catch (IllegalStateException e) {
+                throw e.getCause();
+            }
         });
     }
 

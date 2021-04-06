@@ -78,6 +78,16 @@ public abstract class ServerStream<T> extends AbstractStream<T> implements Strea
         inv.setServiceName(serviceDescriptor.getServiceName());
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
         final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
+        attachments.remove("interface");
+        attachments.remove("serialization");
+        attachments.remove("te");
+        attachments.remove("path");
+        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
+        attachments.remove(TripleConstant.SERVICE_GROUP);
+        attachments.remove(TripleConstant.SERVICE_VERSION);
+        attachments.remove(TripleConstant.MESSAGE_KEY);
+        attachments.remove(TripleConstant.STATUS_KEY);
+        attachments.remove(TripleConstant.TIMEOUT);
         inv.setObjectAttachments(attachments);
         return inv;
     }

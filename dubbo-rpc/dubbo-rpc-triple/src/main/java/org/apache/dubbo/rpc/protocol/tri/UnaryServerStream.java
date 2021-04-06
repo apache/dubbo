@@ -41,6 +41,7 @@ import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
@@ -199,6 +200,7 @@ public class UnaryServerStream extends ServerStream implements Stream {
         };
 
         future.whenComplete(onComplete);
+        RpcContext.removeContext();
     }
 
 }

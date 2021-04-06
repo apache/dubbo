@@ -122,7 +122,7 @@
         <maven_jacoco_version>0.8.2</maven_jacoco_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <maven_enforce_version>3.0.0-M2</maven_enforce_version>
-        <apache-rat-plugin.version>0.12</apache-rat-plugin.version>
+        <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
@@ -149,6 +149,7 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
+        <module>dubbo-spring-boot</module>
     </modules>
 
     <dependencyManagement>
@@ -280,6 +281,7 @@
                                         **/org/apache/dubbo/common/utils/Utf8Utils.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java,
                                         **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java,
+                                        **/org/apache/dubbo/triple/TripleWrapper.java,
                                     </excludes>
                                 </configuration>
                                 <goals>
@@ -528,65 +530,65 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <configuration>
-                            <excludes>
-                                <exclude>**/*.versionsBackup</exclude>
-                                <exclude>**/.idea/</exclude>
-                                <exclude>**/*.iml</exclude>
-                                <exclude>**/*.txt</exclude>
-                                <exclude>**/*.load</exclude>
-                                <exclude>**/*.flex</exclude>
-                                <exclude>**/*.fc</exclude>
-                                <exclude>**/*.javascript</exclude>
-                                <exclude>**/*.properties</exclude>
-                                <exclude>**/*.thrift</exclude>
-                                <exclude>**/*.sh</exclude>
-                                <exclude>**/*.bat</exclude>
-                                <exclude>**/*.md</exclude>
-                                <exclude>.git/</exclude>
-                                <exclude>.gitignore</exclude>
-                                <!-- ASF jenkins box puts the Maven repo in our root directory. -->
-                                <exclude>.repository/</exclude>
-                                <exclude>**/.settings/*</exclude>
-                                <exclude>**/.classpath</exclude>
-                                <exclude>**/.project</exclude>
-                                <exclude>**/target/**</exclude>
-                                <exclude>**/*.log</exclude>
-                                <exclude>CODE_OF_CONDUCT.md</exclude>
-                                <exclude>.codecov.yml</exclude>
-                                <exclude>.travis.yml</exclude>
-                                <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
-                                <exclude>CONTRIBUTING.md</exclude>
-                                <exclude>README.md</exclude>
-                                <exclude>Jenkinsfile</exclude>
-                                <exclude>**/codestyle/*</exclude>
-                                <exclude>**/resources/META-INF/**</exclude>
-                                <!-- exclude the netty files -->
-                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
-                                <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
-                                <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
-                                <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
-                                <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
-                                <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
-                                <!-- exclude the edazdarevic files -->
-                                <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
-                                <!-- exclude protobuf generated files -->
-                                <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
-                                </exclude>
-                                <exclude>
-                                    **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
-                                </exclude>
-                                <exclude>
-                                    **/org/apache/dubbo/common/utils/Utf8Utils.java
-                                </exclude>
-                                <exclude>.github/**</exclude>
-                                <exclude>compiler/**</exclude>
-                                <!-- exclude mockito extensions spi files -->
-                                <exclude>**/mockito-extensions/*</exclude>
-                            </excludes>
-                        </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*.versionsBackup</exclude>
+                        <exclude>**/.idea/</exclude>
+                        <exclude>**/*.iml</exclude>
+                        <exclude>**/*.txt</exclude>
+                        <exclude>**/*.load</exclude>
+                        <exclude>**/*.flex</exclude>
+                        <exclude>**/*.fc</exclude>
+                        <exclude>**/*.javascript</exclude>
+                        <exclude>**/*.properties</exclude>
+                        <exclude>**/*.thrift</exclude>
+                        <exclude>**/*.sh</exclude>
+                        <exclude>**/*.bat</exclude>
+                        <exclude>**/*.md</exclude>
+                        <exclude>.git/</exclude>
+                        <exclude>.gitignore</exclude>
+                        <!-- ASF jenkins box puts the Maven repo in our root directory. -->
+                        <exclude>.repository/</exclude>
+                        <exclude>**/.settings/*</exclude>
+                        <exclude>**/.classpath</exclude>
+                        <exclude>**/.project</exclude>
+                        <exclude>**/target/**</exclude>
+                        <exclude>**/*.log</exclude>
+                        <exclude>CODE_OF_CONDUCT.md</exclude>
+                        <exclude>.codecov.yml</exclude>
+                        <exclude>.travis.yml</exclude>
+                        <exclude>PULL_REQUEST_TEMPLATE.md</exclude>
+                        <exclude>CONTRIBUTING.md</exclude>
+                        <exclude>README.md</exclude>
+                        <exclude>Jenkinsfile</exclude>
+                        <exclude>**/codestyle/*</exclude>
+                        <exclude>**/resources/META-INF/**</exclude>
+                        <!-- exclude the netty files -->
+                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/threadlocal/InternalThreadLocalMap.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/TimerTask.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/Timer.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/Timeout.java</exclude>
+                        <exclude>**/org/apache/dubbo/common/timer/HashedWheelTimer.java</exclude>
+                        <!-- exclude the edazdarevic files -->
+                        <exclude>**/org/apache/dubbo/common/utils/CIDRUtils.java</exclude>
+                        <!-- exclude protobuf generated files -->
+                        <exclude>**/org/apache/dubbo/common/serialize/protobuf/support/wrapper/MapValue.java
+                        </exclude>
+                        <exclude>
+                            **/org/apache/dubbo/common/serialize/protobuf/support/wrapper/ThrowablePB.java
+                        </exclude>
+                        <exclude>
+                            **/org/apache/dubbo/common/utils/Utf8Utils.java
+                        </exclude>
+                        <exclude>.github/**</exclude>
+                        <exclude>compiler/**</exclude>
+                        <!-- exclude mockito extensions spi files -->
+                        <exclude>**/mockito-extensions/*</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

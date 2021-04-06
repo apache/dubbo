@@ -52,7 +52,7 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class AbstractInvoker<T> implements Invoker<T> {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractInvoker.class);
 
     private final Class<T> type;
 
@@ -146,14 +146,8 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
 
         Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
-        if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
-            /**
-             * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
-             * because the {@link RpcContext#setAttachment(String, String)} is passed in the Filter when the call is triggered
-             * by the built-in retry mechanism of the Dubbo. The attachment to update RpcContext will no longer work, which is
-             * a mistake in most cases (for example, through Filter to RpcContext output traceId and spanId and other information).
-             */
-            invocation.addObjectAttachments(contextAttachments);
+        if (contextAttachments != null && contextAttachments.size() != 0) {
+            invocation.addObjectAttachmentsIfAbsent(contextAttachments);
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
@@ -181,7 +175,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter(asyncResult.getResponseFuture()));
+        RpcContext.getContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
 
         waitForResultIfSync(asyncResult, invocation);
         return asyncResult;

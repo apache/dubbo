@@ -17,11 +17,10 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,14 +51,13 @@ public class EnableDubboTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
         context = new AnnotationConfigApplicationContext();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
-        context.close();
+        //context.close();
     }
 
     @Test

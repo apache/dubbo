@@ -33,7 +33,7 @@ import org.apache.dubbo.rpc.RpcException;
  *
  * @see org.apache.dubbo.rpc.Filter
  */
-@Activate(group = CommonConstants.CONSUMER, order = -10000)
+@Activate(group = CommonConstants.CONSUMER, value = Constants.SERVICE_AUTH, order = -10000)
 public class ConsumerSignFilter implements Filter {
 
     @Override

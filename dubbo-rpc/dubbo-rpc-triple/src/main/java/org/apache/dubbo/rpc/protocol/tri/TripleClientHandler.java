@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import java.util.concurrent.Executor;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
@@ -44,11 +45,6 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             super.write(ctx, msg, promise);
         }
-    }
-
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        super.close(ctx, promise);
     }
 
     @Override
@@ -69,16 +65,16 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
+        final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
         ClientStream clientStream;
         if (!methodDescriptor.isStream()) {
-            clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream = new ClientStream(url, ctx, methodDescriptor, req, callback);
             clientStream.streamCreated(req, promise);
             clientStream.writeInvocation(promise);
         } else {
             StreamObserver<Object> responseOBServer = (StreamObserver<Object>)inv.getArguments()[0];
-            clientStream = new ClientStream(url, ctx, methodDescriptor, req);
+            clientStream = new ClientStream(url, ctx, methodDescriptor, req, callback);
             clientStream.streamCreated(req, promise);
-
             clientStream.setObserver(responseOBServer);
             StreamObserver<Object> writer = new StreamOutboundWriter(clientStream);
             Response response = new Response(req.getId(), req.getVersion());
@@ -86,6 +82,5 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             response.setResult(result);
             DefaultFuture2.received(Connection.getConnectionFromChannel(ctx.channel()), response);
         }
-
     }
 }

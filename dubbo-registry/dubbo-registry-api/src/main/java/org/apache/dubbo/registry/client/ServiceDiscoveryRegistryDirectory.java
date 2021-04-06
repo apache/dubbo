@@ -25,16 +25,16 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,8 +49,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     // instance address to invoker mapping.
     private volatile Map<String, Invoker<T>> urlInvokerMap; // The initial value is null and the midway may be assigned to null, please use the local variable reference
-
-    private ServiceInstancesChangedListener listener;
 
     public ServiceDiscoveryRegistryDirectory(Class<T> serviceType, URL url) {
         super(serviceType, url);
@@ -99,6 +97,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     @Override
     public boolean isServiceDiscovery() {
         return true;
+    }
+
+    /**
+     * This implementation wants to make sure all application names related to serviceListener received  address notification.
+     *
+     * FIXME, make sure deprecated "interface-application" mapping item be cleared in time.
+     */
+    @Override
+    public boolean isNotificationReceived() {
+        return serviceListener.isDestroyed()
+                || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
     }
 
     private void refreshInvoker(List<URL> invokerUrls) {
@@ -152,7 +161,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      * @return invokers
      */
     private Map<String, Invoker<T>> toInvokers(List<URL> urls) {
-        Map<String, Invoker<T>> newUrlInvokerMap = new HashMap<>();
+        Map<String, Invoker<T>> newUrlInvokerMap = new UnifiedMap<>();
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }

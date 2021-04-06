@@ -82,6 +82,17 @@ public class InjvmProtocolTest {
     }
 
     @Test
+    public void testLocalProtocolWithToken() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        Invoker<?> invoker = proxy.getInvoker(service, DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService?token=abc").addParameter(INTERFACE_KEY, DemoService.class.getName()));
+        assertTrue(invoker.isAvailable());
+        Exporter<?> exporter = protocol.export(invoker);
+        exporters.add(exporter);
+        service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService").addParameter(INTERFACE_KEY, DemoService.class.getName())));
+        assertEquals(service.getSize(new String[]{"", "", ""}), 3);
+    }
+
+    @Test
     public void testIsInjvmRefer() throws Exception {
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("injvm://127.0.0.1/TestService")
