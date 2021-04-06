@@ -136,6 +136,8 @@ public class ConfigParser {
 
     private static String toParameterString(ConfigItem item) {
         StringBuilder sb = new StringBuilder();
+        sb.append("category=");
+        sb.append(DYNAMIC_CONFIGURATORS_CATEGORY);
         if (item.getSide() != null) {
             sb.append("&side=");
             sb.append(item.getSide());
