@@ -184,7 +184,7 @@ public interface MethodUtils {
     }
 
     /**
-     * Get all public {@link Method methods} of the declared class, including the inherited methods.
+     * Get all public {@link Method methods} of the declared class, excluding the inherited methods.
      *
      * @param declaringClass  the declared class
      * @param methodsToFilter (optional) the methods to be filtered
