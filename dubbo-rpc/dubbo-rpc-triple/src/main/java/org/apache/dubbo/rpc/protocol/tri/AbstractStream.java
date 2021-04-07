@@ -188,7 +188,7 @@ public abstract class AbstractStream<T> implements Stream<T> {
                 }
             }
         } catch (IOException e) {
-            // todo log
+            LOGGER.warn("Meet exception when convert single attachment key:" + key, e);
         }
     }
 

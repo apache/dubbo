@@ -26,6 +26,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 
@@ -84,7 +85,7 @@ public class MethodDescriptor {
     private boolean needWrap() {
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
             return true;
-        } else if ("$echo".equals(methodName)) {
+        } else if ($ECHO.equals(methodName)) {
             return true;
         } else {
             if (parameterClasses.length != 1) {

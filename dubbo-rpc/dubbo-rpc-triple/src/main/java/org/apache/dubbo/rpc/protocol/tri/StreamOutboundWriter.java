@@ -19,7 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.stream.StreamObserver;
 
-public class StreamOutboundWriter implements StreamObserver<Object> {
+public class StreamOutboundWriter<T> implements StreamObserver<T> {
 
     private final AbstractStream stream;
 
