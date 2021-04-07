@@ -131,7 +131,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
             prefixedConfiguration.addConfiguration(propertiesConfiguration);
         } else {
             // The sequence would be: SystemConfiguration -> AbstractConfig -> AppExternalConfiguration -> ExternalConfiguration -> PropertiesConfiguration
-            // Config center has the lowest priority
+            // Config center has the highest priority
             prefixedConfiguration.addConfiguration(systemConfiguration);
             prefixedConfiguration.addConfiguration(environmentConfiguration);
             prefixedConfiguration.addConfiguration(configuration);
