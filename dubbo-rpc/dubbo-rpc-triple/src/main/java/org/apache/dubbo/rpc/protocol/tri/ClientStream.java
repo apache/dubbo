@@ -47,10 +47,6 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
