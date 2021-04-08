@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -43,6 +44,7 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
@@ -101,7 +103,7 @@ public class StreamServerStream extends ServerStream {
 
     @Override
     protected void onSingleMessage(InputStream is) {
-        getProcessor().onSingleMessage(is);
+        getProcessor().onSingleRequestMessage(is);
     }
 
     @Override

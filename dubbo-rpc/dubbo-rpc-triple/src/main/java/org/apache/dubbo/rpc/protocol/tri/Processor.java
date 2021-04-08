@@ -45,14 +45,18 @@ public class Processor {
         this.multipleSerialization = multipleSerialization;
     }
 
-    public void onSingleMessage(InputStream in) {
-        // todo executor
+    public void onSingleRequestMessage(InputStream in) {
         final Object[] resp = decodeRequestMessage(in);
         if (resp.length > 1) {
             return;
         }
         stream.getObserver().onNext(resp[0]);
+    }
 
+    public void onSingleResponseMessage(InputStream in) {
+        final Object resp = decodeResponseMessage(in);
+
+        stream.getObserver().onNext(resp);
     }
 
     public Object[] decodeRequestMessage(InputStream is) {

@@ -47,6 +47,8 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
+
 import java.util.concurrent.Executor;
 
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
@@ -234,7 +236,7 @@ public class ClientStream extends AbstractStream implements Stream {
     @Override
     protected void onSingleMessage(InputStream in) {
         if (getMd().isStream()) {
-            getProcessor().onSingleMessage(in);
+            getProcessor().onSingleResponseMessage(in);
         } else {
             message = new Message(getHeaders(), in);
         }
