@@ -154,7 +154,7 @@ public abstract class Wrapper {
             pts.put(fn, ft);
         }
 
-        final ClassPool classPool = ClassPool.getDefault();
+        final ClassPool classPool = new ClassPool(ClassPool.getDefault());
         classPool.appendClassPath(new CustomizedLoaderClassPath(c.getClassLoader()));
 
         List<String> allMethod = new ArrayList<>();
