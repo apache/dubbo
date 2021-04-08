@@ -23,6 +23,12 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
     protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new XdsServiceDiscovery();
+        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery();
+        try {
+            xdsServiceDiscovery.doInitialize(registryURL);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return xdsServiceDiscovery;
     }
 }

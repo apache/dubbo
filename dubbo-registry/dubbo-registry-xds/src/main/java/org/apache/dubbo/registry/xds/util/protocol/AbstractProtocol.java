@@ -27,6 +27,7 @@ import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.stub.StreamObserver;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -91,6 +92,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
     @Override
     public T getResource(Set<String> resourceNames) {
         long request = requestId.getAndIncrement();
+        resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
 
         // Store Request Parameter, which will be used for ACK
         requestParam.put(request, resourceNames);

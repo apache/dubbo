@@ -17,6 +17,8 @@
 package org.apache.dubbo.registry.xds.util;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 
 import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
 import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryRequest;
@@ -24,16 +26,35 @@ import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryRequest;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
+import io.grpc.netty.shaded.io.grpc.netty.GrpcSslContexts;
+import io.grpc.netty.shaded.io.grpc.netty.NettyChannelBuilder;
+import io.grpc.netty.shaded.io.netty.handler.ssl.SslContext;
+import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.grpc.stub.StreamObserver;
+
+import javax.net.ssl.SSLException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 
 public class XdsChannel {
     private final ManagedChannel channel;
 
     protected XdsChannel(URL url) {
-        channel = ManagedChannelBuilder.forAddress(url.getHost(), url.getPort())
-                .usePlaintext()
-                .build();
+        ManagedChannel channel1 = null;
+        try {
+            XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getAdaptiveExtension();
+            KeyPair keyPair = signer.request(url);
+            SslContext context = GrpcSslContexts.forClient()
+                    .trustManager(InsecureTrustManagerFactory.INSTANCE)
+                    .keyManager(keyPair.getPrivate(), X509Certificate)
+                    .build();
+            channel1 = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
+                    .sslContext(context)
+                    .build();
+        } catch (SSLException e) {
+            e.printStackTrace();
+        }
+        channel = channel1;
     }
 
     public StreamObserver<DeltaDiscoveryRequest> observeDeltaDiscoveryRequest(StreamObserver<DeltaDiscoveryResponse> observer) {

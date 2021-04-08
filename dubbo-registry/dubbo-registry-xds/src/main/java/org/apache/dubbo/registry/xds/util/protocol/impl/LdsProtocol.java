@@ -63,6 +63,10 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     @Override
     protected ListenerResult decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
+            ;
+            response.getResourcesList().forEach((e)->{
+                logger.error("Listener " + e.toString());
+            });
             Set<String> set = response.getResourcesList().stream()
                     .map(LdsProtocol::unpackListener)
                     .filter(Objects::nonNull)
@@ -83,6 +87,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
             deltaListener.removeResource(response.getRemovedResourcesList());
             for (Resource resource : response.getResourcesList()) {
                 Listener unpackedResource = unpackListener(resource.getResource());
+                logger.error("Listener " + resource.getResource().toString());
                 if (unpackedResource == null) {
                     continue;
                 }
@@ -114,6 +119,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private static HttpConnectionManager unpackHttpConnectionManager(Any any) {
         try {
+            logger.info(any.getTypeUrl());
             return any.unpack(HttpConnectionManager.class);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Error occur when decode xDS response.", e);
