@@ -184,6 +184,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         }
     }
 
+    public boolean hasListeners() {
+        return CollectionUtils.isNotEmptyMap(listeners);
+    }
+
     /**
      * Get the correlative service name
      *
@@ -370,13 +374,15 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
     public void destroy() {
-        if (destroyed.compareAndSet(false, true)) {
+        if (!destroyed.get()) {
             if (CollectionUtils.isEmptyMap(listeners)) {
-                allInstances.clear();
-                serviceUrls.clear();
-                revisionToMetadata.clear();
-                if (retryFuture != null && !retryFuture.isDone()) {
-                    retryFuture.cancel(true);
+                if (destroyed.compareAndSet(false, true)) {
+                    allInstances.clear();
+                    serviceUrls.clear();
+                    revisionToMetadata.clear();
+                    if (retryFuture != null && !retryFuture.isDone()) {
+                        retryFuture.cancel(true);
+                    }
                 }
             }
         }
