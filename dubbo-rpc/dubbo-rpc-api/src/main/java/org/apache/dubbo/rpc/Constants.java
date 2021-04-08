@@ -17,6 +17,8 @@
 
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 public interface Constants {
     String LOCAL_KEY = "local";
 
@@ -69,7 +71,7 @@ public interface Constants {
 
     String RETURN_KEY = "return";
 
-    String TOKEN_KEY = "token";
+    String TOKEN_KEY = CommonConstants.TOKEN_KEY;
 
     String INTERFACE = "interface";
 

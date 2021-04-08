@@ -14,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.consul;
+
+package org.apache.dubbo.common.constants;
 
 /**
- * @author cvictory ON 2019-08-02
+ * Common configuration for configCenter, metadata, and registry modules
  */
-public class AbstractConsulRegistry {
+public interface ConsulConstants {
 
-    static final String SERVICE_TAG = "dubbo";
-    static final String URL_META_KEY = "url";
-    static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
-    static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
+    int DEFAULT_PORT = 8500;
 
-    static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
-    // default deregister critical server after
-    static final String DEFAULT_DEREGISTER_TIME = "20s";
+    int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
+
+    String WATCH_TIMEOUT = "consul-watch-timeout";
+
+    int INVALID_PORT = 0;
 
 
 }

@@ -58,19 +58,20 @@ import java.util.stream.Collectors;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
-import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PORT;
-import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
-import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.ConsulParameter.ACL_TOKEN;
 import static org.apache.dubbo.registry.consul.ConsulParameter.CONSISTENCY_MODE;
 import static org.apache.dubbo.registry.consul.ConsulParameter.DEFAULT_ZONE_METADATA_NAME;
 import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_GROUP;
 import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_ZONE;
 import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
 
 /**
  * 2019-07-31
@@ -120,7 +121,7 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     public void initialize(URL registryURL) throws Exception {
         this.url = registryURL;
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         checkPassInterval = url.getParameter(CHECK_PASS_INTERVAL, DEFAULT_CHECK_PASS_INTERVAL);
         client = new ConsulClient(host, port);
         ttlScheduler = new TtlScheduler(checkPassInterval, client);
@@ -195,7 +196,8 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
     }
 
     @Override
-    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
+            throws NullPointerException, IllegalArgumentException {
         Set<String> serviceNames = listener.getServiceNames();
         for (String serviceName : serviceNames) {
             ConsulNotifier notifier = notifiers.get(serviceName);
