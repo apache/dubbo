@@ -30,5 +30,6 @@ public class AbstractConsulRegistry {
     // default deregister critical server after
     static final String DEFAULT_DEREGISTER_TIME = "20s";
 
-
+    static final int PERIOD_DENOMINATOR = 8;
+    static final int ONE_THOUSAND = 1000;
 }

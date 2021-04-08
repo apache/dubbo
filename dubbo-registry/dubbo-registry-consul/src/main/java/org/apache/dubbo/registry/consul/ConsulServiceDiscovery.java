@@ -65,6 +65,8 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.ONE_THOUSAND;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.PERIOD_DENOMINATOR;
 import static org.apache.dubbo.registry.consul.ConsulParameter.ACL_TOKEN;
 import static org.apache.dubbo.registry.consul.ConsulParameter.CONSISTENCY_MODE;
 import static org.apache.dubbo.registry.consul.ConsulParameter.DEFAULT_ZONE_METADATA_NAME;
@@ -368,14 +370,14 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
 
     private NewService.Check buildCheck(ServiceInstance serviceInstance) {
         NewService.Check check = new NewService.Check();
-        check.setTtl((checkPassInterval / 1000) + "s");
+        check.setTtl((checkPassInterval / ONE_THOUSAND) + "s");
         String deregister = serviceInstance.getMetadata().get(DEREGISTER_AFTER);
         check.setDeregisterCriticalServiceAfter(deregister == null ? DEFAULT_DEREGISTER_TIME : deregister);
         return check;
     }
 
     private int buildWatchTimeout() {
-        return url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT) / 1000;
+        return url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT) / ONE_THOUSAND;
     }
 
     private class ConsulNotifier implements Runnable {
@@ -437,8 +439,8 @@ public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements 
         public void add(String instanceId) {
             ScheduledFuture task = this.scheduler.scheduleAtFixedRate(
                     new ConsulHeartbeatTask(instanceId),
-                    checkInterval / 8,
-                    checkInterval / 8,
+                    checkInterval / PERIOD_DENOMINATOR,
+                    checkInterval / PERIOD_DENOMINATOR,
                     TimeUnit.MILLISECONDS);
             ScheduledFuture previousTask = this.serviceHeartbeats.put(instanceId, task);
             if (previousTask != null) {

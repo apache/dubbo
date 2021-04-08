@@ -64,6 +64,8 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_DEREGISTER_TIME;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.ONE_THOUSAND;
+import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.PERIOD_DENOMINATOR;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.SERVICE_TAG;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.URL_META_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
@@ -87,12 +89,8 @@ public class ConsulRegistry extends FailbackRegistry {
 
     private static final int CONSUL_CORE_THREAD_SIZE = 1;
 
-    private static final int PERIOD_DENOMINATOR = 8;
-
     private static final int DEFAULT_INDEX = -1;
     private static final int DEFAULT_WAIT_TIME = -1;
-
-    private static final int ONE_THOUSAND = 1000;
 
 
     public ConsulRegistry(URL url) {
