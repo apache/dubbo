@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -232,7 +233,17 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             logger.warn("Failed to destroy service " + serviceKey, t);
         }
 
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+            for (AddressListener addressListener : supportedListeners) {
+                addressListener.destroy(getConsumerUrl(), this);
+            }
+        }
+
+        routerChain.destroy();
         invokersChangedListener = null;
+        serviceListener = null;
     }
 
     @Override

@@ -184,6 +184,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         }
     }
 
+    public boolean hasListeners() {
+        return CollectionUtils.isNotEmptyMap(listeners);
+    }
+
     /**
      * Get the correlative service name
      *

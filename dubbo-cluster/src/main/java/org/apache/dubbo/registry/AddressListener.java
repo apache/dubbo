@@ -34,4 +34,8 @@ public interface AddressListener {
      */
     List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory);
 
+    default void destroy(URL consumerUrl, Directory registryDirectory) {
+
+    }
+
 }

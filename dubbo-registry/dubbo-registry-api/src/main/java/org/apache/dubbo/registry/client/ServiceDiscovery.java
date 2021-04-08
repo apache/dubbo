@@ -210,7 +210,6 @@ public interface ServiceDiscovery extends Prioritized {
      * @param listener an instance of {@link ServiceInstancesChangedListener}
      * @throws NullPointerException
      * @throws IllegalArgumentException
-     * @see EventPublishingServiceDiscovery
      * @see EventDispatcher
      */
     default void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
