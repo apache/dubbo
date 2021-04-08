@@ -31,12 +31,12 @@
     <dubbo:protocol name="dubbo" port="-1"/>
 
     <!-- service configuration -->
-    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService"
+    <dubbo:service id = "demoServiceImpl" interface="org.apache.dubbo.config.spring.api.DemoService"
                    class="org.apache.dubbo.config.spring.impl.DemoServiceImpl">
         <dubbo:method name="sayName" timeout="500" />
     </dubbo:service>
 
-    <dubbo:service interface="org.apache.dubbo.config.spring.api.DemoService"
+    <dubbo:service id = "demoServiceImpl_LongWaiting" interface="org.apache.dubbo.config.spring.api.DemoService"
                    class="org.apache.dubbo.config.spring.impl.DemoServiceImpl_LongWaiting">
         <dubbo:method name="sayName" timeout="1000" />
     </dubbo:service>
