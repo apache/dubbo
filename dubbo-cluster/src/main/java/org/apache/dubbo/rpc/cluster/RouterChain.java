@@ -113,4 +113,10 @@ public class RouterChain<T> {
         this.invokers = (invokers == null ? Collections.emptyList() : invokers);
         routers.forEach(router -> router.notify(this.invokers));
     }
+
+    public void destroy() {
+        invokers = Collections.emptyList();
+        routers = Collections.emptyList();
+        builtinRouters = Collections.emptyList();
+    }
 }
