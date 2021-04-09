@@ -38,6 +38,7 @@ import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfig
 import org.apache.dubbo.config.spring.filter.MockFilter;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
+import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.registry.MockRegistry;
 import org.apache.dubbo.config.spring.registry.MockRegistryFactory;
 import org.apache.dubbo.registry.Registry;
@@ -447,6 +448,8 @@ public class ConfigTest {
             ctx.start();
             try {
 
+                NotifyService notifyService = ctx.getBean(NotifyService.class);
+
                 // check reference bean
                 Map<String, ReferenceBean> referenceBeanMap = ctx.getBeansOfType(ReferenceBean.class);
                 Assertions.assertEquals(2, referenceBeanMap.size());
@@ -460,6 +463,12 @@ public class ConfigTest {
                 Assertions.assertEquals(1, referenceConfig.getMethods().size());
                 MethodConfig methodConfig = referenceConfig.getMethods().get(0);
                 Assertions.assertEquals("sayName", methodConfig.getName());
+                Assertions.assertEquals(notifyService, methodConfig.getOninvoke());
+                Assertions.assertEquals(notifyService, methodConfig.getOnreturn());
+                Assertions.assertEquals(notifyService, methodConfig.getOnthrow());
+                Assertions.assertEquals("onInvoke", methodConfig.getOninvokeMethod());
+                Assertions.assertEquals("onReturn", methodConfig.getOnreturnMethod());
+                Assertions.assertEquals("onThrow", methodConfig.getOnthrowMethod());
 
                 //method arguments
                 Assertions.assertEquals(1, methodConfig.getArguments().size());

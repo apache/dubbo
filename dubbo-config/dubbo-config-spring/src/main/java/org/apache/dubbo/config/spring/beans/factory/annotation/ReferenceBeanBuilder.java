@@ -300,14 +300,20 @@ public class ReferenceBeanBuilder {
     private MethodConfig createMethodConfig(Map<String, Object> methodAttributes, DefaultConversionService conversionService) {
         String[] callbacks = new String[]{ONINVOKE, ONRETURN, ONTHROW};
         for (String callbackName : callbacks) {
-            //parse callback: beanName.methodName
-            String value = (String) methodAttributes.get(callbackName);
-            int index = value.lastIndexOf(".");
-            String beanName = value.substring(0, index);
-            String methodName = value.substring(index + 1);
-
-            methodAttributes.put(callbackName, applicationContext.getBean(beanName));
-            methodAttributes.put(callbackName+METHOD, methodName);
+            Object value = methodAttributes.get(callbackName);
+            if (value instanceof String) {
+                //parse callback: beanName.methodName
+                String strValue = (String) value;
+                int index = strValue.lastIndexOf(".");
+                if (index != -1) {
+                    String beanName = strValue.substring(0, index);
+                    String methodName = strValue.substring(index + 1);
+                    methodAttributes.put(callbackName, applicationContext.getBean(beanName));
+                    methodAttributes.put(callbackName+METHOD, methodName);
+                } else {
+                    methodAttributes.put(callbackName, applicationContext.getBean(strValue));
+                }
+            }
         }
 
         MethodConfig methodConfig = new MethodConfig();

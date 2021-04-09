@@ -27,6 +27,7 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,9 +86,9 @@ public class ReferenceBeanBuilderTest {
             providedBy = {"service1", "service2", "service3"},
             methods = @Method(name = "sayHello",
                     loadbalance = "loadbalance",
-                    oninvoke = "demoNotify.onInvoke",
-                    onreturn = "demoNotify.onReturn",
-                    onthrow = "demoNotify.onThrow",
+                    oninvoke = "notifyService.onInvoke",
+                    onreturn = "notifyService.onReturn",
+                    onthrow = "notifyService.onThrow",
                     timeout = 1000,
                     retries = 2,
                     parameters = {"a", "1", "b", "2"},
@@ -100,7 +101,7 @@ public class ReferenceBeanBuilderTest {
     private ApplicationContext context;
 
     @Autowired
-    private DemoNotify demoNotify;
+    private NotifyService notifyService;
 
     @BeforeEach
     public void init() {
@@ -172,9 +173,9 @@ public class ReferenceBeanBuilderTest {
         Assertions.assertEquals(1000, methodConfig.getTimeout());
         Assertions.assertEquals(2, methodConfig.getRetries());
         Assertions.assertEquals("loadbalance", methodConfig.getLoadbalance());
-        Assertions.assertEquals(demoNotify, methodConfig.getOninvoke());
-        Assertions.assertEquals(demoNotify, methodConfig.getOnreturn());
-        Assertions.assertEquals(demoNotify, methodConfig.getOnthrow());
+        Assertions.assertEquals(notifyService, methodConfig.getOninvoke());
+        Assertions.assertEquals(notifyService, methodConfig.getOnreturn());
+        Assertions.assertEquals(notifyService, methodConfig.getOnthrow());
         Assertions.assertEquals("onInvoke", methodConfig.getOninvokeMethod());
         Assertions.assertEquals("onReturn", methodConfig.getOnreturnMethod());
         Assertions.assertEquals("onThrow", methodConfig.getOnthrowMethod());
@@ -203,22 +204,10 @@ public class ReferenceBeanBuilderTest {
     public static class ConsumerConfiguration {
 
         @Bean
-        public DemoNotify demoNotify() {
-            return new DemoNotify();
+        public NotifyService notifyService() {
+            return new NotifyService();
         }
 
-    }
-
-    public static class DemoNotify {
-
-        void onInvoke(String name, int id){
-        }
-
-        void onReturn(String name, int id){
-        }
-
-        void onThrow(Throwable ex, int id) {
-        }
     }
 
 }
