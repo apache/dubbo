@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
@@ -27,9 +28,12 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanCreationException;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -42,7 +46,7 @@ import java.util.Map;
  * ReferenceFactoryBean
  */
 public class ReferenceBean<T> implements FactoryBean,
-        ApplicationContextAware, BeanClassLoaderAware, InitializingBean, DisposableBean {
+        ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
 
     private transient ApplicationContext applicationContext;
     private ClassLoader beanClassLoader;
@@ -70,6 +74,10 @@ public class ReferenceBean<T> implements FactoryBean,
         super();
     }
 
+    public ReferenceBean(Map<String, Object> referenceProps) {
+        this.referenceProps = referenceProps;
+    }
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -78,6 +86,12 @@ public class ReferenceBean<T> implements FactoryBean,
     @Override
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.beanClassLoader = classLoader;
+    }
+
+
+    @Override
+    public void setBeanName(String name) {
+        this.setId(name);
     }
 
     @Override
@@ -101,17 +115,51 @@ public class ReferenceBean<T> implements FactoryBean,
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-        if (beanDefinition.hasAttribute("referenceProps")) {
-            referenceProps = (Map<String, Object>) beanDefinition.getAttribute("referenceProps");
+        if (referenceProps != null) {
+            // pre init java-config bean
+
+            if (!referenceProps.containsKey("interfaceClass")) {
+                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+                if (beanDefinition instanceof AnnotatedBeanDefinition) {
+                    // get generic type of ReferenceBean<..> of java-config bean method that return generic reference bean
+                    Class<?> type = beanFactory.getType(getId());
+                    referenceProps.put("interfaceClass", type);
+                }
+            }
+
+            ReferenceBeanSupport.convertReferenceProps(referenceProps);
+            // get interface
+            this.interfaceName = (String) referenceProps.get("interface");
+            if (StringUtils.isBlank(this.interfaceName)) {
+                throw new BeanCreationException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
+            }
+
+            // get generic
+            Object genericValue = referenceProps.get("generic");
+            this.generic = genericValue != null ? genericValue.toString() : null;
+            String consumer = (String) referenceProps.get("consumer");
+            if (StringUtils.isBlank(generic) && consumer != null) {
+                // get generic from consumerConfig
+                BeanDefinition consumerBeanDefinition = getBeanFactory().getBeanDefinition(consumer);
+                if (consumerBeanDefinition != null) {
+                    this.generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
+                }
+            }
         } else {
-            propertyValues = beanDefinition.getPropertyValues();
+            // pre init xml reference bean or @DubboReference annotation
+            Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+            if (beanDefinition.hasAttribute("referenceProps")) {
+                referenceProps = (Map<String, Object>) beanDefinition.getAttribute("referenceProps");
+            } else {
+                propertyValues = beanDefinition.getPropertyValues();
+            }
+            this.generic = (String) beanDefinition.getAttribute("generic");
+            //TODO improve interfaceName attributes pass through
+            this.interfaceName = (String) beanDefinition.getAttribute("interfaceName");
         }
-        this.generic = (String) beanDefinition.getAttribute("generic");
-        this.interfaceName = (String) beanDefinition.getAttribute("interfaceName");
-        this.interfaceClass = (Class<?>) beanDefinition.getAttribute("interfaceClass");
+        this.interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
 
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
@@ -152,6 +200,7 @@ public class ReferenceBean<T> implements FactoryBean,
         return referenceConfig.getGroup();
     }
 
+    /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public String getVersion() {
         return referenceConfig.getVersion();
     }

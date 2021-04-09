@@ -20,23 +20,26 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
-import org.apache.dubbo.config.spring.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.ReferenceBeanSupport;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
-import java.beans.PropertyEditorSupport;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,7 @@ import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.BeanFactoryUtils.getBeans;
 import static com.alibaba.spring.util.BeanFactoryUtils.getOptionalBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
+import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
@@ -103,11 +107,11 @@ public class ReferenceBeanBuilder {
         configureModuleConfig(configBean);
 
         //interfaceClass
-        configureInterface(attributes, configBean);
+        //configureInterface(attributes, configBean);
 
         configureConsumerConfig(attributes, configBean);
 
-        configureMethodConfig(attributes, configBean);
+        //configureMethodConfig(attributes, configBean);
 
         //bean.setApplicationContext(applicationContext);
         //bean.afterPropertiesSet();
@@ -225,33 +229,89 @@ public class ReferenceBeanBuilder {
             attributes.put("interfaceClass", defaultInterfaceClass);
         }
 
-        ReferenceBeanManager.convertReferenceProps(attributes);
+        ReferenceBeanSupport.convertReferenceProps(attributes);
 
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Register CustomEditors for special fields
         dataBinder.registerCustomEditor(String.class, "filter", new StringTrimmerEditor(true));
         dataBinder.registerCustomEditor(String.class, "listener", new StringTrimmerEditor(true));
-        dataBinder.registerCustomEditor(Map.class, "parameters", new PropertyEditorSupport() {
+
+        DefaultConversionService conversionService = new DefaultConversionService();
+
+        // convert String[] to Map (such as @Method.parameters())
+        conversionService.addConverter(String[].class, Map.class, new Converter<String[], Map>() {
             @Override
-            public void setAsText(String text) throws IllegalArgumentException {
-                // Trim all whitespace
-                String content = StringUtils.trimAllWhitespace(text);
-                if (!StringUtils.hasText(content)) { // No content , ignore directly
-                    return;
-                }
-                // replace "=" to ","
-                content = StringUtils.replace(content, "=", ",");
-                // replace ":" to ","
-                content = StringUtils.replace(content, ":", ",");
-                // String[] to Map
-                Map<String, String> parameters = CollectionUtils.toStringMap(commaDelimitedListToStringArray(content));
-                setValue(parameters);
+            public Map convert(String[] source) {
+                return convertStringArrayToMap(source);
+            }
+        });
+
+        //convert Map to MethodConfig
+        conversionService.addConverter(Map.class, MethodConfig.class, new Converter<Map, MethodConfig>() {
+            @Override
+            public MethodConfig convert(Map source) {
+                MethodConfig methodConfig = new MethodConfig();
+                DataBinder mcDataBinder = new DataBinder(methodConfig);
+                mcDataBinder.setConversionService(conversionService);
+                mcDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
+                return methodConfig;
+            }
+        });
+        //convert @Method to MethodConfig
+        conversionService.addConverter(Method.class, MethodConfig.class, new Converter<Method, MethodConfig>() {
+            @Override
+            public MethodConfig convert(Method source) {
+                MethodConfig methodConfig = new MethodConfig();
+                DataBinder mcDataBinder = new DataBinder(methodConfig);
+                mcDataBinder.setConversionService(conversionService);
+                mcDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
+                return methodConfig;
+            }
+        });
+
+        //convert Map to ArgumentConfig
+        conversionService.addConverter(Map.class, ArgumentConfig.class, new Converter<Map, ArgumentConfig>() {
+            @Override
+            public ArgumentConfig convert(Map source) {
+                ArgumentConfig argumentConfig = new ArgumentConfig();
+                DataBinder argDataBinder = new DataBinder(argumentConfig);
+                argDataBinder.setConversionService(conversionService);
+                argDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
+                return argumentConfig;
+            }
+        });
+        //convert @Argument to ArgumentConfig
+        conversionService.addConverter(Argument.class, ArgumentConfig.class, new Converter<Argument, ArgumentConfig>() {
+            @Override
+            public ArgumentConfig convert(Argument source) {
+                ArgumentConfig argumentConfig = new ArgumentConfig();
+                DataBinder argDataBinder = new DataBinder(argumentConfig);
+                argDataBinder.setConversionService(conversionService);
+                argDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
+                return argumentConfig;
             }
         });
 
         // Bind annotation attributes
+        dataBinder.setConversionService(conversionService);
         dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
 
+    }
+
+    public static Map convertStringArrayToMap(String[] source) {
+        String content = arrayToCommaDelimitedString(source);
+        // Trim all whitespace
+        content = StringUtils.trimAllWhitespace(content);
+        if (!StringUtils.hasText(content)) { // No content , ignore directly
+            return null;
+        }
+        // replace "=" to ","
+        content = StringUtils.replace(content, "=", ",");
+        // replace ":" to ","
+        content = StringUtils.replace(content, ":", ",");
+        // String[] to Map
+        Map<String, String> parameters = CollectionUtils.toStringMap(commaDelimitedListToStringArray(content));
+        return parameters;
     }
 
     public static ReferenceBeanBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {

@@ -224,7 +224,7 @@ public @interface DubboReference {
     String[] listener() default {};
 
     /**
-     * Customized parameter key-value pair, for example: {key1, value1, key2, value2}
+     * Customized parameter key-value pair, for example: {key1, value1, key2, value2} or {"key1=value1", "key2=value2"}
      */
     String[] parameters() default {};
 

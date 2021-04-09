@@ -19,9 +19,10 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ArgumentConfig;
 import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -47,6 +48,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -56,6 +58,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -239,6 +242,7 @@ public class ConfigTest {
             ctx.start();
             ctx.stop();
             ctx.close();
+            fail();
         } catch (BeanCreationException e) {
             assertTrue(e.getMessage().contains("Found multi-protocols"));
         }
@@ -442,14 +446,39 @@ public class ConfigTest {
                     resourcePath + "/init-reference-properties.xml");
             ctx.start();
             try {
+
+                // check reference bean
+                Map<String, ReferenceBean> referenceBeanMap = ctx.getBeansOfType(ReferenceBean.class);
+                Assertions.assertEquals(2, referenceBeanMap.size());
+                ReferenceBean referenceBean = referenceBeanMap.get("&demoService");
+                Assertions.assertNotNull(referenceBean);
+                ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
+                // reference parameters
+                Assertions.assertNotNull(referenceConfig.getParameters().get("connec.timeout"));
+
+                //methods
+                Assertions.assertEquals(1, referenceConfig.getMethods().size());
+                MethodConfig methodConfig = referenceConfig.getMethods().get(0);
+                Assertions.assertEquals("sayName", methodConfig.getName());
+
+                //method arguments
+                Assertions.assertEquals(1, methodConfig.getArguments().size());
+                ArgumentConfig argumentConfig = methodConfig.getArguments().get(0);
+                Assertions.assertEquals(0, argumentConfig.getIndex());
+                Assertions.assertEquals(true, argumentConfig.isCallback());
+
+                // method parameters
+                Assertions.assertEquals(1, methodConfig.getParameters().size());
+                Assertions.assertEquals("my-token", methodConfig.getParameters().get("access-token"));
+
+
+                // do call
                 DemoService demoService = (DemoService) ctx.getBean("demoService");
                 assertEquals("say:world", demoService.sayName("world"));
 
                 GenericService demoService2 = (GenericService) ctx.getBean("demoService2");
                 assertEquals("say:world", demoService2.$invoke("sayName", new String[]{"java.lang.String"}, new Object[]{"world"}));
 
-            } catch (Throwable ex){
-                ex.printStackTrace();
             } finally {
                 ctx.stop();
                 ctx.close();

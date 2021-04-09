@@ -25,9 +25,6 @@
         <property name="location">
             <value>classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer/app.properties</value>
         </property>
-        <property name="fileEncoding">
-            <value>UTF-8</value>
-        </property>
     </bean>
 
     <dubbo:application name="demo-consumer">

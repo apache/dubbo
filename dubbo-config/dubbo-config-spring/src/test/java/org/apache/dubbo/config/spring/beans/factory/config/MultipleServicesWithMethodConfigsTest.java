@@ -16,8 +16,10 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,11 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @ImportResource(locations = "classpath:/META-INF/spring/multiple-services-with-methods.xml")
 public class MultipleServicesWithMethodConfigsTest {
+
+    @BeforeAll
+    public static void setUp() {
+        DubboBootstrap.reset();
+    }
 
     @Autowired
     private ApplicationContext applicationContext;

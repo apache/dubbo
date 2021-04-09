@@ -16,11 +16,13 @@
  */
 package org.apache.dubbo.config.spring.propertyconfigurer.consumer2;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -32,10 +34,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class PropertySourcesConfigurerTest {
 
+    @BeforeAll
+    public static void setUp() {
+        DubboBootstrap.reset();
+        ZooKeeperServer.start();
+//        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+    }
+
     @Test
     public void testEarlyInit() {
-
-        ZooKeeperServer.start();
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
         try {
@@ -65,7 +72,7 @@ public class PropertySourcesConfigurerTest {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.propertyconfigurer.consumer2")
     @ComponentScan(value = {"org.apache.dubbo.config.spring.propertyconfigurer.consumer2"})
     @ImportResource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/dubbo-consumer.xml")
-    @PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/app-env.properties")
+    @PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/app.properties")
     static class ConsumerConfiguration {
         @Bean
         public DemoBeanFactoryPostProcessor bizBeanFactoryPostProcessor(HelloService service) {

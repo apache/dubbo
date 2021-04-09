@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class PropertyConfigurerTest {
@@ -35,12 +36,11 @@ public class PropertyConfigurerTest {
     @BeforeAll
     public static void setUp() {
         DubboBootstrap.reset();
-//        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+        ZooKeeperServer.start();
     }
 
     @Test
     public void testEarlyInit() {
-        ZooKeeperServer.start();
 
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext("org/apache/dubbo/config/spring/propertyconfigurer/provider/dubbo-provider.xml");
         try {
@@ -71,6 +71,7 @@ public class PropertyConfigurerTest {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.propertyconfigurer.consumer")
     @ComponentScan(value = {"org.apache.dubbo.config.spring.propertyconfigurer.consumer"})
     @ImportResource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer/dubbo-consumer.xml")
+    @PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer/app.properties")
     static class ConsumerConfiguration {
         @Bean
         public DemoBeanFactoryPostProcessor bizBeanFactoryPostProcessor(HelloService service) {

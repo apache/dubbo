@@ -31,12 +31,12 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
-import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -256,14 +256,16 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
         beanDefinition.setAttribute("generic", generic);
         beanDefinition.setAttribute("interfaceName", interfaceName);
-        beanDefinition.setAttribute("interfaceClass", interfaceClass);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
-        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
-        targetDefinition.setBeanClass(interfaceClass);
-        String id = (String) beanDefinition.getPropertyValues().get("id");
-        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+//        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
+//        targetDefinition.setBeanClass(interfaceClass);
+//        String id = (String) beanDefinition.getPropertyValues().get("id");
+//        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+
+        // signal object type
+        beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
 
         //mark property value as optional
         List<PropertyValue> propertyValues = beanDefinition.getPropertyValues().getPropertyValueList();

@@ -18,8 +18,12 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 
 import com.alibaba.spring.util.AnnotationUtils;
+import org.apache.dubbo.config.ArgumentConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
@@ -34,7 +38,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
@@ -56,7 +62,7 @@ import static org.springframework.util.ReflectionUtils.findField;
 public class ReferenceBeanBuilderTest {
 
     @DubboReference(
-            interfaceClass = HelloService.class,
+            //interfaceClass = HelloService.class,
             version = "1.0.0", group = "TEST_GROUP", url = "dubbo://localhost:12345",
             client = "client", generic = false, injvm = true,
             check = false, init = false, lazy = true,
@@ -74,9 +80,19 @@ public class ReferenceBeanBuilderTest {
             id = "reference",
             // @since 2.7.8
             services = {"service1", "service2", "service3", "service2", "service1"},
-            providedBy = {"service1", "service2", "service3"}
+            providedBy = {"service1", "service2", "service3"},
+            methods = @Method(name = "sayHello",
+                    loadbalance = "loadbalance",
+                    oninvoke = "oninvoke",
+                    onreturn = "onreturn",
+                    onthrow = "onthrow",
+                    timeout = 1000,
+                    retries = 2,
+                    parameters = {"a", "1", "b", "2"},
+                    arguments = @Argument(index = 0, callback = true)
+            )
     )
-    private static final Object TEST_FIELD = new Object();
+    private HelloService helloService;
 
     @Autowired
     private ApplicationContext context;
@@ -88,10 +104,12 @@ public class ReferenceBeanBuilderTest {
 
     @Test
     public void testBuild() throws Exception {
-        DubboReference reference = findAnnotation(findField(getClass(), "TEST_FIELD"), DubboReference.class);
+        Field helloServiceField = findField(getClass(), "helloService");
+        DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);
+        // filter default value
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, true);
         ReferenceConfig referenceBean = ReferenceBeanBuilder.create(attributes, context)
-                .defaultInterfaceClass(HelloService.class)
+                .defaultInterfaceClass(helloServiceField.getType())
                 .build();
         Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
         Assertions.assertEquals("org.apache.dubbo.config.spring.api.HelloService", referenceBean.getInterface());
@@ -138,6 +156,31 @@ public class ReferenceBeanBuilderTest {
         parameters.put("n2", "v2");
         parameters.put("n3", "v3");
         Assertions.assertEquals(parameters, referenceBean.getParameters());
+
+        // methods
+        List<MethodConfig> methods = referenceBean.getMethods();
+        Assertions.assertNotNull(methods);
+        Assertions.assertEquals(1, methods.size());
+        MethodConfig methodConfig = methods.get(0);
+        Assertions.assertEquals("sayHello", methodConfig.getName());
+        Assertions.assertEquals(1000, methodConfig.getTimeout());
+        Assertions.assertEquals(2, methodConfig.getRetries());
+        Assertions.assertEquals("loadbalance", methodConfig.getLoadbalance());
+        Assertions.assertEquals("oninvoke", methodConfig.getOninvoke());
+        Assertions.assertEquals("onreturn", methodConfig.getOnreturn());
+        Assertions.assertEquals("onthrow", methodConfig.getOnthrow());
+        // method parameters
+        Map<String, String> methodParameters = new HashMap<String, String>();
+        methodParameters.put("a", "1");
+        methodParameters.put("b", "2");
+        Assertions.assertEquals(methodParameters, methodConfig.getParameters());
+
+        // method arguments
+        List<ArgumentConfig> arguments = methodConfig.getArguments();
+        Assertions.assertEquals(1, arguments.size());
+        ArgumentConfig argumentConfig = arguments.get(0);
+        Assertions.assertEquals(0, argumentConfig.getIndex());
+        Assertions.assertEquals(true, argumentConfig.isCallback());
 
         // Asserts Null fields
         Assertions.assertThrows(IllegalStateException.class, () -> referenceBean.getApplication());

@@ -21,7 +21,7 @@ import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.spring.ReferenceBean;
-import org.apache.dubbo.config.spring.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -42,8 +42,6 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 public class ReferenceKeyTest {
-
-    private ReferenceBeanManager referenceBeanManager = new ReferenceBeanManager();
 
     @Test
     public void testReferenceKey() throws Exception {
@@ -174,8 +172,8 @@ public class ReferenceKeyTest {
 
     private String getReferenceKey(String fieldName) throws NoSuchFieldException {
         AnnotationAttributes attributes = getAnnotationAttributes(fieldName);
-        ReferenceBeanManager.convertReferenceProps(attributes);
-        return referenceBeanManager.generateReferenceKey(attributes);
+        ReferenceBeanSupport.convertReferenceProps(attributes);
+        return ReferenceBeanSupport.generateReferenceKey(attributes, null);
     }
 
     private AnnotationAttributes getAnnotationAttributes(String fieldName) throws NoSuchFieldException {
@@ -204,7 +202,7 @@ public class ReferenceKeyTest {
         private HelloService helloServiceWithArray0;
 
         // Instance 2
-        @DubboReference(check = false, parameters = {"a", "1", "b", "2"}, filter = {"echo"})
+        @DubboReference(check = false, parameters = {"a=1", "b", "2"}, filter = {"echo"})
         private HelloService helloServiceWithArray1;
 
         @DubboReference(parameters = {"b", "2", "a", "1"}, filter = {"echo"}, check = false)
@@ -214,7 +212,7 @@ public class ReferenceKeyTest {
         @DubboReference(check = false, parameters = {"a", "1", "b", "2"}, filter = {"echo"}, methods = {@Method(parameters = {"d", "2", "c", "1"}, name = "sayHello", timeout = 100)})
         private HelloService helloServiceWithMethod1;
 
-        @DubboReference(parameters = {"b", "2", "a", "1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100, parameters = {"c", "1", "d", "2"})})
+        @DubboReference(parameters = {"b=2", "a=1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100, parameters = {"c", "1", "d", "2"})})
         private HelloService helloServiceWithMethod2;
 
         // Instance 4
