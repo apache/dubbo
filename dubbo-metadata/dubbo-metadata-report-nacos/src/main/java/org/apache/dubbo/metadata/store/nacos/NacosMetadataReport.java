@@ -151,6 +151,11 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         }
     }
 
+    /**
+     * 向nacos写入配置
+     * @param providerMetadataIdentifier
+     * @param serviceDefinitions
+     */
     @Override
     protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
         this.storeMetadata(providerMetadataIdentifier, serviceDefinitions);

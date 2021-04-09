@@ -192,6 +192,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public void publishServiceDefinition(URL providerUrl) {
         try {
+            /**
+             * 非generic
+             */
             if (!ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
                 String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
                 if (StringUtils.isNotEmpty(interfaceName)) {
@@ -199,6 +202,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                     ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
                     Gson gson = new Gson();
                     String data = gson.toJson(serviceDefinition);
+                    /**
+                     * 本地缓存
+                     */
                     serviceDefinitions.put(providerUrl.getServiceKey(), data);
                     return;
                 }

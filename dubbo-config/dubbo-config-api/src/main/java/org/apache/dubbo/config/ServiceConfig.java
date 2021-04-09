@@ -240,6 +240,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             Map<String, String> parameters = getApplication().getParameters();
+            /**
+             * map  向配置中心写入数据
+             */
             ServiceNameMapping.getExtension(parameters != null ? parameters.get(MAPPING_KEY) : null).map(url);
         });
         // dispatch a ServiceConfigExportedEvent since 2.7.4
@@ -605,7 +608,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     for (URL registryURL : registryURLs) {
                         //if protocol is only injvm ,not register
                         /**
-                         * 过滤jvm
+                         * 过滤injvm
                          */
                         if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
                             continue;
@@ -667,12 +670,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                  * dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
                  *
                  * 将已导出服务的配置信息  存储到配置中心
-                 * MetadataService不写入
-                 * org.apache.dubbo.demo.GreetingService:::provider:dubbo-demo-annotation-provider
+                 * org.apache.dubbo.demo.GreetingService:2.0.0:test:provider:dubbo-demo-annotation-provider
+                 * interface:version:group:provider:application_name
                  */
                 MetadataUtils.publishServiceDefinition(url);
             }
         }
+        /**
+         * 本地缓存url  dubbo://192.168.50.39:20880/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=192.168.50.39&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=7392&release=&side=provider&timestamp=1603421163923
+         */
         this.urls.add(url);
     }
 
@@ -686,7 +692,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
-        // InjvmProtocol
+        // InjvmProtocol  injvm://127.0.0.1/org.apache.dubbo.demo.GreetingService?anyhost=true&application=dubbo-demo-annotation-provider&bind.ip=127.0.0.1&bind.port=20880&deprecated=false&dubbo=2.0.2&dynamic=true&generic=false&group=test&interface=org.apache.dubbo.demo.GreetingService&metadata-type=remote&methods=hello&pid=14252&release=&revision=2.0.0&side=provider&timestamp=1617786627499&version=2.0.0
         Exporter<?> exporter = PROTOCOL.export(
                 PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
         exporters.add(exporter);

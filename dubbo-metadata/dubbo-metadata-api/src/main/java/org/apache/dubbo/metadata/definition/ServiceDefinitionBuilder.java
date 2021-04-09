@@ -59,6 +59,9 @@ public final class ServiceDefinitionBuilder {
      */
     public static FullServiceDefinition buildFullDefinition(final Class<?> interfaceClass, Map<String, String> params) {
         FullServiceDefinition sd = new FullServiceDefinition();
+        /**
+         * 添加属性
+         */
         build(sd, interfaceClass);
         sd.setParameters(params);
         return sd;

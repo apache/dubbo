@@ -187,7 +187,7 @@ public class RegistryProtocol implements Protocol {
          */
         Registry registry = registryFactory.getRegistry(registryUrl);
         /**
-         * ListenerRegistryWrapper
+         * ListenerRegistryWrapper 服务注册
          */
         registry.register(registeredProviderUrl);
     }
@@ -218,6 +218,7 @@ public class RegistryProtocol implements Protocol {
         /**
          * 获取注册中心 URL，以 nacos 注册中心为例，得到的示例 URL 如下
          * nacos://113.96.131.199:8848/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F192.168.50.39%3A20880%2Forg.apache.dubbo.demo.DemoService%3Fanyhost%3Dtrue%26application%3Ddubbo-demo-annotation-provider%26bind.ip%3D192.168.50.39%26bind.port%3D20880%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26generic%3Dfalse%26group%3Dtest3342%26interface%3Dorg.apache.dubbo.demo.DemoService%26metadata-type%3Dremote%26methods%3DsayHello%2CsayHelloAsync%26pid%3D11616%26release%3D%26revision%3D2.36.5%26sayHello.return%3Dtrue%26side%3Dprovider%26timestamp%3D1603097863974%26version%3D2.36.5&pid=11616&timestamp=1603097863972
+         * service-discovery-registry://113.96.131.199:8849/org.apache.dubbo.registry.RegistryService?application=dubbo-demo-annotation-provider&dubbo=2.0.2&export=dubbo%3A%2F%2F127.0.0.1%3A20880%2Forg.apache.dubbo.demo.GreetingService%3Fanyhost%3Dtrue%26application%3Ddubbo-demo-annotation-provider%26bind.ip%3D127.0.0.1%26bind.port%3D20880%26deprecated%3Dfalse%26dubbo%3D2.0.2%26dynamic%3Dtrue%26generic%3Dfalse%26group%3Dtest%26interface%3Dorg.apache.dubbo.demo.GreetingService%26metadata-type%3Dremote%26methods%3Dhello%26pid%3D10360%26release%3D%26revision%3D2.0.0%26side%3Dprovider%26timestamp%3D1617786979045%26version%3D2.0.0&id=registryConfig&metadata-type=remote&pid=10360&registry=nacos&registry-type=service&timestamp=1617786979029
          */
         URL registryUrl = getRegistryUrl(originInvoker);
         // url to export locally

@@ -106,6 +106,9 @@ public class RemoteMetadataServiceImpl {
     private void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individual param
+        /**
+         * 批量去除属性
+         */
         providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY,
                 Constants.BIND_PORT_KEY, TIMESTAMP_KEY);
 
@@ -113,10 +116,14 @@ public class RemoteMetadataServiceImpl {
             String interfaceName = providerUrl.getParameter(INTERFACE_KEY);
             if (StringUtils.isNotEmpty(interfaceName)) {
                 Class interfaceClass = Class.forName(interfaceName);
+                /**
+                 * 实例化FullServiceDefinition
+                 */
                 FullServiceDefinition fullServiceDefinition = ServiceDefinitionBuilder.buildFullDefinition(interfaceClass,
                         providerUrl.getParameters());
                 for (Map.Entry<String, MetadataReport> entry : getMetadataReports().entrySet()) {
                     MetadataReport metadataReport = entry.getValue();
+                    //AbstractMetadataReport
                     metadataReport.storeProviderMetadata(new MetadataIdentifier(providerUrl.getServiceInterface(),
                             providerUrl.getParameter(VERSION_KEY), providerUrl.getParameter(GROUP_KEY),
                             PROVIDER_SIDE, providerUrl.getParameter(APPLICATION_KEY)), fullServiceDefinition);

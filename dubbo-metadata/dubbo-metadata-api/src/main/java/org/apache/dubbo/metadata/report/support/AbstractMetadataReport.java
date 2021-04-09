@@ -287,7 +287,8 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             Gson gson = new Gson();
             String data = gson.toJson(serviceDefinition);
             /**
-             * 注册元数据  ConfigCenterBasedMetadataReport
+             * 注册元数据  NacosMetadataReport
+             * org.apache.dubbo.demo.GreetingService:2.0.0:test:provider:dubbo-demo-annotation-provider
              */
             doStoreProviderMetadata(providerMetadataIdentifier, data);
             /**
@@ -486,7 +487,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                                     //记录重试次数
                                     int times = retryCounter.incrementAndGet();
                                     logger.info("start to retry task for metadata report. retry times:" + times);
-                                    //重试且计算次数
+                                    //重试且计算次数   retry()
                                     if (retry() && times > retryTimesIfNonFail) {
                                         cancelRetryTask();
                                     }
