@@ -391,5 +391,5 @@ public interface CommonConstants {
 
     String ON_DISCONNECT_KEY = "ondisconnect";
 
-    String TOKEN_KEY = "token";
+    String TOKEN = "token";
 }

@@ -71,7 +71,7 @@ public interface Constants {
 
     String RETURN_KEY = "return";
 
-    String TOKEN_KEY = CommonConstants.TOKEN_KEY;
+    String TOKEN_KEY = CommonConstants.TOKEN;
 
     String INTERFACE = "interface";
 

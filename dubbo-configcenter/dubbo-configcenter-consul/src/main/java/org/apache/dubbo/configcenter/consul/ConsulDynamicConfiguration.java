@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.TOKEN_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TOKEN;
 import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_WATCH_TIMEOUT;
 import static org.apache.dubbo.common.constants.ConsulConstants.WATCH_TIMEOUT;
 import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
@@ -72,7 +72,7 @@ public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
         int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         Consul.Builder builder = Consul.builder()
                 .withHostAndPort(HostAndPort.fromParts(host, port));
-        String token = url.getParameter(TOKEN_KEY, (String) null);
+        String token = url.getParameter(TOKEN, (String) null);
         if (StringUtils.isNotEmpty(token)) {
             builder.withAclToken(token);
         }
