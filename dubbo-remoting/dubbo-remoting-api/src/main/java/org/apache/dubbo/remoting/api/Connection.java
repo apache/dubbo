@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -33,20 +32,16 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
-import io.netty.util.HashedWheelTimer;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
-import io.netty.util.Timer;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -56,8 +51,6 @@ import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelC
 
 public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
 
-    public static final Timer TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-network-timer", true), 30, TimeUnit.MILLISECONDS);
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private final URL url;
@@ -67,7 +60,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final InetSocketAddress remote;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
-    private final ChannelPromise initPromise;
+    private final ChannelFuture initPromise;
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
@@ -89,7 +82,10 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
 
-    public ChannelPromise connect() {
+    public ChannelFuture connect() {
+        if (isClosed()) {
+            return null;
+        }
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -98,7 +94,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 .remoteAddress(getConnectAddress())
                 .channel(socketChannelClass());
 
-        final ConnectionHandler connectionHandler = new ConnectionHandler(this, bootstrap, TIMER);
+        final ConnectionHandler connectionHandler = new ConnectionHandler(this);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
@@ -116,7 +112,9 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 // TODO support Socks5
             }
         });
-        return connectionHandler.connect();
+        final ChannelFuture promise = bootstrap.connect();
+        promise.addListener(new ConnectionListener(this));
+        return promise;
     }
 
     public Channel getChannel() {
@@ -139,7 +137,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     public void onConnected(Channel channel) {
         this.channel.set(channel);
         channel.attr(CONNECTION).set(this);
-        this.initPromise.trySuccess();
         if (logger.isInfoEnabled()) {
             logger.info(String.format("Connection:%s connected ", this));
         }
