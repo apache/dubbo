@@ -183,7 +183,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
                 if (logger.isWarnEnabled()) {
                     logger.warn("dynamicConfiguration is null , return globalConfiguration.");
                 }
-                return globalConfiguration;
+                return getConfiguration();
             }
             dynamicGlobalConfiguration = new CompositeConfiguration();
             dynamicGlobalConfiguration.addConfiguration(dynamicConfiguration);
