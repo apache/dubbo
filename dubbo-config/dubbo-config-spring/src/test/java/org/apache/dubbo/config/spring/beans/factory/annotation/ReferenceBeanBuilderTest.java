@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -57,7 +59,7 @@ import static org.springframework.util.ReflectionUtils.findField;
  * @since 2.6.4
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = ReferenceBeanBuilderTest.class)
+@ContextConfiguration(classes = {ReferenceBeanBuilderTest.class, ReferenceBeanBuilderTest.ConsumerConfiguration.class})
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class ReferenceBeanBuilderTest {
 
@@ -83,9 +85,9 @@ public class ReferenceBeanBuilderTest {
             providedBy = {"service1", "service2", "service3"},
             methods = @Method(name = "sayHello",
                     loadbalance = "loadbalance",
-                    oninvoke = "oninvoke",
-                    onreturn = "onreturn",
-                    onthrow = "onthrow",
+                    oninvoke = "demoNotify.onInvoke",
+                    onreturn = "demoNotify.onReturn",
+                    onthrow = "demoNotify.onThrow",
                     timeout = 1000,
                     retries = 2,
                     parameters = {"a", "1", "b", "2"},
@@ -97,6 +99,9 @@ public class ReferenceBeanBuilderTest {
     @Autowired
     private ApplicationContext context;
 
+    @Autowired
+    private DemoNotify demoNotify;
+
     @BeforeEach
     public void init() {
         DubboBootstrap.reset();
@@ -104,6 +109,7 @@ public class ReferenceBeanBuilderTest {
 
     @Test
     public void testBuild() throws Exception {
+
         Field helloServiceField = findField(getClass(), "helloService");
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);
         // filter default value
@@ -166,9 +172,12 @@ public class ReferenceBeanBuilderTest {
         Assertions.assertEquals(1000, methodConfig.getTimeout());
         Assertions.assertEquals(2, methodConfig.getRetries());
         Assertions.assertEquals("loadbalance", methodConfig.getLoadbalance());
-        Assertions.assertEquals("oninvoke", methodConfig.getOninvoke());
-        Assertions.assertEquals("onreturn", methodConfig.getOnreturn());
-        Assertions.assertEquals("onthrow", methodConfig.getOnthrow());
+        Assertions.assertEquals(demoNotify, methodConfig.getOninvoke());
+        Assertions.assertEquals(demoNotify, methodConfig.getOnreturn());
+        Assertions.assertEquals(demoNotify, methodConfig.getOnthrow());
+        Assertions.assertEquals("onInvoke", methodConfig.getOninvokeMethod());
+        Assertions.assertEquals("onReturn", methodConfig.getOnreturnMethod());
+        Assertions.assertEquals("onThrow", methodConfig.getOnthrowMethod());
         // method parameters
         Map<String, String> methodParameters = new HashMap<String, String>();
         methodParameters.put("a", "1");
@@ -188,4 +197,28 @@ public class ReferenceBeanBuilderTest {
         Assertions.assertNull(referenceBean.getConsumer());
         Assertions.assertNull(referenceBean.getMonitor());
     }
+
+
+    @Configuration
+    public static class ConsumerConfiguration {
+
+        @Bean
+        public DemoNotify demoNotify() {
+            return new DemoNotify();
+        }
+
+    }
+
+    public static class DemoNotify {
+
+        void onInvoke(String name, int id){
+        }
+
+        void onReturn(String name, int id){
+        }
+
+        void onThrow(Throwable ex, int id) {
+        }
+    }
+
 }

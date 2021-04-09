@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -60,6 +61,11 @@ public class ReferenceBeanBuilder {
 
     // Ignore those fields
     static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
+
+    private static final String ONRETURN = "onreturn";
+    private static final String ONTHROW = "onthrow";
+    private static final String ONINVOKE = "oninvoke";
+    private static final String METHOD = "Method";
 
     protected final Log logger = LogFactory.getLog(getClass());
 
@@ -250,22 +256,15 @@ public class ReferenceBeanBuilder {
         conversionService.addConverter(Map.class, MethodConfig.class, new Converter<Map, MethodConfig>() {
             @Override
             public MethodConfig convert(Map source) {
-                MethodConfig methodConfig = new MethodConfig();
-                DataBinder mcDataBinder = new DataBinder(methodConfig);
-                mcDataBinder.setConversionService(conversionService);
-                mcDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
-                return methodConfig;
+                return createMethodConfig(source, conversionService);
             }
         });
         //convert @Method to MethodConfig
         conversionService.addConverter(Method.class, MethodConfig.class, new Converter<Method, MethodConfig>() {
             @Override
             public MethodConfig convert(Method source) {
-                MethodConfig methodConfig = new MethodConfig();
-                DataBinder mcDataBinder = new DataBinder(methodConfig);
-                mcDataBinder.setConversionService(conversionService);
-                mcDataBinder.bind(new AnnotationPropertyValuesAdapter(source, applicationContext.getEnvironment()));
-                return methodConfig;
+                AnnotationAttributes methodAttributes = AnnotationUtils.getAnnotationAttributes(source, true);
+                return createMethodConfig(methodAttributes, conversionService);
             }
         });
 
@@ -296,6 +295,27 @@ public class ReferenceBeanBuilder {
         dataBinder.setConversionService(conversionService);
         dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
 
+    }
+
+    private MethodConfig createMethodConfig(Map<String, Object> methodAttributes, DefaultConversionService conversionService) {
+        String[] callbacks = new String[]{ONINVOKE, ONRETURN, ONTHROW};
+        for (String callbackName : callbacks) {
+            //parse callback: beanName.methodName
+            String value = (String) methodAttributes.get(callbackName);
+            int index = value.lastIndexOf(".");
+            String beanName = value.substring(0, index);
+            String methodName = value.substring(index + 1);
+
+            methodAttributes.put(callbackName, applicationContext.getBean(beanName));
+            methodAttributes.put(callbackName+METHOD, methodName);
+        }
+
+        MethodConfig methodConfig = new MethodConfig();
+        DataBinder mcDataBinder = new DataBinder(methodConfig);
+        mcDataBinder.setConversionService(conversionService);
+        AnnotationPropertyValuesAdapter propertyValues = new AnnotationPropertyValuesAdapter(methodAttributes, applicationContext.getEnvironment());
+        mcDataBinder.bind(propertyValues);
+        return methodConfig;
     }
 
     public static Map convertStringArrayToMap(String[] source) {
