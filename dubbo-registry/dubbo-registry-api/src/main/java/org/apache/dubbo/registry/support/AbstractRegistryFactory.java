@@ -153,6 +153,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             }
             REGISTRIES.put(key, registry);
             return registry;
+        } catch (IllegalStateException e) {
+            LOGGER.error(e.getMessage(), e);
+            throw e;
         } finally {
             // Release the lock
             LOCK.unlock();
