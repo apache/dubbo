@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-
 public interface Constants {
     String LOCAL_KEY = "local";
 
