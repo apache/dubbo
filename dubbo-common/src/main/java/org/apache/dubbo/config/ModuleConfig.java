@@ -74,7 +74,7 @@ public class ModuleConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = "module", required = true)
+    @Parameter(key = "module")
     public String getName() {
         return name;
     }

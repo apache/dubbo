@@ -18,7 +18,7 @@ package org.apache.dubbo.config.utils;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.Destroyable;
 
@@ -99,12 +99,7 @@ public class ReferenceConfigCache {
      * Create cache if not existed yet.
      */
     public static ReferenceConfigCache getCache(String name, KeyGenerator keyGenerator) {
-        ReferenceConfigCache cache = CACHE_HOLDER.get(name);
-        if (cache != null) {
-            return cache;
-        }
-        CACHE_HOLDER.putIfAbsent(name, new ReferenceConfigCache(name, keyGenerator));
-        return CACHE_HOLDER.get(name);
+        return CACHE_HOLDER.computeIfAbsent(name, k -> new ReferenceConfigCache(k, keyGenerator));
     }
 
     @SuppressWarnings("unchecked")
@@ -112,7 +107,7 @@ public class ReferenceConfigCache {
         String key = generator.generateKey(referenceConfig);
         Class<?> type = referenceConfig.getInterfaceClass();
 
-        proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap());
+        proxies.computeIfAbsent(type, _t -> new ConcurrentHashMap<>());
 
         ConcurrentMap<String, Object> proxiesOfType = proxies.get(type);
         proxiesOfType.computeIfAbsent(key, _k -> {
@@ -222,6 +217,7 @@ public class ReferenceConfigCache {
         }
 
         referredReferences.forEach((_k, referenceConfig) -> {
+            referenceConfig.destroy();
             ApplicationModel.getConfigManager().removeConfig(referenceConfig);
         });
 

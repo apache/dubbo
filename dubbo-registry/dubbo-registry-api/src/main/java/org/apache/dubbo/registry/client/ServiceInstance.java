@@ -23,7 +23,7 @@ import java.util.Map;
  * The model class of an instance of a service, which is used for service registration and discovery.
  * <p>
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface ServiceInstance extends Serializable {
 
@@ -55,6 +55,8 @@ public interface ServiceInstance extends Serializable {
      */
     Integer getPort();
 
+    String getAddress();
+
     /**
      * The enable status of the registered service instance.
      *
@@ -82,6 +84,32 @@ public interface ServiceInstance extends Serializable {
      */
     Map<String, String> getMetadata();
 
+    Map<String, String> getExtendParams();
+
+    Map<String, String> getAllParams();
+
+    /**
+     * Get the value of metadata by the specified name
+     *
+     * @param name the specified name
+     * @return the value of metadata if found, or <code>null</code>
+     * @since 2.7.8
+     */
+    default String getMetadata(String name) {
+        return getMetadata(name, null);
+    }
+
+    /**
+     * Get the value of metadata by the specified name
+     *
+     * @param name the specified name
+     * @return the value of metadata if found, or <code>defaultValue</code>
+     * @since 2.7.8
+     */
+    default String getMetadata(String name, String defaultValue) {
+        return getMetadata().getOrDefault(name, defaultValue);
+    }
+
     /**
      * @return the hash code of current instance.
      */
@@ -92,5 +120,7 @@ public interface ServiceInstance extends Serializable {
      * @return if equals , return <code>true</code>, or <code>false</code>
      */
     boolean equals(Object another);
+
+    InstanceAddressURL toURL();
 
 }

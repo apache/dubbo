@@ -23,21 +23,27 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventListener;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
+import com.ecwid.consul.v1.ConsistencyMode;
 import com.ecwid.consul.v1.ConsulClient;
 import com.ecwid.consul.v1.QueryParams;
 import com.ecwid.consul.v1.Response;
 import com.ecwid.consul.v1.agent.model.NewService;
+import com.ecwid.consul.v1.catalog.CatalogServicesRequest;
 import com.ecwid.consul.v1.health.HealthServicesRequest;
 import com.ecwid.consul.v1.health.model.HealthService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newCachedThreadPool;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
 import static org.apache.dubbo.common.constants.CommonConstants.SEMICOLON_SPLIT_PATTERN;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.CHECK_PASS_INTERVAL;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_CHECK_PASS_INTERVAL;
@@ -58,11 +65,17 @@ import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_PO
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEFAULT_WATCH_TIMEOUT;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.DEREGISTER_AFTER;
 import static org.apache.dubbo.registry.consul.AbstractConsulRegistry.WATCH_TIMEOUT;
+import static org.apache.dubbo.registry.consul.ConsulParameter.ACL_TOKEN;
+import static org.apache.dubbo.registry.consul.ConsulParameter.CONSISTENCY_MODE;
+import static org.apache.dubbo.registry.consul.ConsulParameter.DEFAULT_ZONE_METADATA_NAME;
+import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_GROUP;
+import static org.apache.dubbo.registry.consul.ConsulParameter.INSTANCE_ZONE;
+import static org.apache.dubbo.registry.consul.ConsulParameter.TAGS;
 
 /**
  * 2019-07-31
  */
-public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class ConsulServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsulServiceDiscovery.class);
 
@@ -73,10 +86,30 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     private String tag;
     private ConsulClient client;
     private ExecutorService notifierExecutor = newCachedThreadPool(
-            new NamedThreadFactory("dubbo-consul-notifier", true));
+            new NamedThreadFactory("dubbo-service-discovery-consul-notifier", true));
+    private Map<String, ConsulNotifier> notifiers = new ConcurrentHashMap<>();
     private TtlScheduler ttlScheduler;
     private long checkPassInterval;
     private URL url;
+
+    private String aclToken;
+
+    private List<String> tags;
+
+    private ConsistencyMode consistencyMode;
+
+    private String defaultZoneMetadataName;
+
+    /**
+     * Service instance zone.
+     */
+    private String instanceZone;
+
+    /**
+     * Service instance group.
+     */
+    private String instanceGroup;
+
 
     @Override
     public void onEvent(ServiceInstancesChangedEvent event) {
@@ -93,6 +126,44 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         ttlScheduler = new TtlScheduler(checkPassInterval, client);
         this.tag = registryURL.getParameter(QUERY_TAG);
         this.registeringTags.addAll(getRegisteringTags(url));
+        this.aclToken = ACL_TOKEN.getValue(registryURL);
+        this.tags = getTags(registryURL);
+        this.consistencyMode = getConsistencyMode(registryURL);
+        this.defaultZoneMetadataName = DEFAULT_ZONE_METADATA_NAME.getValue(registryURL);
+        this.instanceZone = INSTANCE_ZONE.getValue(registryURL);
+        this.instanceGroup = INSTANCE_GROUP.getValue(registryURL);
+    }
+
+    /**
+     * Get the {@link ConsistencyMode}
+     *
+     * @param registryURL the {@link URL} of registry
+     * @return non-null, {@link ConsistencyMode#DEFAULT} as default
+     * @sine 2.7.8
+     */
+    private ConsistencyMode getConsistencyMode(URL registryURL) {
+        String value = CONSISTENCY_MODE.getValue(registryURL);
+        if (StringUtils.isNotEmpty(value)) {
+            return ConsistencyMode.valueOf(value);
+        }
+        return ConsistencyMode.DEFAULT;
+    }
+
+    /**
+     * Get the "tags" from the {@link URL} of registry
+     *
+     * @param registryURL the {@link URL} of registry
+     * @return non-null
+     * @sine 2.7.8
+     */
+    private List<String> getTags(URL registryURL) {
+        String value = TAGS.getValue(registryURL);
+        return StringUtils.splitToList(value, COMMA_SEPARATOR_CHAR);
+    }
+
+    @Override
+    public URL getUrl() {
+        return url;
     }
 
     private List<String> getRegisteringTags(URL url) {
@@ -106,35 +177,68 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     @Override
     public void destroy() {
+        notifiers.forEach((_k, notifier) -> {
+            if (notifier != null) {
+                notifier.stop();
+            }
+        });
+        notifiers.clear();
+        notifierExecutor.shutdownNow();
+        ttlScheduler.stop();
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) {
         NewService consulService = buildService(serviceInstance);
         ttlScheduler.add(consulService.getId());
-        client.agentServiceRegister(consulService);
+        client.agentServiceRegister(consulService, aclToken);
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        Set<String> serviceNames = listener.getServiceNames();
+        for (String serviceName : serviceNames) {
+            ConsulNotifier notifier = notifiers.get(serviceName);
+            if (notifier == null) {
+                Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+                Long consulIndex = response.getConsulIndex();
+                notifier = new ConsulNotifier(serviceName, consulIndex);
+            }
+            notifierExecutor.execute(notifier);
+        }
+    }
 
+    @Override
+    public void doUpdate(ServiceInstance serviceInstance) {
+        // TODO
+        // client.catalogRegister(buildCatalogService(serviceInstance));
     }
 
     @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         String id = buildId(serviceInstance);
         ttlScheduler.remove(id);
-        client.agentServiceDeregister(id);
+        client.agentServiceDeregister(id, aclToken);
     }
 
     @Override
     public Set<String> getServices() {
-        return null;
+        CatalogServicesRequest request = CatalogServicesRequest.newBuilder()
+                .setQueryParams(QueryParams.DEFAULT)
+                .setToken(aclToken)
+                .build();
+        return this.client.getCatalogServices(request).getValue().keySet();
     }
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         Response<List<HealthService>> response = getHealthServices(serviceName, -1, buildWatchTimeout());
+        Long consulIndex = response.getConsulIndex();
+        ConsulNotifier notifier = notifiers.get(serviceName);
+        if (notifier == null) {
+            notifier = new ConsulNotifier(serviceName, consulIndex);
+            notifiers.put(serviceName, notifier);
+        }
         return convert(response.getValue());
     }
 
@@ -143,6 +247,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
                 .map(HealthService::getService)
                 .map(service -> {
                     ServiceInstance instance = new DefaultServiceInstance(
+                            service.getId(),
                             service.getService(),
                             service.getAddress(),
                             service.getPort());
@@ -163,6 +268,7 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
 
     private Map<String, String> getMetadata(HealthService.Service service) {
         Map<String, String> metadata = service.getMeta();
+        metadata = decodeMetadata(metadata);
         if (CollectionUtils.isEmptyMap(metadata)) {
             metadata = getScCompatibleMetadata(service.getTags());
         }
@@ -203,7 +309,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         service.setName(serviceInstance.getServiceName());
         service.setCheck(buildCheck(serviceInstance));
         service.setTags(buildTags(serviceInstance));
-        service.setMeta(buildMetadata(serviceInstance));
         return service;
     }
 
@@ -212,10 +317,21 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     private List<String> buildTags(ServiceInstance serviceInstance) {
+        List<String> tags = new LinkedList<>(this.tags);
+
+        if (StringUtils.isNotEmpty(instanceZone)) {
+            tags.add(defaultZoneMetadataName + "=" + instanceZone);
+        }
+
+        if (StringUtils.isNotEmpty(instanceGroup)) {
+            tags.add("group=" + instanceGroup);
+        }
+
         Map<String, String> params = serviceInstance.getMetadata();
-        List<String> tags = params.keySet().stream()
+        params.keySet().stream()
                 .map(k -> k + "=" + params.get(k))
-                .collect(Collectors.toList());
+                .forEach(tags::add);
+
         tags.addAll(registeringTags);
         return tags;
     }
@@ -226,7 +342,26 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         if (CollectionUtils.isNotEmptyMap(serviceInstance.getMetadata())) {
             metadata.putAll(serviceInstance.getMetadata());
         }
+        metadata = encodeMetadata(metadata);
         return metadata;
+    }
+
+    private Map<String, String> encodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> encoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> encoded.put(Base64.getEncoder().encodeToString(k.getBytes()), v));
+        return encoded;
+    }
+
+    private Map<String, String> decodeMetadata(Map<String, String> metadata) {
+        if (metadata == null) {
+            return metadata;
+        }
+        Map<String, String> decoded = new HashMap<>(metadata.size());
+        metadata.forEach((k, v) -> decoded.put(new String(Base64.getDecoder().decode(k)), v));
+        return decoded;
     }
 
     private NewService.Check buildCheck(ServiceInstance serviceInstance) {
@@ -234,7 +369,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         check.setTtl((checkPassInterval / 1000) + "s");
         String deregister = serviceInstance.getMetadata().get(DEREGISTER_AFTER);
         check.setDeregisterCriticalServiceAfter(deregister == null ? DEFAULT_DEREGISTER_TIME : deregister);
-
         return check;
     }
 
@@ -243,12 +377,12 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
     }
 
     private class ConsulNotifier implements Runnable {
-        private ServiceInstance serviceInstance;
+        private String serviceName;
         private long consulIndex;
         private boolean running;
 
-        ConsulNotifier(ServiceInstance serviceInstance, long consulIndex) {
-            this.serviceInstance = serviceInstance;
+        ConsulNotifier(String serviceName, long consulIndex) {
+            this.serviceName = serviceName;
             this.consulIndex = consulIndex;
             this.running = true;
         }
@@ -261,17 +395,14 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         }
 
         private void processService() {
-//            String service = url.getServiceKey();
-//            Response<List<HealthService>> response = getHealthServices(service, consulIndex, buildWatchTimeout(url));
-//            Long currentIndex = response.getConsulIndex();
-//            if (currentIndex != null && currentIndex > consulIndex) {
-//                consulIndex = currentIndex;
-//                List<HealthService> services = response.getValue();
-//                List<URL> urls = convert(services, url);
-//                for (NotifyListener listener : getSubscribed().get(url)) {
-//                    doNotify(url, listener, urls);
-//                }
-//            }
+            Response<List<HealthService>> response = getHealthServices(serviceName, consulIndex, Integer.MAX_VALUE);
+            Long currentIndex = response.getConsulIndex();
+            if (currentIndex != null && currentIndex > consulIndex) {
+                consulIndex = currentIndex;
+                List<HealthService> services = response.getValue();
+                List<ServiceInstance> serviceInstances = convert(services);
+                dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+            }
         }
 
         void stop() {
@@ -286,7 +417,6 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
         private final Map<String, ScheduledFuture> serviceHeartbeats = new ConcurrentHashMap<>();
 
         private ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-        ;
 
         private long checkInterval;
 
@@ -341,6 +471,10 @@ public class ConsulServiceDiscovery implements ServiceDiscovery, EventListener<S
                 }
             }
 
+        }
+
+        public void stop() {
+            scheduler.shutdownNow();
         }
 
     }

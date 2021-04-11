@@ -24,7 +24,7 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 /**
  * File-System based {@link DynamicConfigurationFactory} implementation
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class FileSystemDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 

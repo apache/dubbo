@@ -43,13 +43,13 @@ public class ExporterSideConfigUrlTest extends UrlTestBase {
 
     @BeforeEach
     public void setUp() {
+        ApplicationModel.reset();
         initServConf();
-        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach()
     public void teardown() {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @Test

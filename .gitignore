@@ -19,6 +19,9 @@ target/
 *.iml
 *.iws
 
+# visual-studio-code ignore
+.vscode/
+
 # temp ignore
 *.log
 *.cache
@@ -30,9 +33,6 @@ target/
 .DS_Store
 Thumbs.db
 *.orig
-
-# flatten ignore
-.flattened-pom.xml
 
 # license check result
 license-list

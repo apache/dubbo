@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  *
  * @see ServiceDiscovery
  * @see org.apache.dubbo.event.Event
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ServiceDiscoveryExceptionEvent extends ServiceDiscoveryEvent {
 

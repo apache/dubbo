@@ -22,7 +22,7 @@ import org.apache.dubbo.event.Event;
  * An {@link Event Dubbo event} when the Dubbo service is about to be destroyed.
  *
  * @see Event
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DubboServiceDestroyedEvent extends Event {
 

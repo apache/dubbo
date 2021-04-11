@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Used to build metadata service url from ServiceInstance.
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI
 public interface MetadataServiceURLBuilder {
@@ -34,7 +34,7 @@ public interface MetadataServiceURLBuilder {
      * Build the {@link URL URLs} from the specified {@link ServiceInstance}
      *
      * @param serviceInstance {@link ServiceInstance}
-     * @return TODO, usually, we generate one metadata url from one instance. There's no scenario to return a metadta url list.
+     * @return TODO, usually, we generate one metadata url from one instance. There's no scenario to return a metadata url list.
      */
     List<URL> build(ServiceInstance serviceInstance);
 }

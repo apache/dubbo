@@ -40,7 +40,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private static final Pattern MAP_PATTERN = Pattern.compile("^java\\.util\\.Map<(\\S+), (\\S+)>$");
     private static final Pattern LIST_PATTERN = Pattern.compile("^java\\.util\\.List<(\\S+)>$");
-    private static final List<String> list = null;
+    private static final List<String> LIST = null;
     /**
      * provide a List<String> type for TypeDefinitionBuilder.build(type,class,cache)
      * "repeated string" transform to ProtocolStringList, should be build as List<String> type.
@@ -49,7 +49,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
 
     static {
         try {
-            STRING_LIST_TYPE = ProtobufTypeBuilder.class.getDeclaredField("list").getGenericType();
+            STRING_LIST_TYPE = ProtobufTypeBuilder.class.getDeclaredField("LIST").getGenericType();
         } catch (NoSuchFieldException e) {
             // do nothing
         }
@@ -138,7 +138,7 @@ public class ProtobufTypeBuilder implements TypeBuilder {
         Matcher matcher = MAP_PATTERN.matcher(typeName);
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Map protobuf property " + fieldName + "of Type " +
-                    typeName + " can't be parsed.The type name should mathch[" + MAP_PATTERN.toString() + "].");
+                    typeName + " can't be parsed.The type name should match[" + MAP_PATTERN.toString() + "].");
         }
     }
 

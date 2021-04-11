@@ -31,9 +31,10 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
-import org.apache.dubbo.config.service.ServiceConfigBase;
+import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
@@ -61,12 +62,14 @@ import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
-    public static final String NAME = "config";
+
     private static final Logger logger = LoggerFactory.getLogger(ConfigManager.class);
 
-    private final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
+    public static final String NAME = "config";
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
+
+    final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
     public ConfigManager() {
     }
@@ -113,6 +116,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(MetricsConfig.class)));
     }
 
+    public void setSsl(SslConfig sslConfig) {
+        addConfig(sslConfig, true);
+    }
+
+    public Optional<SslConfig> getSsl() {
+        return ofNullable(getConfig(getTagName(SslConfig.class)));
+    }
+
     // ConfigCenterConfig correlative methods
 
     public void addConfigCenter(ConfigCenterConfig configCenter) {
@@ -153,6 +164,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(MetadataReportConfig.class));
     }
 
+    public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
+        Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        if (CollectionUtils.isEmpty(defaults)) {
+            return getMetadataConfigs();
+        }
+        return defaults;
+    }
+
     // MetadataReportConfig correlative methods
 
     public void addProvider(ProviderConfig providerConfig) {
@@ -167,8 +186,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ProviderConfig.class), id));
     }
 
+    /**
+     * Only allows one default ProviderConfig
+     */
     public Optional<ProviderConfig> getDefaultProvider() {
-        return getProvider(DEFAULT_KEY);
+        List<ProviderConfig> providerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ProviderConfig.class)));
+        if (CollectionUtils.isNotEmpty(providerConfigs)) {
+            return Optional.of(providerConfigs.get(0));
+        }
+        return Optional.empty();
     }
 
     public Collection<ProviderConfig> getProviders() {
@@ -189,8 +215,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ConsumerConfig.class), id));
     }
 
+    /**
+     * Only allows one default ConsumerConfig
+     */
     public Optional<ConsumerConfig> getDefaultConsumer() {
-        return getConsumer(DEFAULT_KEY);
+        List<ConsumerConfig> consumerConfigs = getDefaultConfigs(getConfigsMap(getTagName(ConsumerConfig.class)));
+        if (CollectionUtils.isNotEmpty(consumerConfigs)) {
+            return Optional.of(consumerConfigs.get(0));
+        }
+        return Optional.empty();
     }
 
     public Collection<ConsumerConfig> getConsumers() {
@@ -340,11 +373,17 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
     }
 
-    // For test purpose
     public void clear() {
-        write(() -> {
-            this.configsCache.clear();
-        });
+        write(this.configsCache::clear);
+    }
+
+    /**
+     * @throws IllegalStateException
+     * @since 2.7.8
+     */
+    @Override
+    public void destroy() throws IllegalStateException {
+        clear();
     }
 
     /**
@@ -389,10 +428,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
-                throw new IllegalStateException("The expected single matching " + configType + " but found " + size + " instances");
-            } else {
-                return configsMap.values().iterator().next();
+                logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
             }
+
+            return configsMap.values().iterator().next();
         });
     }
 
@@ -436,7 +475,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
         if (oldOne != null && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
-            throw new IllegalStateException("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
+            logger.warn("Duplicate Config found for " + configName + ", you should use only one unique " + configName + " for one application.");
         }
     }
 
@@ -479,7 +518,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "default");
+        Boolean isDefault = getProperty(config, "isDefault");
         return isDefault == null || TRUE.equals(isDefault);
     }
 

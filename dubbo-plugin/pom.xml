@@ -30,6 +30,7 @@
     <description>The registry module of dubbo project</description>
     <modules>
         <module>dubbo-qos</module>
+        <module>dubbo-auth</module>
     </modules>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>

@@ -105,7 +105,7 @@ public abstract class AbstractCluster implements Cluster {
                 if (interceptor instanceof ClusterInterceptor.Listener) {
                     ClusterInterceptor.Listener listener = (ClusterInterceptor.Listener) interceptor;
                     if (t == null) {
-                        listener.onResponse(r, clusterInvoker, invocation);
+                        listener.onMessage(r, clusterInvoker, invocation);
                     } else {
                         listener.onError(t, clusterInvoker, invocation);
                     }
@@ -125,7 +125,7 @@ public abstract class AbstractCluster implements Cluster {
 
         @Override
         protected Result doInvoke(Invocation invocation, List<Invoker<T>> invokers, LoadBalance loadbalance) throws RpcException {
-            // The only purpose is to build a interceptor chain, so the cluster related logic doesn't matter.
+            // The only purpose is to build an interceptor chain, so the cluster related logic doesn't matter.
             return null;
         }
     }

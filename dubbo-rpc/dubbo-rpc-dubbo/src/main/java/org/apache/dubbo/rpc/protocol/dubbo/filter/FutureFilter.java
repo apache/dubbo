@@ -20,18 +20,21 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
 
 /**
  * EventFilter
@@ -50,7 +53,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result result, Invoker<?> invoker, Invocation invocation) {
+    public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
         if (result.hasException()) {
             fireThrowCallback(invoker, invocation, result.getException());
         } else {
@@ -60,11 +63,11 @@ public class FutureFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
+        fireThrowCallback(invoker, invocation, t);
     }
 
     private void fireInvokeCallback(final Invoker<?> invoker, final Invocation invocation) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -77,10 +80,8 @@ public class FutureFilter implements Filter, Filter.Listener {
         if (onInvokeMethod == null || onInvokeInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a oninvoke callback config , but no such " + (onInvokeMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onInvokeMethod.isAccessible()) {
-            onInvokeMethod.setAccessible(true);
-        }
 
+        ReflectUtils.makeAccessible(onInvokeMethod);
         Object[] params = invocation.getArguments();
         try {
             onInvokeMethod.invoke(onInvokeInst, params);
@@ -92,7 +93,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private void fireReturnCallback(final Invoker<?> invoker, final Invocation invocation, final Object result) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -108,9 +109,7 @@ public class FutureFilter implements Filter, Filter.Listener {
         if (onReturnMethod == null || onReturnInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onreturn callback config , but no such " + (onReturnMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onReturnMethod.isAccessible()) {
-            onReturnMethod.setAccessible(true);
-        }
+        ReflectUtils.makeAccessible(onReturnMethod);
 
         Object[] args = invocation.getArguments();
         Object[] params;
@@ -138,7 +137,7 @@ public class FutureFilter implements Filter, Filter.Listener {
     }
 
     private void fireThrowCallback(final Invoker<?> invoker, final Invocation invocation, final Throwable exception) {
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
+        final AsyncMethodInfo asyncMethodInfo = getAsyncMethodInfo(invoker, invocation);
         if (asyncMethodInfo == null) {
             return;
         }
@@ -153,9 +152,7 @@ public class FutureFilter implements Filter, Filter.Listener {
         if (onthrowMethod == null || onthrowInst == null) {
             throw new IllegalStateException("service:" + invoker.getUrl().getServiceKey() + " has a onthrow callback config , but no such " + (onthrowMethod == null ? "method" : "instance") + " found. url:" + invoker.getUrl());
         }
-        if (!onthrowMethod.isAccessible()) {
-            onthrowMethod.setAccessible(true);
-        }
+        ReflectUtils.makeAccessible(onthrowMethod);
         Class<?>[] rParaTypes = onthrowMethod.getParameterTypes();
         if (rParaTypes[0].isAssignableFrom(exception.getClass())) {
             try {
@@ -184,8 +181,13 @@ public class FutureFilter implements Filter, Filter.Listener {
         }
     }
 
-    private ConsumerModel.AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
-        final ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+    private AsyncMethodInfo getAsyncMethodInfo(Invoker<?> invoker, Invocation invocation) {
+        AsyncMethodInfo asyncMethodInfo = (AsyncMethodInfo) invocation.get(ASYNC_METHOD_INFO);
+        if (asyncMethodInfo != null) {
+            return asyncMethodInfo;
+        }
+
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
         if (consumerModel == null) {
             return null;
         }
@@ -195,12 +197,7 @@ public class FutureFilter implements Filter, Filter.Listener {
             methodName = (String) invocation.getArguments()[0];
         }
 
-        final ConsumerModel.AsyncMethodInfo asyncMethodInfo = consumerModel.getMethodConfig(methodName);
-        if (asyncMethodInfo == null) {
-            return null;
-        }
-
-        return asyncMethodInfo;
+        return consumerModel.getAsyncInfo(methodName);
     }
 
 }

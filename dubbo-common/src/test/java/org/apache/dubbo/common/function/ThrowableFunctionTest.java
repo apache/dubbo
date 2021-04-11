@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 /**
  * {@link ThrowableFunction} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ThrowableFunctionTest {
 

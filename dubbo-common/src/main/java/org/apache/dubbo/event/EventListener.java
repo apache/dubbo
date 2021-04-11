@@ -35,7 +35,7 @@ import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
  * @param <E> the concrete class of {@link Event Dubbo Event}
  * @see Event 
  * @see java.util.EventListener
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI
 @FunctionalInterface
@@ -56,7 +56,7 @@ public interface EventListener<E extends Event> extends java.util.EventListener,
      * The comparison rule , refer to {@link #compareTo}.
      */
     default int getPriority() {
-        return MIN_PRIORITY;
+        return NORMAL_PRIORITY;
     }
 
     /**

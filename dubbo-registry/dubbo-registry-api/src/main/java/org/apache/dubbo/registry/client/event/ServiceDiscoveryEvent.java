@@ -24,7 +24,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
  *
  * @see Event
  * @see ServiceDiscovery
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class ServiceDiscoveryEvent extends Event {
 

@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.client.ServiceInstance;
 /**
  * The {@link Event Dubbo event} for {@link ServiceInstance an service instance}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class ServiceInstanceEvent extends Event {
 

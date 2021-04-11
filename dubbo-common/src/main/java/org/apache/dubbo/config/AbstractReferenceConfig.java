@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.service.ReferenceConfigBase;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -60,7 +59,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     /**
      * Lazy create connection
      */
-    protected Boolean lazy = false;
+    protected Boolean lazy;
 
     protected String reconnect;
 
@@ -72,15 +71,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     //TODO solve merge problem
     protected Boolean stubevent;//= Constants.DEFAULT_STUB_EVENT;
 
-    /**
-     * The remote service version the customer side will reference
-     */
-    protected String version;
+
 
     /**
-     * The remote service group the customer side will reference
+     * declares which app or service this interface belongs to
      */
-    protected String group;
+    protected String providedBy;
+
+    protected String router;
 
     public Boolean isCheck() {
         return check;
@@ -206,19 +204,23 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         this.sticky = sticky;
     }
 
-    public String getVersion() {
-        return version;
+
+
+    @Parameter(key = "provided-by")
+    public String getProvidedBy() {
+        return providedBy;
     }
 
-    public void setVersion(String version) {
-        this.version = version;
+    public void setProvidedBy(String providedBy) {
+        this.providedBy = providedBy;
     }
 
-    public String getGroup() {
-        return group;
+    @Parameter(key = "router", append = true)
+    public String getRouter() {
+        return router;
     }
 
-    public void setGroup(String group) {
-        this.group = group;
+    public void setRouter(String router) {
+        this.router = router;
     }
 }

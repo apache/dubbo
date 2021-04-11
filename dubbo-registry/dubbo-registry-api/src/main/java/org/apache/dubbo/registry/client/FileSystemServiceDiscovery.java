@@ -45,15 +45,16 @@ import java.util.stream.Collectors;
 import static com.alibaba.fastjson.JSON.toJSONString;
 import static java.lang.String.format;
 import static java.nio.channels.FileChannel.open;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.DEFAULT_GROUP;
 import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamicConfiguration.CONFIG_CENTER_DIR_PARAM_NAME;
 
 /**
  * File System {@link ServiceDiscovery} implementation
  *
  * @see FileSystemDynamicConfiguration
- * @since 2.7.4
+ * @since 2.7.5
  */
-public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class FileSystemServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -79,7 +80,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     private void registerListener() {
         getServices().forEach(serviceName -> {
-            dynamicConfiguration.getConfigKeys(serviceName).forEach(serviceInstanceId -> {
+            dynamicConfiguration.getConfigKeys(DEFAULT_GROUP).forEach(serviceInstanceId -> {
                 dynamicConfiguration.addListener(serviceInstanceId, serviceName, this::onConfigChanged);
             });
         });
@@ -120,7 +121,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
-        return dynamicConfiguration.getConfigKeys(serviceName)
+        return dynamicConfiguration.getConfigKeys(DEFAULT_GROUP)
                 .stream()
                 .map(serviceInstanceId -> dynamicConfiguration.getConfig(serviceInstanceId, serviceName))
                 .map(content -> JSON.parseObject(content, DefaultServiceInstance.class))
@@ -128,7 +129,12 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public URL getUrl() {
+        return null;
+    }
+
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) {
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
         String content = toJSONString(serviceInstance);
@@ -160,8 +166,9 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
         });
     }
 
+
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         register(serviceInstance);
     }
 

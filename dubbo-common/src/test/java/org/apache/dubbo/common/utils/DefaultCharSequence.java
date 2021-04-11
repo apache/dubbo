@@ -21,7 +21,7 @@ import org.apache.dubbo.common.lang.Prioritized;
 /**
  * Default {@link CharSequence}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class DefaultCharSequence implements CharSequence, Prioritized {
     @Override

@@ -19,7 +19,7 @@ package org.apache.dubbo.common.context;
 /**
  * The Lifecycle of Dubbo component
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public interface Lifecycle {
 

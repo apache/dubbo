@@ -1,1 +1,0 @@
-http-invoker=org.apache.dubbo.rpc.protocol.httpinvoker.HttpInvokerProtocol

@@ -19,11 +19,14 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
+import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.io.UnsafeByteArrayInputStream;
 import org.apache.dubbo.common.io.UnsafeByteArrayOutputStream;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -35,6 +38,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -54,6 +58,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener {
+    private static final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -70,10 +75,19 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (args == null) {
                     args = new Object[params.length];
                 }
-                String generic = (String) inv.getAttachment(GENERIC_KEY);
+
+                if (types == null) {
+                    types = new String[params.length];
+                }
+
+                if (args.length != types.length) {
+                    throw new RpcException("GenericFilter#invoke args.length != types.length, please check your "
+                            + "params");
+                }
+                String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -81,6 +95,18 @@ public class GenericFilter implements Filter, Filter.Listener {
                         || ProtocolUtils.isGenericReturnRawResult(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
+                    if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
+                        String notice = "Trigger the safety barrier! " +
+                                "Native Java Serializer is not allowed by default." +
+                                "This means currently maybe being attacking by others. " +
+                                "If you are sure this is a mistake, " +
+                                "please set `" + CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE + "` enable in configuration! " +
+                                "Before doing so, please make sure you have configure JEP290 to prevent serialization attack.";
+                        logger.error(notice);
+                        throw new RpcException(new IllegalStateException(notice));
+                    }
+
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try (UnsafeByteArrayInputStream is = new UnsafeByteArrayInputStream((byte[]) args[i])) {
@@ -120,7 +146,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                         try (UnsafeByteArrayInputStream is =
                                      new UnsafeByteArrayInputStream(((String) args[0]).getBytes())) {
                             args[0] = ExtensionLoader.getExtensionLoader(Serialization.class)
-                                    .getExtension("" + GENERIC_SERIALIZATION_PROTOBUF)
+                                    .getExtension(GENERIC_SERIALIZATION_PROTOBUF)
                                     .deserialize(null, is).readObject(method.getParameterTypes()[0]);
                         } catch (Exception e) {
                             throw new RpcException("Deserialize argument failed.", e);
@@ -129,20 +155,19 @@ public class GenericFilter implements Filter, Filter.Listener {
                         throw new RpcException(
                                 "Generic serialization [" +
                                         GENERIC_SERIALIZATION_PROTOBUF +
-                                        "] only support one" + String.class.getName() +
+                                        "] only support one " + String.class.getName() +
                                         " argument and your message size is " +
                                         args.length + " and type is" +
                                         args[0].getClass().getName());
                     }
                 }
-                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, inv.getAttachments(), inv.getAttributes());
+
+                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args, inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
                 return invoker.invoke(rpcInvocation);
-            } catch (NoSuchMethodException e) {
-                throw new RpcException(e.getMessage(), e);
-            } catch (ClassNotFoundException e) {
+            } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RpcException(e.getMessage(), e);
             }
         }
@@ -150,19 +175,27 @@ public class GenericFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public void onMessage(Result appResponse, Invoker<?> invoker, Invocation inv) {
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation inv) {
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
                 && !GenericService.class.isAssignableFrom(invoker.getInterface())) {
 
-            String generic = (String) inv.getAttachment(GENERIC_KEY);
+            String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = (String) RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
             }
 
-            if (appResponse.hasException() && !(appResponse.getException() instanceof GenericException)) {
-                appResponse.setException(new GenericException(appResponse.getException()));
+            if (appResponse.hasException()) {
+                Throwable appException = appResponse.getException();
+                if (appException instanceof GenericException) {
+                    GenericException tmp = (GenericException) appException;
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(tmp.getExceptionClass(), tmp.getExceptionMessage());
+                }
+                if (!(appException instanceof com.alibaba.dubbo.rpc.service.GenericException)) {
+                    appException = new com.alibaba.dubbo.rpc.service.GenericException(appException);
+                }
+                appResponse.setException(appException);
             }
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
@@ -189,7 +222,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                             GENERIC_SERIALIZATION_PROTOBUF +
                             "] serialize result failed.", e);
                 }
-            } else if(ProtocolUtils.isGenericReturnRawResult(generic)) {
+            } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {
                 return;
             } else {
                 appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));

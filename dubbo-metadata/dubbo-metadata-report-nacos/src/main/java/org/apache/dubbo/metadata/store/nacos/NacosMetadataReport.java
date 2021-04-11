@@ -18,8 +18,6 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -30,7 +28,6 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.ArrayList;
@@ -41,8 +38,21 @@ import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_RETRY_TIME;
+import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
+import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_CLOUD_NAMESPACE_PARSING;
+import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_ENDPOINT_PARSING_RULE;
+import static com.alibaba.nacos.api.PropertyKeyConst.MAX_RETRY;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_CLIENT_BEAT_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
+import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT;
+import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
 import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
@@ -54,9 +64,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
  */
 public class NacosMetadataReport extends AbstractMetadataReport {
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
-
-    private ConfigService configService;
+    private NacosConfigServiceWrapper configService;
 
     /**
      * The group used to store metadata in Nacos
@@ -70,10 +78,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
-    public ConfigService buildConfigService(URL url) {
+    public NacosConfigServiceWrapper buildConfigService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
         try {
-            configService = NacosFactory.createConfigService(nacosProperties);
+            configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getErrMsg(), e);
@@ -104,19 +112,41 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         properties.put(SERVER_ADDR, serverAddr);
     }
 
-    private void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NAMESPACE);
+    private static void setProperties(URL url, Properties properties) {
         putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+        putPropertyIfAbsent(url, properties, IS_USE_CLOUD_NAMESPACE_PARSING);
+        putPropertyIfAbsent(url, properties, IS_USE_ENDPOINT_PARSING_RULE);
         putPropertyIfAbsent(url, properties, ENDPOINT);
+        putPropertyIfAbsent(url, properties, ENDPOINT_PORT);
+        putPropertyIfAbsent(url, properties, NAMESPACE);
         putPropertyIfAbsent(url, properties, ACCESS_KEY);
         putPropertyIfAbsent(url, properties, SECRET_KEY);
+        putPropertyIfAbsent(url, properties, RAM_ROLE_NAME);
+        putPropertyIfAbsent(url, properties, CONTEXT_PATH);
         putPropertyIfAbsent(url, properties, CLUSTER_NAME);
+        putPropertyIfAbsent(url, properties, ENCODE);
+        putPropertyIfAbsent(url, properties, CONFIG_LONG_POLL_TIMEOUT);
+        putPropertyIfAbsent(url, properties, CONFIG_RETRY_TIME);
+        putPropertyIfAbsent(url, properties, MAX_RETRY);
+        putPropertyIfAbsent(url, properties, ENABLE_REMOTE_SYNC_CONFIG);
+        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
+        putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
+        putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
     }
 
-    private void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
         String propertyValue = url.getParameter(propertyName);
         if (StringUtils.isNotEmpty(propertyValue)) {
             properties.setProperty(propertyName, propertyValue);
+        }
+    }
+
+    private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName, String defaultValue) {
+        String propertyValue = url.getParameter(propertyName);
+        if (StringUtils.isNotEmpty(propertyValue)) {
+            properties.setProperty(propertyName, propertyValue);
+        } else {
+            properties.setProperty(propertyName, defaultValue);
         }
     }
 
@@ -190,7 +220,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private String getConfig(BaseMetadataIdentifier identifier) {
         try {
-            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
+            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);

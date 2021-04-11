@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
  * should implement {@link #createDiscovery(URL)} method to create an instance of {@link ServiceDiscovery}
  *
  * @see ServiceDiscoveryFactory
- * @since 2.7.4
+ * @since 2.7.5
  */
 public abstract class AbstractServiceDiscoveryFactory implements ServiceDiscoveryFactory {
 

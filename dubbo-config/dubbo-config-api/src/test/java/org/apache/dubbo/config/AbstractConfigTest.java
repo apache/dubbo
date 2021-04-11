@@ -17,8 +17,10 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.hamcrest.Matchers;
@@ -106,17 +108,26 @@ public class AbstractConfigTest {
     }*/
 
     @Test
+    public void testValidateProtocolConfig() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setCodec("exchange");
+        protocolConfig.setName("test");
+        protocolConfig.setHost("host");
+        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+    }
+
+    @Test
     public void testAppendParameters1() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
-        parameters.put("default.num", "one");
         parameters.put("num", "ONE");
         AbstractConfig.appendParameters(parameters, new ParameterConfig(1, "hello/world", 30, "password"), "prefix");
         Assertions.assertEquals("one", parameters.get("prefix.key.1"));
         Assertions.assertEquals("two", parameters.get("prefix.key.2"));
-        Assertions.assertEquals("ONE,one,1", parameters.get("prefix.num"));
+        Assertions.assertEquals("ONE,1", parameters.get("prefix.num"));
         Assertions.assertEquals("hello%2Fworld", parameters.get("prefix.naming"));
         Assertions.assertEquals("30", parameters.get("prefix.age"));
-        Assertions.assertFalse(parameters.containsKey("prefix.key-2"));
+        Assertions.assertTrue(parameters.containsKey("prefix.key-2"));
+        Assertions.assertTrue(parameters.containsKey("prefix.key.2"));
         Assertions.assertFalse(parameters.containsKey("prefix.secret"));
     }
 
@@ -166,17 +177,19 @@ public class AbstractConfigTest {
 
     @Test
     public void checkExtension() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkExtension(Greeting.class, "hello", "world"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkExtension(Greeting.class, "hello", "world"));
     }
 
     @Test
     public void checkMultiExtension1() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
     }
 
     @Test
     public void checkMultiExtension2() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
     }
 
     @Test
@@ -186,7 +199,7 @@ public class AbstractConfigTest {
             for (int i = 0; i <= 200; i++) {
                 builder.append("a");
             }
-            BootstrapUtils.checkLength("hello", builder.toString());
+            ConfigValidationUtils.checkLength("hello", builder.toString());
         });
     }
 
@@ -197,20 +210,20 @@ public class AbstractConfigTest {
             for (int i = 0; i <= 200; i++) {
                 builder.append("a");
             }
-            BootstrapUtils.checkPathLength("hello", builder.toString());
+            ConfigValidationUtils.checkPathLength("hello", builder.toString());
         });
     }
 
     @Test
     public void checkName() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> BootstrapUtils.checkName("hello", "world%"));
+        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
     public void checkNameHasSymbol() throws Exception {
         try {
-            BootstrapUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
-            BootstrapUtils.checkNameHasSymbol("mock", "force:return world");
+            ConfigValidationUtils.checkNameHasSymbol("hello", ":*,/ -0123\tabcdABCD");
+            ConfigValidationUtils.checkNameHasSymbol("mock", "force:return world");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -219,7 +232,7 @@ public class AbstractConfigTest {
     @Test
     public void checkKey() throws Exception {
         try {
-            BootstrapUtils.checkKey("hello", "*,-0123abcdABCD");
+            ConfigValidationUtils.checkKey("hello", "*,-0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -228,7 +241,7 @@ public class AbstractConfigTest {
     @Test
     public void checkMultiName() throws Exception {
         try {
-            BootstrapUtils.checkMultiName("hello", ",-._0123abcdABCD");
+            ConfigValidationUtils.checkMultiName("hello", ",-._0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -237,7 +250,7 @@ public class AbstractConfigTest {
     @Test
     public void checkPathName() throws Exception {
         try {
-            BootstrapUtils.checkPathName("hello", "/-$._0123abcdABCD");
+            ConfigValidationUtils.checkPathName("hello", "/-$._0123abcdABCD");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -246,13 +259,13 @@ public class AbstractConfigTest {
     @Test
     public void checkMethodName() throws Exception {
         try {
-            BootstrapUtils.checkMethodName("hello", "abcdABCD0123abcd");
+            ConfigValidationUtils.checkMethodName("hello", "abcdABCD0123abcd");
         } catch (Exception e) {
             fail("the value should be legal.");
         }
 
         try {
-            BootstrapUtils.checkMethodName("hello", "0a");
+            ConfigValidationUtils.checkMethodName("hello", "0a");
             fail("the value should be illegal.");
         } catch (Exception e) {
             // ignore
@@ -263,7 +276,7 @@ public class AbstractConfigTest {
     public void checkParameterName() throws Exception {
         Map<String, String> parameters = Collections.singletonMap("hello", ":*,/-._0123abcdABCD");
         try {
-            BootstrapUtils.checkParameterName(parameters);
+            ConfigValidationUtils.checkParameterName(parameters);
         } catch (Exception e) {
             fail("the value should be legal.");
         }
@@ -304,6 +317,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
             System.setProperty("dubbo.override.protocol", "system");
@@ -400,6 +414,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             overrideConfig.refresh();
 
@@ -434,6 +449,7 @@ public class AbstractConfigTest {
             // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.override.key2", "external");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             overrideConfig.setConfigCenter(configCenter);
@@ -463,6 +479,7 @@ public class AbstractConfigTest {
             Map<String, String> external = new HashMap<>();
             external.put("dubbo.override.parameters", "[{key3:value3},{key4:value4},{key2:value5}]");
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
+            ApplicationModel.getEnvironment().initialize();
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             overrideConfig.setConfigCenter(configCenter);
@@ -897,11 +914,11 @@ public class AbstractConfigTest {
         try {
             Class<?> processEnvironmentClass = Class.forName("java.lang.ProcessEnvironment");
             Field theEnvironmentField = processEnvironmentClass.getDeclaredField("theEnvironment");
-            theEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theEnvironmentField);
             Map<String, String> env = (Map<String, String>) theEnvironmentField.get(null);
             env.putAll(newenv);
             Field theCaseInsensitiveEnvironmentField = processEnvironmentClass.getDeclaredField("theCaseInsensitiveEnvironment");
-            theCaseInsensitiveEnvironmentField.setAccessible(true);
+            ReflectUtils.makeAccessible(theCaseInsensitiveEnvironmentField);
             Map<String, String> cienv = (Map<String, String>) theCaseInsensitiveEnvironmentField.get(null);
             cienv.putAll(newenv);
         } catch (NoSuchFieldException e) {
@@ -910,7 +927,7 @@ public class AbstractConfigTest {
             for (Class cl : classes) {
                 if ("java.util.Collections$UnmodifiableMap".equals(cl.getName())) {
                     Field field = cl.getDeclaredField("m");
-                    field.setAccessible(true);
+                    ReflectUtils.makeAccessible(field);
                     Object obj = field.get(env);
                     Map<String, String> map = (Map<String, String>) obj;
                     map.clear();

@@ -22,11 +22,12 @@ import org.apache.dubbo.cache.support.AbstractCacheFactoryTest;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
+
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class JCacheFactoryTest extends AbstractCacheFactoryTest {
 
@@ -38,7 +39,7 @@ public class JCacheFactoryTest extends AbstractCacheFactoryTest {
 
     @Test
     public void testJCacheGetExpired() throws Exception {
-        URL url = URL.valueOf("test://test:12/test?cache=jacache&.cache.write.expire=1");
+        URL url = URL.valueOf("test://test:12/test?cache=jacache&cache.write.expire=1");
         AbstractCacheFactory cacheFactory = getCacheFactory();
         Invocation invocation = new RpcInvocation();
         Cache cache = cacheFactory.getCache(url, invocation);

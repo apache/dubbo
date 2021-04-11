@@ -28,7 +28,7 @@ import static org.apache.dubbo.common.function.ThrowableAction.execute;
 /**
  * The compose {@link ShutdownHookCallback} class to manipulate one and more {@link ShutdownHookCallback} instances
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ShutdownHookCallbacks {
 

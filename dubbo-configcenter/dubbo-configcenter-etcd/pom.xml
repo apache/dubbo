@@ -32,6 +32,10 @@
     <name>${project.artifactId}</name>
     <description>The etcd implementation of the config-center api</description>
 
+    <properties>
+        <skipIntegrationTests>true</skipIntegrationTests>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.etcd</groupId>
@@ -55,4 +59,16 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipIntegrationTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

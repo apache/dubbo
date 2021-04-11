@@ -75,13 +75,9 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-    /**
-     * instances
-     **/
+    private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
-    private static final ExtensionLoader<FrameworkExt> loader = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
-
-    public static void initApplication() {
+    public static void initFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();
@@ -89,15 +85,15 @@ public class ApplicationModel {
     }
 
     public static Environment getEnvironment() {
-        return (Environment) loader.getExtension(Environment.NAME);
+        return (Environment) LOADER.getExtension(Environment.NAME);
     }
 
     public static ConfigManager getConfigManager() {
-        return (ConfigManager) loader.getExtension(ConfigManager.NAME);
+        return (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
     }
 
     public static ServiceRepository getServiceRepository() {
-        return (ServiceRepository) loader.getExtension(ServiceRepository.NAME);
+        return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
     }
 
     public static ApplicationConfig getApplicationConfig() {
@@ -116,6 +112,7 @@ public class ApplicationModel {
         return application == null ? getName() : application;
     }
 
+    // Currently used by UT.
     @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;
@@ -127,4 +124,5 @@ public class ApplicationModel {
         getConfigManager().destroy();
         getEnvironment().destroy();
     }
+
 }

@@ -23,9 +23,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 
 import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -55,7 +53,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param listener configuration listener
      */
     default void addListener(String key, ConfigurationListener listener) {
-        addListener(key, DEFAULT_GROUP, listener);
+        addListener(key, getDefaultGroup(), listener);
     }
 
 
@@ -66,7 +64,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param listener configuration listener
      */
     default void removeListener(String key, ConfigurationListener listener) {
-        removeListener(key, DEFAULT_GROUP, listener);
+        removeListener(key, getDefaultGroup(), listener);
     }
 
     /**
@@ -91,14 +89,15 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     void removeListener(String key, String group, ConfigurationListener listener);
 
     /**
-     * Get the configuration mapped to the given key and the given group
+     * Get the configuration mapped to the given key and the given group with {@link #getDefaultTimeout() the default
+     * timeout}
      *
      * @param key   the key to represent a configuration
      * @param group the group where the key belongs to
      * @return target configuration mapped to the given key and the given group
      */
     default String getConfig(String key, String group) {
-        return getConfig(key, group, -1L);
+        return getConfig(key, group, getDefaultTimeout());
     }
 
     /**
@@ -114,10 +113,11 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     String getConfig(String key, String group, long timeout) throws IllegalStateException;
 
     /**
-     * This method are mostly used to get a compound config file, such as a complete dubbo.properties file.
+     * This method are mostly used to get a compound config file with {@link #getDefaultTimeout() the default timeout},
+     * such as a complete dubbo.properties file.
      */
     default String getProperties(String key, String group) throws IllegalStateException {
-        return getProperties(key, group, -1L);
+        return getProperties(key, group, getDefaultTimeout());
     }
 
     /**
@@ -130,16 +130,16 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
-     * Publish Config mapped to the given key under the {@link #DEFAULT_GROUP default group}
+     * Publish Config mapped to the given key under the {@link #getDefaultGroup() default group}
      *
      * @param key     the key to represent a configuration
      * @param content the content of configuration
      * @return <code>true</code> if success, or <code>false</code>
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default boolean publishConfig(String key, String content) throws UnsupportedOperationException {
-        return publishConfig(key, DEFAULT_GROUP, content);
+        return publishConfig(key, getDefaultGroup(), content);
     }
 
     /**
@@ -150,46 +150,10 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param content the content of configuration
      * @return <code>true</code> if success, or <code>false</code>
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
-    }
-
-    /**
-     * Remove Config mapped to the given key under the {@link #DEFAULT_GROUP default group}
-     *
-     * @param key the key to represent a configuration
-     * @return the content of configuration was removed
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
-     */
-    default String removeConfig(String key) throws UnsupportedOperationException {
-        return removeConfig(key, DEFAULT_GROUP);
-    }
-
-    /**
-     * Remove Config mapped to the given key and the given group.
-     *
-     * @param key   the key to represent a configuration
-     * @param group the group where the key belongs to
-     * @return the content of configuration was removed
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
-     */
-    default String removeConfig(String key, String group) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
-    }
-
-    /**
-     * Get all groups
-     *
-     * @return the read-only non-null {@link Set set} of config keys
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
-     */
-    default Set<String> getConfigGroups() throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
+        return false;
     }
 
     /**
@@ -198,47 +162,37 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param group the specified group
      * @return the read-only non-null sorted {@link Set set} of config keys
      * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @since 2.7.5
      */
     default SortedSet<String> getConfigKeys(String group) throws UnsupportedOperationException {
-        throw new UnsupportedOperationException("No support");
+        return Collections.emptySortedSet();
     }
 
     /**
-     * Get the {@link SortedMap} with with config keys and contents value by the specified group
+     * Get the default group for the operations
      *
-     * @param group the specified group
-     * @return the read-only non-null sorted {@link SortedMap map}
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @since 2.7.4
+     * @return The default value is {@link #DEFAULT_GROUP "dubbo"}
+     * @since 2.7.5
      */
-    default SortedMap<String, String> getConfigs(String group) throws UnsupportedOperationException {
-        return getConfigs(group, -1);
+    default String getDefaultGroup() {
+        return DEFAULT_GROUP;
     }
 
     /**
-     * Get the {@link SortedMap} with with config keys and content value by the specified group
+     * Get the default timeout for the operations in milliseconds
      *
-     * @param group   the specified group
-     * @param timeout the millisecond for timeout
-     * @return the read-only non-null sorted {@link SortedMap map}
-     * @throws UnsupportedOperationException If the under layer does not support
-     * @throws IllegalStateException         If timeout exceeds
-     * @since 2.7.4
+     * @return The default value is <code>-1L</code>
+     * @since 2.7.5
      */
-    default SortedMap<String, String> getConfigs(String group, long timeout) throws UnsupportedOperationException,
-            IllegalStateException {
-        SortedMap<String, String> configs = new TreeMap<>();
-        SortedSet<String> configKeys = getConfigKeys(group);
-        configKeys.forEach(key -> configs.put(key, getString(key)));
-        return Collections.unmodifiableSortedMap(configs);
+    default long getDefaultTimeout() {
+        return -1L;
     }
 
     /**
      * Close the configuration
      *
      * @throws Exception
-     * @since 2.7.4
+     * @since 2.7.5
      */
     @Override
     default void close() throws Exception {
@@ -262,7 +216,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      *
      * @param connectionURL
      * @return non-null
-     * @since 2.7.4
+     * @since 2.7.5
      */
     static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
         String protocol = connectionURL.getProtocol();
@@ -277,5 +231,15 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      */
     static String getRuleKey(URL url) {
         return url.getColonSeparatedKey();
+    }
+
+    /**
+     * @param key   the key to represent a configuration
+     * @param group the group where the key belongs to
+     * @return <code>true</code> if success, or <code>false</code>
+     * @since 2.7.8
+     */
+    default boolean removeConfig(String key, String group) {
+        return true;
     }
 }

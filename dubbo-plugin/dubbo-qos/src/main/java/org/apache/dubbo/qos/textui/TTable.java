@@ -24,7 +24,7 @@ import java.util.Scanner;
 import static java.lang.Math.abs;
 import static java.lang.Math.max;
 import static java.lang.String.format;
-import static org.apache.dubbo.common.utils.StringUtils.EMPTY;
+import static org.apache.dubbo.common.utils.StringUtils.EMPTY_STRING;
 import static org.apache.dubbo.common.utils.StringUtils.length;
 import static org.apache.dubbo.common.utils.StringUtils.repeat;
 import static org.apache.dubbo.common.utils.StringUtils.replace;
@@ -128,7 +128,7 @@ public class TTable implements TComponent {
                             && border.has(Border.BORDER_INNER_V)) {
                         borderChar = "|";
                     } else {
-                        borderChar = EMPTY;
+                        borderChar = EMPTY_STRING;
                     }
 
 
@@ -143,7 +143,7 @@ public class TTable implements TComponent {
                         data = scanner.nextLine();
                         hasNextLine = true;
                     } else {
-                        data = EMPTY;
+                        data = EMPTY_STRING;
                     }
 
                     if (width > 0) {
@@ -181,7 +181,7 @@ public class TTable implements TComponent {
 
     private String getData(int rowIndex, ColumnDefine columnDefine) {
         return columnDefine.getRowCount() <= rowIndex
-                ? EMPTY
+                ? EMPTY_STRING
                 : columnDefine.rows.get(rowIndex);
     }
 
@@ -278,7 +278,7 @@ public class TTable implements TComponent {
                         && null != columnDataArray[index]) {
                     columnDefine.rows.add(replaceTab(columnDataArray[index].toString()));
                 } else {
-                    columnDefine.rows.add(EMPTY);
+                    columnDefine.rows.add(EMPTY_STRING);
                 }
             }
         }

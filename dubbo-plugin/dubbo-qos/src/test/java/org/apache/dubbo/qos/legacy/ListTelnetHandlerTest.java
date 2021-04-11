@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.Channel;
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -135,12 +137,15 @@ public class ListTelnetHandlerTest {
     }
 
     private void registerProvider(String key, Object impl, Class<?> interfaceClass) {
+        ServiceConfigBase sc = mock(ServiceConfigBase.class);
+        given(sc.getRegistries()).willReturn(new ArrayList<>());
+
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         repository.registerProvider(
                 key,
                 impl,
                 serviceDescriptor,
-                null,
+                sc,
                 null
         );
     }

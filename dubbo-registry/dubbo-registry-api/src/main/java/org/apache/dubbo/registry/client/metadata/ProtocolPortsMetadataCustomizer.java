@@ -26,24 +26,19 @@ import org.apache.dubbo.rpc.Protocol;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.metadata.WritableMetadataService.getExtension;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getMetadataStorageType;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setEndpoints;
 
 /**
  * A Class to customize the ports of {@link Protocol protocols} into
  * {@link ServiceInstance#getMetadata() the metadata of service instance}
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-
-        String metadataStoredType = getMetadataStorageType(serviceInstance);
-
-        WritableMetadataService writableMetadataService = getExtension(metadataStoredType);
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
 
         Map<String, Integer> protocols = new HashMap<>();
         writableMetadataService.getExportedURLs()

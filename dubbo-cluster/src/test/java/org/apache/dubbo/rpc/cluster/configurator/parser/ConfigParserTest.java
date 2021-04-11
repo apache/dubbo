@@ -89,7 +89,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseConfiguratorsServiceMultiAppsTest() throws IOException {
+    public void parseConfiguratorsServiceMultiAppsTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceMultiApps.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -112,7 +112,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseConfiguratorsAppMultiServicesTest() throws IOException {
+    public void parseConfiguratorsAppMultiServicesTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppMultiServices.yml")) {
             String yamlFile = streamToString(yamlStream);
             List<URL> urls = ConfigParser.parseConfigurators(yamlFile);
@@ -129,7 +129,7 @@ public class ConfigParserTest {
 
 
     @Test
-    public void parseConfiguratorsAppAnyServicesTest() throws IOException {
+    public void parseConfiguratorsAppAnyServicesTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppAnyServices.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -144,7 +144,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseConfiguratorsAppNoServiceTest() throws IOException {
+    public void parseConfiguratorsAppNoServiceTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppNoService.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -159,7 +159,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseConsumerSpecificProvidersTest() throws IOException {
+    public void parseConsumerSpecificProvidersTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConsumerSpecificProviders.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -172,6 +172,22 @@ public class ConfigParserTest {
             Assertions.assertEquals("127.0.0.1:20880", url.getParameter(OVERRIDE_PROVIDERS_KEY));
             Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
+    }
+
+    @Test
+    public void parseURLJsonArrayCompatible() throws Exception {
+
+        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+
+        List<URL> urls = ConfigParser.parseConfigurators(configData);
+
+        Assertions.assertNotNull(urls);
+        Assertions.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+
+        Assertions.assertEquals("0.0.0.0", url.getAddress());
+        Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
+        Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
     }
 
 }

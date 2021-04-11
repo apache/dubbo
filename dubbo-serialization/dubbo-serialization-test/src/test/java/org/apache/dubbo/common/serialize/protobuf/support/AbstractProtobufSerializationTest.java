@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +58,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readBool();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -87,7 +87,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readBool();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -106,7 +107,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readByte();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -132,7 +134,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readByte();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -151,7 +154,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readShort();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -171,7 +175,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readInt();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -190,7 +195,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readLong();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -209,7 +215,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readFloat();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -230,7 +237,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readDouble();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -249,7 +257,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readUTF();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -268,7 +277,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readBytes();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -289,7 +299,8 @@ public class AbstractProtobufSerializationTest {
         try {
             deserialize.readBytes();
             fail();
-        } catch (IOException expected) {
+        } catch (Exception expected) {
+            expected.printStackTrace();
         }
     }
 
@@ -313,6 +324,7 @@ public class AbstractProtobufSerializationTest {
 
     @Test
     public void testPbNormal() throws Exception {
+        ProtobufUtils.marshaller(GooglePB.PBRequestType.getDefaultInstance());
         GooglePB.PBRequestType request = buildPbMessage();
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
         objectOutput.writeObject(request);
@@ -336,14 +348,14 @@ public class AbstractProtobufSerializationTest {
         Map<String, Object> attachments = new HashMap<>();
         attachments.put("key", "value");
         ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
-        objectOutput.writeObject(attachments);
+        objectOutput.writeAttachments(attachments);
         objectOutput.flushBuffer();
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
                 byteArrayOutputStream.toByteArray());
         ObjectInput objectInput = serialization.deserialize(url, byteArrayInputStream);
 
-        Map<String, Object> derializedAttachments = objectInput.readObject(Map.class);
+        Map<String, Object> derializedAttachments = objectInput.readAttachments();
         assertEquals(attachments, derializedAttachments);
     }
 

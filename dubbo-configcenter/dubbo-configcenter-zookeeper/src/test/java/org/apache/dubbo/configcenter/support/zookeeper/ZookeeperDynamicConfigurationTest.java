@@ -58,14 +58,14 @@ public class ZookeeperDynamicConfigurationTest {
     public static void setUp() throws Exception {
         zkServer = new TestingServer(zkServerPort, true);
 
-        client = CuratorFrameworkFactory.newClient("localhost:" + zkServerPort, 60 * 1000, 60 * 1000,
+        client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zkServerPort, 60 * 1000, 60 * 1000,
                 new ExponentialBackoffRetry(1000, 3));
         client.start();
 
         try {
             setData("/dubbo/config/dubbo/dubbo.properties", "The content from dubbo.properties");
             setData("/dubbo/config/dubbo/service:version:group.configurators", "The content from configurators");
-            setData("/dubbo/config/appname", "The content from higer level node");
+            setData("/dubbo/config/appname", "The content from higher level node");
             setData("/dubbo/config/dubbo/appname.tag-router", "The content from appname tagrouters");
             setData("/dubbo/config/dubbo/never.change.DemoService.configurators", "Never change value from configurators");
         } catch (Exception e) {
@@ -73,7 +73,7 @@ public class ZookeeperDynamicConfigurationTest {
         }
 
 
-        configUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
+        configUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
 
         configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol()).getDynamicConfiguration(configUrl);
     }
@@ -107,6 +107,7 @@ public class ZookeeperDynamicConfigurationTest {
         configuration.addListener("appname.tag-router", listener3);
         configuration.addListener("appname.tag-router", listener4);
 
+        Thread.sleep(100);
         setData("/dubbo/config/dubbo/service:version:group.configurators", "new value1");
         Thread.sleep(100);
         setData("/dubbo/config/dubbo/appname.tag-router", "new value2");
@@ -116,10 +117,10 @@ public class ZookeeperDynamicConfigurationTest {
         Thread.sleep(5000);
 
         latch.await();
-        Assertions.assertEquals(1, listener1.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(1, listener2.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(1, listener3.getCount("appname.tag-router"));
-        Assertions.assertEquals(1, listener4.getCount("appname.tag-router"));
+        Assertions.assertEquals(2, listener1.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(2, listener2.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(2, listener3.getCount("appname.tag-router"));
+        Assertions.assertEquals(2, listener4.getCount("appname.tag-router"));
 
         Assertions.assertEquals("new value1", listener1.getValue());
         Assertions.assertEquals("new value1", listener2.getValue());
@@ -140,11 +141,11 @@ public class ZookeeperDynamicConfigurationTest {
     @Test
     public void testGetConfigKeysAndContents() {
 
-        String key = "user-service";
-        String group = "org.apache.dubbo.service.UserService";
-        String content = "test";
+        String group = "mapping";
+        String key = "org.apache.dubbo.service.UserService";
+        String content = "app1";
 
-        String key2 = "user-service-1";
+        String key2 = "org.apache.dubbo.service.UserService2";
 
         assertTrue(configuration.publishConfig(key, group, content));
         assertTrue(configuration.publishConfig(key2, group, content));
@@ -152,12 +153,6 @@ public class ZookeeperDynamicConfigurationTest {
         Set<String> configKeys = configuration.getConfigKeys(group);
 
         assertEquals(new TreeSet(asList(key, key2)), configKeys);
-
-        Map<String, String> configs = configuration.getConfigs(group);
-
-        assertEquals(configs.keySet(), configKeys);
-
-        configs.forEach((k, value) -> assertEquals(content, value));
     }
 
     private class TestListener implements ConfigurationListener {

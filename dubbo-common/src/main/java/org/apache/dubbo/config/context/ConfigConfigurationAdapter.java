@@ -17,8 +17,10 @@
 package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,7 +31,13 @@ public class ConfigConfigurationAdapter implements Configuration {
     private Map<String, String> metaData;
 
     public ConfigConfigurationAdapter(AbstractConfig config) {
-        this.metaData = config.getMetaData();
+        Map<String, String> configMetadata = config.getMetaData();
+        metaData = new HashMap<>(configMetadata.size(), 1.0f);
+        for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
+            String prefix = config.getPrefix().endsWith(".") ? config.getPrefix() : config.getPrefix() + ".";
+            String id = StringUtils.isEmpty(config.getId()) ? "" : config.getId() + ".";
+            metaData.put(prefix + id + entry.getKey(), entry.getValue());
+        }
     }
 
     @Override

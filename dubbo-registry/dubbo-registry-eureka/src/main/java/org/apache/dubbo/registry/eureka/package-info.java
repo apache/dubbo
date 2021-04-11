@@ -17,6 +17,6 @@
 /**
  * The package contains the registry implementations for Netflix Eureka
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 package org.apache.dubbo.registry.eureka;

@@ -70,8 +70,8 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             if (forks <= 0 || forks >= invokers.size()) {
                 selected = invokers;
             } else {
-                selected = new ArrayList<>();
-                for (int i = 0; i < forks; i++) {
+                selected = new ArrayList<>(forks);
+                while (selected.size() < forks) {
                     Invoker<T> invoker = select(loadbalance, invocation, invokers, selected);
                     if (!selected.contains(invoker)) {
                         //Avoid add the same invoker several times.

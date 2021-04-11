@@ -17,13 +17,13 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.service.Destroyable;
+import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
-
-import com.alibaba.dubbo.rpc.service.EchoService;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -52,16 +52,24 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
         String config = invoker.getUrl().getParameter(INTERFACES);
         if (config != null && config.length() > 0) {
             String[] types = COMMA_SPLIT_PATTERN.split(config);
-            if (types != null && types.length > 0) {
-                for (int i = 0; i < types.length; i++) {
-                    // TODO can we load successfully for a different classloader?.
-                    interfaces.add(ReflectUtils.forName(types[i]));
-                }
+            for (String type : types) {
+                // TODO can we load successfully for a different classloader?.
+                interfaces.add(ReflectUtils.forName(type));
             }
         }
 
-        if (!GenericService.class.isAssignableFrom(invoker.getInterface()) && generic) {
-            interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
+        if (generic) {
+            if (GenericService.class.equals(invoker.getInterface()) || !GenericService.class.isAssignableFrom(invoker.getInterface())) {
+                interfaces.add(com.alibaba.dubbo.rpc.service.GenericService.class);
+            }
+
+            try {
+                // find the real interface from url
+                String realInterface = invoker.getUrl().getParameter(Constants.INTERFACE);
+                interfaces.add(ReflectUtils.forName(realInterface));
+            } catch (Throwable e) {
+                // ignore
+            }
         }
 
         interfaces.add(invoker.getInterface());

@@ -26,7 +26,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * The factory to create {@link ServiceDiscovery}
  *
  * @see ServiceDiscovery
- * @since 2.7.4
+ * @since 2.7.5
  */
 @SPI("default")
 public interface ServiceDiscoveryFactory {

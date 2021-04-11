@@ -23,7 +23,7 @@ import java.util.Vector;
 /**
  * {@link EchoEvent} {@link EventListener} 2
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class EchoEventListener2 extends Vector<EventListener<Event>> implements Serializable, EventListener<Event> {
 
@@ -41,7 +41,7 @@ public class EchoEventListener2 extends Vector<EventListener<Event>> implements 
 
     @Override
     public int getPriority() {
-        return 0;
+        return -1;
     }
 
     public int getEventOccurs() {

@@ -25,13 +25,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * {@link AdaptiveClassCodeGenerator} Test
  *
- * @since 2.7.4
+ * @since 2.7.5
  */
 public class AdaptiveClassCodeGeneratorTest {
 
@@ -41,8 +42,10 @@ public class AdaptiveClassCodeGeneratorTest {
         String value = generator.generate();
         URL url = getClass().getResource("/org/apache/dubbo/common/extension/adaptive/HasAdaptiveExt$Adaptive");
         try (InputStream inputStream = url.openStream()) {
-            String content = IOUtils.read(new InputStreamReader(inputStream, "UTF-8"));
-            assertEquals(content, value);
+            String content = IOUtils.read(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
+            // in Windows platform content get from resource contains \r delimiter
+            content = content.replaceAll("\r","");
+            assertTrue(content.contains(value));
         }
     }
 }

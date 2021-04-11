@@ -19,7 +19,7 @@ package org.apache.dubbo.config.bootstrap.builders;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.service.ServiceConfigBase;
+import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,15 +128,15 @@ public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig, Ser
         return getThis();
     }
 
-    @Override
-    public ServiceBuilder<U> mock(String mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
+//    @Override
+//    public ServiceBuilder<U> mock(String mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
 
-    @Override
-    public ServiceBuilder<U> mock(Boolean mock) {
-        throw new IllegalArgumentException("mock doesn't support on provider side");
-    }
+//    @Override
+//    public ServiceBuilder<U> mock(Boolean mock) {
+//        throw new IllegalArgumentException("mock doesn't support on provider side");
+//    }
 
     public ServiceConfig<U> build() {
         ServiceConfig<U> serviceConfig = new ServiceConfig<>();
