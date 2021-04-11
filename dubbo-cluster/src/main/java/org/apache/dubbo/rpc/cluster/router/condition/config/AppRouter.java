@@ -16,9 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition.config;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 
 /**
  * Application level router, "application.condition-router"
@@ -30,8 +29,8 @@ public class AppRouter extends ListenableRouter {
      */
     private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
 
-    public AppRouter(DynamicConfiguration configuration, URL url) {
-        super(configuration, url, url.getParameter(Constants.APPLICATION_KEY));
+    public AppRouter(URL url) {
+        super(url, url.getParameter(CommonConstants.APPLICATION_KEY));
         this.priority = APP_ROUTER_DEFAULT_PRIORITY;
     }
 }

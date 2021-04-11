@@ -275,7 +275,7 @@ public interface ChannelBuffer extends Comparable<ChannelBuffer> {
      * not an instance of {@link ChannelBuffer} type.
      */
     @Override
-    public boolean equals(Object o);
+    boolean equals(Object o);
 
     /**
      * Returns the factory which creates a {@link ChannelBuffer} whose type and

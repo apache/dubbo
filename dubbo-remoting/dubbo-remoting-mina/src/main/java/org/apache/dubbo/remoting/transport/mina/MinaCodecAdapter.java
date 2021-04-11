@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.mina;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
@@ -32,6 +31,11 @@ import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+
+import static org.apache.dubbo.remoting.Constants.BUFFER_KEY;
+import static org.apache.dubbo.remoting.Constants.DEFAULT_BUFFER_SIZE;
+import static org.apache.dubbo.remoting.Constants.MAX_BUFFER_SIZE;
+import static org.apache.dubbo.remoting.Constants.MIN_BUFFER_SIZE;
 
 /**
  * MinaCodecAdapter.
@@ -54,8 +58,8 @@ final class MinaCodecAdapter implements ProtocolCodecFactory {
         this.codec = codec;
         this.url = url;
         this.handler = handler;
-        int b = url.getPositiveParameter(Constants.BUFFER_KEY, Constants.DEFAULT_BUFFER_SIZE);
-        this.bufferSize = b >= Constants.MIN_BUFFER_SIZE && b <= Constants.MAX_BUFFER_SIZE ? b : Constants.DEFAULT_BUFFER_SIZE;
+        int b = url.getPositiveParameter(BUFFER_KEY, DEFAULT_BUFFER_SIZE);
+        this.bufferSize = b >= MIN_BUFFER_SIZE && b <= MAX_BUFFER_SIZE ? b : DEFAULT_BUFFER_SIZE;
     }
 
     @Override

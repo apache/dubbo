@@ -24,6 +24,8 @@ import java.util.Map;
 
 public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entry<Object, Object>> {
 
+    private static final long serialVersionUID = -8505586483570518029L;
+
     public static final int TYPE_CLASS = 1;
     public static final int TYPE_ENUM = 2;
     public static final int TYPE_COLLECTION = 3;
@@ -34,11 +36,9 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
      */
     public static final int TYPE_PRIMITIVE = 6;
     public static final int TYPE_BEAN = 7;
-    private static final long serialVersionUID = -8505586483570518029L;
+
     private static final String ENUM_PROPERTY_NAME = "name";
-
     private static final String CLASS_PROPERTY_NAME = "name";
-
     private static final String PRIMITIVE_PROPERTY_VALUE = "value";
 
     /**
@@ -47,7 +47,6 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
      * @see #isValidType(int)
      */
     private static final int TYPE_MAX = TYPE_BEAN;
-
     /**
      * Used to define a type is valid.
      *
@@ -56,13 +55,11 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
     private static final int TYPE_MIN = TYPE_CLASS;
 
     private String className;
-
     private int type;
 
-    private Map<Object, Object> properties = new LinkedHashMap<Object, Object>();
+    private Map<Object, Object> properties = new LinkedHashMap<>();
 
-    public JavaBeanDescriptor() {
-    }
+    public JavaBeanDescriptor() {}
 
     public JavaBeanDescriptor(String className, int type) {
         notEmpty(className, "class name is empty");
@@ -120,9 +117,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     public Object setProperty(Object propertyName, Object propertyValue) {
         notNull(propertyName, "Property name is null");
-
-        Object oldValue = properties.put(propertyName, propertyValue);
-        return oldValue;
+        return properties.put(propertyName, propertyValue);
     }
 
     public String setEnumNameProperty(String name) {
@@ -173,8 +168,7 @@ public final class JavaBeanDescriptor implements Serializable, Iterable<Map.Entr
 
     public Object getProperty(Object propertyName) {
         notNull(propertyName, "Property name is null");
-        Object propertyValue = properties.get(propertyName);
-        return propertyValue;
+        return properties.get(propertyName);
     }
 
     public boolean containsProperty(Object propertyName) {

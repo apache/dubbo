@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.HESSIAN2_SERIALIZATION_ID;
+
 /**
  * Hessian2 serialization implementation, hessian2 is the default serialization protocol for dubbo
  *
@@ -34,11 +36,9 @@ import java.io.OutputStream;
  */
 public class Hessian2Serialization implements Serialization {
 
-    public static final byte ID = 2;
-
     @Override
     public byte getContentTypeId() {
-        return ID;
+        return HESSIAN2_SERIALIZATION_ID;
     }
 
     @Override

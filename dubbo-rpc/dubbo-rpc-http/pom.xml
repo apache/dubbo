@@ -14,20 +14,25 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-rpc</artifactId>
+        <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+
     <artifactId>dubbo-rpc-http</artifactId>
-    <packaging>jar</packaging>
-    <name>${project.artifactId}</name>
-    <description>The http rpc module of dubbo project</description>
+
+    <description>The JSON-RPC module of dubbo project</description>
+
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -44,14 +49,14 @@
             <artifactId>spring-context</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <groupId>com.github.briandilley.jsonrpc4j</groupId>
+            <artifactId>jsonrpc4j</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-serialization-jdk</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
+            <groupId>javax.portlet</groupId>
+            <artifactId>portlet-api</artifactId>
         </dependency>
     </dependencies>
+
+
 </project>

@@ -35,11 +35,22 @@ public class StatItemTest {
     public void testIsAllowable() throws Exception {
         statItem = new StatItem("test", 5, 1000L);
         long lastResetTime = statItem.getLastResetTime();
-        assertEquals(true, statItem.isAllowable());
+        assertTrue(statItem.isAllowable());
         Thread.sleep(1100L);
-        assertEquals(true, statItem.isAllowable());
+        assertTrue(statItem.isAllowable());
         assertTrue(lastResetTime != statItem.getLastResetTime());
         assertEquals(4, statItem.getToken());
     }
 
+	@Test
+	public void testAccuracy() throws Exception {
+		final int EXPECTED_RATE = 5;
+		statItem = new StatItem("test", EXPECTED_RATE, 60_000L);
+		for (int i = 1; i <= EXPECTED_RATE; i++) {
+			assertEquals(true, statItem.isAllowable());
+		}
+
+		// Must block the 6th item
+		assertEquals(false, statItem.isAllowable());
+	}
 }

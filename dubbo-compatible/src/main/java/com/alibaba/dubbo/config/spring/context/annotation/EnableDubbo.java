@@ -18,7 +18,7 @@
 package com.alibaba.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.spring.context.annotation.CompatibleDubboComponentScan;
+import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 
 import org.springframework.core.annotation.AliasFor;
@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 @EnableDubboConfig
-@CompatibleDubboComponentScan
+@DubboComponentScan
 public @interface EnableDubbo {
 
     /**
@@ -46,9 +46,9 @@ public @interface EnableDubbo {
      * package names.
      *
      * @return the base packages to scan
-     * @see CompatibleDubboComponentScan#basePackages()
+     * @see DubboComponentScan#basePackages()
      */
-    @AliasFor(annotation = CompatibleDubboComponentScan.class, attribute = "basePackages")
+    @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackages")
     String[] scanBasePackages() default {};
 
     /**
@@ -57,9 +57,9 @@ public @interface EnableDubbo {
      * scanned.
      *
      * @return classes from the base packages to scan
-     * @see CompatibleDubboComponentScan#basePackageClasses
+     * @see DubboComponentScan#basePackageClasses
      */
-    @AliasFor(annotation = CompatibleDubboComponentScan.class, attribute = "basePackageClasses")
+    @AliasFor(annotation = DubboComponentScan.class, attribute = "basePackageClasses")
     Class<?>[] scanBasePackageClasses() default {};
 
 

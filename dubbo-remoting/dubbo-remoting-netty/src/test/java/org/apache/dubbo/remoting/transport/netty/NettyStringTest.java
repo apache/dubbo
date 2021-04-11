@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
@@ -36,7 +37,8 @@ public class NettyStringTest {
     @BeforeAll
     public static void setUp() throws Exception {
         //int port = (int) (1000 * Math.random() + 10000);
-        int port = 10001;
+        //int port = 10001;
+        int port = NetUtils.getAvailablePort();
         System.out.println(port);
         server = Exchangers.bind(URL.valueOf("telnet://0.0.0.0:" + port + "?server=netty3"), new TelnetServerHandler());
         client = Exchangers.connect(URL.valueOf("telnet://127.0.0.1:" + port + "?client=netty3"), new TelnetClientHandler());

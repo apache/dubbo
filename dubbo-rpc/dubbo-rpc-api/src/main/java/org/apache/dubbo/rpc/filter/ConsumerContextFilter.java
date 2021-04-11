@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -26,6 +26,12 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.TimeoutCountDown;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_KEY;
 
 /**
  * ConsumerContextFilter set current RpcContext with invoker,invocation, local host, remote host and port
@@ -34,33 +40,33 @@ import org.apache.dubbo.rpc.RpcInvocation;
  * @see org.apache.dubbo.rpc.Filter
  * @see RpcContext
  */
-@Activate(group = Constants.CONSUMER, order = -10000)
+@Activate(group = CONSUMER, order = -10000)
 public class ConsumerContextFilter implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        RpcContext.getContext()
-                .setInvoker(invoker)
+        RpcContext context = RpcContext.getContext();
+        context.setInvoker(invoker)
                 .setInvocation(invocation)
                 .setLocalAddress(NetUtils.getLocalHost(), 0)
-                .setRemoteAddress(invoker.getUrl().getHost(),
-                        invoker.getUrl().getPort());
+                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
+                .setRemoteApplicationName(invoker.getUrl().getParameter(REMOTE_APPLICATION_KEY))
+                .setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getParameter(APPLICATION_KEY));
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
-        try {
-            // TODO should we clear server context?
-            RpcContext.removeServerContext();
-            return invoker.invoke(invocation);
-        } finally {
-            // TODO removeContext? but we need to save future for RpcContext.getFuture() API. If clear attachments here, attachments will not available when postProcessResult is invoked.
-            RpcContext.getContext().clearAttachments();
+
+        // pass default timeout set by end user (ReferenceConfig)
+        Object countDown = context.get(TIME_COUNTDOWN_KEY);
+        if (countDown != null) {
+            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
+            if (timeoutCountDown.isExpired()) {
+                return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                        "No time left for making the following call: " + invocation.getServiceName() + "."
+                                + invocation.getMethodName() + ", terminate directly."), invocation);
+            }
         }
+        return invoker.invoke(invocation);
     }
 
-    @Override
-    public Result onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        RpcContext.getServerContext().setAttachments(result.getAttachments());
-        return result;
-    }
 }

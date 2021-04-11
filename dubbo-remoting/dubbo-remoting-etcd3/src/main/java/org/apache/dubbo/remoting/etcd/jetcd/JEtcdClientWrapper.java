@@ -17,38 +17,38 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.etcd.jetcd.kv.PutResponse;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;
 import org.apache.dubbo.remoting.etcd.StateListener;
-import org.apache.dubbo.remoting.etcd.option.Constants;
 
 import io.etcd.jetcd.ByteSequence;
 import io.etcd.jetcd.Client;
 import io.etcd.jetcd.ClientBuilder;
-import io.etcd.jetcd.CloseableClient;
 import io.etcd.jetcd.KeyValue;
-import io.etcd.jetcd.Observers;
 import io.etcd.jetcd.common.exception.ErrorCode;
 import io.etcd.jetcd.common.exception.EtcdException;
 import io.etcd.jetcd.kv.GetResponse;
+import io.etcd.jetcd.kv.PutResponse;
 import io.etcd.jetcd.lease.LeaseKeepAliveResponse;
 import io.etcd.jetcd.options.GetOption;
 import io.etcd.jetcd.options.PutOption;
+import io.etcd.jetcd.support.CloseableClient;
+import io.etcd.jetcd.support.Observers;
 import io.grpc.ConnectivityState;
 import io.grpc.ManagedChannel;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import io.grpc.util.RoundRobinLoadBalancerFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -66,6 +66,15 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_KEEPALIVE_TIMEOUT;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RECONNECT_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.DEFAULT_RETRY_PERIOD;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.HTTP_SUBFIX_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.RETRY_PERIOD_KEY;
+import static org.apache.dubbo.remoting.etcd.Constants.SESSION_TIMEOUT_KEY;
 
 public class JEtcdClientWrapper {
 
@@ -105,13 +114,13 @@ public class JEtcdClientWrapper {
 
     private volatile boolean cancelKeepAlive = false;
 
-    public static final Charset UTF_8 = Charset.forName("UTF-8");
+    public static final Charset UTF_8 = StandardCharsets.UTF_8;
 
     public JEtcdClientWrapper(URL url) {
         this.url = url;
-        this.expirePeriod = url.getParameter(Constants.SESSION_TIMEOUT_KEY, Constants.DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
+        this.expirePeriod = url.getParameter(SESSION_TIMEOUT_KEY, DEFAULT_KEEPALIVE_TIMEOUT) / 1000;
         if (expirePeriod <= 0) {
-            this.expirePeriod = Constants.DEFAULT_KEEPALIVE_TIMEOUT / 1000;
+            this.expirePeriod = DEFAULT_KEEPALIVE_TIMEOUT / 1000;
         }
         this.channel = new AtomicReference<>();
         this.completableFuture = CompletableFuture.supplyAsync(() -> prepareClient(url));
@@ -120,7 +129,7 @@ public class JEtcdClientWrapper {
         this.retryPolicy = new RetryNTimes(1, 1000, TimeUnit.MILLISECONDS);
 
         this.failed = new IllegalStateException("Etcd3 registry is not connected yet, url:" + url);
-        int retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        int retryPeriod = url.getParameter(RETRY_PERIOD_KEY, DEFAULT_RETRY_PERIOD);
 
         this.retryFuture = retryExecutor.scheduleWithFixedDelay(() -> {
             try {
@@ -138,8 +147,8 @@ public class JEtcdClientWrapper {
             maxInboundSize = Integer.valueOf(System.getProperty(GRPC_MAX_INBOUND_SIZE_KEY));
         }
 
+        // TODO, uses default pick-first round robin.
         ClientBuilder clientBuilder = Client.builder()
-                .loadBalancerFactory(RoundRobinLoadBalancerFactory.getInstance())
                 .endpoints(endPoints(url.getBackupAddress()))
                 .maxInboundMessageSize(maxInboundSize);
 
@@ -185,8 +194,10 @@ public class JEtcdClientWrapper {
                                     String key = pair.getKey().toString(UTF_8);
                                     int index = len, count = 0;
                                     if (key.length() > len) {
-                                        for (; (index = key.indexOf(Constants.PATH_SEPARATOR, index)) != -1; ++index) {
-                                            if (count++ > 1) break;
+                                        for (; (index = key.indexOf(PATH_SEPARATOR, index)) != -1; ++index) {
+                                            if (count++ > 1) {
+                                                break;
+                                            }
                                         }
                                     }
                                     return count == 1;
@@ -305,7 +316,7 @@ public class JEtcdClientWrapper {
     /**
      * create new ephemeral path save to etcd .
      * if node disconnect from etcd, it will be deleted
-     * automatically by etcd when sessian timeout.
+     * automatically by etcd when session timeout.
      *
      * @param path the path to be saved
      * @return the lease of current path.
@@ -477,11 +488,11 @@ public class JEtcdClientWrapper {
     }
 
     public String[] endPoints(String backupAddress) {
-        String[] endpoints = backupAddress.split(Constants.COMMA_SEPARATOR);
+        String[] endpoints = backupAddress.split(COMMA_SEPARATOR);
         List<String> addresses = Arrays.stream(endpoints)
-                .map(address -> address.contains(Constants.HTTP_SUBFIX_KEY)
+                .map(address -> address.contains(HTTP_SUBFIX_KEY)
                         ? address
-                        : Constants.HTTP_KEY + address)
+                        : HTTP_KEY + address)
                 .collect(toList());
         Collections.shuffle(addresses);
         return addresses.toArray(new String[0]);
@@ -489,7 +500,7 @@ public class JEtcdClientWrapper {
 
     /**
      * because jetcd's connection change callback not supported yet, we must
-     * loop to test if connect or disconnect event happend or not. It will be changed
+     * loop to test if connect or disconnect event happened or not. It will be changed
      * in the future if we found better choice.
      */
     public void start() {
@@ -527,7 +538,7 @@ public class JEtcdClientWrapper {
                         }
                         connectState = connected;
                     }
-                }, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, Constants.DEFAULT_REGISTRY_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
+                }, DEFAULT_RECONNECT_PERIOD, DEFAULT_RECONNECT_PERIOD, TimeUnit.MILLISECONDS);
             } catch (Throwable t) {
                 logger.error("monitor reconnect status failed.", t);
             }
@@ -585,7 +596,7 @@ public class JEtcdClientWrapper {
     }
 
     /**
-     * try get client's shared channel, becase all fields is private on jetcd,
+     * try get client's shared channel, because all fields is private on jetcd,
      * we must using it by reflect, in the future, jetcd may provider better tools.
      *
      * @param client get channel from current client
@@ -594,14 +605,10 @@ public class JEtcdClientWrapper {
     private ManagedChannel newChannel(Client client) {
         try {
             Field connectionField = client.getClass().getDeclaredField("connectionManager");
-            if (!connectionField.isAccessible()) {
-                connectionField.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(connectionField);
             Object connection = connectionField.get(client);
             Method channel = connection.getClass().getDeclaredMethod("getChannel");
-            if (!channel.isAccessible()) {
-                channel.setAccessible(true);
-            }
+            ReflectUtils.makeAccessible(channel);
             return (ManagedChannel) channel.invoke(connection);
         } catch (Exception e) {
             throw new RuntimeException("Failed to obtain connection channel from " + url.getBackupAddress(), e);
@@ -616,9 +623,9 @@ public class JEtcdClientWrapper {
         this.connectionStateListener = connectionStateListener;
     }
 
-    public static void requiredNotNull(Object obj, RuntimeException exeception) {
+    public static void requiredNotNull(Object obj, RuntimeException exception) {
         if (obj == null) {
-            throw exeception;
+            throw exception;
         }
     }
 
@@ -655,6 +662,26 @@ public class JEtcdClientWrapper {
             // ignore
         }
         return false;
+    }
+
+    public boolean putEphemeral(final String key, String value) {
+        try {
+            return RetryLoops.invokeWithRetry(
+                    () -> {
+                        requiredNotNull(client, failed);
+                        // recovery an retry
+                        keepAlive();
+                        final long leaseId = globalLeaseId;
+                        client.getKVClient()
+                                .put(ByteSequence.from(key, UTF_8)
+                                        , ByteSequence.from(String.valueOf(value), UTF_8)
+                                        , PutOption.newBuilder().withLeaseId(leaseId).build())
+                                .get(DEFAULT_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                        return true;
+                    }, retryPolicy);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
     }
 
     private void retry() {

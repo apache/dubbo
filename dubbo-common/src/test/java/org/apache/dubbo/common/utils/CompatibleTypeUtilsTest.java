@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -77,6 +78,15 @@ public class CompatibleTypeUtilsTest {
             result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11 12:24:12", java.sql.Timestamp.class);
             assertEquals(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format((java.sql.Timestamp) result), "2011-12-11 12:24:12");
 
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11T12:24:12.047", java.time.LocalDateTime.class);
+            assertEquals(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format((java.time.LocalDateTime) result), "2011-12-11 12:24:12");
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11T12:24:12.047", java.time.LocalTime.class);
+            assertEquals(DateTimeFormatter.ofPattern("HH:mm:ss").format((java.time.LocalTime) result), "12:24:12");
+
+            result = CompatibleTypeUtils.compatibleTypeConvert("2011-12-11", java.time.LocalDate.class);
+            assertEquals(DateTimeFormatter.ofPattern("yyyy-MM-dd").format((java.time.LocalDate) result), "2011-12-11");
+
             result = CompatibleTypeUtils.compatibleTypeConvert("ab", char[].class);
             assertEquals(2, ((char[]) result).length);
             assertEquals('a', ((char[]) result)[0]);
@@ -86,7 +96,7 @@ public class CompatibleTypeUtilsTest {
             assertEquals(0, ((char[]) result).length);
 
             result = CompatibleTypeUtils.compatibleTypeConvert(null, char[].class);
-            assertEquals(null, result);
+            assertNull(result);
         }
 
         {

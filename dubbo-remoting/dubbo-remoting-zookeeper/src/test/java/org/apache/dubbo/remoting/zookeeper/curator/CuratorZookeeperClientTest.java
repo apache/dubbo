@@ -22,8 +22,6 @@ import org.apache.dubbo.remoting.zookeeper.ChildListener;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
 import org.apache.zookeeper.WatchedEvent;
@@ -173,24 +171,25 @@ public class CuratorZookeeperClientTest {
         String valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertEquals(value, valueFromCache);
         final AtomicInteger atomicInteger = new AtomicInteger(0);
-        curatorClient.addTargetDataListener(listenerPath, new CuratorZookeeperClient.CuratorWatcherImpl() {
+        curatorClient.addTargetDataListener(path + "/d.json", new CuratorZookeeperClient.NodeCacheListenerImpl() {
+
             @Override
-            public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
-                System.out.println("===" + event);
+            public void nodeChanged() throws Exception {
                 atomicInteger.incrementAndGet();
             }
         });
 
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNotNull(valueFromCache);
-        curatorClient.getClient().setData().forPath(path + "/d.json", "sdsdf".getBytes());
-        curatorClient.getClient().setData().forPath(path + "/d.json", "dfsasf".getBytes());
+
+        Thread.sleep(100);
+        curatorClient.getClient().setData().forPath(path + "/d.json", "foo".getBytes());
+        Thread.sleep(100);
+        curatorClient.getClient().setData().forPath(path + "/d.json", "bar".getBytes());
         curatorClient.delete(path + "/d.json");
-        curatorClient.delete(path);
         valueFromCache = curatorClient.getContent(path + "/d.json");
         Assertions.assertNull(valueFromCache);
-        Thread.sleep(2000l);
-        Assertions.assertTrue(9l >= atomicInteger.get());
-        Assertions.assertTrue(2l <= atomicInteger.get());
+        Thread.sleep(2000L);
+        Assertions.assertTrue(3L <= atomicInteger.get());
     }
 }

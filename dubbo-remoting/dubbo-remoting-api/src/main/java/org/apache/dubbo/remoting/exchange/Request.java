@@ -20,14 +20,12 @@ import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+
 /**
  * Request.
  */
 public class Request {
-
-    public static final String HEARTBEAT_EVENT = null;
-
-    public static final String READONLY_EVENT = "R";
 
     private static final AtomicLong INVOKE_ID = new AtomicLong(0);
 
@@ -127,6 +125,16 @@ public class Request {
         if (isHeartbeat) {
             setEvent(HEARTBEAT_EVENT);
         }
+    }
+
+    public Request copy() {
+        Request copy = new Request(mId);
+        copy.mVersion = this.mVersion;
+        copy.mTwoWay = this.mTwoWay;
+        copy.mEvent = this.mEvent;
+        copy.mBroken = this.mBroken;
+        copy.mData = this.mData;
+        return copy;
     }
 
     @Override

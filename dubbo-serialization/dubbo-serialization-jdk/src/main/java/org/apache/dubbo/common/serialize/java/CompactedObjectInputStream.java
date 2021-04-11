@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.serialize.java;
 
-import org.apache.dubbo.common.utils.ClassHelper;
+
+import org.apache.dubbo.common.utils.ClassUtils;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class CompactedObjectInputStream extends ObjectInputStream {
 
     public CompactedObjectInputStream(InputStream in, ClassLoader cl) throws IOException {
         super(in);
-        mClassLoader = cl == null ? ClassHelper.getClassLoader() : cl;
+        mClassLoader = cl == null ? ClassUtils.getClassLoader() : cl;
     }
 
     @Override

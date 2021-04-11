@@ -22,7 +22,7 @@ public class AtomicPositiveInteger extends Number {
 
     private static final long serialVersionUID = -3038533876489105940L;
 
-    private static final AtomicIntegerFieldUpdater<AtomicPositiveInteger> indexUpdater =
+    private static final AtomicIntegerFieldUpdater<AtomicPositiveInteger> INDEX_UPDATER =
             AtomicIntegerFieldUpdater.newUpdater(AtomicPositiveInteger.class, "index");
 
     @SuppressWarnings("unused")
@@ -32,69 +32,69 @@ public class AtomicPositiveInteger extends Number {
     }
 
     public AtomicPositiveInteger(int initialValue) {
-        indexUpdater.set(this, initialValue);
+        INDEX_UPDATER.set(this, initialValue);
     }
 
     public final int getAndIncrement() {
-        return indexUpdater.getAndIncrement(this) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.getAndIncrement(this) & Integer.MAX_VALUE;
     }
 
     public final int getAndDecrement() {
-        return indexUpdater.getAndDecrement(this) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.getAndDecrement(this) & Integer.MAX_VALUE;
     }
 
     public final int incrementAndGet() {
-        return indexUpdater.incrementAndGet(this) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.incrementAndGet(this) & Integer.MAX_VALUE;
     }
 
     public final int decrementAndGet() {
-        return indexUpdater.decrementAndGet(this) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.decrementAndGet(this) & Integer.MAX_VALUE;
     }
 
     public final int get() {
-        return indexUpdater.get(this) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.get(this) & Integer.MAX_VALUE;
     }
 
     public final void set(int newValue) {
         if (newValue < 0) {
             throw new IllegalArgumentException("new value " + newValue + " < 0");
         }
-        indexUpdater.set(this, newValue);
+        INDEX_UPDATER.set(this, newValue);
     }
 
     public final int getAndSet(int newValue) {
         if (newValue < 0) {
             throw new IllegalArgumentException("new value " + newValue + " < 0");
         }
-        return indexUpdater.getAndSet(this, newValue) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.getAndSet(this, newValue) & Integer.MAX_VALUE;
     }
 
     public final int getAndAdd(int delta) {
         if (delta < 0) {
             throw new IllegalArgumentException("delta " + delta + " < 0");
         }
-        return indexUpdater.getAndAdd(this, delta) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.getAndAdd(this, delta) & Integer.MAX_VALUE;
     }
 
     public final int addAndGet(int delta) {
         if (delta < 0) {
             throw new IllegalArgumentException("delta " + delta + " < 0");
         }
-        return indexUpdater.addAndGet(this, delta) & Integer.MAX_VALUE;
+        return INDEX_UPDATER.addAndGet(this, delta) & Integer.MAX_VALUE;
     }
 
     public final boolean compareAndSet(int expect, int update) {
         if (update < 0) {
             throw new IllegalArgumentException("update value " + update + " < 0");
         }
-        return indexUpdater.compareAndSet(this, expect, update);
+        return INDEX_UPDATER.compareAndSet(this, expect, update);
     }
 
     public final boolean weakCompareAndSet(int expect, int update) {
         if (update < 0) {
             throw new IllegalArgumentException("update value " + update + " < 0");
         }
-        return indexUpdater.weakCompareAndSet(this, expect, update);
+        return INDEX_UPDATER.weakCompareAndSet(this, expect, update);
     }
 
     @Override

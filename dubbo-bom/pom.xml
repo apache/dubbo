@@ -23,6 +23,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>dubbo-bom</artifactId>
@@ -30,7 +31,7 @@
 
     <name>dubbo-bom</name>
     <description>Dubbo dependencies BOM</description>
-    <url>https://github.com/apache/incubator-dubbo</url>
+    <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
         <license>
@@ -41,11 +42,11 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/apache/incubator-dubbo</url>
-        <connection>scm:git:https://github.com/apache/incubator-dubbo.git</connection>
-        <developerConnection>scm:git:https://github.com/apache/incubator-dubbo.git</developerConnection>
-      <tag>HEAD</tag>
-  </scm>
+        <url>https://github.com/apache/dubbo</url>
+        <connection>scm:git:https://github.com/apache/dubbo.git</connection>
+        <developerConnection>scm:git:https://github.com/apache/dubbo.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <mailingLists>
         <mailingList>
             <name>Development List</name>
@@ -82,11 +83,16 @@
 
     <issueManagement>
         <system>Github Issues</system>
-        <url>https://github.com/apache/incubator-dubbo/issues</url>
+        <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-cluster</artifactId>
@@ -174,7 +180,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-jsonrpc</artifactId>
+                <artifactId>dubbo-rpc-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -189,17 +195,17 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-http</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-thrift</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-native-thrift</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -219,6 +225,16 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-xml</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-grpc</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -230,6 +246,11 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-multicast</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-multiple</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -250,6 +271,16 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-registry-consul</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-nacos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-registry-sofa</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -304,6 +335,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-serialization-native-hession</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-serialization-jdk</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -324,12 +360,23 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-compatible</artifactId>
+                <artifactId>dubbo-serialization-gson</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-metadata-report-api</artifactId>
+                <artifactId>dubbo-serialization-protobuf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-compatible</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <!-- metadata -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -349,9 +396,21 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-configcenter-api</artifactId>
+                <artifactId>dubbo-metadata-report-etcd</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-report-nacos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-report-failover</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- config-center -->
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-configcenter-zookeeper</artifactId>
@@ -374,7 +433,38 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-metadata-definition</artifactId>
+                <artifactId>dubbo-configcenter-nacos</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-metadata-definition-protobuf</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-actuator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-autoconfigure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-actuator-compatible</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-autoconfigure-compatible</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-spring-boot-starter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

@@ -17,8 +17,9 @@
 package org.apache.dubbo.remoting.transport.netty;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 
@@ -34,12 +35,12 @@ import java.util.List;
  * Time: 5:47 PM
  */
 public class NettyClientTest {
-    static Server server;
-
+    static RemotingServer server;
+    static int port = NetUtils.getAvailablePort();
 
     @BeforeAll
     public static void setUp() throws Exception {
-        server = Exchangers.bind(URL.valueOf("exchange://localhost:10001?server=netty3"), new TelnetServerHandler());
+        server = Exchangers.bind(URL.valueOf("exchange://localhost:" + port + "?server=netty3"), new TelnetServerHandler());
     }
 
     @AfterAll
@@ -60,7 +61,7 @@ public class NettyClientTest {
     public void testClientClose() throws Exception {
         List<ExchangeChannel> clients = new ArrayList<ExchangeChannel>(100);
         for (int i = 0; i < 100; i++) {
-            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:10001?client=netty3"));
+            ExchangeChannel client = Exchangers.connect(URL.valueOf("exchange://localhost:" + port + "?client=netty3"));
             Thread.sleep(5);
             clients.add(client);
         }
@@ -73,7 +74,7 @@ public class NettyClientTest {
     @Test
     public void testServerClose() throws Exception {
         for (int i = 0; i < 100; i++) {
-            Server aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + (6000 + i) + "?server=netty3"), new TelnetServerHandler());
+            RemotingServer aServer = Exchangers.bind(URL.valueOf("exchange://localhost:" + NetUtils.getAvailablePort(6000) + "?server=netty3"), new TelnetServerHandler());
             aServer.close();
         }
     }

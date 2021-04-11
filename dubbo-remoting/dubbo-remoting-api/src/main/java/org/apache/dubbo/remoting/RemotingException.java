@@ -22,8 +22,7 @@ import java.net.InetSocketAddress;
  * RemotingException. (API, Prototype, ThreadSafe)
  *
  * @export
- * @see org.apache.dubbo.remoting.exchange.ResponseFuture#get()
- * @see org.apache.dubbo.remoting.exchange.ResponseFuture#get(int)
+ * @see org.apache.dubbo.remoting.exchange.support.DefaultFuture#get()
  * @see org.apache.dubbo.remoting.Channel#send(Object, boolean)
  * @see org.apache.dubbo.remoting.exchange.ExchangeChannel#request(Object)
  * @see org.apache.dubbo.remoting.exchange.ExchangeChannel#request(Object, int)

@@ -17,8 +17,6 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
@@ -36,7 +34,6 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class SimpleRegistryService extends AbstractRegistryService {
 
-    private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
     private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
     private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
@@ -45,11 +42,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
     public void register(String service, URL url) {
         super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
-        Map<String, URL> urls = remoteRegistered.get(client);
-        if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<String, URL>());
-            urls = remoteRegistered.get(client);
-        }
+        Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
     }
@@ -77,7 +70,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
             register(service, new URL("dubbo",
                     NetUtils.getLocalHost(),
                     RpcContext.getContext().getLocalPort(),
-                    org.apache.dubbo.registry.RegistryService.class.getName(),
+                    RegistryService.class.getName(),
                     url.getParameters()));
             List<String> rs = registries;
             if (rs != null && rs.size() > 0) {
@@ -88,11 +81,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         }
         super.subscribe(service, url, listener);
 
-        Map<String, NotifyListener> listeners = remoteListeners.get(client);
-        if (listeners == null) {
-            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
-            listeners = remoteListeners.get(client);
-        }
+        Map<String, NotifyListener> listeners = remoteListeners.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         listeners.put(service, listener);
         urls = getRegistered().get(service);
         if (urls != null && urls.size() > 0) {
@@ -134,7 +123,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
                 super.unsubscribe(service, new URL("subscribe",
                         RpcContext.getContext().getRemoteHost(),
                         RpcContext.getContext().getRemotePort(),
-                        org.apache.dubbo.registry.RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
+                        RegistryService.class.getName(), getSubscribed(service)), entry.getValue());
             }
         }
     }

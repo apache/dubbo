@@ -52,7 +52,7 @@ public class DecodeHandler extends AbstractChannelHandlerDelegate {
     }
 
     private void decode(Object message) {
-        if (message != null && message instanceof Decodeable) {
+        if (message instanceof Decodeable) {
             try {
                 ((Decodeable) message).decode();
                 if (log.isDebugEnabled()) {

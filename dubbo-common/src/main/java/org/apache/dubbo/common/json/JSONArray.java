@@ -47,7 +47,7 @@ public class JSONArray implements JSONNode {
      */
     public boolean getBoolean(int index, boolean def) {
         Object tmp = mArray.get(index);
-        return tmp != null && tmp instanceof Boolean ? ((Boolean) tmp).booleanValue() : def;
+        return tmp instanceof Boolean ? ((Boolean) tmp).booleanValue() : def;
     }
 
     /**
@@ -59,7 +59,7 @@ public class JSONArray implements JSONNode {
      */
     public int getInt(int index, int def) {
         Object tmp = mArray.get(index);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).intValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).intValue() : def;
     }
 
     /**
@@ -71,7 +71,7 @@ public class JSONArray implements JSONNode {
      */
     public long getLong(int index, long def) {
         Object tmp = mArray.get(index);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).longValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).longValue() : def;
     }
 
     /**
@@ -83,7 +83,7 @@ public class JSONArray implements JSONNode {
      */
     public float getFloat(int index, float def) {
         Object tmp = mArray.get(index);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).floatValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).floatValue() : def;
     }
 
     /**
@@ -95,7 +95,7 @@ public class JSONArray implements JSONNode {
      */
     public double getDouble(int index, double def) {
         Object tmp = mArray.get(index);
-        return tmp != null && tmp instanceof Number ? ((Number) tmp).doubleValue() : def;
+        return tmp instanceof Number ? ((Number) tmp).doubleValue() : def;
     }
 
     /**

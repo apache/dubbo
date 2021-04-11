@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
@@ -24,17 +23,22 @@ import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_FAILBACK_TIMES;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
+import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 
 /**
  * When fails, record failure requests and schedule for retry on a regular interval.
@@ -57,13 +61,13 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
     public FailbackClusterInvoker(Directory<T> directory) {
         super(directory);
 
-        int retriesConfig = getUrl().getParameter(Constants.RETRIES_KEY, Constants.DEFAULT_FAILBACK_TIMES);
+        int retriesConfig = getUrl().getParameter(RETRIES_KEY, DEFAULT_FAILBACK_TIMES);
         if (retriesConfig <= 0) {
-            retriesConfig = Constants.DEFAULT_FAILBACK_TIMES;
+            retriesConfig = DEFAULT_FAILBACK_TIMES;
         }
-        int failbackTasksConfig = getUrl().getParameter(Constants.FAIL_BACK_TASKS_KEY, Constants.DEFAULT_FAILBACK_TASKS);
+        int failbackTasksConfig = getUrl().getParameter(FAIL_BACK_TASKS_KEY, DEFAULT_FAILBACK_TASKS);
         if (failbackTasksConfig <= 0) {
-            failbackTasksConfig = Constants.DEFAULT_FAILBACK_TASKS;
+            failbackTasksConfig = DEFAULT_FAILBACK_TASKS;
         }
         retries = retriesConfig;
         failbackTasks = failbackTasksConfig;
@@ -99,7 +103,7 @@ public class FailbackClusterInvoker<T> extends AbstractClusterInvoker<T> {
             logger.error("Failback to invoke method " + invocation.getMethodName() + ", wait for retry in background. Ignored exception: "
                     + e.getMessage() + ", ", e);
             addFailed(loadbalance, invocation, invokers, invoker);
-            return new RpcResult(); // ignore
+            return AsyncRpcResult.newDefaultAsyncResult(null, null, invocation); // ignore
         }
     }
 

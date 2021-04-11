@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -30,12 +29,18 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+
 /**
  * InjvmProtocol
  */
 public class InjvmProtocol extends AbstractProtocol implements Protocol {
 
-    public static final String NAME = Constants.LOCAL_PROTOCOL;
+    public static final String NAME = LOCAL_PROTOCOL;
 
     public static final int DEFAULT_PORT = 0;
     private static InjvmProtocol INSTANCE;
@@ -70,7 +75,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         if (result == null) {
             return null;
         } else if (ProtocolUtils.isGeneric(
-                result.getInvoker().getUrl().getParameter(Constants.GENERIC_KEY))) {
+                result.getInvoker().getUrl().getParameter(GENERIC_KEY))) {
             return null;
         } else {
             return result;
@@ -88,21 +93,21 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     }
 
     @Override
-    public <T> Invoker<T> refer(Class<T> serviceType, URL url) throws RpcException {
+    public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
         return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), exporterMap);
     }
 
     public boolean isInjvmRefer(URL url) {
-        String scope = url.getParameter(Constants.SCOPE_KEY);
+        String scope = url.getParameter(SCOPE_KEY);
         // Since injvm protocol is configured explicitly, we don't need to set any extra flag, use normal refer process.
-        if (Constants.SCOPE_LOCAL.equals(scope) || (url.getParameter(Constants.LOCAL_PROTOCOL, false))) {
+        if (SCOPE_LOCAL.equals(scope) || (url.getParameter(LOCAL_PROTOCOL, false))) {
             // if it's declared as local reference
             // 'scope=local' is equivalent to 'injvm=true', injvm will be deprecated in the future release
             return true;
-        } else if (Constants.SCOPE_REMOTE.equals(scope)) {
+        } else if (SCOPE_REMOTE.equals(scope)) {
             // it's declared as remote reference
             return false;
-        } else if (url.getParameter(Constants.GENERIC_KEY, false)) {
+        } else if (url.getParameter(GENERIC_KEY, false)) {
             // generic invocation is not local reference
             return false;
         } else if (getExporter(exporterMap, url) != null) {

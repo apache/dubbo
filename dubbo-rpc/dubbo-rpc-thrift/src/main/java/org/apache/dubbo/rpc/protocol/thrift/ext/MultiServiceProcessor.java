@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.thrift.ext;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.protocol.thrift.ThriftCodec;
-
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;

@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-registry</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-registry-multicast</artifactId>
     <packaging>jar</packaging>

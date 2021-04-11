@@ -16,22 +16,25 @@
  */
 package org.apache.dubbo.qos.protocol;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.qos.common.QosConstants;
 import org.apache.dubbo.qos.server.Server;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.apache.dubbo.common.Constants.ACCEPT_FOREIGN_IP;
-import static org.apache.dubbo.common.Constants.QOS_ENABLE;
-import static org.apache.dubbo.common.Constants.QOS_PORT;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
 
 
 public class QosProtocolWrapper implements Protocol {
@@ -56,7 +59,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (UrlUtils.isRegistry(invoker.getUrl())) {
             startQosServer(invoker.getUrl());
             return protocol.export(invoker);
         }
@@ -65,7 +68,7 @@ public class QosProtocolWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (Constants.REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (UrlUtils.isRegistry(url)) {
             startQosServer(url);
             return protocol.refer(type, url);
         }
@@ -76,6 +79,11 @@ public class QosProtocolWrapper implements Protocol {
     public void destroy() {
         protocol.destroy();
         stopServer();
+    }
+
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
     }
 
     private void startQosServer(URL url) {
@@ -92,9 +100,11 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
+            String host = url.getParameter(QOS_HOST);
             int port = url.getParameter(QOS_PORT, QosConstants.DEFAULT_PORT);
             boolean acceptForeignIp = Boolean.parseBoolean(url.getParameter(ACCEPT_FOREIGN_IP, "false"));
             Server server = Server.getInstance();
+            server.setHost(host);
             server.setPort(port);
             server.setAcceptForeignIp(acceptForeignIp);
             server.start();

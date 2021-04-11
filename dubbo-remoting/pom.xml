@@ -21,6 +21,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-remoting</artifactId>
     <packaging>pom</packaging>
@@ -39,5 +40,6 @@
         <module>dubbo-remoting-zookeeper</module>
         <module>dubbo-remoting-netty4</module>
         <module>dubbo-remoting-etcd3</module>
+        <module>dubbo-remoting-redis</module>
     </modules>
 </project>

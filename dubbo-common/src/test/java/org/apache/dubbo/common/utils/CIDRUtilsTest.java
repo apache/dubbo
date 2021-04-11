@@ -21,9 +21,6 @@ import org.junit.jupiter.api.Test;
 
 import java.net.UnknownHostException;
 
-/**
- * @author cvictory ON 2019-02-28
- */
 public class CIDRUtilsTest {
 
     @Test

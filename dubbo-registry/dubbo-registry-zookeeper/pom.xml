@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-registry</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-registry-zookeeper</artifactId>
     <packaging>jar</packaging>
@@ -38,6 +39,10 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-remoting-zookeeper</artifactId>
             <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>

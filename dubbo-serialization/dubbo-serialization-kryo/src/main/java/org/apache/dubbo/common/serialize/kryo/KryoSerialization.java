@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.KRYO_SERIALIZATION_ID;
+
 /**
  * TODO for now kryo serialization doesn't deny classes that don't implement the serializable interface
  *
@@ -36,7 +38,7 @@ public class KryoSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 8;
+        return KRYO_SERIALIZATION_ID;
     }
 
     @Override

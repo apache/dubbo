@@ -19,6 +19,9 @@ package org.apache.dubbo.remoting.exchange;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+
 /**
  * ExchangeChannel. (API/SPI, Prototype, ThreadSafe)
  */
@@ -31,7 +34,8 @@ public interface ExchangeChannel extends Channel {
      * @return response future
      * @throws RemotingException
      */
-    ResponseFuture request(Object request) throws RemotingException;
+    @Deprecated
+    CompletableFuture<Object> request(Object request) throws RemotingException;
 
     /**
      * send request.
@@ -41,7 +45,27 @@ public interface ExchangeChannel extends Channel {
      * @return response future
      * @throws RemotingException
      */
-    ResponseFuture request(Object request, int timeout) throws RemotingException;
+    @Deprecated
+    CompletableFuture<Object> request(Object request, int timeout) throws RemotingException;
+
+    /**
+     * send request.
+     *
+     * @param request
+     * @return response future
+     * @throws RemotingException
+     */
+    CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException;
+
+    /**
+     * send request.
+     *
+     * @param request
+     * @param timeout
+     * @return response future
+     * @throws RemotingException
+     */
+    CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException;
 
     /**
      * get message handler.

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.remoting.transport.codec;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,6 +24,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.CodecSupport;
 
@@ -37,6 +37,9 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.remoting.Constants.CHARSET_KEY;
 
 public class DeprecatedTelnetCodec implements Codec {
 
@@ -68,7 +71,7 @@ public class DeprecatedTelnetCodec implements Codec {
 
     private static Charset getCharset(Channel channel) {
         if (channel != null) {
-            Object attribute = channel.getAttribute(Constants.CHARSET_KEY);
+            Object attribute = channel.getAttribute(CHARSET_KEY);
             if (attribute instanceof String) {
                 try {
                     return Charset.forName((String) attribute);
@@ -80,7 +83,7 @@ public class DeprecatedTelnetCodec implements Codec {
             }
             URL url = channel.getUrl();
             if (url != null) {
-                String parameter = url.getParameter(Constants.CHARSET_KEY);
+                String parameter = url.getParameter(CHARSET_KEY);
                 if (StringUtils.isNotEmpty(parameter)) {
                     try {
                         return Charset.forName(parameter);
@@ -151,7 +154,7 @@ public class DeprecatedTelnetCodec implements Codec {
     }
 
     protected boolean isClientSide(Channel channel) {
-        String side = (String) channel.getAttribute(Constants.SIDE_KEY);
+        String side = (String) channel.getAttribute(SIDE_KEY);
         if ("client".equals(side)) {
             return true;
         } else if ("server".equals(side)) {
@@ -163,7 +166,7 @@ public class DeprecatedTelnetCodec implements Codec {
                     && NetUtils.filterLocalHost(url.getIp()).equals(
                     NetUtils.filterLocalHost(address.getAddress()
                             .getHostAddress()));
-            channel.setAttribute(Constants.SIDE_KEY, client ? "client"
+            channel.setAttribute(SIDE_KEY, client ? "client"
                     : "server");
             return client;
         }

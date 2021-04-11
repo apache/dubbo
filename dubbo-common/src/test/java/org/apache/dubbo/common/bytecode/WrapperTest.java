@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class WrapperTest {
@@ -74,9 +75,9 @@ public class WrapperTest {
     @Test
     public void testWrapperObject() throws Exception {
         Wrapper w = Wrapper.getWrapper(Object.class);
-        Assertions.assertTrue(w.getMethodNames().length == 4);
-        Assertions.assertTrue(w.getPropertyNames().length == 0);
-        Assertions.assertEquals(null, w.getPropertyType(null));
+        Assertions.assertEquals(4, w.getMethodNames().length);
+        Assertions.assertEquals(0, w.getPropertyNames().length);
+        Assertions.assertNull(w.getPropertyType(null));
     }
 
     @Test
@@ -102,7 +103,7 @@ public class WrapperTest {
         Assertions.assertEquals(instance.getClass(), (Class<?>) w.invokeMethod(instance, "getClass", null, null));
         Assertions.assertEquals(instance.hashCode(), (int) w.invokeMethod(instance, "hashCode", null, null));
         Assertions.assertEquals(instance.toString(), (String) w.invokeMethod(instance, "toString", null, null));
-        Assertions.assertEquals(true, (boolean) w.invokeMethod(instance, "equals", null, new Object[]{instance}));
+        Assertions.assertTrue((boolean)w.invokeMethod(instance, "equals", null, new Object[] {instance}));
     }
 
     @Test
@@ -113,9 +114,26 @@ public class WrapperTest {
         });
     }
 
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
+    @Test
+    public void testOverloadMethod() throws Exception {
+        Wrapper w = Wrapper.getWrapper(I2.class);
+        assertEquals(2, w.getMethodNames().length);
+
+        Impl2 impl = new Impl2();
+
+        w.invokeMethod(impl, "setFloat", new Class[]{float.class}, new Object[]{1F});
+        assertEquals(1F, impl.getFloat1());
+        assertNull(impl.getFloat2());
+
+        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{2f});
+        assertEquals(1F, impl.getFloat1());
+        assertEquals(2F, impl.getFloat2());
+
+        w.invokeMethod(impl, "setFloat", new Class[]{Float.class}, new Object[]{null});
+        assertEquals(1F, impl.getFloat1());
+        assertNull(impl.getFloat2());
+    }
+
     @Test
     public void test_getDeclaredMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello",}, Wrapper.getWrapper(Parent1.class).getMethodNames());
@@ -123,19 +141,16 @@ public class WrapperTest {
         assertArrayEquals(new String[]{}, Wrapper.getWrapper(Son.class).getDeclaredMethodNames());
     }
 
-    /**
-     * see http://code.alibabatech.com/jira/browse/DUBBO-571
-     */
     @Test
     public void test_getMethodNames_ContainExtendsParentMethods() throws Exception {
         assertArrayEquals(new String[]{"hello", "world"}, Wrapper.getWrapper(Son.class).getMethodNames());
     }
 
-    public static interface I0 {
+    public interface I0 {
         String getName();
     }
 
-    public static interface I1 extends I0 {
+    public interface I1 extends I0 {
         void setName(String name);
 
         void hello(String name);
@@ -147,19 +162,25 @@ public class WrapperTest {
         void setFloat(float f);
     }
 
-    public static interface EmptyService {
+    public interface I2 {
+        void setFloat(float f);
+
+        void setFloat(Float f);
     }
 
-    public static interface Parent1 {
+    public interface EmptyService {
+    }
+
+    public interface Parent1 {
         void hello();
     }
 
 
-    public static interface Parent2 {
+    public interface Parent2 {
         void world();
     }
 
-    public static interface Son extends Parent1, Parent2 {
+    public interface Son extends Parent1, Parent2 {
 
     }
 
@@ -194,6 +215,29 @@ public class WrapperTest {
 
         public void setFloat(float f) {
             fv = f;
+        }
+    }
+
+    public static class Impl2 implements I2 {
+        private float float1;
+        private Float float2;
+
+        @Override
+        public void setFloat(float f) {
+            this.float1 = f;
+        }
+
+        @Override
+        public void setFloat(Float f) {
+            this.float2 = f;
+        }
+
+        public float getFloat1() {
+            return float1;
+        }
+
+        public Float getFloat2() {
+            return float2;
         }
     }
 

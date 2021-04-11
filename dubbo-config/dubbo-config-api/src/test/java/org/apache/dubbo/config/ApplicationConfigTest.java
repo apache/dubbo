@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.Constants;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,13 +24,17 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUMP_DIRECTORY;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ApplicationConfigTest {
     @Test
@@ -44,7 +46,7 @@ public class ApplicationConfigTest {
         assertThat(application.getName(), equalTo("app2"));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.APPLICATION_KEY, "app2"));
+        assertThat(parameters, hasEntry(APPLICATION_KEY, "app2"));
     }
 
     @Test
@@ -138,7 +140,7 @@ public class ApplicationConfigTest {
         assertThat(application.getDumpDirectory(), equalTo("/dump"));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.DUMP_DIRECTORY, "/dump"));
+        assertThat(parameters, hasEntry(DUMP_DIRECTORY, "/dump"));
     }
 
     @Test
@@ -148,7 +150,7 @@ public class ApplicationConfigTest {
         assertThat(application.getQosEnable(), is(true));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.QOS_ENABLE, "true"));
+        assertThat(parameters, hasEntry(QOS_ENABLE, "true"));
     }
 
     @Test
@@ -165,7 +167,7 @@ public class ApplicationConfigTest {
         assertThat(application.getQosAcceptForeignIp(), is(true));
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
-        assertThat(parameters, hasEntry(Constants.ACCEPT_FOREIGN_IP, "true"));
+        assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
     }
 
     @Test
@@ -176,6 +178,40 @@ public class ApplicationConfigTest {
         parameters.put("k1", "v1");
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry("k1", "v1"));
-        assertThat(parameters, hasEntry(Constants.ACCEPT_FOREIGN_IP, "true"));
+        assertThat(parameters, hasEntry(ACCEPT_FOREIGN_IP, "true"));
+    }
+
+    @Test
+    public void testAppendEnvironmentProperties() {
+        try {
+            ApplicationConfig application = new ApplicationConfig("app");
+            System.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
+            application.refresh();
+            Map<String, String> parameters = application.getParameters();
+            Assertions.assertEquals("value1", parameters.get("tag1"));
+            Assertions.assertEquals("value2", parameters.get("tag2"));
+            Assertions.assertEquals("value3", parameters.get("tag3"));
+
+            ApplicationConfig application1 = new ApplicationConfig("app");
+            System.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
+            // mock environment variables
+            System.setProperty("tag1", "value1");
+            System.setProperty("tag2", "value2");
+            System.setProperty("tag3", "value3");
+            application1.refresh();
+            Map<String, String> parameters1 = application1.getParameters();
+            Assertions.assertEquals("value1", parameters1.get("tag1"));
+            Assertions.assertEquals("value2", parameters1.get("tag2"));
+            Assertions.assertEquals("value3", parameters1.get("tag3"));
+
+            Map<String, String> urlParameters = new HashMap<>();
+            ApplicationConfig.appendParameters(urlParameters, application1);
+            Assertions.assertEquals("value1", urlParameters.get("tag1"));
+            Assertions.assertEquals("value2", urlParameters.get("tag2"));
+            Assertions.assertEquals("value3", urlParameters.get("tag3"));
+        } finally {
+            System.clearProperty("dubbo.labels");
+            System.clearProperty("dubbo.keys");
+        }
     }
 }

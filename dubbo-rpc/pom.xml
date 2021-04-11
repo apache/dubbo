@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-parent</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-rpc</artifactId>
     <packaging>pom</packaging>
@@ -32,14 +33,16 @@
         <module>dubbo-rpc-api</module>
         <module>dubbo-rpc-dubbo</module>
         <module>dubbo-rpc-injvm</module>
-        <module>dubbo-rpc-jsonrpc</module>
+        <module>dubbo-rpc-http</module>
         <module>dubbo-rpc-rmi</module>
         <module>dubbo-rpc-hessian</module>
-        <module>dubbo-rpc-http</module>
         <module>dubbo-rpc-webservice</module>
+        <module>dubbo-rpc-native-thrift</module>
         <module>dubbo-rpc-thrift</module>
         <module>dubbo-rpc-memcached</module>
         <module>dubbo-rpc-redis</module>
         <module>dubbo-rpc-rest</module>
+        <module>dubbo-rpc-xml</module>
+        <module>dubbo-rpc-grpc</module>
     </modules>
 </project>

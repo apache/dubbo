@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.serialize.fastjson;
 
 import org.apache.dubbo.common.serialize.model.media.Image;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -124,7 +125,7 @@ public class FastJsonObjectOutputTest {
 
     @Test
     public void testWriteObject() throws IOException, ClassNotFoundException {
-        Image image = new Image("http://dubbo.io/logo.png", "logo", 300, 480, Image.Size.SMALL);
+        Image image = new Image("http://dubbo.apache.org/img/dubbo_white.png", "logo", 300, 480, Image.Size.SMALL);
         this.fastJsonObjectOutput.writeObject(image);
         this.flushToInput();
 

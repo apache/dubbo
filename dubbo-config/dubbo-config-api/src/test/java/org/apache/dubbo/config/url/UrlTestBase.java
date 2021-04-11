@@ -28,6 +28,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -65,7 +66,7 @@ public class UrlTestBase {
             {"deprecated", "deprecated", "boolean", false, true, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
             {"accesslog", "accesslog", "string", "", "haominTest", "", "", "", "", ""},
-            {"document", "document", "string", "", "http://b2b-doc.alibaba-inc.com/display/RC/dubbo_devguide.htm?testquery=你好你好", "", "", "", "", ""},
+            {"document", "document", "string", "", "http://dubbo.apache.org/zh-cn/docs/user/quick-start.html?testquery=你好你好", "", "", "", "", ""},
             {"weight", "weight", "int", 0, 90, "", "", "", "", ""},
 
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
@@ -80,13 +81,7 @@ public class UrlTestBase {
             //            {"subscribe", "subscribe", "boolean", true, false, "", "", "", "", ""},
             {"dynamic", "dynamic", "boolean", true, false, "", "", "", "", ""},
     };
-    protected Object provConfTable[][] = {
-            {"cluster", "default.cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""},
-            {"async", "default.async", "boolean", false, true, "", "", "", "", ""},
-            {"loadbalance", "default.loadbalance", "string", "random", "leastactive", "", "", "", "", ""},
-            {"connections", "default.connections", "int", 0, 60, "", "", "", "", ""},
-            {"retries", "default.retries", "int", 2, 60, "", "", "", "", ""},
-            {"timeout", "default.timeout", "int", 5000, 60, "", "", "", "", ""},
+    protected Object provConfTable[][] = {{"cluster", "cluster", "string", "string", "failover", "failfast", "failsafe", "", "", ""}, {"async", "async", "boolean", false, true, "", "", "", "", ""}, {"loadbalance", "loadbalance", "string", "random", "leastactive", "", "", "", "", ""}, {"connections", "connections", "int", 0, 60, "", "", "", "", ""}, {"retries", "retries", "int", 2, 60, "", "", "", "", ""}, {"timeout", "timeout", "int", 5000, 60, "", "", "", "", ""},
             //change by fengting listener 没有缺省值
             //{"listener", "exporter.listener", "string", "", "", "", "", "", "", ""},
             //{"filter", "service.filter", "string", "", "", "", "", "", "", ""},
@@ -154,8 +149,8 @@ public class UrlTestBase {
         provConf.setRegistry(regConfForProvider);
         servConf.setRegistry(regConfForService);
 
-        provConf.setProtocols(Arrays.asList(new ProtocolConfig[]{protoConfForProvider}));
-        servConf.setProtocols(Arrays.asList(new ProtocolConfig[]{protoConfForService}));
+        provConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForProvider)));
+        servConf.setProtocols(new ArrayList<>(Arrays.asList(protoConfForService)));
 
         servConf.setMethods(Arrays.asList(new MethodConfig[]{methodConfForService}));
         servConf.setProvider(provConf);
