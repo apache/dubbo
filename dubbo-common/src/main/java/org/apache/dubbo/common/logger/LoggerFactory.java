@@ -60,8 +60,8 @@ public class LoggerFactory {
                 break;
             default:
                 List<Class<? extends LoggerAdapter>> candidates = Arrays.asList(
-                        Slf4jLoggerAdapter.class,
                         Log4jLoggerAdapter.class,
+                        Slf4jLoggerAdapter.class,
                         Log4j2LoggerAdapter.class,
                         JclLoggerAdapter.class,
                         JdkLoggerAdapter.class
