@@ -54,8 +54,6 @@ import java.util.concurrent.Executor;
 import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
 
 public class ClientStream extends AbstractStream implements Stream {
-    private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-        .withDescription("Missing Response");
     private static final AsciiString SCHEME = AsciiString.of("http");
     private final String authority;
     private final Request request;
@@ -85,6 +83,26 @@ public class ClientStream extends AbstractStream implements Stream {
         }
         String serviceKey = invocation.getInvoker().getUrl().getServiceKey();
         return ApplicationModel.getConsumerModel(serviceKey);
+    }
+
+    public Executor getCallback() {
+        return callback;
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public RpcInvocation getInvocation() {
+        return invocation;
+    }
+
+    public Http2StreamChannel getStreamChannel() {
+        return streamChannel;
+    }
+
+    public Message getMessage() {
+        return message;
     }
 
     @Override
@@ -160,79 +178,6 @@ public class ClientStream extends AbstractStream implements Stream {
         write(data, null);
     }
 
-    public void writeInvocation(ChannelPromise promise) {
-        final boolean endStream = !getMd().isStream();
-        final ByteBuf out;
-
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            final ConsumerModel model = getConsumerModel(invocation);
-            if (model != null) {
-                ClassLoadUtil.switchContextLoader(model.getClassLoader());
-            }
-            out = getProcessor().encodeRequest(invocation, getCtx());
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
-        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
-        streamChannel.write(data).addListener(f -> {
-            if (f.isSuccess()) {
-                promise.trySuccess();
-            } else {
-                promise.tryFailure(f.cause());
-            }
-        });
-    }
-
-    public void halfClose() {
-        final int httpCode = HttpResponseStatus.parseLine(getHeaders().status()).code();
-        if (HttpResponseStatus.OK.code() != httpCode) {
-            final Integer code = getHeaders().getInt(TripleConstant.STATUS_KEY);
-            final GrpcStatus status = GrpcStatus.fromCode(code)
-                .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
-            onError(status);
-            return;
-        }
-        final Http2Headers te = getTe() == null ? getHeaders() : getTe();
-        final Integer code = te.getInt(TripleConstant.STATUS_KEY);
-        if (!GrpcStatus.Code.isOk(code)) {
-            final GrpcStatus status = GrpcStatus.fromCode(code)
-                .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
-            onError(status);
-            return;
-        }
-        final InputStream data = message.getIs();
-        if (data == null) {
-            onError(MISSING_RESP);
-            return;
-        }
-
-        callback.execute(() -> {
-            final Invocation invocation = (Invocation) (request.getData());
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            try {
-                final Object resp;
-                final ConsumerModel model = getConsumerModel(invocation);
-                if (model != null) {
-                    ClassLoadUtil.switchContextLoader(model.getClassLoader());
-                }
-                resp = getProcessor().decodeResponseMessage(data);
-                Response response = new Response(request.getId(), request.getVersion());
-                final AppResponse result = new AppResponse(resp);
-                result.setObjectAttachments(parseHeadersToMap(te));
-                response.setResult(result);
-                DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
-            } catch (Exception e) {
-                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(e)
-                        .withDescription("Failed to deserialize response");
-                onError(status);
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
-        });
-    }
-
     @Override
     protected void onSingleMessage(InputStream in) {
         if (getMd().isStream()) {
@@ -246,12 +191,5 @@ public class ClientStream extends AbstractStream implements Stream {
         if (getCanceled().compareAndSet(false, true)) {
             streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true));
         }
-    }
-
-    @Override
-    public void write(Object obj, ChannelPromise promise) {
-        final com.google.protobuf.Message message = (com.google.protobuf.Message)obj;
-        final ByteBuf buf = getProcessor().encodeResponse(message, getCtx());
-        streamChannel.write(new DefaultHttp2DataFrame(buf));
     }
 }

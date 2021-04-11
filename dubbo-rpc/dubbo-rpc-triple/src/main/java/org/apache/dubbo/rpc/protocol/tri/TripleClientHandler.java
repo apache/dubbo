@@ -68,12 +68,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
         ClientStream clientStream;
         if (!methodDescriptor.isStream()) {
-            clientStream = new ClientStream(url, ctx, methodDescriptor, req, callback);
+            clientStream = new UnaryClientStream(url, ctx, methodDescriptor, req, callback);
             clientStream.streamCreated(req, promise);
-            clientStream.writeInvocation(promise);
+            clientStream.write(req, promise);
         } else {
             StreamObserver<Object> responseOBServer = (StreamObserver<Object>)inv.getArguments()[0];
-            clientStream = new ClientStream(url, ctx, methodDescriptor, req, callback);
+            clientStream = new StreamClientStream(url, ctx, methodDescriptor, req, callback);
             clientStream.streamCreated(req, promise);
             clientStream.setObserver(responseOBServer);
             StreamObserver<Object> writer = new StreamOutboundWriter(clientStream);
