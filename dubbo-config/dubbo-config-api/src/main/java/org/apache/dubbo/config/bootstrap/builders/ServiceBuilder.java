@@ -29,7 +29,7 @@ import java.util.List;
  *
  * @since 2.7
  */
-public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig, ServiceBuilder<U>> {
+public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig<U>, ServiceBuilder<U>> {
     /**
      * The interface name of the exported service
      */
@@ -69,11 +69,11 @@ public class ServiceBuilder<U> extends AbstractServiceBuilder<ServiceConfig, Ser
      */
     private String generic;
 
-    public static ServiceBuilder newBuilder() {
-        return new ServiceBuilder();
+    public static <T> ServiceBuilder<T> newBuilder() {
+        return new ServiceBuilder<>();
     }
 
-    public ServiceBuilder id(String id) {
+    public ServiceBuilder<U> id(String id) {
         return super.id(id);
     }
 

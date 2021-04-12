@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.consul;
 
-/**
- * @author cvictory ON 2019-08-02
- */
-public class AbstractConsulRegistry {
+package org.apache.dubbo.common.extension.activate.impl;
 
-    static final String SERVICE_TAG = "dubbo";
-    static final String URL_META_KEY = "url";
-    static final String CHECK_PASS_INTERVAL = "consul-check-pass-interval";
-    static final String DEREGISTER_AFTER = "consul-deregister-critical-service-after";
+import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
 
-    static final long DEFAULT_CHECK_PASS_INTERVAL = 16000L;
-    // default deregister critical server after
-    static final String DEFAULT_DEREGISTER_TIME = "20s";
 
-    static final int PERIOD_DENOMINATOR = 8;
-    static final int ONE_THOUSAND = 1000;
+public class ActivateWrapperExt1Wrapper implements ActivateWrapperExt1 {
+    private ActivateWrapperExt1 activateWrapperExt1;
+
+    public ActivateWrapperExt1Wrapper(ActivateWrapperExt1 activateWrapperExt1) {
+        this.activateWrapperExt1 = activateWrapperExt1;
+    }
+
+    @Override
+    public String echo(String msg) {
+        return activateWrapperExt1.echo(msg);
+    }
 }
