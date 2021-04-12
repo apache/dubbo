@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
 
 /**
  * ClusterUtils
@@ -89,6 +90,9 @@ public class ClusterUtils {
             }
             if(map.containsKey(VERSION_KEY)){
                 copyOfLocalMap.remove(VERSION_KEY);
+            }
+            if (map.containsKey(GENERIC_KEY)) {
+                copyOfLocalMap.remove(GENERIC_KEY);
             }
 
             copyOfLocalMap.remove(RELEASE_KEY);

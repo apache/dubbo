@@ -36,11 +36,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
+
 /**
  * metadata report impl for consul
  */
 public class ConsulMetadataReport extends AbstractMetadataReport {
-    private static final int DEFAULT_PORT = 8500;
 
     private ConsulClient client;
 
@@ -48,7 +50,7 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
         super(url);
 
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
     }
 

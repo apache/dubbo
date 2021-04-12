@@ -203,6 +203,8 @@ public interface CommonConstants {
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
 
+    String GENERIC_KEY = "generic";
+
     /**
      * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
      * {@link #REMOTE_METADATA_STORAGE_TYPE "remote"}.
@@ -237,6 +239,11 @@ public interface CommonConstants {
     String HOST_KEY = "host";
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+
+    /**
+     * broadcast cluster.
+     */
+    String BROADCAST_CLUSTER = "broadcast";
 
     /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
@@ -390,4 +397,6 @@ public interface CommonConstants {
     String ON_CONNECT_KEY = "onconnect";
 
     String ON_DISCONNECT_KEY = "ondisconnect";
+
+    String TOKEN = "token";
 }
