@@ -51,7 +51,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         Optional<DynamicConfiguration> optional =  ApplicationModel.getEnvironment().getDynamicConfiguration();
 
         if (optional.isPresent()) {
-            this.configuration = optional.orElseGet(null);
+            this.configuration = optional.get();
 
             logger.info("Listening for migration rules on dataId-" + MigrationRule.RULE_KEY + " group-" + MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP);
             configuration.addListener(MigrationRule.RULE_KEY, MigrationRule.DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP, this);
@@ -63,7 +63,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         } else {
             if (logger.isWarnEnabled()) {
-                logger.warn("configceneter is not configured!");
+                logger.warn("config center is not configured!");
             }
 
             rawRule = INIT;

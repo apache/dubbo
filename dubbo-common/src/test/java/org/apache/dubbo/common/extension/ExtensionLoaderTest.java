@@ -22,6 +22,7 @@ import org.apache.dubbo.common.convert.StringToBooleanConverter;
 import org.apache.dubbo.common.convert.StringToDoubleConverter;
 import org.apache.dubbo.common.convert.StringToIntegerConverter;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
+import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
 import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
 import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2;
@@ -156,6 +157,14 @@ public class ExtensionLoaderTest {
         assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
         assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
         assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+    }
+
+    @Test
+    public void test_getActivateExtension_WithWrapper() throws Exception {
+        URL url = URL.valueOf("test://localhost/test");
+        List<ActivateWrapperExt1> list = getExtensionLoader(ActivateWrapperExt1.class)
+                .getActivateExtension(url, new String[]{}, "order");
+        assertEquals(2, list.size());
     }
 
     @Test

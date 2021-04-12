@@ -118,9 +118,9 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
 
-    private final NamingService namingService;
+    private final NacosNamingServiceWrapper namingService;
 
-    public NacosRegistry(URL url, NamingService namingService) {
+    public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
     }
@@ -147,6 +147,7 @@ public class NacosRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
+
         final Instance instance = createInstance(url);
         /**
          *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
@@ -617,7 +618,7 @@ public class NacosRegistry extends FailbackRegistry {
          * @param namingService {@link NamingService}
          * @throws NacosException
          */
-        void callback(NamingService namingService) throws NacosException;
+        void callback(NacosNamingServiceWrapper namingService) throws NacosException;
 
     }
 }

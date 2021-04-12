@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config.spring.context;
 
-
 import org.apache.dubbo.common.context.Lifecycle;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
@@ -50,6 +49,9 @@ public class DubboLifecycleComponentApplicationListener extends OnceApplicationC
     public static final String BEAN_NAME = "dubboLifecycleComponentApplicationListener";
 
     private List<Lifecycle> lifecycleComponents = emptyList();
+
+    public DubboLifecycleComponentApplicationListener() {
+    }
 
     public DubboLifecycleComponentApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);

@@ -24,7 +24,7 @@ import org.apache.dubbo.config.spring.context.event.DubboBootstrapStopedEvent;
 import org.springframework.context.ApplicationContext;
 
 /**
- * convcert Dubbo bootstrap event to spring environment.
+ * convert Dubbo bootstrap event to spring environment.
  *
  * @scene 2.7.9
  */
