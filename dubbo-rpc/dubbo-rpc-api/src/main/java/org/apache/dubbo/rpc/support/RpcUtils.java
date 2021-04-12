@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -166,7 +167,7 @@ public class RpcUtils {
         }
 
         String config;
-        if ((config = inv.getAttachment(getMethodName(inv) + HIDE_KEY_PREFIX + ASYNC_KEY)) != null) {
+        if ((config = inv.getAttachment(getMethodName(inv) + DOT_SEPARATOR + ASYNC_KEY)) != null) {
             isAsync = Boolean.valueOf(config);
         } else if ((config = inv.getAttachment(ASYNC_KEY)) != null) {
             isAsync = Boolean.valueOf(config);
@@ -222,7 +223,7 @@ public class RpcUtils {
     public static boolean isOneway(URL url, Invocation inv) {
         boolean isOneway;
         String config;
-        if ((config = inv.getAttachment(getMethodName(inv) + HIDE_KEY_PREFIX + RETURN_KEY)) != null) {
+        if ((config = inv.getAttachment(getMethodName(inv) + DOT_SEPARATOR + RETURN_KEY)) != null) {
             isOneway = !Boolean.valueOf(config);
         } else if ((config = inv.getAttachment(RETURN_KEY)) != null) {
             isOneway = !Boolean.valueOf(config);
