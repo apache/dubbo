@@ -241,6 +241,11 @@ public interface CommonConstants {
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
     /**
+     * broadcast cluster.
+     */
+    String BROADCAST_CLUSTER = "broadcast";
+
+    /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
      * the Dubbo application prefers
      *
