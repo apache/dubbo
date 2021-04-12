@@ -37,9 +37,11 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -460,12 +462,12 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
-//        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
-//        targetDefinition.setBeanClass(interfaceClass);
-//        String id = (String) beanDefinition.getPropertyValues().get("id");
-//        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+        GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
+        targetDefinition.setBeanClass(interfaceClass);
+        String id = (String) beanDefinition.getPropertyValues().get("id");
+        beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
 
-        // signal object type
+        // signal object type since Spring 5.2
         beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
 
         beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
