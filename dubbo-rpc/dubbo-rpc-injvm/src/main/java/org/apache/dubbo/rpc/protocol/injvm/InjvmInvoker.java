@@ -17,15 +17,14 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Constants;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 
@@ -37,6 +36,8 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
     private final String key;
 
     private final Map<String, Exporter<?>> exporterMap;
+
+    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
         super(type, url);
@@ -67,6 +68,17 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        return exporter.getInvoker().invoke(invocation);
+
+        // use consumer executor
+        ExecutorService executor = executorRepository.getExecutor(getUrl());
+        CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
+            Result result = exporter.getInvoker().invoke(invocation);
+            return new AppResponse(result.getValue());
+        }, executor);
+        // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
+        FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+        AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, invocation);
+        result.setExecutor(executor);
+        return result;
     }
 }
