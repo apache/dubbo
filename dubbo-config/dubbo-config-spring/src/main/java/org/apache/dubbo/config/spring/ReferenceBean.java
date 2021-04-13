@@ -96,9 +96,18 @@ public class ReferenceBean<T> implements FactoryBean,
         ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
 
     private transient ApplicationContext applicationContext;
+
     private ClassLoader beanClassLoader;
-    private DubboReferenceLazyInitTargetSource lazyTargetSource;
+
+    // lazy proxy of reference
     private Object lazyProxy;
+
+    // beanName
+    protected String id;
+
+    // reference key
+    private String key;
+
     /**
      * The interface class of the reference service
      */
@@ -111,14 +120,18 @@ public class ReferenceBean<T> implements FactoryBean,
      */
     private Class actualInterface;
 
-    // beanName
-    protected String id;
-    // reference key
-    private String key;
+    /*
+     * actual interface class name
+     */
+    // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
+    private String interfaceName;
+
     //from annotation attributes
     private Map<String, Object> referenceProps;
-    //from bean definition
+
+    //from xml bean definition
     private MutablePropertyValues propertyValues;
+
     //actual reference config
     private ReferenceConfig referenceConfig;
 
@@ -199,6 +212,7 @@ public class ReferenceBean<T> implements FactoryBean,
             }
         }
         Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
+        this.interfaceName = actualInterface.getName();
 
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
@@ -226,6 +240,7 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public Class<?> getInterfaceClass() {
         return interfaceClass;
     }
@@ -234,12 +249,12 @@ public class ReferenceBean<T> implements FactoryBean,
         return actualInterface;
     }
 
-    /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public String getGroup() {
         return referenceConfig.getGroup();
     }
 
-    /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public String getVersion() {
         return referenceConfig.getVersion();
     }
@@ -275,12 +290,11 @@ public class ReferenceBean<T> implements FactoryBean,
      * create lazy proxy for reference
      */
     private void createLazyProxy() {
-        this.lazyTargetSource = new DubboReferenceLazyInitTargetSource();
 
         //set proxy interfaces
         //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
         ProxyFactory proxyFactory = new ProxyFactory();
-        proxyFactory.setTargetSource(lazyTargetSource);
+        proxyFactory.setTargetSource(new DubboReferenceLazyInitTargetSource());
         proxyFactory.addInterface(getInterfaceClass());
         Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
         for (Class<?> anInterface : internalInterfaces) {
@@ -295,9 +309,8 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     private Object getCallProxy() throws Exception {
-
         if (referenceConfig == null) {
-            throw new IllegalStateException("ReferenceBean is not ready yet, maybe dubbo engine is not started");
+            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
         return ReferenceConfigCache.getCache().get(referenceConfig);
