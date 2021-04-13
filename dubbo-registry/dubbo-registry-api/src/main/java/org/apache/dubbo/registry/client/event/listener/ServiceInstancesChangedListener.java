@@ -337,7 +337,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                     if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
                         urls.add(((DefaultServiceInstance) i).copy(endpoint).toURL());
-                        break;
+                        continue;
                     }
                 }
                 urls.add(i.toURL());
