@@ -51,7 +51,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         String version = url.getParameter(VERSION_KEY);
         String protocol = url.getProtocol();
 
-        // 过滤MetadataService
+        /**
+         * 过滤MetadataService
+         */
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
@@ -73,6 +75,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         execute(() -> {
             /**
              * 存储到配置中心   CompositeDynamicConfiguration
+             * buildGroup     mapping-serviceInterface
              */
             dynamicConfiguration.publishConfig(key, ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), content);
             if (logger.isInfoEnabled()) {

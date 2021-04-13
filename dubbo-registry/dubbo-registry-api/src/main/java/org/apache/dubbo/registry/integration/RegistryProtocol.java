@@ -257,6 +257,7 @@ public class RegistryProtocol implements Protocol {
         // url to registry
         // 根据 URL 加载 Registry 实现类
         /**
+         * 获取注册中心
          * 服务自省    注册中心地址添加registry-type=service
          * 服务自省    注册中心地址添加registry-type=service
          * 服务自省    注册中心地址添加registry-type=service

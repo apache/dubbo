@@ -60,6 +60,14 @@ public interface ServiceNameMapping {
         return getExtensionLoader(ServiceNameMapping.class).getExtension(name == null ? CONFIG_MAPPING_TYPE : name);
     }
 
+    /**
+     * mapping-org.apache.dubbo.demo.GreetingService
+     * @param serviceInterface
+     * @param group
+     * @param version
+     * @param protocol
+     * @return
+     */
     static String buildGroup(String serviceInterface, String group, String version, String protocol) {
         //        the issue : https://github.com/apache/dubbo/issues/4671
         //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
@@ -67,6 +75,7 @@ public interface ServiceNameMapping {
         //                .append(KEY_SEPARATOR).append(defaultString(version))
         //                .append(KEY_SEPARATOR).append(defaultString(protocol));
         //        return groupBuilder.toString();
+        //mapping-org.apache.dubbo.demo.GreetingService
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 }

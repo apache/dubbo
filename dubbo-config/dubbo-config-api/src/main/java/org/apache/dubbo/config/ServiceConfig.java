@@ -241,7 +241,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         exportedURLs.forEach(url -> {
             Map<String, String> parameters = getApplication().getParameters();
             /**
-             * map  向配置中心写入数据
+             * map  向配置中心写入数据  DynamicConfigurationServiceNameMapping
              */
             ServiceNameMapping.getExtension(parameters != null ? parameters.get(MAPPING_KEY) : null).map(url);
         });
@@ -671,7 +671,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                  *
                  * 将已导出服务的配置信息  存储到配置中心
                  * org.apache.dubbo.demo.GreetingService:2.0.0:test:provider:dubbo-demo-annotation-provider
-                 * interface:version:group:provider:application_name
+                 * {interface}:{version}:{group}:{provider}:{application_name}
                  */
                 MetadataUtils.publishServiceDefinition(url);
             }
