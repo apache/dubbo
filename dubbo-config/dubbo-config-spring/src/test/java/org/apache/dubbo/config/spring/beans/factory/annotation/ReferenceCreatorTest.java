@@ -28,6 +28,7 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.NotifyService;
+import org.apache.dubbo.config.spring.reference.ReferenceCreator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,17 +53,17 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 import static org.springframework.util.ReflectionUtils.findField;
 
 /**
- * {@link ReferenceBeanBuilder} Test
+ * {@link ReferenceCreator} Test
  *
- * @see ReferenceBeanBuilder
+ * @see ReferenceCreator
  * @see DubboReference
  * @see Reference
  * @since 2.6.4
  */
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {ReferenceBeanBuilderTest.class, ReferenceBeanBuilderTest.ConsumerConfiguration.class})
+@ContextConfiguration(classes = {ReferenceCreatorTest.class, ReferenceCreatorTest.ConsumerConfiguration.class})
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
-public class ReferenceBeanBuilderTest {
+public class ReferenceCreatorTest {
 
     @DubboReference(
             //interfaceClass = HelloService.class,
@@ -115,7 +116,7 @@ public class ReferenceBeanBuilderTest {
         DubboReference reference = findAnnotation(helloServiceField, DubboReference.class);
         // filter default value
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(reference, true);
-        ReferenceConfig referenceBean = ReferenceBeanBuilder.create(attributes, context)
+        ReferenceConfig referenceBean = ReferenceCreator.create(attributes, context)
                 .defaultInterfaceClass(helloServiceField.getType())
                 .build();
         Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());

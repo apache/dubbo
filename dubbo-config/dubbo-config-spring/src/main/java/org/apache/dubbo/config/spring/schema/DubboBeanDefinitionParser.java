@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
@@ -255,11 +256,19 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         }
 
         Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
-        beanDefinition.setAttribute("generic", generic);
-        beanDefinition.setAttribute("interfaceName", interfaceName);
+        Class actualInterface = null;
+        try {
+            actualInterface = ClassUtils.forName(interfaceName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        beanDefinition.setAttribute("interfaceClass", interfaceClass);
+        beanDefinition.setAttribute("actualInterface", actualInterface);
+
+        // TODO Only register one reference bean for same (group, interface, version)
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
-        // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
+        // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
         GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
         targetDefinition.setBeanClass(interfaceClass);
         String id = (String) beanDefinition.getPropertyValues().get("id");

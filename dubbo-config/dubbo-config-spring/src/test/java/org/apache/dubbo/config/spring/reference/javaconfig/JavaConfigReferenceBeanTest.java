@@ -17,11 +17,14 @@
 package org.apache.dubbo.config.spring.reference.javaconfig;
 
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -57,44 +60,69 @@ public class JavaConfigReferenceBeanTest {
         Assertions.assertEquals(1, helloServiceMap.size());
         Assertions.assertNotNull(helloServiceMap.get("helloService"));
 
+        Map<String, GenericService> genericServiceMap = context.getBeansOfType(GenericService.class);
+        Assertions.assertEquals(1, genericServiceMap.size());
+        Assertions.assertNotNull(genericServiceMap.get("genericHelloService"));
+
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(1, referenceBeanMap.size());
+        Assertions.assertEquals(2, referenceBeanMap.size());
         ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
         Assertions.assertEquals("demo", referenceBean.getGroup());
+        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class, referenceBean.getActualInterface());
+
+        ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
+        Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
+        Assertions.assertEquals(GenericService.class, genericHelloServiceReferenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class, genericHelloServiceReferenceBean.getActualInterface());
 
         context.close();
     }
 
     @Test
-    public void testRawBean() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class, RawBeanConfiguration.class);
+    public void testGenericReferenceBean() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class, ReferenceBeanConfiguration.class);
 
         Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
-        Assertions.assertEquals(1, helloServiceMap.size());
+        Assertions.assertEquals(2, helloServiceMap.size());
         Assertions.assertNotNull(helloServiceMap.get("helloService"));
+        Assertions.assertNotNull(helloServiceMap.get("helloService2"));
+
+        Map<String, GenericService> genericServiceMap = context.getBeansOfType(GenericService.class);
+        Assertions.assertEquals(1, genericServiceMap.size());
+        Assertions.assertNotNull(genericServiceMap.get("genericHelloService"));
 
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(1, referenceBeanMap.size());
+        Assertions.assertEquals(3, referenceBeanMap.size());
         ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
-        Assertions.assertEquals("demo", referenceBean.getGroup());
+        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class, referenceBean.getActualInterface());
+
+        ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
+        Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
+        Assertions.assertEquals(GenericService.class, genericHelloServiceReferenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class, genericHelloServiceReferenceBean.getActualInterface());
 
         context.close();
     }
 
     @Test
-    public void testRawGenericBean() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class, RawGenericBeanConfiguration.class);
+    public void testRawReferenceBean() {
+        AnnotationConfigApplicationContext context = null;
+        try {
+            context = new AnnotationConfigApplicationContext(ConsumerConfig.class, ReferenceBeanWithoutGenericTypeConfiguration.class);
+            Assertions.fail("Should not load application");
 
-        Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
-        Assertions.assertEquals(1, helloServiceMap.size());
-        Assertions.assertNotNull(helloServiceMap.get("helloService"));
+        } catch (Exception e) {
+            String s = e.toString();
+            Assertions.assertTrue(s.contains("The ReferenceBean is missing necessary generic type"), s);
+            Assertions.assertTrue(s.contains("ReferenceBeanWithoutGenericTypeConfiguration#helloService()"), s);
+        } finally {
+            if (context != null) {
+                context.close();
+            }
+        }
 
-        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(1, referenceBeanMap.size());
-        ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
-        Assertions.assertEquals("demo", referenceBean.getGroup());
-
-        context.close();
     }
 
     @Test
@@ -119,12 +147,28 @@ public class JavaConfigReferenceBeanTest {
     public void testMissingGenericTypeBean() {
         AnnotationConfigApplicationContext context = null;
         try {
-            context = new AnnotationConfigApplicationContext(ConsumerConfig.class, MissingGenericTypeConfiguration.class);
+            context = new AnnotationConfigApplicationContext(ConsumerConfig.class, MissingGenericTypeAnnotationBeanConfiguration.class);
             Assertions.fail("Should not load application");
         } catch (Exception e) {
             String s = e.toString();
-            Assertions.assertTrue(s.contains("The ReferenceBean returned by the bean method is missing the necessary generic type"), s);
-            Assertions.assertTrue(s.contains("MissingGenericTypeConfiguration#helloService()"), s);
+            Assertions.assertTrue(s.contains("The ReferenceBean is missing necessary generic type"), s);
+            Assertions.assertTrue(s.contains("MissingGenericTypeAnnotationBeanConfiguration#helloService()"), s);
+        } finally {
+            if (context != null) {
+                context.close();
+            }
+        }
+    }
+
+    @Test
+    public void testMissingInterfaceTypeBean() {
+        AnnotationConfigApplicationContext context = null;
+        try {
+            context = new AnnotationConfigApplicationContext(ConsumerConfig.class, MissingInterfaceTypeAnnotationBeanConfiguration.class);
+            Assertions.fail("Should not load application");
+        } catch (Exception e) {
+            String s = e.toString();
+            Assertions.assertTrue(s.contains("The interface class or name of reference was not found"), s);
         } finally {
             if (context != null) {
                 context.close();
@@ -152,29 +196,51 @@ public class JavaConfigReferenceBeanTest {
             return new ReferenceBean();
         }
 
-    }
-
-    @Configuration
-    public static class RawBeanConfiguration {
-
         @Bean
-        public ReferenceBean helloService() {
-            Map<String, Object> props = new HashMap<>();
-            props.put("group", "${myapp.group}");
-            props.put("interfaceClass", HelloService.class);
-            return new ReferenceBean(props);
+        @Reference(group = "${myapp.group}", interfaceClass = HelloService.class)
+        public ReferenceBean<GenericService> genericHelloService() {
+            return new ReferenceBean();
         }
+
     }
 
     @Configuration
-    public static class RawGenericBeanConfiguration {
+    public static class ReferenceBeanConfiguration {
 
         @Bean
         public ReferenceBean<HelloService> helloService() {
-            Map<String, Object> props = new HashMap<>();
-            props.put("group", "${myapp.group}");
-            return new ReferenceBean(props);
+            return new ReferenceBeanBuilder()
+                    .setGroup("${myapp.group}")
+                    .build();
         }
+
+        @Bean
+        public ReferenceBean<HelloService> helloService2() {
+            return new ReferenceBean();
+        }
+
+        @Bean
+        public ReferenceBean<GenericService> genericHelloService() {
+            return new ReferenceBeanBuilder()
+                    .setGroup("${myapp.group}")
+                    .setInterface(HelloService.class)
+                    .build();
+        }
+
+    }
+
+    @Configuration
+    public static class ReferenceBeanWithoutGenericTypeConfiguration {
+
+        // The ReferenceBean is missing necessary generic type
+        @Bean
+        public ReferenceBean helloService() {
+            return new ReferenceBeanBuilder()
+                    .setGroup("${myapp.group}")
+                    .setInterface(HelloService.class)
+                    .build();
+        }
+
     }
 
     @Configuration
@@ -190,9 +256,9 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Configuration
-    public static class MissingGenericTypeConfiguration {
+    public static class MissingGenericTypeAnnotationBeanConfiguration {
 
-        // The ReferenceBean returned by the bean method is missing the necessary generic type
+        // The ReferenceBean is missing necessary generic type
         @Bean
         @DubboReference(group = "${myapp.group}", interfaceClass = DemoService.class)
         public ReferenceBean helloService() {
@@ -200,5 +266,15 @@ public class JavaConfigReferenceBeanTest {
         }
     }
 
+    @Configuration
+    public static class MissingInterfaceTypeAnnotationBeanConfiguration {
+
+        // The ReferenceBean is missing necessary generic type
+        @Bean
+        @DubboReference(group = "${myapp.group}")
+        public ReferenceBean<GenericService> helloService() {
+            return new ReferenceBean();
+        }
+    }
 
 }

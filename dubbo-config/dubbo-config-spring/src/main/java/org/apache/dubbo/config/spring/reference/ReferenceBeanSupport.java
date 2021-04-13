@@ -14,11 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.reference;
 
 import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.spring.Constants;
+import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -42,43 +45,53 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.utils.StringUtils.join;
-import static org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceBeanBuilder.convertStringArrayToMap;
+import static org.apache.dubbo.config.spring.reference.ReferenceCreator.convertStringArrayToMap;
 
 public class ReferenceBeanSupport {
 
-    public static void convertReferenceProps(Map<String, Object> attributes) {
+    public static void convertReferenceProps(Map<String, Object> attributes, Class defaultInterfaceClass) {
 
         // interface class
-        String interfaceClass = (String) attributes.get("interface");
-        if (interfaceClass == null) {
-            interfaceClass = (String) attributes.get("interfaceName");
+        String interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE);
+        if (interfaceName == null) {
+            interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE_NAME);
         }
-        if (interfaceClass == null) {
-            Class clazz = (Class) attributes.get("interfaceClass");
-            interfaceClass = clazz != null ? clazz.getName() : null;
+        if (interfaceName == null) {
+            Class clazz = (Class) attributes.get(ReferenceAttributes.INTERFACE_CLASS);
+            interfaceName = clazz != null ? clazz.getName() : null;
         }
-        Assert.notEmptyString(interfaceClass, "No interface class or name found from attributes");
-        attributes.put("interface", interfaceClass);
-        attributes.remove("interfaceName");
-        attributes.remove("interfaceClass");
+        if (interfaceName == null && defaultInterfaceClass != GenericService.class) {
+            interfaceName = defaultInterfaceClass.getName();
+        }
+        Assert.notEmptyString(interfaceName, "The interface class or name of reference was not found");
+        attributes.put(ReferenceAttributes.INTERFACE, interfaceName);
+        attributes.remove(ReferenceAttributes.INTERFACE_NAME);
+        attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
+
+        //reset generic value
+        String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
+        String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ? String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
+        if (!StringUtils.isEquals(oldGeneric, generic)) {
+            attributes.put(ReferenceAttributes.GENERIC, generic);
+        }
 
         //Specially convert @DubboReference attribute name/value to ReferenceConfig property
         // String[] registry => String registryIds
-        String[] registryIds = (String[]) attributes.get("registry");
+        String[] registryIds = (String[]) attributes.get(ReferenceAttributes.REGISTRY);
         if (registryIds != null) {
             String value = join((String[]) registryIds, ",");
-            attributes.remove("registry");
-            attributes.put("registryIds", value);
+            attributes.remove(ReferenceAttributes.REGISTRY);
+            attributes.put(ReferenceAttributes.REGISTRY_IDS, value);
         }
 
     }
 
     public static String generateReferenceKey(Map<String, Object> attributes, PropertyResolver propertyResolver) {
 
-        String interfaceClass = (String) attributes.get("interface");
+        String interfaceClass = (String) attributes.get(ReferenceAttributes.INTERFACE);
         Assert.notEmptyString(interfaceClass, "No interface class or name found from attributes");
-        String group = (String) attributes.get("group");
-        String version = (String) attributes.get("version");
+        String group = (String) attributes.get(ReferenceAttributes.GROUP);
+        String version = (String) attributes.get(ReferenceAttributes.VERSION);
 
         //ReferenceBean:group/interface:version
         StringBuilder beanNameBuilder = new StringBuilder("ReferenceBean:");
@@ -95,7 +108,7 @@ public class ReferenceBeanSupport {
         //sort attributes keys
         List<String> sortedAttrKeys = new ArrayList<>(attributes.keySet());
         Collections.sort(sortedAttrKeys);
-        List<String> ignoredAttrs = Arrays.asList("id", "group", "version", "interface", "interfaceName", "interfaceClass");
+        List<String> ignoredAttrs = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP, ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME, ReferenceAttributes.INTERFACE_CLASS);
         for (String key : sortedAttrKeys) {
             if (ignoredAttrs.contains(key)) {
                 continue;
@@ -133,7 +146,7 @@ public class ReferenceBeanSupport {
         if (obj == null) {
             return null;
         }
-        if ("parameters".equals(key) && obj instanceof String[]) {
+        if (ReferenceAttributes.PARAMETERS.equals(key) && obj instanceof String[]) {
             //convert parameters array pairs to map
             obj = convertStringArrayToMap((String[]) obj);
         }
@@ -173,16 +186,16 @@ public class ReferenceBeanSupport {
         for (PropertyValue propertyValue : propertyValues.getPropertyValueList()) {
             String propertyName = propertyValue.getName();
             Object value = propertyValue.getValue();
-            if ("methods".equals(propertyName) || "arguments".equals(propertyName)) {
+            if (ReferenceAttributes.METHODS.equals(propertyName) || ReferenceAttributes.ARGUMENTS.equals(propertyName)) {
                 ManagedList managedList = (ManagedList) value;
                 List<Map<String, Object>> elementList = new ArrayList<>();
                 for (Object el : managedList) {
                     Map<String, Object> element = convertPropertyValues(((BeanDefinitionHolder) el).getBeanDefinition().getPropertyValues());
-                    element.remove("id");
+                    element.remove(ReferenceAttributes.ID);
                     elementList.add(element);
                 }
                 value = elementList.toArray(new Object[0]);
-            } else if ("parameters".equals(propertyName)) {
+            } else if (ReferenceAttributes.PARAMETERS.equals(propertyName)) {
                 value = createParameterMap((ManagedMap) value);
             }
             //convert ref
@@ -226,7 +239,7 @@ public class ReferenceBeanSupport {
         if (referenceProps == null) {
             MutablePropertyValues propertyValues = referenceBean.getPropertyValues();
             if (propertyValues == null) {
-                throw new RuntimeException("ReferenceBean is invalid, missing 'propertyValues'");
+                throw new RuntimeException("ReferenceBean is invalid, 'referenceProps' and 'propertyValues' cannot both be empty.");
             }
             referenceProps = convertPropertyValues(propertyValues);
         }
@@ -235,8 +248,8 @@ public class ReferenceBeanSupport {
 
     public static Map<String, Object> getReferenceAttributes(BeanDefinition beanDefinition) {
         Map<String, Object> referenceProps = null;
-        if (beanDefinition.hasAttribute("referenceProps")) {
-            referenceProps = (Map<String, Object>) beanDefinition.getAttribute("referenceProps");
+        if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
+            referenceProps = (Map<String, Object>) beanDefinition.getAttribute(Constants.REFERENCE_PROPS);
         } else {
             referenceProps = convertPropertyValues(beanDefinition.getPropertyValues());
         }

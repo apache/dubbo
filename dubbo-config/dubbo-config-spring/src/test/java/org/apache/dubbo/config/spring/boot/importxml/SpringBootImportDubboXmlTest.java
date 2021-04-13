@@ -47,9 +47,6 @@ public class SpringBootImportDubboXmlTest {
     public static void setUp(){
         ZooKeeperServer.start();
         DubboBootstrap.reset();
-//        ExtensionLoader.destroyAll();
-//        ExtensionLoader.resetExtensionLoader(Environment.class);
-//        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     @AfterAll

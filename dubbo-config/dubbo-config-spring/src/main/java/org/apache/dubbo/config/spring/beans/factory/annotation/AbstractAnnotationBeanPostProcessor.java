@@ -212,6 +212,10 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
                     return;
                 }
 
+                if (method.getAnnotation(Bean.class) != null) {
+                    // DO NOT inject to Java-config class's @Bean method
+                    return;
+                }
 
                 for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
@@ -219,18 +223,10 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
                     if (attributes != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                         if (Modifier.isStatic(method.getModifiers())) {
-                            if (logger.isWarnEnabled()) {
-                                logger.warn("@" + annotationType.getName() + " annotation is not supported on static methods: " + method);
-                            }
-                            return;
+                            throw new IllegalStateException("When using @"+annotationType.getName() +" to inject interface proxy, it is not supported on static methods: "+method);
                         }
-                        if (method.getParameterTypes().length == 0) {
-                            boolean isBeanMethod = (method.getAnnotation(Bean.class) != null);
-                            if (!isBeanMethod && logger.isWarnEnabled()) {
-                                logger.warn("@" + annotationType.getName() + " annotation should only be used on methods with parameters: " +
-                                        method);
-                            }
-                            return;
+                        if (method.getParameterTypes().length != 1) {
+                            throw new IllegalStateException("When using @"+annotationType.getName() +" to inject interface proxy, the method must have only one parameter: "+method);
                         }
                         PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
                         elements.add(new AnnotatedMethodElement(method, pd, attributes));
@@ -241,7 +237,6 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
         return elements;
     }
-
 
     private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);

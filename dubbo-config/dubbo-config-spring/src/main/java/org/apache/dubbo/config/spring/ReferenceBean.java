@@ -17,18 +17,19 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
@@ -39,11 +40,57 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 /**
- * ReferenceFactoryBean
+ * <p>
+ * Spring FactoryBean for {@link ReferenceConfig}.
+ * </p>
+ *
+ *
+ * <p></p>
+ * Step 1: Register ReferenceBean in Java-config class:
+ * <pre class="code">
+ * &#64;Configuration
+ * public class ReferenceConfiguration {
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo")
+ *     public ReferenceBean&lt;HelloService&gt; helloService() {
+ *         return new ReferenceBean();
+ *     }
+ *
+ *     // As GenericService
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo", interfaceClass = HelloService.class)
+ *     public ReferenceBean&lt;GenericService&gt; genericHelloService() {
+ *         return new ReferenceBean();
+ *     }
+ * }
+ * </pre>
+ *
+ * Or register ReferenceBean in xml:
+ * <pre class="code">
+ * &lt;dubbo:reference id="helloService" interface="org.apache.dubbo.config.spring.api.HelloService"/&gt;
+ * &lt;!-- As GenericService --&gt;
+ * &lt;dubbo:reference id="genericHelloService" interface="org.apache.dubbo.config.spring.api.HelloService" generic="true"/&gt;
+ * </pre>
+ *
+ * Step 2: Inject ReferenceBean by @Autowired
+ * <pre class="code">
+ * public class FooController {
+ *     &#64;Autowired
+ *     private HelloService helloService;
+ *
+ *     &#64;Autowired
+ *     private GenericService genericHelloService;
+ * }
+ * </pre>
+ *
+ *
+ * @see org.apache.dubbo.config.annotation.DubboReference
+ * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  */
 public class ReferenceBean<T> implements FactoryBean,
         ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
@@ -55,11 +102,18 @@ public class ReferenceBean<T> implements FactoryBean,
     /**
      * The interface class of the reference service
      */
-    protected Class<?> interfaceClass;
+    private Class<?> interfaceClass;
+
+    /**
+     * Actual interface class of this reference.
+     * The actual service type of remote provider.
+     * see {@link ReferenceConfigBase#getActualInterface()}
+     */
+    private Class actualInterface;
 
     // beanName
     protected String id;
-    // unique cache key
+    // reference key
     private String key;
     //from annotation attributes
     private Map<String, Object> referenceProps;
@@ -67,8 +121,6 @@ public class ReferenceBean<T> implements FactoryBean,
     private MutablePropertyValues propertyValues;
     //actual reference config
     private ReferenceConfig referenceConfig;
-    private String generic;
-    private String interfaceName;
 
     public ReferenceBean() {
         super();
@@ -87,7 +139,6 @@ public class ReferenceBean<T> implements FactoryBean,
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.beanClassLoader = classLoader;
     }
-
 
     @Override
     public void setBeanName(String name) {
@@ -116,50 +167,38 @@ public class ReferenceBean<T> implements FactoryBean,
     @Override
     public void afterPropertiesSet() throws Exception {
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-        if (referenceProps != null) {
-            // pre init java-config bean
 
-            if (!referenceProps.containsKey("interfaceClass")) {
-                BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-                if (beanDefinition instanceof AnnotatedBeanDefinition) {
-                    // get generic type of ReferenceBean<..> of java-config bean method that return generic reference bean
-                    Class<?> type = beanFactory.getType(getId());
-                    referenceProps.put("interfaceClass", type);
-                }
-            }
+        // pre init xml reference bean or @DubboReference annotation
+        Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
+        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+        this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
+        this.actualInterface = (Class) beanDefinition.getAttribute(ReferenceAttributes.ACTUAL_INTERFACE);
+        Assert.notNull(this.interfaceClass, "The interface class of ReferenceBean is not initialized");
 
-            ReferenceBeanSupport.convertReferenceProps(referenceProps);
-            // get interface
-            this.interfaceName = (String) referenceProps.get("interface");
-            if (StringUtils.isBlank(this.interfaceName)) {
-                throw new BeanCreationException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
-            }
-
-            // get generic
-            Object genericValue = referenceProps.get("generic");
-            this.generic = genericValue != null ? genericValue.toString() : null;
-            String consumer = (String) referenceProps.get("consumer");
-            if (StringUtils.isBlank(generic) && consumer != null) {
-                // get generic from consumerConfig
-                BeanDefinition consumerBeanDefinition = getBeanFactory().getBeanDefinition(consumer);
-                if (consumerBeanDefinition != null) {
-                    this.generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
-                }
-            }
+        if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
+            // @DubboReference annotation at java-config class @Bean method
+            // @DubboReference annotation at reference field or setter method
+            referenceProps = (Map<String, Object>) beanDefinition.getAttribute(Constants.REFERENCE_PROPS);
         } else {
-            // pre init xml reference bean or @DubboReference annotation
-            Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
-            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-            if (beanDefinition.hasAttribute("referenceProps")) {
-                referenceProps = (Map<String, Object>) beanDefinition.getAttribute("referenceProps");
+            if (beanDefinition instanceof AnnotatedBeanDefinition) {
+                // Return ReferenceBean in java-config class @Bean method
+                if (referenceProps == null) {
+                    referenceProps = new LinkedHashMap<>();
+                }
+                ReferenceBeanSupport.convertReferenceProps(referenceProps, interfaceClass);
+                if (this.actualInterface == null) {
+                    try {
+                        this.actualInterface = ClassUtils.forName((String) referenceProps.get(ReferenceAttributes.INTERFACE));
+                    } catch (ClassNotFoundException e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
+                }
             } else {
+                // xml reference bean
                 propertyValues = beanDefinition.getPropertyValues();
             }
-            this.generic = (String) beanDefinition.getAttribute("generic");
-            //TODO improve interfaceName attributes pass through
-            this.interfaceName = (String) beanDefinition.getAttribute("interfaceName");
         }
-        this.interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
+        Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
 
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
@@ -187,12 +226,12 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
-    public String getGeneric() {
-        return generic;
+    public Class<?> getInterfaceClass() {
+        return interfaceClass;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public Class getActualInterface() {
+        return actualInterface;
     }
 
     /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
@@ -232,10 +271,6 @@ public class ReferenceBean<T> implements FactoryBean,
         }
     }
 
-    public Class<?> getInterfaceClass() {
-        return interfaceClass;
-    }
-
     /**
      * create lazy proxy for reference
      */
@@ -251,9 +286,9 @@ public class ReferenceBean<T> implements FactoryBean,
         for (Class<?> anInterface : internalInterfaces) {
             proxyFactory.addInterface(anInterface);
         }
-        if (ProtocolUtils.isGeneric(generic)){
+        if (actualInterface != interfaceClass){
             //add actual interface
-            proxyFactory.addInterface(ReflectUtils.forName(interfaceName));
+            proxyFactory.addInterface(actualInterface);
         }
 
         this.lazyProxy = proxyFactory.getProxy(this.beanClassLoader);

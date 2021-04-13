@@ -21,7 +21,6 @@ import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.spring.ReferenceBean;
-import org.apache.dubbo.config.spring.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -110,7 +109,9 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Already exists another reference bean with the same bean name and type but difference attributes"), getStackTrace(e));
+            String s = e.toString();
+            Assertions.assertTrue(s.contains("Already exists another reference bean with the same bean name and type but difference attributes"), getStackTrace(e));
+            Assertions.assertTrue(s.contains("ConsumerConfiguration2.demoService"), getStackTrace(e));
         }
     }
 
@@ -160,6 +161,7 @@ public class ReferenceKeyTest {
         } catch (BeansException e) {
             String checkString = "Already exists another bean definition with the same bean name, but cannot rename the reference bean name";
             Assertions.assertTrue(e.getMessage().contains(checkString), getStackTrace(e));
+            Assertions.assertTrue(e.getMessage().contains("ConsumerConfiguration6.demoService"), getStackTrace(e));
         }
     }
 
@@ -171,18 +173,11 @@ public class ReferenceKeyTest {
     }
 
     private String getReferenceKey(String fieldName) throws NoSuchFieldException {
-        AnnotationAttributes attributes = getAnnotationAttributes(fieldName);
-        ReferenceBeanSupport.convertReferenceProps(attributes);
-        return ReferenceBeanSupport.generateReferenceKey(attributes, null);
-    }
-
-    private AnnotationAttributes getAnnotationAttributes(String fieldName) throws NoSuchFieldException {
         Field field = ReferenceConfiguration.class.getDeclaredField(fieldName);
         AnnotationAttributes attributes = AnnotationUtils.getAnnotationAttributes(field, DubboReference.class, null, true);
-        attributes.put("interfaceClass", field.getType());
-        return attributes;
+        ReferenceBeanSupport.convertReferenceProps(attributes, field.getType());
+        return ReferenceBeanSupport.generateReferenceKey(attributes, null);
     }
-
 
     static class ReferenceConfiguration {
         @DubboReference(methods = @Method(name = "sayHello", timeout = 100, retries = 0))

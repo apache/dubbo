@@ -25,9 +25,43 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * An annotation used for referencing a Dubbo service
+ * An annotation used for referencing a Dubbo service.
+ * <p>
+ * <b>It is recommended to use @DubboReference on the @Bean method in the Java-config class, but not on the fields or setter methods to be injected.</b>
+ * </p>
+ *
+ * Step 1: Register ReferenceBean in Java-config class:
+ * <pre class="code">
+ * &#64;Configuration
+ * public class ReferenceConfiguration {
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo")
+ *     public ReferenceBean&lt;HelloService&gt; helloService() {
+ *         return new ReferenceBean();
+ *     }
+ *
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo", interfaceClass = HelloService.class)
+ *     public ReferenceBean&lt;GenericService&gt; genericHelloService() {
+ *         return new ReferenceBean();
+ *     }
+ * }
+ * </pre>
+ *
+ * Step 2: Inject ReferenceBean by @Autowired
+ * <pre class="code">
+ * public class FooController {
+ *     &#64;Autowired
+ *     private HelloService helloService;
+ *
+ *     &#64;Autowired
+ *     private GenericService genericHelloService;
+ * }
+ * </pre>
  *
  * @since 2.7.7
+ * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
+ * @see org.apache.dubbo.config.spring.ReferenceBean
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
@@ -66,7 +100,9 @@ public @interface DubboReference {
 
     /**
      * Whether to enable generic invocation, default value is false
+     * @deprecated Do not need specify generic value, judge by injection type and interface class
      */
+    @Deprecated
     boolean generic() default false;
 
     /**
@@ -278,7 +314,7 @@ public @interface DubboReference {
 
     /**
      * The id
-     *
+     * NOTE: The id attribute is ignored when using @DubboReference on @Bean method
      * @return default value is empty
      * @since 2.7.3
      */

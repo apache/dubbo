@@ -67,7 +67,9 @@ public @interface Reference {
 
     /**
      * Whether to enable generic invocation, default value is false
+     * @deprecated Do not need specify generic value, judge by injection type and interface class
      */
+    @Deprecated
     boolean generic() default false;
 
     /**

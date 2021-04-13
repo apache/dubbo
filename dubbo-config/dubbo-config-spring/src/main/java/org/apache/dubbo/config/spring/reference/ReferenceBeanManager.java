@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.reference;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceBeanBuilder;
+import org.apache.dubbo.config.spring.ReferenceBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.PropertyResolver;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReferenceBeanManager implements ApplicationContextAware {
     public static final String BEAN_NAME = "dubboReferenceBeanManager";
     private final Log logger = LogFactory.getLog(getClass());
-    //reference bean id/name ->
+    //reference bean id/name -> ReferenceBean
     private Map<String, ReferenceBean> referenceIdMap = new ConcurrentHashMap<>();
 
     //reference key -> [ reference bean names ]
@@ -140,7 +139,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         if (referenceConfig == null) {
             //create real ReferenceConfig
             Map<String, Object> referenceAttributes = ReferenceBeanSupport.getReferenceAttributes(referenceBean);
-            referenceConfig = ReferenceBeanBuilder.create(new AnnotationAttributes(referenceAttributes), applicationContext)
+            referenceConfig = ReferenceCreator.create(referenceAttributes, applicationContext)
                     .defaultInterfaceClass(referenceBean.getObjectType())
                     .build();
             //cache referenceConfig

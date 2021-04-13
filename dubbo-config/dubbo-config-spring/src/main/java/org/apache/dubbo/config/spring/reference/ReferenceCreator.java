@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.beans.factory.annotation;
+package org.apache.dubbo.config.spring.reference;
 
 import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.commons.logging.Log;
@@ -31,10 +31,9 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
-import org.apache.dubbo.config.spring.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.beans.factory.annotation.AnnotationPropertyValuesAdapter;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.core.convert.support.DefaultConversionService;
 import org.springframework.util.Assert;
@@ -53,11 +52,11 @@ import static org.springframework.util.StringUtils.arrayToCommaDelimitedString;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 
 /**
- * {@link ReferenceConfig} Builder for @{@link DubboReference}
+ * {@link ReferenceConfig} Creator for @{@link DubboReference}
  *
  * @since 3.0
  */
-public class ReferenceBeanBuilder {
+public class ReferenceCreator {
 
     // Ignore those fields
     static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry", "interfaceClass");
@@ -69,7 +68,7 @@ public class ReferenceBeanBuilder {
 
     protected final Log logger = LogFactory.getLog(getClass());
 
-    protected final AnnotationAttributes attributes;
+    protected final Map<String, Object> attributes;
 
     protected final ApplicationContext applicationContext;
 
@@ -77,7 +76,7 @@ public class ReferenceBeanBuilder {
 
     protected Class<?> defaultInterfaceClass;
 
-    private ReferenceBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
+    private ReferenceCreator(Map<String, Object> attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
         Assert.notNull(applicationContext, "The ApplicationContext must not be null!");
         this.attributes = attributes;
@@ -166,7 +165,7 @@ public class ReferenceBeanBuilder {
 
     }
 
-    private void configureInterface(AnnotationAttributes attributes, ReferenceConfig referenceBean) {
+    private void configureInterface(Map<String, Object> attributes, ReferenceConfig referenceBean) {
         if (referenceBean.getInterface() == null) {
 
             Object genericValue = getAttribute(attributes, "generic");
@@ -198,7 +197,7 @@ public class ReferenceBeanBuilder {
     }
 
 
-    private void configureConsumerConfig(AnnotationAttributes attributes, ReferenceConfig<?> referenceBean) {
+    private void configureConsumerConfig(Map<String, Object> attributes, ReferenceConfig<?> referenceBean) {
         ConsumerConfig consumerConfig = null;
         Object consumer = getAttribute(attributes, "consumer");
         if (consumer != null) {
@@ -213,7 +212,7 @@ public class ReferenceBeanBuilder {
         }
     }
 
-    void configureMethodConfig(AnnotationAttributes attributes, ReferenceConfig<?> referenceBean) {
+    void configureMethodConfig(Map<String, Object> attributes, ReferenceConfig<?> referenceBean) {
         Object value = attributes.get("methods");
         if (value instanceof Method[]) {
             Method[] methods = (Method[]) value;
@@ -227,15 +226,9 @@ public class ReferenceBeanBuilder {
         }
     }
 
-    protected void populateBean(AnnotationAttributes attributes, ReferenceConfig referenceBean) {
+    protected void populateBean(Map<String, Object> attributes, ReferenceConfig referenceBean) {
         Assert.notNull(defaultInterfaceClass, "The default interface class cannot be empty!");
-        if (!attributes.containsKey("interfaceClass") && !attributes.containsKey("interfaceName")) {
-            Assert.isTrue(defaultInterfaceClass.isInterface(),
-                    "The class of field or method that was annotated @DubboReference is not an interface!");
-            attributes.put("interfaceClass", defaultInterfaceClass);
-        }
-
-        ReferenceBeanSupport.convertReferenceProps(attributes);
+        ReferenceBeanSupport.convertReferenceProps(attributes, defaultInterfaceClass);
 
         DataBinder dataBinder = new DataBinder(referenceBean);
         // Register CustomEditors for special fields
@@ -263,7 +256,7 @@ public class ReferenceBeanBuilder {
         conversionService.addConverter(Method.class, MethodConfig.class, new Converter<Method, MethodConfig>() {
             @Override
             public MethodConfig convert(Method source) {
-                AnnotationAttributes methodAttributes = AnnotationUtils.getAnnotationAttributes(source, true);
+                Map<String, Object> methodAttributes = AnnotationUtils.getAnnotationAttributes(source, true);
                 return createMethodConfig(methodAttributes, conversionService);
             }
         });
@@ -340,11 +333,11 @@ public class ReferenceBeanBuilder {
         return parameters;
     }
 
-    public static ReferenceBeanBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {
-        return new ReferenceBeanBuilder(attributes, applicationContext);
+    public static ReferenceCreator create(Map<String, Object> attributes, ApplicationContext applicationContext) {
+        return new ReferenceCreator(attributes, applicationContext);
     }
 
-    public ReferenceBeanBuilder defaultInterfaceClass(Class<?> interfaceClass) {
+    public ReferenceCreator defaultInterfaceClass(Class<?> interfaceClass) {
         this.defaultInterfaceClass = interfaceClass;
         return this;
     }

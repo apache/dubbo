@@ -165,7 +165,9 @@ public abstract class AbstractMethodConfig extends AbstractConfig {
      *
      * @param mock the value of mock
      * @since 2.7.6
+     * @deprecated use {@link #setMock(String)} instead
      */
+    @Deprecated
     public void setMock(Object mock) {
         if (mock == null) {
             return;

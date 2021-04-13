@@ -22,6 +22,7 @@ import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.context.annotation.provider.HelloServiceImpl;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -34,7 +35,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -87,10 +87,9 @@ public class JavaConfigRawReferenceBeanConditionalTest {
 
         @Bean
         public ReferenceBean<HelloService> helloService() {
-            Map<String, Object> props = new HashMap<>();
-            props.put("group", "${myapp.group}");
-            //props.put("interfaceClass", HelloService.class);
-            return new ReferenceBean(props);
+            return new ReferenceBeanBuilder()
+                    .setGroup("${myapp.group}")
+                    .build();
         }
 
     }
