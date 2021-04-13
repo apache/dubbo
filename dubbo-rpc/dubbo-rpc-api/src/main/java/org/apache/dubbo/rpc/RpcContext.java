@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -31,10 +31,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 
 /**
@@ -68,9 +75,8 @@ public class RpcContext {
         }
     };
 
-    private final Map<String, String> attachments = new HashMap<String, String>();
+    protected final Map<String, Object> attachments = new HashMap<>();
     private final Map<String, Object> values = new HashMap<String, Object>();
-    private Future<?> future;
 
     private List<URL> urls;
 
@@ -85,6 +91,9 @@ public class RpcContext {
     private InetSocketAddress localAddress;
 
     private InetSocketAddress remoteAddress;
+
+    private String remoteApplicationName;
+
     @Deprecated
     private List<Invoker<?>> invokers;
     @Deprecated
@@ -97,6 +106,9 @@ public class RpcContext {
     private Object request;
     private Object response;
     private AsyncContext asyncContext;
+
+    private boolean remove = true;
+
 
     protected RpcContext() {
     }
@@ -132,34 +144,17 @@ public class RpcContext {
         return LOCAL.get();
     }
 
+    public boolean canRemove() {
+        return remove;
+    }
+
+    public void clearAfterEachInvoke(boolean remove) {
+        this.remove = remove;
+    }
+
     public static void restoreContext(RpcContext oldContext) {
         LOCAL.set(oldContext);
     }
-
-
-    public RpcContext copyOf() {
-        RpcContext copy = new RpcContext();
-        copy.attachments.putAll(this.attachments);
-        copy.values.putAll(this.values);
-        copy.future = this.future;
-        copy.urls = this.urls;
-        copy.url = this.url;
-        copy.methodName = this.methodName;
-        copy.parameterTypes = this.parameterTypes;
-        copy.arguments = this.arguments;
-        copy.localAddress = this.localAddress;
-        copy.remoteAddress = this.remoteAddress;
-        copy.invokers = this.invokers;
-        copy.invoker = this.invoker;
-        copy.invocation = this.invocation;
-
-        copy.request = this.request;
-        copy.response = this.response;
-        copy.asyncContext = this.asyncContext;
-
-        return copy;
-    }
-
 
     /**
      * remove context.
@@ -167,7 +162,18 @@ public class RpcContext {
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
-        LOCAL.remove();
+        removeContext(false);
+    }
+
+    /**
+     * customized for internal use.
+     *
+     * @param checkCanRemove if need check before remove
+     */
+    public static void removeContext(boolean checkCanRemove) {
+        if (LOCAL.get().canRemove()) {
+            LOCAL.remove();
+        }
     }
 
     /**
@@ -231,7 +237,7 @@ public class RpcContext {
      * @return consumer side.
      */
     public boolean isConsumerSide() {
-        return getUrl().getParameter(Constants.SIDE_KEY, Constants.PROVIDER_SIDE).equals(Constants.CONSUMER_SIDE);
+        return getUrl().getParameter(SIDE_KEY, PROVIDER_SIDE).equals(CONSUMER_SIDE);
     }
 
     /**
@@ -242,7 +248,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompletableFuture() {
-        return (CompletableFuture<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -253,7 +259,7 @@ public class RpcContext {
      */
     @SuppressWarnings("unchecked")
     public <T> Future<T> getFuture() {
-        return (Future<T>) future;
+        return FutureContext.getContext().getCompletableFuture();
     }
 
     /**
@@ -261,8 +267,8 @@ public class RpcContext {
      *
      * @param future
      */
-    public void setFuture(Future<?> future) {
-        this.future = future;
+    public void setFuture(CompletableFuture<?> future) {
+        FutureContext.getContext().setFuture(future);
     }
 
     public List<URL> getUrls() {
@@ -407,6 +413,15 @@ public class RpcContext {
         return this;
     }
 
+    public String getRemoteApplicationName() {
+        return remoteApplicationName;
+    }
+
+    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+        this.remoteApplicationName = remoteApplicationName;
+        return this;
+    }
+
     /**
      * get remote address string.
      *
@@ -470,12 +485,27 @@ public class RpcContext {
     }
 
     /**
-     * get attachment.
+     * also see {@link #getObjectAttachment(String)}.
      *
      * @param key
      * @return attachment
      */
     public String getAttachment(String key) {
+        Object value = attachments.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return null; // or JSON.toString(value);
+    }
+
+    /**
+     * get attachment.
+     *
+     * @param key
+     * @return attachment
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
 
@@ -487,6 +517,15 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachment(String key, String value) {
+        return setObjectAttachment(key, (Object) value);
+    }
+
+    public RpcContext setAttachment(String key, Object value) {
+        return setObjectAttachment(key, value);
+    }
+
+    @Experimental("Experiment api for supporting Object transmission")
+    public RpcContext setObjectAttachment(String key, Object value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -511,7 +550,18 @@ public class RpcContext {
      *
      * @return attachments
      */
+    @Deprecated
     public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(this.getObjectAttachments());
+    }
+
+    /**
+     * get attachments.
+     *
+     * @return attachments
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
@@ -522,6 +572,21 @@ public class RpcContext {
      * @return context
      */
     public RpcContext setAttachments(Map<String, String> attachment) {
+        this.attachments.clear();
+        if (attachment != null && attachment.size() > 0) {
+            this.attachments.putAll(attachment);
+        }
+        return this;
+    }
+
+    /**
+     * set attachments
+     *
+     * @param attachment
+     * @return context
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    public RpcContext setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
             this.attachments.putAll(attachment);
@@ -660,7 +725,7 @@ public class RpcContext {
     public <T> CompletableFuture<T> asyncCall(Callable<T> callable) {
         try {
             try {
-                setAttachment(Constants.ASYNC_KEY, Boolean.TRUE.toString());
+                setAttachment(ASYNC_KEY, Boolean.TRUE.toString());
                 final T o = callable.call();
                 //local invoke will return directly
                 if (o != null) {
@@ -674,37 +739,12 @@ public class RpcContext {
             } catch (Exception e) {
                 throw new RpcException(e);
             } finally {
-                removeAttachment(Constants.ASYNC_KEY);
+                removeAttachment(ASYNC_KEY);
             }
         } catch (final RpcException e) {
-            return new CompletableFuture<T>() {
-                @Override
-                public boolean cancel(boolean mayInterruptIfRunning) {
-                    return false;
-                }
-
-                @Override
-                public boolean isCancelled() {
-                    return false;
-                }
-
-                @Override
-                public boolean isDone() {
-                    return true;
-                }
-
-                @Override
-                public T get() throws InterruptedException, ExecutionException {
-                    throw new ExecutionException(e.getCause());
-                }
-
-                @Override
-                public T get(long timeout, TimeUnit unit)
-                        throws InterruptedException, ExecutionException,
-                        TimeoutException {
-                    return get();
-                }
-            };
+            CompletableFuture<T> exceptionFuture = new CompletableFuture<>();
+            exceptionFuture.completeExceptionally(e);
+            return exceptionFuture;
         }
         return ((CompletableFuture<T>) getContext().getFuture());
     }
@@ -716,13 +756,13 @@ public class RpcContext {
      */
     public void asyncCall(Runnable runnable) {
         try {
-            setAttachment(Constants.RETURN_KEY, Boolean.FALSE.toString());
+            setAttachment(RETURN_KEY, Boolean.FALSE.toString());
             runnable.run();
         } catch (Throwable e) {
             // FIXME should put exception in future?
             throw new RpcException("oneway call error ." + e.getMessage(), e);
         } finally {
-            removeAttachment(Constants.RETURN_KEY);
+            removeAttachment(RETURN_KEY);
         }
     }
 
@@ -740,6 +780,10 @@ public class RpcContext {
         return currentContext.asyncContext;
     }
 
+    protected void setAsyncContext(AsyncContext asyncContext) {
+        this.asyncContext = asyncContext;
+    }
+
     public boolean isAsyncStarted() {
         if (this.asyncContext == null) {
             return false;
@@ -755,4 +799,61 @@ public class RpcContext {
         return asyncContext;
     }
 
+    // RPC service context updated before each service call.
+    private URL consumerUrl;
+
+    public String getGroup() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(GROUP_KEY);
+    }
+
+    public String getVersion() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(VERSION_KEY);
+    }
+
+    public String getInterfaceName() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceInterface();
+    }
+
+    public String getProtocol() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getParameter(PROTOCOL_KEY, DUBBO);
+    }
+
+    public String getServiceKey() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getServiceKey();
+    }
+
+    public String getProtocolServiceKey() {
+        if (consumerUrl == null) {
+            return null;
+        }
+        return consumerUrl.getProtocolServiceKey();
+    }
+
+    public URL getConsumerUrl() {
+        return consumerUrl;
+    }
+
+    public void setConsumerUrl(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
+    }
+
+    public static void setRpcContext(URL url) {
+        RpcContext rpcContext = RpcContext.getContext();
+        rpcContext.setConsumerUrl(url);
+    }
 }

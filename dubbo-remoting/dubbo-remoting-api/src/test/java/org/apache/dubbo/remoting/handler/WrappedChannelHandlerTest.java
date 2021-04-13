@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.handler;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
@@ -60,7 +61,7 @@ public class WrappedChannelHandlerTest {
                 clazz = clazz.getSuperclass();
             }
             if (field != null) {
-                field.setAccessible(true);
+                ReflectUtils.makeAccessible(field);
                 return field.get(obj);
             } else {
                 throw new NoSuchFieldException();
@@ -82,8 +83,6 @@ public class WrappedChannelHandlerTest {
     public void test_Connect_Biz_Error() throws RemotingException {
         Assertions.assertThrows(RemotingException.class, () -> handler.connected(new MockedChannel()));
     }
-
-    ;
 
     @Test
     public void test_Disconnect_Biz_Error() throws RemotingException {

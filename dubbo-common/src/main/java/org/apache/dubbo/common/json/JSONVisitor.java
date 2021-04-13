@@ -21,7 +21,7 @@ package org.apache.dubbo.common.json;
  */
 @Deprecated
 public interface JSONVisitor {
-    public static final String CLASS_PROPERTY = "class";
+    String CLASS_PROPERTY = "class";
 
     /**
      * parse begin .

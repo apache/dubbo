@@ -16,17 +16,16 @@
  */
 package org.apache.dubbo.registry.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.timer.HashedWheelTimer;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.retry.FailedNotifiedTask;
 import org.apache.dubbo.registry.retry.FailedRegisteredTask;
 import org.apache.dubbo.registry.retry.FailedSubscribedTask;
 import org.apache.dubbo.registry.retry.FailedUnregisteredTask;
 import org.apache.dubbo.registry.retry.FailedUnsubscribedTask;
+import org.apache.dubbo.remoting.Constants;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +35,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
+import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY_RETRY_PERIOD;
+import static org.apache.dubbo.registry.Constants.REGISTRY_RETRY_PERIOD_KEY;
 
 /**
  * FailbackRegistry. (SPI, Prototype, ThreadSafe)
@@ -52,8 +56,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     private final ConcurrentMap<Holder, FailedUnsubscribedTask> failedUnsubscribed = new ConcurrentHashMap<Holder, FailedUnsubscribedTask>();
 
-    private final ConcurrentMap<Holder, FailedNotifiedTask> failedNotified = new ConcurrentHashMap<Holder, FailedNotifiedTask>();
-
     /**
      * The time in milliseconds the retryExecutor will wait
      */
@@ -64,7 +66,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
     public FailbackRegistry(URL url) {
         super(url);
-        this.retryPeriod = url.getParameter(Constants.REGISTRY_RETRY_PERIOD_KEY, Constants.DEFAULT_REGISTRY_RETRY_PERIOD);
+        this.retryPeriod = url.getParameter(REGISTRY_RETRY_PERIOD_KEY, DEFAULT_REGISTRY_RETRY_PERIOD);
 
         // since the retry task will not be very much. 128 ticks is enough.
         retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboRegistryRetryTimer", true), retryPeriod, TimeUnit.MILLISECONDS, 128);
@@ -86,11 +88,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     public void removeFailedUnsubscribedTask(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         failedUnsubscribed.remove(h);
-    }
-
-    public void removeFailedNotifiedTask(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        failedNotified.remove(h);
     }
 
     private void addFailedRegistered(URL url) {
@@ -133,7 +130,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    private void addFailedSubscribed(URL url, NotifyListener listener) {
+    protected void addFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask oldOne = failedSubscribed.get(h);
         if (oldOne != null) {
@@ -154,7 +151,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             f.cancel();
         }
         removeFailedUnsubscribed(url, listener);
-        removeFailedNotified(url, listener);
     }
 
     private void addFailedUnsubscribed(URL url, NotifyListener listener) {
@@ -179,50 +175,29 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    private void addFailedNotified(URL url, NotifyListener listener, List<URL> urls) {
-        Holder h = new Holder(url, listener);
-        FailedNotifiedTask newTask = new FailedNotifiedTask(url, listener);
-        FailedNotifiedTask f = failedNotified.putIfAbsent(h, newTask);
-        if (f == null) {
-            // never has a retry task. then start a new task for retry.
-            newTask.addUrlToRetry(urls);
-            retryTimer.newTimeout(newTask, retryPeriod, TimeUnit.MILLISECONDS);
-        } else {
-            // just add urls which needs retry.
-            newTask.addUrlToRetry(urls);
-        }
-    }
-
-    private void removeFailedNotified(URL url, NotifyListener listener) {
-        Holder h = new Holder(url, listener);
-        FailedNotifiedTask f = failedNotified.remove(h);
-        if (f != null) {
-            f.cancel();
-        }
-    }
-
-    public ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
+    ConcurrentMap<URL, FailedRegisteredTask> getFailedRegistered() {
         return failedRegistered;
     }
 
-    public ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
+    ConcurrentMap<URL, FailedUnregisteredTask> getFailedUnregistered() {
         return failedUnregistered;
     }
 
-    public ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
+    ConcurrentMap<Holder, FailedSubscribedTask> getFailedSubscribed() {
         return failedSubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
+    ConcurrentMap<Holder, FailedUnsubscribedTask> getFailedUnsubscribed() {
         return failedUnsubscribed;
     }
 
-    public ConcurrentMap<Holder, FailedNotifiedTask> getFailedNotified() {
-        return failedNotified;
-    }
 
     @Override
     public void register(URL url) {
+        if (!acceptable(url)) {
+            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
+            return;
+        }
         super.register(url);
         removeFailedRegistered(url);
         removeFailedUnregistered(url);
@@ -235,7 +210,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
-                    && !Constants.CONSUMER_PROTOCOL.equals(url.getProtocol());
+                    && !CONSUMER_PROTOCOL.equals(url.getProtocol());
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
@@ -248,6 +223,25 @@ public abstract class FailbackRegistry extends AbstractRegistry {
 
             // Record a failed registration request to a failed list, retry regularly
             addFailedRegistered(url);
+        }
+    }
+
+    @Override
+    public void reExportRegister(URL url) {
+        if (!acceptable(url)) {
+            logger.info("URL " + url + " will not be registered to Registry. Registry " + url + " does not accept service of this protocol type.");
+            return;
+        }
+        super.register(url);
+        removeFailedRegistered(url);
+        removeFailedUnregistered(url);
+        try {
+            // Sending a registration request to the server side
+            doRegister(url);
+        } catch (Exception e) {
+            if (!(e instanceof SkipFailbackWrapperException)) {
+                throw new IllegalStateException("Failed to register (re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -265,7 +259,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             // If the startup detection is opened, the Exception is thrown directly.
             boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
                     && url.getParameter(Constants.CHECK_KEY, true)
-                    && !Constants.CONSUMER_PROTOCOL.equals(url.getProtocol());
+                    && !CONSUMER_PROTOCOL.equals(url.getProtocol());
             boolean skipFailback = t instanceof SkipFailbackWrapperException;
             if (check || skipFailback) {
                 if (skipFailback) {
@@ -282,6 +276,21 @@ public abstract class FailbackRegistry extends AbstractRegistry {
     }
 
     @Override
+    public void reExportUnregister(URL url) {
+        super.unregister(url);
+        removeFailedRegistered(url);
+        removeFailedUnregistered(url);
+        try {
+            // Sending a cancellation request to the server side
+            doUnregister(url);
+        } catch (Exception e) {
+            if (!(e instanceof SkipFailbackWrapperException)) {
+                throw new IllegalStateException("Failed to unregister(re-export) " + url + " to registry " + getUrl().getAddress() + ", cause: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    @Override
     public void subscribe(URL url, NotifyListener listener) {
         super.subscribe(url, listener);
         removeFailedSubscribed(url, listener);
@@ -294,7 +303,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             List<URL> urls = getCacheUrls(url);
             if (CollectionUtils.isNotEmpty(urls)) {
                 notify(url, listener, urls);
-                logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(Constants.FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
+                logger.error("Failed to subscribe " + url + ", Using cached list: " + urls + " from cache file: " + getUrl().getParameter(FILE_KEY, System.getProperty("user.home") + "/dubbo-registry-" + url.getHost() + ".cache") + ", cause: " + t.getMessage(), t);
             } else {
                 // If the startup detection is opened, the Exception is thrown directly.
                 boolean check = getUrl().getParameter(Constants.CHECK_KEY, true)
@@ -354,9 +363,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             doNotify(url, listener, urls);
         } catch (Exception t) {
-            // Record a failed registration request to a failed list, retry regularly
-            addFailedNotified(url, listener, urls);
-            logger.error("Failed to notify for subscribe " + url + ", waiting for retry, cause: " + t.getMessage(), t);
+            // Record a failed registration request to a failed list
+            logger.error("Failed to notify addresses for subscribe " + url + ", cause: " + t.getMessage(), t);
         }
     }
 

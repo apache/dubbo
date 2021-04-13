@@ -72,10 +72,10 @@ public @interface EnableDubbo {
     /**
      * It indicates whether {@link AbstractConfig} binding to multiple Spring Beans.
      *
-     * @return the default value is <code>false</code>
+     * @return the default value is <code>true</code>
      * @see EnableDubboConfig#multiple()
      */
     @AliasFor(annotation = EnableDubboConfig.class, attribute = "multiple")
-    boolean multipleConfig() default false;
+    boolean multipleConfig() default true;
 
 }

@@ -33,7 +33,6 @@
  */
 package org.apache.dubbo.remoting.etcd.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -49,6 +48,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.remoting.etcd.Constants.CONFIGURATORS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.CONSUMERS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.PROVIDERS_CATEGORY;
+import static org.apache.dubbo.remoting.etcd.Constants.ROUTERS_CATEGORY;
+
 public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient {
 
     protected static final Logger logger = LoggerFactory.getLogger(AbstractEtcdClient.class);
@@ -57,37 +62,40 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
 
     private final Set<StateListener> stateListeners = new ConcurrentHashSet<>();
 
-    private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<String, ConcurrentMap<ChildListener, WatcherListener>>();
-    private final List<String> categroies = Arrays.asList(Constants.PROVIDERS_CATEGORY
-            , Constants.CONSUMERS_CATEGORY
-            , Constants.ROUTERS_CATEGORY
-            , Constants.CONFIGURATORS_CATEGORY);
+    private final ConcurrentMap<String, ConcurrentMap<ChildListener, WatcherListener>> childListeners = new ConcurrentHashMap<>();
+    private final List<String> categories = Arrays.asList(PROVIDERS_CATEGORY, CONSUMERS_CATEGORY, ROUTERS_CATEGORY,
+            CONFIGURATORS_CATEGORY);
     private volatile boolean closed = false;
 
     public AbstractEtcdClient(URL url) {
         this.url = url;
     }
 
+    @Override
     public URL getUrl() {
         return url;
     }
 
+    @Override
     public void create(String path) {
         String fixedPath = fixNamespace(path);
         createParentIfAbsent(fixedPath);
         doCreatePersistent(fixedPath);
     }
 
+    @Override
     public long createEphemeral(String path) {
         String fixedPath = fixNamespace(path);
         createParentIfAbsent(fixedPath);
         return doCreateEphemeral(path);
     }
 
+    @Override
     public void addStateListener(StateListener listener) {
         stateListeners.add(listener);
     }
 
+    @Override
     public void removeStateListener(StateListener listener) {
         stateListeners.remove(listener);
     }
@@ -96,33 +104,23 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         return stateListeners;
     }
 
+    @Override
     public List<String> addChildListener(String path, final ChildListener listener) {
-        ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
-        if (listeners == null) {
-            childListeners.putIfAbsent(path, new ConcurrentHashMap<ChildListener, WatcherListener>());
-            listeners = childListeners.get(path);
-        }
-        WatcherListener targetListener = listeners.get(listener);
-        if (targetListener == null) {
-            listeners.putIfAbsent(listener, createChildWatcherListener(path, listener));
-            targetListener = listeners.get(listener);
-        }
+        ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.computeIfAbsent(path, k -> new ConcurrentHashMap<>());
+        WatcherListener targetListener = listeners.computeIfAbsent(listener, k -> createChildWatcherListener(path, k));
         return addChildWatcherListener(path, targetListener);
     }
 
+    @Override
     public WatcherListener getChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners == null) {
             return null;
         }
-        WatcherListener targetListener = listeners.get(listener);
-        if (targetListener == null) {
-            listeners.putIfAbsent(listener, createChildWatcherListener(path, listener));
-            targetListener = listeners.get(listener);
-        }
-        return targetListener;
+        return listeners.computeIfAbsent(listener, k -> createChildWatcherListener(path, k));
     }
 
+    @Override
     public void removeChildListener(String path, ChildListener listener) {
         ConcurrentMap<ChildListener, WatcherListener> listeners = childListeners.get(path);
         if (listeners != null) {
@@ -143,18 +141,18 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         if (StringUtils.isEmpty(path)) {
             throw new IllegalArgumentException("path is required, actual null or ''");
         }
-        return (path.charAt(0) != '/') ? (Constants.PATH_SEPARATOR + path) : path;
+        return (path.charAt(0) != '/') ? (PATH_SEPARATOR + path) : path;
     }
 
     protected void createParentIfAbsent(String fixedPath) {
         int i = fixedPath.lastIndexOf('/');
         if (i > 0) {
             String parentPath = fixedPath.substring(0, i);
-            if (categroies.stream().anyMatch(c -> fixedPath.endsWith(c))) {
+            if (categories.stream().anyMatch(c -> fixedPath.endsWith(c))) {
                 if (!checkExists(parentPath)) {
                     this.doCreatePersistent(parentPath);
                 }
-            } else if (categroies.stream().anyMatch(c -> parentPath.endsWith(c))) {
+            } else if (categories.stream().anyMatch(c -> parentPath.endsWith(c))) {
                 String grandfather = parentPath.substring(0, parentPath.lastIndexOf('/'));
                 if (!checkExists(grandfather)) {
                     this.doCreatePersistent(grandfather);
@@ -163,6 +161,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
         }
     }
 
+    @Override
     public void close() {
         if (closed) {
             return;
@@ -181,6 +180,7 @@ public abstract class AbstractEtcdClient<WatcherListener> implements EtcdClient 
 
     public abstract long doCreateEphemeral(String path);
 
+    @Override
     public abstract void delete(String path);
 
     public abstract boolean checkExists(String path);

@@ -16,96 +16,49 @@
  */
 package org.apache.dubbo.configcenter.support.zookeeper;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
+import org.apache.dubbo.remoting.zookeeper.EventType;
 
-import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.TreeCacheEvent;
-import org.apache.curator.framework.recipes.cache.TreeCacheListener;
-
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.CountDownLatch;
+
+import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  *
  */
-public class CacheListener implements TreeCacheListener {
-    private static final byte[] EMPTY_BYTES = new byte[0];
+
+public class CacheListener implements DataListener {
 
     private Map<String, Set<ConfigurationListener>> keyListeners = new ConcurrentHashMap<>();
-    private CountDownLatch initializedLatch;
     private String rootPath;
 
-    public CacheListener(String rootPath, CountDownLatch initializedLatch) {
+    public CacheListener(String rootPath) {
         this.rootPath = rootPath;
-        this.initializedLatch = initializedLatch;
-    }
-
-    @Override
-    public void childEvent(CuratorFramework aClient, TreeCacheEvent event) throws Exception {
-
-        TreeCacheEvent.Type type = event.getType();
-        ChildData data = event.getData();
-        if (type == TreeCacheEvent.Type.INITIALIZED) {
-            initializedLatch.countDown();
-            return;
-        }
-
-        // TODO, ignore other event types
-        if (data == null) {
-            return;
-        }
-
-        // TODO We limit the notification of config changes to a specific path level, for example
-        //  /dubbo/config/service/configurators, other config changes not in this level will not get notified,
-        //  say /dubbo/config/dubbo.properties
-        if (data.getPath().split("/").length >= 5) {
-            byte[] value = data.getData();
-            String key = pathToKey(data.getPath());
-            ConfigChangeType changeType;
-            switch (type) {
-                case NODE_ADDED:
-                    changeType = ConfigChangeType.ADDED;
-                    break;
-                case NODE_REMOVED:
-                    changeType = ConfigChangeType.DELETED;
-                    break;
-                case NODE_UPDATED:
-                    changeType = ConfigChangeType.MODIFIED;
-                    break;
-                default:
-                    return;
-            }
-
-            if (value == null) {
-                value = EMPTY_BYTES;
-            }
-            ConfigChangeEvent configChangeEvent = new ConfigChangeEvent(key, new String(value, StandardCharsets.UTF_8), changeType);
-            Set<ConfigurationListener> listeners = keyListeners.get(key);
-            if (CollectionUtils.isNotEmpty(listeners)) {
-                listeners.forEach(listener -> listener.process(configChangeEvent));
-            }
-        }
     }
 
     public void addListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = this.keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
+        Set<ConfigurationListener> listeners = keyListeners.computeIfAbsent(key, k -> new CopyOnWriteArraySet<>());
         listeners.add(configurationListener);
     }
 
     public void removeListener(String key, ConfigurationListener configurationListener) {
-        Set<ConfigurationListener> listeners = this.keyListeners.get(key);
+        Set<ConfigurationListener> listeners = keyListeners.get(key);
         if (listeners != null) {
             listeners.remove(configurationListener);
         }
+    }
+
+    public Set<ConfigurationListener> getConfigurationListeners(String key) {
+        return keyListeners.get(key);
     }
 
     /**
@@ -119,6 +72,39 @@ public class CacheListener implements TreeCacheListener {
         if (StringUtils.isEmpty(path)) {
             return path;
         }
-        return path.replace(rootPath + "/", "").replaceAll("/", ".");
+        String groupKey = path.replace(rootPath + PATH_SEPARATOR, "").replaceAll(PATH_SEPARATOR, DOT_SEPARATOR);
+        return groupKey.substring(groupKey.indexOf(DOT_SEPARATOR) + 1);
+    }
+
+    private String getGroup(String path) {
+        if (!StringUtils.isEmpty(path)) {
+            int beginIndex = path.indexOf(rootPath + PATH_SEPARATOR);
+            if (beginIndex > -1) {
+                int endIndex = path.indexOf(PATH_SEPARATOR, beginIndex);
+                if (endIndex > beginIndex) {
+                    return path.substring(beginIndex, endIndex);
+                }
+            }
+        }
+        return path;
+    }
+
+
+    @Override
+    public void dataChanged(String path, Object value, EventType eventType) {
+        ConfigChangeType changeType;
+        if (value == null) {
+            changeType = ConfigChangeType.DELETED;
+        } else {
+            changeType = ConfigChangeType.MODIFIED;
+        }
+        String key = pathToKey(path);
+
+        ConfigChangedEvent configChangeEvent = new ConfigChangedEvent(key, getGroup(path), (String) value, changeType);
+        Set<ConfigurationListener> listeners = keyListeners.get(path);
+        if (CollectionUtils.isNotEmpty(listeners)) {
+            listeners.forEach(listener -> listener.process(configChangeEvent));
+        }
     }
 }
+

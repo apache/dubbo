@@ -20,7 +20,8 @@ limitations under the License.
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-serialization</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-serialization-jdk</artifactId>
     <packaging>jar</packaging>

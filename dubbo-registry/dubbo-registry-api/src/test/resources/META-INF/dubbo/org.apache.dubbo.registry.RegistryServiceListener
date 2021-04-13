@@ -1,0 +1,2 @@
+listener-one=org.apache.dubbo.registry.RegistryServiceListener1
+listener-two=org.apache.dubbo.registry.RegistryServiceListener2

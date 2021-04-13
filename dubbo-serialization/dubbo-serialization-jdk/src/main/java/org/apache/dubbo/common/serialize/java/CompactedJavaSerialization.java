@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.COMPACTED_JAVA_SERIALIZATION_ID;
+
 /**
  * Compacted java serialization implementation
  *
@@ -36,7 +38,7 @@ public class CompactedJavaSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 4;
+        return COMPACTED_JAVA_SERIALIZATION_ID;
     }
 
     @Override

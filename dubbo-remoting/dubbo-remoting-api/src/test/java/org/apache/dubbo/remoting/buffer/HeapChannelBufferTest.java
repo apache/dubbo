@@ -16,7 +16,12 @@
  */
 package org.apache.dubbo.remoting.buffer;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 
 public class HeapChannelBufferTest extends AbstractChannelBufferTest {
 
@@ -32,5 +37,20 @@ public class HeapChannelBufferTest extends AbstractChannelBufferTest {
     @Override
     protected ChannelBuffer[] components() {
         return new ChannelBuffer[]{buffer};
+    }
+
+    @Test
+    void testEqualsAndHashcode() {
+        HeapChannelBuffer b1 = new HeapChannelBuffer("hello-world".getBytes());
+        HeapChannelBuffer b2 = new HeapChannelBuffer("hello-world".getBytes());
+
+        MatcherAssert.assertThat(b1.equals(b2), is(true));
+        MatcherAssert.assertThat(b1.hashCode(), is(b2.hashCode()));
+
+        b1 = new HeapChannelBuffer("hello-world".getBytes());
+        b2 = new HeapChannelBuffer("hello-worldd".getBytes());
+
+        MatcherAssert.assertThat(b1.equals(b2), is(false));
+        MatcherAssert.assertThat(b1.hashCode(), not(b2.hashCode()));
     }
 }

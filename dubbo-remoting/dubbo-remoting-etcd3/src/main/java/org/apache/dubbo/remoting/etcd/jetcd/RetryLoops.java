@@ -64,7 +64,9 @@ public class RetryLoops {
 
     public void fireException(Exception e, RetryPolicy retryPolicy) throws Exception {
 
-        if (e instanceof InterruptedException) Thread.currentThread().interrupt();
+        if (e instanceof InterruptedException) {
+            Thread.currentThread().interrupt();
+        }
 
         boolean rethrow = true;
         if (isRetryException(e)
@@ -79,7 +81,9 @@ public class RetryLoops {
 
     private boolean isRetryException(Throwable e) {
         Status status = Status.fromThrowable(e);
-        if (OptionUtil.isRecoverable(status)) return true;
+        if (OptionUtil.isRecoverable(status)) {
+            return true;
+        }
 
         return false;
     }

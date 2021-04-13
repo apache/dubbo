@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import static org.apache.dubbo.common.serialize.Constants.FST_SERIALIZATION_ID;
+
 /**
  * Fst serialization implementation
  *
@@ -36,7 +38,7 @@ public class FstSerialization implements Serialization {
 
     @Override
     public byte getContentTypeId() {
-        return 9;
+        return FST_SERIALIZATION_ID;
     }
 
     @Override

@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.configurator.parser;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfigItem;
 import org.apache.dubbo.rpc.cluster.configurator.parser.model.ConfiguratorConfig;
@@ -30,6 +29,14 @@ import org.yaml.snakeyaml.constructor.Constructor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
 
 /**
  *
@@ -65,7 +72,7 @@ public class ConfigParserTest {
             Assertions.assertEquals(2, urls.size());
             URL url = urls.get(0);
             Assertions.assertEquals(url.getAddress(), "127.0.0.1:20880");
-            Assertions.assertEquals(url.getParameter(Constants.WEIGHT_KEY, 0), 222);
+            Assertions.assertEquals(url.getParameter(WEIGHT_KEY, 0), 222);
         }
     }
 
@@ -76,21 +83,21 @@ public class ConfigParserTest {
             Assertions.assertNotNull(urls);
             Assertions.assertEquals(1, urls.size());
             URL url = urls.get(0);
-            Assertions.assertEquals("testgroup", url.getParameter(Constants.GROUP_KEY));
-            Assertions.assertEquals("1.0.0", url.getParameter(Constants.VERSION_KEY));
+            Assertions.assertEquals("testgroup", url.getParameter(GROUP_KEY));
+            Assertions.assertEquals("1.0.0", url.getParameter(VERSION_KEY));
         }
     }
 
     @Test
-    public void parseConfiguratorsServiceMultiAppsTest() throws IOException {
+    public void parseConfiguratorsServiceMultiAppsTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ServiceMultiApps.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
             Assertions.assertEquals(4, urls.size());
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
-            Assertions.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-            Assertions.assertNotNull(url.getParameter(Constants.APPLICATION_KEY));
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+            Assertions.assertNotNull(url.getParameter(APPLICATION_KEY));
         }
     }
 
@@ -105,7 +112,7 @@ public class ConfigParserTest {
     }
 
     @Test
-    public void parseConfiguratorsAppMultiServicesTest() throws IOException {
+    public void parseConfiguratorsAppMultiServicesTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppMultiServices.yml")) {
             String yamlFile = streamToString(yamlStream);
             List<URL> urls = ConfigParser.parseConfigurators(yamlFile);
@@ -114,15 +121,15 @@ public class ConfigParserTest {
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
             Assertions.assertEquals("service1", url.getServiceInterface());
-            Assertions.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-            Assertions.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+            Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
+            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
     }
 
 
     @Test
-    public void parseConfiguratorsAppAnyServicesTest() throws IOException {
+    public void parseConfiguratorsAppAnyServicesTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppAnyServices.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -130,14 +137,14 @@ public class ConfigParserTest {
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
             Assertions.assertEquals("*", url.getServiceInterface());
-            Assertions.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-            Assertions.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+            Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
+            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
     }
 
     @Test
-    public void parseConfiguratorsAppNoServiceTest() throws IOException {
+    public void parseConfiguratorsAppNoServiceTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/AppNoService.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -145,14 +152,14 @@ public class ConfigParserTest {
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
             Assertions.assertEquals("*", url.getServiceInterface());
-            Assertions.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-            Assertions.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-            Assertions.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+            Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
+            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
     }
 
     @Test
-    public void parseConsumerSpecificProvidersTest() throws IOException {
+    public void parseConsumerSpecificProvidersTest() throws Exception {
         try (InputStream yamlStream = this.getClass().getResourceAsStream("/ConsumerSpecificProviders.yml")) {
             List<URL> urls = ConfigParser.parseConfigurators(streamToString(yamlStream));
             Assertions.assertNotNull(urls);
@@ -160,11 +167,27 @@ public class ConfigParserTest {
             URL url = urls.get(0);
             Assertions.assertEquals("127.0.0.1", url.getAddress());
             Assertions.assertEquals("*", url.getServiceInterface());
-            Assertions.assertEquals(6666, url.getParameter(Constants.TIMEOUT_KEY, 0));
-            Assertions.assertEquals("random", url.getParameter(Constants.LOADBALANCE_KEY));
-            Assertions.assertEquals("127.0.0.1:20880", url.getParameter(Constants.OVERRIDE_PROVIDERS_KEY));
-            Assertions.assertEquals(url.getParameter(Constants.APPLICATION_KEY), "demo-consumer");
+            Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
+            Assertions.assertEquals("random", url.getParameter(LOADBALANCE_KEY));
+            Assertions.assertEquals("127.0.0.1:20880", url.getParameter(OVERRIDE_PROVIDERS_KEY));
+            Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "demo-consumer");
         }
+    }
+
+    @Test
+    public void parseURLJsonArrayCompatible() throws Exception {
+
+        String configData = "[\"override://0.0.0.0/com.xx.Service?category=configurators&timeout=6666&disabled=true&dynamic=false&enabled=true&group=dubbo&priority=1&version=1.0\" ]";
+
+        List<URL> urls = ConfigParser.parseConfigurators(configData);
+
+        Assertions.assertNotNull(urls);
+        Assertions.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+
+        Assertions.assertEquals("0.0.0.0", url.getAddress());
+        Assertions.assertEquals("com.xx.Service", url.getServiceInterface());
+        Assertions.assertEquals(6666, url.getParameter(TIMEOUT_KEY, 0));
     }
 
 }

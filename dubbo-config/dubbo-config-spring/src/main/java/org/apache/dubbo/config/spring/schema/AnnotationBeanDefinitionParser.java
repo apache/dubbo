@@ -18,12 +18,9 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.xml.AbstractSingleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
@@ -33,7 +30,6 @@ import static org.springframework.util.StringUtils.trimArrayElements;
 
 /**
  * @link BeanDefinitionParser}
- *
  * @see ServiceAnnotationBeanPostProcessor
  * @see ReferenceAnnotationBeanPostProcessor
  * @since 2.5.9
@@ -61,27 +57,18 @@ public class AnnotationBeanDefinitionParser extends AbstractSingleBeanDefinition
 
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
 
-        // Registers ReferenceAnnotationBeanPostProcessor
-        registerReferenceAnnotationBeanPostProcessor(parserContext.getRegistry());
-
+        /**
+         * @since 2.7.6 Register the common beans
+         * @since 2.7.8 comment this code line, and migrated to
+         * @see DubboNamespaceHandler#parse(Element, ParserContext)
+         * @see https://github.com/apache/dubbo/issues/6174
+         */
+        // registerCommonBeans(parserContext.getRegistry());
     }
 
     @Override
     protected boolean shouldGenerateIdAsFallback() {
         return true;
-    }
-
-    /**
-     * Registers {@link ReferenceAnnotationBeanPostProcessor} into {@link BeanFactory}
-     *
-     * @param registry {@link BeanDefinitionRegistry}
-     */
-    private void registerReferenceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
-
-        // Register @Reference Annotation Bean Processor
-        BeanRegistrar.registerInfrastructureBean(registry,
-                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
-
     }
 
     @Override

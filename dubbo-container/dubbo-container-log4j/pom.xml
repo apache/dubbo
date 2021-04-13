@@ -19,7 +19,8 @@
     <parent>
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-container</artifactId>
-        <version>2.7.1-SNAPSHOT</version>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-container-log4j</artifactId>
     <packaging>jar</packaging>
@@ -32,11 +33,6 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-container-api</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-api</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>

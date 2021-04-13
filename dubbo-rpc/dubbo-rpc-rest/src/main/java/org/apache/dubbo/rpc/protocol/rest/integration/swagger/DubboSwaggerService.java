@@ -38,6 +38,6 @@ public interface DubboSwaggerService {
 
     @GET
     @Path("swagger")
-    public Response getListingJson(@Context Application app, @Context ServletConfig sc,
-                                   @Context HttpHeaders headers, @Context UriInfo uriInfo) throws JsonProcessingException;
+    Response getListingJson(@Context Application app, @Context ServletConfig sc,
+                            @Context HttpHeaders headers, @Context UriInfo uriInfo) throws JsonProcessingException;
 }

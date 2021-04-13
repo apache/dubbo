@@ -1,0 +1,3 @@
+config=org.apache.dubbo.config.context.ConfigManager
+environment=org.apache.dubbo.common.config.Environment
+repository=org.apache.dubbo.rpc.model.ServiceRepository

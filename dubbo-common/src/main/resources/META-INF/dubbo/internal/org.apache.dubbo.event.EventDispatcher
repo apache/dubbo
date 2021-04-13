@@ -1,0 +1,2 @@
+direct=org.apache.dubbo.event.DirectEventDispatcher
+parallel=org.apache.dubbo.event.ParallelEventDispatcher

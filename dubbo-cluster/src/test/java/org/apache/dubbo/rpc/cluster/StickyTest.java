@@ -17,15 +17,14 @@
 package org.apache.dubbo.rpc.cluster;
 
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.RpcResult;
 import org.apache.dubbo.rpc.cluster.support.AbstractClusterInvoker;
 
 import org.junit.jupiter.api.Assertions;
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -48,20 +48,22 @@ public class StickyTest {
     private  Invoker<StickyTest> invoker2 = mock(Invoker.class);
     private RpcInvocation invocation;
     private Directory<StickyTest> dic;
-    private Result result = new RpcResult();
+    private Result result = new AppResponse();
     private StickyClusterInvoker<StickyTest> clusterinvoker = null;
     private URL url = URL.valueOf("test://test:11/test?"
                     + "&loadbalance=roundrobin"
-                    + "&" + Constants.CLUSTER_STICKY_KEY + "=true"
+                    + "&" + CLUSTER_STICKY_KEY + "=true"
     );
     private int runs = 1;
 
     @BeforeEach
     public void setUp() throws Exception {
         dic = mock(Directory.class);
+
         invocation = new RpcInvocation();
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(StickyTest.class);
 
@@ -75,14 +77,14 @@ public class StickyTest {
 
     @Test
     public void testStickyNoCheck() {
-        int count = testSticky(null, false);
+        int count = testSticky("t1", false);
         System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
     public void testStickyForceCheck() {
-        int count = testSticky(null, true);
+        int count = testSticky("t2", true);
         Assertions.assertTrue(count == 0 || count == runs);
     }
 
@@ -104,15 +106,15 @@ public class StickyTest {
         for (int i = 0; i < 100; i++) {//Two different methods should always use the same invoker every time.
             int count1 = testSticky("method1", true);
             int count2 = testSticky("method2", true);
-            Assertions.assertTrue(count1 == count2);
+            Assertions.assertEquals(count1, count2);
         }
     }
 
     public int testSticky(String methodName, boolean check) {
         if (methodName == null) {
-            url = url.addParameter(Constants.CLUSTER_STICKY_KEY, String.valueOf(check));
+            url = url.addParameter(CLUSTER_STICKY_KEY, String.valueOf(check));
         } else {
-            url = url.addParameter(methodName + "." + Constants.CLUSTER_STICKY_KEY, String.valueOf(check));
+            url = url.addParameter(methodName + "." + CLUSTER_STICKY_KEY, String.valueOf(check));
         }
 
         given(invoker1.invoke(invocation)).willReturn(result);
@@ -129,7 +131,7 @@ public class StickyTest {
 
         int count = 0;
         for (int i = 0; i < runs; i++) {
-            Assertions.assertEquals(null, clusterinvoker.invoke(invocation));
+            Assertions.assertNull(clusterinvoker.invoke(invocation));
             if (invoker1 == clusterinvoker.getSelectedInvoker()) {
                 count++;
             }

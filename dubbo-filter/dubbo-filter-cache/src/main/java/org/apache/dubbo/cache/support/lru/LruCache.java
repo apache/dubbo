@@ -54,7 +54,7 @@ public class LruCache implements Cache {
      */
     public LruCache(URL url) {
         final int max = url.getParameter("cache.size", 1000);
-        this.store = new LRUCache<Object, Object>(max);
+        this.store = new LRUCache<>(max);
     }
 
     /**

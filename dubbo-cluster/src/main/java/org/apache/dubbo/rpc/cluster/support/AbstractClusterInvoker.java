@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.support;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -31,6 +30,7 @@ import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.RpcUtils;
@@ -40,20 +40,30 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_AVAILABLE_CHECK_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK;
+import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_CLUSTER_STICKY;
+
 /**
  * AbstractClusterInvoker
  */
-public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
+public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractClusterInvoker.class);
 
-    protected final Directory<T> directory;
+    protected Directory<T> directory;
 
-    protected final boolean availablecheck;
+    protected boolean availablecheck;
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
     private volatile Invoker<T> stickyInvoker = null;
+
+    public AbstractClusterInvoker() {
+    }
 
     public AbstractClusterInvoker(Directory<T> directory) {
         this(directory, directory.getUrl());
@@ -66,7 +76,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
         this.directory = directory;
         //sticky: invoker.isAvailable() should always be checked before using when availablecheck is true.
-        this.availablecheck = url.getParameter(Constants.CLUSTER_AVAILABLE_CHECK_KEY, Constants.DEFAULT_CLUSTER_AVAILABLE_CHECK);
+        this.availablecheck = url.getParameter(CLUSTER_AVAILABLE_CHECK_KEY, DEFAULT_CLUSTER_AVAILABLE_CHECK);
     }
 
     @Override
@@ -76,6 +86,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
 
     @Override
     public URL getUrl() {
+        return directory.getConsumerUrl();
+    }
+
+    public URL getRegistryUrl() {
         return directory.getUrl();
     }
 
@@ -88,11 +102,20 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         return directory.isAvailable();
     }
 
+    public Directory<T> getDirectory() {
+        return directory;
+    }
+
     @Override
     public void destroy() {
         if (destroyed.compareAndSet(false, true)) {
             directory.destroy();
         }
+    }
+
+    @Override
+    public boolean isDestroyed() {
+        return destroyed.get();
     }
 
     /**
@@ -117,10 +140,10 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             return null;
         }
-        String methodName = invocation == null ? StringUtils.EMPTY : invocation.getMethodName();
+        String methodName = invocation == null ? StringUtils.EMPTY_STRING : invocation.getMethodName();
 
         boolean sticky = invokers.get(0).getUrl()
-                .getMethodParameter(methodName, Constants.CLUSTER_STICKY_KEY, Constants.DEFAULT_CLUSTER_STICKY);
+                .getMethodParameter(methodName, CLUSTER_STICKY_KEY, DEFAULT_CLUSTER_STICKY);
 
         //ignore overloaded method
         if (stickyInvoker != null && !invokers.contains(stickyInvoker)) {
@@ -156,9 +179,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if ((selected != null && selected.contains(invoker))
                 || (!invoker.isAvailable() && getUrl() != null && availablecheck)) {
             try {
-                Invoker<T> rinvoker = reselect(loadbalance, invocation, invokers, selected, availablecheck);
-                if (rinvoker != null) {
-                    invoker = rinvoker;
+                Invoker<T> rInvoker = reselect(loadbalance, invocation, invokers, selected, availablecheck);
+                if (rInvoker != null) {
+                    invoker = rInvoker;
                 } else {
                     //Check the index of current selected invoker, if it's not the last one, choose the one at index+1.
                     int index = invokers.indexOf(invoker);
@@ -231,9 +254,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-        Map<String, String> contextAttachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
-            ((RpcInvocation) invocation).addAttachments(contextAttachments);
+            ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
         List<Invoker<T>> invokers = list(invocation);
@@ -259,7 +282,7 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
         if (CollectionUtils.isEmpty(invokers)) {
             throw new RpcException(RpcException.NO_INVOKER_AVAILABLE_AFTER_FILTER, "Failed to invoke the method "
                     + invocation.getMethodName() + " in the service " + getInterface().getName()
-                    + ". No provider available for the service " + directory.getUrl().getServiceKey()
+                    + ". No provider available for the service " + directory.getConsumerUrl().getServiceKey()
                     + " from registry " + directory.getUrl().getAddress()
                     + " on the consumer " + NetUtils.getLocalHost()
                     + " using the dubbo version " + Version.getVersion()
@@ -288,9 +311,9 @@ public abstract class AbstractClusterInvoker<T> implements Invoker<T> {
     protected LoadBalance initLoadBalance(List<Invoker<T>> invokers, Invocation invocation) {
         if (CollectionUtils.isNotEmpty(invokers)) {
             return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(invokers.get(0).getUrl()
-                    .getMethodParameter(RpcUtils.getMethodName(invocation), Constants.LOADBALANCE_KEY, Constants.DEFAULT_LOADBALANCE));
+                    .getMethodParameter(RpcUtils.getMethodName(invocation), LOADBALANCE_KEY, DEFAULT_LOADBALANCE));
         } else {
-            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(Constants.DEFAULT_LOADBALANCE);
+            return ExtensionLoader.getExtensionLoader(LoadBalance.class).getExtension(DEFAULT_LOADBALANCE);
         }
     }
 }

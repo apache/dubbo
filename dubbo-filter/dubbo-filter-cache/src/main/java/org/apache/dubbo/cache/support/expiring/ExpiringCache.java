@@ -48,7 +48,7 @@ public class ExpiringCache implements Cache {
         final int secondsToLive = url.getParameter("cache.seconds", 180);
         // Cache check interval (second)
         final int intervalSeconds = url.getParameter("cache.interval", 4);
-        ExpiringMap<Object, Object> expiringMap = new ExpiringMap<Object, Object>(secondsToLive, intervalSeconds);
+        ExpiringMap<Object, Object> expiringMap = new ExpiringMap<>(secondsToLive, intervalSeconds);
         expiringMap.getExpireThread().startExpiryIfNotStarted();
         this.store = expiringMap;
     }

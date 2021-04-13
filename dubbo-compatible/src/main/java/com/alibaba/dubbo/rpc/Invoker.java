@@ -24,6 +24,7 @@ public interface Invoker<T> extends org.apache.dubbo.rpc.Invoker<T> {
 
     Result invoke(Invocation invocation) throws RpcException;
 
+    @Override
     URL getUrl();
 
     default org.apache.dubbo.rpc.Invoker<T> getOriginal() {

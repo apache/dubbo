@@ -17,13 +17,13 @@ public class ClassNameTestThrift {
 
     public interface Iface {
 
-        public String echo(String arg) throws org.apache.thrift.TException;
+        String echo(String arg) throws org.apache.thrift.TException;
 
     }
 
     public interface AsyncIface {
 
-        public void echo(String arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echo_call> resultHandler) throws org.apache.thrift.TException;
+        void echo(String arg, org.apache.thrift.async.AsyncMethodCallback<AsyncClient.echo_call> resultHandler) throws org.apache.thrift.TException;
 
     }
 
@@ -146,11 +146,16 @@ public class ClassNameTestThrift {
                 super("echo");
             }
 
-            protected echo_args getEmptyArgsInstance() {
+            public echo_args getEmptyArgsInstance() {
                 return new echo_args();
             }
 
-            protected echo_result getResult(I iface, echo_args args) throws org.apache.thrift.TException {
+            @Override
+            protected boolean isOneway() {
+                return false;
+            }
+
+            public echo_result getResult(I iface, echo_args args) throws org.apache.thrift.TException {
                 echo_result result = new echo_result();
                 result.success = iface.echo(args.arg);
                 return result;

@@ -37,6 +37,6 @@ public interface Directory<T> extends org.apache.dubbo.rpc.cluster.Directory<T> 
     @Override
     default List<Invoker<T>> list(Invocation invocation) throws RpcException {
         List<com.alibaba.dubbo.rpc.Invoker<T>> res = this.list(new com.alibaba.dubbo.rpc.Invocation.CompatibleInvocation(invocation));
-        return res.stream().map(i -> i.getOriginal()).collect(Collectors.toList());
+        return res.stream().map(com.alibaba.dubbo.rpc.Invoker::getOriginal).collect(Collectors.toList());
     }
 }

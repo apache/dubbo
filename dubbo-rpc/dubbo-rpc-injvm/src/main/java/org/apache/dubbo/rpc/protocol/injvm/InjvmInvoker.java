@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
@@ -26,6 +26,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
 
 /**
  * InjvmInvoker
@@ -58,7 +60,13 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
-        RpcContext.getContext().setRemoteAddress(Constants.LOCALHOST_VALUE, 0);
+        RpcContext.getContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+        // Solve local exposure, the server opens the token, and the client call fails.
+        URL serverURL = exporter.getInvoker().getUrl();
+        boolean serverHasToken = serverURL.hasParameter(Constants.TOKEN_KEY);
+        if (serverHasToken) {
+            invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
+        }
         return exporter.getInvoker().invoke(invocation);
     }
 }

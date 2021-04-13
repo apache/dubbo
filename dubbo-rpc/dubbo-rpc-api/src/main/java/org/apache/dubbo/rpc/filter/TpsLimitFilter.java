@@ -17,7 +17,7 @@
 
 package org.apache.dubbo.rpc.filter;
 
-import org.apache.dubbo.common.Constants;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
@@ -27,6 +27,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.filter.tps.DefaultTPSLimiter;
 import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
 
+import static org.apache.dubbo.rpc.Constants.TPS_LIMIT_RATE_KEY;
+
 /**
  * TpsLimitFilter limit the TPS (transaction per second) for all method of a service or a particular method.
  * Service or method url can define <b>tps</b> or <b>tps.interval</b> to control this control.It use {@link DefaultTPSLimiter}
@@ -34,7 +36,7 @@ import org.apache.dubbo.rpc.filter.tps.TPSLimiter;
  * if invocation count exceed the configured <b>tps</b> value (default is -1 which means unlimited) then invocation will get
  * RpcException.
  * */
-@Activate(group = Constants.PROVIDER, value = Constants.TPS_LIMIT_RATE_KEY)
+@Activate(group = CommonConstants.PROVIDER, value = TPS_LIMIT_RATE_KEY)
 public class TpsLimitFilter implements Filter {
 
     private final TPSLimiter tpsLimiter = new DefaultTPSLimiter();

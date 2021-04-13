@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster.router.condition;
 
-import org.apache.dubbo.common.Constants;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,15 +38,29 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
+
 /**
  * ConditionRouter
- *
+ * It supports the conditional routing configured by "override://", in 2.6.x,
+ * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
+ * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
+ * and {@link org.apache.dubbo.rpc.cluster.router.condition.config.AppRouter}
+ * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
 public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
 
     private static final Logger logger = LoggerFactory.getLogger(ConditionRouter.class);
-    protected static Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
+    protected static final Pattern ROUTE_PATTERN = Pattern.compile("([&!=,]*)\\s*([^&!=,\\s]+)");
     protected Map<String, MatchPair> whenCondition;
     protected Map<String, MatchPair> thenCondition;
 
@@ -61,10 +74,10 @@ public class ConditionRouter extends AbstractRouter {
 
     public ConditionRouter(URL url) {
         this.url = url;
-        this.priority = url.getParameter(Constants.PRIORITY_KEY, 0);
-        this.force = url.getParameter(Constants.FORCE_KEY, false);
-        this.enabled = url.getParameter(Constants.ENABLED_KEY, true);
-        init(url.getParameterAndDecoded(Constants.RULE_KEY));
+        this.priority = url.getParameter(PRIORITY_KEY, 0);
+        this.force = url.getParameter(FORCE_KEY, false);
+        this.enabled = url.getParameter(ENABLED_KEY, true);
+        init(url.getParameterAndDecoded(RULE_KEY));
     }
 
     public void init(String rule) {
@@ -183,7 +196,7 @@ public class ConditionRouter extends AbstractRouter {
             if (!result.isEmpty()) {
                 return result;
             } else if (force) {
-                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(Constants.RULE_KEY));
+                logger.warn("The route result is empty and force execute. consumer: " + NetUtils.getLocalHost() + ", service: " + url.getServiceKey() + ", router: " + url.getParameterAndDecoded(RULE_KEY));
                 return result;
             }
         } catch (Throwable t) {
@@ -196,7 +209,7 @@ public class ConditionRouter extends AbstractRouter {
     public boolean isRuntime() {
         // We always return true for previously defined Router, that is, old Router doesn't support cache anymore.
 //        return true;
-        return this.url.getParameter(Constants.RUNTIME_KEY, false);
+        return this.url.getParameter(RUNTIME_KEY, false);
     }
 
     @Override
@@ -219,16 +232,16 @@ public class ConditionRouter extends AbstractRouter {
             String key = matchPair.getKey();
             String sampleValue;
             //get real invoked method name from invocation
-            if (invocation != null && (Constants.METHOD_KEY.equals(key) || Constants.METHODS_KEY.equals(key))) {
+            if (invocation != null && (METHOD_KEY.equals(key) || METHODS_KEY.equals(key))) {
                 sampleValue = invocation.getMethodName();
-            } else if (Constants.ADDRESS_KEY.equals(key)) {
+            } else if (ADDRESS_KEY.equals(key)) {
                 sampleValue = url.getAddress();
-            } else if (Constants.HOST_KEY.equals(key)) {
+            } else if (HOST_KEY.equals(key)) {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {
-                    sampleValue = sample.get(Constants.DEFAULT_KEY_PREFIX + key);
+                    sampleValue = sample.get(key);
                 }
             }
             if (sampleValue != null) {

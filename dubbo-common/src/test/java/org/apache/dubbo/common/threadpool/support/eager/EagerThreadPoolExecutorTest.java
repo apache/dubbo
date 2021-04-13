@@ -75,22 +75,19 @@ public class EagerThreadPoolExecutorTest {
 
         for (int i = 0; i < 15; i++) {
             Thread.sleep(50);
-            executor.execute(new Runnable() {
-                @Override
-                public void run() {
-                    System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
-                            .size() + " executor size: " + executor.getPoolSize());
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+            executor.execute(() -> {
+                System.out.println("thread number in current pool：" + executor.getPoolSize() + ",  task number in task queue：" + executor.getQueue()
+                        .size() + " executor size: " + executor.getPoolSize());
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             });
         }
         Thread.sleep(5000);
         // cores theads are all alive.
-        Assertions.assertTrue(executor.getPoolSize() == cores, "more than cores threads alive!");
+        Assertions.assertEquals(executor.getPoolSize(), cores, "more than cores threads alive!");
     }
 
     @Test
@@ -98,9 +95,7 @@ public class EagerThreadPoolExecutorTest {
         ExecutorService executorService = (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class)
                 .getExtension("eager")
                 .getExecutor(URL);
-        Assertions.assertTrue(
-                executorService.getClass()
-                        .getSimpleName()
-                        .equals("EagerThreadPoolExecutor"), "test spi fail!");
+        Assertions.assertEquals("EagerThreadPoolExecutor", executorService.getClass()
+            .getSimpleName(), "test spi fail!");
     }
 }

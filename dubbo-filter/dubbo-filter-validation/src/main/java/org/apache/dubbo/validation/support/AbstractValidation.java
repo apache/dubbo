@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public abstract class AbstractValidation implements Validation {
 
-    private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<String, Validator>();
+    private final ConcurrentMap<String, Validator> validators = new ConcurrentHashMap<>();
 
     @Override
     public Validator getValidator(URL url) {

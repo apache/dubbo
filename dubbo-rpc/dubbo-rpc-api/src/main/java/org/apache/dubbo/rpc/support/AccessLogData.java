@@ -17,9 +17,14 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 
 import com.alibaba.fastjson.JSON;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -204,14 +209,14 @@ public final class AccessLogData {
                 .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
-        if (StringUtils.isNotEmpty(group.toString())) {
+        if (StringUtils.isNotEmpty(group)) {
             sn.append(group).append("/");
         }
 
         sn.append(get(SERVICE));
 
         String version = get(VERSION) != null ? get(VERSION).toString() : "";
-        if (StringUtils.isNotEmpty(version.toString())) {
+        if (StringUtils.isNotEmpty(version)) {
             sn.append(":").append(version);
         }
 
@@ -261,6 +266,16 @@ public final class AccessLogData {
      */
     private void set(String key, Object value) {
         data.put(key, value);
+    }
+    
+    public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
+        setServiceName(invoker.getInterface().getName());
+        setMethodName(inv.getMethodName());
+        setVersion(invoker.getUrl().getParameter(VERSION_KEY));
+        setGroup(invoker.getUrl().getParameter(GROUP_KEY));
+        setInvocationTime(new Date());
+        setTypes(inv.getParameterTypes());
+        setArguments(inv.getArguments());
     }
 
 }
