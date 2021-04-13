@@ -30,6 +30,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import static org.apache.dubbo.common.constants.CommonConstants.HEARTBEAT_EVENT;
+
 /**
  * NettyClientHandler
  */
@@ -55,10 +57,9 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.connected(channel);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+        handler.connected(channel);
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is established.");
         }
     }
 
@@ -68,18 +69,18 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         try {
             handler.disconnected(channel);
         } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            NettyChannel.removeChannel(ctx.channel());
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info("The connection of " + channel.getLocalAddress() + " -> " + channel.getRemoteAddress() + " is disconnected.");
         }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
-        try {
-            handler.received(channel, msg);
-        } finally {
-            NettyChannel.removeChannelIfDisconnected(ctx.channel());
-        }
+        handler.received(channel, msg);
     }
 
     @Override
@@ -92,28 +93,24 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         // If our out bound event has an error (in most cases the encoder fails),
         // we need to have the request return directly instead of blocking the invoke process.
         promise.addListener(future -> {
-            try {
-                if (future.isSuccess()) {
-                    // if our future is success, mark the future to sent.
-                    handler.sent(channel, msg);
-                    return;
-                }
+            if (future.isSuccess()) {
+                // if our future is success, mark the future to sent.
+                handler.sent(channel, msg);
+                return;
+            }
 
-                Throwable t = future.cause();
-                if (t != null && isRequest) {
-                    Request request = (Request) msg;
-                    Response response = buildErrorResponse(request, t);
-                    handler.received(channel, response);
-                }
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ctx.channel());
+            Throwable t = future.cause();
+            if (t != null && isRequest) {
+                Request request = (Request) msg;
+                Response response = buildErrorResponse(request, t);
+                handler.received(channel, response);
             }
         });
     }
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-    	// send heartbeat when read idle.
+        // send heartbeat when read idle.
         if (evt instanceof IdleStateEvent) {
             try {
                 NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
@@ -123,12 +120,12 @@ public class NettyClientHandler extends ChannelDuplexHandler {
                 Request req = new Request();
                 req.setVersion(Version.getProtocolVersion());
                 req.setTwoWay(true);
-                req.setEvent(Request.HEARTBEAT_EVENT);
+                req.setEvent(HEARTBEAT_EVENT);
                 channel.send(req);
             } finally {
                 NettyChannel.removeChannelIfDisconnected(ctx.channel());
             }
-       } else {
+        } else {
             super.userEventTriggered(ctx, evt);
         }
     }
@@ -142,6 +139,10 @@ public class NettyClientHandler extends ChannelDuplexHandler {
         } finally {
             NettyChannel.removeChannelIfDisconnected(ctx.channel());
         }
+    }
+
+    public void handshakeCompleted(SslHandlerInitializer.HandshakeCompletionEvent evt) {
+        // TODO
     }
 
     /**

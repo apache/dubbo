@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.status;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -41,6 +43,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.MockitoAnnotations.initMocks;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DataSourceStatusCheckerTest {
     private DataSourceStatusChecker dataSourceStatusChecker;
 

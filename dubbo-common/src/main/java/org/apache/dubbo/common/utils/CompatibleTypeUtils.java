@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -110,6 +111,24 @@ public class CompatibleTypeUtils {
                             + DATE_FORMAT + ", cause: " + e.getMessage(), e);
                 }
             }
+            if (type == java.time.LocalDateTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
+                }
+                return LocalDateTime.parse(string);
+            }
+            if (type == java.time.LocalDate.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
+                }
+                return java.time.LocalDate.parse(string);
+            }
+            if (type == java.time.LocalTime.class) {
+                if (StringUtils.isEmpty(string)) {
+                    return null;
+                }
+                return LocalDateTime.parse(string).toLocalTime();
+            }
             if (type == Class.class) {
                 try {
                     return ReflectUtils.name2class(string);
@@ -187,19 +206,19 @@ public class CompatibleTypeUtils {
             }
         }
         if (value.getClass().isArray() && Collection.class.isAssignableFrom(type)) {
+            int length = Array.getLength(value);
             Collection collection;
             if (!type.isInterface()) {
                 try {
                     collection = (Collection) type.newInstance();
                 } catch (Throwable e) {
-                    collection = new ArrayList<Object>();
+                    collection = new ArrayList<Object>(length);
                 }
             } else if (type == Set.class) {
-                collection = new HashSet<Object>();
+                collection = new HashSet<Object>(Math.max((int) (length/.75f) + 1, 16));
             } else {
-                collection = new ArrayList<Object>();
+                collection = new ArrayList<Object>(length);
             }
-            int length = Array.getLength(value);
             for (int i = 0; i < length; i++) {
                 collection.add(Array.get(value, i));
             }

@@ -232,6 +232,18 @@
                         <xsd:documentation><![CDATA[ lazy create connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="provided-by" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ declares which app or service this interface belongs to. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="router" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ The routers ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -397,6 +409,16 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="metadata-type" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadta type: local or remote. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="register-consumer" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Register consumer instance or not, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
 
     </xsd:complexType>
 
@@ -502,6 +524,11 @@
                 <xsd:documentation><![CDATA[ The registry cluster type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="zone" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The registry zone type. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="forks" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ ForkingCluster forks. ]]></xsd:documentation>
@@ -575,6 +602,32 @@
                 <xsd:documentation><![CDATA[ Extra Parameter Keys. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="use-as-config-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as config center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="use-as-metadata-center" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ work as metadata center or not. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="accepts" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ list of rpc protocols accepted by this registry, separated with ",". ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="preferred" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is this registry the preferred one. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="weight" type="xsd:integer">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ weight of registry. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="metadataReportType">
@@ -635,6 +688,11 @@
         <xsd:attribute name="cluster" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ Need cluster support, default false. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="registry" type="xsd:string" use="optional">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ registry config id. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
@@ -992,6 +1050,11 @@
                 <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="threadname" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="threads" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool size. ]]></xsd:documentation>
@@ -1005,6 +1068,11 @@
         <xsd:attribute name="iothreads" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The IO thread pool size. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="alive" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool keepAliveTime. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="queues" type="xsd:string">
@@ -1138,6 +1206,11 @@
                 <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="ssl-enabled" type="xsd:boolean">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ Is SSL enabled. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:anyAttribute namespace="##other" processContents="lax"/>
     </xsd:complexType>
 
@@ -1163,6 +1236,11 @@
                         <xsd:documentation><![CDATA[ The thread pool type. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="threadname" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The thread pool name. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:attribute name="threads" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The thread pool size. ]]></xsd:documentation>
@@ -1171,6 +1249,11 @@
                 <xsd:attribute name="iothreads" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The IO thread pool size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="alive" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The thread pool keepAliveTime. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="queues" type="xsd:string">
@@ -1329,6 +1412,65 @@
         </xsd:complexContent>
     </xsd:complexType>
 
+    <xsd:complexType name="sslType">
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-key-cert-chain-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-private-key-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-key-password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The server key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="server-trust-cert-collection-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The trusted server cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-key-cert-chain-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-private-key-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client key. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-key-password" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The client key pwd. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="client-trust-cert-collection-path" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The trusted client cert. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:element name="ssl" type="sslType">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[ The ssl config ]]></xsd:documentation>
+            <xsd:appinfo>
+                <tool:annotation>
+                    <tool:exports type="org.apache.dubbo.config.SslConfig"/>
+                </tool:annotation>
+            </xsd:appinfo>
+        </xsd:annotation>
+    </xsd:element>
+
     <xsd:element name="application" type="applicationType">
         <xsd:annotation>
             <xsd:documentation><![CDATA[ The application config ]]></xsd:documentation>
@@ -1433,7 +1575,7 @@
             <xsd:documentation><![CDATA[ Export service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ServiceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.ServiceConfigBase"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>
@@ -1444,7 +1586,7 @@
             <xsd:documentation><![CDATA[ Reference service config ]]></xsd:documentation>
             <xsd:appinfo>
                 <tool:annotation>
-                    <tool:exports type="org.apache.dubbo.config.ReferenceConfig"/>
+                    <tool:exports type="org.apache.dubbo.config.ReferenceConfigBase"/>
                 </tool:annotation>
             </xsd:appinfo>
         </xsd:annotation>

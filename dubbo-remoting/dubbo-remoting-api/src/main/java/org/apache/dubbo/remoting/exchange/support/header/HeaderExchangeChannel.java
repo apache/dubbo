@@ -31,6 +31,7 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
@@ -75,6 +76,12 @@ final class HeaderExchangeChannel implements ExchangeChannel {
         }
     }
 
+    static void removeChannel(Channel ch) {
+        if (ch != null) {
+            ch.removeAttribute(CHANNEL_KEY);
+        }
+    }
+
     @Override
     public void send(Object message) throws RemotingException {
         send(message, false);
@@ -83,7 +90,8 @@ final class HeaderExchangeChannel implements ExchangeChannel {
     @Override
     public void send(Object message, boolean sent) throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null,
+                    "Failed to send message " + message + ", cause: The channel " + this + " is closed!");
         }
         if (message instanceof Request
                 || message instanceof Response
@@ -100,20 +108,31 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public CompletableFuture<Object> request(Object request) throws RemotingException {
-        return request(request, channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT));
+        return request(request, null);
     }
 
     @Override
     public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
+        return request(request, timeout, null);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        return request(request, channel.getUrl().getPositiveParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT), executor);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         if (closed) {
-            throw new RemotingException(this.getLocalAddress(), null, "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
+            throw new RemotingException(this.getLocalAddress(), null,
+                    "Failed to send request " + request + ", cause: The channel " + this + " is closed!");
         }
         // create request.
         Request req = new Request();
         req.setVersion(Version.getProtocolVersion());
         req.setTwoWay(true);
         req.setData(request);
-        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout);
+        DefaultFuture future = DefaultFuture.newFuture(channel, req, timeout, executor);
         try {
             channel.send(req);
         } catch (RemotingException e) {
@@ -130,6 +149,10 @@ final class HeaderExchangeChannel implements ExchangeChannel {
 
     @Override
     public void close() {
+        // If the channel has been closed, return directly.
+        if (closed) {
+            return;
+        }
         try {
             // graceful close
             DefaultFuture.closeChannel(channel);

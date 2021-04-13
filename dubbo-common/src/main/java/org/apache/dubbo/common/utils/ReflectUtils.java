@@ -21,6 +21,8 @@ import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.NotFoundException;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -29,20 +31,31 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
+import static org.apache.dubbo.common.utils.ArrayUtils.isEmpty;
 
 /**
  * ReflectUtils
@@ -122,14 +135,28 @@ public final class ReflectUtils {
 
     private static final ConcurrentMap<String, Class<?>> NAME_CLASS_CACHE = new ConcurrentHashMap<String, Class<?>>();
 
-    private static final ConcurrentMap<String, Method> Signature_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentMap<String, Method> SIGNATURE_METHODS_CACHE = new ConcurrentHashMap<String, Method>();
+
+    private static Map<Class<?>, Object> primitiveDefaults = new HashMap<>();
+
+    static {
+        primitiveDefaults.put(int.class, 0);
+        primitiveDefaults.put(long.class, 0L);
+        primitiveDefaults.put(byte.class, (byte) 0);
+        primitiveDefaults.put(char.class, (char) 0);
+        primitiveDefaults.put(short.class, (short) 0);
+        primitiveDefaults.put(float.class, (float) 0);
+        primitiveDefaults.put(double.class, (double) 0);
+        primitiveDefaults.put(boolean.class, false);
+        primitiveDefaults.put(void.class, null);
+    }
 
     private ReflectUtils() {
     }
 
     public static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
+        while (cls.isArray()) {
+            cls = cls.getComponentType();
         }
         return isPrimitive(cls);
     }
@@ -414,6 +441,16 @@ public final class ReflectUtils {
         }
         ret.append(')').append(getDesc(m.getReturnType()));
         return ret.toString();
+    }
+
+    public static String[] getDescArray(final Method m) {
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        String[] arr = new String[parameterTypes.length];
+
+        for (int i = 0; i < parameterTypes.length; i++) {
+            arr[i] = getDesc(parameterTypes[i]);
+        }
+        return arr;
     }
 
     /**
@@ -868,14 +905,16 @@ public final class ReflectUtils {
      * @throws NoSuchMethodException
      * @throws ClassNotFoundException
      * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
      */
+    @Deprecated
     public static Method findMethodByMethodSignature(Class<?> clazz, String methodName, String[] parameterTypes)
             throws NoSuchMethodException, ClassNotFoundException {
         String signature = clazz.getName() + "." + methodName;
         if (parameterTypes != null && parameterTypes.length > 0) {
             signature += StringUtils.join(parameterTypes);
         }
-        Method method = Signature_METHODS_CACHE.get(signature);
+        Method method = SIGNATURE_METHODS_CACHE.get(signature);
         if (method != null) {
             return method;
         }
@@ -903,10 +942,20 @@ public final class ReflectUtils {
             method = clazz.getMethod(methodName, types);
 
         }
-        Signature_METHODS_CACHE.put(signature, method);
+        SIGNATURE_METHODS_CACHE.put(signature, method);
         return method;
     }
 
+    /**
+     * @param clazz      Target class to find method
+     * @param methodName Method signature, e.g.: method1(int, String). It is allowed to provide method name only, e.g.: method2
+     * @return target method
+     * @throws NoSuchMethodException
+     * @throws ClassNotFoundException
+     * @throws IllegalStateException  when multiple methods are found (overridden method when parameter info is not provided)
+     * @deprecated Recommend {@link MethodUtils#findMethod(Class, String, Class[])}
+     */
+    @Deprecated
     public static Method findMethodByMethodName(Class<?> clazz, String methodName)
             throws NoSuchMethodException, ClassNotFoundException {
         return findMethodByMethodSignature(clazz, methodName, null);
@@ -1015,7 +1064,7 @@ public final class ReflectUtils {
         try {
             Object value = emptyInstances.get(returnType);
             if (value == null) {
-                value = returnType.newInstance();
+                value = returnType.getDeclaredConstructor().newInstance();
                 emptyInstances.put(returnType, value);
             }
             Class<?> cls = value.getClass();
@@ -1028,9 +1077,7 @@ public final class ReflectUtils {
                     Object property = getEmptyObject(field.getType(), emptyInstances, level + 1);
                     if (property != null) {
                         try {
-                            if (!field.isAccessible()) {
-                                field.setAccessible(true);
-                            }
+                            ReflectUtils.makeAccessible(field);
                             field.set(value, property);
                         } catch (Throwable ignored) {
                         }
@@ -1040,6 +1087,22 @@ public final class ReflectUtils {
             }
             return value;
         } catch (Throwable e) {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Method m) {
+        if (m.getReturnType().isPrimitive()) {
+            return primitiveDefaults.get(m.getReturnType());
+        } else {
+            return null;
+        }
+    }
+
+    public static Object defaultReturn(Class<?> classType) {
+        if (classType != null && classType.isPrimitive()) {
+            return primitiveDefaults.get(classType);
+        } else {
             return null;
         }
     }
@@ -1103,8 +1166,7 @@ public final class ReflectUtils {
                         || Modifier.isStatic(field.getModifiers())) {
                     continue;
                 }
-
-                field.setAccessible(true);
+                ReflectUtils.makeAccessible(field);
 
                 properties.put(field.getName(), field);
             }
@@ -1119,7 +1181,7 @@ public final class ReflectUtils {
             Method[] methods = cl.getDeclaredMethods();
             for (Method method : methods) {
                 if (isBeanPropertyReadMethod(method)) {
-                    method.setAccessible(true);
+                    ReflectUtils.makeAccessible(method);
                     String property = getPropertyNameFromBeanReadMethod(method);
                     properties.put(property, method);
                 }
@@ -1138,6 +1200,9 @@ public final class ReflectUtils {
                 if (actualArgType instanceof ParameterizedType) {
                     returnType = (Class<?>) ((ParameterizedType) actualArgType).getRawType();
                     genericReturnType = actualArgType;
+                } else if (actualArgType instanceof TypeVariable) {
+                    returnType = (Class<?>) ((TypeVariable<?>) actualArgType).getBounds()[0];
+                    genericReturnType = actualArgType;
                 } else {
                     returnType = (Class<?>) actualArgType;
                     genericReturnType = returnType;
@@ -1148,5 +1213,183 @@ public final class ReflectUtils {
             }
         }
         return new Type[]{returnType, genericReturnType};
+    }
+
+    /**
+     * Find the {@link Set} of {@link ParameterizedType}
+     *
+     * @param sourceClass the source {@link Class class}
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
+        // Add Generic Interfaces
+        List<Type> genericTypes = new LinkedList<>(asList(sourceClass.getGenericInterfaces()));
+        // Add Generic Super Class
+        genericTypes.add(sourceClass.getGenericSuperclass());
+
+        Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
+                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
+                .map(ParameterizedType.class::cast)  // cast to ParameterizedType
+                .collect(Collectors.toSet());
+
+        if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
+            genericTypes.stream()
+                    .filter(type -> type instanceof Class)
+                    .map(Class.class::cast)
+                    .forEach(superClass -> parameterizedTypes.addAll(findParameterizedTypes(superClass)));
+        }
+
+        return unmodifiableSet(parameterizedTypes);                     // build as a Set
+
+    }
+
+    /**
+     * Find the hierarchical types from the source {@link Class class} by specified {@link Class type}.
+     *
+     * @param sourceClass the source {@link Class class}
+     * @param matchType   the type to match
+     * @param <T>         the type to match
+     * @return non-null read-only {@link Set}
+     * @since 2.7.5
+     */
+    public static <T> Set<Class<T>> findHierarchicalTypes(Class<?> sourceClass, Class<T> matchType) {
+        if (sourceClass == null) {
+            return Collections.emptySet();
+        }
+
+        Set<Class<T>> hierarchicalTypes = new LinkedHashSet<>();
+
+        if (matchType.isAssignableFrom(sourceClass)) {
+            hierarchicalTypes.add((Class<T>) sourceClass);
+        }
+
+        // Find all super classes
+        hierarchicalTypes.addAll(findHierarchicalTypes(sourceClass.getSuperclass(), matchType));
+
+        return unmodifiableSet(hierarchicalTypes);
+    }
+
+    /**
+     * Get the value from the specified bean and its getter method.
+     *
+     * @param bean       the bean instance
+     * @param methodName the name of getter
+     * @param <T>        the type of property value
+     * @return
+     * @since 2.7.5
+     */
+    public static <T> T getProperty(Object bean, String methodName) {
+        Class<?> beanClass = bean.getClass();
+        BeanInfo beanInfo = null;
+        T propertyValue = null;
+
+        try {
+            beanInfo = Introspector.getBeanInfo(beanClass);
+            propertyValue = (T) Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
+                    .findFirst()
+                    .map(method -> {
+                        try {
+                            return method.getMethod().invoke(bean);
+                        } catch (Exception e) {
+                            //ignore
+                        }
+                        return null;
+                    }).get();
+        } catch (Exception e) {
+
+        }
+        return propertyValue;
+    }
+
+    /**
+     * Resolve the types of the specified values
+     *
+     * @param values the values
+     * @return If can't be resolved, return {@link ReflectUtils#EMPTY_CLASS_ARRAY empty class array}
+     * @since 2.7.6
+     */
+    public static Class[] resolveTypes(Object... values) {
+
+        if (isEmpty(values)) {
+            return EMPTY_CLASS_ARRAY;
+        }
+
+        int size = values.length;
+
+        Class[] types = new Class[size];
+
+        for (int i = 0; i < size; i++) {
+            Object value = values[i];
+            types[i] = value == null ? null : value.getClass();
+        }
+
+        return types;
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given method accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param method the method to make accessible
+     * @see java.lang.reflect.Method#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Method method) {
+        if ((!Modifier.isPublic(method.getModifiers()) ||
+                !Modifier.isPublic(method.getDeclaringClass().getModifiers())) && !method.isAccessible()) {
+            method.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given field accessible, explicitly setting it accessible if
+     * necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param field the field to make accessible
+     * @see java.lang.reflect.Field#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Field field) {
+        if ((!Modifier.isPublic(field.getModifiers()) ||
+                !Modifier.isPublic(field.getDeclaringClass().getModifiers()) ||
+                Modifier.isFinal(field.getModifiers())) && !field.isAccessible()) {
+            field.setAccessible(true);
+        }
+    }
+
+    /**
+     * Copy from org.springframework.util.ReflectionUtils.
+     * Make the given constructor accessible, explicitly setting it accessible
+     * if necessary. The {@code setAccessible(true)} method is only called
+     * when actually necessary, to avoid unnecessary conflicts with a JVM
+     * SecurityManager (if active).
+     * @param ctor the constructor to make accessible
+     * @see java.lang.reflect.Constructor#setAccessible
+     */
+    @SuppressWarnings("deprecation")  // on JDK 9
+    public static void makeAccessible(Constructor<?> ctor) {
+        if ((!Modifier.isPublic(ctor.getModifiers()) ||
+                !Modifier.isPublic(ctor.getDeclaringClass().getModifiers())) && !ctor.isAccessible()) {
+            ctor.setAccessible(true);
+        }
+    }
+
+    public static boolean checkZeroArgConstructor(Class clazz) {
+        try {
+            clazz.getDeclaredConstructor();
+            return true;
+        } catch (NoSuchMethodException e) {
+            return false;
+        }
+    }
+
+    public static boolean isJdk(Class clazz) {
+        return clazz.getName().startsWith("java.") || clazz.getName().startsWith("javax.");
     }
 }

@@ -16,38 +16,48 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
+
+/**
+ * Miscellaneous collection utility methods.
+ * Mainly for internal use within the framework.
+ *
+ * @author william.liangf
+ * @since 2.0.7
+ */
 public class CollectionUtils {
 
-    private static final Comparator<String> SIMPLE_NAME_COMPARATOR = new Comparator<String>() {
-        @Override
-        public int compare(String s1, String s2) {
-            if (s1 == null && s2 == null) {
-                return 0;
-            }
-            if (s1 == null) {
-                return -1;
-            }
-            if (s2 == null) {
-                return 1;
-            }
-            int i1 = s1.lastIndexOf('.');
-            if (i1 >= 0) {
-                s1 = s1.substring(i1 + 1);
-            }
-            int i2 = s2.lastIndexOf('.');
-            if (i2 >= 0) {
-                s2 = s2.substring(i2 + 1);
-            }
-            return s1.compareToIgnoreCase(s2);
+    private static final Comparator<String> SIMPLE_NAME_COMPARATOR = (s1, s2) -> {
+        if (s1 == null && s2 == null) {
+            return 0;
         }
+        if (s1 == null) {
+            return -1;
+        }
+        if (s2 == null) {
+            return 1;
+        }
+        int i1 = s1.lastIndexOf('.');
+        if (i1 >= 0) {
+            s1 = s1.substring(i1 + 1);
+        }
+        int i2 = s2.lastIndexOf('.');
+        if (i2 >= 0) {
+            s2 = s2.substring(i2 + 1);
+        }
+        return s1.compareToIgnoreCase(s2);
     };
 
     private CollectionUtils() {
@@ -173,7 +183,7 @@ public class CollectionUtils {
 
     public static Map<String, String> toStringMap(String... pairs) {
         Map<String, String> parameters = new HashMap<>();
-        if(ArrayUtils.isEmpty(pairs)){
+        if (ArrayUtils.isEmpty(pairs)) {
             return parameters;
         }
 
@@ -205,20 +215,162 @@ public class CollectionUtils {
         return ret;
     }
 
+    /**
+     * Return {@code true} if the supplied Collection is {@code null} or empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param collection the Collection to check
+     * @return whether the given Collection is empty
+     */
     public static boolean isEmpty(Collection<?> collection) {
         return collection == null || collection.isEmpty();
     }
 
+    /**
+     * Return {@code true} if the supplied Collection is {@code not null} or not empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param collection the Collection to check
+     * @return whether the given Collection is not empty
+     */
     public static boolean isNotEmpty(Collection<?> collection) {
         return !isEmpty(collection);
     }
 
+    /**
+     * Return {@code true} if the supplied Map is {@code null} or empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param map the Map to check
+     * @return whether the given Map is empty
+     */
     public static boolean isEmptyMap(Map map) {
         return map == null || map.size() == 0;
     }
 
+    /**
+     * Return {@code true} if the supplied Map is {@code not null} or not empty.
+     * Otherwise, return {@code false}.
+     *
+     * @param map the Map to check
+     * @return whether the given Map is not empty
+     */
     public static boolean isNotEmptyMap(Map map) {
         return !isEmptyMap(map);
+    }
+
+    /**
+     * Convert to multiple values to be {@link LinkedHashSet}
+     *
+     * @param values one or more values
+     * @param <T>    the type of <code>values</code>
+     * @return read-only {@link Set}
+     */
+    public static <T> Set<T> ofSet(T... values) {
+        int size = values == null ? 0 : values.length;
+        if (size < 1) {
+            return emptySet();
+        }
+
+        float loadFactor = 1f / ((size + 1) * 1.0f);
+
+        if (loadFactor > 0.75f) {
+            loadFactor = 0.75f;
+        }
+
+        Set<T> elements = new LinkedHashSet<>(size, loadFactor);
+        for (int i = 0; i < size; i++) {
+            elements.add(values[i]);
+        }
+        return unmodifiableSet(elements);
+    }
+
+    /**
+     * Get the size of the specified {@link Collection}
+     *
+     * @param collection the specified {@link Collection}
+     * @return must be positive number
+     * @since 2.7.6
+     */
+    public static int size(Collection<?> collection) {
+        return collection == null ? 0 : collection.size();
+    }
+
+    /**
+     * Compares the specified collection with another, the main implementation references
+     * {@link AbstractSet}
+     *
+     * @param one     {@link Collection}
+     * @param another {@link Collection}
+     * @return if equals, return <code>true</code>, or <code>false</code>
+     * @since 2.7.6
+     */
+    public static boolean equals(Collection<?> one, Collection<?> another) {
+
+        if (one == another) {
+            return true;
+        }
+
+        if (isEmpty(one) && isEmpty(another)) {
+            return true;
+        }
+
+        if (size(one) != size(another)) {
+            return false;
+        }
+
+        try {
+            return one.containsAll(another);
+        } catch (ClassCastException | NullPointerException unused) {
+            return false;
+        }
+    }
+
+    /**
+     * Add the multiple values into {@link Collection the specified collection}
+     *
+     * @param collection {@link Collection the specified collection}
+     * @param values     the multiple values
+     * @param <T>        the type of values
+     * @return the effected count after added
+     * @since 2.7.6
+     */
+    public static <T> int addAll(Collection<T> collection, T... values) {
+
+        int size = values == null ? 0 : values.length;
+
+        if (collection == null || size < 1) {
+            return 0;
+        }
+
+        int effectedCount = 0;
+        for (int i = 0; i < size; i++) {
+            if (collection.add(values[i])) {
+                effectedCount++;
+            }
+        }
+
+        return effectedCount;
+    }
+
+    /**
+     * Take the first element from the specified collection
+     *
+     * @param values the collection object
+     * @param <T>    the type of element of collection
+     * @return if found, return the first one, or <code>null</code>
+     * @since 2.7.6
+     */
+    public static <T> T first(Collection<T> values) {
+        if (isEmpty(values)) {
+            return null;
+        }
+        if (values instanceof List) {
+            List<T> list = (List<T>) values;
+            return list.get(0);
+        } else {
+            return values.iterator().next();
+        }
     }
 
 }

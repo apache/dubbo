@@ -23,23 +23,26 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.codec.ExchangeCodec;
 import org.apache.dubbo.remoting.transport.CodecSupport;
+import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.encodeInvocationArgument;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DECODE_IN_IO_THREAD_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_DECODE_IN_IO_THREAD;
@@ -78,12 +81,15 @@ public class DubboCodec extends ExchangeCodec {
             try {
                 if (status == Response.OK) {
                     Object data;
-                    if (res.isHeartbeat()) {
-                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                        data = decodeHeartbeatData(channel, in);
-                    } else if (res.isEvent()) {
-                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                        data = decodeEventData(channel, in);
+                    if (res.isEvent()) {
+                        byte[] eventPayload = CodecSupport.getPayload(is);
+                        if (CodecSupport.isHeartBeat(eventPayload, proto)) {
+                            // heart beat response data is always null;
+                            data = null;
+                        } else {
+                            ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
+                            data = decodeEventData(channel, in, eventPayload);
+                        }
                     } else {
                         DecodeableRpcResult result;
                         if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
@@ -120,12 +126,15 @@ public class DubboCodec extends ExchangeCodec {
             }
             try {
                 Object data;
-                if (req.isHeartbeat()) {
-                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                    data = decodeHeartbeatData(channel, in);
-                } else if (req.isEvent()) {
-                    ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
-                    data = decodeEventData(channel, in);
+                if (req.isEvent()) {
+                    byte[] eventPayload = CodecSupport.getPayload(is);
+                    if (CodecSupport.isHeartBeat(eventPayload, proto)) {
+                        // heart beat response data is always null;
+                        data = null;
+                    } else {
+                        ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
+                        data = decodeEventData(channel, in, eventPayload);
+                    }
                 } else {
                     DecodeableRpcInvocation inv;
                     if (channel.getUrl().getParameter(DECODE_IN_IO_THREAD_KEY, DEFAULT_DECODE_IN_IO_THREAD)) {
@@ -175,18 +184,23 @@ public class DubboCodec extends ExchangeCodec {
         RpcInvocation inv = (RpcInvocation) data;
 
         out.writeUTF(version);
-        out.writeUTF(inv.getAttachment(PATH_KEY));
+        // https://github.com/apache/dubbo/issues/6138
+        String serviceName = inv.getAttachment(INTERFACE_KEY);
+        if (serviceName == null) {
+            serviceName = inv.getAttachment(PATH_KEY);
+        }
+        out.writeUTF(serviceName);
         out.writeUTF(inv.getAttachment(VERSION_KEY));
 
         out.writeUTF(inv.getMethodName());
-        out.writeUTF(ReflectUtils.getDesc(inv.getParameterTypes()));
+        out.writeUTF(inv.getParameterTypesDesc());
         Object[] args = inv.getArguments();
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
                 out.writeObject(encodeInvocationArgument(channel, inv, i));
             }
         }
-        out.writeObject(inv.getAttachments());
+        out.writeAttachments(inv.getObjectAttachments());
     }
 
     @Override
@@ -205,13 +219,30 @@ public class DubboCodec extends ExchangeCodec {
             }
         } else {
             out.writeByte(attach ? RESPONSE_WITH_EXCEPTION_WITH_ATTACHMENTS : RESPONSE_WITH_EXCEPTION);
-            out.writeObject(th);
+            out.writeThrowable(th);
         }
 
         if (attach) {
             // returns current version of Response to consumer side.
-            result.getAttachments().put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
-            out.writeObject(result.getAttachments());
+            result.getObjectAttachments().put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
+            out.writeAttachments(result.getObjectAttachments());
         }
     }
+
+    @Override
+    protected Serialization getSerialization(Channel channel, Request req) {
+        if (!(req.getData() instanceof Invocation)) {
+            return super.getSerialization(channel, req);
+        }
+        return DubboCodecSupport.getRequestSerialization(channel.getUrl(), (Invocation) req.getData());
+    }
+
+    @Override
+    protected Serialization getSerialization(Channel channel, Response res) {
+        if (!(res.getResult() instanceof AppResponse)) {
+            return super.getSerialization(channel, res);
+        }
+        return DubboCodecSupport.getResponseSerialization(channel.getUrl(), (AppResponse) res.getResult());
+    }
+
 }

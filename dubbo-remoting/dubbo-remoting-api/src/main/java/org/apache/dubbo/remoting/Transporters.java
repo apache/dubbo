@@ -36,11 +36,11 @@ public class Transporters {
     private Transporters() {
     }
 
-    public static Server bind(String url, ChannelHandler... handler) throws RemotingException {
+    public static RemotingServer bind(String url, ChannelHandler... handler) throws RemotingException {
         return bind(URL.valueOf(url), handler);
     }
 
-    public static Server bind(URL url, ChannelHandler... handlers) throws RemotingException {
+    public static RemotingServer bind(URL url, ChannelHandler... handlers) throws RemotingException {
         if (url == null) {
             throw new IllegalArgumentException("url == null");
         }

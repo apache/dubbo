@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.SENT_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.CALLBACK_SERVICE_KEY;
@@ -54,7 +53,7 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
     private final ExchangeClient currentClient;
 
     ChannelWrappedInvoker(Class<T> serviceType, Channel channel, URL url, String serviceKey) {
-        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY, TIMEOUT_KEY});
+        super(serviceType, url, new String[]{GROUP_KEY, TOKEN_KEY});
         this.channel = channel;
         this.serviceKey = serviceKey;
         this.currentClient = new HeaderExchangeClient(new ChannelWrapper(this.channel), false);
@@ -72,16 +71,8 @@ class ChannelWrappedInvoker<T> extends AbstractInvoker<T> {
                 currentClient.send(inv, getUrl().getMethodParameter(invocation.getMethodName(), SENT_KEY, false));
                 return AsyncRpcResult.newDefaultAsyncResult(invocation);
             } else {
-                CompletableFuture<Object> responseFuture = currentClient.request(inv);
-                AsyncRpcResult asyncRpcResult = new AsyncRpcResult(inv);
-                responseFuture.whenComplete((appResponse, t) -> {
-                    if (t != null) {
-                        asyncRpcResult.completeExceptionally(t);
-                    } else {
-                        asyncRpcResult.complete((AppResponse) appResponse);
-                    }
-                });
-                return asyncRpcResult;
+                CompletableFuture<AppResponse> appResponseFuture = currentClient.request(inv).thenApply(obj -> (AppResponse) obj);
+                return new AsyncRpcResult(appResponseFuture, inv);
             }
         } catch (RpcException e) {
             throw e;

@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,11 +207,6 @@ public class JdkCompiler extends AbstractCompiler {
             Iterable<JavaFileObject> result = super.list(location, packageName, kinds, recurse);
 
             ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-            List<URL> urlList = new ArrayList<URL>();
-            Enumeration<URL> e = contextClassLoader.getResources("com");
-            while (e.hasMoreElements()) {
-                urlList.add(e.nextElement());
-            }
 
             ArrayList<JavaFileObject> files = new ArrayList<JavaFileObject>();
 

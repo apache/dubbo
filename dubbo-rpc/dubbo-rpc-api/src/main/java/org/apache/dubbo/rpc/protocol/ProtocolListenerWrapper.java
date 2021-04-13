@@ -17,26 +17,29 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.InvokerListener;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
 
 import java.util.Collections;
+import java.util.List;
 
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-
-import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.rpc.Constants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 
 /**
  * ListenerProtocol
  */
+@Activate(order = 200)
 public class ProtocolListenerWrapper implements Protocol {
 
     private final Protocol protocol;
@@ -55,7 +58,7 @@ public class ProtocolListenerWrapper implements Protocol {
 
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
-        if (REGISTRY_PROTOCOL.equals(invoker.getUrl().getProtocol())) {
+        if (UrlUtils.isRegistry(invoker.getUrl())) {
             return protocol.export(invoker);
         }
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
@@ -65,7 +68,7 @@ public class ProtocolListenerWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
-        if (REGISTRY_PROTOCOL.equals(url.getProtocol())) {
+        if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
         return new ListenerInvokerWrapper<T>(protocol.refer(type, url),
@@ -79,4 +82,8 @@ public class ProtocolListenerWrapper implements Protocol {
         protocol.destroy();
     }
 
+    @Override
+    public List<ProtocolServer> getServers() {
+        return protocol.getServers();
+    }
 }

@@ -77,7 +77,7 @@ public class Stack<E> {
      * @return element.
      */
     public E get(int index) {
-        if (index >= mSize) {
+        if (index >= mSize || index + mSize < 0) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
         }
 
@@ -92,7 +92,7 @@ public class Stack<E> {
      * @return old element.
      */
     public E set(int index, E value) {
-        if (index >= mSize) {
+        if (index >= mSize || index + mSize < 0) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
         }
 
@@ -106,7 +106,7 @@ public class Stack<E> {
      * @return element
      */
     public E remove(int index) {
-        if (index >= mSize) {
+        if (index >= mSize || index + mSize < 0) {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + mSize);
         }
 

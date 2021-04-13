@@ -35,7 +35,7 @@ public class $__ClassNameTestDubboStub {
 
     public interface Iface {
 
-        public String echo(String arg);
+        String echo(String arg);
 
     }
 

@@ -91,7 +91,7 @@ public class ConfigUtilsTest {
     @Test
     public void testMergeValuesDeleteDefault() {
         List<String> merged = ConfigUtils.mergeValues(ThreadPool.class, "-default", asList("fixed", "default.limited", "cached"));
-        assertEquals(asList(), merged);
+        assertEquals(Collections.emptyList(), merged);
     }
 
     @Test
@@ -229,7 +229,7 @@ public class ConfigUtilsTest {
     }
 
 
-    @Disabled("see http://code.alibabatech.com/jira/browse/DUBBO-133")
+    @Disabled("Not know why disabled, the original link explaining this was reachable.")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {

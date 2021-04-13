@@ -18,179 +18,157 @@
 package org.apache.dubbo.configcenter.consul;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
+
+import com.google.common.base.Charsets;
+import com.google.common.net.HostAndPort;
+import com.orbitz.consul.Consul;
+import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.cache.KVCache;
+import com.orbitz.consul.model.kv.Value;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigChangeType;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
 
-import com.ecwid.consul.v1.ConsulClient;
-import com.ecwid.consul.v1.QueryParams;
-import com.ecwid.consul.v1.Response;
-import com.ecwid.consul.v1.kv.model.GetValue;
-
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutorService;
 
-import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_NAMESPACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.configcenter.ConfigChangeType.ADDED;
+import static org.apache.dubbo.common.constants.CommonConstants.TOKEN;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
 
 /**
  * config center implementation for consul
  */
-public class ConsulDynamicConfiguration implements DynamicConfiguration {
+public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ConsulDynamicConfiguration.class);
 
-    private static final int DEFAULT_PORT = 8500;
-    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
+    private final Consul client;
 
-    private URL url;
-    private String rootPath;
-    private ConsulClient client;
-    private int watchTimeout = -1;
-    private ConcurrentMap<String, ConsulKVWatcher> watchers = new ConcurrentHashMap<>();
-    private ConcurrentMap<String, Long> consulIndexes = new ConcurrentHashMap<>();
-    private ExecutorService watcherService = newCachedThreadPool(
-            new NamedThreadFactory("dubbo-consul-configuration-watcher", true));
+    private final KeyValueClient kvClient;
+
+    private final int watchTimeout;
+
+    private final ConcurrentMap<String, ConsulListener> watchers = new ConcurrentHashMap<>();
 
     public ConsulDynamicConfiguration(URL url) {
-        this.url = url;
-        this.rootPath = PATH_SEPARATOR + url.getParameter(CONFIG_NAMESPACE_KEY, DEFAULT_GROUP) + PATH_SEPARATOR + "config";
-        this.watchTimeout = buildWatchTimeout(url);
+        super(url);
+        watchTimeout = url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT);
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
-        client = new ConsulClient(host, port);
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
+        Consul.Builder builder = Consul.builder()
+                .withHostAndPort(HostAndPort.fromParts(host, port));
+        String token = url.getParameter(TOKEN, (String) null);
+        if (StringUtils.isNotEmpty(token)) {
+            builder.withAclToken(token);
+        }
+        client = builder.build();
+        this.kvClient = client.keyValueClient();
     }
 
     @Override
-    public void addListener(String key, String group, ConfigurationListener listener) {
-        logger.info("register listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
-        String normalizedKey = convertKey(group, key);
-        ConsulKVWatcher watcher = watchers.putIfAbsent(normalizedKey, new ConsulKVWatcher(normalizedKey));
-        if (watcher == null) {
-            watcher = watchers.get(normalizedKey);
-            watcherService.submit(watcher);
+    public String getInternalProperty(String key) {
+        logger.info("getting config from: " + key);
+        return kvClient.getValueAsString(key, Charsets.UTF_8).orElse(null);
+    }
+
+    @Override
+    protected boolean doPublishConfig(String pathKey, String content) throws Exception {
+        return kvClient.putValue(pathKey, content);
+    }
+
+    @Override
+    protected String doGetConfig(String pathKey) throws Exception {
+        return getInternalProperty(pathKey);
+    }
+
+    @Override
+    protected boolean doRemoveConfig(String pathKey) throws Exception {
+        kvClient.deleteKey(pathKey);
+        return true;
+    }
+
+    @Override
+    protected Collection<String> doGetConfigKeys(String groupPath) {
+        List<String> keys = kvClient.getKeys(groupPath);
+        List<String> configKeys = new LinkedList<>();
+        if (CollectionUtils.isNotEmpty(keys)) {
+            keys.stream()
+                    .filter(k -> !k.equals(groupPath))
+                    .map(k -> k.substring(k.lastIndexOf(PATH_SEPARATOR) + 1))
+                    .forEach(configKeys::add);
         }
+        return configKeys;
+    }
+
+    @Override
+    protected void doAddListener(String pathKey, ConfigurationListener listener) {
+        logger.info("register listener " + listener.getClass() + " for config with key: " + pathKey);
+        ConsulListener watcher = watchers.computeIfAbsent(pathKey, k -> new ConsulListener(pathKey));
         watcher.addListener(listener);
     }
 
     @Override
-    public void removeListener(String key, String group, ConfigurationListener listener) {
-        logger.info("unregister listener " + listener.getClass() + " for config with key: " + key + ", group: " + group);
-        ConsulKVWatcher watcher = watchers.get(convertKey(group, key));
+    protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
+        logger.info("unregister listener " + listener.getClass() + " for config with key: " + pathKey);
+        ConsulListener watcher = watchers.get(pathKey);
         if (watcher != null) {
             watcher.removeListener(listener);
         }
     }
 
     @Override
-    public String getRule(String key, String group, long timeout) throws IllegalStateException {
-        return (String) getInternalProperty(convertKey(group, key));
+    protected void doClose() throws Exception {
+        client.destroy();
     }
 
-    @Override
-    public String getProperties(String key, String group, long timeout) throws IllegalStateException {
-        if (StringUtils.isEmpty(group)) {
-            group = DEFAULT_GROUP;
+    private class ConsulListener implements KVCache.Listener<String, Value> {
+
+        private KVCache kvCache;
+        private final Set<ConfigurationListener> listeners = new LinkedHashSet<>();
+        private final String normalizedKey;
+
+        public ConsulListener(String normalizedKey) {
+            this.normalizedKey = normalizedKey;
+            initKVCache();
         }
-        return (String) getInternalProperty(convertKey(group, key));
-    }
 
-    @Override
-    public Object getInternalProperty(String key) {
-        logger.info("get config from: " + key);
-        Response<GetValue> response = getValue(key);
-        if (response != null) {
-            GetValue value = response.getValue();
-            consulIndexes.put(key, response.getConsulIndex());
-            return value != null ? value.getDecodedValue() : null;
-        }
-        return null;
-    }
-
-    private Response<GetValue> getValue(String key) {
-        try {
-            Long currentIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-            return client.getKVValue(key, new QueryParams(watchTimeout, currentIndex));
-        } catch (Throwable t) {
-            logger.warn("fail to get value for key: " + key);
-        }
-        return null;
-    }
-
-    private String convertKey(String group, String key) {
-        return rootPath + PATH_SEPARATOR + group + PATH_SEPARATOR + key;
-    }
-
-    private int buildWatchTimeout(URL url) {
-        return url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT) / 1000;
-    }
-
-    private class ConsulKVWatcher implements Runnable {
-        private String key;
-        private Set<ConfigurationListener> listeners;
-        private boolean running = true;
-        private boolean existing = false;
-
-        public ConsulKVWatcher(String key) {
-            this.key = key;
-            this.listeners = new HashSet<>();
+        private void initKVCache() {
+            this.kvCache = KVCache.newCache(kvClient, normalizedKey, watchTimeout);
+            kvCache.addListener(this);
+            kvCache.start();
         }
 
         @Override
-        public void run() {
-            while (running) {
-                Long lastIndex = consulIndexes.computeIfAbsent(key, k -> -1L);
-                Response<GetValue> response = getValue(key);
-                if (response == null) {
-                    try {
-                        Thread.sleep(watchTimeout);
-                    } catch (InterruptedException e) {
-                        // ignore
-                    }
-                    continue;
-                }
+        public void notify(Map<String, Value> newValues) {
+            // Cache notifies all paths with "foo" the root path
+            // If you want to watch only "foo" value, you must filter other paths
+            Optional<Value> newValue = newValues.values().stream()
+                    .filter(value -> value.getKey().equals(normalizedKey))
+                    .findAny();
 
-                GetValue getValue = response.getValue();
-                Long currentIndex = response.getConsulIndex();
-                if (currentIndex == null || currentIndex <= lastIndex) {
-                    continue;
-                }
-
-                consulIndexes.put(key, currentIndex);
-                ConfigChangeEvent event = null;
-                if (getValue != null) {
-                    String value = getValue.getDecodedValue();
-                    if (existing) {
-                        logger.info("notify change for key: " + key + ", the changed value is: " + value);
-                        event = new ConfigChangeEvent(key, value);
-                    } else {
-                        logger.info("notify change for key: " + key + ", the added value is: " + value);
-                        event = new ConfigChangeEvent(key, value, ADDED);
-                    }
-                } else {
-                    if (existing) {
-                        logger.info("notify change for key: " + key + ", the value is deleted");
-                        event = new ConfigChangeEvent(key, null, ConfigChangeType.DELETED);
-                    }
-                }
-
-                existing = getValue != null;
-                if (event != null) {
-                    for (ConfigurationListener listener : listeners) {
-                        listener.process(event);
-                    }
-                }
-            }
+            newValue.ifPresent(value -> {
+                // Values are encoded in key/value store, decode it if needed
+                Optional<String> decodedValue = newValue.get().getValueAsString();
+                decodedValue.ifPresent(v -> listeners.forEach(l -> {
+                    ConfigChangedEvent event = new ConfigChangedEvent(normalizedKey, getGroup(), v, ConfigChangeType.MODIFIED);
+                    l.process(event);
+                }));
+            });
         }
 
         private void addListener(ConfigurationListener listener) {
@@ -199,10 +177,6 @@ public class ConsulDynamicConfiguration implements DynamicConfiguration {
 
         private void removeListener(ConfigurationListener listener) {
             this.listeners.remove(listener);
-        }
-
-        private void stop() {
-            running = false;
         }
     }
 }

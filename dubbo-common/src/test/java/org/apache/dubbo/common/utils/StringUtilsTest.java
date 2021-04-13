@@ -19,22 +19,31 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
+import static org.apache.dubbo.common.utils.StringUtils.splitToList;
+import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
+import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyOrNullString;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StringUtilsTest {
@@ -220,9 +229,50 @@ public class StringUtilsTest {
 
     @Test
     public void testSplit() throws Exception {
-        String s = "d,1,2,4";
-        assertEquals(StringUtils.split(s, ',').length, 4);
+        String str = "d,1,2,4";
+
+        assertEquals(4, StringUtils.split(str, ',').length);
+        assertArrayEquals(str.split(","), StringUtils.split(str, ','));
+
+        assertEquals(1, StringUtils.split(str, 'a').length);
+        assertArrayEquals(str.split("a"), StringUtils.split(str, 'a'));
+
+        assertEquals(0, StringUtils.split("", 'a').length);
+        assertEquals(0, StringUtils.split(null, 'a').length);
+
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", ':')));
+        System.out.println(Arrays.toString(StringUtils.split("boo:and:foo", 'o')));
     }
+
+    @Test
+    public void testSplitToList() throws Exception {
+        String str = "d,1,2,4";
+
+        assertEquals(4, splitToList(str, ',').size());
+        assertEquals(asList(str.split(",")), splitToList(str, ','));
+
+        assertEquals(1, splitToList(str, 'a').size());
+        assertEquals(asList(str.split("a")), splitToList(str, 'a'));
+
+        assertEquals(0, splitToList("", 'a').size());
+        assertEquals(0, splitToList(null, 'a').size());
+    }
+
+    /**
+     * Test {@link StringUtils#splitToSet(String, char, boolean)}
+     *
+     * @since 2.7.8
+     */
+    @Test
+    public void testSplitToSet() {
+        String value = "1# 2#3 #4#3";
+        Set<String> values = splitToSet(value, '#', false);
+        assertEquals(ofSet("1", " 2", "3 ", "4", "3"), values);
+
+        values = splitToSet(value, '#', true);
+        assertEquals(ofSet("1", "2", "3", "4"), values);
+    }
+
 
     @Test
     public void testTranslate() throws Exception {
@@ -237,6 +287,16 @@ public class StringUtilsTest {
         assertThat(StringUtils.isContains("", "b"), is(false));
         assertThat(StringUtils.isContains(new String[]{"a", "b", "c"}, "b"), is(true));
         assertThat(StringUtils.isContains((String[]) null, null), is(false));
+
+        assertTrue(StringUtils.isContains("abc", 'a'));
+        assertFalse(StringUtils.isContains("abc", 'd'));
+        assertFalse(StringUtils.isContains("", 'a'));
+        assertFalse(StringUtils.isContains(null, 'a'));
+
+        assertTrue(StringUtils.isNotContains("abc", 'd'));
+        assertFalse(StringUtils.isNotContains("abc", 'a'));
+        assertTrue(StringUtils.isNotContains("", 'a'));
+        assertTrue(StringUtils.isNotContains(null, 'a'));
     }
 
     @Test
@@ -331,6 +391,31 @@ public class StringUtilsTest {
         String illegalStr = "[{key=value},{aa:bb}]";
         Map<String, String> illegalMap = StringUtils.parseParameters(illegalStr);
         assertEquals(0, illegalMap.size());
+    }
+
+    /**
+     * Test {@link StringUtils#toCommaDelimitedString(String, String...)}
+     * @since 2.7.8
+     */
+    @Test
+    public void testToCommaDelimitedString() {
+        String value = toCommaDelimitedString(null);
+        assertNull(value);
+
+        value = toCommaDelimitedString(null, null);
+        assertNull(value);
+
+        value = toCommaDelimitedString("");
+        assertEquals("", value);
+
+        value = toCommaDelimitedString("one");
+        assertEquals("one", value);
+
+        value = toCommaDelimitedString("one", "two");
+        assertEquals("one,two", value);
+
+        value = toCommaDelimitedString("one", "two", "three");
+        assertEquals("one,two,three", value);
     }
 
 }

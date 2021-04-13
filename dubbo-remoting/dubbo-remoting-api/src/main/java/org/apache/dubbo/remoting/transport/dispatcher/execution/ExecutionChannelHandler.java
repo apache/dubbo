@@ -17,12 +17,12 @@
 package org.apache.dubbo.remoting.transport.dispatcher.execution;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.threadpool.ThreadlessExecutor;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.ExecutionException;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable;
 import org.apache.dubbo.remoting.transport.dispatcher.ChannelEventRunnable.ChannelState;
 import org.apache.dubbo.remoting.transport.dispatcher.WrappedChannelHandler;
@@ -42,7 +42,8 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
 
     @Override
     public void received(Channel channel, Object message) throws RemotingException {
-        ExecutorService executor = getExecutorService();
+        ExecutorService executor = getPreferredExecutorService(message);
+
         if (message instanceof Request) {
             try {
                 executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
@@ -51,19 +52,12 @@ public class ExecutionChannelHandler extends WrappedChannelHandler {
                 // therefore the consumer side has to wait until gets timeout. This is a temporary solution to prevent
                 // this scenario from happening, but a better solution should be considered later.
                 if (t instanceof RejectedExecutionException) {
-                    Request request = (Request) message;
-                    if (request.isTwoWay()) {
-                        String msg = "Server side(" + url.getIp() + "," + url.getPort()
-                                + ") thread pool is exhausted, detail msg:" + t.getMessage();
-                        Response response = new Response(request.getId(), request.getVersion());
-                        response.setStatus(Response.SERVER_THREADPOOL_EXHAUSTED_ERROR);
-                        response.setErrorMessage(msg);
-                        channel.send(response);
-                        return;
-                    }
+                    sendFeedback(channel, (Request) message, t);
                 }
                 throw new ExecutionException(message, channel, getClass() + " error when process received event.", t);
             }
+        } else if (executor instanceof ThreadlessExecutor) {
+            executor.execute(new ChannelEventRunnable(channel, handler, ChannelState.RECEIVED, message));
         } else {
             handler.received(channel, message);
         }

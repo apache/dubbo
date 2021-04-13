@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.rest;
 
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.RpcContext;
+
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 
 import javax.annotation.Priority;
@@ -69,9 +70,9 @@ public class RpcContextFilter implements ContainerRequestFilter, ClientRequestFi
     @Override
     public void filter(ClientRequestContext requestContext) throws IOException {
         int size = 0;
-        for (Map.Entry<String, String> entry : RpcContext.getContext().getAttachments().entrySet()) {
+        for (Map.Entry<String, Object> entry : RpcContext.getContext().getObjectAttachments().entrySet()) {
             String key = entry.getKey();
-            String value = entry.getValue();
+            String value = (String) entry.getValue();
             if (illegalHttpHeaderKey(key) || illegalHttpHeaderValue(value)) {
                 throw new IllegalArgumentException("The attachments of " + RpcContext.class.getSimpleName() + " must not contain ',' or '=' when using rest protocol");
             }

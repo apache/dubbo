@@ -38,20 +38,23 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.ADDRESS_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.PRIORITY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
-import static org.apache.dubbo.common.constants.CommonConstants.ENABLED_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 
 /**
  * ConditionRouter
- *
+ * It supports the conditional routing configured by "override://", in 2.6.x,
+ * refer to https://dubbo.apache.org/en/docs/v2.7/user/examples/routing-rule/ .
+ * For 2.7.x and later, please refer to {@link org.apache.dubbo.rpc.cluster.router.condition.config.ServiceRouter}
+ * and {@link org.apache.dubbo.rpc.cluster.router.condition.config.AppRouter}
+ * refer to https://dubbo.apache.org/zh/docs/v2.7/user/examples/routing-rule/ .
  */
 public class ConditionRouter extends AbstractRouter {
     public static final String NAME = "condition";
@@ -238,7 +241,7 @@ public class ConditionRouter extends AbstractRouter {
             } else {
                 sampleValue = sample.get(key);
                 if (sampleValue == null) {
-                    sampleValue = sample.get(DEFAULT_KEY_PREFIX + key);
+                    sampleValue = sample.get(key);
                 }
             }
             if (sampleValue != null) {

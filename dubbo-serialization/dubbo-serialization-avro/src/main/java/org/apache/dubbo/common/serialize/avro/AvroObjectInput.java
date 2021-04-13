@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.common.serialize.avro;
 
+import org.apache.dubbo.common.serialize.ObjectInput;
+
 import org.apache.avro.io.BinaryDecoder;
 import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.reflect.ReflectDatumReader;
 import org.apache.avro.util.Utf8;
-import org.apache.dubbo.common.serialize.ObjectInput;
 
 import java.io.IOException;
 import java.io.InputStream;

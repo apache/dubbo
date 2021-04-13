@@ -35,8 +35,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TIMES;
-import static org.apache.dubbo.rpc.cluster.Constants.RETRIES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_FAILBACK_TIMES;
+import static org.apache.dubbo.common.constants.CommonConstants.RETRIES_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.DEFAULT_FAILBACK_TASKS;
 import static org.apache.dubbo.rpc.cluster.Constants.FAIL_BACK_TASKS_KEY;
 

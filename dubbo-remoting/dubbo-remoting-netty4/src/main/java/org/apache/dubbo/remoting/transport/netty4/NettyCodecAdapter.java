@@ -66,11 +66,7 @@ final public class NettyCodecAdapter {
             org.apache.dubbo.remoting.buffer.ChannelBuffer buffer = new NettyBackedChannelBuffer(out);
             Channel ch = ctx.channel();
             NettyChannel channel = NettyChannel.getOrAddChannel(ch, url, handler);
-            try {
-                codec.encode(channel, buffer, msg);
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ch);
-            }
+            codec.encode(channel, buffer, msg);
         }
     }
 
@@ -83,27 +79,23 @@ final public class NettyCodecAdapter {
 
             NettyChannel channel = NettyChannel.getOrAddChannel(ctx.channel(), url, handler);
 
-            try {
-                // decode object.
-                do {
-                    int saveReaderIndex = message.readerIndex();
-                    Object msg = codec.decode(channel, message);
-                    if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
-                        message.readerIndex(saveReaderIndex);
-                        break;
-                    } else {
-                        //is it possible to go here ?
-                        if (saveReaderIndex == message.readerIndex()) {
-                            throw new IOException("Decode without read data.");
-                        }
-                        if (msg != null) {
-                            out.add(msg);
-                        }
+            // decode object.
+            do {
+                int saveReaderIndex = message.readerIndex();
+                Object msg = codec.decode(channel, message);
+                if (msg == Codec2.DecodeResult.NEED_MORE_INPUT) {
+                    message.readerIndex(saveReaderIndex);
+                    break;
+                } else {
+                    //is it possible to go here ?
+                    if (saveReaderIndex == message.readerIndex()) {
+                        throw new IOException("Decode without read data.");
                     }
-                } while (message.readable());
-            } finally {
-                NettyChannel.removeChannelIfDisconnected(ctx.channel());
-            }
+                    if (msg != null) {
+                        out.add(msg);
+                    }
+                }
+            } while (message.readable());
         }
     }
 }

@@ -24,6 +24,7 @@
         <artifactId>dubbo-remoting</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-remoting-etcd3</artifactId>
     <packaging>jar</packaging>
@@ -31,7 +32,10 @@
     <description>The etcd3 remoting module of Dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <assertj.version>3.13.2</assertj.version>
+        <skipIntegrationTests>true</skipIntegrationTests>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
@@ -48,10 +52,56 @@
             <artifactId>jetcd-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-grpclb</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.etcd/jetcd-launcher -->
+        <dependency>
+            <groupId>io.etcd</groupId>
+            <artifactId>jetcd-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skipTests>${skipIntegrationTests}</skipTests>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 
 </project>

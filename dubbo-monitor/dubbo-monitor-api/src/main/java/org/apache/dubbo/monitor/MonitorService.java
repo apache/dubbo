@@ -88,5 +88,4 @@ public interface MonitorService {
      */
     List<URL> lookup(URL query);
 
-
 }

@@ -21,17 +21,17 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
 
 import org.mockito.Mockito;
 
 public class MockTransporter implements Transporter {
-    private Server server = Mockito.mock(Server.class);
+    private RemotingServer server = Mockito.mock(RemotingServer.class);
     private Client client = Mockito.mock(Client.class);
 
     @Override
-    public Server bind(URL url, ChannelHandler handler) throws RemotingException {
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
         return server;
     }
 

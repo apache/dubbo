@@ -55,7 +55,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     public static final String THRIFT_PROCESSOR = "$Processor";
     public static final String THRIFT_CLIENT = "$Client";
 
-    private static final Map<String, TServer> serverMap = new HashMap<>();
+    private static final Map<String, TServer> SERVER_MAP = new HashMap<>();
     private TMultiplexedProcessor processor = new TMultiplexedProcessor();
 
     public ThriftProtocol() {
@@ -88,7 +88,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
         if (thriftServer == null) {
             return null;
         }
-        serverMap.put(url.getAddress(), thriftServer);
+        SERVER_MAP.put(url.getAddress(), thriftServer);
         new Thread(() -> {
             logger.info("Start Thrift ThreadedSelectorServer");
             thriftServer.serve();
@@ -149,7 +149,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
                 TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
                 processor.registerProcessor(typeName, tprocessor);
 
-                tserver = serverMap.get(url.getAddress());
+                tserver = SERVER_MAP.get(url.getAddress());
                 if (tserver == null) {
 
                     /**Solve the problem of only 50 of the default number of concurrent connections*/
@@ -186,7 +186,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
         }
 
         if (tArgs == null) {
-            logger.error("Fail to create nativethrift server(" + url + ") due to null args");
+            logger.error("Fail to create native thrift server(" + url + ") due to null args");
             throw new RpcException("Fail to create nativethrift server(" + url + ") due to null args");
         }
         tserver = new TThreadedSelectorServer(tArgs);

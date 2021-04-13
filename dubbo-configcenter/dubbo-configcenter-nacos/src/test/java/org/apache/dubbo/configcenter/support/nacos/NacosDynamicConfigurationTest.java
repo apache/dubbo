@@ -18,9 +18,9 @@
 package org.apache.dubbo.configcenter.support.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.configcenter.ConfigChangeEvent;
-import org.apache.dubbo.configcenter.ConfigurationListener;
-import org.apache.dubbo.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
+import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
@@ -33,7 +33,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -59,9 +63,9 @@ public class NacosDynamicConfigurationTest {
         Thread.sleep(200);
         put("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", "helloworld");
         Thread.sleep(200);
-        Assertions.assertEquals("hello", config.getRule("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
-        Assertions.assertEquals("aaa=bbb", config.getRule("dubbo.properties", "test"));
-        Assertions.assertEquals("helloworld", config.getRule("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("hello", config.getConfig("org.apache.dubbo.nacos.testService.configurators", DynamicConfiguration.DEFAULT_GROUP));
+        Assertions.assertEquals("aaa=bbb", config.getConfig("dubbo.properties", "test"));
+        Assertions.assertEquals("helloworld", config.getConfig("org.apache.dubbo.demo.DemoService:1.0.0.test:xxxx.configurators", DynamicConfiguration.DEFAULT_GROUP));
     }
 
     @Test
@@ -99,6 +103,18 @@ public class NacosDynamicConfigurationTest {
 
     }
 
+    @Test
+    public void testGetConfigKeys() {
+
+        put("key1", "a");
+        put("key2", "b");
+
+        SortedSet<String> keys = config.getConfigKeys(DynamicConfiguration.DEFAULT_GROUP);
+
+        Assertions.assertFalse(keys.isEmpty());
+
+    }
+
     private void put(String key, String value) {
         put(key, DynamicConfiguration.DEFAULT_GROUP, value);
     }
@@ -127,6 +143,16 @@ public class NacosDynamicConfigurationTest {
         }
     }
 
+    @Test
+    public void testPublishConfig() {
+        String key = "user-service";
+        String group = "org.apache.dubbo.service.UserService";
+        String content = "test";
+
+        assertTrue(config.publishConfig(key, group, content));
+        assertEquals("test", config.getProperties(key, group));
+    }
+
     @AfterAll
     public static void tearDown() {
 
@@ -142,11 +168,11 @@ public class NacosDynamicConfigurationTest {
         }
 
         @Override
-        public void process(ConfigChangeEvent event) {
+        public void process(ConfigChangedEvent event) {
             System.out.println(this + ": " + event);
             Integer count = countMap.computeIfAbsent(event.getKey(), k -> 0);
             countMap.put(event.getKey(), ++count);
-            value = event.getValue();
+            value = event.getContent();
             latch.countDown();
         }
 

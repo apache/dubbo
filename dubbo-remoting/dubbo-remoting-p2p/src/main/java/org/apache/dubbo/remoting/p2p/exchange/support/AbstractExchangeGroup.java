@@ -22,7 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
@@ -100,7 +100,7 @@ public abstract class AbstractExchangeGroup implements ExchangeGroup {
 
     @Override
     public void leave(URL url) throws RemotingException {
-        Server server = servers.remove(url);
+        RemotingServer server = servers.remove(url);
         if (server != null) {
             server.close();
         }

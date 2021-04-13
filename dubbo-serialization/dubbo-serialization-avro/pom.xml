@@ -21,6 +21,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-serialization</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-serialization-avro</artifactId>
     <packaging>jar</packaging>
