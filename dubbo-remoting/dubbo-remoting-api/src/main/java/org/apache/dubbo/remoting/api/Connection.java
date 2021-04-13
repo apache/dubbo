@@ -21,7 +21,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
@@ -30,17 +29,16 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
+import io.netty.channel.EventLoop;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.util.AbstractReferenceCounted;
 import io.netty.util.AttributeKey;
-import io.netty.util.HashedWheelTimer;
 import io.netty.util.ReferenceCountUtil;
 import io.netty.util.ReferenceCounted;
-import io.netty.util.Timer;
 import io.netty.util.concurrent.DefaultPromise;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
@@ -56,8 +54,6 @@ import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelC
 
 public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
 
-    public static final Timer TIMER = new HashedWheelTimer(
-            new NamedThreadFactory("dubbo-network-timer", true), 30, TimeUnit.MILLISECONDS);
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
     private final URL url;
@@ -67,7 +63,9 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final InetSocketAddress remote;
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
-    private final ChannelPromise initPromise;
+    private final ChannelFuture initPromise;
+    private final Bootstrap bootstrap;
+    private final ConnectionListener connectionListener = new ConnectionListener();
 
     public Connection(URL url) {
         url = ExecutorUtil.setThreadName(url, "DubboClientHandler");
@@ -77,6 +75,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         this.connectTimeout = Math.max(3000, url.getPositiveParameter(Constants.CONNECT_TIMEOUT_KEY, Constants.DEFAULT_CONNECT_TIMEOUT));
         this.closeFuture = new DefaultPromise<>(GlobalEventExecutor.INSTANCE);
         this.remote = getConnectAddress();
+        this.bootstrap = create();
         this.initPromise = connect();
     }
 
@@ -88,8 +87,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         return closeFuture;
     }
 
-
-    public ChannelPromise connect() {
+    private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
                 .option(ChannelOption.SO_KEEPALIVE, true)
@@ -98,7 +96,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 .remoteAddress(getConnectAddress())
                 .channel(socketChannelClass());
 
-        final ConnectionHandler connectionHandler = new ConnectionHandler(this, bootstrap, TIMER);
+        final ConnectionHandler connectionHandler = new ConnectionHandler(this);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
 
@@ -116,7 +114,20 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 // TODO support Socks5
             }
         });
-        return connectionHandler.connect();
+        return bootstrap;
+    }
+
+    public ChannelFuture connect() {
+        if (isClosed()) {
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("%s aborted to reconnect cause connection closed. ", Connection.this));
+            }
+            return null;
+        }
+
+        final ChannelFuture promise = bootstrap.connect();
+        promise.addListener(this.connectionListener);
+        return promise;
     }
 
     public Channel getChannel() {
@@ -125,13 +136,13 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     @Override
     public String toString() {
-        return "(Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" + (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
+        return super.toString() + " (Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" + (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
     }
 
     public void onGoaway(Channel channel) {
         if (this.channel.compareAndSet(channel, null)) {
             if (logger.isInfoEnabled()) {
-                logger.info(String.format("Connection:%s  goaway", this));
+                logger.info(String.format("%s goaway", this));
             }
         }
     }
@@ -139,9 +150,8 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     public void onConnected(Channel channel) {
         this.channel.set(channel);
         channel.attr(CONNECTION).set(this);
-        this.initPromise.trySuccess();
         if (logger.isInfoEnabled()) {
-            logger.info(String.format("Connection:%s connected ", this));
+            logger.info(String.format("%s connected ", this));
         }
     }
 
@@ -178,6 +188,9 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public void close() {
+        if (logger.isInfoEnabled()) {
+            logger.info(String.format("Connection:%s freed ", this));
+        }
         final Channel current = this.channel.get();
         if (current != null) {
             current.close();
@@ -203,8 +216,26 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         return url;
     }
 
-    private int getConnectTimeout() {
-        return connectTimeout;
+    class ConnectionListener implements ChannelFutureListener {
+
+        @Override
+        public void operationComplete(ChannelFuture future) {
+            if (future.isSuccess()) {
+                return;
+            }
+            final Connection conn = Connection.this;
+            if (conn.isClosed() || conn.refCnt() == 0) {
+                if (logger.isInfoEnabled()) {
+                    logger.info(String.format("%s aborted to reconnect. %s", conn, future.cause().getMessage()));
+                }
+                return;
+            }
+            if (logger.isInfoEnabled()) {
+                logger.info(String.format("%s is reconnecting, attempt=%d cause=%s", conn, 0, future.cause().getMessage()));
+            }
+            final EventLoop loop = future.channel().eventLoop();
+            loop.schedule((Runnable) conn::connect, 1L, TimeUnit.SECONDS);
+        }
     }
 }
 
