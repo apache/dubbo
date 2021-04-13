@@ -26,7 +26,10 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
+import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -112,6 +115,11 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
             // generic invocation is not local reference
             return false;
         } else if (getExporter(this, url) != null) {
+            // Broadcast cluster means that multiple machines will be called,
+            // which is not converted to injvm protocol at this time.
+            if (BROADCAST_CLUSTER.equalsIgnoreCase(url.getParameter(CLUSTER_KEY))) {
+                return false;
+            }
             // by default, go through local reference if there's the service exposed locally
             return true;
         } else {

@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -58,8 +56,6 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
  * Support for ectd3 registry.
  */
 public class EtcdRegistry extends FailbackRegistry {
-
-    private final static Logger logger = LoggerFactory.getLogger(EtcdRegistry.class);
 
     private final static int DEFAULT_ETCD_PORT = 2379;
 
@@ -251,9 +247,14 @@ public class EtcdRegistry extends FailbackRegistry {
         if (listeners != null) {
             ChildListener etcdListener = listeners.get(listener);
             if (etcdListener != null) {
-                // maybe url has many subscribed paths
-                for (String path : toUnsubscribedPath(url)) {
-                    etcdClient.removeChildListener(path, etcdListener);
+                if (ANY_VALUE.equals(url.getServiceInterface())) {
+                    String root = toRootPath();
+                    etcdClient.removeChildListener(root, etcdListener);
+                }else {
+                    // maybe url has many subscribed paths
+                    for (String path : toUnsubscribedPath(url)) {
+                        etcdClient.removeChildListener(path, etcdListener);
+                    }
                 }
             }
         }

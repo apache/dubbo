@@ -22,6 +22,7 @@ import org.apache.dubbo.common.convert.StringToBooleanConverter;
 import org.apache.dubbo.common.convert.StringToDoubleConverter;
 import org.apache.dubbo.common.convert.StringToIntegerConverter;
 import org.apache.dubbo.common.extension.activate.ActivateExt1;
+import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
 import org.apache.dubbo.common.extension.activate.impl.ActivateExt1Impl1;
 import org.apache.dubbo.common.extension.activate.impl.GroupActivateExtImpl;
 import org.apache.dubbo.common.extension.activate.impl.OldActivateExt1Impl2;
@@ -69,6 +70,7 @@ import java.util.Set;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getLoadingStrategies;
+import static org.apache.dubbo.common.extension.ExtensionLoader.resetExtensionLoader;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -156,6 +158,14 @@ public class ExtensionLoaderTest {
         assertEquals("Ext5Impl1-echo", impl1.echo(url, "ha"));
         assertEquals(echoCount1 + 1, Ext5Wrapper1.echoCount.get());
         assertEquals(echoCount2 + 1, Ext5Wrapper2.echoCount.get());
+    }
+
+    @Test
+    public void test_getActivateExtension_WithWrapper() throws Exception {
+        URL url = URL.valueOf("test://localhost/test");
+        List<ActivateWrapperExt1> list = getExtensionLoader(ActivateWrapperExt1.class)
+                .getActivateExtension(url, new String[]{}, "order");
+        assertEquals(2, list.size());
     }
 
     @Test
@@ -255,6 +265,7 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(AddExt1_ManualAdd1.class));
         assertEquals("Manual1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd1.class));
+        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -324,6 +335,7 @@ public class ExtensionLoaderTest {
             assertThat(ext, instanceOf(AddExt1_ManualAdd2.class));
             assertEquals("impl1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd2.class));
         }
+        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -337,6 +349,7 @@ public class ExtensionLoaderTest {
 
         adaptive = loader.getAdaptiveExtension();
         assertTrue(adaptive instanceof AddExt3_ManualAdaptive);
+        ExtensionLoader.resetExtensionLoader(AddExt3.class);
     }
 
     @Test
@@ -374,7 +387,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.ext7.InitErrorExt"));
-            assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
+            assertThat(expected.getMessage(), containsString("java.lang.ExceptionInInitializerError"));
         }
     }
 
