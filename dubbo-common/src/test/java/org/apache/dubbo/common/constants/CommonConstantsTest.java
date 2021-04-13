@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.constants;
 
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;

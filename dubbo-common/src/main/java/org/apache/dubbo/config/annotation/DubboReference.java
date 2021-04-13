@@ -170,7 +170,7 @@ public @interface DubboReference {
     /**
      * Load balance strategy, you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default LoadbalanceRules.RANDOM;
+    String loadbalance() default LoadbalanceRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false

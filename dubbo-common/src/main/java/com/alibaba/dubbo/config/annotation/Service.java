@@ -68,7 +68,7 @@ public @interface Service {
 
     String stub() default "";
 
-    String cluster() default ClusterRules.DEFAULT;
+    String cluster() default ClusterRules.EMPTY;
 
     String proxy() default "";
 
@@ -86,7 +86,7 @@ public @interface Service {
 
     int retries() default 0;
 
-    String loadbalance() default LoadbalanceRules.DEFAULT;
+    String loadbalance() default LoadbalanceRules.EMPTY;
 
     boolean async() default false;
 
