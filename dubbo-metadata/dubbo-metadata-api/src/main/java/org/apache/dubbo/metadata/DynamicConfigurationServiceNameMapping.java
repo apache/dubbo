@@ -47,7 +47,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final int PUBLISH_CONFIG_RETRY_TIMES = 3;
+    private static final int PUBLISH_CONFIG_RETRY_TIMES = 6;
 
     @Override
     public void map(URL url) {
