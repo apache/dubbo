@@ -1067,7 +1067,6 @@ public class DubboBootstrap extends GenericEventListener {
                 /**
                  * 启动元数据服务
                  * 向本地元数据中心注册元数据服务
-                 * 向配置中心写入导出服务url集合与订阅服务url集合[X为url列表为空]
                  */
                 exportMetadataService();
                 //3. Register the local ServiceInstance if required
@@ -1272,11 +1271,7 @@ public class DubboBootstrap extends GenericEventListener {
     private void exportMetadataService() {
         /**
          * ConfigurableMetadataServiceExporter
-         *      启动元数据服务以供服务消费者调用  但不向注册中心和配置中心写入信息
-         * RemoteMetadataServiceExporter
-         *      向配置中心写入导出的服务以及订阅的服务配置信息
-         *      导出服务url集合：exported-urls:dubbo-nacos-provider-demo:1c4d10cf00f5e9dc
-         *      订阅服务url集合：dubbo-nacos-provider-demo:X【x为当前没有订阅服务】
+         *      启动元数据服务以供服务消费者调用  只缓存到本地 不向注册中心和配置中心写入信息
          */
         metadataServiceExporter.export();
     }
@@ -1403,7 +1398,7 @@ public class DubboBootstrap extends GenericEventListener {
         String serviceName = application.getName();
 
         /**
-         * 获取本地元数据中心中缓存的一个待导出服务得url（rest协议优先，没有则选取最后一个）
+         * 获取本地元数据中心中缓存的一个待导出服务得url（过滤MetadataService，rest协议优先，没有则选取最后一个）
          */
         URL exportedURL = selectMetadataServiceExportedURL();
 
@@ -1416,21 +1411,7 @@ public class DubboBootstrap extends GenericEventListener {
          */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
-        /**
-         * 计算serviceInstance中的metadata
-         *
-         * 元数据服务对应的参数
-         *      dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
-         * 订阅服务对应的hashcode
-         *      dubbo.subscribed-services.revision=X
-         * 导出服务对应的协议以及端口号
-         *      dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
-         * 存储对应的实现（SPI）
-         *      dubbo.metadata.storage-type=remote
-         * 导出服务对应的hashcode
-         *      dubbo.exported-services.revision=3b46c4664c6d5a
-         */
-        doRegisterServiceInstance(serviceInstance);
+       doRegisterServiceInstance(serviceInstance);
 
         // scheduled task for updating Metadata and ServiceInstance
         executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
@@ -1521,11 +1502,27 @@ public class DubboBootstrap extends GenericEventListener {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
         setMetadataStorageType(serviceInstance, getMetadataType());
 
+        /**
+         * 获取ServiceInstanceCustomizer得实现
+         */
         ExtensionLoader<ServiceInstanceCustomizer> loader =
                 ExtensionLoader.getExtensionLoader(ServiceInstanceCustomizer.class);
         // FIXME, sort customizer before apply
         loader.getSupportedExtensionInstances().forEach(customizer -> {
-            // customizes
+            /**
+             * 计算serviceInstance中的metadata
+             *
+             * 元数据服务对应的参数
+             *      dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+             * 订阅服务对应的hashcode
+             *      dubbo.subscribed-services.revision=X
+             * 导出服务对应的协议以及端口号
+             *      dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
+             * 存储对应的实现（SPI）
+             *      dubbo.metadata.storage-type=remote
+             * 导出服务对应的hashcode
+             *      dubbo.exported-services.revision=3b46c4664c6d5a
+             */
             customizer.customize(this.serviceInstance);
         });
 
