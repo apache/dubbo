@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -31,6 +33,7 @@ import java.util.stream.Collectors;
  * Router chain
  */
 public class RouterChain<T> {
+    public static final Logger LOGGER = LoggerFactory.getLogger(RouterChain.class);
 
     // full list of addresses from registry, classified by method name.
     private List<Invoker<T>> invokers = Collections.emptyList();
@@ -116,6 +119,20 @@ public class RouterChain<T> {
 
     public void destroy() {
         invokers = Collections.emptyList();
+        for (Router router : routers) {
+            try {
+                router.stop();
+            } catch (Exception e) {
+                LOGGER.error("Error trying to stop router " + router.getClass(), e);
+            }
+        }
+        for (Router router : builtinRouters) {
+            try {
+                router.stop();
+            } catch (Exception e) {
+                LOGGER.error("Error trying to stop builtin router " + router.getClass(), e);
+            }
+        }
         routers = Collections.emptyList();
         builtinRouters = Collections.emptyList();
     }
