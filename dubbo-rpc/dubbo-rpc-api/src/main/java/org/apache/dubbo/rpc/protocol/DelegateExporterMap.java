@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol;
 
 import org.apache.dubbo.rpc.Exporter;
-
 import java.util.Collection;
 
 /**
@@ -56,4 +55,5 @@ public interface DelegateExporterMap {
      * @return
      */
     Collection<Exporter<?>> getExporters();
+
 }

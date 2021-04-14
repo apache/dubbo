@@ -26,7 +26,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.BROADCAST_CLUSTER;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;

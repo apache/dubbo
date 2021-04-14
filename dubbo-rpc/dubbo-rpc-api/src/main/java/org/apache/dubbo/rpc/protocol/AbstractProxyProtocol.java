@@ -276,4 +276,5 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             return false;
         }
     }
+
 }
