@@ -49,7 +49,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     private volatile boolean closed = false;
 
-    private final Set<String>  persistentExistNodePath = new ConcurrentHashSet<>();
+    private final Set<String> persistentExistNodePath = new ConcurrentHashSet<>();
 
     public AbstractZookeeperClient(URL url) {
         this.url = url;
@@ -61,7 +61,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void delete(String path){
+    public void delete(String path) {
         //never mind if ephemeral
         persistentExistNodePath.remove(path);
         deletePath(path);
@@ -71,7 +71,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     @Override
     public void create(String path, boolean ephemeral) {
         if (!ephemeral) {
-            if(persistentExistNodePath.contains(path)){
+            if (persistentExistNodePath.contains(path)) {
                 return;
             }
             if (checkExists(path)) {
@@ -125,11 +125,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void removeDataListener(String path, DataListener listener ){
+    public void removeDataListener(String path, DataListener listener) {
         ConcurrentMap<DataListener, TargetDataListener> dataListenerMap = listeners.get(path);
         if (dataListenerMap != null) {
             TargetDataListener targetListener = dataListenerMap.remove(listener);
-            if(targetListener != null){
+            if (targetListener != null) {
                 removeTargetDataListener(path, targetListener);
             }
         }
@@ -199,7 +199,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     protected abstract void createEphemeral(String path, String data);
 
-    protected abstract boolean checkExists(String path);
+    public abstract boolean checkExists(String path);
 
     protected abstract TargetChildListener createTargetChildListener(String path, ChildListener listener);
 
@@ -219,6 +219,7 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     /**
      * we invoke the zookeeper client to delete the node
+     *
      * @param path the node path
      */
     protected abstract void deletePath(String path);

@@ -37,6 +37,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +62,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private final Set<String> serviceNames;
     private final ServiceDiscovery serviceDiscovery;
+    private final String registryId;
     private URL url;
-    private Map<String, NotifyListener> listeners;
+    private Map<String, Set<NotifyListener>> listeners;
 
     private Map<String, List<ServiceInstance>> allInstances;
 
@@ -73,6 +75,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
+        this.registryId = serviceDiscovery.getUrl().getParameter("id");
         this.listeners = new HashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
@@ -88,10 +91,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
         allInstances.put(appName, event.getServiceInstances());
+        if (logger.isDebugEnabled()) {
+            logger.debug(event.getServiceInstances().toString());
+        }
 
         Map<String, List<ServiceInstance>> revisionToInstances = new HashMap<>();
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
         Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
+        Map<String, List<URL>> tmpServiceUrls = new HashMap<>();
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
@@ -108,7 +115,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     metadata = getMetadataInfo(instance);
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
-                        revisionToMetadata.put(revision, getMetadataInfo(instance));
+                        revisionToMetadata.put(revision, metadata);
                     } else {
 
                     }
@@ -123,25 +130,26 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 //                    Set<String> set = localServiceToRevisions.computeIfAbsent(url.getServiceKey(), k -> new TreeSet<>());
 //                    set.add(revision);
 //                }
-
-                localServiceToRevisions.forEach((serviceKey, revisions) -> {
-                    List<URL> urls = revisionsToUrls.get(revisions);
-                    if (urls != null) {
-                        serviceUrls.put(serviceKey, urls);
-                    } else {
-                        urls = new ArrayList<>();
-                        for (String r : revisions) {
-                            for (ServiceInstance i : revisionToInstances.get(r)) {
-                                urls.add(i.toURL());
-                            }
-                        }
-                        revisionsToUrls.put(revisions, urls);
-                        serviceUrls.put(serviceKey, urls);
-                    }
-                });
             }
+
+            localServiceToRevisions.forEach((serviceKey, revisions) -> {
+                List<URL> urls = revisionsToUrls.get(revisions);
+                if (urls != null) {
+                    tmpServiceUrls.put(serviceKey, urls);
+                } else {
+                    urls = new ArrayList<>();
+                    for (String r : revisions) {
+                        for (ServiceInstance i : revisionToInstances.get(r)) {
+                            urls.add(i.toURL());
+                        }
+                    }
+                    revisionsToUrls.put(revisions, urls);
+                    tmpServiceUrls.put(serviceKey, urls);
+                }
+            });
         }
 
+        this.serviceUrls = tmpServiceUrls;
         this.notifyAddressChanged();
     }
 
@@ -161,6 +169,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
+            if (logger.isDebugEnabled()) {
+                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+            }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
@@ -168,8 +179,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
+            if (logger.isDebugEnabled()) {
+                logger.info("Metadata " + metadataInfo.toString());
+            }
         } catch (Exception e) {
-            logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
+            logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
             metadataInfo = null;
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
@@ -177,9 +191,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     private void notifyAddressChanged() {
-        listeners.forEach((key, notifyListener) -> {
-            //FIXME, group wildcard match
-            notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
+        listeners.forEach((key, notifyListeners) -> {
+            notifyListeners.forEach(notifyListener -> {
+                notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
+            });
         });
     }
 
@@ -191,7 +206,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     public void addListener(String serviceKey, NotifyListener listener) {
-        this.listeners.put(serviceKey, listener);
+        this.listeners.computeIfAbsent(serviceKey, k -> new HashSet<>()).add(listener);
+    }
+
+    public void removeListener(String serviceKey) {
+        listeners.remove(serviceKey);
+        if (listeners.isEmpty()) {
+            serviceDiscovery.removeServiceInstancesChangedListener(this);
+        }
     }
 
     public List<URL> getUrls(String serviceKey) {
@@ -223,16 +245,24 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return serviceNames.contains(event.getServiceName());
     }
 
+    public String getRegistryId() {
+        return registryId;
+    }
+
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceInstancesChangedListener)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceInstancesChangedListener)) {
+            return false;
+        }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceNames(), that.getServiceNames());
+        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(getRegistryId(), that.getRegistryId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames());
+        return Objects.hash(getClass(), getServiceNames(), getRegistryId());
     }
 }

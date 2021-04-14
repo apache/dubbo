@@ -71,7 +71,7 @@ public class MultipleRegistry extends AbstractRegistry {
         this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
         init();
         checkApplicationName(this.applicationName);
-        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
+        // This urls contain parameter and it do not inherit from the parameter of url in MultipleRegistry
 
         Map<String, Registry> registryMap = new HashMap<>();
         if (initServiceRegistry) {
@@ -118,7 +118,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public boolean isAvailable() {
-        boolean available = serviceRegistries.isEmpty() ? true : false;
+        boolean available = serviceRegistries.isEmpty();
         for (Registry serviceRegistry : serviceRegistries.values()) {
             if (serviceRegistry.isAvailable()) {
                 available = true;
@@ -128,7 +128,7 @@ public class MultipleRegistry extends AbstractRegistry {
             return false;
         }
 
-        available = referenceRegistries.isEmpty() ? true : false;
+        available = referenceRegistries.isEmpty();
         for (Registry referenceRegistry : referenceRegistries.values()) {
             if (referenceRegistry.isAvailable()) {
                 available = true;

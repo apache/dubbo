@@ -18,8 +18,6 @@
 package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -30,7 +28,6 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.ArrayList;
@@ -67,9 +64,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
  */
 public class NacosMetadataReport extends AbstractMetadataReport {
 
-    private static final Logger logger = LoggerFactory.getLogger(NacosMetadataReport.class);
-
-    private ConfigService configService;
+    private NacosConfigServiceWrapper configService;
 
     /**
      * The group used to store metadata in Nacos
@@ -83,10 +78,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
-    public ConfigService buildConfigService(URL url) {
+    public NacosConfigServiceWrapper buildConfigService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
         try {
-            configService = NacosFactory.createConfigService(nacosProperties);
+            configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getErrMsg(), e);
@@ -225,7 +220,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
     private String getConfig(BaseMetadataIdentifier identifier) {
         try {
-            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 300);
+            return configService.getConfig(identifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY), group, 3000L);
         } catch (Throwable t) {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
