@@ -7,6 +7,21 @@
     <property name="charset" value="UTF-8"/>
     <property name="fileExtensions" value="java"/>
 
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf" />
+    </module>
+    <module name="FileTabCharacter">
+        <property name="fileExtensions" value="java,xml"/>
+    </module>
+    <module name="RegexpSingleline">
+        <!-- \s matches whitespace character, $ matches end of line. -->
+        <property name="format" value="\s+$"/>
+        <property name="message" value="Line has trailing spaces."/>
+    </module>
+    <module name="SuppressionFilter">
+        <property name="file" value="codestyle/checkstyle-suppressions.xml"/>
+    </module>
+
     <module name="Header">
         <property name="headerFile" value="/checkstyle-header.txt"/>
         <property name="fileExtensions" value="java"/>
