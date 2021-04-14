@@ -80,14 +80,18 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        
+
         if (isAsync(exporter.getInvoker().getUrl(), getUrl())) {
             ((RpcInvocation) invocation).setInvokeMode(InvokeMode.ASYNC);
             // use consumer executor
             ExecutorService executor = executorRepository.getExecutor(getUrl());
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
                 Result result = exporter.getInvoker().invoke(invocation);
-                return new AppResponse(result.getValue());
+                if (result.hasException()) {
+                    return new AppResponse(result.getException());
+                } else {
+                    return new AppResponse(result.getValue());
+                }
             }, executor);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(appResponseFuture);
@@ -100,7 +104,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
     }
 
     private boolean isAsync(URL remoteUrl, URL localUrl) {
-        if(localUrl.hasParameter(ASYNC_KEY)){
+        if (localUrl.hasParameter(ASYNC_KEY)) {
             return localUrl.getParameter(ASYNC_KEY, false);
         }
         return remoteUrl.getParameter(ASYNC_KEY, false);
