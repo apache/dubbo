@@ -16,18 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.internal.shaded.org.jctools.queues.MpscChunkedArrayQueue;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -38,6 +26,17 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2Headers;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public abstract class AbstractStream<T> implements Stream<T> {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
         ConfigUtils.getProperty("triple.attachment", "false"));
@@ -47,7 +46,6 @@ public abstract class AbstractStream<T> implements Stream<T> {
     private final ChannelHandlerContext ctx;
     private final URL url;
     private final MethodDescriptor md;
-    private final Queue<InputStream> datas;
     private MultipleSerialization multipleSerialization;
     private Http2Headers headers;
     private Http2Headers te;
@@ -60,7 +58,6 @@ public abstract class AbstractStream<T> implements Stream<T> {
         this.ctx = ctx;
         this.url = url;
         this.md = md;
-        this.datas = new MpscChunkedArrayQueue<>(16, 1 << 30);
         if (md.isNeedWrap()) {
             loadFromURL(url);
         }

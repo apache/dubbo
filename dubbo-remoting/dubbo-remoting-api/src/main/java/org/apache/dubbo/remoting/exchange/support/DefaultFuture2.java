@@ -56,7 +56,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
     // invoke id.
     private final Long id;
     private final Connection connection;
-    private final Request request;
     private final int timeout;
     private final long start = System.currentTimeMillis();
     private volatile long sent;
@@ -64,10 +63,9 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
 
     private ExecutorService executor;
 
-    private DefaultFuture2(Connection client2, Request request, int timeout) {
+    private DefaultFuture2(Connection client2, long id, int timeout) {
         this.connection = client2;
-        this.request = request;
-        this.id = request.getId();
+        this.id = id ;
         this.timeout = timeout;
         // put into waiting map.
         FUTURES.put(id, this);
@@ -92,8 +90,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
      * @param timeout timeout
      * @return a new DefaultFuture
      */
-    public static DefaultFuture2 newFuture(Connection channel, Request request, int timeout, ExecutorService executor) {
-        final DefaultFuture2 future = new DefaultFuture2(channel, request, timeout);
+    public static DefaultFuture2 newFuture(Connection channel, long id, int timeout, ExecutorService executor) {
+        final DefaultFuture2 future = new DefaultFuture2(channel,id, timeout);
         future.setExecutor(executor);
         // ThreadlessExecutor needs to hold the waiting future in case of circuit return.
         if (executor instanceof ThreadlessExecutor) {
@@ -236,9 +234,6 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
         return sent > 0;
     }
 
-    public Request getRequest() {
-        return request;
-    }
 
     private int getTimeout() {
         return timeout;

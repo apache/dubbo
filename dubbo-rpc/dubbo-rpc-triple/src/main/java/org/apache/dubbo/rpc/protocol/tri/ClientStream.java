@@ -16,16 +16,21 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.InputStream;
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -34,26 +39,16 @@ import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
 
+import java.io.InputStream;
+import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
-
 public class ClientStream extends AbstractStream implements Stream {
+
+    public static ClientStream unary(){
+
+    }
     private static final AsciiString SCHEME = AsciiString.of("http");
     private final String authority;
     private final Request request;
@@ -76,14 +71,6 @@ public class ClientStream extends AbstractStream implements Stream {
         setProcessor(new Processor(this, getMd(), getUrl(), getSerializeType(), getMultipleSerialization()));
     }
 
-    public static ConsumerModel getConsumerModel(Invocation invocation) {
-        Object o = invocation.get(CONSUMER_MODEL);
-        if (o instanceof ConsumerModel) {
-            return (ConsumerModel)o;
-        }
-        String serviceKey = invocation.getInvoker().getUrl().getServiceKey();
-        return ApplicationModel.getConsumerModel(serviceKey);
-    }
 
     public Executor getCallback() {
         return callback;
@@ -125,52 +112,7 @@ public class ClientStream extends AbstractStream implements Stream {
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
         TripleUtil.setClientStream(streamChannel, this);
 
-        Http2Headers headers = new DefaultHttp2Headers()
-                .authority(authority)
-                .scheme(SCHEME)
-                .method(HttpMethod.POST.asciiName())
-                .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) + "m")
-                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        final String version = invocation.getInvoker().getUrl().getVersion();
-        if (version != null) {
-            headers.set(TripleConstant.SERVICE_VERSION, version);
-        }
-
-        final String app = (String)invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
-        if (app != null) {
-            headers.set(TripleConstant.CONSUMER_APP_NAME_KEY, app);
-            invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
-        }
-
-        final String group = invocation.getInvoker().getUrl().getGroup();
-        if (group != null) {
-            headers.set(TripleConstant.SERVICE_GROUP, group);
-            invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
-        }
-        final Map<String, Object> attachments = invocation.getObjectAttachments();
-        if (attachments != null) {
-            convertAttachment(headers, attachments);
-        }
-        headers.remove("path");
-        headers.remove("interface");
-        DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
-        final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
-
-        TripleUtil.setClientStream(streamChannel, this);
-        streamChannel.pipeline().addLast(responseHandler)
-            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-            .addLast(new TripleClientInboundHandler());
-        streamChannel.write(frame).addListener(future -> {
-            if (!future.isSuccess()) {
-                if (future.cause() instanceof Http2NoMoreStreamIdsException) {
-                    getCtx().close();
-                }
-                promise.setFailure(future.cause());
-            }
-        });
     }
 
     @Override

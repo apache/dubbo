@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantLock;
-
-import io.netty.channel.ChannelFuture;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -47,6 +40,14 @@ import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
+
+import io.netty.channel.ChannelFuture;
+
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_TIMEOUT_COUNTDOWN_KEY;
@@ -78,22 +79,17 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     protected Result doInvoke(final Invocation invocation) throws Throwable {
+        connection.connectSync();
         RpcInvocation inv = (RpcInvocation)invocation;
+        Metadata metadata=new Metadata();
+        metadata.put(PATH_KEY,getUrl().getPath());
         final String methodName = RpcUtils.getMethodName(invocation);
-        inv.setAttachment(PATH_KEY, getUrl().getPath());
+        int timeout = calculateTimeout(invocation, methodName);
+        invocation.put(TIMEOUT_KEY, timeout);
         inv.setAttachment(Constants.SERIALIZATION_KEY,
             getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
+        ExecutorService executor = getCallbackExecutor(getUrl(), inv);
         try {
-            int timeout = calculateTimeout(invocation, methodName);
-            invocation.put(TIMEOUT_KEY, timeout);
-            ExecutorService executor = getCallbackExecutor(getUrl(), inv);
-            // create request.
-            Request req = new Request();
-            req.setVersion(Version.getProtocolVersion());
-            req.setTwoWay(true);
-            req.setData(inv);
-
-            connection.connectSync();
 
             DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse)obj);

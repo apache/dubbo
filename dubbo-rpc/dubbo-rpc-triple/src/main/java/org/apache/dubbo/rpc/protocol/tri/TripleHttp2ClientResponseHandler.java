@@ -24,6 +24,7 @@ import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.remoting.Client;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
@@ -55,9 +56,12 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
+        ClientStream2 stream2;
+        stream2.onMetadata();
         TripleUtil.getClientStream(ctx).onHeaders(msg.headers());
         if (msg.isEndStream()) {
             final ClientStream clientStream = TripleUtil.getClientStream(ctx);
+            stream2.onComplete();
             clientStream.halfClose();
         }
     }

@@ -14,32 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.exchange.Request;
 
-import java.io.InputStream;
-
-public interface Stream {
-
-    void onMetadata(Metadata metadata, OperationHandler handler);
-
-    void onData(InputStream in, OperationHandler handler);
-
-    void onComplete(OperationHandler handler);
-
-    void onError(Throwable t, OperationHandler handler);
-
-    void subscribe(StreamObserver<Object> observer);
-
-    StreamObserver<Object> asObserver();
-
-    enum OperationResult {
-        OK,FAILURE
-    }
-
-    interface OperationHandler {
-
-        void operationDone(OperationResult result, Throwable cause);
+public class ReqWrapperMeta extends Metadata{
+    private final Request request;
+    public ReqWrapperMeta(Request request){
+        this.request=request;
     }
 }

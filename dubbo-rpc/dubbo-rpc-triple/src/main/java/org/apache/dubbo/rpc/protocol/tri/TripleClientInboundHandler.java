@@ -24,6 +24,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        ClientStream2 stream2;
+        stream2.onData();
         final ClientStream invoker = TripleUtil.getClientStream(ctx);
         final ByteBuf buffer = (ByteBuf)msg;
         if (invoker != null) {

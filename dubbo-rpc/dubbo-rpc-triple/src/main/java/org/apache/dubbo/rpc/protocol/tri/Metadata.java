@@ -14,32 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.stream.StreamObserver;
+import java.util.HashMap;
+import java.util.Map;
 
-import java.io.InputStream;
+public class Metadata {
+    private final Map<CharSequence, CharSequence> innerMap = new HashMap<>();
 
-public interface Stream {
-
-    void onMetadata(Metadata metadata, OperationHandler handler);
-
-    void onData(InputStream in, OperationHandler handler);
-
-    void onComplete(OperationHandler handler);
-
-    void onError(Throwable t, OperationHandler handler);
-
-    void subscribe(StreamObserver<Object> observer);
-
-    StreamObserver<Object> asObserver();
-
-    enum OperationResult {
-        OK,FAILURE
+    public CharSequence get(CharSequence key) {
+        return innerMap.get(key);
     }
 
-    interface OperationHandler {
-
-        void operationDone(OperationResult result, Throwable cause);
+    public void put(CharSequence key, CharSequence value) {
+        innerMap.put(key, value);
     }
 }

@@ -25,68 +25,55 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.triple.TripleWrapper;
 
-public class Processor {
+public class Processor<T,R> {
+    private final StreamObserver<T> subscriber;
     private final AbstractStream stream;
-    private final MethodDescriptor md;
-    private final MultipleSerialization multipleSerialization;
-    private final URL url;
     private String serializeType;
+    private final Class<T> inboundClass;
+    private final Class<R> outboundClass;
+    // inbound observer / handler
+    // outbound observer /handler
+    private final StreamObserver<?> inbound;
+    private final StreamObserver<?> outbound;
 
-    public Processor(AbstractStream stream, MethodDescriptor md, URL url, String serializeType,
-        MultipleSerialization multipleSerialization) {
+
+    private StreamObserver<T> getSubscriber(){
+        return subscriber;
+    }
+    public Processor(AbstractStream stream, Class<T> inbound, Class<R> outbound, StreamObserver<T> subscriber) {
         this.stream = stream;
-        this.md = md;
-        this.url = url;
-        this.serializeType = serializeType;
-        this.multipleSerialization = multipleSerialization;
+        this.inboundClass=inbound;
+        this.outboundClass=outbound;
+        this.subscriber = subscriber;
     }
 
-    public void onSingleRequestMessage(InputStream in) {
-        final Object[] resp = decodeRequestMessage(in);
-        if (resp.length > 1) {
-            return;
-        }
-        stream.getObserver().onNext(resp[0]);
+    public void onSingleMessage(InputStream in) {
+        final T message= decodeMessage(in,inboundClass);
+        getSubscriber().onNext(message);
+    }
+    public void sendSingleMessage()
+
+    public static <M> M decodeMessage(InputStream is,Class<M> clz) {
+        return TripleUtil.unpack(is, clz);
     }
 
-    public void onSingleResponseMessage(InputStream in) {
-        final Object resp = decodeResponseMessage(in);
 
-        stream.getObserver().onNext(resp);
-    }
-
-    public Object[] decodeRequestMessage(InputStream is) {
-        if (md.isNeedWrap()) {
-            final TripleWrapper.TripleRequestWrapper req = TripleUtil.unpack(is,
-                TripleWrapper.TripleRequestWrapper.class);
-            this.serializeType = req.getSerializeType();
-            String[] paramTypes = req.getArgTypesList().toArray(new String[req.getArgsCount()]);
-            if (!Arrays.equals(this.md.getCompatibleParamSignatures(), paramTypes)) {
-                throw new IllegalArgumentException("paramTypes is not ");
-            }
-            final Object[] arguments = TripleUtil.unwrapReq(url, req, multipleSerialization);
-            return arguments;
-        } else {
-            final Object req = TripleUtil.unpack(is, md.getParameterClasses()[0]);
-            return new Object[] {req};
-        }
-    }
-
-    public Object decodeResponseMessage(InputStream is) {
-        final Object resp;
-        if (md.isNeedWrap()) {
-            final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(is,
-                TripleWrapper.TripleResponseWrapper.class);
-            resp = TripleUtil.unwrapResp(url, message, multipleSerialization);
-        } else {
-            resp = TripleUtil.unpack(is, md.getReturnClass());
-        }
-        return resp;
-    }
+//    public Object decodeResponseMessage(InputStream is) {
+//        final Object resp;
+//        if (md.isNeedWrap()) {
+//            final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(is,
+//                TripleWrapper.TripleResponseWrapper.class);
+//            resp = TripleUtil.unwrapResp(url, message, multipleSerialization);
+//        } else {
+//            resp = TripleUtil.unpack(is, md.getReturnClass());
+//        }
+//        return resp;
+//    }
 
     public ByteBuf encodeResponse(Object value, ChannelHandlerContext ctx) {
         final Message message;
@@ -102,6 +89,7 @@ public class Processor {
     }
 
     public ByteBuf encodeRequest(RpcInvocation invocation, ChannelHandlerContext ctx) {
+        outbound.onNext();
         final ByteBuf out;
 
         if (md.isNeedWrap()) {
