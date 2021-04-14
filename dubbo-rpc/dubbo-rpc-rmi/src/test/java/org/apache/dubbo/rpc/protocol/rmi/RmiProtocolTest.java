@@ -36,8 +36,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RmiProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     /*
     @Test
@@ -48,8 +46,10 @@ public class RmiProtocolTest {
     */
     @Test
     public void testRmiProtocolTimeout() throws Exception {
-        int availablePort = 1099;
+        int availablePort = NetUtils.getAvailablePort();
         System.setProperty("sun.rmi.transport.tcp.responseTimeout", "1000");
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         DemoService service = new DemoServiceImpl();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:" + availablePort + "/TestService")));
         service = proxy.getProxy(protocol.refer(DemoService.class, URL.valueOf("rmi://127.0.0.1:" + availablePort + "/TestService")));
@@ -68,7 +68,9 @@ public class RmiProtocolTest {
     @Test
     public void testRmiProtocol() throws Exception {
         {
-            int availablePort = 1100;
+            int availablePort = NetUtils.getAvailablePort();
+            Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             DemoService service = new DemoServiceImpl();
             Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:" + availablePort + "/TestService")));
 
@@ -82,7 +84,9 @@ public class RmiProtocolTest {
         }
 
         {
-            int port = 1101;
+            int port = NetUtils.getAvailablePort();
+            Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+            ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
             RemoteService remoteService = new RemoteServiceImpl();
             Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(remoteService, RemoteService.class, URL.valueOf("rmi://127.0.0.1:" + port + "/remoteService")));
 
@@ -100,7 +104,9 @@ public class RmiProtocolTest {
     @Disabled
     @Test
     public void testRmiProtocol_echoService() throws Exception {
-        int availablePort = 1102;
+        int availablePort = NetUtils.getAvailablePort();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         DemoService service = new DemoServiceImpl();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("rmi://127.0.0.1:" + availablePort + "/TestService")));
 
@@ -127,7 +133,9 @@ public class RmiProtocolTest {
 
     @Test
     public void testGenericInvoke() {
-        int availablePort = 1103;
+        int availablePort = NetUtils.getAvailablePort();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("rmi://127.0.0.1:" + availablePort + "/" + DemoService.class.getName() + "?release=2.7.0");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
@@ -142,7 +150,9 @@ public class RmiProtocolTest {
 
     @Test
     public void testRemoteApplicationName() throws Exception {
-        int availablePort = 1104;
+        int availablePort = NetUtils.getAvailablePort();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
         DemoService service = new DemoServiceImpl();
         URL url = URL.valueOf("rmi://127.0.0.1:" + availablePort + "/TestService?release=2.7.0").addParameter("application", "consumer");
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(service, DemoService.class, url));
