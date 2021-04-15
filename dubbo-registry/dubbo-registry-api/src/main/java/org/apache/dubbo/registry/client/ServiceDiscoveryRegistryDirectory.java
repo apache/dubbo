@@ -77,6 +77,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
+        if (isDestroyed()) {
+            return;
+        }
         // Set the context of the address notification thread.
         RpcContext.setRpcContext(getConsumerUrl());
 

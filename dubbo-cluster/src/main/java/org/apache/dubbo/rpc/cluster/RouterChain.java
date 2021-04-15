@@ -126,13 +126,6 @@ public class RouterChain<T> {
                 LOGGER.error("Error trying to stop router " + router.getClass(), e);
             }
         }
-        for (Router router : builtinRouters) {
-            try {
-                router.stop();
-            } catch (Exception e) {
-                LOGGER.error("Error trying to stop builtin router " + router.getClass(), e);
-            }
-        }
         routers = Collections.emptyList();
         builtinRouters = Collections.emptyList();
     }
