@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
@@ -25,17 +26,24 @@ import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigEarlyIniti
 import org.apache.dubbo.config.spring.context.DubboApplicationListenerRegistrar;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
+
+import com.alibaba.spring.util.PropertySourcesUtils;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.beans.factory.BeanNotOfRequiredTypeException;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.validation.DataBinder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static java.util.Collections.emptyList;
@@ -157,5 +165,39 @@ public abstract class DubboBeanUtils {
             }
         }
         return unmodifiableList(beans);
+    }
+
+    public static Map<String, Object> getValidPropertiesWithPrefix(String prefix, MutablePropertySources propertySources) {
+        Map<String, Object> properties = PropertySourcesUtils.getSubProperties(propertySources, prefix);
+        return properties.entrySet().stream()
+                .filter(e -> !e.getKey().contains("."))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    public static void appendOrCreateMethodConfigFromProperties(String prefix, Class<?> interfaceClass, List<MethodConfig> methodConfigs, MutablePropertySources propertySources) {
+        for (java.lang.reflect.Method declaredMethod : interfaceClass.getDeclaredMethods()) {
+            String methodName = declaredMethod.getName();
+            Map<String, Object> methodProperties = getValidPropertiesWithPrefix(prefix + interfaceClass.getName() + "." + methodName, propertySources);
+            if (methodProperties.size() == 0) {
+                continue;
+            }
+            MethodConfig methodConfig = null;
+            for (MethodConfig config : methodConfigs) {
+                if (methodName.equals(config.getName())) {
+                    methodConfig = config;
+                    break;
+                }
+            }
+            if (methodConfig == null) {
+                methodConfig = new MethodConfig();
+                methodConfig.setName(methodName);
+                methodConfig.setReturn(true);
+                methodConfigs.add(methodConfig);
+            }
+            DataBinder binder = new DataBinder(methodConfig);
+            binder.setIgnoreInvalidFields(true);
+            binder.setIgnoreUnknownFields(true);
+            binder.bind(new MutablePropertyValues(methodProperties));
+        }
     }
 }

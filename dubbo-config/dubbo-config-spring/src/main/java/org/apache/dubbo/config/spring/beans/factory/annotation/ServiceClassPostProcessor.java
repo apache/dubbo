@@ -27,8 +27,8 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 
-import com.alibaba.spring.util.PropertySourcesUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -60,7 +60,6 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.validation.DataBinder;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -72,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
@@ -110,7 +108,6 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Set<String> packagesToScan;
-
 
     private Environment environment;
 
@@ -410,7 +407,8 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
         // 追加配置在properties文件中的service属性
         if (this.propertySources != null) {
-            propertyValues.addPropertyValues(getValidPropertiesWithPrefix(DUBBO_SERVICE_PREFIX + interfaceClass.getName()));
+            Map<String, Object> validProperties = DubboBeanUtils.getValidPropertiesWithPrefix(DUBBO_SERVICE_PREFIX + interfaceClass.getName(), this.propertySources);
+            propertyValues.addPropertyValues(validProperties);
         }
 
         // References "ref" property to annotated-@Service Bean
@@ -420,13 +418,13 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         // Convert parameters into map
         builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
         // Add methods parameters
-        List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
+        List<MethodConfig> methodConfigList = new ArrayList(convertMethodConfigs(serviceAnnotationAttributes.get("methods")));
         // 追加配置在properties文件中的方法属性，或者从properties构造methodConfig
         if (this.propertySources != null) {
-            appendOrCreateMethodConfigFromProperties(interfaceClass, methodConfigs);
+            DubboBeanUtils.appendOrCreateMethodConfigFromProperties(DUBBO_SERVICE_PREFIX, interfaceClass, methodConfigList, this.propertySources);
         }
-        if (!methodConfigs.isEmpty()) {
-            builder.addPropertyValue("methods", methodConfigs);
+        if (!methodConfigList.isEmpty()) {
+            builder.addPropertyValue("methods", methodConfigList);
         }
 
         /**
@@ -486,43 +484,6 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         return builder.getBeanDefinition();
 
-    }
-
-    private void appendOrCreateMethodConfigFromProperties(Class<?> interfaceClass, List<MethodConfig> methodConfigs) {
-        for (java.lang.reflect.Method declaredMethod : interfaceClass.getDeclaredMethods()) {
-            String methodName = declaredMethod.getName();
-            Map<String, Object> methodProperties = getValidPropertiesWithPrefix(DUBBO_SERVICE_PREFIX + interfaceClass.getName() + "." + methodName);
-            if (methodProperties.size() == 0) {
-                continue;
-            }
-            MethodConfig methodConfig = null;
-            for (MethodConfig config : methodConfigs) {
-                if (methodName.equals(config.getName())) {
-                    methodConfig = config;
-                    break;
-                }
-            }
-            if (methodConfig == null) {
-                methodConfig = new MethodConfig();
-                methodConfig.setName(methodName);
-                methodConfig.setReturn(true);
-                if (methodConfigs.isEmpty()) {
-                    methodConfigs = new ArrayList<>();
-                }
-                methodConfigs.add(methodConfig);
-            }
-            DataBinder binder = new DataBinder(methodConfig);
-            binder.setIgnoreInvalidFields(true);
-            binder.setIgnoreUnknownFields(true);
-            binder.bind(new MutablePropertyValues(methodProperties));
-        }
-    }
-
-    private Map<String, Object> getValidPropertiesWithPrefix(String prefix) {
-        Map<String, Object> properties = PropertySourcesUtils.getSubProperties(this.propertySources, prefix);
-        return properties.entrySet().stream()
-                .filter(e -> !e.getKey().contains("."))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     private List convertMethodConfigs(Object methodsAnnotation) {
