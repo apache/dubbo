@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 /**
  * InjvmProtocol
  */
-public class InjvmProtocol extends AbstractProtocol {
+public class InjvmProtocol extends AbstractProtocol implements Protocol{
 
     public static final String NAME = LOCAL_PROTOCOL;
 

@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.protocol.rmi;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
@@ -41,7 +40,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 /**
  * RmiProtocol.
  */
-public class RmiProtocol extends AbstractProxyProtocol implements Protocol{
+public class RmiProtocol extends AbstractProxyProtocol{
 
     public static final int DEFAULT_PORT = 1099;
 
