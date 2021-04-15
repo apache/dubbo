@@ -328,8 +328,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
         } else {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
-            if (!migrated && !serviceDiscoveryInvoker.isDestroyed() && serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
+            if (!migrated && !serviceDiscoveryInvoker.isDestroyed()) {
                 scheduler.submit(() -> {
+                    try {
+                        if (!serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
+                            Thread.sleep(3000);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     destroyServiceDiscoveryInvoker(serviceDiscoveryInvoker);
                 });
             }
