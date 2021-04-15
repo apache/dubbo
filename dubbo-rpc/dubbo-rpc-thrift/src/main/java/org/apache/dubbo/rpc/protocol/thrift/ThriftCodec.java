@@ -267,7 +267,7 @@ public class ThriftCodec implements Codec2 {
             Request request = new Request(id);
             request.setData(result);
 
-            CACHED_REQUEST.computeIfAbsent(id, k ->
+            CACHED_REQUEST.putIfAbsent(id,
                     RequestData.create(message.seqid, serviceName, message.name));
 
             return request;
