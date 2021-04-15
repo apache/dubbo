@@ -32,12 +32,22 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
 
 public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstanceCustomizer {
 
+    /**
+     * 元数据服务对应的参数
+     * dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+     * @param serviceInstance {@link ServiceInstance the service instance}
+     */
     @Override
     public void customize(ServiceInstance serviceInstance) {
 
         Map<String, String> metadata = serviceInstance.getMetadata();
 
+        //dubbo.metadata-service.url-params
         String propertyName = resolveMetadataPropertyName(serviceInstance);
+        /**
+         * 获取元数据服务的特定参数
+         * {"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+         */
         String propertyValue = resolveMetadataPropertyValue(serviceInstance);
 
         if (!isBlank(propertyName) && !isBlank(propertyValue)) {
@@ -49,7 +59,13 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         return METADATA_SERVICE_URL_PARAMS_PROPERTY_NAME;
     }
 
+    /**
+     * 获取本地元数据服务的参数
+     * @param serviceInstance the instance of {@link ServiceInstance}
+     * @return
+     */
     private String resolveMetadataPropertyValue(ServiceInstance serviceInstance) {
+        // 获取WritableMetadataService默认实现
         WritableMetadataService writableMetadataService = getDefaultExtension();
 
         String serviceInterface = MetadataService.class.getName();
@@ -57,9 +73,9 @@ public class MetadataServiceURLParamsMetadataCustomizer implements ServiceInstan
         String group = serviceInstance.getServiceName();
 
         String version = MetadataService.VERSION;
-
+        // 获取本地元数据中心中 元数据服务的url
         SortedSet<String> urls = writableMetadataService.getExportedURLs(serviceInterface, group, version);
-
+        //获取元数据服务对应的参数
         return getMetadataServiceParameter(toURLs(urls));
     }
 }

@@ -28,9 +28,17 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         return serviceInstance;
     }
 
+    /**
+     * 服务注册
+     * @param serviceInstance an instance of {@link ServiceInstance} to be registered
+     * @throws RuntimeException
+     */
     @Override
     public final void register(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
+        /**
+         * 服务注册
+         */
         doRegister(serviceInstance);
     }
 
@@ -39,13 +47,30 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
      */
     public abstract void doRegister(ServiceInstance serviceInstance);
 
+    /**
+     *
+     * @param serviceInstance the registered {@link ServiceInstance}
+     * @throws RuntimeException
+     */
     @Override
     public final void update(ServiceInstance serviceInstance) throws RuntimeException {
+        /**
+         *
+         */
         if (!isInstanceUpdated(serviceInstance)) {
             return;
         }
+        /**
+         *
+         */
         this.serviceInstance = serviceInstance;
+        /**
+         *
+         */
         doUpdate(serviceInstance);
+        /**
+         *
+         */
         resetInstanceUpdateKey(serviceInstance);
     }
 

@@ -41,23 +41,34 @@ public class EnvironmentAdapter implements InfraAdapter {
     public Map<String, String> getExtraAttributes(Map<String, String> params) {
         Map<String, String> parameters = new HashMap<>();
 
+        /**
+         * 是否设置 dubbo.labels
+         */
         String rawLabels = ConfigurationUtils.getProperty(DUBBO_LABELS);
         if (StringUtils.isNotEmpty(rawLabels)) {
             String[] labelPairs = SEMICOLON_SPLIT_PATTERN.split(rawLabels);
             for (String pair : labelPairs) {
                 String[] label = EQUAL_SPLIT_PATTERN.split(pair);
                 if (label.length == 2) {
+                    /**
+                     *
+                     */
                     parameters.put(label[0], label[1]);
                 }
             }
         }
-
+        /**
+         * 是否设置 dubbo.env.keys
+         */
         String rawKeys = ConfigurationUtils.getProperty(DUBBO_ENV_KEYS);
         if (StringUtils.isNotEmpty(rawKeys)) {
             String[] keys = COMMA_SPLIT_PATTERN.split(rawKeys);
             for (String key : keys) {
                 String value = ConfigurationUtils.getProperty(key);
                 if (value != null) {
+                    /**
+                     *
+                     */
                     parameters.put(key, value);
                 }
             }

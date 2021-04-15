@@ -148,14 +148,23 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         this.serviceDiscovery = serviceDiscovery;
     }
 
+    /**
+     * 服务注册
+     * @param serviceInstance an instance of {@link ServiceInstance} to be registered
+     * @throws RuntimeException
+     */
     @Override
     public final void register(ServiceInstance serviceInstance) throws RuntimeException {
 
         assertDestroyed(REGISTER_ACTION);
         assertInitialized(REGISTER_ACTION);
 
+        /**
+         * 服务注册  并发布事件
+         */
         executeWithEvents(
                 of(new ServiceInstancePreRegisteredEvent(serviceDiscovery, serviceInstance)),
+                // 注册  AbstractServiceDiscovery
                 () -> serviceDiscovery.register(serviceInstance),
                 of(new ServiceInstanceRegisteredEvent(serviceDiscovery, serviceInstance))
         );
@@ -282,15 +291,24 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         destroyed.compareAndSet(false, true);
     }
 
+    /**
+     * 业务执行前后添加事件
+     * @param beforeEvent
+     * @param action
+     * @param afterEvent
+     */
     protected final void executeWithEvents(Optional<? extends Event> beforeEvent,
                                            ThrowableAction action,
                                            Optional<? extends Event> afterEvent) {
+        //业务执行前   发布事件
         beforeEvent.ifPresent(this::dispatchEvent);
         try {
+            //业务执行
             action.execute();
         } catch (Throwable e) {
             dispatchEvent(new ServiceDiscoveryExceptionEvent(this, serviceDiscovery, e));
         }
+        //业务执行后  发布时间
         afterEvent.ifPresent(this::dispatchEvent);
     }
 

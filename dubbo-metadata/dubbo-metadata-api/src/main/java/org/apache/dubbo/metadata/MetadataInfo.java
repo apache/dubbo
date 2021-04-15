@@ -86,6 +86,10 @@ public class MetadataInfo implements Serializable {
         markChanged();
     }
 
+    /**
+     * 计算revision
+     * @return
+     */
     public String calAndGetRevision() {
         if (revision != null && hasReported()) {
             return revision;
@@ -96,10 +100,13 @@ public class MetadataInfo implements Serializable {
         }
 
         StringBuilder sb = new StringBuilder();
+        // 应用名称
         sb.append(app);
+        // 本地缓存的所有服务（元数据服务与待导出服务）
         for (Map.Entry<String, ServiceInfo> entry : services.entrySet()) {
             sb.append(entry.getValue().toDescString());
         }
+        //dubbo-demo-annotation-providertest/org.apache.dubbo.demo.GreetingService:2.0.0:dubbo[public abstract java.lang.String org.apache.dubbo.demo.GreetingService.hello()]{deprecated=false, dubbo=2.0.2, version=2.0.0, group=test}org.apache.dubbo.demo.DemoService:dubbo[public abstract java.lang.String org.apache.dubbo.demo.DemoService.sayHello(java.lang.String), public default java.util.concurrent.CompletableFuture org.apache.dubbo.demo.DemoService.sayHelloAsync(java.lang.String)]{deprecated=false, dubbo=2.0.2}dubbo-demo-annotation-provider/org.apache.dubbo.metadata.MetadataService:1.0.0:dubbo[public abstract java.lang.String org.apache.dubbo.metadata.MetadataService.getServiceDefinition(java.lang.String), public abstract java.lang.String org.apache.dubbo.metadata.MetadataService.serviceName(), public abstract java.util.Map org.apache.dubbo.metadata.MetadataService.getMetadataInfos(), public abstract java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getExportedURLs(java.lang.String,java.lang.String,java.lang.String,java.lang.String), public abstract org.apache.dubbo.metadata.MetadataInfo org.apache.dubbo.metadata.MetadataService.getMetadataInfo(java.lang.String), public default java.lang.String org.apache.dubbo.metadata.MetadataService.getAndListenServiceDiscoveryMetadata(java.lang.String,org.apache.dubbo.metadata.MetadataChangeListener), public default java.lang.String org.apache.dubbo.metadata.MetadataService.getServiceDefinition(java.lang.String,java.lang.String,java.lang.String), public default java.lang.String org.apache.dubbo.metadata.MetadataService.version(), public default java.util.Map org.apache.dubbo.metadata.MetadataService.getMetadataChangeListenerMap(), public default java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getExportedURLs(), public default java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getExportedURLs(java.lang.String), public default java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getExportedURLs(java.lang.String,java.lang.String), public default java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getExportedURLs(java.lang.String,java.lang.String,java.lang.String), public default java.util.SortedSet org.apache.dubbo.metadata.MetadataService.getSubscribedURLs(), public default void org.apache.dubbo.metadata.MetadataService.exportServiceDiscoveryMetadata(java.lang.String), public static boolean org.apache.dubbo.metadata.MetadataService.isMetadataServiceURL(org.apache.dubbo.common.URL), public static java.util.List org.apache.dubbo.metadata.MetadataService.toURLs(java.lang.Iterable), public static java.util.SortedSet org.apache.dubbo.metadata.MetadataService.toSortedStrings(java.lang.Iterable), public static java.util.SortedSet org.apache.dubbo.metadata.MetadataService.toSortedStrings(java.util.stream.Stream)]{deprecated=false, dubbo=2.0.2, version=1.0.0, group=dubbo-demo-annotation-provider}
         this.revision = RevisionResolver.calRevision(sb.toString());
         return revision;
     }

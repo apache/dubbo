@@ -50,10 +50,17 @@ public class MetadataUtils {
 
     public static WritableMetadataService localMetadataService;
 
+    /**
+     * 实际为InMemoryWritableMetadataService
+     * @return
+     */
     public static RemoteMetadataServiceImpl getRemoteMetadataService() {
         if (remoteMetadataService == null) {
             synchronized (REMOTE_LOCK) {
                 if (remoteMetadataService == null) {
+                    /**
+                     * 实际为InMemoryWritableMetadataService
+                     */
                     remoteMetadataService = new RemoteMetadataServiceImpl(WritableMetadataService.getDefaultExtension());
                 }
             }

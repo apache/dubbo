@@ -81,6 +81,7 @@ public class MetadataReportInstance {
         if (checked) {
             checkInit();
         }
+        //default -> {NacosMetadataReport@5922} "nacos://113.96.131.199:8849/org.apache.dubbo.metadata.report.MetadataReport?application=dubbo-demo-annotation-provider&client=&registry-type=service&registry.type=service"
         return metadataReports;
     }
 

@@ -36,9 +36,14 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  */
 public class ProtocolPortsMetadataCustomizer implements ServiceInstanceCustomizer {
 
+    /**
+     * 导出服务对应的协议以及端口号
+     * dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
+     * @param serviceInstance {@link ServiceInstance the service instance}
+     */
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        // 获取WritableMetadataService对应实现
+        // 获取WritableMetadataService默认实现
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
 
         // 获取本地元数据中心中对外暴露服务的协议以及端口号

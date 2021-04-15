@@ -253,16 +253,39 @@ public class ServiceInstanceMetadataUtils {
         return null;
     }
 
+    /**
+     * 为元数据添加dubbo.metadata.revision -> 6E05C73112CB34FBD5FFAC83B2299BDE
+     * @param serviceDiscovery
+     * @param instance
+     */
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
+        /**
+         * 获取注册中心url中parameters对应的id
+         */
         String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
         if (registryCluster == null) {
             return;
         }
+        /**
+         * 本地缓存中  {registryCluster}对应的元数据信息（包括待导出服务）
+         */
         MetadataInfo metadataInfo = WritableMetadataService.getDefaultExtension().getMetadataInfos().get(registryCluster);
         if (metadataInfo != null) {
+            /**
+             * 元数据中的dubbo.metadata.revision
+             */
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
+            /**
+             * revision不相同
+             */
             if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
+                /**
+                 * 将revision注入到元数据
+                 */
                 instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
+                /**
+                 * 更新元数据中的extendParams  提示revision有变化  应该通知注册中心
+                 */
                 if (existingInstanceRevision != null) {// skip the first registration.
                     instance.getExtendParams().put(INSTANCE_REVISION_UPDATED_KEY, "true");
                 }
@@ -270,7 +293,15 @@ public class ServiceInstanceMetadataUtils {
         }
     }
 
+    /**
+     * 比对是否需要更新   即revision是否有变化
+     * @param instance
+     * @return
+     */
     public static boolean isInstanceUpdated(ServiceInstance instance) {
+        /**
+         * revision有变化
+         */
         return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
     }
 
@@ -278,13 +309,31 @@ public class ServiceInstanceMetadataUtils {
         instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
     }
 
+    /**
+     *
+     */
     public static void refreshMetadataAndInstance() {
+        /**
+         * 初始化RemoteMetadataServiceImpl    内部为InMemoryWritableMetadataService
+         */
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        /**
+         * 遍历本地链接的注册中心  发布相应的服务配置
+         */
         remoteMetadataService.publishMetadata(ApplicationModel.getName());
 
+        /**
+         * 遍历服务自省策略的注册中心
+         */
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
+            /**
+             * 计算元数据的revision   dubbo.metadata.revision -> 6E05C73112CB34FBD5FFAC83B2299BDE
+             */
             calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
             // update service instance revision
+            /**
+             * 向注册中心更新服务列表   revision有变化
+             */
             serviceDiscovery.update(serviceDiscovery.getLocalInstance());
         });
     }

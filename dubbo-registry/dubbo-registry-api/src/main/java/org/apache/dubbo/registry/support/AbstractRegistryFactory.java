@@ -65,6 +65,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
      * @return all registries
      */
     public static Collection<Registry> getRegistries() {
+        //service-discovery-registry://113.96.131.199:8849/org.apache.dubbo.registry.RegistryService -> {ServiceDiscoveryRegistry@5778}
         return Collections.unmodifiableCollection(new LinkedList<>(REGISTRIES.values()));
     }
 

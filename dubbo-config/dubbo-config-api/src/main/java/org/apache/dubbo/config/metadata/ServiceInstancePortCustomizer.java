@@ -33,6 +33,10 @@ import java.util.stream.Stream;
  */
 public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer {
 
+    /**
+     * 服务没有指定端口则使用协议对应的端口
+     * @param serviceInstance {@link ServiceInstance the service instance}
+     */
     @Override
     public void customize(ServiceInstance serviceInstance) {
         // port不为空则跳出
@@ -48,6 +52,9 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
         }
 
         Stream<ProtocolConfig> protocolStream = protocols.stream();
+        /**
+         * 优先使用rest协议  如果没有则取第一个
+         */
         ProtocolConfig protocolConfig = protocolStream
                 // use rest as service instance's default protocol.
                 .filter(protocol -> "rest".equals(protocol.getName()))
@@ -57,6 +64,9 @@ public class ServiceInstancePortCustomizer implements ServiceInstanceCustomizer 
         if (serviceInstance instanceof DefaultServiceInstance) {
             DefaultServiceInstance instance = (DefaultServiceInstance) serviceInstance;
             if (protocolConfig.getPort() != null) {
+                /**
+                 * 服务端口使用协议的端口
+                 */
                 instance.setPort(protocolConfig.getPort());
             }
         }

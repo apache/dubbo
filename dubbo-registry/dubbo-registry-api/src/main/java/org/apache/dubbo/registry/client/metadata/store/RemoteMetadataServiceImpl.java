@@ -58,22 +58,50 @@ public class RemoteMetadataServiceImpl {
         return MetadataReportInstance.getMetadataReports(false);
     }
 
+    /**
+     * 更新MetadataInfo对应的revision
+     * 发布数据（nacos没有对应的实现）
+     * @param serviceName
+     */
     public void publishMetadata(String serviceName) {
+        /**
+         * 当前应用下的元数据服务与信息
+         */
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
+        /**
+         * 遍历
+         */
         metadataInfos.forEach((registryCluster, metadataInfo) -> {
             if (!metadataInfo.hasReported()) {
                 SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
+                /**
+                 * 计算revision
+                 */
                 metadataInfo.calAndGetRevision();
                 metadataInfo.getExtendParams().put(REGISTRY_CLUSTER_KEY, registryCluster);
+                /**
+                 * 获取【registryCluster】对应的注册中心
+                 */
                 MetadataReport metadataReport = getMetadataReports().get(registryCluster);
                 if (metadataReport == null) {
+                    /**
+                     * 没有则获取第一个注册中心
+                     * default -> {NacosMetadataReport@5922} "nacos://113.96.131.199:8849/org.apache.dubbo.metadata.report.MetadataReport?application=dubbo-demo-annotation-provider&client=&registry-type=service&registry.type=service"
+                     */
                     metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
                 }
                 logger.info("Publishing metadata to " + metadataReport.getClass().getSimpleName());
                 if (logger.isDebugEnabled()) {
                     logger.debug(metadataInfo.toString());
                 }
+                /**
+                 * 发布配置
+                 * 目前没有nacos对应的实现
+                 */
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
+                /**
+                 * 设置reported为true
+                 */
                 metadataInfo.markReported();
             }
         });

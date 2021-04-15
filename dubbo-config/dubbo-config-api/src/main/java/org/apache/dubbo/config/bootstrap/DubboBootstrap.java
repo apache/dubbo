@@ -1407,17 +1407,23 @@ public class DubboBootstrap extends GenericEventListener {
         int port = exportedURL.getPort();
 
         /**
-         * 实例化
+         * 实例化待导出服务实例   并填充元数据
          */
         ServiceInstance serviceInstance = createServiceInstance(serviceName, host, port);
 
-       doRegisterServiceInstance(serviceInstance);
+        /**
+         * 服务注册（元数据服务）
+         */
+        doRegisterServiceInstance(serviceInstance);
 
         // scheduled task for updating Metadata and ServiceInstance
         executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
             try {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
                 localMetadataService.blockUntilUpdated();
+                /**
+                 *
+                 */
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
             } catch (Throwable e) {
                 logger.error("refresh metadata and instance failed", e);
@@ -1425,29 +1431,66 @@ public class DubboBootstrap extends GenericEventListener {
         }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * 服务注册
+     * @param serviceInstance
+     */
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         //FIXME
         if (logger.isInfoEnabled()) {
             logger.info("Start publishing metadata to remote center, this only makes sense for applications enabled remote metadata center.");
         }
+        /**
+         * 遍历本地链接的注册中心  发布相应的注册服务配置
+         * nacos目前没有实现
+         * nacos目前没有实现
+         * nacos目前没有实现
+         */
         publishMetadataToRemote(serviceInstance);
 
         logger.info("Start registering instance address to registry.");
+        /**
+         * 遍历本地采用服务自省策略的注册中心
+         */
         getServiceDiscoveries().forEach(serviceDiscovery ->
         {
+            /**
+             * 计算元数据的revision
+             * dubbo.metadata.revision -> 6E05C73112CB34FBD5FFAC83B2299BDE
+             */
             calInstanceRevision(serviceDiscovery, serviceInstance);
             if (logger.isDebugEnabled()) {
                 logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
             }
             // register metadata
+            /**
+             * 元数据服务注册  EventPublishingServiceDiscovery
+             *
+             * dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
+             *
+             * dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
+             *
+             * dubbo.metadata.revision=6E05C73112CB34FBD5FFAC83B2299BDE
+             *
+             * dubbo.metadata.storage-type=remote
+             */
             serviceDiscovery.register(serviceInstance);
         });
     }
 
+    /**
+     * 遍历本地链接的注册中心  发布相应的服务配置
+     */
     private void publishMetadataToRemote(ServiceInstance serviceInstance) {
 //        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
 //        localMetadataService.blockUntilUpdated();
+        /**
+         * 初始化RemoteMetadataServiceImpl    内部为InMemoryWritableMetadataService
+         */
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        /**
+         * 遍历本地链接的注册中心  发布相应的服务配置
+         */
         remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
     }
 
@@ -1498,8 +1541,16 @@ public class DubboBootstrap extends GenericEventListener {
         }
     }
 
+    /**
+     * 导出服务实例
+     * @param serviceName applicationname
+     * @param host        待导出业务服务的ip
+     * @param port        待导出业务服务的端口
+     * @return
+     */
     private ServiceInstance createServiceInstance(String serviceName, String host, int port) {
         this.serviceInstance = new DefaultServiceInstance(serviceName, host, port);
+        //dubbo.metadata.storage-type -> remote
         setMetadataStorageType(serviceInstance, getMetadataType());
 
         /**
@@ -1512,17 +1563,18 @@ public class DubboBootstrap extends GenericEventListener {
             /**
              * 计算serviceInstance中的metadata
              *
-             * 元数据服务对应的参数
+             * 1元数据服务对应的参数
              *      dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
-             * 订阅服务对应的hashcode
-             *      dubbo.subscribed-services.revision=X
-             * 导出服务对应的协议以及端口号
+             * 2导出服务对应的协议以及端口号
              *      dubbo.endpoints=[{"port":20880,"protocol":"dubbo"}]
-             * 存储对应的实现（SPI）
+             * 3存储对应的实现（SPI）
              *      dubbo.metadata.storage-type=remote
-             * 导出服务对应的hashcode
-             *      dubbo.exported-services.revision=3b46c4664c6d5a
+             * 4获取环境变量或者jvm启动参数信息
+             *
+             * 5服务没有指定端口则使用协议端口
              */
+//                         * 订阅服务对应的hashcode
+//                    *      dubbo.subscribed-services.revision=X
             customizer.customize(this.serviceInstance);
         });
 
