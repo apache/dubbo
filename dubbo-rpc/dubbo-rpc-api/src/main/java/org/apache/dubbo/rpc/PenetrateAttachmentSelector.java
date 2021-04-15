@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.filter.support;
+package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.Map;
 

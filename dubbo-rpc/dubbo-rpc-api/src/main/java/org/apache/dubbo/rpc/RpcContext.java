@@ -22,6 +22,7 @@ import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -560,7 +561,10 @@ public class RpcContext {
      */
     @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
-        return CLIENT_ATTACHMENT.get().attachments;
+        Map<String, Object> result = new HashMap<>((int) ((CLIENT_ATTACHMENT.get().attachments.size() + SERVER_ATTACHMENT.get().attachments.size()) / .75) + 1);
+        result.putAll(SERVER_ATTACHMENT.get().attachments);
+        result.putAll(CLIENT_ATTACHMENT.get().attachments);
+        return result;
     }
 
     /**
@@ -601,6 +605,7 @@ public class RpcContext {
      *
      * @return values
      */
+    @Deprecated
     public Map<String, Object> get() {
         return CLIENT_ATTACHMENT.get().get();
     }
@@ -612,6 +617,7 @@ public class RpcContext {
      * @param value
      * @return context
      */
+    @Deprecated
     public RpcContext set(String key, Object value) {
         CLIENT_ATTACHMENT.get().set(key, value);
         return this;
@@ -623,6 +629,7 @@ public class RpcContext {
      * @param key
      * @return value
      */
+    @Deprecated
     public RpcContext remove(String key) {
         CLIENT_ATTACHMENT.get().remove(key);
         return this;
@@ -634,6 +641,7 @@ public class RpcContext {
      * @param key
      * @return value
      */
+    @Deprecated
     public Object get(String key) {
         return CLIENT_ATTACHMENT.get().get(key);
     }

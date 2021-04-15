@@ -247,7 +247,7 @@ public class RpcServiceContext extends RpcContext {
      * @return context
      */
     @Override
-    public RpcContext setLocalAddress(String host, int port) {
+    public RpcServiceContext setLocalAddress(String host, int port) {
         if (port < 0) {
             port = 0;
         }
@@ -272,7 +272,7 @@ public class RpcServiceContext extends RpcContext {
      * @return context
      */
     @Override
-    public RpcContext setLocalAddress(InetSocketAddress address) {
+    public RpcServiceContext setLocalAddress(InetSocketAddress address) {
         this.localAddress = address;
         return this;
     }
@@ -304,7 +304,7 @@ public class RpcServiceContext extends RpcContext {
      * @return context
      */
     @Override
-    public RpcContext setRemoteAddress(String host, int port) {
+    public RpcServiceContext setRemoteAddress(String host, int port) {
         if (port < 0) {
             port = 0;
         }
@@ -329,7 +329,7 @@ public class RpcServiceContext extends RpcContext {
      * @return context
      */
     @Override
-    public RpcContext setRemoteAddress(InetSocketAddress address) {
+    public RpcServiceContext setRemoteAddress(InetSocketAddress address) {
         this.remoteAddress = address;
         return this;
     }
@@ -340,7 +340,7 @@ public class RpcServiceContext extends RpcContext {
     }
 
     @Override
-    public RpcContext setRemoteApplicationName(String remoteApplicationName) {
+    public RpcServiceContext setRemoteApplicationName(String remoteApplicationName) {
         this.remoteApplicationName = remoteApplicationName;
         return this;
     }
@@ -442,7 +442,7 @@ public class RpcServiceContext extends RpcContext {
     }
 
     @Override
-    public RpcContext setInvokers(List<Invoker<?>> invokers) {
+    public RpcServiceContext setInvokers(List<Invoker<?>> invokers) {
         this.invokers = invokers;
         if (CollectionUtils.isNotEmpty(invokers)) {
             List<URL> urls = new ArrayList<URL>(invokers.size());
@@ -464,7 +464,7 @@ public class RpcServiceContext extends RpcContext {
     }
 
     @Override
-    public RpcContext setInvoker(Invoker<?> invoker) {
+    public RpcServiceContext setInvoker(Invoker<?> invoker) {
         this.invoker = invoker;
         if (invoker != null) {
             setUrl(invoker.getUrl());
@@ -482,7 +482,7 @@ public class RpcServiceContext extends RpcContext {
     }
 
     @Override
-    public RpcContext setInvocation(Invocation invocation) {
+    public RpcServiceContext setInvocation(Invocation invocation) {
         this.invocation = invocation;
         if (invocation != null) {
             setMethodName(invocation.getMethodName());

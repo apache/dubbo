@@ -156,8 +156,9 @@ public class RpcContextAttachment extends RpcContext{
      * @return values
      */
     @Override
+    @Deprecated
     public Map<String, Object> get() {
-        return values;
+        return getObjectAttachments();
     }
 
     /**
@@ -168,13 +169,9 @@ public class RpcContextAttachment extends RpcContext{
      * @return context
      */
     @Override
-    public RpcContext set(String key, Object value) {
-        if (value == null) {
-            values.remove(key);
-        } else {
-            values.put(key, value);
-        }
-        return this;
+    @Deprecated
+    public RpcContextAttachment set(String key, Object value) {
+        return setAttachment(key, value);
     }
 
     /**
@@ -184,9 +181,9 @@ public class RpcContextAttachment extends RpcContext{
      * @return value
      */
     @Override
-    public RpcContext remove(String key) {
-        values.remove(key);
-        return this;
+    @Deprecated
+    public RpcContextAttachment remove(String key) {
+        return removeAttachment(key);
     }
 
     /**
@@ -196,8 +193,9 @@ public class RpcContextAttachment extends RpcContext{
      * @return value
      */
     @Override
+    @Deprecated
     public Object get(String key) {
-        return values.get(key);
+        return getAttachment(key);
     }
 
 }
