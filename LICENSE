@@ -280,24 +280,3 @@ https://developers.google.com/protocol-buffers/ and is licensed under the follow
     of the input file used when generating it.  This code is not
     standalone and requires a support library to be linked with it.  This
     support library is itself covered by the above license.
-
-For the file org.apache.dubbo.common.utils.MD5Utils:
-
-This product contains a portion of the Protocol Buffers project, which is published at
-https://github.com/alibaba/nacos and is licensed under the following License:
-
-    /*
-     * Copyright 1999-2018 Alibaba Group Holding Ltd.
-     *
-     * Licensed under the Apache License, Version 2.0 (the "License");
-     * you may not use this file except in compliance with the License.
-     * You may obtain a copy of the License at
-     *
-     *      http://www.apache.org/licenses/LICENSE-2.0
-     *
-     * Unless required by applicable law or agreed to in writing, software
-     * distributed under the License is distributed on an "AS IS" BASIS,
-     * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     * See the License for the specific language governing permissions and
-     * limitations under the License.
-     */

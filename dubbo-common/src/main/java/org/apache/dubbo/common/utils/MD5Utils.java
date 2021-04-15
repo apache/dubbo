@@ -1,11 +1,12 @@
 /*
- * Copyright 1999-2018 Alibaba Group Holding Ltd.
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,76 +17,49 @@
 
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * MD5 util.
  */
 public class MD5Utils {
 
-    private static final char[] DIGITS_LOWER = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd',
-            'e', 'f'};
+    private static final Logger logger = LoggerFactory.getLogger(MD5Utils.class);
 
-    private static final ThreadLocal<MessageDigest> MESSAGE_DIGEST_LOCAL = new ThreadLocal<MessageDigest>() {
-        @Override
-        protected MessageDigest initialValue() {
-            try {
-                return MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException e) {
-                return null;
-            }
-        }
+    private static final char[] hexDigits = {
+            '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
 
-    /**
-     * Calculate MD5 hex string.
-     *
-     * @param bytes byte arrays
-     * @return MD5 hex string of input
-     * @throws NoSuchAlgorithmException if can't load md5 digest spi.
-     */
-    public static String md5Hex(byte[] bytes) throws NoSuchAlgorithmException {
+    private static MessageDigest mdInst;
+
+    static {
         try {
-            MessageDigest messageDigest = MESSAGE_DIGEST_LOCAL.get();
-            if (messageDigest != null) {
-                return encodeHexString(messageDigest.digest(bytes));
-            }
-            throw new NoSuchAlgorithmException("MessageDigest get MD5 instance error");
-        } finally {
-            MESSAGE_DIGEST_LOCAL.remove();
+            mdInst = MessageDigest.getInstance("MD5");
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Failed to obtain md5", e);
         }
     }
 
-    /**
-     * Calculate MD5 hex string with encode charset.
-     *
-     * @param value  value
-     * @param encode encode charset of input
-     * @return MD5 hex string of input
-     */
-    public static String md5Hex(String value, String encode) {
-        try {
-            return md5Hex(value.getBytes(encode));
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    public static String getMd5(String value) {
+        mdInst.update(value.getBytes(UTF_8));
+        byte[] md5 = mdInst.digest();
+
+        int j = md5.length;
+        char str[] = new char[j * 2];
+        int k = 0;
+        for (int i = 0; i < j; i++) {
+            byte byte0 = md5[i];
+            str[k++] = hexDigits[byte0 >>> 4 & 0xf];
+            str[k++] = hexDigits[byte0 & 0xf];
         }
+        return new String(str);
     }
 
-    /**
-     * Convert a byte array into a visible string.
-     */
-    public static String encodeHexString(byte[] bytes) {
-        int l = bytes.length;
-
-        char[] out = new char[l << 1];
-
-        for (int i = 0, j = 0; i < l; i++) {
-            out[j++] = DIGITS_LOWER[(0xF0 & bytes[i]) >>> 4];
-            out[j++] = DIGITS_LOWER[0x0F & bytes[i]];
-        }
-
-        return new String(out);
-    }
 
 }
