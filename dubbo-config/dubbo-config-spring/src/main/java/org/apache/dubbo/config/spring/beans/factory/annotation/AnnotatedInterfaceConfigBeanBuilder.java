@@ -25,6 +25,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.Assert;
 
 import java.lang.annotation.Annotation;
@@ -55,6 +56,8 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
     protected Object configBean;
 
     protected Class<?> interfaceClass;
+
+    protected MutablePropertySources propertySources;
 
     protected AnnotatedInterfaceConfigBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
@@ -209,6 +212,11 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
 
     public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T interfaceClass(Class<?> interfaceClass) {
         this.interfaceClass = interfaceClass;
+        return (T) this;
+    }
+
+    public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T setPropertySources(MutablePropertySources propertySources) {
+        this.propertySources = propertySources;
         return (T) this;
     }
 }

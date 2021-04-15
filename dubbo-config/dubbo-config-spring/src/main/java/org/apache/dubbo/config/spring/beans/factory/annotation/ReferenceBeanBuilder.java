@@ -22,6 +22,10 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+
+import com.alibaba.spring.util.PropertySourcesUtils;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.propertyeditors.StringTrimmerEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
@@ -30,8 +34,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.DataBinder;
 
 import java.beans.PropertyEditorSupport;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
@@ -50,6 +56,8 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
 
     // Ignore those fields
     static final String[] IGNORE_FIELD_NAMES = of("application", "module", "consumer", "monitor", "registry");
+
+    private static final String DUBBO_REFERENCE_PREFIX = "dubbo.reference.";
 
     private ReferenceBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         super(attributes, applicationContext);
@@ -88,9 +96,13 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
 
     void configureMethodConfig(AnnotationAttributes attributes, ReferenceBean<?> referenceBean) {
         Method[] methods = (Method[]) attributes.get("methods");
-        List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
-        if (!methodConfigs.isEmpty()) {
-            referenceBean.setMethods(methodConfigs);
+        List<MethodConfig> methodConfigList = new ArrayList(MethodConfig.constructMethodConfig(methods));
+        // 追加配置在properties文件中的方法属性，或者从properties构造methodConfig
+        if (this.propertySources != null) {
+            DubboBeanUtils.appendOrCreateMethodConfigFromProperties(DUBBO_REFERENCE_PREFIX, interfaceClass, methodConfigList, this.propertySources);
+        }
+        if (!methodConfigList.isEmpty()) {
+            referenceBean.setMethods(methodConfigList);
         }
     }
 
@@ -123,12 +135,14 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
                 setValue(parameters);
             }
         });
-
+        // 追加配置在properties文件中的reference属性
+        if (this.propertySources != null) {
+            Map<String, Object> validProperties = DubboBeanUtils.getValidPropertiesWithPrefix(DUBBO_REFERENCE_PREFIX + interfaceClass.getName(), this.propertySources);
+            attributes.putAll(validProperties);
+        }
         // Bind annotation attributes
         dataBinder.bind(new AnnotationPropertyValuesAdapter(attributes, applicationContext.getEnvironment(), IGNORE_FIELD_NAMES));
-
     }
-
 
     @Override
     protected String resolveModuleConfigBeanName(AnnotationAttributes attributes) {
@@ -174,4 +188,5 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
     public static ReferenceBeanBuilder create(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         return new ReferenceBeanBuilder(attributes, applicationContext);
     }
+
 }

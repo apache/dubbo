@@ -38,6 +38,9 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
@@ -95,6 +98,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private ApplicationContext applicationContext;
 
     private static Map<String, TreeSet<String>> referencedBeanNameIdx = new HashMap<>();
+
+    private MutablePropertySources propertySources;
 
     /**
      * {@link com.alibaba.dubbo.config.annotation.Reference @com.alibaba.dubbo.config.annotation.Reference} has been supported since 2.7.3
@@ -371,6 +376,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         if (referenceBean == null) {
             ReferenceBeanBuilder beanBuilder = ReferenceBeanBuilder
                     .create(attributes, applicationContext)
+                    .setPropertySources(propertySources)
                     .interfaceClass(referencedType);
             referenceBean = beanBuilder.build();
             referenceBeanCache.put(referenceBeanName, referenceBean);
@@ -411,6 +417,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 logger.warn(e.getValue().stream().collect(Collectors.joining(", ", logPrefix, "")));
             });
             referencedBeanNameIdx.clear();
+        }
+    }
+
+    @Override
+    public void setEnvironment(Environment environment) {
+        super.setEnvironment(environment);
+        if (environment instanceof ConfigurableEnvironment) {
+            this.propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
         }
     }
 }
