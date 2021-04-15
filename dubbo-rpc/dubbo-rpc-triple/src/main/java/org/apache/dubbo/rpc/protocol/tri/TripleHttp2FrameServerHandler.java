@@ -160,64 +160,56 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             return;
         }
         ServiceRepository repo = ApplicationModel.getServiceRepository();
-        final ServiceDescriptor descriptor = repo.lookupService(invoker.getUrl().getServiceKey());
-        if (descriptor == null) {
+        final ServiceDescriptor serviceDescriptor = repo.lookupService(invoker.getUrl().getServiceKey());
+        if (serviceDescriptor == null) {
             responseErr(ctx,
                     GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
 
-        List<MethodDescriptor> methodDescriptors = descriptor.getMethods(methodName);
+        List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
         if (methodDescriptors.size() != 1) {
             responseErr(ctx,
                     GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
             return;
         }
-        MethodDescriptor md = methodDescriptors.get(0);
-        if (md == null) {
+        MethodDescriptor methodDescriptor = methodDescriptors.get(0);
+        if (methodDescriptor == null) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                    .withDescription("Method not found:" + md + " of service:" + descriptor.getServiceName()));
+                    .withDescription("Method not found:" + methodDescriptor + " of service:" + serviceDescriptor.getServiceName()));
             return;
         }
 
-        final List<MethodDescriptor> methods = descriptor.getMethods(md.getMethodName());
+        final List<MethodDescriptor> methods = serviceDescriptor.getMethods(methodDescriptor.getMethodName());
         if (methods == null || methods.isEmpty()) {
             responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED)
-                    .withDescription("Method not found:" + md + " of service:" + descriptor.getServiceName()));
+                    .withDescription("Method not found:" + methodDescriptor + " of service:" + serviceDescriptor.getServiceName()));
             return;
         }
 
         if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
-            md = repo.lookupMethod(GenericService.class.getName(), methodName);
+            methodDescriptor = repo.lookupMethod(GenericService.class.getName(), methodName);
         } else if (CommonConstants.$ECHO.equals(methodName)) {
-            md = repo.lookupMethod(EchoService.class.getName(), methodName);
+            methodDescriptor = repo.lookupMethod(EchoService.class.getName(), methodName);
         }
 
         final ServerStream2 stream;
-        if (md.isStream()) {
-            stream = ServerStream2.stream();
+        if (methodDescriptor.isStream()) {
+            stream = ServerStream2.stream(invoker.getUrl());
         } else {
-            stream = ServerStream2.unary();
+            stream = ServerStream2.unary(invoker.getUrl());
         }
-        stream.method(md).invoker(invoker)
+        stream.service(serviceDescriptor)
+                .method(methodDescriptor)
+                .invoker(invoker)
                 .subscribe(new TransportObserver() {
                     @Override
-                    public void onMetadata(Metadata metadata, Stream.OperationHandler handler) {
+                    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
 
                     }
 
                     @Override
-                    public void onData(InputStream in, Stream.OperationHandler handler) {
-
-                    }
-
-                    @Override
-                    public void onError(Metadata metadata, Stream.OperationHandler handler) {
-
-                    }
-
-                    @Override
-                    public void onTrailers(InputStream in, Stream.OperationHandler handler) {
+                    public void onData(InputStream in, boolean endStream, Stream.OperationHandler handler) {
 
                     }
 
@@ -227,8 +219,11 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
                     }
                 });
         final TransportObserver observer = stream.asTransportObserver();
-        observer.onMetadata(new Http2HeaderMeta(headers), (result, cause) -> {
+        observer.onMetadata(new Http2HeaderMeta(headers), false, (result, cause) -> {
         });
+        if (msg.isEndStream()) {
+            observer.onComplete(null);
+        }
 
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);
     }

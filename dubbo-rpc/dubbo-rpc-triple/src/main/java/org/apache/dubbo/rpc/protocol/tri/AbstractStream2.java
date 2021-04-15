@@ -18,19 +18,34 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+
+import java.io.InputStream;
 
 public abstract class AbstractStream2 implements Stream {
     private final URL url;
+    private final MultipleSerialization multipleSerialization;
+    private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private StreamObserver<Object> streamSubscriber;
     private StreamObserver<Object> streamObserver;
     private TransportObserver transportObserver;
     private TransportObserver transportSubscriber;
-
     protected AbstractStream2(URL url) {
         this.url = url;
+        final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
+        this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
+                .getExtension(value);
+    }
+
+    public MultipleSerialization getMultipleSerialization() {
+        return multipleSerialization;
     }
 
     public StreamObserver<Object> getStreamSubscriber() {
@@ -51,6 +66,14 @@ public abstract class AbstractStream2 implements Stream {
 
     public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
         this.methodDescriptor = methodDescriptor;
+    }
+
+    public ServiceDescriptor getServiceDescriptor() {
+        return serviceDescriptor;
+    }
+
+    public void setServiceDescriptor(ServiceDescriptor serviceDescriptor) {
+        this.serviceDescriptor = serviceDescriptor;
     }
 
     public URL getUrl() {
@@ -75,6 +98,54 @@ public abstract class AbstractStream2 implements Stream {
     @Override
     public TransportObserver asTransportObserver() {
         return transportObserver;
+    }
+
+    protected void transportError(GrpcStatus status) {
+        Metadata metadata = new Metadata();
+        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
+        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+        getTransportSubscriber().onMetadata(metadata, true, null);
+    }
+
+    protected static abstract class AbstractTransportObserver implements TransportObserver {
+        private Metadata headers;
+        private Metadata trailers;
+
+        public Metadata getHeaders() {
+            return headers;
+        }
+
+        public Metadata getTrailers() {
+            return trailers;
+        }
+
+        @Override
+        public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
+            if (headers == null) {
+                headers = metadata;
+            } else {
+                trailers = metadata;
+            }
+        }
+
+    }
+
+    protected abstract static class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
+        private InputStream data;
+
+        public InputStream getData() {
+            return data;
+        }
+
+        @Override
+        public void onData(InputStream in, boolean endStream, OperationHandler handler) {
+            if (data == null) {
+                this.data = in;
+            } else {
+                handler.operationDone(OperationResult.FAILURE, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription(Stream.DUPLICATED_REQ).asException());
+            }
+        }
     }
 
 }

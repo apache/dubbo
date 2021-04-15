@@ -27,7 +27,9 @@ public class Metadata {
         return innerMap.get(key);
     }
 
-    public void put(CharSequence key, CharSequence value) {
+    public Metadata put(CharSequence key, CharSequence value) {
         innerMap.put(key, value);
+        return this;
     }
+
 }

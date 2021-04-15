@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Response;
+
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -86,6 +89,32 @@ public class GrpcStatus {
 
     public TripleRpcException asException() {
         return new TripleRpcException(this);
+    }
+
+    public String toMessage(){
+        final String msg;
+        if (cause == null) {
+            msg =description;
+        } else {
+            String placeHolder = description == null ? "" : description;
+            msg = StringUtils.toString(placeHolder,cause);
+        }
+        if (msg== null) {
+            return "";
+        }
+        String output = limitSizeTo4KB(msg);
+        QueryStringEncoder encoder = new QueryStringEncoder("");
+        encoder.addParam("",output);
+        // ?=
+        return encoder.toString().substring(2);
+    }
+
+    public static String limitSizeTo4KB(String desc) {
+        if (desc.length() < 4096) {
+            return desc;
+        } else {
+            return desc.substring(0, 4086);
+        }
     }
 
     enum Code {

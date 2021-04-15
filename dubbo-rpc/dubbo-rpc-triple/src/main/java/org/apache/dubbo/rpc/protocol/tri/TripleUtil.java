@@ -92,24 +92,6 @@ public class TripleUtil {
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
 
-    public static String getErrorMsg(GrpcStatus status) {
-        final String msg;
-        if (status.cause == null) {
-            msg = status.description;
-        } else {
-            String placeHolder = status.description == null ? "" : status.description;
-            msg = StringUtils.toString(placeHolder, status.cause);
-        }
-        return percentEncode(msg);
-    }
-
-    public static String limitSizeTo4KB(String desc) {
-        if (desc.length() < 4096) {
-            return desc;
-        } else {
-            return desc.substring(0, 4086);
-        }
-    }
 
     public static String percentDecode(CharSequence corpus) {
         if (corpus == null) {
@@ -123,14 +105,7 @@ public class TripleUtil {
     }
 
     public static String percentEncode(String corpus) {
-        if (corpus == null) {
-            return "";
-        }
-        corpus = limitSizeTo4KB(corpus);
-        QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", corpus);
-        // ?=
-        return encoder.toString().substring(2);
+
     }
 
     public static void responsePlainTextError(ChannelHandlerContext ctx, int code, GrpcStatus status) {

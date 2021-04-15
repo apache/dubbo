@@ -28,7 +28,7 @@ public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
         final ByteBuf buffer = (ByteBuf) msg;
         if (serverStream != null) {
             serverStream.asTransportObserver()
-                    .onData(new ByteBufInputStream(buffer, buffer.readableBytes(), true), null);
+                    .onData(new ByteBufInputStream(buffer, buffer.readableBytes(), true), false, null);
         }
     }
 }

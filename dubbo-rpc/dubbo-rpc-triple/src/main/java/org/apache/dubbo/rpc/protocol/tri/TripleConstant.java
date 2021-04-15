@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 public interface TripleConstant {
+    String HTTP_STATUS_KEY = "http-status";
     String STATUS_KEY = "grpc-status";
     String MESSAGE_KEY = "grpc-message";
     String TIMEOUT = "grpc-timeout";

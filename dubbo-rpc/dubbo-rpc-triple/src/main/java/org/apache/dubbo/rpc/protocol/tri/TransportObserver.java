@@ -20,13 +20,9 @@ package org.apache.dubbo.rpc.protocol.tri;
 import java.io.InputStream;
 
 public interface TransportObserver {
-    void onMetadata(Metadata metadata, Stream.OperationHandler handler);
+    void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler);
 
-    void onData(InputStream in, Stream.OperationHandler handler);
-
-    void onError(Metadata metadata, Stream.OperationHandler handler);
-
-    void onTrailers(InputStream in, Stream.OperationHandler handler);
+    void onData(InputStream in, boolean endStream, Stream.OperationHandler handler);
 
     void onComplete(Stream.OperationHandler handler);
 

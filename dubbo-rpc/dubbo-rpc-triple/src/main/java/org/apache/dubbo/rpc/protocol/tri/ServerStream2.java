@@ -22,16 +22,14 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
-
-import java.io.InputStream;
 
 public abstract class ServerStream2 extends AbstractStream2 implements Stream {
     protected static final String MISSING_REQ = "Missing request";
     private final ProviderModel providerModel;
-    private MethodDescriptor md;
     private Invoker<?> invoker;
-    private Metadata metadata;
+
     protected ServerStream2(URL url) {
         super(url);
         this.providerModel = lookupProviderModel();
@@ -44,6 +42,10 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
 
     public static ServerStream2 stream(URL url) {
 
+    }
+
+    public Invoker<?> getInvoker() {
+        return invoker;
     }
 
     public ProviderModel getProviderModel() {
@@ -59,8 +61,13 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
         return model;
     }
 
+    public ServerStream2 service(ServiceDescriptor sd) {
+        setServiceDescriptor(sd);
+        return this;
+    }
+
     public ServerStream2 method(MethodDescriptor md) {
-        this.md = md;
+        setMethodDescriptor(md);
         return this;
     }
 
@@ -69,30 +76,4 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
         return this;
     }
 
-    @Override
-    public void onMetadata(Metadata metadata, OperationHandler handler) {
-        this.metadata = metadata;
-    }
-
-    @Override
-    public void onData(InputStream in, OperationHandler handler) {
-        if (in == null) {
-            handler.operationDone(OperationResult.FAILURE, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription(MISSING_REQ).asException());
-            return;
-        }
-        appendData(in, handler);
-    }
-
-    protected abstract void appendData(InputStream in, OperationHandler handler);
-
-    @Override
-    public void onComplete(OperationHandler handler) {
-        getSubscriber().onCompleted();
-    }
-
-    @Override
-    public void onError(Throwable t, OperationHandler handler) {
-
-    }
 }
