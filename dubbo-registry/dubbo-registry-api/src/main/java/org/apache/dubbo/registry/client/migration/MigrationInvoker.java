@@ -315,6 +315,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
             if (!migrated && !invoker.isDestroyed()) {
+                migrated = true;
                 scheduler.submit(() -> {
                     try {
                         if (!invoker.getDirectory().isNotificationReceived()) {
@@ -329,6 +330,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         } else {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
             if (!migrated && !serviceDiscoveryInvoker.isDestroyed()) {
+                migrated = true;
                 scheduler.submit(() -> {
                     try {
                         if (!serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
@@ -348,10 +350,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             this.currentAvailableInvoker = this.invoker;
             updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+        if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+            }
+            serviceDiscoveryInvoker.destroy();
         }
-        serviceDiscoveryInvoker.destroy();
 
         migrated = true;
     }
@@ -397,10 +401,12 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
             updateConsumerModel(currentAvailableInvoker, invoker);
         }
-        if (logger.isInfoEnabled()) {
-            logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+        if (invoker != null && !invoker.isDestroyed()) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
+            }
+            invoker.destroy();
         }
-        invoker.destroy();
 
         migrated = true;
     }
