@@ -33,8 +33,17 @@ import java.util.concurrent.Future;
  * Thread local context. (API, ThreadLocal, ThreadSafe)
  * <p>
  * Note: RpcContext is a temporary state holder. States in RpcContext changes every time when request is sent or received.
- * For example: A invokes B, then B invokes C. On service B, RpcContext saves invocation info from A to B before B
- * starts invoking C, and saves invocation info from B to C after B invokes C.
+ * <p/>
+ * There are four kinds of RpcContext, which are ServerContext, ClientAttachment, ServerAttachment and ServiceContext.
+ * <p/>
+ * ServiceContext: Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
+ *      `remoteAddress`, etc. {@link RpcServiceContext}
+ * ClientAttachment, ServerAttachment and ServiceContext are using to transfer attachments.
+ * Imaging a situation like this, A is calling B, and B will call C, after that, B wants to return some attachments back to A.
+ * ClientAttachment is using to pass attachments to next hop as a consumer. ( A --> B , in A side)
+ * ServerAttachment is using to fetch attachments from previous hop as a provider. ( A --> B , in B side)
+ * ServiceContext is using to return some attachments back to client as a provider. ( A <-- B , in B side)
+ * The reason why using `ServiceContext` is to make API compatible with previous.
  *
  * @export
  * @see org.apache.dubbo.rpc.filter.ContextFilter
@@ -108,16 +117,23 @@ public class RpcContext {
      */
     @Deprecated
     public static RpcContext getContext() {
-        // return LOCAL.get();
-
-        // return proxy
         return AGENT;
     }
 
+    /**
+     * get consumer side attachment
+     *
+     * @return context
+     */
     public static RpcContextAttachment getClientAttachment() {
         return CLIENT_ATTACHMENT.get();
     }
 
+    /**
+     * get provider side attachment from consumer
+     *
+     * @return context
+     */
     public static RpcContextAttachment getServerAttachment() {
         return SERVER_ATTACHMENT.get();
     }

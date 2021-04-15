@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.filter.support;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -31,6 +32,7 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
@@ -56,6 +58,19 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
         context.setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
+        }
+
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ExtensionLoader.getExtensionLoader(PenetrateAttachmentSelector.class);
+        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (String supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(selected);
+                }
+            }
+        } else {
+            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(RpcContext.getServerAttachment().get());
         }
 
         Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
