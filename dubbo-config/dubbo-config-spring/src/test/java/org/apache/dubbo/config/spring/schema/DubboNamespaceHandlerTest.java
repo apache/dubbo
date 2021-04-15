@@ -218,4 +218,18 @@ public class DubboNamespaceHandlerTest {
         assertThat(prefix, is("welcome:"));
         ctx.close();
     }
+
+
+    @Test
+    public void testDuplicateServiceBean() {
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-duplicate-service-bean.xml");
+        } catch (BeanDefinitionStoreException e) {
+            Assertions.assertThrows(IllegalStateException.class, () -> {
+                throw e.getCause();
+            });
+
+            Assertions.assertTrue(e.getCause().getMessage().contains("Duplicate spring bean id"));
+        }
+    }
 }

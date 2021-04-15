@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.schema;
 
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -82,27 +83,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         RootBeanDefinition beanDefinition = new RootBeanDefinition();
         beanDefinition.setBeanClass(beanClass);
         beanDefinition.setLazyInit(false);
-        String id = resolveAttribute(element, "id", parserContext);
-        if (StringUtils.isEmpty(id) && required) {
-            String generatedBeanName = resolveAttribute(element, "name", parserContext);
-            if (StringUtils.isEmpty(generatedBeanName)) {
-                if (ProtocolConfig.class.equals(beanClass)) {
-                    generatedBeanName = "dubbo";
-                } else {
-                    generatedBeanName = resolveAttribute(element, "interface", parserContext);
-                }
-            }
-            if (StringUtils.isEmpty(generatedBeanName)) {
-                generatedBeanName = beanClass.getName();
-            }
-            id = generatedBeanName;
-            int counter = 2;
-            if (!beanClass.equals(ServiceBean.class)) {
-                while (parserContext.getRegistry().containsBeanDefinition(id)) {
-                    id = generatedBeanName + (counter++);
-                }
-            }
-        }
+        String id = generateId(element, parserContext, beanClass, required);
+
         if (StringUtils.isNotEmpty(id)) {
             if (parserContext.getRegistry().containsBeanDefinition(id)) {
                 throw new IllegalStateException("Duplicate spring bean id " + id);
@@ -420,5 +402,33 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         String attributeValue = element.getAttribute(attributeName);
         Environment environment = parserContext.getReaderContext().getEnvironment();
         return environment.resolvePlaceholders(attributeValue);
+    }
+
+    private static String generateId(Element element, ParserContext parserContext, Class<?> beanClass, boolean required) {
+        String id = resolveAttribute(element, "id", parserContext);
+        if (StringUtils.isEmpty(id) && required) {
+            String generatedBeanName = resolveAttribute(element, "name", parserContext);
+
+            if (StringUtils.isEmpty((generatedBeanName))) {
+                if (ProtocolConfig.class.equals(beanClass)) {
+                    generatedBeanName = CommonConstants.DUBBO;
+                } else {
+                    generatedBeanName = resolveAttribute(element, CommonConstants.INTERFACE_KEY, parserContext);
+                    generatedBeanName = StringUtils.isEmpty(generatedBeanName) ? beanClass.getName() : generatedBeanName;
+                    if (beanClass.equals(ServiceBean.class)) {
+                        String groupName = resolveAttribute(element, CommonConstants.GROUP_KEY, parserContext);
+                        String version = resolveAttribute(element, CommonConstants.VERSION_KEY, parserContext);
+                        generatedBeanName = groupName + "/" + generatedBeanName + ":" + version;
+                    } else {
+                        int counter = 2;
+                        while (parserContext.getRegistry().containsBeanDefinition(generatedBeanName)) {
+                            generatedBeanName = generatedBeanName + (counter++);
+                        }
+                    }
+                }
+            }
+            id = generatedBeanName;
+        }
+        return id;
     }
 }
