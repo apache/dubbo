@@ -79,7 +79,7 @@ public class MockMetadataReport implements MetadataReport {
 
     @Override
     public void registerServiceAppMapping(String serviceKey, String application, URL url) {
-        appMapping.putIfAbsent(serviceKey, new ConcurrentHashSet<>());
+        appMapping.computeIfAbsent(serviceKey, k -> new ConcurrentHashSet<>());
         Set<String> appNames = appMapping.get(serviceKey);
         appNames.add(application);
     }
@@ -96,7 +96,7 @@ public class MockMetadataReport implements MetadataReport {
 
     @Override
     public void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url) {
-        serviceMetadata.putIfAbsent(metadataIdentifier, new CopyOnWriteArrayList<>());
+        serviceMetadata.computeIfAbsent(metadataIdentifier, k -> new CopyOnWriteArrayList<>());
         List<String> urls = serviceMetadata.get(metadataIdentifier);
         urls.add(url.toFullString());
     }
@@ -108,7 +108,7 @@ public class MockMetadataReport implements MetadataReport {
 
     @Override
     public void saveSubscribedData(SubscriberMetadataIdentifier subscriberMetadataIdentifier, Set<String> urls) {
-        subscribeMetadata.putIfAbsent(subscriberMetadataIdentifier, new CopyOnWriteArraySet());
+        subscribeMetadata.computeIfAbsent(subscriberMetadataIdentifier, k -> new CopyOnWriteArraySet());
         Set<String> metadataUrls = subscribeMetadata.get(subscriberMetadataIdentifier);
         metadataUrls.addAll(urls);
     }

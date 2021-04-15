@@ -46,7 +46,7 @@ public class ProtocolUtils {
         serviceGroup = serviceGroup == null ? "" : serviceGroup;
         GroupServiceKeyCache groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
         if (groupServiceKeyCache == null) {
-            groupServiceKeyCacheMap.putIfAbsent(serviceGroup, new GroupServiceKeyCache(serviceGroup));
+            groupServiceKeyCacheMap.computeIfAbsent(serviceGroup, GroupServiceKeyCache::new);
             groupServiceKeyCache = groupServiceKeyCacheMap.get(serviceGroup);
         }
         return groupServiceKeyCache.getServiceKey(serviceName, serviceVersion, port);

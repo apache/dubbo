@@ -36,14 +36,14 @@ public class GroupServiceKeyCache {
     public String getServiceKey(String serviceName, String serviceVersion, int port) {
         ConcurrentMap<String, ConcurrentMap<Integer, String>> versionMap = serviceKeyMap.get(serviceName);
         if (versionMap == null) {
-            serviceKeyMap.putIfAbsent(serviceName, new ConcurrentHashMap<>());
+            serviceKeyMap.computeIfAbsent(serviceName, k-> new ConcurrentHashMap<>());
             versionMap = serviceKeyMap.get(serviceName);
         }
 
         serviceVersion = serviceVersion == null ? "" : serviceVersion;
         ConcurrentMap<Integer, String> portMap = versionMap.get(serviceVersion);
         if (portMap == null) {
-            versionMap.putIfAbsent(serviceVersion, new ConcurrentHashMap<>());
+            versionMap.computeIfAbsent(serviceVersion,  k-> new ConcurrentHashMap<>());
             portMap = versionMap.get(serviceVersion);
         }
 
