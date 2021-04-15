@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,8 +56,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 })
 public class ServiceClassPostProcessorTest {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 

@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -218,7 +219,7 @@ public class ConfigManagerTest {
         assertFalse(ConfigManager.isDefaultConfig(providerConfig));
 
         ProviderConfig providerConfig1 = new ProviderConfig();
-        assertTrue(ConfigManager.isDefaultConfig(providerConfig1));
+        assertNull(ConfigManager.isDefaultConfig(providerConfig1));
 
         ProviderConfig providerConfig3 = new ProviderConfig();
         providerConfig.setDefault(true);

@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,6 @@ public class PropertySourcesConfigurerTest {
     public static void setUp() {
         DubboBootstrap.reset();
         ZooKeeperServer.start();
-//        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     @Test
@@ -52,6 +52,10 @@ public class PropertySourcesConfigurerTest {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
             }
+
+            // remove provider's application config
+            // ApplicationModel.getConfigManager().removeConfig(ApplicationModel.getApplicationConfig());
+            DubboBootstrap.newInstance();
 
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             context.start();

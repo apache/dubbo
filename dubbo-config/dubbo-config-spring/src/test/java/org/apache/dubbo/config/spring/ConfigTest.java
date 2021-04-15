@@ -47,6 +47,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -110,6 +111,11 @@ public class ConfigTest {
     public void testServiceClass() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/service-class.xml");
         ctx.start();
+
+        // clear config manager
+        //ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.newInstance();
+
         try {
             DemoService demoService = refer("dubbo://127.0.0.1:20887");
             String hello = demoService.sayName("hello");
@@ -210,6 +216,11 @@ public class ConfigTest {
     public void testMultiProtocol() {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/multi-protocol.xml");
         ctx.start();
+
+        // clear config manager
+        //ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.newInstance();
+
         try {
             DemoService demoService = refer("dubbo://127.0.0.1:20881");
             String hello = demoService.sayName("hello");
@@ -442,6 +453,11 @@ public class ConfigTest {
                 resourcePath + "/demo-provider.xml",
                 resourcePath + "/demo-provider-properties.xml");
         providerContext.start();
+
+        // clear config manager
+        //ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.newInstance();
+
         try {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/init-reference.xml",
                     resourcePath + "/init-reference-properties.xml");

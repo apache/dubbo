@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -84,10 +85,10 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         DubboBootstrap.reset();
     }
 
-//    @AfterEach
-//    public void tearDown() {
-//        DubboBootstrap.reset();
-//    }
+    @AfterEach
+    public void tearDown() {
+        DubboBootstrap.reset();
+    }
 
     private static final String AOP_SUFFIX = "(based on AOP)";
 
