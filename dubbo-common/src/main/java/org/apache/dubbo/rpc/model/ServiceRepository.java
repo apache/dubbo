@@ -98,8 +98,9 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
-        consumers.computeIfAbsent(serviceKey, k -> new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-                serviceMetadata));
+        ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
+                serviceMetadata);
+        consumers.putIfAbsent(serviceKey, consumerModel);
     }
 
     public void reRegisterConsumer(String newServiceKey, String serviceKey) {

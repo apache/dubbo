@@ -229,11 +229,12 @@ public class RedisRegistry extends FailbackRegistry {
         String service = toServicePath(url);
         Notifier notifier = notifiers.get(service);
         if (notifier == null) {
-            notifiers.computeIfAbsent(service, k -> {
-                Notifier notifier1 = new Notifier(k);
-                notifier1.start();
-                return notifier1;
-            });
+            Notifier newNotifier = new Notifier(service);
+            notifiers.putIfAbsent(service, newNotifier);
+            notifier = notifiers.get(service);
+            if (notifier == newNotifier) {
+                notifier.start();
+            }
         }
         try {
             if (service.endsWith(ANY_VALUE)) {
