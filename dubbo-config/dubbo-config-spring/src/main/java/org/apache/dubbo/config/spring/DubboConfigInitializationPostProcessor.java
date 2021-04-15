@@ -116,7 +116,8 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
         beansOfTypeIncludingAncestors(beanFactory, MetricsConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, SslConfig.class);
 
-        //SHOULD NOT init service beans here, avoid conflicts with seata
+        //SHOULD NOT init service beans here, all BeanPostProcessors have not been loaded yet (including seata),
+        //so the ServiceBean cannot be processed by seata
         //beansOfTypeIncludingAncestors(beanFactory, ServiceBean.class);
     }
 

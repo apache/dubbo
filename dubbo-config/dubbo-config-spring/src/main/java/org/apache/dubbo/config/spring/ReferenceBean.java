@@ -40,7 +40,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -135,6 +137,9 @@ public class ReferenceBean<T> implements FactoryBean,
     //actual reference config
     private ReferenceConfig referenceConfig;
 
+    // Registration sources of this reference, may be xml file or annotation location
+    private List<Map<String,Object>> sources = new ArrayList<>();
+
     public ReferenceBean() {
         super();
     }
@@ -214,6 +219,9 @@ public class ReferenceBean<T> implements FactoryBean,
         Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
         this.interfaceName = actualInterface.getName();
 
+//        this.sources = (List<Map<String, Object>>) beanDefinition.getAttribute(Constants.REFERENCE_SOURCES);
+//        Assert.notNull(this.sources, "The registration sources of this reference is empty");
+
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
     }
@@ -225,11 +233,6 @@ public class ReferenceBean<T> implements FactoryBean,
     @Override
     public void destroy() {
         // do nothing
-    }
-
-    @Deprecated
-    public Object get() {
-        return referenceConfig.get();
     }
 
     public String getId() {
@@ -278,12 +281,6 @@ public class ReferenceBean<T> implements FactoryBean,
     public void setKeyAndReferenceConfig(String key, ReferenceConfig referenceConfig) {
         this.key = key;
         this.referenceConfig = referenceConfig;
-
-        //If the 'init' attribute is not set, the default value is false
-        Object init = referenceConfig.isInit();
-        if (init == null) {
-            referenceConfig.setInit(false);
-        }
     }
 
     /**
