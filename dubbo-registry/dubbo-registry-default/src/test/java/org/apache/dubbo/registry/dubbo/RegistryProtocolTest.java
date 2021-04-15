@@ -25,7 +25,6 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.RegistryFactory;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
-import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invocation;
@@ -228,17 +227,4 @@ public class RegistryProtocolTest {
             return null;
         }
     }
-
-    static class MockRegistry extends AbstractRegistry {
-
-        public MockRegistry(URL url) {
-            super(url);
-        }
-
-        @Override
-        public boolean isAvailable() {
-            return true;
-        }
-    }
-
 }
