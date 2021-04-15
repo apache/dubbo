@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.support.Parameter;
@@ -64,6 +65,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
+        //TODO remove SpringExtensionFactory.addApplicationContext();
         SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 
@@ -88,6 +90,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
                 setPath(getInterface());
             }
         }
+        //register service bean and set bootstrap
+        DubboBootstrap.getInstance().service(this);
     }
 
     /**

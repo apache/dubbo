@@ -28,6 +28,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.AfterEach;
@@ -76,6 +77,8 @@ public class ServiceConfigTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        ApplicationModel.getConfigManager().clear();
+
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
         Mockito.when(protocolDelegate.export(Mockito.any(Invoker.class))).thenReturn(exporter);
@@ -124,12 +127,11 @@ public class ServiceConfigTest {
         delayService.setMethods(Collections.singletonList(method));
         delayService.setDelay(100);
 
-//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test

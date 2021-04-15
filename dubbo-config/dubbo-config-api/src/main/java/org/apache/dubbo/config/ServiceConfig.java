@@ -189,8 +189,13 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
+            // Initializing bootstrap here only for compatible with old API usages
             bootstrap.initialize();
             bootstrap.service(this);
+        } else if (!bootstrap.isInitialized()) {
+            // Using DubboBootstrap API will associate bootstrap when registering service
+            // Loading by Spring context will associate bootstrap in afterPropertiesSet() method
+            throw new IllegalStateException("DubboBootstrap is not initialized");
         }
 
         checkAndUpdateSubConfigs();

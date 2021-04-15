@@ -465,12 +465,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setApplication(ApplicationConfig application) {
         this.application = application;
         if (application != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            if (!configManager.getApplication().isPresent()) {
-                configManager.setApplication(application);
-            } else {
-                application.refresh();
-            }
+            ApplicationModel.getConfigManager().setApplication(application);
         }
     }
 
@@ -485,11 +480,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setModule(ModuleConfig module) {
         this.module = module;
         if (module != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getModule().orElseGet(() -> {
-                configManager.setModule(module);
-                return module;
-            });
+            ApplicationModel.getConfigManager().setModule(module);
         }
     }
 
@@ -551,11 +542,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
         if (monitor != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getMonitor().orElseGet(() -> {
-                configManager.setMonitor(monitor);
-                return monitor;
-            });
+            ApplicationModel.getConfigManager().setMonitor(monitor);
         }
     }
 
@@ -661,11 +648,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMetrics(MetricsConfig metrics) {
         this.metrics = metrics;
         if (metrics != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            configManager.getMetrics().orElseGet(() -> {
-                configManager.setMetrics(metrics);
-                return metrics;
-            });
+            ApplicationModel.getConfigManager().setMetrics(metrics);
         }
     }
 

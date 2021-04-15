@@ -205,8 +205,9 @@ public class DubboBootstrap extends GenericEventListener {
 
     /**
      * Try reset dubbo status for new instance.
-     * For testing purposes only
+     * @deprecated  For testing purposes only
      */
+    @Deprecated
     public static void reset() {
         if (instance != null) {
             instance.destroy();
@@ -218,6 +219,16 @@ public class DubboBootstrap extends GenericEventListener {
         ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
         ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
         ExtensionLoader.destroyAll();
+    }
+
+    /**
+     * Try reset dubbo status for new instance.
+     * @deprecated For testing purposes only
+     */
+    @Deprecated
+    public static void newInstance() {
+        instance = new DubboBootstrap();
+        ApplicationModel.reset();
     }
 
     private DubboBootstrap() {
@@ -389,6 +400,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
+        serviceConfig.setBootstrap(this);
         configManager.addService(serviceConfig);
         return this;
     }
@@ -413,6 +425,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
+        referenceConfig.setBootstrap(this);
         configManager.addReference(referenceConfig);
         return this;
     }
@@ -566,6 +579,7 @@ public class DubboBootstrap extends GenericEventListener {
         Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
         if (CollectionUtils.isEmpty(metadatas)) {
             MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+            metadataReportConfig.setId("MetadataReportConfig#default");
             metadataReportConfig.refresh();
             if (metadataReportConfig.isValid()) {
                 configManager.addMetadataReport(metadataReportConfig);
@@ -584,6 +598,7 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isEmpty(providers)) {
             configManager.getDefaultProvider().orElseGet(() -> {
                 ProviderConfig providerConfig = new ProviderConfig();
+                providerConfig.setId("ProviderConfig#default");
                 configManager.addProvider(providerConfig);
                 providerConfig.refresh();
                 return providerConfig;
@@ -597,6 +612,7 @@ public class DubboBootstrap extends GenericEventListener {
         if (CollectionUtils.isEmpty(consumers)) {
             configManager.getDefaultConsumer().orElseGet(() -> {
                 ConsumerConfig consumerConfig = new ConsumerConfig();
+                consumerConfig.setId("ConsumerConfig#default");
                 configManager.addConsumer(consumerConfig);
                 consumerConfig.refresh();
                 return consumerConfig;
@@ -625,6 +641,7 @@ public class DubboBootstrap extends GenericEventListener {
         // check Config Center
         if (CollectionUtils.isEmpty(configCenters)) {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+            configCenterConfig.setId("ConfigCenterConfig#default");
             configCenterConfig.refresh();
             if (configCenterConfig.isValid()) {
                 configManager.addConfigCenter(configCenterConfig);
@@ -1318,6 +1335,7 @@ public class DubboBootstrap extends GenericEventListener {
                 .getApplication()
                 .orElseGet(() -> {
                     ApplicationConfig applicationConfig = new ApplicationConfig();
+                    applicationConfig.setId("ApplicationConfig#default");
                     configManager.setApplication(applicationConfig);
                     return applicationConfig;
                 });
@@ -1333,6 +1351,7 @@ public class DubboBootstrap extends GenericEventListener {
                 .getMonitor()
                 .orElseGet(() -> {
                     MonitorConfig monitorConfig = new MonitorConfig();
+                    monitorConfig.setId("MonitorConfig#default");
                     configManager.setMonitor(monitorConfig);
                     return monitorConfig;
                 });
@@ -1346,6 +1365,7 @@ public class DubboBootstrap extends GenericEventListener {
                 .getMetrics()
                 .orElseGet(() -> {
                     MetricsConfig metricsConfig = new MetricsConfig();
+                    metricsConfig.setId("MetricsConfig#default");
                     configManager.setMetrics(metricsConfig);
                     return metricsConfig;
                 });
@@ -1358,6 +1378,7 @@ public class DubboBootstrap extends GenericEventListener {
                 .getModule()
                 .orElseGet(() -> {
                     ModuleConfig moduleConfig = new ModuleConfig();
+                    moduleConfig.setId("ModuleConfig#default");
                     configManager.setModule(moduleConfig);
                     return moduleConfig;
                 });
@@ -1371,6 +1392,7 @@ public class DubboBootstrap extends GenericEventListener {
                 .getSsl()
                 .orElseGet(() -> {
                     SslConfig sslConfig = new SslConfig();
+                    sslConfig.setId("SslConfig#default");
                     configManager.setSsl(sslConfig);
                     return sslConfig;
                 });

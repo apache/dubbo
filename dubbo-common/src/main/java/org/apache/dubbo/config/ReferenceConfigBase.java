@@ -111,11 +111,11 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    public void checkDefault() throws IllegalStateException {
+    protected void checkDefault() throws IllegalStateException {
         if (consumer == null) {
             consumer = ApplicationModel.getConfigManager()
                     .getDefaultConsumer()
-                    .orElse(new ConsumerConfig());
+                    .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }
     }
 

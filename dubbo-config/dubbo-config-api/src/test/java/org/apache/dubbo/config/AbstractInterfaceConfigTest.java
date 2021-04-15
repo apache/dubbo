@@ -55,7 +55,7 @@ public class AbstractInterfaceConfigTest {
 
     @AfterEach
     public void tearMethodAfterEachUT() {
-//        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.reset();
     }
 
     @Test

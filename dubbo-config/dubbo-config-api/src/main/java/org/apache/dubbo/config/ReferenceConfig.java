@@ -236,8 +236,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
+            // Initializing bootstrap here only for compatible with old API usages
             bootstrap.initialize();
             bootstrap.reference(this);
+        } else if (!bootstrap.isInitialized()) {
+            // Using DubboBootstrap API will associate bootstrap when registering reference
+            // Loading by Spring context will associate bootstrap in afterPropertiesSet() method
+            throw new IllegalStateException("DubboBootstrap is not initialized");
         }
 
         checkAndUpdateSubConfigs();

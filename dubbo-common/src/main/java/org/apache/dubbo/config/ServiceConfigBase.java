@@ -193,11 +193,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return ref.getClass();
     }
 
-    public void checkDefault() throws IllegalStateException {
+    protected void checkDefault() throws IllegalStateException {
         if (provider == null) {
             provider = ApplicationModel.getConfigManager()
                     .getDefaultProvider()
-                    .orElse(new ProviderConfig());
+                    .orElseThrow(() -> new IllegalArgumentException("Default provider is not initialized"));
         }
     }
 

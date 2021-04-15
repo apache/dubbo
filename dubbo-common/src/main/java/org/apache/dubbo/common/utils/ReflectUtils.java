@@ -23,6 +23,7 @@ import javassist.NotFoundException;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
+import java.beans.MethodDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -43,6 +44,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -1293,6 +1295,25 @@ public final class ReflectUtils {
     }
 
     /**
+     * Check target bean class whether has specify method
+     * @param beanClass
+     * @param methodName
+     * @return
+     */
+    public static boolean hasMethod(Class<?> beanClass, String methodName) {
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(beanClass);
+            Optional<MethodDescriptor> descriptor = Stream.of(beanInfo.getMethodDescriptors())
+                    .filter(methodDescriptor -> methodName.equals(methodDescriptor.getName()))
+                    .findFirst();
+            return descriptor.isPresent();
+        } catch (Exception e) {
+
+        }
+        return false;
+    }
+
+    /**
      * Resolve the types of the specified values
      *
      * @param values the values
@@ -1315,5 +1336,26 @@ public final class ReflectUtils {
         }
 
         return types;
+    }
+
+    /**
+     * Get all field names of target type
+     * @param type
+     * @return
+     */
+    public static Set<String> getAllFieldNames(Class<?> type) {
+
+        Set<String> fieldNames = new HashSet<>();
+        for (Field field : type.getDeclaredFields()) {
+            fieldNames.add(field.getName());
+        }
+
+        Set<Class<?>> allSuperClasses = ClassUtils.getAllSuperClasses(type);
+        for (Class<?> aClass : allSuperClasses) {
+            for (Field field : aClass.getDeclaredFields()) {
+                fieldNames.add(field.getName());
+            }
+        }
+        return fieldNames;
     }
 }
