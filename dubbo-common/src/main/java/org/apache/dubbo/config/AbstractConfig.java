@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,8 @@ public abstract class AbstractConfig implements Serializable {
      * The legacy properties container
      */
     private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
+
+    private static final Map<Class, Set<String>> fieldNamesCache = new ConcurrentHashMap<>();
 
     /**
      * The suffix container
@@ -514,6 +517,9 @@ public abstract class AbstractConfig implements Serializable {
     @Override
     public String toString() {
         try {
+
+            Set<String> fieldNames = getFieldNames(this.getClass());
+
             StringBuilder buf = new StringBuilder();
             buf.append("<dubbo:");
             buf.append(getTagName(getClass()));
@@ -524,10 +530,7 @@ public abstract class AbstractConfig implements Serializable {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
 
-                        try {
-                            getClass().getDeclaredField(key);
-                        } catch (NoSuchFieldException e) {
-                            // ignore
+                        if (!fieldNames.contains(key)) {
                             continue;
                         }
 
@@ -552,6 +555,10 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
+    private static Set<String> getFieldNames(Class<?> configClass) {
+        return fieldNamesCache.computeIfAbsent(configClass, ReflectUtils::getAllFieldNames);
+    }
+
     /**
      * FIXME check @Parameter(required=true) and any conditions that need to match.
      */
@@ -565,6 +572,9 @@ public abstract class AbstractConfig implements Serializable {
     public boolean equals(Object obj) {
         if (obj == null || !(obj.getClass().getName().equals(this.getClass().getName()))) {
             return false;
+        }
+        if (obj == this) {
+            return true;
         }
 
         Method[] methods = this.getClass().getMethods();
