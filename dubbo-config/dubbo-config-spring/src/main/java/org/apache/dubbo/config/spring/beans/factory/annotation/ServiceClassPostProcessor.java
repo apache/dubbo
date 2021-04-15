@@ -28,6 +28,7 @@ import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 
+import com.alibaba.spring.util.PropertySourcesUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -51,14 +52,18 @@ import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.DataBinder;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,6 +72,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
@@ -90,6 +96,8 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
+    private static final String DUBBO_SERVICE_PREFIX = "dubbo.service.";
+
     private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
             DubboService.class,
@@ -109,6 +117,8 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     private ResourceLoader resourceLoader;
 
     private ClassLoader classLoader;
+
+    private MutablePropertySources propertySources;
 
     public ServiceClassPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
@@ -398,6 +408,10 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
                 "interface", "interfaceName", "parameters");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
+        // 追加配置在properties文件中的service属性
+        if (this.propertySources != null) {
+            propertyValues.addPropertyValues(getValidPropertiesWithPrefix(DUBBO_SERVICE_PREFIX + interfaceClass.getName()));
+        }
 
         // References "ref" property to annotated-@Service Bean
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
@@ -407,6 +421,10 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
+        // 追加配置在properties文件中的方法属性，或者从properties构造methodConfig
+        if (this.propertySources != null) {
+            appendOrCreateMethodConfigFromProperties(interfaceClass, methodConfigs);
+        }
         if (!methodConfigs.isEmpty()) {
             builder.addPropertyValue("methods", methodConfigs);
         }
@@ -470,6 +488,43 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
     }
 
+    private void appendOrCreateMethodConfigFromProperties(Class<?> interfaceClass, List<MethodConfig> methodConfigs) {
+        for (java.lang.reflect.Method declaredMethod : interfaceClass.getDeclaredMethods()) {
+            String methodName = declaredMethod.getName();
+            Map<String, Object> methodProperties = getValidPropertiesWithPrefix(DUBBO_SERVICE_PREFIX + interfaceClass.getName() + "." + methodName);
+            if (methodProperties.size() == 0) {
+                continue;
+            }
+            MethodConfig methodConfig = null;
+            for (MethodConfig config : methodConfigs) {
+                if (methodName.equals(config.getName())) {
+                    methodConfig = config;
+                    break;
+                }
+            }
+            if (methodConfig == null) {
+                methodConfig = new MethodConfig();
+                methodConfig.setName(methodName);
+                methodConfig.setReturn(true);
+                if (methodConfigs.isEmpty()) {
+                    methodConfigs = new ArrayList<>();
+                }
+                methodConfigs.add(methodConfig);
+            }
+            DataBinder binder = new DataBinder(methodConfig);
+            binder.setIgnoreInvalidFields(true);
+            binder.setIgnoreUnknownFields(true);
+            binder.bind(new MutablePropertyValues(methodProperties));
+        }
+    }
+
+    private Map<String, Object> getValidPropertiesWithPrefix(String prefix) {
+        Map<String, Object> properties = PropertySourcesUtils.getSubProperties(this.propertySources, prefix);
+        return properties.entrySet().stream()
+                .filter(e -> !e.getKey().contains("."))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
     private List convertMethodConfigs(Object methodsAnnotation) {
         if (methodsAnnotation == null) {
             return Collections.EMPTY_LIST;
@@ -525,6 +580,9 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     @Override
     public void setEnvironment(Environment environment) {
         this.environment = environment;
+        if (environment instanceof ConfigurableEnvironment) {
+            this.propertySources = ((ConfigurableEnvironment) environment).getPropertySources();
+        }
     }
 
     @Override
