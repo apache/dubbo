@@ -28,7 +28,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
@@ -78,7 +78,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
         // Set the context of the address notification thread.
-        RpcContext.setRpcContext(getConsumerUrl());
+        RpcServiceContext.setRpcContext(getConsumerUrl());
 
         /**
          * 3.x added for extend URL address

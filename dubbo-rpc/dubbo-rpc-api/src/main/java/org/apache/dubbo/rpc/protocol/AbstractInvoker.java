@@ -145,7 +145,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             invocation.addObjectAttachmentsIfAbsent(attachment);
         }
 
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             invocation.addObjectAttachmentsIfAbsent(contextAttachments);
         }
@@ -175,7 +175,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+        RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
 
         waitForResultIfSync(asyncResult, invocation);
         return asyncResult;

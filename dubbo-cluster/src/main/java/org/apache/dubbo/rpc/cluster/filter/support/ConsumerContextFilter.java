@@ -48,15 +48,17 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        RpcContext context = RpcContext.getContext();
-        context.setInvocation(invocation)
-                .setLocalAddress(NetUtils.getLocalHost(), 0)
-                .setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
+        RpcContext.getServiceContext()
+                .setInvocation(invocation)
+                .setLocalAddress(NetUtils.getLocalHost(), 0);
+
+        RpcContext context = RpcContext.getClientAttachment();
+        context.setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
@@ -67,22 +69,23 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
-        // pass default timeout set by end user (ReferenceConfig)
-        Object countDown = context.get(TIME_COUNTDOWN_KEY);
-        if (countDown != null) {
-            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
-            if (timeoutCountDown.isExpired()) {
-                return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
-                        "No time left for making the following call: " + invocation.getServiceName() + "."
-                                + invocation.getMethodName() + ", terminate directly."), invocation);
-            }
-        }
-
         try {
+            // pass default timeout set by end user (ReferenceConfig)
+            Object countDown = context.getObjectAttachment(TIME_COUNTDOWN_KEY);
+            if (countDown != null) {
+                TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
+                if (timeoutCountDown.isExpired()) {
+                    return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                            "No time left for making the following call: " + invocation.getServiceName() + "."
+                                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                }
+            }
+
             RpcContext.removeServerContext();
             return invoker.invoke(invocation);
         } finally {
-            RpcContext.removeContext();
+            RpcContext.removeServiceContext();
+            RpcContext.removeClientAttachment();
         }
     }
 
