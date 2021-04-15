@@ -32,7 +32,6 @@ import java.util.Set;
 import static java.lang.String.valueOf;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.constants.CommonConstants.UTF8ENCODE;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
@@ -137,7 +136,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
             String oldConfigContent = dynamicConfiguration.getConfig(key, group);
             String casMd5 = "";
             if (StringUtils.isNotEmpty(oldConfigContent)) {
-                casMd5 = MD5Utils.md5Hex(oldConfigContent, UTF8ENCODE);
+                casMd5 = MD5Utils.getMd5(oldConfigContent);
                 boolean contains = StringUtils.isContains(oldConfigContent, appName);
                 if (contains) {
                     return true;
