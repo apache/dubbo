@@ -63,11 +63,7 @@ public class UnaryServerStream extends ServerStream implements Stream {
 
     @Override
     protected void onSingleMessage(InputStream in) {
-        if (in == null) {
-            responseErr(getCtx(), GrpcStatus.fromCode(Code.INTERNAL)
-                .withDescription(MISSING_REQ));
-            return;
-        }
+
         message = new Message(getHeaders(), in);
     }
 
@@ -110,97 +106,5 @@ public class UnaryServerStream extends ServerStream implements Stream {
         }
     }
 
-    private void unaryInvoke() {
-
-        RpcInvocation invocation;
-        try {
-            invocation = buildInvocation();
-
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            invocation.setParameterTypes(getMd().getParameterClasses());
-            invocation.setReturnTypes(getMd().getReturnTypes());
-            InputStream is = message.getIs();
-            try {
-                if (getProviderModel() != null) {
-                    ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
-                }
-
-                invocation.setArguments(getProcessor().decodeRequestMessage(is));
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
-
-        } catch (Throwable t) {
-            LOGGER.warn("Exception processing triple message", t);
-            responseErr(getCtx(),
-                GrpcStatus.fromCode(Code.INTERNAL).withDescription("Decode request failed:" + t.getMessage()));
-            return;
-        }
-        if (invocation == null) {
-            return;
-        }
-
-        final Result result = getInvoker().invoke(invocation);
-        CompletionStage<Object> future = result.thenApply(Function.identity());
-
-        BiConsumer<Object, Throwable> onComplete = (appResult, t) -> {
-            try {
-                if (t != null) {
-                    if (t instanceof TimeoutException) {
-                        responseErr(getCtx(), GrpcStatus.fromCode(Code.DEADLINE_EXCEEDED).withCause(t));
-                    } else {
-                        responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN).withCause(t));
-                    }
-                    return;
-                }
-                AppResponse response = (AppResponse)appResult;
-                if (response.hasException()) {
-                    final Throwable exception = response.getException();
-                    if (exception instanceof TripleRpcException) {
-                        responseErr(getCtx(), ((TripleRpcException)exception).getStatus());
-                    } else {
-                        responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN)
-                            .withCause(exception));
-                    }
-                    return;
-                }
-                Http2Headers http2Headers = new DefaultHttp2Headers()
-                    .status(OK.codeAsText())
-                    .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                getCtx().write(new DefaultHttp2HeadersFrame(http2Headers));
-
-                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                final ByteBuf buf;
-                try {
-                    ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
-                    buf = getProcessor().encodeResponse(response.getValue(), getCtx());
-                } finally {
-                    ClassLoadUtil.switchContextLoader(tccl);
-                }
-                final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
-                getCtx().write(data);
-
-                final Http2Headers trailers = new DefaultHttp2Headers()
-                    .setInt(TripleConstant.STATUS_KEY, Code.OK.code);
-                final Map<String, Object> attachments = response.getObjectAttachments();
-                if (attachments != null) {
-                    convertAttachment(trailers, attachments);
-                }
-                getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
-            } catch (Throwable e) {
-                LOGGER.warn("Exception processing triple message", e);
-                if (e instanceof TripleRpcException) {
-                    responseErr(getCtx(), ((TripleRpcException)e).getStatus());
-                } else {
-                    responseErr(getCtx(), GrpcStatus.fromCode(Code.UNKNOWN)
-                        .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                        .withCause(e));
-                }
-            }
-        };
-
-        future.whenComplete(onComplete);
-        RpcContext.removeContext();
-    }
 
 }

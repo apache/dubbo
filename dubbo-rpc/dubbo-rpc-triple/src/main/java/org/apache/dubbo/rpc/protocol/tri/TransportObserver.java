@@ -14,34 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
+import java.io.InputStream;
 
-import com.sun.istack.internal.NotNull;
+public interface TransportObserver {
+    void onMetadata(Metadata metadata, Stream.OperationHandler handler);
 
-public interface Stream {
-    Logger LOGGER = LoggerFactory.getLogger(Stream.class);
+    void onData(InputStream in, Stream.OperationHandler handler);
 
-    void subscribe(TransportObserver observer);
+    void onError(Metadata metadata, Stream.OperationHandler handler);
 
-    @NotNull
-    TransportObserver asTransportObserver();
+    void onTrailers(InputStream in, Stream.OperationHandler handler);
 
-    void subscribe(StreamObserver<Object> observer);
+    void onComplete(Stream.OperationHandler handler);
 
-    @NotNull
-    StreamObserver<Object> asStreamObserver();
-
-
-    enum OperationResult {
-        OK, FAILURE
-    }
-
-    interface OperationHandler {
-
-        void operationDone(OperationResult result, Throwable cause);
-    }
 }

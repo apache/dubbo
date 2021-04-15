@@ -79,7 +79,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             ClientStream2 stream=ClientStream2.stream(new ReqWrapperMeta(req));
 
-            final StreamObserver<Object> observer = stream.asObserver();
+            final StreamObserver<Object> observer = stream.asStreamObserver();
 
             StreamObserver<Object> responseOBServer = (StreamObserver<Object>)inv.getArguments()[0];
             stream.subscribe(responseOBServer);

@@ -32,7 +32,6 @@ import org.apache.dubbo.rpc.model.ServiceRepository;
 
 public abstract class ServerStream<T> extends AbstractStream<T> implements Stream<T> {
     protected static final String TOO_MANY_REQ = "Too many requests";
-    protected static final String MISSING_REQ = "Missing request";
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
         ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
@@ -68,27 +67,4 @@ public abstract class ServerStream<T> extends AbstractStream<T> implements Strea
         return invoker;
     }
 
-    protected RpcInvocation buildInvocation() {
-        RpcInvocation inv = new RpcInvocation();
-        if (getMd().isNeedWrap()) {
-            loadFromURL(getUrl());
-        }
-
-        inv.setMethodName(getMd().getMethodName());
-        inv.setServiceName(serviceDescriptor.getServiceName());
-        inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-        final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
-        attachments.remove("interface");
-        attachments.remove("serialization");
-        attachments.remove("te");
-        attachments.remove("path");
-        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
-        attachments.remove(TripleConstant.SERVICE_GROUP);
-        attachments.remove(TripleConstant.SERVICE_VERSION);
-        attachments.remove(TripleConstant.MESSAGE_KEY);
-        attachments.remove(TripleConstant.STATUS_KEY);
-        attachments.remove(TripleConstant.TIMEOUT);
-        inv.setObjectAttachments(attachments);
-        return inv;
-    }
 }
