@@ -21,6 +21,7 @@ import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -46,6 +47,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -55,8 +57,6 @@ import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
 import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
@@ -72,8 +72,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
+    private static Map<Class, AtomicInteger> configNameIndexes = new ConcurrentHashMap<>();
+
     private static volatile boolean configWarnLogEnabled = false;
-    private static Map<String, Boolean> warnLogStatus = new ConcurrentHashMap<>();
+
 
     public ConfigManager() {
         try {
@@ -82,7 +84,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 configWarnLogEnabled = Boolean.parseBoolean(rawWarn);
             }
         } catch (Exception e) {
-            logger.warn("Illegal 'dubbo.application.config.warn'config, only boolean value is accepted.", e);
+            logger.warn("Illegal 'dubbo.application.config.warn' config, only boolean value is accepted.", e);
         }
     }
 
@@ -93,7 +95,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<ApplicationConfig> getApplication() {
-        return ofNullable(getConfig(getTagName(ApplicationConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(ApplicationConfig.class)));
     }
 
     public ApplicationConfig getApplicationOrElseThrow() {
@@ -107,7 +109,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<MonitorConfig> getMonitor() {
-        return ofNullable(getConfig(getTagName(MonitorConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(MonitorConfig.class)));
     }
 
     // ModuleConfig correlative methods
@@ -117,7 +119,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<ModuleConfig> getModule() {
-        return ofNullable(getConfig(getTagName(ModuleConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(ModuleConfig.class)));
     }
 
     public void setMetrics(MetricsConfig metrics) {
@@ -125,7 +127,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<MetricsConfig> getMetrics() {
-        return ofNullable(getConfig(getTagName(MetricsConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(MetricsConfig.class)));
     }
 
     public void setSsl(SslConfig sslConfig) {
@@ -133,7 +135,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public Optional<SslConfig> getSsl() {
-        return ofNullable(getConfig(getTagName(SslConfig.class)));
+        return ofNullable(getSingleConfig(getTagName(SslConfig.class)));
     }
 
     // ConfigCenterConfig correlative methods
@@ -381,13 +383,14 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
         Map<String, AbstractConfig> configs = configsCache.get(getTagName(config.getClass()));
         if (CollectionUtils.isNotEmptyMap(configs)) {
-            configs.remove(getId(config));
+            configs.values().removeIf(c -> config.equals(c));
         }
     }
 
     public void clear() {
         write(() -> {
             this.configsCache.clear();
+            configNameIndexes.clear();
         });
     }
 
@@ -434,7 +437,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         });
     }
 
-    protected <C extends AbstractConfig> C getConfig(String configType) throws IllegalStateException {
+    protected <C extends AbstractConfig> C getSingleConfig(String configType) throws IllegalStateException {
         return read(() -> {
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
             int size = configsMap.size();
@@ -442,10 +445,8 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
-                if (configWarnLogEnabled && warnLogStatus.get(configType) == null) {
-                    logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
-                    warnLogStatus.put(configType, true);
-                }
+                throw new IllegalStateException("Expected single matching of " + configType + ", but found " + size +
+                        " instances, please remove redundant configs. instances: "+configsMap.values());
             }
 
             return configsMap.values().iterator().next();
@@ -490,11 +491,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     private static void checkDuplicate(AbstractConfig oldOne, AbstractConfig newOne) throws IllegalStateException {
-        if (oldOne != null && !oldOne.equals(newOne)) {
+        if (oldOne != null && oldOne.getClass() == newOne.getClass() && !oldOne.equals(newOne)) {
             String configName = oldOne.getClass().getSimpleName();
-            if (configWarnLogEnabled) {
-                logger.warn("Duplicate Config found for " + configName + ", only one unique " + configName + " is allowed for one application.");
-            }
+            throw new IllegalStateException("Duplicate Config found for " + configName + ", only one unique " + configName +
+                    " is allowed for one application. old: "+oldOne+", new: "+newOne);
         }
     }
 
@@ -515,39 +515,66 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             });
         }
 
+        // find by value
+        // TODO Is there a problem with ignoring duplicate but different ReferenceConfig instances?
+        Optional<String> existingKey = configsMap.entrySet().stream()
+                .filter(e -> e.getValue().equals(config))
+                .map(Map.Entry::getKey)
+                .findFirst();
+        if (existingKey.isPresent()) {
+            return;
+        }
+
         String key = getId(config);
+        if (key == null) {
+            // generate key for non-default config compatible with API usages
+            key = generateConfigName(config);
+        }
 
         C existedConfig = configsMap.get(key);
 
         if (existedConfig != null && !config.equals(existedConfig)) {
-            if (configWarnLogEnabled) {
-                //TODO throw exception
-                if (logger.isWarnEnabled()) {
-                    String type = config.getClass().getSimpleName();
-                    logger.warn(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
-                            "you can try to give each %s a different id : %s", type, type, type, type, config));
-                }
-            }
+            String type = config.getClass().getSimpleName();
+            throw new IllegalStateException(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
+                    "you can try to give each %s a different id, key: %s, prev: %s, new: %s", type, type, type, type, key, existedConfig, config));
         } else {
             configsMap.put(key, config);
         }
     }
 
-    static <C extends AbstractConfig> String getId(C config) {
-        String id = config.getId();
-        return isNotEmpty(id) ? id : isDefaultConfig(config) ?
-                config.getClass().getSimpleName() + "#" + DEFAULT_KEY : null;
+    private static <C extends AbstractConfig> String generateConfigName(C config) {
+        int idx = configNameIndexes.computeIfAbsent(config.getClass(), clazz -> new AtomicInteger(0)).incrementAndGet();
+        return config.getClass().getSimpleName() + "#" + idx;
     }
 
-    static <C extends AbstractConfig> boolean isDefaultConfig(C config) {
-        Boolean isDefault = getProperty(config, "isDefault");
-        return isDefault == null || TRUE.equals(isDefault);
+    static <C extends AbstractConfig> String getId(C config) {
+        String id = config.getId();
+        return isNotEmpty(id) ? id : null;
+    }
+
+    static <C extends AbstractConfig> Boolean isDefaultConfig(C config) {
+        if (!ReflectUtils.hasMethod(config.getClass(), "isDefault")) {
+            return false;
+        }
+        Boolean isDefault = ReflectUtils.getProperty(config, "isDefault");
+        return isDefault;
     }
 
     static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
-        return configsMap.values()
+        // find isDefault() == TRUE
+        List<C> list = configsMap.values()
                 .stream()
-                .filter(ConfigManager::isDefaultConfig)
+                .filter(c -> TRUE.equals(ConfigManager.isDefaultConfig(c)))
                 .collect(Collectors.toList());
+        if (list.size() > 0) {
+            return list;
+        }
+
+        // find isDefault() == null
+        list = configsMap.values()
+                .stream()
+                .filter(c -> ConfigManager.isDefaultConfig(c) == null)
+                .collect(Collectors.toList());
+        return list;
     }
 }
