@@ -25,7 +25,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 public class ServiceNameMappingHandler {
     public static final String DUBBO_SERVICENAME_STORE = "dubbo.application.service-name.store";
     private static final Logger logger = LoggerFactory.getLogger(ServiceNameMappingHandler.class);
-    private static final ServiceNameMappingStoreEnum DEFAULT_STORE_TYPE = ServiceNameMappingStoreEnum.BOTH_STORE;
+    private static final ServiceNameMappingStoreEnum DEFAULT_STORE_TYPE = ServiceNameMappingStoreEnum.BOTH_STORAGE;
 
     private final ServiceNameMapping serviceNameMapping;
     private final URL url;
@@ -45,7 +45,7 @@ public class ServiceNameMappingHandler {
         ServiceNameMappingStoreEnum storeType = DEFAULT_STORE_TYPE;
         boolean hasSupportCas = dynamicConfiguration.hasSupportCas();
         if (!hasSupportCas) {
-            storeType = ServiceNameMappingStoreEnum.OLD_STORE;
+            storeType = ServiceNameMappingStoreEnum.APPLICANT_INTERFACE_STORAGE;
         }
         doMap(storeType);
     }
@@ -55,13 +55,13 @@ public class ServiceNameMappingHandler {
             throw new IllegalStateException("storeType of serviceNameMapping cannot be null");
         }
         switch (storeType) {
-            case NEW_STORE:
+            case INTERFACE_APPLICATION_STORAGE:
                 serviceNameMapping.mapWithCas(url);
                 break;
-            case OLD_STORE:
+            case APPLICANT_INTERFACE_STORAGE:
                 serviceNameMapping.map(url);
                 break;
-            case BOTH_STORE:
+            case BOTH_STORAGE:
                 serviceNameMapping.map(url);
                 serviceNameMapping.mapWithCas(url);
                 break;

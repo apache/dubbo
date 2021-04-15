@@ -22,9 +22,9 @@ import java.util.Map;
 
 public enum ServiceNameMappingStoreEnum {
 
-    OLD_STORE("old_store"),
-    NEW_STORE("new_store"),
-    BOTH_STORE("both_store");
+    INTERFACE_APPLICATION_STORAGE("interface_application_storage"),
+    APPLICANT_INTERFACE_STORAGE("applicant_interface_storage"),
+    BOTH_STORAGE("both_storage");
 
     private String storeType;
 
