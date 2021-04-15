@@ -314,8 +314,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            if (!migrated && !invoker.isDestroyed() && invoker.getDirectory().isNotificationReceived()) {
+            if (!migrated && !invoker.isDestroyed()) {
                 scheduler.submit(() -> {
+                    try {
+                        if (!invoker.getDirectory().isNotificationReceived()) {
+                            Thread.sleep(3000);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     destroyInterfaceInvoker(invoker);
                 });
             }
