@@ -226,7 +226,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
-        super.destroy(); // must be executed after unsubscribing
         try {
             destroyAllInvokers();
         } catch (Throwable t) {
@@ -244,6 +243,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         routerChain.destroy();
         invokersChangedListener = null;
         serviceListener = null;
+
+        super.destroy(); // must be executed after unsubscribing
     }
 
     @Override
