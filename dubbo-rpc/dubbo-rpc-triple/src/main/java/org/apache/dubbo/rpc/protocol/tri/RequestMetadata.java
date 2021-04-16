@@ -17,32 +17,36 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.exchange.Request;
 
-import java.util.concurrent.Executor;
+import java.util.Iterator;
+import java.util.Map;
 
-public abstract class AbstractClientStream extends AbstractStream implements Stream {
-    protected Executor callbackExecutor;
+//TODO
+public class RequestMetadata implements Metadata{
+    private final Request request;
 
-    protected AbstractClientStream(URL url) {
-        super(url);
+    public RequestMetadata(Request request) {
+        this.request = request;
     }
 
-    public static AbstractClientStream unary(URL url) {
-        return new UnaryClientStream(url);
-
+    @Override
+    public Metadata put(CharSequence key, CharSequence value) {
+        return null;
     }
 
-    public static AbstractClientStream stream(URL url) {
-        return new ClientStream(url);
+    @Override
+    public CharSequence get(CharSequence key) {
+        return null;
     }
 
-    public Executor getCallbackExecutor() {
-        return callbackExecutor;
+    @Override
+    public boolean contains(CharSequence key) {
+        return false;
     }
 
-    public AbstractClientStream callback(Executor callbackExecutor) {
-        this.callbackExecutor = callbackExecutor;
-        return this;
+    @Override
+    public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
+        return null;
     }
 }

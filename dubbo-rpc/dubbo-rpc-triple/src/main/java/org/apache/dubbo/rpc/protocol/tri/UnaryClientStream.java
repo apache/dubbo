@@ -18,31 +18,35 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-import java.util.concurrent.Executor;
-
-public abstract class AbstractClientStream extends AbstractStream implements Stream {
-    protected Executor callbackExecutor;
-
-    protected AbstractClientStream(URL url) {
+public class UnaryClientStream extends AbstractClientStream implements Stream{
+    protected UnaryClientStream(URL url) {
         super(url);
     }
 
-    public static AbstractClientStream unary(URL url) {
-        return new UnaryClientStream(url);
-
+    @Override
+    protected StreamObserver<Object> createStreamObserver() {
+        return null;
     }
 
-    public static AbstractClientStream stream(URL url) {
-        return new ClientStream(url);
-    }
+    @Override
+    protected TransportObserver createTransportObserver() {
+        return new TransportObserver() {
+            @Override
+            public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
+                // TODO 保存headers/trailers
+            }
 
-    public Executor getCallbackExecutor() {
-        return callbackExecutor;
-    }
+            @Override
+            public void onData(byte[] data, boolean endStream, OperationHandler handler) {
 
-    public AbstractClientStream callback(Executor callbackExecutor) {
-        this.callbackExecutor = callbackExecutor;
-        return this;
+            }
+
+            @Override
+            public void onComplete(OperationHandler handler) {
+                //TODO stream observer 传给应用代码
+            }
+        };
     }
 }

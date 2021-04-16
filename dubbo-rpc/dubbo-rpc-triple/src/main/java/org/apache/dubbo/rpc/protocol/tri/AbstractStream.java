@@ -57,6 +57,11 @@ public abstract class AbstractStream implements Stream {
         this.transportObserver = createTransportObserver();
     }
 
+    public AbstractStream method(MethodDescriptor md) {
+        this.methodDescriptor = md;
+        return this;
+    }
+
     protected abstract StreamObserver<Object> createStreamObserver();
 
     protected abstract TransportObserver createTransportObserver();
@@ -65,11 +70,12 @@ public abstract class AbstractStream implements Stream {
         return serializeType;
     }
 
-    public void setSerializeType(String serializeType) {
-        if(serializeType.equals("hessian4")){
-            serializeType="hessian2";
+    public AbstractStream serialize(String serializeType) {
+        if (serializeType.equals("hessian4")) {
+            serializeType = "hessian2";
         }
         this.serializeType = serializeType;
+        return this;
     }
 
     public MultipleSerialization getMultipleSerialization() {
@@ -80,20 +86,12 @@ public abstract class AbstractStream implements Stream {
         return streamSubscriber;
     }
 
-    public StreamObserver<Object> getStreamObserver() {
-        return streamObserver;
-    }
-
     public TransportObserver getTransportSubscriber() {
         return transportSubscriber;
     }
 
     public MethodDescriptor getMethodDescriptor() {
         return methodDescriptor;
-    }
-
-    public void setMethodDescriptor(MethodDescriptor methodDescriptor) {
-        this.methodDescriptor = methodDescriptor;
     }
 
     public ServiceDescriptor getServiceDescriptor() {

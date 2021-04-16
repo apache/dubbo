@@ -24,7 +24,6 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
@@ -105,7 +104,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data, TripleWrapper.TripleRequestWrapper.class);
-                setSerializeType(wrapper.getSerializeType());
+                serialize(wrapper.getSerializeType());
                 return TripleUtil.unwrapReq(getUrl(), wrapper, getMultipleSerialization());
             } else {
                 return new Object[]{TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])};
@@ -160,10 +159,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return this;
     }
 
-    public AbstractServerStream method(MethodDescriptor md) {
-        setMethodDescriptor(md);
-        return this;
-    }
 
     public AbstractServerStream invoker(Invoker<?> invoker) {
         this.invoker = invoker;
