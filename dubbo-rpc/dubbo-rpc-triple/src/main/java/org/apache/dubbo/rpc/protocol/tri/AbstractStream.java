@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public abstract class AbstractStream2 implements Stream {
+public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
             ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
@@ -48,7 +48,7 @@ public abstract class AbstractStream2 implements Stream {
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
 
-    protected AbstractStream2(URL url) {
+    protected AbstractStream(URL url) {
         this.url = url;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
@@ -238,5 +238,4 @@ public abstract class AbstractStream2 implements Stream {
             }
         }
     }
-
 }

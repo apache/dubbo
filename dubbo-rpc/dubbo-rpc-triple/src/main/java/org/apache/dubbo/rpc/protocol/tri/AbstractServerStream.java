@@ -22,35 +22,38 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.Message;
 
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
-public abstract class ServerStream2 extends AbstractStream2 implements Stream {
+public abstract class AbstractServerStream extends AbstractStream implements Stream {
         protected static final ExecutorRepository EXECUTOR_REPOSITORY =
         ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     private final ProviderModel providerModel;
     private Invoker<?> invoker;
 
-    protected ServerStream2(URL url) {
+    protected AbstractServerStream(URL url) {
         super(url);
         this.providerModel = lookupProviderModel(url);
     }
 
-    public static ServerStream2 unary(URL url) {
-        return new UnaryServerStream2(url);
+    public static AbstractServerStream unary(URL url) {
+        return new UnaryServerStream(url);
     }
 
-    public static ServerStream2 stream(URL url) {
-        return new StreamServerStream2(url);
+    public static AbstractServerStream stream(URL url) {
+        return new ServerStream(url);
     }
 
     public Invoker<?> getInvoker() {
@@ -70,6 +73,48 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
         return model;
     }
 
+    protected RpcInvocation buildInvocation(Metadata metadata) {
+        RpcInvocation inv = new RpcInvocation();
+        inv.setMethodName(getMethodDescriptor().getMethodName());
+        inv.setServiceName(getServiceDescriptor().getServiceName());
+        inv.setTargetServiceUniqueName(getUrl().getServiceKey());
+        inv.setParameterTypes(getMethodDescriptor().getParameterClasses());
+        inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
+
+        final Map<String, Object> attachments = parseMetadataToMap(metadata);
+        attachments.remove("interface");
+        attachments.remove("serialization");
+        attachments.remove("te");
+        attachments.remove("path");
+        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
+        attachments.remove(TripleConstant.SERVICE_GROUP);
+        attachments.remove(TripleConstant.SERVICE_VERSION);
+        attachments.remove(TripleConstant.MESSAGE_KEY);
+        attachments.remove(TripleConstant.STATUS_KEY);
+        attachments.remove(TripleConstant.TIMEOUT);
+        inv.setObjectAttachments(attachments);
+
+        return inv;
+    }
+
+    protected Object[] deserializeRequest(byte[] data){
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        try {
+            if (getProviderModel() != null) {
+                ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
+            }
+            if (getMethodDescriptor().isNeedWrap()) {
+                final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data, TripleWrapper.TripleRequestWrapper.class);
+                setSerializeType(wrapper.getSerializeType());
+                return TripleUtil.unwrapReq(getUrl(), wrapper, getMultipleSerialization());
+            } else {
+                return new Object[]{TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])};
+            }
+
+        } finally {
+            ClassLoadUtil.switchContextLoader(tccl);
+        }
+    }
 
     protected byte[] encodeResponse(Object value) {
         final com.google.protobuf.Message message;
@@ -82,7 +127,7 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
     }
 
 
-    protected void executorInvoke(){
+    protected void executorInvoke(Runnable runnable){
         ExecutorService executor = null;
         if (getProviderModel() != null) {
             executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(
@@ -96,7 +141,7 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
         }
 
         try {
-            executor.execute(this::invoke);
+            executor.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
@@ -110,17 +155,17 @@ public abstract class ServerStream2 extends AbstractStream2 implements Stream {
     }
 
 
-    public ServerStream2 service(ServiceDescriptor sd) {
+    public AbstractServerStream service(ServiceDescriptor sd) {
         setServiceDescriptor(sd);
         return this;
     }
 
-    public ServerStream2 method(MethodDescriptor md) {
+    public AbstractServerStream method(MethodDescriptor md) {
         setMethodDescriptor(md);
         return this;
     }
 
-    public ServerStream2 invoker(Invoker<?> invoker) {
+    public AbstractServerStream invoker(Invoker<?> invoker) {
         this.invoker = invoker;
         return this;
     }

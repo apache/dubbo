@@ -73,7 +73,7 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
     protected Result doInvoke(final Invocation invocation) throws Throwable {
         connection.connectSync();
         RpcInvocation inv = (RpcInvocation)invocation;
-        Metadata metadata=new Metadata();
+        Metadata metadata=new DefaultMetadata();
         metadata.put(PATH_KEY,getUrl().getPath());
         final String methodName = RpcUtils.getMethodName(invocation);
         int timeout = calculateTimeout(invocation, methodName);

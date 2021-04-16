@@ -83,7 +83,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         super.channelRead(ctx, msg.content());
 
         if (msg.isEndStream()) {
-            final ServerStream2 serverStream = TripleUtil.getServerStream(ctx);
+            final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
             if (serverStream != null) {
                 serverStream.asTransportObserver().tryOnComplete();
             }
@@ -167,9 +167,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
 
         List<MethodDescriptor> methodDescriptors = serviceDescriptor.getMethods(methodName);
-        if (methodDescriptors.size() != 1) {
-            responseErr(ctx,
-                    GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Service not found:" + serviceName));
+        if (methodDescriptors == null || methodDescriptors.size() != 1) {
+            responseErr(ctx, GrpcStatus.fromCode(Code.UNIMPLEMENTED).withDescription("Method :" + methodName + " not found of service:" + serviceName));
             return;
         }
         MethodDescriptor methodDescriptor = methodDescriptors.get(0);
@@ -192,21 +191,20 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             methodDescriptor = repo.lookupMethod(EchoService.class.getName(), methodName);
         }
 
-        final ServerStream2 stream;
+        final AbstractServerStream stream;
         if (methodDescriptor.isStream()) {
-            stream = ServerStream2.stream(invoker.getUrl());
+            stream = AbstractServerStream.stream(invoker.getUrl());
         } else {
-            stream = ServerStream2.unary(invoker.getUrl());
+            stream = AbstractServerStream.unary(invoker.getUrl());
         }
         stream.service(serviceDescriptor)
                 .method(methodDescriptor)
                 .invoker(invoker)
                 .subscribe(new ServerTransportObserver(ctx));
         final TransportObserver observer = stream.asTransportObserver();
-        observer.onMetadata(new Http2HeaderMeta(headers), false, (result, cause) -> {
-        });
+        observer.tryOnMetadata(new Http2HeaderMeta(headers), false);
         if (msg.isEndStream()) {
-            observer.onComplete(null);
+            observer.tryOnComplete();
         }
 
         ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).set(stream);

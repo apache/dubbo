@@ -23,6 +23,8 @@ import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
 public class ServerTransportObserver implements TransportObserver {
     private final ChannelHandlerContext ctx;
     private boolean headerSent = false;
@@ -38,12 +40,12 @@ public class ServerTransportObserver implements TransportObserver {
             headers.set(e.getKey(), e.getValue());
         });
         if (!headerSent) {
-            headers.remove(TripleConstant.HTTP_STATUS_KEY);
-            headers.status(metadata.get(TripleConstant.HTTP_STATUS_KEY));
             headerSent = true;
-            ctx.write(new DefaultHttp2HeadersFrame(headers, false));
+            headers.status(OK.codeAsText());
+            headers.set(TripleConstant.CONTENT_TYPE_KEY,TripleConstant.CONTENT_PROTO);
+            ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
         } else {
-            ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, true));
+            ctx.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
         }
     }
 

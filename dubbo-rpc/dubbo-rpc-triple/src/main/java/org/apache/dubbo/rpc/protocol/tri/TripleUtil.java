@@ -52,13 +52,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-    public static final AttributeKey<ServerStream2> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
+    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
 //    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
-    public static ServerStream2 getServerStream(ChannelHandlerContext ctx) {
+    public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
 
