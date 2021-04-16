@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.metadata.store.redis;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
@@ -26,6 +25,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -77,7 +77,19 @@ public class RedisMetadataReportTest {
             registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
 
-        this.redisServer.start();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+                exception = null;
+            } catch (IOException e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
         URL asyncRegistryUrl = URL.valueOf("redis://localhost:" + redisPort + "?" + SYNC_REPORT_KEY + "=true");
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);

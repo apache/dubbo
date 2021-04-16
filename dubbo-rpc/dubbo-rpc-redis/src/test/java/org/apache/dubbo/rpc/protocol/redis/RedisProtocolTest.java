@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -28,6 +27,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -76,7 +76,19 @@ public class RedisProtocolTest {
             redisServer = builder.build();
             this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
-        this.redisServer.start();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+                exception = null;
+            } catch (IOException e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
     }
 
     @AfterEach
