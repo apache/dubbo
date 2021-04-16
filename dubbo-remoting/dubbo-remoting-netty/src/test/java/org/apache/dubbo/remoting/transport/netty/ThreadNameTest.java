@@ -27,6 +27,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 public class ThreadNameTest {
 
     private NettyServer server;
@@ -41,9 +45,11 @@ public class ThreadNameTest {
     private static String serverRegex = "DubboServerHandler\\-localhost:(\\d+)\\-thread\\-(\\d+)";
     private static String clientRegex = "DubboClientHandler\\-thread\\-(\\d+)";
 
+    private final CountDownLatch countDownLatch = new CountDownLatch(2);
+
     @BeforeEach
     public void before() throws Exception {
-        int port = NetUtils.getAvailablePort();
+        int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
         serverURL = URL.valueOf("telnet://localhost?side=provider").setPort(port);
         clientURL = URL.valueOf("telnet://localhost?side=consumer").setPort(port);
 
@@ -70,7 +76,8 @@ public class ThreadNameTest {
     @Test
     public void testThreadName() throws Exception {
         client.send("hello");
-        Thread.sleep(1000L * 5L);
+        //Thread.sleep(1000L * 5L);
+        countDownLatch.await(30, TimeUnit.SECONDS);
         if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
             Assertions.fail();
         }
@@ -118,12 +125,14 @@ public class ThreadNameTest {
         public void sent(Channel channel, Object message) throws RemotingException {
             output("sent");
             checkThreadName();
+            countDownLatch.countDown();
         }
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
             output("received");
             checkThreadName();
+            countDownLatch.countDown();
         }
 
         @Override
