@@ -106,7 +106,6 @@ public class ThreadNameTest {
             if (!success) {
                 success = Thread.currentThread().getName().matches(message);
             }
-            latch.countDown();
         }
 
         private void output(String method) {
@@ -130,12 +129,14 @@ public class ThreadNameTest {
         public void sent(Channel channel, Object message) throws RemotingException {
             output("sent");
             checkThreadName();
+            latch.countDown();
         }
 
         @Override
         public void received(Channel channel, Object message) throws RemotingException {
             output("received");
             checkThreadName();
+            latch.countDown();
         }
 
         @Override
