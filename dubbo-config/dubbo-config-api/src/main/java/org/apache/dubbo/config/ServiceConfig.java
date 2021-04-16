@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -115,6 +116,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * A delayed exposure service timer
      */
     private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
+
+    private static final Set<String> exportedServiceBeanIds = new HashSet<>();
 
     private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -222,6 +225,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         completeCompoundConfigs();
         checkDefault();
         checkProtocol();
+        duplicateExportCheck();
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
@@ -723,5 +727,42 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
+    }
+
+
+    private void duplicateExportCheck() {
+        String generateVersion = version;
+        String generateGroup = group;
+
+        if (StringUtils.isBlank(version) && provider != null) {
+            generateVersion = provider.getVersion();
+        }
+
+        if (StringUtils.isBlank(group) && provider != null) {
+            generateGroup = provider.getGroup();
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("ServiceBean:");
+
+        if (!StringUtils.isBlank(generateGroup)) {
+            stringBuilder.append(generateGroup);
+        }
+
+        stringBuilder.append("/").append(interfaceName).append(":");
+
+        if (!StringUtils.isBlank(generateVersion)) {
+            stringBuilder.append(generateVersion);
+        }
+
+        String serviceBeanId = stringBuilder.toString();
+        System.out.println(serviceBeanId);
+        if (exportedServiceBeanIds.contains(serviceBeanId)) {
+            throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[group:" +
+                    group + ", bean name :" +
+                    interfaceName + ", version:" +
+                    version + "] try to export");
+        } else {
+            exportedServiceBeanIds.add(serviceBeanId);
+        }
     }
 }

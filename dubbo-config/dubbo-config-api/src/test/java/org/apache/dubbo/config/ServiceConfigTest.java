@@ -36,6 +36,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -261,5 +262,20 @@ public class ServiceConfigTest {
         service.export();
         Assertions.assertNotNull(service.toUrl().getParameter(APPLICATION_KEY));
         Assertions.assertEquals("app", service.toUrl().getParameter(APPLICATION_KEY));
+    }
+
+
+    @Test
+    public void testDuplicateServiceBean() {
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(ServiceConfigTest.class.getPackage().getName().replace('.', '/') + "/demo-provider-duplicate-service-bean.xml");
+            ctx.start();
+            ctx.stop();
+            ctx.close();
+        } catch (IllegalArgumentException e) {
+            Assertions.assertTrue(e.getMessage().contains("The Duplicated BeanDefinition of ServiceBean"));
+            return;
+        }
+        Assertions.fail();
     }
 }
