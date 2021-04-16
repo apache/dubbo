@@ -170,6 +170,11 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         );
     }
 
+    /**
+     * 服务更新
+     * @param serviceInstance the registered {@link ServiceInstance}
+     * @throws RuntimeException
+     */
     @Override
     public final void update(ServiceInstance serviceInstance) throws RuntimeException {
 
@@ -178,6 +183,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
 
         executeWithEvents(
                 empty(),
+                // 更新  AbstractServiceDiscovery
                 () -> serviceDiscovery.update(serviceInstance),
                 empty()
         );

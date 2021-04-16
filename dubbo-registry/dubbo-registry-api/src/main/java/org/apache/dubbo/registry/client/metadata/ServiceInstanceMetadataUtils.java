@@ -281,9 +281,13 @@ public class ServiceInstanceMetadataUtils {
             if (!metadataInfo.calAndGetRevision().equals(existingInstanceRevision)) {
                 /**
                  * 将revision注入到元数据
+                 * 将revision注入到元数据
+                 * 将revision注入到元数据
                  */
                 instance.getMetadata().put(EXPORTED_SERVICES_REVISION_PROPERTY_NAME, metadataInfo.calAndGetRevision());
                 /**
+                 * 更新元数据中的extendParams  提示revision有变化  应该通知注册中心
+                 * 更新元数据中的extendParams  提示revision有变化  应该通知注册中心
                  * 更新元数据中的extendParams  提示revision有变化  应该通知注册中心
                  */
                 if (existingInstanceRevision != null) {// skip the first registration.
@@ -310,7 +314,7 @@ public class ServiceInstanceMetadataUtils {
     }
 
     /**
-     *
+     * 检查导出服务是否有变化  有则刷新
      */
     public static void refreshMetadataAndInstance() {
         /**
@@ -328,11 +332,12 @@ public class ServiceInstanceMetadataUtils {
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             /**
              * 计算元数据的revision   dubbo.metadata.revision -> 6E05C73112CB34FBD5FFAC83B2299BDE
+             * 并比较revision是否有变化
              */
             calInstanceRevision(serviceDiscovery, serviceDiscovery.getLocalInstance());
             // update service instance revision
             /**
-             * 向注册中心更新服务列表   revision有变化
+             * revision有变化向注册中心更新服务列表
              */
             serviceDiscovery.update(serviceDiscovery.getLocalInstance());
         });

@@ -72,6 +72,9 @@ public class RemoteMetadataServiceImpl {
          * 遍历
          */
         metadataInfos.forEach((registryCluster, metadataInfo) -> {
+            /**
+             * 没有通知过
+             */
             if (!metadataInfo.hasReported()) {
                 SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
                 /**
@@ -100,7 +103,7 @@ public class RemoteMetadataServiceImpl {
                  */
                 metadataReport.publishAppMetadata(identifier, metadataInfo);
                 /**
-                 * 设置reported为true
+                 * 设置reported为true  即已经通知过注册中心
                  */
                 metadataInfo.markReported();
             }

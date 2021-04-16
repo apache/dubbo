@@ -155,9 +155,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
             MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
                 return new MetadataInfo(ApplicationModel.getName());
             });
+            //在metadataInfo缓存服务
             metadataInfo.addService(new ServiceInfo(url));
         }
         metadataSemaphore.release();
+        // 缓存待导出服务
         return addURL(exportedServiceURLs, url);
     }
 

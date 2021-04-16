@@ -55,17 +55,15 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public final void update(ServiceInstance serviceInstance) throws RuntimeException {
         /**
-         *
+         * 比对是否需要更新   即revision是否有变化
          */
         if (!isInstanceUpdated(serviceInstance)) {
             return;
         }
-        /**
-         *
-         */
+
         this.serviceInstance = serviceInstance;
         /**
-         *
+         * 更新注册服务信息
          */
         doUpdate(serviceInstance);
         /**

@@ -49,6 +49,9 @@ public class MetadataInfo implements Serializable {
 
     // used at runtime
     private transient Map<String, String> extendParams;
+    /**
+     * 元数据信息中缓存的待导出服务有变化是否通知过注册中心  为true则表示已经通知过注册中心
+     */
     private transient AtomicBoolean reported = new AtomicBoolean(false);
 
     public MetadataInfo(String app) {
@@ -62,11 +65,16 @@ public class MetadataInfo implements Serializable {
         this.extendParams = new HashMap<>();
     }
 
+    /**
+     * 缓存导出服务
+     * @param serviceInfo
+     */
     public void addService(ServiceInfo serviceInfo) {
         if (serviceInfo == null) {
             return;
         }
         this.services.put(serviceInfo.getMatchKey(), serviceInfo);
+        //还没有通知注册中心
         markChanged();
     }
 
@@ -75,6 +83,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(serviceInfo.getMatchKey());
+        //还没有通知注册中心
         markChanged();
     }
 
@@ -83,6 +92,7 @@ public class MetadataInfo implements Serializable {
             return;
         }
         this.services.remove(key);
+        //还没有通知注册中心
         markChanged();
     }
 
@@ -91,6 +101,9 @@ public class MetadataInfo implements Serializable {
      * @return
      */
     public String calAndGetRevision() {
+        /**
+         * 元数据中心缓存服务是否有变化
+         */
         if (revision != null && hasReported()) {
             return revision;
         }
@@ -115,14 +128,24 @@ public class MetadataInfo implements Serializable {
         this.revision = revision;
     }
 
+    /**
+     * 元数据中心缓存服务是否有变化
+     * @return
+     */
     public boolean hasReported() {
         return reported.get();
     }
 
+    /**
+     * 通知过
+     */
     public void markReported() {
         reported.compareAndSet(false, true);
     }
 
+    /**
+     * 需要重新通知
+     */
     public void markChanged() {
         reported.compareAndSet(true, false);
     }

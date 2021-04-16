@@ -1422,7 +1422,7 @@ public class DubboBootstrap extends GenericEventListener {
                 InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
                 localMetadataService.blockUntilUpdated();
                 /**
-                 *
+                 * 每5秒检查导出服务是否有变化 有则刷新
                  */
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance();
             } catch (Throwable e) {
@@ -1457,6 +1457,7 @@ public class DubboBootstrap extends GenericEventListener {
             /**
              * 计算元数据的revision
              * dubbo.metadata.revision -> 6E05C73112CB34FBD5FFAC83B2299BDE
+             * 并比较revision是否有变化
              */
             calInstanceRevision(serviceDiscovery, serviceInstance);
             if (logger.isDebugEnabled()) {
@@ -1464,6 +1465,8 @@ public class DubboBootstrap extends GenericEventListener {
             }
             // register metadata
             /**
+             * 元数据服务注册  EventPublishingServiceDiscovery
+             * 元数据服务注册  EventPublishingServiceDiscovery
              * 元数据服务注册  EventPublishingServiceDiscovery
              *
              * dubbo.metadata-service.url-params={"dubbo":{"version":"1.0.0","dubbo":"2.0.2","port":"20881"}}
@@ -1479,7 +1482,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * 遍历本地链接的注册中心  发布相应的服务配置
+     * 遍历本地链接的注册中心  发布相应的服务配置  （nacos没有对应的实现）
      */
     private void publishMetadataToRemote(ServiceInstance serviceInstance) {
 //        InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService)WritableMetadataService.getDefaultExtension();
@@ -1489,7 +1492,7 @@ public class DubboBootstrap extends GenericEventListener {
          */
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         /**
-         * 遍历本地链接的注册中心  发布相应的服务配置
+         * 遍历本地链接的注册中心  发布相应的服务配置  （nacos没有对应的实现）
          */
         remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
     }

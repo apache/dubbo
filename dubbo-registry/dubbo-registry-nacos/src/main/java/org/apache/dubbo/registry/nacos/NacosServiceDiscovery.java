@@ -88,27 +88,30 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     /**
-     *
+     * 更新注册服务
      * @param serviceInstance
      */
     @Override
     public void doUpdate(ServiceInstance serviceInstance) {
         if (this.serviceInstance == null) {
             /**
-             *
+             * 之前没有注册服务  则直接注册
              */
             register(serviceInstance);
         } else {
             /**
-             *
+             * 注销服务
              */
             unregister(serviceInstance);
+            /**
+             * 重新注册
+             */
             register(serviceInstance);
         }
     }
 
     /**
-     *
+     * 注销服务
      * @param serviceInstance an instance of {@link ServiceInstance} to be unregistered
      * @throws RuntimeException
      */
@@ -117,7 +120,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             /**
-             *
+             * 注销服务
              */
             service.deregisterInstance(instance.getServiceName(), group, instance);
         });
