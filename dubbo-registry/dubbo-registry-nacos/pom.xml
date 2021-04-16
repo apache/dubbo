@@ -27,7 +27,7 @@
     <artifactId>dubbo-registry-nacos</artifactId>
 
     <properties>
-        <nacos.version>0.6.2</nacos.version>
+        <nacos.version>2.0.0</nacos.version>
     </properties>
 
     <dependencies>
@@ -51,6 +51,11 @@
             <artifactId>nacos-client</artifactId>
             <version>${nacos.version}</version>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
         </dependency>
 
         <!-- Test Libraries -->
