@@ -96,15 +96,8 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 generatedBeanName = beanClass.getName();
             }
             id = generatedBeanName;
-            if (parserContext.getRegistry().containsBeanDefinition(id)) {
-                if (beanClass.equals(ServiceBean.class)) {
-                    throw new IllegalStateException("Duplicate service bean id " + id);
-                } else {
-                    int counter = 2;
-                    while (parserContext.getRegistry().containsBeanDefinition(id)) {
-                        id = generatedBeanName + (counter++);
-                    }
-                }
+            while (parserContext.getRegistry().containsBeanDefinition(id)) {
+                id = generatedBeanName + (counter++);
             }
         }
         if (StringUtils.isNotEmpty(id)) {
