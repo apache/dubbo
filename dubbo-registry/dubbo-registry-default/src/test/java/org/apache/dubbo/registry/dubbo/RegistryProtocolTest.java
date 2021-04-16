@@ -64,7 +64,8 @@ public class RegistryProtocolTest {
     }
 
     final String service = DemoService.class.getName() + ":1.0.0";
-    final String serviceUrl = "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer&register.ip=127.0.0.1";
+    final String serviceUrl =
+            "dubbo://127.0.0.1:9453/" + service + "?notify=true&methods=test1,test2&side=con&side=consumer&register.ip=127.0.0.1";
     final URL registryUrl = URL.valueOf("registry://127.0.0.1:9090/");
     final private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -102,7 +103,7 @@ public class RegistryProtocolTest {
             Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
             registryProtocol.setProtocol(dubboProtocol);
             Invoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
-                    registryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
+                    registryUrl, new ExchangeClient[] {new MockedClient("10.20.20.20", 2222, true)});
             registryProtocol.export(invoker);
         });
     }
@@ -113,11 +114,14 @@ public class RegistryProtocolTest {
 //        registryProtocol.setCluster(new FailfastCluster());
         registryProtocol.setRegistryFactory(ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension());
 
+        ServiceDescriptor descriptor = ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.getServiceRepository().registerProvider(service, new DemoServiceImpl(), descriptor, null, null);
+
         Protocol dubboProtocol = DubboProtocol.getDubboProtocol();
         registryProtocol.setProtocol(dubboProtocol);
         URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         DubboInvoker<DemoService> invoker = new DubboInvoker<DemoService>(DemoService.class,
-                newRegistryUrl, new ExchangeClient[]{new MockedClient("10.20.20.20", 2222, true)});
+                newRegistryUrl, new ExchangeClient[] {new MockedClient("10.20.20.20", 2222, true)});
         Exporter<DemoService> exporter = registryProtocol.export(invoker);
         Exporter<DemoService> exporter2 = registryProtocol.export(invoker);
         //The same invoker, exporter that multiple exported are different
@@ -202,7 +206,7 @@ public class RegistryProtocolTest {
     @Test
     public void testGetParamsToRegistry() {
         RegistryProtocol registryProtocol = getRegistryProtocol();
-        String[] additionalParams = new String[]{"key1", "key2"};
+        String[] additionalParams = new String[] {"key1", "key2"};
         String[] registryParams = registryProtocol.getParamsToRegistry(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
         String[] expectParams = ArrayUtils.addAll(DEFAULT_REGISTER_PROVIDER_KEYS, additionalParams);
         Assertions.assertArrayEquals(expectParams, registryParams);
