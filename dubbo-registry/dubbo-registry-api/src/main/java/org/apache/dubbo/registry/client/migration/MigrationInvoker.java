@@ -282,12 +282,25 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    /**
+     *
+     */
     public synchronized void refreshServiceDiscoveryInvoker() {
+        /**
+         *
+         */
         clearListener(serviceDiscoveryInvoker);
+
+        /**
+         *
+         */
         if (needRefresh(serviceDiscoveryInvoker)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
+            /**
+             *
+             */
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
 
             if (migrationMultiRegsitry) {

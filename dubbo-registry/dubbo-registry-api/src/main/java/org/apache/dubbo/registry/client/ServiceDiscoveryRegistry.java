@@ -132,7 +132,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         this.subscribedServices = parseServices(registryURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY));
         // 获取默认实现 CompositeServiceNameMapping
         this.serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
-        // 获取metadataStorageType对应的WritableMetadataService实现
+        // 获取metadataStorageType对应的默认实现
         this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 

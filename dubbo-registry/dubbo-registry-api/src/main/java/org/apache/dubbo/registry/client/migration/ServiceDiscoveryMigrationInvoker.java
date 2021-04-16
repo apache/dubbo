@@ -45,6 +45,10 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
         migrateToServiceDiscoveryInvoker(true);
     }
 
+    /**
+     *
+     * @param forceMigrate
+     */
     @Override
     public synchronized void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
         refreshServiceDiscoveryInvoker();

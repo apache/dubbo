@@ -34,9 +34,19 @@ public class MigrationRuleHandler<T> {
 
     private MigrationStep currentStep;
 
+    /**
+     *
+     * @param rawRule
+     */
     public void doMigrate(String rawRule) {
+        /**
+         * 初始step为APPLICATION_FIRST
+         */
         MigrationRule rule = MigrationRule.parse(rawRule);
 
+        /**
+         * currentStep不为空且没有发生变化   否则替换currentStep
+         */
         if (null != currentStep && currentStep.equals(rule.getStep())) {
             if (logger.isInfoEnabled()) {
                 logger.info("Migration step is not change. rule.getStep is " + currentStep.name());
@@ -46,24 +56,48 @@ public class MigrationRuleHandler<T> {
             currentStep = rule.getStep();
         }
 
+        /**
+         *
+         */
         migrationInvoker.setMigrationRule(rule);
 
+        /**
+         * 默认false
+         */
         if (migrationInvoker.isMigrationMultiRegsitry()) {
+            /**
+             * 服务自省为true   非服务自省为false
+             */
             if (migrationInvoker.isServiceInvoker()) {
+                /**
+                 *
+                 */
                 migrationInvoker.refreshServiceDiscoveryInvoker();
             } else {
+                /**
+                 *
+                 */
                 migrationInvoker.refreshInterfaceInvoker();
             }
         } else {
             switch (rule.getStep()) {
                 case APPLICATION_FIRST:
+                    /**
+                     *
+                     */
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
                     break;
                 case FORCE_APPLICATION:
+                    /**
+                     *
+                     */
                     migrationInvoker.migrateToServiceDiscoveryInvoker(true);
                     break;
                 case FORCE_INTERFACE:
                 default:
+                    /**
+                     *
+                     */
                     migrationInvoker.fallbackToInterfaceInvoker();
             }
         }

@@ -565,6 +565,9 @@ public class RegistryProtocol implements Protocol {
     protected <T> Invoker<T> doRefer(Cluster cluster, Registry registry, Class<T> type, URL url, Map<String, String> parameters) {
         URL consumerUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
+        /**
+         *
+         */
         return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
 
@@ -572,18 +575,44 @@ public class RegistryProtocol implements Protocol {
         return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
+    /**
+     *
+     * @param invoker
+     * @param url
+     * @param consumerUrl
+     * @param <T>
+     * @return
+     */
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl) {
+        /**
+         * 获取url对应得MigrationRuleListener
+         */
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
             return invoker;
         }
 
+        /**
+         * 遍历
+         */
         for (RegistryProtocolListener listener : listeners) {
+            /**
+             * 调用
+             */
             listener.onRefer(this, invoker, consumerUrl);
         }
         return invoker;
     }
 
+    /**
+     *
+     * @param cluster
+     * @param registry
+     * @param type
+     * @param url
+     * @param <T>
+     * @return
+     */
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
@@ -595,6 +624,15 @@ public class RegistryProtocol implements Protocol {
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
+    /**
+     *
+     * @param directory
+     * @param cluster
+     * @param registry
+     * @param type
+     * @param <T>
+     * @return
+     */
     protected <T> ClusterInvoker<T> doCreateInvoker(DynamicDirectory<T> directory, Cluster cluster, Registry registry, Class<T> type) {
         directory.setRegistry(registry);
         directory.setProtocol(protocol);
@@ -645,6 +683,11 @@ public class RegistryProtocol implements Protocol {
         return url.addParameter(CATEGORY_KEY, PROVIDERS_CATEGORY + "," + CONFIGURATORS_CATEGORY + "," + ROUTERS_CATEGORY);
     }
 
+    /**
+     *
+     * @param url
+     * @return
+     */
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
         return ExtensionLoader.getExtensionLoader(RegistryProtocolListener.class)
                 .getActivateExtension(url, "registry.protocol.listener");
