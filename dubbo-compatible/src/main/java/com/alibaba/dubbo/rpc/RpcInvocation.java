@@ -160,7 +160,7 @@ public class RpcInvocation implements Invocation, Serializable {
             attachments.put(key, value);
         }
     }
-    //Optimize code to remove useless objects  srchen1987 add
+    //Optimize code to remove useless objects
     public void addAttachments(Map<String, String> attachments) {
         if (attachments == null) {
             return;
@@ -171,17 +171,6 @@ public class RpcInvocation implements Invocation, Serializable {
             this.attachments.putAll(attachments);
         }
     }
-    /**
-    public void addAttachments(Map<String, String> attachments) {
-        if (attachments == null) {
-            return;
-        }
-        if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
-        }
-        this.attachments.putAll(attachments);
-    }
-    **/
 
     public void addAttachmentsIfAbsent(Map<String, String> attachments) {
         if (attachments == null) {
