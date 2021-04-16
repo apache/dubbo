@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.registry.consul;
 
-import com.pszymczyk.consul.ConsulProcess;
-import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -25,6 +23,8 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
 
+import com.pszymczyk.consul.ConsulProcess;
+import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,8 +34,8 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -51,6 +51,7 @@ public class ConsulRegistryTest {
     @BeforeEach
     public void setUp() throws Exception {
         this.consul = ConsulStarterBuilder.consulStarter()
+                .withWaitTimeout(300)
                 .build()
                 .start();
         this.registryUrl = URL.valueOf("consul://localhost:" + consul.getHttpPort());

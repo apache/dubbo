@@ -16,19 +16,21 @@
  */
 package org.apache.dubbo.registry.redis;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.embedded.RedisServer;
 import redis.embedded.core.RedisServerBuilder;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,7 +57,19 @@ public class RedisRegistryTest {
             builder.setting("maxheap 128mb");
         }
         this.redisServer = builder.build();
-        this.redisServer.start();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+                exception = null;
+            } catch (IOException e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
