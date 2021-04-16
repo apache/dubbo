@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.remoting.Client;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
@@ -56,35 +56,35 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
-        ClientStream2 stream2;
-        stream2.onMetadata();
-        TripleUtil.getClientStream(ctx).onHeaders(msg.headers());
-        if (msg.isEndStream()) {
-            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-            stream2.onComplete();
-            clientStream.halfClose();
-        }
+//        ClientStream2 stream2;
+//        stream2.onMetadata();
+//        TripleUtil.getClientStream(ctx).onHeaders(msg.headers());
+//        if (msg.isEndStream()) {
+//            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
+//            stream2.onComplete();
+//            clientStream.halfClose();
+//        }
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-            .withCause(cause);
-        clientStream.onError(status);
-        ctx.close();
-        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
-            + status.description);
+//        final ClientStream clientStream = TripleUtil.getClientStream(ctx);
+//        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+//            .withCause(cause);
+//        clientStream.onError(status);
+//        ctx.close();
+//        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
+//            + status.description);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-        super.channelRead(ctx, msg.content());
-        if (msg.isEndStream()) {
-            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-            // stream already closed;
-            if (clientStream != null) {
-                clientStream.halfClose();
-            }
-        }
+//        super.channelRead(ctx, msg.content());
+//        if (msg.isEndStream()) {
+//            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
+//            // stream already closed;
+//            if (clientStream != null) {
+//                clientStream.halfClose();
+//            }
+//        }
     }
 }

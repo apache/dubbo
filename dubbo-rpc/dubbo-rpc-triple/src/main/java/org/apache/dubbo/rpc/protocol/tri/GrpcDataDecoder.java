@@ -16,11 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.List;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
+
+import java.util.List;
 
 public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecodeState> {
     private static final int RESERVED_MASK = 0xFE;
@@ -63,8 +63,9 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
-                ByteBuf buf = in.readRetainedSlice(len);
-                out.add(buf);
+                byte[] dst=new byte[len];
+                in.readBytes(dst);
+                out.add(dst);
                 checkpoint(GrpcDecodeState.HEADER);
                 break;
             default:

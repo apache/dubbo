@@ -17,36 +17,43 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Headers;
-
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
-public class Http2HeaderMeta implements Metadata {
-    private final Http2Headers headers;
+public class DefaultMetadata implements Metadata {
+    private final Map<CharSequence, CharSequence> innerMap = new HashMap<>();
 
-    public Http2HeaderMeta(Http2Headers headers) {
-        this.headers = headers;
+    @Override
+    public CharSequence get(CharSequence key) {
+        return innerMap.get(key);
     }
 
     @Override
     public Metadata put(CharSequence key, CharSequence value) {
-        headers.set(key, value);
+        innerMap.put(key, value);
         return this;
     }
 
     @Override
-    public CharSequence get(CharSequence key) {
-        return headers.get(key);
-    }
-
-    @Override
-    public boolean contains(CharSequence key) {
-        return headers.contains(key);
-    }
-
-    @Override
     public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
-        return headers.iterator();
+        return innerMap.entrySet().iterator();
     }
+
+    @Override
+    public void forEach(Consumer<? super Map.Entry<CharSequence, CharSequence>> action) {
+        innerMap.entrySet().forEach(action);
+    }
+
+    @Override
+    public Spliterator<Map.Entry<CharSequence, CharSequence>> spliterator() {
+        return innerMap.entrySet().spliterator();
+    }
+
+    public boolean contains(CharSequence key) {
+        return innerMap.containsKey(key);
+    }
+
 }

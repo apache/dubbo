@@ -20,22 +20,17 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 
-import com.sun.istack.internal.NotNull;
 
 public interface Stream {
-    String MISSING_REQ = "Missing request";
-    String DUPLICATED_REQ = "Duplicated request";
 
     Logger LOGGER = LoggerFactory.getLogger(Stream.class);
 
     void subscribe(TransportObserver observer);
 
-    @NotNull
     TransportObserver asTransportObserver();
 
     void subscribe(StreamObserver<Object> observer);
 
-    @NotNull
     StreamObserver<Object> asStreamObserver();
 
 

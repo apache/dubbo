@@ -17,12 +17,22 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.InputStream;
-
 public interface TransportObserver {
+    default void tryOnMetadata(Metadata metadata, boolean endStream) {
+        onMetadata(metadata, endStream, null);
+    }
+
+    default void tryOnData(byte[] data, boolean endStream) {
+        onData(data, endStream, null);
+    }
+
+    default void tryOnComplete() {
+        onComplete(null);
+    }
+
     void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler);
 
-    void onData(InputStream in, boolean endStream, Stream.OperationHandler handler);
+    void onData(byte[] data, boolean endStream, Stream.OperationHandler handler);
 
     void onComplete(Stream.OperationHandler handler);
 

@@ -42,7 +42,6 @@ import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.util.ReferenceCountUtil;
 
-import java.io.InputStream;
 import java.util.List;
 
 import static org.apache.dubbo.rpc.protocol.tri.TripleUtil.responseErr;
@@ -84,9 +83,9 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         super.channelRead(ctx, msg.content());
 
         if (msg.isEndStream()) {
-            final ServerStream serverStream = TripleUtil.getServerStream(ctx);
+            final ServerStream2 serverStream = TripleUtil.getServerStream(ctx);
             if (serverStream != null) {
-                serverStream.halfClose();
+                serverStream.asTransportObserver().tryOnComplete();
             }
         }
     }
@@ -202,22 +201,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         stream.service(serviceDescriptor)
                 .method(methodDescriptor)
                 .invoker(invoker)
-                .subscribe(new TransportObserver() {
-                    @Override
-                    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
-
-                    }
-
-                    @Override
-                    public void onData(InputStream in, boolean endStream, Stream.OperationHandler handler) {
-
-                    }
-
-                    @Override
-                    public void onComplete(Stream.OperationHandler handler) {
-
-                    }
-                });
+                .subscribe(new ServerTransportObserver(ctx));
         final TransportObserver observer = stream.asTransportObserver();
         observer.onMetadata(new Http2HeaderMeta(headers), false, (result, cause) -> {
         });

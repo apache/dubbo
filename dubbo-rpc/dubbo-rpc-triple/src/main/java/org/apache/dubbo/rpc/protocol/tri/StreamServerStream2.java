@@ -17,11 +17,35 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.stream.StreamObserver;
 
-public class ReqWrapperMeta extends Metadata{
-    private final Request request;
-    public ReqWrapperMeta(Request request){
-        this.request=request;
+public class StreamServerStream2 extends ServerStream2 implements Stream {
+    protected StreamServerStream2(URL url) {
+        super(url);
+    }
+
+    @Override
+    protected StreamObserver<Object> createStreamObserver() {
+        return null;
+    }
+
+    @Override
+    protected TransportObserver createTransportObserver() {
+        return null;
+    }
+
+
+    private class StreamTransportObserver extends UnaryTransportObserver implements TransportObserver {
+
+        @Override
+        public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
+            super.onMetadata(metadata, endStream, handler);
+        }
+
+        @Override
+        public void onComplete(OperationHandler handler) {
+
+        }
     }
 }

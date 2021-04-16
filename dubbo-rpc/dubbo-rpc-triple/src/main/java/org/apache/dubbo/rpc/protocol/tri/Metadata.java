@@ -17,19 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class Metadata {
-    private final Map<CharSequence, CharSequence> innerMap = new HashMap<>();
 
-    public CharSequence get(CharSequence key) {
-        return innerMap.get(key);
-    }
+public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>> {
 
-    public Metadata put(CharSequence key, CharSequence value) {
-        innerMap.put(key, value);
-        return this;
-    }
+    Metadata put(CharSequence key, CharSequence value);
+
+    CharSequence get(CharSequence key);
+
+    boolean contains(CharSequence key);
+
 
 }

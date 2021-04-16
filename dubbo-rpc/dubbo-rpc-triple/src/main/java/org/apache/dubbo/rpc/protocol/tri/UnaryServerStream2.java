@@ -18,7 +18,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Result;
@@ -26,73 +26,40 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.triple.TripleWrapper;
 
-import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-import static org.apache.dubbo.rpc.protocol.tri.ServerStream.EXECUTOR_REPOSITORY;
 
 public class UnaryServerStream2 extends ServerStream2 implements Stream {
-    private InputStream data;
 
     protected UnaryServerStream2(URL url) {
         super(url);
     }
 
     @Override
-    protected void appendData(InputStream in, OperationHandler handler) {
-        if (data != null) {
-            this.data = in;
-        } else {
-            handler.operationDone(OperationResult.FAILURE,
-                    GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL).withDescription(MISSING_REQ).asException());
-        }
+    protected StreamObserver<Object> createStreamObserver() {
+        return null;
     }
 
     @Override
-    public void onComplete(OperationHandler handler) {
-        invoke();
+    protected TransportObserver createTransportObserver() {
+        return new UnaryServerTransportObserver();
     }
 
     private class UnaryServerTransportObserver extends UnaryTransportObserver implements TransportObserver {
         @Override
         public void onComplete(OperationHandler handler) {
-            ExecutorService executor = null;
-            if (getProviderModel() != null) {
-                executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(
-                        CommonConstants.THREADPOOL_KEY);
-            }
-            if (executor == null) {
-                executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
-            }
-            if (executor == null) {
-                executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(getUrl());
-            }
-
-            try {
-                executor.execute(this::unaryInvoke);
-            } catch (RejectedExecutionException e) {
-                LOGGER.error("Provider's thread pool is full", e);
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                        .withDescription("Provider's thread pool is full"));
-            } catch (Throwable t) {
-                LOGGER.error("Provider submit request to thread pool error ", t);
+            if(getData()==null){
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(t)
-                        .withDescription("Provider's error"));
+                        .withDescription("Missing request data"));
+                return;
             }
+            executorInvoke();
         }
 
 
@@ -101,7 +68,7 @@ public class UnaryServerStream2 extends ServerStream2 implements Stream {
             inv.setMethodName(getMethodDescriptor().getMethodName());
             inv.setServiceName(getServiceDescriptor().getServiceName());
             inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-            final Map<String, Object> attachments = parseHeadersToMap(getHeaders());
+            final Map<String, Object> attachments = parseMetadataToMap(getHeaders());
             attachments.remove("interface");
             attachments.remove("serialization");
             attachments.remove("te");
@@ -116,25 +83,26 @@ public class UnaryServerStream2 extends ServerStream2 implements Stream {
             return inv;
         }
 
-        private void unaryInvoke() {
+        public void invoke() {
 
-            final RpcInvocation invocation ;
+            final RpcInvocation invocation;
             try {
                 invocation = buildInvocation();
 
                 ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                 invocation.setParameterTypes(getMethodDescriptor().getParameterClasses());
                 invocation.setReturnTypes(getMethodDescriptor().getReturnTypes());
-                InputStream is = getData();
+                byte[] data = getData();
                 try {
                     if (getProviderModel() != null) {
                         ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
                     }
                     if (getMethodDescriptor().isNeedWrap()) {
-                        final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(is, TripleWrapper.TripleRequestWrapper.class);
+                        final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data, TripleWrapper.TripleRequestWrapper.class);
+                        setSerializeType(wrapper.getSerializeType());
                         invocation.setArguments(TripleUtil.unwrapReq(getUrl(), wrapper, getMultipleSerialization()));
                     } else {
-                        invocation.setArguments(new Object[]{TripleUtil.unpack(is, getMethodDescriptor().getParameterClasses()[0])});
+                        invocation.setArguments(new Object[]{TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])});
                     }
 
                 } finally {
@@ -172,29 +140,28 @@ public class UnaryServerStream2 extends ServerStream2 implements Stream {
                         }
                         return;
                     }
-                    Metadata metadata=new Metadata();
-                    metadata.put(TripleConstant.HTTP_STATUS_KEY,Integer.toString(OK.code()))
-                    .put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
-                    getTransportSubscriber().onMetadata(metadata,false,null);
+                    Metadata metadata = new DefaultMetadata();
+                    metadata.put(TripleConstant.HTTP_STATUS_KEY, Integer.toString(OK.code()))
+                            .put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
+                    getTransportSubscriber().tryOnMetadata(metadata, false);
 
                     ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                    final ByteBuf buf;
+                    final byte[] data;
                     try {
                         ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
-                        buf = getProcessor().encodeResponse(response.getValue(), getCtx());
+                        data = encodeResponse(response.getValue());
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(buf);
-                    getCtx().write(data);
+                    getTransportSubscriber().tryOnData(data, false);
 
-                    final Http2Headers trailers = new DefaultHttp2Headers()
-                            .setInt(TripleConstant.STATUS_KEY, GrpcStatus.Code.OK.code);
+                    Metadata trailers = new DefaultMetadata()
+                            .put(TripleConstant.STATUS_KEY, Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);
                     }
-                    getCtx().writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
+                    getTransportSubscriber().tryOnMetadata(trailers, true);
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof TripleRpcException) {

@@ -138,7 +138,8 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                     disconnectResponse.setErrorMessage("Channel " +
                             connection +
                             " is inactive. Directly return the unFinished request : " +
-                            future.getRequest());
+                            //todo
+                            future);
                     DefaultFuture2.received(connection, disconnectResponse);
                 }
             }
@@ -252,13 +253,15 @@ public class DefaultFuture2 extends CompletableFuture<Object> {
                 + (sent > 0 ? " client elapsed: " + (sent - start)
                 + " ms, server elapsed: " + (nowTimestamp - sent)
                 : " elapsed: " + (nowTimestamp - start)) + " ms, timeout: "
-                + timeout + " ms, request: " + (logger.isDebugEnabled() ? request : getRequestWithoutData()) + ", channel: " + connection.getChannel();
+                //todo
+                + timeout + " ms, request: " + (logger.isDebugEnabled() ?  null: getRequestWithoutData()) + ", channel: " + connection.getChannel();
     }
 
     private Request getRequestWithoutData() {
-        Request newRequest = request;
-        newRequest.setData(null);
-        return newRequest;
+//        Request newRequest = request;
+//        newRequest.setData(null);
+//        return newRequest;
+        return null;
     }
 
     private static class TimeoutCheckTask implements TimerTask {

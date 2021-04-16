@@ -17,16 +17,11 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionManager;
-import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.AsyncRpcResult;
@@ -35,13 +30,10 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
 import org.apache.dubbo.rpc.support.RpcUtils;
-
-import io.netty.channel.ChannelFuture;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -89,9 +81,10 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
         inv.setAttachment(Constants.SERIALIZATION_KEY,
             getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
         ExecutorService executor = getCallbackExecutor(getUrl(), inv);
-        try {
+//        try {
 
-            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
+//            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection, req, timeout, executor);
+            DefaultFuture2 future = DefaultFuture2.newFuture(this.connection,12, timeout, executor);
             final CompletableFuture<AppResponse> respFuture = future.thenApply(obj -> (AppResponse)obj);
             // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
             FutureContext.getContext().setCompatibleFuture(respFuture);
@@ -101,34 +94,34 @@ public class TripleInvoker<T> extends AbstractInvoker<T> {
 
 
             if (!connection.isAvailable()) {
-                Response response = new Response(req.getId(), req.getVersion());
-                response.setStatus(Response.CHANNEL_INACTIVE);
-                response.setErrorMessage(String.format("Connect to %s failed", this));
-                DefaultFuture2.received(connection, response);
-            } else {
-                final ChannelFuture writeFuture = this.connection.write(req);
-                writeFuture.addListener(future1 -> {
-                    if (future1.isSuccess()) {
-                        DefaultFuture2.sent(req);
-                    } else {
-                        Response response = new Response(req.getId(), req.getVersion());
-                        response.setStatus(Response.CHANNEL_INACTIVE);
-                        response.setErrorMessage(StringUtils.toString(future1.cause()));
-                        DefaultFuture2.received(connection, response);
-                    }
-                });
-            }
+//                Response response = new Response(req.getId(), req.getVersion());
+//                response.setStatus(Response.CHANNEL_INACTIVE);
+//                response.setErrorMessage(String.format("Connect to %s failed", this));
+//                DefaultFuture2.received(connection, response);
+//            } else {
+//                final ChannelFuture writeFuture = this.connection.write(req);
+//                writeFuture.addListener(future1 -> {
+//                    if (future1.isSuccess()) {
+//                        DefaultFuture2.sent(req);
+//                    } else {
+//                        Response response = new Response(req.getId(), req.getVersion());
+//                        response.setStatus(Response.CHANNEL_INACTIVE);
+//                        response.setErrorMessage(StringUtils.toString(future1.cause()));
+//                        DefaultFuture2.received(connection, response);
+//                    }
+//                });
+//            }
 
-            return result;
-        } catch (TimeoutException e) {
-            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
-                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                    + ", cause: " + e.getMessage(), e);
-        } catch (RemotingException e) {
-            throw new RpcException(RpcException.NETWORK_EXCEPTION,
-                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
-                    + ", cause: " + e.getMessage(), e);
+//        } catch (TimeoutException e) {
+//            throw new RpcException(RpcException.TIMEOUT_EXCEPTION,
+//                "Invoke remote method timeout. method: " + invocation.getMethodName() + ", provider: " + getUrl()
+//                    + ", cause: " + e.getMessage(), e);
+//        } catch (RemotingException e) {
+//            throw new RpcException(RpcException.NETWORK_EXCEPTION,
+//                "Failed to invoke remote method: " + invocation.getMethodName() + ", provider: " + getUrl()
+//                    + ", cause: " + e.getMessage(), e);
         }
+        return result;
     }
 
     @Override
