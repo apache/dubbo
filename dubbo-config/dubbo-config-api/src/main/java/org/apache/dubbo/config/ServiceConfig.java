@@ -731,30 +731,34 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
 
     private void duplicateExportCheck() {
-        String generateVersion = version;
-        String generateGroup = group;
+        String serviceBeanId = id;
+        if(StringUtils.isBlank(id)){
+            String generateVersion = version;
+            String generateGroup = group;
 
-        if (StringUtils.isBlank(version) && provider != null) {
-            generateVersion = provider.getVersion();
+            if (StringUtils.isBlank(version) && provider != null) {
+                generateVersion = provider.getVersion();
+            }
+
+            if (StringUtils.isBlank(group) && provider != null) {
+                generateGroup = provider.getGroup();
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("ServiceBean:");
+
+            if (!StringUtils.isBlank(generateGroup)) {
+                stringBuilder.append(generateGroup);
+            }
+
+            stringBuilder.append("/").append(interfaceName);
+
+            if (!StringUtils.isBlank(generateVersion)) {
+                stringBuilder.append(":").append(generateVersion);
+            }
+
+            serviceBeanId = stringBuilder.toString();
         }
 
-        if (StringUtils.isBlank(group) && provider != null) {
-            generateGroup = provider.getGroup();
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("ServiceBean:");
-
-        if (!StringUtils.isBlank(generateGroup)) {
-            stringBuilder.append(generateGroup);
-        }
-
-        stringBuilder.append("/").append(interfaceName).append(":");
-
-        if (!StringUtils.isBlank(generateVersion)) {
-            stringBuilder.append(generateVersion);
-        }
-
-        String serviceBeanId = stringBuilder.toString();
         if (exportedServiceBeanIds.contains(serviceBeanId)) {
             throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[group:" +
                     group + ", bean name :" +

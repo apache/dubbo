@@ -31,7 +31,7 @@
                    class="org.apache.dubbo.config.provider.impl.DemoServiceImpl">
     </dubbo:service>
 
-    <dubbo:service interface="org.apache.dubbo.config.provider.impl.DemoServiceImpl"
+    <dubbo:service interface="org.apache.dubbo.config.api.DemoService"
                    class="org.apache.dubbo.config.provider.impl.DemoServiceImpl">
     </dubbo:service>
 
