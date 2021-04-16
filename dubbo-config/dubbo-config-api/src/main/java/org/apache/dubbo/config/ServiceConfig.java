@@ -755,7 +755,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         String serviceBeanId = stringBuilder.toString();
-        System.out.println(serviceBeanId);
         if (exportedServiceBeanIds.contains(serviceBeanId)) {
             throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[group:" +
                     group + ", bean name :" +
