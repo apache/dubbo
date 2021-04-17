@@ -63,7 +63,7 @@ public class JdkCompiler extends AbstractCompiler {
 
     private final List<String> options;
 
-    private static final String DEFAULT_JAVA_VERSION = "1.6";
+    private static final String DEFAULT_JAVA_VERSION = "1.8";
 
     private static List<String> buildDefaultOptions(String javaVersion) {
         return Arrays.asList(
