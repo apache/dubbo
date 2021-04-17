@@ -39,9 +39,10 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
-import redis.embedded.RedisServerBuilder;
+import redis.embedded.core.RedisServerBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -54,12 +55,12 @@ public class RedisProtocolTest {
     private URL registryUrl;
 
     @BeforeEach
-    public void setUp(TestInfo testInfo) {
+    public void setUp(TestInfo testInfo) throws IOException {
         int redisPort = NetUtils.getAvailablePort();
         String methodName = testInfo.getTestMethod().get().getName();
         if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
             String password = "123456";
-            RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
+            RedisServerBuilder builder = RedisServer.newRedisServer().port(redisPort).setting("requirepass " + password);
             if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
@@ -67,7 +68,7 @@ public class RedisProtocolTest {
             redisServer = builder.build();
             this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
         } else {
-            RedisServerBuilder builder = RedisServer.builder().port(redisPort);
+            RedisServerBuilder builder = RedisServer.newRedisServer().port(redisPort);
             if (SystemUtils.IS_OS_WINDOWS) {
                 // set maxheap to fix Windows error 0x70 while starting redis
                 builder.setting("maxheap 128mb");
@@ -79,7 +80,7 @@ public class RedisProtocolTest {
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
         this.redisServer.stop();
     }
     @Test

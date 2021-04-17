@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -55,7 +56,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
 
 /**
  * ZookeeperRegistry
- *
  */
 public class ZookeeperRegistry extends FailbackRegistry {
 
@@ -164,10 +164,14 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
             } else {
+                CountDownLatch latch = new CountDownLatch(1);
                 List<URL> urls = new ArrayList<>();
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
-                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> (parentPath, currentChilds) -> ZookeeperRegistry.this.notify(url, k, toUrlsWithEmpty(url, parentPath, currentChilds)));
+                    ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, k, latch));
+                    if (zkListener instanceof RegistryChildListenerImpl) {
+                        ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                    }
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
@@ -175,6 +179,8 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     }
                 }
                 notify(url, listener, urls);
+                // tells the listener to run only after the sync notification of main thread finishes.
+                latch.countDown();
             }
         } catch (Throwable e) {
             throw new RpcException("Failed to subscribe " + url + " to zookeeper " + getUrl() + ", cause: " + e.getMessage(), e);
@@ -305,6 +311,35 @@ public class ZookeeperRegistry extends FailbackRegistry {
                     addFailedSubscribed(url, listener);
                 }
             }
+        }
+    }
+
+    private class RegistryChildListenerImpl implements ChildListener {
+
+        private URL url;
+
+        private NotifyListener listener;
+
+        private volatile CountDownLatch latch;
+
+        RegistryChildListenerImpl(URL url, NotifyListener listener, CountDownLatch latch) {
+            this.url = url;
+            this.listener = listener;
+            this.latch = latch;
+        }
+
+        void setLatch(CountDownLatch latch) {
+            this.latch = latch;
+        }
+
+        @Override
+        public void childChanged(String path, List<String> children) {
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                logger.warn("Zookeeper children listener thread was interrupted unexpectedly, may cause race condition with the main thread.");
+            }
+            ZookeeperRegistry.this.notify(url, listener, toUrlsWithEmpty(url, path, children));
         }
     }
 

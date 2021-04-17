@@ -12,7 +12,7 @@ Before we accept a non-trivial patch or pull request (PRs), we will need you to 
 The mailing list is the recommended way of pursuing a discussion on almost anything related to Dubbo. Please refer to this [guide](https://github.com/apache/dubbo/wiki/Mailing-list-subscription-guide) for detailed documentation on how to subscribe.
 
 - [dev@dubbo.apache.org](mailto:dev-subscribe@dubbo.apache.org): the developer mailing list where you can ask questions about an issue you may have encountered while working with Dubbo. 
-- [commits@dubbo.apache.org](mailto:commits-subscribe@dubbo.apache.org): the commits update will get broadcasted on this mailing list. You can subscribe to it, should you be interested in following Dubbo's development.
+- [commits@dubbo.apache.org](mailto:commits-subscribe@dubbo.apache.org): the commit updates will get broadcasted on this mailing list. You can subscribe to it, should you be interested in following Dubbo's development.
 - [notifications@dubbo.apache.org](mailto:notifications-subscribe@dubbo.apache.org): all the Github [issue](https://github.com/apache/dubbo/issues) updates and [pull request](https://github.com/apache/dubbo/pulls) updates will be sent to this mailing list.
 
 ### Reporting issue
@@ -59,6 +59,23 @@ git push origin your_awesome_patch
 * Submit a pull request to apache/dubbo and wait for the reply.
 
 Thanks for contributing!
+
+### Debugging issues on Linux ARM64
+
+Apache Dubbo officially supports ARM64 CPU architecture!
+The project uses TravisCI to run the build and tests every night.
+
+If one needs to debug a problem on ARM64 and has no access to such hardware then the following setup with Docker and QEMU could be used on a 
+x86_64 machine:
+
+    (dev-machine) $ docker run -it --rm --privileged multiarch/qemu-user-static --credential yes --persistent yes
+    (dev-machine) $ docker run -it --rm -v /path/to/dubbo:/dubbo arm64v8/ubuntu:focal bash
+    (docker) # apt install ... # jdk, ...
+    (docker) # cd /dubbo
+    (docker) # ./mvnw clean test
+
+More information about the Docker+QEMU setup could be found [here](https://martin-grigorov.medium.
+com/building-linux-packages-for-different-cpu-architectures-with-docker-and-qemu-d29e4ebc9fa5). 
 
 ### Code style
 

@@ -51,7 +51,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is setter method
      */
-    public static boolean isSetter(Method method) {
+    static boolean isSetter(Method method) {
         /**
          * 以set开始 && 方法名不是set && public方法 && 仅一个参数 && 返回原始类型或简单类型
          */
@@ -69,7 +69,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is getter method
      */
-    public static boolean isGetter(Method method) {
+    static boolean isGetter(Method method) {
         String name = method.getName();
         return (name.startsWith("get") || name.startsWith("is"))
                 && !"get".equals(name) && !"is".equals(name)
@@ -86,7 +86,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is meta method
      */
-    public static boolean isMetaMethod(Method method) {
+    static boolean isMetaMethod(Method method) {
         String name = method.getName();
         /**
          * 方法不是以 get和is 开始
@@ -135,7 +135,7 @@ public interface MethodUtils {
      * @param method the method to check
      * @return whether the given method is deprecated method
      */
-    public static boolean isDeprecated(Method method) {
+    static boolean isDeprecated(Method method) {
         return method.getAnnotation(Deprecated.class) != null;
     }
 

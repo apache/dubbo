@@ -126,7 +126,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.10-SNAPSHOT</revision>
+        <revision>2.7.11-SNAPSHOT</revision>
     </properties>
 
     <modules>
@@ -151,6 +151,7 @@
         <module>dubbo-dependencies</module>
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
+        <module>dubbo-spring-boot</module>
     </modules>
 
     <dependencyManagement>

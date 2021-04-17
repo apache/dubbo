@@ -27,7 +27,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
@@ -55,7 +54,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private String group;
 
-    private NamingService namingService;
+    private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
 

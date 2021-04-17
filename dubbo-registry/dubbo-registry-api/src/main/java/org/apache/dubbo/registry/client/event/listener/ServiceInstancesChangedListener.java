@@ -37,6 +37,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -61,8 +62,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     private final Set<String> serviceNames;
     private final ServiceDiscovery serviceDiscovery;
+    private final String registryId;
     private URL url;
-    private Map<String, NotifyListener> listeners;
+    private Map<String, Set<NotifyListener>> listeners;
 
     private Map<String, List<ServiceInstance>> allInstances;
 
@@ -73,6 +75,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
+        this.registryId = serviceDiscovery.getUrl().getParameter("id");
         this.listeners = new HashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
@@ -180,7 +183,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 logger.info("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
-            logger.error("Failed to load service metadata, metadta type is " + metadataType, e);
+            logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
             metadataInfo = null;
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
@@ -188,9 +191,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     private void notifyAddressChanged() {
-        listeners.forEach((key, notifyListener) -> {
-            //FIXME, group wildcard match
-            notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
+        listeners.forEach((key, notifyListeners) -> {
+            notifyListeners.forEach(notifyListener -> {
+                notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
+            });
         });
     }
 
@@ -202,7 +206,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     }
 
     public void addListener(String serviceKey, NotifyListener listener) {
-        this.listeners.put(serviceKey, listener);
+        this.listeners.computeIfAbsent(serviceKey, k -> new HashSet<>()).add(listener);
     }
 
     public void removeListener(String serviceKey) {
@@ -241,6 +245,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return serviceNames.contains(event.getServiceName());
     }
 
+    public String getRegistryId() {
+        return registryId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -250,11 +258,11 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             return false;
         }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
-        return Objects.equals(getServiceNames(), that.getServiceNames());
+        return Objects.equals(getServiceNames(), that.getServiceNames()) && Objects.equals(getRegistryId(), that.getRegistryId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), getServiceNames());
+        return Objects.hash(getClass(), getServiceNames(), getRegistryId());
     }
 }

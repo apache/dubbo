@@ -17,7 +17,6 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import java.nio.charset.StandardCharsets;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -49,6 +48,7 @@ import io.grpc.stub.StreamObserver;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -500,7 +500,7 @@ public class JEtcdClientWrapper {
 
     /**
      * because jetcd's connection change callback not supported yet, we must
-     * loop to test if connect or disconnect event happend or not. It will be changed
+     * loop to test if connect or disconnect event happened or not. It will be changed
      * in the future if we found better choice.
      */
     public void start() {
@@ -596,7 +596,7 @@ public class JEtcdClientWrapper {
     }
 
     /**
-     * try get client's shared channel, becase all fields is private on jetcd,
+     * try get client's shared channel, because all fields is private on jetcd,
      * we must using it by reflect, in the future, jetcd may provider better tools.
      *
      * @param client get channel from current client
@@ -623,9 +623,9 @@ public class JEtcdClientWrapper {
         this.connectionStateListener = connectionStateListener;
     }
 
-    public static void requiredNotNull(Object obj, RuntimeException exeception) {
+    public static void requiredNotNull(Object obj, RuntimeException exception) {
         if (obj == null) {
-            throw exeception;
+            throw exception;
         }
     }
 

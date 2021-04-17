@@ -170,6 +170,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @see RegistryConstants#SUBSCRIBED_SERVICE_NAMES_KEY
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(key = SUBSCRIBED_SERVICE_NAMES_KEY)
     public String getServices() {
         return services;
@@ -181,6 +182,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * @return the String {@link List} presenting the Dubbo interface subscribed
      * @since 2.7.8
      */
+    @Deprecated
     @Parameter(excluded = true)
     public Set<String> getSubscribedServices() {
         return splitToSet(getServices(), COMMA_SEPARATOR_CHAR);
@@ -220,7 +222,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         try {
             invoker.destroy();
         } catch (Throwable t) {
-            logger.warn("Unexpected error occured when destroy invoker of ReferenceConfig(" + url + ").", t);
+            logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
         invoker = null;
         ref = null;
@@ -319,7 +321,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+            throw new IllegalArgumentException(
+                    "Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
@@ -409,7 +412,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         }
                     }
                     if (urls.isEmpty()) {
-                        throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
+                        throw new IllegalStateException(
+                                "No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() +
+                                        " use dubbo version " + Version.getVersion() +
+                                        ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                     }
                 }
             }
@@ -429,7 +435,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                      * refprotocol 会在运行时根据url协议头加载指定的Protocol实例，
                      * 并调用实例的refer方法
                      */
-                    invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+                    Invoker<?> referInvoker = REF_PROTOCOL.refer(interfaceClass, url);
+                    if (shouldCheck()) {
+                        if (referInvoker.isAvailable()) {
+                            invokers.add(referInvoker);
+                        } else {
+                            referInvoker.destroy();
+                        }
+                    } else {
+                        invokers.add(referInvoker);
+                    }
                     /**
                      * url对应得protocol为register   则使用最后一个注册中心url
                      */
@@ -437,6 +452,18 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         registryURL = url; // use last registry url
                     }
                 }
+
+                if (shouldCheck() && invokers.size() == 0) {
+                    throw new IllegalStateException("Failed to check the status of the service "
+                            + interfaceName
+                            + ". No provider available for the service "
+                            + (group == null ? "" : group + "/")
+                            + interfaceName +
+                            (version == null ? "" : ":" + version)
+                            + " from the multi registry cluster"
+                            + " use dubbo version " + Version.getVersion());
+                }
+
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
                     /**
@@ -455,7 +482,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                      * 不是注册表url，必须是直接调用。
                      */
                     String cluster = CollectionUtils.isNotEmpty(invokers)
-                            ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
+                            ?
+                            (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
+                                    Cluster.DEFAULT)
                             : Cluster.DEFAULT;
                     invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }

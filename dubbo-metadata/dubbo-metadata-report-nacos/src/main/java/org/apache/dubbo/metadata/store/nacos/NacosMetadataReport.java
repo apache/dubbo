@@ -28,7 +28,6 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.exception.NacosException;
 
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
  */
 public class NacosMetadataReport extends AbstractMetadataReport {
 
-    private ConfigService configService;
+    private NacosConfigServiceWrapper configService;
 
     /**
      * The group used to store metadata in Nacos
@@ -79,10 +78,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
         group = url.getParameter(GROUP_KEY, DEFAULT_ROOT);
     }
 
-    public ConfigService buildConfigService(URL url) {
+    public NacosConfigServiceWrapper buildConfigService(URL url) {
         Properties nacosProperties = buildNacosProperties(url);
         try {
-            configService = NacosFactory.createConfigService(nacosProperties);
+            configService = new NacosConfigServiceWrapper(NacosFactory.createConfigService(nacosProperties));
         } catch (NacosException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getErrMsg(), e);

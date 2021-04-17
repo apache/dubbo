@@ -249,7 +249,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         try {
             metadataSemaphore.acquire();
         } catch (InterruptedException e) {
-            logger.warn("metadata refresh thread has been interrupted unexpectedly while wating for update.", e);
+            logger.warn("metadata refresh thread has been interrupted unexpectedly while waiting for update.", e);
         }
     }
 

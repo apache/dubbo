@@ -74,7 +74,8 @@ public class ReferenceBeanBuilderTest {
             // @since 2.7.3
             id = "reference",
             // @since 2.7.8
-            services = {"service1", "service2", "service3", "service2", "service1"}
+            services = {"service1", "service2", "service3", "service2", "service1"},
+            providedBy = {"service1", "service2", "service3"}
     )
     private static final Object TEST_FIELD = new Object();
 
@@ -128,6 +129,7 @@ public class ReferenceBeanBuilderTest {
         Assertions.assertEquals("deprecated", referenceBean.getListener());
         Assertions.assertEquals("reference", referenceBean.getId());
         Assertions.assertEquals(ofSet("service1", "service2", "service3"), referenceBean.getSubscribedServices());
+        Assertions.assertEquals("service1,service2,service3", referenceBean.getProvidedBy());
 
         // parameters
         Map<String, String> parameters = new HashMap<String, String>();

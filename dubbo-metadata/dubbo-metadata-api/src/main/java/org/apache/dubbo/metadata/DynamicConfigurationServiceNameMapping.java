@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -121,7 +122,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
              */
             Set<String> keys = dynamicConfiguration
                     .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol));
-            serviceNames.addAll(keys);
+            if (CollectionUtils.isNotEmpty(keys)) {
+                serviceNames.addAll(keys);
+            }
         });
         return Collections.unmodifiableSet(serviceNames);
     }

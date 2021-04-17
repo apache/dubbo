@@ -64,7 +64,7 @@ public class MigrationRuleHandler<T> {
         /**
          * 默认false
          */
-        if (migrationInvoker.isMigrationMultiRegsitry()) {
+        if (migrationInvoker.isMigrationMultiRegistry()) {
             /**
              * 服务自省为true   非服务自省为false
              */

@@ -55,7 +55,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private MigrationRule rule;
 
-    private boolean migrationMultiRegsitry;
+    private boolean migrationMultiRegistry;
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -82,7 +82,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
-        this.migrationMultiRegsitry = url.getParameter("MIGRATION_MULTI_REGSITRY", RegistryConstants.MIGRATION_MULTI_REGSITRY);
+        this.migrationMultiRegistry = url.getParameter(RegistryConstants.MIGRATION_MULTI_REGISTRY, false);
     }
 
     public ClusterInvoker<T> getInvoker() {
@@ -112,10 +112,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
             setListener(invoker, () -> {
-                this.compareAddresses(invoker, serviceDiscoveryInvoker);
+                this.compareAddresses(serviceDiscoveryInvoker, invoker);
             });
             setListener(serviceDiscoveryInvoker, () -> {
-                this.compareAddresses(invoker, serviceDiscoveryInvoker);
+                this.compareAddresses(serviceDiscoveryInvoker, invoker);
             });
         } else {
             refreshServiceDiscoveryInvoker();
@@ -140,7 +140,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void doReSubscribe(ClusterInvoker<T> invoker, URL newSubscribeUrl) {
-        DynamicDirectory<T> directory = (DynamicDirectory<T>)invoker.getDirectory();
+        DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         URL oldSubscribeUrl = directory.getRegisteredConsumerUrl();
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
@@ -243,7 +243,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged.set(true);
         if (logger.isDebugEnabled()) {
-            logger.info(invoker.getDirectory().getAllInvokers() == null ? "null" :invoker.getDirectory().getAllInvokers().size() + "");
+            logger.info(invoker.getDirectory().getAllInvokers() == null ? "null" : invoker.getDirectory().getAllInvokers().size() + "");
         }
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
@@ -258,6 +258,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.invokersChanged.set(true);
     }
 
+    @Override
     public synchronized void destroyServiceDiscoveryInvoker(ClusterInvoker<?> serviceDiscoveryInvoker) {
         if (checkInvokerAvailable(this.invoker)) {
             this.currentAvailableInvoker = this.invoker;
@@ -270,6 +271,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<?> serviceDiscoveryInvoker) {
         if (checkInvokerAvailable(this.invoker)) {
             this.currentAvailableInvoker = this.invoker;
@@ -285,6 +287,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     /**
      *
      */
+    @Override
     public synchronized void refreshServiceDiscoveryInvoker() {
         /**
          *
@@ -303,7 +306,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
              */
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
 
-            if (migrationMultiRegsitry) {
+            if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
                     this.setAddressChanged();
                 });
@@ -312,7 +315,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void clearListener(ClusterInvoker<T> invoker) {
-        if (migrationMultiRegsitry) {
+        if (migrationMultiRegistry) {
             return;
         }
 
@@ -331,6 +334,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         directory.setInvokersChangedListener(listener);
     }
 
+    @Override
     public synchronized void refreshInterfaceInvoker() {
         clearListener(invoker);
         if (needRefresh(invoker)) {
@@ -340,7 +344,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
             invoker = registryProtocol.getInvoker(cluster, registry, type, url);
 
-            if (migrationMultiRegsitry) {
+            if (migrationMultiRegistry) {
                 setListener(serviceDiscoveryInvoker, () -> {
                     this.setAddressChanged();
                 });
@@ -348,6 +352,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void destroyInterfaceInvoker(ClusterInvoker<T> invoker) {
         if (checkInvokerAvailable(this.serviceDiscoveryInvoker)) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
@@ -360,13 +365,14 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
         }
         if (invoker != null) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Discarding interface addresses, total address size " + (null == invoker.getDirectory().getAllInvokers() ? "null": invoker.getDirectory().getAllInvokers().size()));
+                logger.debug("Discarding interface addresses, total address size " + (null == invoker.getDirectory().getAllInvokers() ? "null" : invoker.getDirectory().getAllInvokers().size()));
             }
             invoker.getDirectory().discordAddresses();
         }
@@ -396,8 +402,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     @Override
-    public boolean isMigrationMultiRegsitry() {
-        return migrationMultiRegsitry;
+    public boolean isMigrationMultiRegistry() {
+        return migrationMultiRegistry;
     }
 
 }

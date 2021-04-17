@@ -119,6 +119,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         return null;
     }
 
+    public static Registry getDefaultNopRegistryIfNotSupportServiceDiscovery() {
+        return DEFAULT_NOP_REGISTRY;
+    }
+
     /**
      * 根据url获取对应的Registry
      * @param url Registry address, is not allowed to be empty
