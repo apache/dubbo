@@ -218,6 +218,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         });
         // dispatch a ServiceConfigExportedEvent since 2.7.4
         dispatch(new ServiceConfigExportedEvent(this));
+        this.setExport(Boolean.FALSE);
     }
 
     private void checkAndUpdateSubConfigs() {
