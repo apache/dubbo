@@ -198,8 +198,8 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
             stream = AbstractServerStream.unary(invoker.getUrl());
         }
         stream.service(serviceDescriptor)
-                .method(methodDescriptor)
                 .invoker(invoker)
+                .method(methodDescriptor)
                 .subscribe(new ServerTransportObserver(ctx));
         final TransportObserver observer = stream.asTransportObserver();
         observer.tryOnMetadata(new Http2HeaderMeta(headers), false);

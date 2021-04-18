@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.channel.Channel;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.remoting.Constants;
@@ -53,7 +54,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class TripleUtil {
 
     public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
-//    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
+    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
@@ -62,13 +63,9 @@ public class TripleUtil {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
 
-//    public static void setClientStream(Channel channel, ClientStream clientStream) {
-//        channel.attr(TripleUtil.CLIENT_STREAM_KEY).set(clientStream);
-//    }
-//
-//    public static ClientStream getClientStream(ChannelHandlerContext ctx) {
-//        return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
-//    }
+    public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
+        return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
+    }
 
     /**
      * must starts from application/grpc

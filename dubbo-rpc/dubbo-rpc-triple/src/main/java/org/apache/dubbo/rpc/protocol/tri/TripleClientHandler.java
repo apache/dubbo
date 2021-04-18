@@ -16,7 +16,14 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.AsciiString;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
@@ -37,9 +44,11 @@ import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
+    private static final AsciiString SCHEME = AsciiString.of("http");
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -71,38 +80,55 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (!methodDescriptor.isStream()) {
-            stream = AbstractClientStream.unary(url);
+            stream = AbstractClientStream.unary(url).req(req);
         } else {
             stream = AbstractClientStream.stream(url);
         }
         stream.callback(callback)
+                .channel(ctx.channel())
                 .method(methodDescriptor)
-                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY));
-        stream.asTransportObserver().tryOnMetadata(new RequestMetadata(req), false);
-        stream.subscribe(new TransportObserver() {
-            @Override
-            public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
+                .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
+                .subscribe(new  ClientTransportObserver(ctx, stream));
 
-                // netty write
-            }
 
-            @Override
-            public void onData(byte[] data, boolean endStream, Stream.OperationHandler handler) {
-                // netty write
-            }
+        Http2Headers headers = new DefaultHttp2Headers()
+            .authority(url.getAddress())
+            .scheme(SCHEME)
+            .method(HttpMethod.POST.asciiName())
+            .path("/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .set(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+            .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-            @Override
-            public void onComplete(Stream.OperationHandler handler) {
+        final String version = inv.getInvoker().getUrl().getVersion();
+        if (version != null) {
+            headers.set(TripleConstant.SERVICE_VERSION, version);
+        }
 
-            }
-        });
+        final String app = (String)inv.getObjectAttachment(CommonConstants.APPLICATION_KEY);
+        if (app != null) {
+            headers.set(TripleConstant.CONSUMER_APP_NAME_KEY, app);
+            inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
+        }
+
+        final String group = inv.getInvoker().getUrl().getGroup();
+        if (group != null) {
+            headers.set(TripleConstant.SERVICE_GROUP, group);
+            inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
+        }
+        headers.remove("path");
+        headers.remove("interface");
+        Metadata metadata = new Http2HeaderMeta(headers);
+        final Map<String, Object> attachments = inv.getObjectAttachments();
+        if (attachments != null) {
+            stream.convertAttachment(metadata, attachments);
+        }
+
+        stream.getTransportSubscriber().tryOnMetadata(metadata, false);
 
         if (!methodDescriptor.isStream()) {
-            byte[] data = null;
-            // TODO serialize data to byte[]
-            stream.asStreamObserver().onNext(data);
-//            stream.asTransportObserver().tryOnData(data, true);
-//            stream.asTransportObserver().tryOnComplete();
+            stream.asStreamObserver().onNext(inv);
+            stream.asStreamObserver().onCompleted();
         } else {
             final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
             stream.subscribe(streamObserver);

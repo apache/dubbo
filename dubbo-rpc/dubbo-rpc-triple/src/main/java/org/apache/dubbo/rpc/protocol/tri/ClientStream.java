@@ -27,10 +27,13 @@ public class ClientStream extends AbstractClientStream implements Stream{
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
+        // writer
         return new StreamObserver<Object>() {
             @Override
             public void onNext(Object data) {
-
+                getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
+                final byte[] bytes = encodeRequest(data);
+                getTransportSubscriber().tryOnData(bytes, false);
             }
 
             @Override
@@ -40,7 +43,7 @@ public class ClientStream extends AbstractClientStream implements Stream{
 
             @Override
             public void onCompleted() {
-
+                getTransportSubscriber().onComplete(null);
             }
         };
     }
@@ -55,12 +58,13 @@ public class ClientStream extends AbstractClientStream implements Stream{
 
             @Override
             public void onData(byte[] data, boolean endStream, OperationHandler handler) {
-
+                final Object resp = deserializeResponse(data);
+                getStreamSubscriber().onNext(resp);
             }
 
             @Override
             public void onComplete(OperationHandler handler) {
-
+                getStreamSubscriber().onCompleted();
             }
         };
     }

@@ -19,34 +19,83 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.api.Connection;
+import org.apache.dubbo.remoting.exchange.Request;
+import org.apache.dubbo.remoting.exchange.Response;
+import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream{
     protected UnaryClientStream(URL url) {
         super(url);
     }
 
+    private Request req;
+
+    protected UnaryClientStream req(Request req) {
+        this.req = req;
+        return this;
+    }
+
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return null;
+        return new StreamObserver<Object>() {
+            @Override
+            public void onNext(Object data) {
+                RpcInvocation invocation = (RpcInvocation)data;
+
+                getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
+                final byte[] bytes = encodeRequest(invocation);
+                getTransportSubscriber().tryOnData(bytes, false);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+                getTransportSubscriber().tryOnComplete();
+            }
+        };
     }
 
     @Override
     protected TransportObserver createTransportObserver() {
-        return new TransportObserver() {
-            @Override
-            public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
-                // TODO 保存headers/trailers
-            }
+        return new UnaryClientTransportObserver();
+    }
 
-            @Override
-            public void onData(byte[] data, boolean endStream, OperationHandler handler) {
+    private class UnaryClientTransportObserver extends UnaryTransportObserver implements TransportObserver {
 
+        @Override
+        public void onComplete(OperationHandler handler) {
+            try {
+                final Object resp = deserializeResponse(getData());
+                Response response = new Response(req.getId(), req.getVersion());
+                final AppResponse result = new AppResponse(resp);
+                result.setObjectAttachments(parseMetadataToMap(getTrailers()));
+                response.setResult(result);
+                DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
+            } catch (Exception e) {
+                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withCause(e)
+                    .withDescription("Failed to deserialize response");
+                onError(status);
             }
+        }
 
-            @Override
-            public void onComplete(OperationHandler handler) {
-                //TODO stream observer 传给应用代码
+        private void onError(GrpcStatus status) {
+            Response response = new Response(req.getId(), req.getVersion());
+            if (status.description != null) {
+                response.setErrorMessage(status.description);
+            } else {
+                response.setErrorMessage(status.cause.getMessage());
             }
-        };
+            final byte code = GrpcStatus.toDubboStatus(status.code);
+            response.setStatus(code);
+            DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
+        }
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
@@ -56,14 +57,13 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     private void onHeadersRead(ChannelHandlerContext ctx, Http2HeadersFrame msg) {
-//        ClientStream2 stream2;
-//        stream2.onMetadata();
-//        TripleUtil.getClientStream(ctx).onHeaders(msg.headers());
-//        if (msg.isEndStream()) {
-//            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-//            stream2.onComplete();
-//            clientStream.halfClose();
-//        }
+        Http2Headers headers = msg.headers();
+        AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+        final TransportObserver observer = clientStream.asTransportObserver();
+        observer.tryOnMetadata(new Http2HeaderMeta(headers), false);
+        if (msg.isEndStream()) {
+            observer.tryOnComplete();
+        }
     }
 
     @Override
@@ -78,13 +78,13 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
-//        super.channelRead(ctx, msg.content());
-//        if (msg.isEndStream()) {
-//            final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-//            // stream already closed;
-//            if (clientStream != null) {
-//                clientStream.halfClose();
-//            }
-//        }
+        super.channelRead(ctx, msg.content());
+        if (msg.isEndStream()) {
+            final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+            // stream already closed;
+            if (clientStream != null) {
+                clientStream.asTransportObserver().tryOnComplete();
+            }
+        }
     }
 }
