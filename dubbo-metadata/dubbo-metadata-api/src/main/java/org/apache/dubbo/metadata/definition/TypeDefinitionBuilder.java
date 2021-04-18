@@ -55,9 +55,6 @@ public class TypeDefinitionBuilder {
             td = DefaultTypeBuilder.build(clazz, typeCache);
             td.setTypeBuilderName(DefaultTypeBuilder.class.getName());
         }
-        if (isSimpleType(clazz)) { // changed since 2.7.6
-            td.setProperties(null);
-        }
         return td;
     }
 
