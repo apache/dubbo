@@ -17,6 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -24,20 +30,12 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
-import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 
-import io.netty.handler.codec.http2.Http2Headers;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
-            ConfigUtils.getProperty("triple.attachment", "false"));
+        ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
     private final URL url;
     private final MultipleSerialization multipleSerialization;
@@ -53,7 +51,7 @@ public abstract class AbstractStream implements Stream {
         this.url = url;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
-                .getExtension(value);
+            .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
     }
@@ -146,7 +144,7 @@ public abstract class AbstractStream implements Stream {
                 if (key.endsWith("-tw-bin") && key.length() > 7) {
                     try {
                         attachments.put(key.substring(0, key.length() - 7),
-                                TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
+                            TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
                     } catch (Exception e) {
                         LOGGER.error("Failed to parse response attachment key=" + key, e);
                     }
@@ -180,9 +178,9 @@ public abstract class AbstractStream implements Stream {
         try {
             if (!ENABLE_ATTACHMENT_WRAP) {
                 if (v instanceof String) {
-                    metadata.put(key, (String) v);
+                    metadata.put(key, (String)v);
                 } else if (v instanceof byte[]) {
-                    metadata.put(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
+                    metadata.put(key + "-bin", TripleUtil.encodeBase64ASCII((byte[])v));
                 }
             } else {
                 if (v instanceof String || serializeType == null) {
@@ -220,7 +218,8 @@ public abstract class AbstractStream implements Stream {
 
     }
 
-    protected abstract static class UnaryTransportObserver extends AbstractTransportObserver implements TransportObserver {
+    protected abstract static class UnaryTransportObserver extends AbstractTransportObserver
+        implements TransportObserver {
         private byte[] data;
 
         public byte[] getData() {
@@ -233,7 +232,7 @@ public abstract class AbstractStream implements Stream {
                 this.data = in;
             } else {
                 handler.operationDone(OperationResult.FAILURE, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription(DUPLICATED_DATA).asException());
+                    .withDescription(DUPLICATED_DATA).asException());
             }
         }
     }

@@ -20,7 +20,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 
-public class ClientStream extends AbstractClientStream implements Stream{
+public class ClientStream extends AbstractClientStream implements Stream {
     protected ClientStream(URL url) {
         super(url);
     }

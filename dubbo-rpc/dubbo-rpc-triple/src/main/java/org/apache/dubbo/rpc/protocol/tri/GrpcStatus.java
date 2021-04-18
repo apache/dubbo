@@ -16,10 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Response;
-
-import io.netty.handler.codec.http.QueryStringEncoder;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -79,6 +78,14 @@ public class GrpcStatus {
         return status;
     }
 
+    public static String limitSizeTo4KB(String desc) {
+        if (desc.length() < 4096) {
+            return desc;
+        } else {
+            return desc.substring(0, 4086);
+        }
+    }
+
     public GrpcStatus withCause(Throwable cause) {
         return new GrpcStatus(this.code, cause, this.description);
     }
@@ -91,30 +98,22 @@ public class GrpcStatus {
         return new TripleRpcException(this);
     }
 
-    public String toMessage(){
+    public String toMessage() {
         final String msg;
         if (cause == null) {
-            msg =description;
+            msg = description;
         } else {
             String placeHolder = description == null ? "" : description;
-            msg = StringUtils.toString(placeHolder,cause);
+            msg = StringUtils.toString(placeHolder, cause);
         }
-        if (msg== null) {
+        if (msg == null) {
             return "";
         }
         String output = limitSizeTo4KB(msg);
         QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("",output);
+        encoder.addParam("", output);
         // ?=
         return encoder.toString().substring(2);
-    }
-
-    public static String limitSizeTo4KB(String desc) {
-        if (desc.length() < 4096) {
-            return desc;
-        } else {
-            return desc.substring(0, 4086);
-        }
     }
 
     enum Code {
@@ -144,7 +143,6 @@ public class GrpcStatus {
         public static boolean isOk(Integer status) {
             return status == OK.code;
         }
-
 
         public static Code fromCode(int code) {
             for (Code value : Code.values()) {

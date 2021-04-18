@@ -17,13 +17,13 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.remoting.exchange.Request;
-
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.dubbo.remoting.exchange.Request;
+
 //TODO
-public class RequestMetadata implements Metadata{
+public class RequestMetadata implements Metadata {
     private final Request request;
 
     public RequestMetadata(Request request) {

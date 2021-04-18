@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import java.util.Map;
 
-
 public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>> {
 
     Metadata put(CharSequence key, CharSequence value);
@@ -27,6 +26,5 @@ public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>
     CharSequence get(CharSequence key);
 
     boolean contains(CharSequence key);
-
 
 }

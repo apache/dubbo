@@ -23,10 +23,10 @@ public class TripleServerInboundHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         final AbstractServerStream serverStream = TripleUtil.getServerStream(ctx);
-        final byte[] data = (byte[]) msg;
+        final byte[] data = (byte[])msg;
         if (serverStream != null) {
             serverStream.asTransportObserver()
-                    .tryOnData(data, false);
+                .tryOnData(data, false);
         }
     }
 }

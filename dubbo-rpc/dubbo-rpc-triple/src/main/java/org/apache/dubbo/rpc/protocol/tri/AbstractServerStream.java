@@ -17,6 +17,11 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+
+import com.google.protobuf.Message;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -29,14 +34,8 @@ import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.triple.TripleWrapper;
 
-import com.google.protobuf.Message;
-
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionException;
-
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
-        protected static final ExecutorRepository EXECUTOR_REPOSITORY =
+    protected static final ExecutorRepository EXECUTOR_REPOSITORY =
         ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
     private final ProviderModel providerModel;
@@ -96,18 +95,19 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return inv;
     }
 
-    protected Object[] deserializeRequest(byte[] data){
+    protected Object[] deserializeRequest(byte[] data) {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getProviderModel() != null) {
                 ClassLoadUtil.switchContextLoader(getProviderModel().getServiceInterfaceClass().getClassLoader());
             }
             if (getMethodDescriptor().isNeedWrap()) {
-                final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data, TripleWrapper.TripleRequestWrapper.class);
+                final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
+                    TripleWrapper.TripleRequestWrapper.class);
                 serialize(wrapper.getSerializeType());
                 return TripleUtil.unwrapReq(getUrl(), wrapper, getMultipleSerialization());
             } else {
-                return new Object[]{TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])};
+                return new Object[] {TripleUtil.unpack(data, getMethodDescriptor().getParameterClasses()[0])};
             }
 
         } finally {
@@ -118,19 +118,19 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected byte[] encodeResponse(Object value) {
         final com.google.protobuf.Message message;
         if (getMethodDescriptor().isNeedWrap()) {
-            message = TripleUtil.wrapResp(getUrl(), getSerializeType(), value, getMethodDescriptor(), getMultipleSerialization());
+            message = TripleUtil.wrapResp(getUrl(), getSerializeType(), value, getMethodDescriptor(),
+                getMultipleSerialization());
         } else {
-            message = (Message) value;
+            message = (Message)value;
         }
         return TripleUtil.pack(message);
     }
 
-
-    protected void executorInvoke(Runnable runnable){
+    protected void executorInvoke(Runnable runnable) {
         ExecutorService executor = null;
         if (getProviderModel() != null) {
-            executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(
-                    CommonConstants.THREADPOOL_KEY);
+            executor = (ExecutorService)getProviderModel().getServiceMetadata().getAttribute(
+                CommonConstants.THREADPOOL_KEY);
         }
         if (executor == null) {
             executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
@@ -144,21 +144,19 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Provider's thread pool is full"));
+                .withDescription("Provider's thread pool is full"));
         } catch (Throwable t) {
             LOGGER.error("Provider submit request to thread pool error ", t);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Provider's error"));
+                .withCause(t)
+                .withDescription("Provider's error"));
         }
     }
-
 
     public AbstractServerStream service(ServiceDescriptor sd) {
         setServiceDescriptor(sd);
         return this;
     }
-
 
     public AbstractServerStream invoker(Invoker<?> invoker) {
         this.invoker = invoker;

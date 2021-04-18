@@ -20,7 +20,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 
-
 public interface Stream {
 
     Logger LOGGER = LoggerFactory.getLogger(Stream.class);
@@ -33,9 +32,9 @@ public interface Stream {
 
     StreamObserver<Object> asStreamObserver();
 
-
     enum OperationResult {
-        OK, FAILURE
+        OK,
+        FAILURE
     }
 
     interface OperationHandler {

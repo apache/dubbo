@@ -26,12 +26,12 @@ import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.RpcInvocation;
 
-public class UnaryClientStream extends AbstractClientStream implements Stream{
+public class UnaryClientStream extends AbstractClientStream implements Stream {
+    private Request req;
+
     protected UnaryClientStream(URL url) {
         super(url);
     }
-
-    private Request req;
 
     protected UnaryClientStream req(Request req) {
         this.req = req;

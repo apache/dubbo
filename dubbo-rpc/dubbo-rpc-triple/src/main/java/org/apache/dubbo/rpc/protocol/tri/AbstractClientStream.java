@@ -17,27 +17,32 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.concurrent.Executor;
+
 import io.netty.channel.Channel;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.triple.TripleWrapper;
 
-import java.util.concurrent.Executor;
-
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
-    protected Executor callbackExecutor;
     private final ConsumerModel consumerModel;
+    protected Executor callbackExecutor;
     private Channel channel;
 
     protected AbstractClientStream(URL url) {
         super(url);
         this.consumerModel = lookupConsumerModel(url);
+    }
+
+    public static UnaryClientStream unary(URL url) {
+        return new UnaryClientStream(url);
+    }
+
+    public static AbstractClientStream stream(URL url) {
+        return new ClientStream(url);
     }
 
     private ConsumerModel lookupConsumerModel(URL url) {
@@ -51,14 +56,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     public ConsumerModel getConsumerModel() {
         return consumerModel;
-    }
-
-    public static UnaryClientStream unary(URL url) {
-        return new UnaryClientStream(url);
-    }
-
-    public static AbstractClientStream stream(URL url) {
-        return new ClientStream(url);
     }
 
     public Executor getCallbackExecutor() {
@@ -82,27 +79,29 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected byte[] encodeRequest(Object value) {
         final byte[] out;
 
-        if(getMethodDescriptor().isStream()) {
+        if (getMethodDescriptor().isStream()) {
             out = TripleUtil.pack(value);
         } else if (getMethodDescriptor().isNeedWrap()) {
             RpcInvocation invocation = (RpcInvocation)value;
-            TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
+            TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation,
+                getMultipleSerialization());
             out = TripleUtil.pack(wrap);
         } else {
             RpcInvocation invocation = (RpcInvocation)value;
             out = TripleUtil.pack(invocation.getArguments()[0]);
         }
-            return out;
+        return out;
     }
 
-    protected Object deserializeResponse(byte[] data){
+    protected Object deserializeResponse(byte[] data) {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
             if (getConsumerModel() != null) {
                 ClassLoadUtil.switchContextLoader(getConsumerModel().getServiceInterfaceClass().getClassLoader());
             }
             if (getMethodDescriptor().isNeedWrap()) {
-                final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
+                final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
+                    TripleWrapper.TripleResponseWrapper.class);
                 serialize(wrapper.getSerializeType());
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {

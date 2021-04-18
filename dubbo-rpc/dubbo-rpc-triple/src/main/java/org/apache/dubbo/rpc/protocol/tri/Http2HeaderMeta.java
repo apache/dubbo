@@ -17,10 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Headers;
-
 import java.util.Iterator;
 import java.util.Map;
+
+import io.netty.handler.codec.http2.Http2Headers;
 
 public class Http2HeaderMeta implements Metadata {
     private final Http2Headers headers;

@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Headers;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http2.Http2DataFrame;
 import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamFrame;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 
 public final class TripleHttp2ClientResponseHandler extends SimpleChannelInboundHandler<Http2StreamFrame> {
     private static final Logger logger = LoggerFactory.getLogger(TripleHttp2ClientResponseHandler.class);
@@ -68,13 +67,14 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-//        final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-//        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-//            .withCause(cause);
-//        clientStream.onError(status);
-//        ctx.close();
-//        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
-//            + status.description);
+        //        final ClientStream clientStream = TripleUtil.getClientStream(ctx);
+        //        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+        //            .withCause(cause);
+        //        clientStream.onError(status);
+        //        ctx.close();
+        //        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + "
+        //       description: "
+        //            + status.description);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {

@@ -25,8 +25,6 @@ import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
-
 public class ClientTransportObserver implements TransportObserver {
     private final ChannelHandlerContext ctx;
     private final AbstractClientStream stream;

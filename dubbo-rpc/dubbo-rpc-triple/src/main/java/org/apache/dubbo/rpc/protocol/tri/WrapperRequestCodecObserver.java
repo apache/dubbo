@@ -17,12 +17,12 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import java.util.Arrays;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.triple.TripleWrapper;
-
-import java.util.Arrays;
 
 public class WrapperRequestCodecObserver implements StreamObserver<TripleWrapper.TripleRequestWrapper> {
     private final String[] signatures;
@@ -31,7 +31,7 @@ public class WrapperRequestCodecObserver implements StreamObserver<TripleWrapper
     private final StreamObserver<Object[]> delegate;
 
     public WrapperRequestCodecObserver(String[] signatures, URL url, MultipleSerialization multipleSerialization,
-                                       StreamObserver<Object[]> delegate) {
+        StreamObserver<Object[]> delegate) {
         this.signatures = signatures;
         this.url = url;
         this.multipleSerialization = multipleSerialization;

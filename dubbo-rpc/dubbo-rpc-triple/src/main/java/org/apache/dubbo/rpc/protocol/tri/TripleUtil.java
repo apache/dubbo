@@ -16,13 +16,15 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.Channel;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -38,23 +40,21 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
-import java.util.Map;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
-    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
+    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
+        "tri_server_stream");
+    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
+        "tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
@@ -79,13 +79,12 @@ public class TripleUtil {
 
     public static void responseErr(ChannelHandlerContext ctx, GrpcStatus status) {
         Http2Headers trailers = new DefaultHttp2Headers()
-                .status(OK.codeAsText())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .setInt(TripleConstant.STATUS_KEY, status.code.code)
-                .set(TripleConstant.MESSAGE_KEY,status.toMessage());
+            .status(OK.codeAsText())
+            .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
+            .setInt(TripleConstant.STATUS_KEY, status.code.code)
+            .set(TripleConstant.MESSAGE_KEY, status.toMessage());
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
-
 
     public static String percentDecode(CharSequence corpus) {
         if (corpus == null) {
@@ -162,10 +161,10 @@ public class TripleUtil {
             throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
-    public static <T> T unpack(byte[] data, Class<T> clz) {
-        return unpack(new ByteArrayInputStream(data),clz);
-    }
 
+    public static <T> T unpack(byte[] data, Class<T> clz) {
+        return unpack(new ByteArrayInputStream(data), clz);
+    }
 
     public static <T> T unpack(InputStream is, Class<T> clz) {
         try {
@@ -189,15 +188,16 @@ public class TripleUtil {
         }
     }
 
-    public static byte[] pack(Object obj){
-        final ByteArrayOutputStream baos=new ByteArrayOutputStream();
+    public static byte[] pack(Object obj) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            pbSerialization.serialize(obj,baos);
+            pbSerialization.serialize(obj, baos);
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack protobuf object", e);
         }
         return baos.toByteArray();
     }
+
     public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) {
         try {
             final ByteBuf buf = ctx.alloc().buffer();
@@ -252,7 +252,8 @@ public class TripleUtil {
         return BASE64_ENCODER.encode(in);
     }
 
-    public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization) throws InvalidProtocolBufferException {
+    public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization)
+        throws InvalidProtocolBufferException {
         final byte[] decode = decodeASCIIByte(value);
         final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
         final Object[] objects = TripleUtil.unwrapReq(url, wrapper, serialization);
