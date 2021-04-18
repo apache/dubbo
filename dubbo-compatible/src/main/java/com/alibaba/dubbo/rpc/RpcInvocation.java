@@ -160,7 +160,7 @@ public class RpcInvocation implements Invocation, Serializable {
             attachments.put(key, value);
         }
     }
-    //Optimize code to remove useless objects
+  
     public void addAttachments(Map<String, String> attachments) {
         if (attachments == null) {
             return;
