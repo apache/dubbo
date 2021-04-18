@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.embedded.RedisServer;
-import redis.embedded.core.RedisServerBuilder;
 
 import java.util.List;
 import java.util.Map;
@@ -37,26 +36,28 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static redis.embedded.RedisServer.newRedisServer;
 
 public class RedisRegistryTest {
 
-    private String service = "org.apache.dubbo.test.injvmServie";
-    private URL serviceUrl = URL.valueOf("redis://redis/" + service + "?notify=false&methods=test1,test2");
+    private static final String SERVICE = "org.apache.dubbo.test.injvmServie";
+    private static final URL SERVICE_URL = URL.valueOf("redis://redis/" + SERVICE + "?notify=false&methods=test1,test2");
+
     private RedisServer redisServer;
     private RedisRegistry redisRegistry;
     private URL registryUrl;
 
     @BeforeEach
     public void setUp() throws Exception {
-        int redisPort = NetUtils.getAvailablePort();
-        RedisServerBuilder builder = RedisServer.newRedisServer().port(redisPort);
-        if (SystemUtils.IS_OS_WINDOWS) {
+        final int redisPort = NetUtils.getAvailablePort();
+
+        redisServer = newRedisServer()
+            .port(redisPort)
             // set maxheap to fix Windows error 0x70 while starting redis
-            builder.setting("maxheap 128mb");
-        }
-        this.redisServer = builder.build();
-        this.redisServer.start();
-        this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+            .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+            .build();
+        redisServer.start();
+        registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
 
@@ -70,9 +71,9 @@ public class RedisRegistryTest {
         Set<URL> registered = null;
 
         for (int i = 0; i < 2; i++) {
-            redisRegistry.register(serviceUrl);
+            redisRegistry.register(SERVICE_URL);
             registered = redisRegistry.getRegistered();
-            assertThat(registered.contains(serviceUrl), is(true));
+            assertThat(registered.contains(SERVICE_URL), is(true));
         }
 
         registered = redisRegistry.getRegistered();
@@ -96,20 +97,20 @@ public class RedisRegistryTest {
 
             }
         };
-        redisRegistry.subscribe(serviceUrl, listener);
+        redisRegistry.subscribe(SERVICE_URL, listener);
 
         Map<URL, Set<NotifyListener>> subscribed = redisRegistry.getSubscribed();
         assertThat(subscribed.size(), is(1));
-        assertThat(subscribed.get(serviceUrl).size(), is(1));
+        assertThat(subscribed.get(SERVICE_URL).size(), is(1));
 
-        redisRegistry.unsubscribe(serviceUrl, listener);
+        redisRegistry.unsubscribe(SERVICE_URL, listener);
         subscribed = redisRegistry.getSubscribed();
-        assertThat(subscribed.get(serviceUrl).size(), is(0));
+        assertThat(subscribed.get(SERVICE_URL).size(), is(0));
     }
 
     @Test
     public void testAvailable() {
-        redisRegistry.register(serviceUrl);
+        redisRegistry.register(SERVICE_URL);
         assertThat(redisRegistry.isAvailable(), is(true));
 
         redisRegistry.destroy();
