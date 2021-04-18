@@ -119,6 +119,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private static final Set<String> exportedServiceBeanIds = new HashSet<>();
 
+    private String serviceBeanId;
+
     private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
@@ -168,6 +170,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (unexported) {
             return;
         }
+
+        if (!StringUtils.isBlank(serviceBeanId)) {
+            exportedServiceBeanIds.remove(serviceBeanId);
+        }
+
         if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
@@ -202,7 +209,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+            DELAY_EXPORT_EXECUTOR.schedule(this::delayExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
@@ -225,7 +232,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         completeCompoundConfigs();
         checkDefault();
         checkProtocol();
-        duplicateExportCheck();
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
@@ -300,6 +306,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
         exported = true;
+
+        duplicateExportCheck();
 
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
@@ -729,35 +737,35 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         this.bootstrap = bootstrap;
     }
 
+    protected void delayExport() {
+        doExport();
+    }
 
     private void duplicateExportCheck() {
-        String serviceBeanId = id;
-        if(StringUtils.isBlank(id)){
-            String generateVersion = version;
-            String generateGroup = group;
+        String generateVersion = version;
+        String generateGroup = group;
 
-            if (StringUtils.isBlank(version) && provider != null) {
-                generateVersion = provider.getVersion();
-            }
-
-            if (StringUtils.isBlank(group) && provider != null) {
-                generateGroup = provider.getGroup();
-            }
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("ServiceBean:");
-
-            if (!StringUtils.isBlank(generateGroup)) {
-                stringBuilder.append(generateGroup);
-            }
-
-            stringBuilder.append("/").append(interfaceName);
-
-            if (!StringUtils.isBlank(generateVersion)) {
-                stringBuilder.append(":").append(generateVersion);
-            }
-
-            serviceBeanId = stringBuilder.toString();
+        if (StringUtils.isBlank(version) && provider != null) {
+            generateVersion = provider.getVersion();
         }
+
+        if (StringUtils.isBlank(group) && provider != null) {
+            generateGroup = provider.getGroup();
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("ServiceBean:");
+
+        if (!StringUtils.isBlank(generateGroup)) {
+            stringBuilder.append(generateGroup);
+        }
+
+        stringBuilder.append("/").append(interfaceName);
+
+        if (!StringUtils.isBlank(generateVersion)) {
+            stringBuilder.append(":").append(generateVersion);
+        }
+
+        serviceBeanId = stringBuilder.toString();
 
         if (exportedServiceBeanIds.contains(serviceBeanId)) {
             throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[group:" +
@@ -765,6 +773,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     interfaceName + ", version:" +
                     version + "] try to export");
         } else {
+            this.serviceBeanId = serviceBeanId;
             exportedServiceBeanIds.add(serviceBeanId);
         }
     }

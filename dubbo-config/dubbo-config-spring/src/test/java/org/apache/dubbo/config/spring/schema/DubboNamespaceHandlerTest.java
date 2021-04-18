@@ -218,4 +218,19 @@ public class DubboNamespaceHandlerTest {
         assertThat(prefix, is("welcome:"));
         ctx.close();
     }
+
+
+    @Test
+    public void testDuplicateServiceBean() {
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-duplicate-service-bean.xml");
+            ctx.start();
+            ctx.stop();
+            ctx.close();
+        } catch (IllegalArgumentException e) {
+            Assertions.assertTrue(e.getMessage().contains("The Duplicated BeanDefinition of ServiceBean"));
+            return;
+        }
+        Assertions.fail();
+    }
 }
