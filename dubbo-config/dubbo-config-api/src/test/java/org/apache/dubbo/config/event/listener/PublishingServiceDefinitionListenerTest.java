@@ -77,5 +77,6 @@ public class PublishingServiceDefinitionListenerTest {
         ServiceDefinition serviceDefinitionBuild = ServiceDefinitionBuilder.build(serviceConfig.getInterfaceClass());
 
         assertEquals(serviceDefinition, new Gson().toJson(serviceDefinitionBuild));
+        serviceConfig.unexport();
     }
 }

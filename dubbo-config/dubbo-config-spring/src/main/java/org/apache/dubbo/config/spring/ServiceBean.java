@@ -31,8 +31,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.support.AbstractApplicationContext;
 
 /**
@@ -41,7 +39,7 @@ import org.springframework.context.support.AbstractApplicationContext;
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware, ApplicationListener<ContextClosedEvent> {
+        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware{
 
 
     private static final long serialVersionUID = 213195494150089726L;
@@ -144,11 +142,6 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
-    }
-
-    @Override
-    public void onApplicationEvent(ContextClosedEvent contextClosedEvent) {
-        super.unexport();
     }
 
     @Override
