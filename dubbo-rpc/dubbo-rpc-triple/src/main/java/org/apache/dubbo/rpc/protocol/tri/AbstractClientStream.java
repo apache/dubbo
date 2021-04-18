@@ -78,19 +78,35 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     protected byte[] encodeRequest(Object value) {
         final byte[] out;
+        final Object obj;
 
+        if (getMethodDescriptor().isNeedWrap()) {
+            obj = getRequestWrapper(value);
+        } else {
+            obj = getRequestValue(value);
+        }
+        out = TripleUtil.pack(obj);
+
+        return out;
+    }
+
+    private TripleWrapper.TripleRequestWrapper getRequestWrapper(Object value) {
         if (getMethodDescriptor().isStream()) {
-            out = TripleUtil.pack(value);
-        } else if (getMethodDescriptor().isNeedWrap()) {
-            RpcInvocation invocation = (RpcInvocation)value;
-            TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation,
-                getMultipleSerialization());
-            out = TripleUtil.pack(wrap);
+            String type = getMethodDescriptor().getParameterClasses()[0].getName();
+            return TripleUtil.wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
         } else {
             RpcInvocation invocation = (RpcInvocation)value;
-            out = TripleUtil.pack(invocation.getArguments()[0]);
+            return TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
         }
-        return out;
+    }
+
+    private Object getRequestValue(Object value) {
+        if (getMethodDescriptor().isUnary()) {
+            RpcInvocation invocation = (RpcInvocation)value;
+            return invocation.getArguments()[0];
+        }
+
+        return value;
     }
 
     protected Object deserializeResponse(byte[] data) {

@@ -78,7 +78,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
         final Executor callback = (Executor)inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
-        if (!methodDescriptor.isStream()) {
+        if (methodDescriptor.isUnary()) {
             stream = AbstractClientStream.unary(url).req(req);
         } else {
             stream = AbstractClientStream.stream(url);
@@ -124,7 +124,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
 
         stream.getTransportSubscriber().tryOnMetadata(metadata, false);
 
-        if (!methodDescriptor.isStream()) {
+        if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
             stream.asStreamObserver().onCompleted();
         } else {

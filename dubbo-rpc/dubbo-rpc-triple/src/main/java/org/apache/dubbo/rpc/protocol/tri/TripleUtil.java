@@ -162,6 +162,42 @@ public class TripleUtil {
         }
     }
 
+    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
+        String type,
+        MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .addArgTypes(type)
+                .setSerializeType(convertHessianToWrapper(serializeType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            multipleSerialization.serialize(url, serializeType, type, req, bos);
+            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
+        MultipleSerialization serialization) {
+        try {
+            String serializationName = (String)invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                .setSerializeType(convertHessianToWrapper(serializationName));
+            for (int i = 0; i < invocation.getArguments().length; i++) {
+                final String clz = invocation.getParameterTypes()[i].getName();
+                builder.addArgTypes(clz);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
+                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            }
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
     public static <T> T unpack(byte[] data, Class<T> clz) {
         return unpack(new ByteArrayInputStream(data), clz);
     }
@@ -209,25 +245,6 @@ public class TripleUtil {
             return buf;
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack req", e);
-        }
-    }
-
-    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
-        MultipleSerialization serialization) {
-        try {
-            String serializationName = (String)invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
-            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                .setSerializeType(convertHessianToWrapper(serializationName));
-            for (int i = 0; i < invocation.getArguments().length; i++) {
-                final String clz = invocation.getParameterTypes()[i].getName();
-                builder.addArgTypes(clz);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
-                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
-            }
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
 

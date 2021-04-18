@@ -56,7 +56,11 @@ public class MethodDescriptor {
                 (Class<?>)((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[0]};
             this.returnClass = (Class<?>)((ParameterizedType)method.getGenericParameterTypes()[0])
                 .getActualTypeArguments()[0];
-            rpcType = RpcType.STREAM;
+            if (needWrap()) {
+                rpcType = RpcType.STREAM_WRAP;
+            } else {
+                rpcType = RpcType.STREAM_UNWRAP;
+            }
         } else {
             this.parameterClasses = method.getParameterTypes();
             this.returnClass = method.getReturnType();
@@ -76,11 +80,15 @@ public class MethodDescriptor {
     }
 
     public boolean isStream() {
-        return rpcType.equals(RpcType.STREAM);
+        return rpcType.equals(RpcType.STREAM_WRAP) || rpcType.equals(RpcType.STREAM_UNWRAP);
+    }
+
+    public boolean isUnary() {
+        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.UNARY_UNWRAP);
     }
 
     public boolean isNeedWrap() {
-        return rpcType.equals(RpcType.UNARY_WRAP);
+        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.STREAM_WRAP);
     }
 
     private boolean needWrap() {
@@ -139,7 +147,8 @@ public class MethodDescriptor {
     public enum RpcType {
         UNARY_WRAP,
         UNARY_UNWRAP,
-        STREAM;
+        STREAM_WRAP,
+        STREAM_UNWRAP;
     }
 
 }
