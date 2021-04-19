@@ -84,7 +84,7 @@ public class RegistryProtocolTest {
 
     @AfterEach
     public void reset() {
-        ApplicationModel.getConfigManager().destroy();
+        ApplicationModel.reset();
     }
 
 
@@ -192,6 +192,10 @@ public class RegistryProtocolTest {
     public void testDestoryRegistry() {
         URL newRegistryUrl = registryUrl.addParameter(EXPORT_KEY, serviceUrl);
         Invoker<RegistryProtocolTest> invoker = new MockInvoker<RegistryProtocolTest>(RegistryProtocolTest.class, newRegistryUrl);
+
+        ServiceDescriptor descriptor = ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.getServiceRepository().registerProvider(service, new DemoServiceImpl(), descriptor, null, null);
+
         Exporter<?> exporter = protocol.export(invoker);
         destroyRegistryProtocol();
         try {
