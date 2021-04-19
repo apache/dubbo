@@ -55,7 +55,7 @@ public class PropertySourcesConfigurerTest {
 
             // remove provider's application config
             // ApplicationModel.getConfigManager().removeConfig(ApplicationModel.getApplicationConfig());
-            DubboBootstrap.newInstance();
+            DubboBootstrap.reset(false);
 
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             context.start();

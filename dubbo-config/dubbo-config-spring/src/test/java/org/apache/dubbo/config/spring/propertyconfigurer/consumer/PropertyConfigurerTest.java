@@ -49,7 +49,7 @@ public class PropertyConfigurerTest {
 
             // clear config manager
             //ApplicationModel.getConfigManager().clear();
-            DubboBootstrap.newInstance();
+            DubboBootstrap.reset(false);
 
             try {
                 Thread.sleep(1000);

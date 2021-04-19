@@ -209,16 +209,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     @Deprecated
     public static void reset() {
-        if (instance != null) {
-            instance.destroy();
-            instance = null;
-        }
-        ApplicationModel.reset();
-        MetadataReportInstance.destroy();
-        AbstractMetadataReportFactory.clear();
-        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
-        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
-        ExtensionLoader.destroyAll();
+        reset(true);
     }
 
     /**
@@ -226,9 +217,22 @@ public class DubboBootstrap extends GenericEventListener {
      * @deprecated For testing purposes only
      */
     @Deprecated
-    public static void newInstance() {
-        instance = new DubboBootstrap();
-        ApplicationModel.reset();
+    public static void reset(boolean destroy) {
+        if (destroy) {
+            if (instance != null) {
+                instance.destroy();
+                instance = null;
+            }
+            ApplicationModel.reset();
+            MetadataReportInstance.destroy();
+            AbstractMetadataReportFactory.clear();
+            ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+            ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
+            ExtensionLoader.destroyAll();
+        } else {
+            instance = null;
+            ApplicationModel.reset();
+        }
     }
 
     private DubboBootstrap() {

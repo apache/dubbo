@@ -114,7 +114,7 @@ public class ConfigTest {
 
         // clear config manager
         //ApplicationModel.getConfigManager().clear();
-        DubboBootstrap.newInstance();
+        DubboBootstrap.reset(false);
 
         try {
             DemoService demoService = refer("dubbo://127.0.0.1:20887");
@@ -219,7 +219,7 @@ public class ConfigTest {
 
         // clear config manager
         //ApplicationModel.getConfigManager().clear();
-        DubboBootstrap.newInstance();
+        DubboBootstrap.reset(false);
 
         try {
             DemoService demoService = refer("dubbo://127.0.0.1:20881");
@@ -456,7 +456,7 @@ public class ConfigTest {
 
         // clear config manager
         //ApplicationModel.getConfigManager().clear();
-        DubboBootstrap.newInstance();
+        DubboBootstrap.reset(false);
 
         try {
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/init-reference.xml",
