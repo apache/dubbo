@@ -408,29 +408,31 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
 
         void startRetryTask() {
-            if (retryScheduledFuture == null) {
-                synchronized (retryCounter) {
-                    if (retryScheduledFuture == null) {
-                        retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
-                            @Override
-                            public void run() {
-                                // Check and connect to the metadata
-                                try {
-                                    int times = retryCounter.incrementAndGet();
-                                    logger.info("start to retry task for metadata report. retry times:" + times);
-                                    if (retry() && times > retryTimesIfNonFail) {
-                                        cancelRetryTask();
-                                    }
-                                    if (times > retryLimit) {
-                                        cancelRetryTask();
-                                    }
-                                } catch (Throwable t) { // Defensive fault tolerance
-                                    logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
-                                }
-                            }
-                        }, 500, retryPeriod, TimeUnit.MILLISECONDS);
-                    }
+            if (retryScheduledFuture != null) {
+                return;
+            }
+            synchronized (retryCounter) {
+                if (retryScheduledFuture != null) {
+                    return;
                 }
+                retryScheduledFuture = retryExecutor.scheduleWithFixedDelay(new Runnable() {
+                    @Override
+                    public void run() {
+                        // Check and connect to the metadata
+                        try {
+                            int times = retryCounter.incrementAndGet();
+                            logger.info("start to retry task for metadata report. retry times:" + times);
+                            if (retry() && times > retryTimesIfNonFail) {
+                                cancelRetryTask();
+                            }
+                            if (times > retryLimit) {
+                                cancelRetryTask();
+                            }
+                        } catch (Throwable t) { // Defensive fault tolerance
+                            logger.error("Unexpected error occur at failed retry, cause: " + t.getMessage(), t);
+                        }
+                    }
+                }, 500, retryPeriod, TimeUnit.MILLISECONDS);
             }
         }
 
