@@ -33,8 +33,8 @@ import io.grpc.netty.shaded.io.netty.handler.ssl.util.InsecureTrustManagerFactor
 import io.grpc.stub.StreamObserver;
 
 import javax.net.ssl.SSLException;
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 
 public class XdsChannel {
     private final ManagedChannel channel;
@@ -43,10 +43,10 @@ public class XdsChannel {
         ManagedChannel channel1 = null;
         try {
             XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getAdaptiveExtension();
-            KeyPair keyPair = signer.request(url);
+            XdsCertificateSigner.KeyPair keyPair = signer.request(url);
             SslContext context = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .keyManager(keyPair.getPrivate(), X509Certificate)
+                    .keyManager(new ByteArrayInputStream(keyPair.getPublicKey().getBytes(StandardCharsets.UTF_8)), new ByteArrayInputStream(keyPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                     .build();
             channel1 = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                     .sslContext(context)

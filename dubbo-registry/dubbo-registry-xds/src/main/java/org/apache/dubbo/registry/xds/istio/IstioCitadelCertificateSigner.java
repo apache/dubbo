@@ -3,8 +3,6 @@ package org.apache.dubbo.registry.xds.istio;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 
-import java.security.KeyPair;
-
 /**
  * @author Albumen
  * @date on 2021/4/2
