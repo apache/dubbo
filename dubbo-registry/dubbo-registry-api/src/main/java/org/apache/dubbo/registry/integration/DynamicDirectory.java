@@ -205,7 +205,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     @Override
-    public synchronized void destroy() {
+    public void destroy() {
         if (isDestroyed()) {
             return;
         }
