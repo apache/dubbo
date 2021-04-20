@@ -240,7 +240,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
+
+        this.urlInvokerMap = null;
+        this.invokers = null;
     }
 
     /**
