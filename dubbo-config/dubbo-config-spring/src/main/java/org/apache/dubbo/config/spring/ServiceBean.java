@@ -31,7 +31,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.support.AbstractApplicationContext;
 
 /**
  * ServiceFactoryBean
@@ -39,7 +38,7 @@ import org.springframework.context.support.AbstractApplicationContext;
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware{
+        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware {
 
 
     private static final long serialVersionUID = 213195494150089726L;

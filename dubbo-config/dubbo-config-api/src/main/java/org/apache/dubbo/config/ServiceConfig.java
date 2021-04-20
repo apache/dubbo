@@ -167,7 +167,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (unexported) {
             return;
         }
-
         if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
@@ -202,7 +201,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::export, getDelay(), TimeUnit.MILLISECONDS);
+            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
