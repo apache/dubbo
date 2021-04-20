@@ -338,8 +338,8 @@ public class ConditionRouterTest {
         fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
         Assertions.assertEquals(3, fileredInvokers.size());
 
-        Integer i = 1;
-        invocation.setArguments(new Object[]{i});
+        int integer = 1;
+        invocation.setArguments(new Object[]{integer});
         router = new ConditionRouterFactory().getRouter(getRouteUrl("arguments[0].inner = 1 " + " => " + " host = 1.2.3.4").addParameter(FORCE_KEY, String.valueOf(true)));
         fileredInvokers = router.route(invokers, URL.valueOf("consumer://" + LOCAL_HOST + "/com.foo.BarService"), invocation);
         Assertions.assertEquals(0, fileredInvokers.size());
