@@ -280,8 +280,7 @@ public class ConditionRouter extends AbstractRouter {
      * analysis the arguments in the rule.
      * Examples would be like this:
      * "arguments[0]=1", whenCondition is that the first argument is equal to '1'.
-     * "arguments[1].param=a", whenCondition is that the 'param' attribute in the second argument is equal to 'a'.
-     * "arguments[2].inner.param=b", whenCondition is that the 'param' attribute in the 'inner' attribute of the third argument is equal to 'b'.
+     * "arguments[1]=a", whenCondition is that the second argument is equal to 'a'.
      * @param matchPair
      * @param invocation
      * @return
@@ -305,14 +304,6 @@ public class ConditionRouter extends AbstractRouter {
 
             //extract the argument value
             Object object = invocation.getArguments()[index];
-            for (int i = 1; i < expressArray.length; i++) {
-                if (object == null) {
-                    return false;
-                }
-                Field field = FieldUtils.getDeclaredField(object.getClass(), expressArray[i]);
-                field.setAccessible(true);
-                object = field.get(object);
-            }
 
             if (matchPair.getValue().isMatch(String.valueOf(object), null)) {
                 return true;
