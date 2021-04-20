@@ -60,7 +60,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -117,9 +116,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
-    private static final Set<String> exportedServiceBeanIds = new HashSet<>();
-
-    private String serviceBeanId;
+    private String serviceName;
 
     private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
@@ -171,10 +168,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
 
-        if (!StringUtils.isBlank(serviceBeanId)) {
-            exportedServiceBeanIds.remove(serviceBeanId);
-        }
-
         if (!exporters.isEmpty()) {
             for (Exporter<?> exporter : exporters) {
                 try {
@@ -209,7 +202,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::delayExport, getDelay(), TimeUnit.MILLISECONDS);
+            DELAY_EXPORT_EXECUTOR.schedule(this::export, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
@@ -306,8 +299,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
         exported = true;
-
-        duplicateExportCheck();
 
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
@@ -737,11 +728,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         this.bootstrap = bootstrap;
     }
 
-    protected void delayExport() {
-        doExport();
-    }
+    public String getServiceName() {
 
-    private void duplicateExportCheck() {
+        if(!StringUtils.isBlank(serviceName)){
+            return serviceName;
+        }
         String generateVersion = version;
         String generateGroup = group;
 
@@ -765,16 +756,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             stringBuilder.append(":").append(generateVersion);
         }
 
-        serviceBeanId = stringBuilder.toString();
-
-        if (exportedServiceBeanIds.contains(serviceBeanId)) {
-            throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[group:" +
-                    group + ", bean name :" +
-                    interfaceName + ", version:" +
-                    version + "] try to export");
-        } else {
-            this.serviceBeanId = serviceBeanId;
-            exportedServiceBeanIds.add(serviceBeanId);
-        }
+        serviceName = stringBuilder.toString();
+        return serviceName;
     }
 }

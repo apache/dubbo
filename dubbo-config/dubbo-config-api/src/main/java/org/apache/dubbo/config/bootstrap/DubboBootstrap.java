@@ -79,6 +79,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -182,6 +183,8 @@ public class DubboBootstrap extends GenericEventListener {
     private volatile MetadataServiceExporter metadataServiceExporter;
 
     private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
+
+    private Set<String> exportedServiceNames = new HashSet<>();
 
     private List<Future<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -1079,20 +1082,28 @@ public class DubboBootstrap extends GenericEventListener {
 
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
-                Future<?> future = executor.submit(() -> {
-                    sc.export();
-                    exportedServices.add(sc);
-                });
+                Future<?> future = executor.submit(() -> exportService(serviceConfig));
                 asyncExportingFutures.add(future);
             } else {
-                sc.export();
-                exportedServices.add(sc);
+                exportService(serviceConfig);
             }
         });
     }
 
+    private void exportService(ServiceConfig sc){
+        if (exportedServiceNames.contains(sc.getServiceName())) {
+            throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[ServiceConfig:" +
+                    sc.toString() + "] try to export");
+        }
+        exportedServiceNames.add(sc.getServiceName());
+        sc.export();
+        exportedServices.add(sc);
+    }
+
     private void unexportServices() {
         exportedServices.forEach(sc -> {
+            ServiceConfig serviceConfig = (ServiceConfig) sc;
+            exportedServiceNames.remove(serviceConfig.getServiceName());
             configManager.removeConfig(sc);
             sc.unexport();
         });

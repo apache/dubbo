@@ -143,13 +143,4 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
         this.applicationEventPublisher = applicationEventPublisher;
     }
-
-    @Override
-    protected void delayExport() {
-        if (applicationContext instanceof AbstractApplicationContext) {
-            if (((AbstractApplicationContext) applicationContext).isActive()) {
-                super.delayExport();
-            }
-        }
-    }
 }
