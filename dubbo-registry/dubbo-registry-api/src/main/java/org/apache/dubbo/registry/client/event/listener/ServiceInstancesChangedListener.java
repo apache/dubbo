@@ -273,7 +273,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         if (metadata == null
                 || (metadata == MetadataInfo.EMPTY && (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)))) {
             metadata = getMetadataInfo(instance);
-
             if (metadata != MetadataInfo.EMPTY) {
                 failureCounter.set(0);
                 revisionToMetadata.putIfAbsent(revision, metadata);

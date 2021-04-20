@@ -226,11 +226,6 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
-        try {
-            destroyAllInvokers();
-        } catch (Throwable t) {
-            logger.warn("Failed to destroy service " + serviceKey, t);
-        }
 
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
@@ -240,11 +235,18 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
             }
         }
 
-        routerChain.destroy();
-        invokersChangedListener = null;
-        serviceListener = null;
+        synchronized (this) {
+            try {
+                destroyAllInvokers();
+            } catch (Throwable t) {
+                logger.warn("Failed to destroy service " + serviceKey, t);
+            }
+            routerChain.destroy();
+            invokersChangedListener = null;
+            serviceListener = null;
 
-        super.destroy(); // must be executed after unsubscribing
+            super.destroy(); // must be executed after unsubscribing
+        }
     }
 
     @Override
