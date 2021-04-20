@@ -14,17 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.redis;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
+package org.apache.dubbo.common.extension.activate.impl;
 
-public class RedisServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
 
-    @Override
-    protected ServiceDiscovery createDiscovery(URL registryURL) {
-        return new RedisServiceDiscovery();
+@Activate(order = 1, group = {"order"})
+public class ActivateWrapperExt1Impl1 implements ActivateWrapperExt1 {
+    public String echo(String msg) {
+        return msg;
     }
-
 }

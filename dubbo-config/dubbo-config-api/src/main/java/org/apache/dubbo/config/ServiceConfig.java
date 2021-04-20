@@ -173,7 +173,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 try {
                     exporter.unexport();
                 } catch (Throwable t) {
-                    logger.warn("Unexpected error occured when unexport " + exporter, t);
+                    logger.warn("Unexpected error occurred when unexport " + exporter, t);
                 }
             }
             exporters.clear();

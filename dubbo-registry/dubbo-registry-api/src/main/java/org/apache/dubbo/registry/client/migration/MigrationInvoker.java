@@ -258,6 +258,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.invokersChanged.set(true);
     }
 
+    @Override
     public synchronized void destroyServiceDiscoveryInvoker(ClusterInvoker<?> serviceDiscoveryInvoker) {
         if (checkInvokerAvailable(this.invoker)) {
             this.currentAvailableInvoker = this.invoker;
@@ -270,6 +271,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<?> serviceDiscoveryInvoker) {
         if (checkInvokerAvailable(this.invoker)) {
             this.currentAvailableInvoker = this.invoker;
@@ -282,6 +284,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void refreshServiceDiscoveryInvoker() {
         clearListener(serviceDiscoveryInvoker);
         if (needRefresh(serviceDiscoveryInvoker)) {
@@ -318,6 +321,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         directory.setInvokersChangedListener(listener);
     }
 
+    @Override
     public synchronized void refreshInterfaceInvoker() {
         clearListener(invoker);
         if (needRefresh(invoker)) {
@@ -335,6 +339,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void destroyInterfaceInvoker(ClusterInvoker<T> invoker) {
         if (checkInvokerAvailable(this.serviceDiscoveryInvoker)) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
@@ -347,6 +352,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    @Override
     public synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;

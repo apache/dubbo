@@ -247,9 +247,14 @@ public class EtcdRegistry extends FailbackRegistry {
         if (listeners != null) {
             ChildListener etcdListener = listeners.get(listener);
             if (etcdListener != null) {
-                // maybe url has many subscribed paths
-                for (String path : toUnsubscribedPath(url)) {
-                    etcdClient.removeChildListener(path, etcdListener);
+                if (ANY_VALUE.equals(url.getServiceInterface())) {
+                    String root = toRootPath();
+                    etcdClient.removeChildListener(root, etcdListener);
+                }else {
+                    // maybe url has many subscribed paths
+                    for (String path : toUnsubscribedPath(url)) {
+                        etcdClient.removeChildListener(path, etcdListener);
+                    }
                 }
             }
         }

@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
 
-public class MetadataConstants {
-    public static final String KEY_SEPARATOR = ":";
-    public static final String DEFAULT_PATH_TAG = "metadata";
-    public static final String KEY_REVISION_PREFIX = "revision";
-    public static final String META_DATA_STORE_TAG = ".metaData";
-    public static final String SERVICE_META_DATA_STORE_TAG = ".smd";
-    public static final String CONSUMER_META_DATA_STORE_TAG = ".cmd";
-    public static final String METADATA_PUBLISH_DELAY_KEY = "dubbo.application.metadata.delay";
-    public static final int DEFAULT_METADATA_PUBLISH_DELAY = 5000;
-    public static final String METADATA_PROXY_TIMEOUT_KEY = "dubbo.application.metadata.delay";
-    public static final int DEFAULT_METADATA_TIMEOUT_VALUE = 5000;
+package org.apache.dubbo.common.extension.activate.impl;
+
+import org.apache.dubbo.common.extension.activate.ActivateWrapperExt1;
+
+
+public class ActivateWrapperExt1Wrapper implements ActivateWrapperExt1 {
+    private ActivateWrapperExt1 activateWrapperExt1;
+
+    public ActivateWrapperExt1Wrapper(ActivateWrapperExt1 activateWrapperExt1) {
+        this.activateWrapperExt1 = activateWrapperExt1;
+    }
+
+    @Override
+    public String echo(String msg) {
+        return activateWrapperExt1.echo(msg);
+    }
 }
