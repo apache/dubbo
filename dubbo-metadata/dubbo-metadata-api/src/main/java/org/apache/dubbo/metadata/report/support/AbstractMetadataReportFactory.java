@@ -39,10 +39,18 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         url = url.setPath(MetadataReport.class.getName())
                 .removeParameters(EXPORT_KEY, REFER_KEY);
         String key = url.toServiceString();
+
+        // take it from the cache first.
+        MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
+        if (null != metadataReport) {
+            return metadataReport;
+        }
+
         // Lock the metadata access process to ensure a single instance of the metadata instance
         LOCK.lock();
         try {
-            MetadataReport metadataReport = SERVICE_STORE_MAP.get(key);
+
+            metadataReport = SERVICE_STORE_MAP.get(key);
             if (metadataReport != null) {
                 return metadataReport;
             }
