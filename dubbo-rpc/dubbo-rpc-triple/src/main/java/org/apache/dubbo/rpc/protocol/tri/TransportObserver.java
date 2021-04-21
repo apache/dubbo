@@ -18,16 +18,19 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 public interface TransportObserver {
+    Stream.OperationHandler EMPTY_HANDLER = (result, cause) -> {
+    };
+
     default void tryOnMetadata(Metadata metadata, boolean endStream) {
-        onMetadata(metadata, endStream, null);
+        onMetadata(metadata, endStream, EMPTY_HANDLER);
     }
 
     default void tryOnData(byte[] data, boolean endStream) {
-        onData(data, endStream, null);
+        onData(data, endStream, EMPTY_HANDLER);
     }
 
     default void tryOnComplete() {
-        onComplete(null);
+        onComplete(EMPTY_HANDLER);
     }
 
     void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler);
