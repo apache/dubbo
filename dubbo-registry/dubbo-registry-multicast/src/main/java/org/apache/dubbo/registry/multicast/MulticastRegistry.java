@@ -333,7 +333,7 @@ public class MulticastRegistry extends FailbackRegistry {
                 if (urls != null) {
                     urls.remove(url);
                 }
-                if (urls == null || urls.isEmpty()) {
+                if (CollectionUtils.isEmpty(urls)) {
                     if (urls == null) {
                         urls = new ConcurrentHashSet<URL>();
                     }
