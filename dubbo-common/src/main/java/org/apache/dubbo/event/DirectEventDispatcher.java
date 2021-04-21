@@ -23,6 +23,7 @@ package org.apache.dubbo.event;
  * @since 2.7.5
  */
 public final class DirectEventDispatcher extends AbstractEventDispatcher {
+    public static final String NAME = "direct";
 
     public DirectEventDispatcher() {
         super(DIRECT_EXECUTOR);

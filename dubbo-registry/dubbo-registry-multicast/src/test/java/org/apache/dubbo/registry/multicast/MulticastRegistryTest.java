@@ -59,7 +59,7 @@ public class MulticastRegistryTest {
     @Test
     public void testUrlError() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
-            URL errorUrl = URL.valueOf("multicast://mullticast/");
+            URL errorUrl = URL.valueOf("multicast://dubbo.mullticast/");
             new MulticastRegistry(errorUrl);
         });
     }
