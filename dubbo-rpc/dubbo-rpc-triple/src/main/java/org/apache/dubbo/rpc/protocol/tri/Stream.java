@@ -34,11 +34,16 @@ public interface Stream {
 
     enum OperationResult {
         OK,
-        FAILURE
+        FAILURE,
+        NETWORK_FAIL
     }
 
     interface OperationHandler {
 
+        /**
+         * @param result operation's result
+         * @param cause  null if the operation succeed
+         */
         void operationDone(OperationResult result, Throwable cause);
     }
 }

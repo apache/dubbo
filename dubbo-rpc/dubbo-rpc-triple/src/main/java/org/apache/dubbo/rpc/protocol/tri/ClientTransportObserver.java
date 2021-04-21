@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -27,22 +28,20 @@ import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 
 public class ClientTransportObserver implements TransportObserver {
     private final ChannelHandlerContext ctx;
-    private final AbstractClientStream stream;
+    private final Http2StreamChannel streamChannel;
     private boolean headerSent = false;
     private boolean endStreamSent = false;
-    private Http2StreamChannel streamChannel;
 
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream) {
         this.ctx = ctx;
-        this.stream = stream;
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
 
         final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
         streamChannel.pipeline().addLast(responseHandler)
-            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-            .addLast(new TripleClientInboundHandler());
+                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
+                .addLast(new TripleClientInboundHandler());
         streamChannel.attr(TripleUtil.CLIENT_STREAM_KEY).set(stream);
     }
 
@@ -64,6 +63,14 @@ public class ClientTransportObserver implements TransportObserver {
         buf.writeByte(0);
         buf.writeInt(data.length);
         buf.writeBytes(data);
+        final ChannelPromise promise = ctx.newPromise();
+        promise.addListener(future -> {
+            if (future.isSuccess()) {
+                handler.operationDone(Stream.OperationResult.OK, null);
+            } else {
+                handler.operationDone(Stream.OperationResult.NETWORK_FAIL, future.cause());
+            }
+        });
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream));
     }
 
