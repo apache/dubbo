@@ -29,26 +29,25 @@ public class ClientTransportObserver implements TransportObserver {
     private final ChannelHandlerContext ctx;
     private final AbstractClientStream stream;
     private boolean headerSent = false;
+    private boolean endStreamSent = false;
     private Http2StreamChannel streamChannel;
 
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream) {
         this.ctx = ctx;
         this.stream = stream;
+
+        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
+        streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+
+        final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
+        streamChannel.pipeline().addLast(responseHandler)
+            .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
+            .addLast(new TripleClientInboundHandler());
+        streamChannel.attr(TripleUtil.CLIENT_STREAM_KEY).set(stream);
     }
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
-        if (streamChannel == null) {
-            final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
-            streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
-
-            final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
-            streamChannel.pipeline().addLast(responseHandler)
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-                .addLast(new TripleClientInboundHandler());
-            streamChannel.attr(TripleUtil.CLIENT_STREAM_KEY).set(stream);
-        }
-
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> {
             headers.set(e.getKey(), e.getValue());
@@ -70,7 +69,9 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onComplete(Stream.OperationHandler handler) {
-        //todo
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true));
+        if (!endStreamSent) {
+            endStreamSent = true;
+            streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true));
+        }
     }
 }

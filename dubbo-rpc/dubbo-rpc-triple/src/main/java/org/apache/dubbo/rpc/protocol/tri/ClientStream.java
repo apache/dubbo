@@ -31,19 +31,23 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new StreamObserver<Object>() {
             @Override
             public void onNext(Object data) {
-                getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
-                final byte[] bytes = encodeRequest(data);
-                getTransportSubscriber().tryOnData(bytes, false);
+                getCallbackExecutor().execute(() -> {
+                    getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
+                    final byte[] bytes = encodeRequest(data);
+                    getTransportSubscriber().tryOnData(bytes, false);
+                });
             }
 
             @Override
             public void onError(Throwable throwable) {
-
+                transportError(throwable);
             }
 
             @Override
             public void onCompleted() {
-                getTransportSubscriber().onComplete(null);
+                getCallbackExecutor().execute(() -> {
+                    getTransportSubscriber().onComplete(null);
+                });
             }
         };
     }
@@ -53,18 +57,21 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new TransportObserver() {
             @Override
             public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
-
             }
 
             @Override
             public void onData(byte[] data, boolean endStream, OperationHandler handler) {
-                final Object resp = deserializeResponse(data);
-                getStreamSubscriber().onNext(resp);
+                getCallbackExecutor().execute(() -> {
+                    final Object resp = deserializeResponse(data);
+                    getStreamSubscriber().onNext(resp);
+                });
             }
 
             @Override
             public void onComplete(OperationHandler handler) {
-                getStreamSubscriber().onCompleted();
+                getCallbackExecutor().execute(() -> {
+                    getStreamSubscriber().onCompleted();
+                });
             }
         };
     }

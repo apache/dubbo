@@ -32,6 +32,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
@@ -129,6 +130,13 @@ public abstract class AbstractStream implements Stream {
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
         metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+        getTransportSubscriber().tryOnMetadata(metadata, true);
+    }
+
+    protected void transportError(Throwable throwable) {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(Code.UNKNOWN.code));
+        metadata.put(TripleConstant.MESSAGE_KEY, throwable.getMessage());
         getTransportSubscriber().tryOnMetadata(metadata, true);
     }
 

@@ -116,7 +116,11 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         }
         headers.remove("path");
         headers.remove("interface");
-        Metadata metadata = new Http2HeaderMeta(headers);
+        Metadata metadata = new DefaultMetadata();
+        headers.forEach(e -> {
+            metadata.put(e.getKey(), e.getValue());
+        });
+
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             stream.convertAttachment(metadata, attachments);

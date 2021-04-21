@@ -71,19 +71,21 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
-            try {
-                final Object resp = deserializeResponse(getData());
-                Response response = new Response(req.getId(), req.getVersion());
-                final AppResponse result = new AppResponse(resp);
-                result.setObjectAttachments(parseMetadataToMap(getTrailers()));
-                response.setResult(result);
-                DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
-            } catch (Exception e) {
-                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(e)
-                    .withDescription("Failed to deserialize response");
-                onError(status);
-            }
+            getCallbackExecutor().execute(() -> {
+                try {
+                    final Object resp = deserializeResponse(getData());
+                    Response response = new Response(req.getId(), req.getVersion());
+                    final AppResponse result = new AppResponse(resp);
+                    result.setObjectAttachments(parseMetadataToMap(getTrailers()));
+                    response.setResult(result);
+                    DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
+                } catch (Exception e) {
+                    final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withCause(e)
+                        .withDescription("Failed to deserialize response");
+                    onError(status);
+                }
+            });
         }
 
         private void onError(GrpcStatus status) {

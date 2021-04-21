@@ -67,14 +67,16 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        //        final ClientStream clientStream = TripleUtil.getClientStream(ctx);
-        //        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-        //            .withCause(cause);
-        //        clientStream.onError(status);
-        //        ctx.close();
-        //        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + "
-        //       description: "
-        //            + status.description);
+            final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
+            final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withCause(cause);
+            Metadata metadata = new DefaultMetadata();
+            metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
+            metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+            clientStream.asTransportObserver().onMetadata(metadata, true, null);
+            ctx.close();
+            logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
+                + status.description);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {
