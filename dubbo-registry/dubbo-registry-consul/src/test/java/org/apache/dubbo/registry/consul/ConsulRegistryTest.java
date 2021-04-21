@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.status.RegistryStatusChecker;
 import com.pszymczyk.consul.ConsulProcess;
 import com.pszymczyk.consul.ConsulStarterBuilder;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,7 @@ import static org.mockito.Mockito.mock;
 
 public class ConsulRegistryTest {
 
-    private static ConsulProcess consul;
+    private ConsulProcess consul;
     private ConsulRegistry consulRegistry;
     private String service = "org.apache.dubbo.test.injvmServie";
     private URL serviceUrl = URL.valueOf("consul://127.0.0.1:" + NetUtils.getAvailablePort() + "/" + service + "?notify=false&methods=test1,test2");
@@ -49,11 +50,21 @@ public class ConsulRegistryTest {
     private ConsulRegistryFactory consulRegistryFactory;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        this.consul = ConsulStarterBuilder.consulStarter()
-                .withWaitTimeout(300)
-                .build()
-                .start();
+    public void setUp() {
+        Exception exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.consul = ConsulStarterBuilder.consulStarter()
+                        .build()
+                        .start();
+            } catch (Exception e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         this.registryUrl = URL.valueOf("consul://localhost:" + consul.getHttpPort());
 
         consulRegistryFactory = new ConsulRegistryFactory();

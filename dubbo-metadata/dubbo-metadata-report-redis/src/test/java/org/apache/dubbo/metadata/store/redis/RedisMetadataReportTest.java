@@ -25,7 +25,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.gson.Gson;
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -63,15 +62,14 @@ public class RedisMetadataReportTest {
         final boolean usesAuthentication = usesAuthentication(testInfo);
 
         redisServer = newRedisServer()
-            .port(redisPort)
-            .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
-            .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
-            .build();
+                .port(redisPort)
+                .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
+                .build();
         IOException exception = null;
         for (int i = 0; i < 10; i++) {
             try {
                 this.redisServer.start();
-                exception = null;
             } catch (IOException e) {
                 exception = e;
             }
@@ -89,6 +87,7 @@ public class RedisMetadataReportTest {
         final String methodName = testInfo.getTestMethod().get().getName();
         return "testAuthRedisMetadata".equals(methodName) || "testWrongAuthRedisMetadata".equals(methodName);
     }
+
     private static URL newRedisUrl(final boolean usesAuthentication, final int redisPort) {
         final String urlAuthSection = usesAuthentication ? REDIS_URL_AUTH_SECTION : "";
         return URL.valueOf(String.format(REDIS_URL_TEMPLATE, urlAuthSection, redisPort));

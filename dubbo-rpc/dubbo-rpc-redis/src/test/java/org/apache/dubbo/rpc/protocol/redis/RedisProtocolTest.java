@@ -76,7 +76,6 @@ public class RedisProtocolTest {
         for (int i = 0; i < 10; i++) {
             try {
                 this.redisServer.start();
-                exception = null;
             } catch (IOException e) {
                 exception = e;
             }

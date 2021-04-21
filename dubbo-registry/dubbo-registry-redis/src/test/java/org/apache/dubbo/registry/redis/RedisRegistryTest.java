@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.registry.redis;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,15 +54,14 @@ public class RedisRegistryTest {
         final int redisPort = NetUtils.getAvailablePort();
 
         redisServer = newRedisServer()
-            .port(redisPort)
-            // set maxheap to fix Windows error 0x70 while starting redis
-            .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
-            .build();
+                .port(redisPort)
+                // set maxheap to fix Windows error 0x70 while starting redis
+                .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                .build();
         IOException exception = null;
         for (int i = 0; i < 10; i++) {
             try {
                 this.redisServer.start();
-                exception = null;
             } catch (IOException e) {
                 exception = e;
             }
