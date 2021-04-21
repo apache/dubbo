@@ -1,4 +1,4 @@
 import static org.junit.jupiter.api.Assertions.*;
-class UnaryServerStreamTest {
+class UnaryClientStreamTest {
   
 }

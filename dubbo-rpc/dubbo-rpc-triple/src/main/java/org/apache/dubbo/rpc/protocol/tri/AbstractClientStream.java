@@ -17,24 +17,27 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.concurrent.Executor;
-
-import io.netty.channel.Channel;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.triple.TripleWrapper;
 
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http.HttpHeaderValues;
+
+import java.util.Map;
+import java.util.concurrent.Executor;
+
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
-    private final ConsumerModel consumerModel;
     protected Executor callbackExecutor;
-    private Channel channel;
+    private ConsumerModel consumerModel;
+    private Connection connection;
 
     protected AbstractClientStream(URL url) {
         super(url);
-        this.consumerModel = lookupConsumerModel(url);
     }
 
     public static UnaryClientStream unary(URL url) {
@@ -45,13 +48,9 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new ClientStream(url);
     }
 
-    private ConsumerModel lookupConsumerModel(URL url) {
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        final ConsumerModel model = repo.lookupReferredService(url.getServiceKey());
-        if (model != null) {
-            ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
-        }
-        return model;
+    public AbstractClientStream service(ConsumerModel model) {
+        this.consumerModel = model;
+        return this;
     }
 
     public ConsumerModel getConsumerModel() {
@@ -67,13 +66,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return this;
     }
 
-    public AbstractClientStream channel(Channel channel) {
-        this.channel = channel;
+    public AbstractClientStream connection(Connection connection) {
+        this.connection = connection;
         return this;
     }
 
-    public Channel getChannel() {
-        return channel;
+    public Connection getConnection() {
+        return connection;
     }
 
     protected byte[] encodeRequest(Object value) {
@@ -95,14 +94,14 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             String type = getMethodDescriptor().getParameterClasses()[0].getName();
             return TripleUtil.wrapReq(getUrl(), getSerializeType(), value, type, getMultipleSerialization());
         } else {
-            RpcInvocation invocation = (RpcInvocation)value;
+            RpcInvocation invocation = (RpcInvocation) value;
             return TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
         }
     }
 
     private Object getRequestValue(Object value) {
         if (getMethodDescriptor().isUnary()) {
-            RpcInvocation invocation = (RpcInvocation)value;
+            RpcInvocation invocation = (RpcInvocation) value;
             return invocation.getArguments()[0];
         }
 
@@ -117,7 +116,7 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
-                    TripleWrapper.TripleResponseWrapper.class);
+                        TripleWrapper.TripleResponseWrapper.class);
                 serialize(wrapper.getSerializeType());
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
@@ -125,6 +124,50 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
         } finally {
             ClassLoadUtil.switchContextLoader(tccl);
+        }
+    }
+
+    protected Metadata createRequestMeta(RpcInvocation inv) {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleConstant.PATH_KEY, "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
+                .put(TripleConstant.AUTHORITY_KEY, getUrl().getAddress())
+                .put(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO)
+                .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+                .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+
+        metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion());
+
+        metadata.putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY));
+
+        metadata.putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
+        inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
+        metadata.forEach(e -> metadata.put(e.getKey(), e.getValue()));
+        final Map<String, Object> attachments = inv.getObjectAttachments();
+        if (attachments != null) {
+            convertAttachment(metadata, attachments);
+        }
+        return metadata;
+    }
+
+    protected class ClientStreamObserver implements StreamObserver<Object> {
+        @Override
+        public void onNext(Object data) {
+            RpcInvocation invocation = (RpcInvocation) data;
+            final Metadata metadata = createRequestMeta(invocation);
+            getTransportSubscriber().tryOnMetadata(metadata, false);
+            final byte[] bytes = encodeRequest(invocation);
+            getTransportSubscriber().tryOnData(bytes, false);
+        }
+
+        @Override
+        public void onError(Throwable throwable) {
+
+        }
+
+        @Override
+        public void onCompleted() {
+            getTransportSubscriber().tryOnComplete();
         }
     }
 

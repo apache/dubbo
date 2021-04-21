@@ -19,12 +19,10 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.RpcInvocation;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
     private Request req;
@@ -40,26 +38,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        return new StreamObserver<Object>() {
-            @Override
-            public void onNext(Object data) {
-                RpcInvocation invocation = (RpcInvocation)data;
-
-                getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
-                final byte[] bytes = encodeRequest(invocation);
-                getTransportSubscriber().tryOnData(bytes, false);
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-
-            }
-
-            @Override
-            public void onCompleted() {
-                getTransportSubscriber().tryOnComplete();
-            }
-        };
+        return new ClientStreamObserver();
     }
 
     @Override
@@ -78,11 +57,11 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     final AppResponse result = new AppResponse(resp);
                     result.setObjectAttachments(parseMetadataToMap(getTrailers()));
                     response.setResult(result);
-                    DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
+                    DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
                     final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(e)
-                        .withDescription("Failed to deserialize response");
+                            .withCause(e)
+                            .withDescription("Failed to deserialize response");
                     onError(status);
                 }
             });
@@ -97,7 +76,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             }
             final byte code = GrpcStatus.toDubboStatus(status.code);
             response.setStatus(code);
-            DefaultFuture2.received(Connection.getConnectionFromChannel(getChannel()), response);
+            DefaultFuture2.received(getConnection(), response);
         }
     }
 }

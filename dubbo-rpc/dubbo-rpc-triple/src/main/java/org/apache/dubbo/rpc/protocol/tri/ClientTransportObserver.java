@@ -20,17 +20,22 @@ package org.apache.dubbo.rpc.protocol.tri;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.handler.codec.http2.Http2StreamChannel;
 import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
+import io.netty.util.AsciiString;
 
 public class ClientTransportObserver implements TransportObserver {
+    private static final AsciiString SCHEME = AsciiString.of("http");
     private final ChannelHandlerContext ctx;
     private final Http2StreamChannel streamChannel;
     private boolean headerSent = false;
     private boolean endStreamSent = false;
+
 
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream) {
         this.ctx = ctx;
@@ -47,11 +52,13 @@ public class ClientTransportObserver implements TransportObserver {
 
     @Override
     public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
-        final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
-        metadata.forEach(e -> {
-            headers.set(e.getKey(), e.getValue());
-        });
         if (!headerSent) {
+            final Http2Headers headers = new DefaultHttp2Headers(true)
+                    .path(metadata.get(TripleConstant.PATH_KEY))
+                    .authority(metadata.get(TripleConstant.AUTHORITY_KEY))
+                    .scheme(SCHEME)
+                    .method(HttpMethod.POST.asciiName());
+            metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
             headerSent = true;
             streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
         }

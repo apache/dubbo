@@ -27,8 +27,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
     @Override
     protected StreamObserver<Object> createStreamObserver() {
-        // writer
-        return new StreamObserver<Object>() {
+        return new ClientStreamObserver() {
             @Override
             public void onNext(Object data) {
                 getCallbackExecutor().execute(() -> {
@@ -41,13 +40,6 @@ public class ClientStream extends AbstractClientStream implements Stream {
             @Override
             public void onError(Throwable throwable) {
                 transportError(throwable);
-            }
-
-            @Override
-            public void onCompleted() {
-                getCallbackExecutor().execute(() -> {
-                    getTransportSubscriber().onComplete(null);
-                });
             }
         };
     }

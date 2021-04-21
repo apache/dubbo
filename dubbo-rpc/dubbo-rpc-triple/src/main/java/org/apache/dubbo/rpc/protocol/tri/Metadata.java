@@ -23,6 +23,13 @@ public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>
 
     Metadata put(CharSequence key, CharSequence value);
 
+    default Metadata putIfNotNull(CharSequence key, CharSequence value) {
+        if (value != null) {
+            put(key, value);
+        }
+        return this;
+    }
+
     CharSequence get(CharSequence key);
 
     boolean contains(CharSequence key);
