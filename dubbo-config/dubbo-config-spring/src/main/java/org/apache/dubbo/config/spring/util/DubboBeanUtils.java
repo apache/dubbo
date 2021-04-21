@@ -18,7 +18,7 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.spring.DubboConfigInitializationPostProcessor;
+import org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
