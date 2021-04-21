@@ -72,7 +72,18 @@ public class RedisProtocolTest {
             .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
             .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
             .build();
-        redisServer.start();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+            } catch (IOException e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
     }
 

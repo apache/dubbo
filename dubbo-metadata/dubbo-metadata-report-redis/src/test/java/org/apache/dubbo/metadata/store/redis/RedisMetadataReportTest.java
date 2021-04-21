@@ -62,11 +62,22 @@ public class RedisMetadataReportTest {
         final boolean usesAuthentication = usesAuthentication(testInfo);
 
         redisServer = newRedisServer()
-            .port(redisPort)
-            .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
-            .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
-            .build();
-        redisServer.start();
+                .port(redisPort)
+                .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
+                .build();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+            } catch (IOException e) {
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+        Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
         syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
@@ -76,6 +87,7 @@ public class RedisMetadataReportTest {
         final String methodName = testInfo.getTestMethod().get().getName();
         return "testAuthRedisMetadata".equals(methodName) || "testWrongAuthRedisMetadata".equals(methodName);
     }
+
     private static URL newRedisUrl(final boolean usesAuthentication, final int redisPort) {
         final String urlAuthSection = usesAuthentication ? REDIS_URL_AUTH_SECTION : "";
         return URL.valueOf(String.format(REDIS_URL_TEMPLATE, urlAuthSection, redisPort));
