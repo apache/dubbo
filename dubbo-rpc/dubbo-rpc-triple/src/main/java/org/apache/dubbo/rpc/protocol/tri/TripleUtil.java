@@ -16,6 +16,25 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpHeaderNames;
+import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
+import io.netty.handler.codec.http2.DefaultHttp2Headers;
+import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
+import io.netty.handler.codec.http2.Http2Headers;
+import io.netty.util.AttributeKey;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -23,29 +42,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.util.AttributeKey;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -86,17 +82,6 @@ public class TripleUtil {
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
     }
 
-    public static String percentDecode(CharSequence corpus) {
-        if (corpus == null) {
-            return "";
-        }
-        QueryStringDecoder decoder = new QueryStringDecoder("?=" + corpus);
-        for (Map.Entry<String, List<String>> e : decoder.parameters().entrySet()) {
-            return e.getKey();
-        }
-        return "";
-    }
-
     public static void responsePlainTextError(ChannelHandlerContext ctx, int code, GrpcStatus status) {
         Http2Headers headers = new DefaultHttp2Headers(true)
             .status("" + code)
@@ -106,13 +91,6 @@ public class TripleUtil {
         ctx.write(new DefaultHttp2HeadersFrame(headers));
         ByteBuf buf = ByteBufUtil.writeUtf8(ctx.alloc(), status.description);
         ctx.write(new DefaultHttp2DataFrame(buf, true));
-    }
-
-    public static boolean needWrapper(Class<?>[] parameterTypes) {
-        if (parameterTypes.length != 1) {
-            return true;
-        }
-        return !Message.class.isAssignableFrom(parameterTypes[0]);
     }
 
     public static Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap,
@@ -232,20 +210,6 @@ public class TripleUtil {
             throw new RuntimeException("Failed to pack protobuf object", e);
         }
         return baos.toByteArray();
-    }
-
-    public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) {
-        try {
-            final ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(0);
-            buf.writeInt(0);
-            final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
-            final int size = pbSerialization.serialize(obj, bos);
-            buf.setInt(1, size);
-            return buf;
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack req", e);
-        }
     }
 
     public static String encodeWrapper(URL url, Object obj, String serializeType, MultipleSerialization serialization)
