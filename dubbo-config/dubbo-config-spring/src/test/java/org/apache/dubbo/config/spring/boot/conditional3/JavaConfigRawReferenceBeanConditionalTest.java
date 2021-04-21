@@ -89,6 +89,7 @@ public class JavaConfigRawReferenceBeanConditionalTest {
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBeanBuilder()
                     .setGroup("${myapp.group}")
+                    .setInit(false)
                     .build();
         }
 

@@ -278,12 +278,6 @@ public class ReferenceBean<T> implements FactoryBean,
     public void setKeyAndReferenceConfig(String key, ReferenceConfig referenceConfig) {
         this.key = key;
         this.referenceConfig = referenceConfig;
-
-        //If the 'init' attribute is not set, the default value is false
-        Object init = referenceConfig.isInit();
-        if (init == null) {
-            referenceConfig.setInit(false);
-        }
     }
 
     /**

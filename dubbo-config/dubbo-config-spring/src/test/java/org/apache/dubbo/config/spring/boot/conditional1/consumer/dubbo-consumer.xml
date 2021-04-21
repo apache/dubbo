@@ -31,6 +31,6 @@
 
 	<dubbo:protocol name="dubbo" port="${myapp.dubbo.port:20880}"/>
 
-	<dubbo:reference id="helloService" group="${myapp.group:foo}" interface="org.apache.dubbo.config.spring.api.HelloService"/>
+	<dubbo:reference id="helloService" group="${myapp.group:foo}" interface="org.apache.dubbo.config.spring.api.HelloService" init="false"/>
 
 </beans>

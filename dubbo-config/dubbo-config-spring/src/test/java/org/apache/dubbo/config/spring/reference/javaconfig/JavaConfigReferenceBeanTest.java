@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -41,8 +42,8 @@ import java.util.Map;
 
 public class JavaConfigReferenceBeanTest {
 
-    @BeforeAll
-    public static void setUp() {
+    @BeforeEach
+    public void setUp() {
         DubboBootstrap.reset();
     }
 
@@ -191,13 +192,13 @@ public class JavaConfigReferenceBeanTest {
     public static class AnnotationBeanConfiguration {
 
         @Bean
-        @DubboReference(group = "${myapp.group}")
+        @DubboReference(group = "${myapp.group}", init = false)
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBean();
         }
 
         @Bean
-        @Reference(group = "${myapp.group}", interfaceClass = HelloService.class)
+        @Reference(group = "${myapp.group}", interfaceClass = HelloService.class, init = false)
         public ReferenceBean<GenericService> genericHelloService() {
             return new ReferenceBean();
         }
@@ -211,12 +212,15 @@ public class JavaConfigReferenceBeanTest {
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBeanBuilder()
                     .setGroup("${myapp.group}")
+                    .setInit(false)
                     .build();
         }
 
         @Bean
         public ReferenceBean<HelloService> helloService2() {
-            return new ReferenceBean();
+            return new ReferenceBeanBuilder()
+                    .setInit(false)
+                    .build();
         }
 
         @Bean
@@ -224,6 +228,7 @@ public class JavaConfigReferenceBeanTest {
             return new ReferenceBeanBuilder()
                     .setGroup("${myapp.group}")
                     .setInterface(HelloService.class)
+                    .setInit(false)
                     .build();
         }
 

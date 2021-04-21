@@ -126,7 +126,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
      * @param referenceBean
      * @throws Exception
      */
-    private synchronized void initReferenceBean(ReferenceBean referenceBean) throws Exception {
+    private synchronized void  initReferenceBean(ReferenceBean referenceBean) throws Exception {
 
         if (referenceBean.getReferenceConfig() != null) {
             return;
