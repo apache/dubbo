@@ -29,14 +29,14 @@
     <dubbo:consumer id="my-consumer" registry="my-registry" group="demo" version="1.2.3" scope="remote"
                     timeout="${call.timeout:foo100}" >
         <dubbo:reference id="demoService2" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
-                         url="dubbo://127.0.0.1:20813" />
+                         url="dubbo://127.0.0.1:20813" init="false" />
         <!-- consumer parameters -->
         <dubbo:parameter key="connec.timeout" value="${connection.timeout:foo1000}"/>
     </dubbo:consumer>
 
     <!-- service reference configuration -->
     <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3"
-                     url="dubbo://127.0.0.1:20813" timeout="${call.timeout:foo100}"
+                     url="dubbo://127.0.0.1:20813" timeout="${call.timeout:foo100}" init="false"
                      scope="remote" protocol="dubbo" registry="my-registry" consumer="my-consumer" >
         <dubbo:method name="sayName" retries="0">
             <!-- method arguments -->

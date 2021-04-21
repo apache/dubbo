@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.annotation;
 
 import org.apache.dubbo.common.constants.RegistryConstants;
+import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -118,9 +119,10 @@ public @interface DubboReference {
     boolean check() default true;
 
     /**
-     * Whether eager initialize the reference bean when all properties are set, default value is false
+     * Whether eager initialize the reference bean when all properties are set, default value is true ( null as true)
+     * @see ReferenceConfigBase#shouldInit()
      */
-    boolean init() default false;
+    boolean init() default true;
 
     /**
      * Whether to make connection when the client is created, the default value is false

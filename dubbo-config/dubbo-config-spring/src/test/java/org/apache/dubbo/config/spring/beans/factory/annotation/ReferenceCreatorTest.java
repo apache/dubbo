@@ -68,7 +68,7 @@ public class ReferenceCreatorTest {
     @DubboReference(
             //interfaceClass = HelloService.class,
             version = "1.0.0", group = "TEST_GROUP", url = "dubbo://localhost:12345",
-            client = "client", generic = false, injvm = true,
+            client = "client", generic = false, injvm = false,
             check = false, init = false, lazy = true,
             stubevent = true, reconnect = "reconnect", sticky = true,
             proxy = "javassist", stub = "org.apache.dubbo.config.spring.api.HelloService", cluster = "failover",
@@ -126,9 +126,9 @@ public class ReferenceCreatorTest {
         Assertions.assertEquals("dubbo://localhost:12345", referenceBean.getUrl());
         Assertions.assertEquals("client", referenceBean.getClient());
         Assertions.assertEquals(null, referenceBean.isGeneric());
-        Assertions.assertEquals(null, referenceBean.isInjvm());
+        Assertions.assertEquals(false, referenceBean.isInjvm());
         Assertions.assertEquals(false, referenceBean.isCheck());
-        Assertions.assertEquals(null, referenceBean.isInit());
+        Assertions.assertEquals(false, referenceBean.isInit());
         Assertions.assertEquals(true, referenceBean.getLazy());
         Assertions.assertEquals(true, referenceBean.getStubevent());
         Assertions.assertEquals("reconnect", referenceBean.getReconnect());

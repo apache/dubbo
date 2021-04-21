@@ -61,7 +61,7 @@ public @interface Reference {
 
     boolean check() default true;
 
-    boolean init() default false;
+    boolean init() default true;
 
     boolean lazy() default false;
 

@@ -103,7 +103,7 @@ public class ReferenceKeyTest {
 
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
         Assertions.assertEquals(2, referenceBeanMap.size());
-        Assertions.assertEquals("ReferenceBean:demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3(consumer=my-consumer,methods=[{arguments=[{callback=true, index=0}], name=sayName, parameters={access-token=my-token, b=2}, retries=0}],parameters={connec.timeout=1000},protocol=dubbo,registryIds=my-registry,scope=remote,timeout=1000,url=dubbo://127.0.0.1:20813)",
+        Assertions.assertEquals("ReferenceBean:demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3(consumer=my-consumer,init=false,methods=[{arguments=[{callback=true, index=0}], name=sayName, parameters={access-token=my-token, b=2}, retries=0}],parameters={connec.timeout=1000},protocol=dubbo,registryIds=my-registry,scope=remote,timeout=1000,url=dubbo://127.0.0.1:20813)",
                 referenceBeanMap.get("&demoService").getKey());
 
     }

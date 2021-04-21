@@ -86,7 +86,7 @@ public class JavaConfigAnnotationReferenceBeanConditionalTest {
     public static class AnnotationBeanConfiguration {
 
         @Bean
-        @DubboReference(group = "${myapp.group}")
+        @DubboReference(group = "${myapp.group}", init = false)
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBean();
         }
