@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -26,6 +26,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
