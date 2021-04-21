@@ -41,7 +41,7 @@ public class MetadataReportInstance {
     private static final Map<String, MetadataReport> metadataReports = new HashMap<>();
 
     public static void init(MetadataReportConfig config) {
-        if (init.get()) {
+        if (!init.compareAndSet(false, true)) {
             return;
         }
         MetadataReportFactory metadataReportFactory = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).getAdaptiveExtension();
@@ -58,7 +58,6 @@ public class MetadataReportInstance {
 //        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
         metadataReports.put(relatedRegistryId, metadataReportFactory.getMetadataReport(url));
-        init.set(true);
     }
 
     public static Map<String, MetadataReport> getMetadataReports(boolean checked) {
