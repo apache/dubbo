@@ -70,6 +70,9 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
         final ConsumerModel service = repo.lookupReferredService(url.getServiceKey());
+        if (service != null) {
+            ClassLoadUtil.switchContextLoader(service.getServiceInterfaceClass().getClassLoader());
+        }
         final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {

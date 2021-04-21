@@ -139,9 +139,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
         metadata.putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
                 (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY));
+        metadata.putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY));
 
         metadata.putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
         inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
+        inv.getObjectAttachments().remove(CommonConstants.INTERFACE_KEY);
+        inv.getObjectAttachments().remove(CommonConstants.PATH_KEY);
         metadata.forEach(e -> metadata.put(e.getKey(), e.getValue()));
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {

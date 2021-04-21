@@ -16,19 +16,19 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class SingleProtobufSerialization {
     private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
@@ -65,10 +65,9 @@ public class SingleProtobufSerialization {
         }
     }
 
-    public int serialize(Object obj, OutputStream os) throws IOException {
+    public void serialize(Object obj, OutputStream os) throws IOException {
         final MessageLite msg = (MessageLite)obj;
         msg.writeTo(os);
-        return msg.getSerializedSize();
     }
 
     private SingleMessageMarshaller<?> getMarshaller(Class<?> clz) {
