@@ -34,13 +34,14 @@ import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -123,11 +124,12 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit()
-                    .editOrNewMetadata()
-                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
-                    .endMetadata()
-                    .done();
+                    .edit(pod->
+                            new PodBuilder(pod)
+                                    .editOrNewMetadata()
+                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
+                                    .endMetadata()
+                                    .build());
             if (logger.isInfoEnabled()) {
                 logger.info("Write Current Service Instance Metadata to Kubernetes pod. " +
                         "Current pod name: " + currentHostname);
@@ -149,11 +151,12 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit()
-                    .editOrNewMetadata()
-                    .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
-                    .endMetadata()
-                    .done();
+                    .edit(pod ->
+                            new PodBuilder(pod)
+                                    .editOrNewMetadata()
+                                    .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
+                                    .endMetadata()
+                                    .build());
             if (logger.isInfoEnabled()) {
                 logger.info("Remove Current Service Instance from Kubernetes pod. Current pod name: " + currentHostname);
             }
@@ -222,7 +225,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });
@@ -253,7 +256,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });
@@ -284,7 +287,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });
