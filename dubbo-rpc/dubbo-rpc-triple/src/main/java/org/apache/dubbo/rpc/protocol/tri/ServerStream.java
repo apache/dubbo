@@ -87,7 +87,9 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onData(byte[] in, boolean endStream, OperationHandler handler) {
             try {
                 final Object[] arguments = deserializeRequest(in);
-                getStreamSubscriber().onNext(arguments[0]);
+                if(arguments!=null) {
+                    getStreamSubscriber().onNext(arguments[0]);
+                }
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                     .withDescription("Deserialize request failed")
