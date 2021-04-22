@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.dubbo.common.utils.ClassUtils.isSimpleType;
-
 /**
  * 2015/1/27.
  */
