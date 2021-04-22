@@ -51,12 +51,6 @@
 
         <dependency>
             <groupId>io.fabric8</groupId>
-            <artifactId>kubernetes-server-mock</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.fabric8</groupId>
             <artifactId>mockwebserver</artifactId>
             <version>0.1.8</version>
             <scope>test</scope>
