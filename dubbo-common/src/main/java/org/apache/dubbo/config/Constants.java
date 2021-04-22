@@ -115,4 +115,6 @@ public interface Constants {
     String ZOOKEEPER_PROTOCOL = "zookeeper";
 
     String REGISTER_KEY = "register";
+
+    String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 }

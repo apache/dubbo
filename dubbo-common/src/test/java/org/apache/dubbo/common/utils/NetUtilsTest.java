@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -162,7 +163,7 @@ public class NetUtilsTest {
     @Test
     public void testGetIpByHost() throws Exception {
         assertThat(NetUtils.getIpByHost("localhost"), equalTo("127.0.0.1"));
-        assertThat(NetUtils.getIpByHost("dubbo"), equalTo("dubbo"));
+        assertThat(NetUtils.getIpByHost("dubbo.local"), equalTo("dubbo.local"));
     }
 
     @Test
@@ -193,11 +194,15 @@ public class NetUtilsTest {
     public void testIsValidV6Address() {
         String saved = System.getProperty("java.net.preferIPv6Addresses", "false");
         System.setProperty("java.net.preferIPv6Addresses", "true");
+
         InetAddress address = NetUtils.getLocalAddress();
-        if (address instanceof Inet6Address) {
-            assertThat(NetUtils.isPreferIPV6Address(), equalTo(true));
-        }
+        boolean isPreferIPV6Address = NetUtils.isPreferIPV6Address();
+
+        // Restore system property to previous value before executing test
         System.setProperty("java.net.preferIPv6Addresses", saved);
+
+        assumeTrue(address instanceof Inet6Address);
+        assertThat(isPreferIPV6Address, equalTo(true));
     }
 
     /**

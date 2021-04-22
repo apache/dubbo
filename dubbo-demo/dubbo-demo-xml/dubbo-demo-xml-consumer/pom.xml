@@ -36,6 +36,10 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-failover</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-demo-interface</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
@@ -83,5 +87,16 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-serialization-hessian2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-serialization-jdk</artifactId>
+        </dependency>
+        <!-- The metadata center cannot be initialized without this dependency -->
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+            <version>1.9.12</version>
+        </dependency>
+
     </dependencies>
 </project>

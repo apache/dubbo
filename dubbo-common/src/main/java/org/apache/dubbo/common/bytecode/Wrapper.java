@@ -113,7 +113,7 @@ public abstract class Wrapper {
             return OBJECT_WRAPPER;
         }
 
-        return WRAPPER_MAP.computeIfAbsent(c, key -> makeWrapper(key));
+        return WRAPPER_MAP.computeIfAbsent(c, Wrapper::makeWrapper);
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
@@ -154,6 +154,12 @@ public abstract class Wrapper {
         // get all public method.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
+            Map<String, Integer> sameNameMethodCount = new HashMap<>((int) (methods.length / 0.75f) + 1);
+            for (Method m : methods) {
+                sameNameMethodCount.compute(m.getName(),
+                        (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
+            }
+            
             c3.append(" try{");
             for (Method m : methods) {
                 //ignore Object's method.
@@ -166,14 +172,8 @@ public abstract class Wrapper {
                 int len = m.getParameterTypes().length;
                 c3.append(" && ").append(" $3.length == ").append(len);
 
-                boolean override = false;
-                for (Method m2 : methods) {
-                    if (m != m2 && m.getName().equals(m2.getName())) {
-                        override = true;
-                        break;
-                    }
-                }
-                if (override) {
+                boolean overload = sameNameMethodCount.get(m.getName()) > 1;
+                if (overload) {
                     if (len > 0) {
                         for (int l = 0; l < len; l++) {
                             c3.append(" && ").append(" $3[").append(l).append("].getName().equals(\"")
@@ -226,7 +226,7 @@ public abstract class Wrapper {
             }
         }
         c1.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
-        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or setter method in class " + c.getName() + ".\"); }");
+        c2.append(" throw new " + NoSuchPropertyException.class.getName() + "(\"Not found property \\\"\"+$2+\"\\\" field or getter method in class " + c.getName() + ".\"); }");
 
         // make class
         long id = WRAPPER_CLASS_COUNTER.getAndIncrement();
@@ -263,7 +263,7 @@ public abstract class Wrapper {
             for (Method m : ms.values()) {
                 wc.getField("mts" + ix++).set(null, m.getParameterTypes());
             }
-            return (Wrapper) wc.newInstance();
+            return (Wrapper) wc.getDeclaredConstructor().newInstance();
         } catch (RuntimeException e) {
             throw e;
         } catch (Throwable e) {

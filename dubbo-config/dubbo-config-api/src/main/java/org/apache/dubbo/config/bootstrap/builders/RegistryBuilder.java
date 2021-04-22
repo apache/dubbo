@@ -344,7 +344,6 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         RegistryConfig registry = new RegistryConfig();
         super.build(registry);
 
-        registry.setAddress(address);
         registry.setCheck(check);
         registry.setClient(client);
         registry.setCluster(cluster);
@@ -372,6 +371,7 @@ public class RegistryBuilder extends AbstractBuilder<RegistryConfig, RegistryBui
         registry.setAccepts(accepts);
         registry.setPreferred(preferred);
         registry.setWeight(weight);
+        registry.setAddress(address);
 
         return registry;
     }

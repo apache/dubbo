@@ -108,6 +108,11 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
+    public String getProtocolServiceKey() {
+        return null;
+    }
+
     public String getMethodName() {
         return methodName;
     }
@@ -155,15 +160,16 @@ public class RpcInvocation implements Invocation, Serializable {
             attachments.put(key, value);
         }
     }
-
+  
     public void addAttachments(Map<String, String> attachments) {
         if (attachments == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
+            this.attachments = attachments;
+        }else{
+            this.attachments.putAll(attachments);
         }
-        this.attachments.putAll(attachments);
     }
 
     public void addAttachmentsIfAbsent(Map<String, String> attachments) {
