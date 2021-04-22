@@ -50,7 +50,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
-            getCallbackExecutor().execute(() -> {
+            callbackExecutorInvoke(() -> {
                 try {
                     final Object resp = deserializeResponse(getData());
                     Response response = new Response(req.getId(), req.getVersion());

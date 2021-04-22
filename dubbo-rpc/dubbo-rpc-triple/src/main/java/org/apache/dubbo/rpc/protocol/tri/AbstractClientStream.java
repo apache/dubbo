@@ -30,6 +30,8 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
 
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
     protected Executor callbackExecutor;
@@ -73,6 +75,21 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     public Connection getConnection() {
         return connection;
+    }
+
+    protected void callbackExecutorInvoke(Runnable runnable) {
+        try {
+            callbackExecutor.execute(runnable);
+        } catch (RejectedExecutionException e) {
+            LOGGER.error("Consumer's thread pool is full", e);
+            transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+                .withDescription("Consumer's thread pool is full"));
+        } catch (Throwable t) {
+            LOGGER.error("Consumer submit request to thread pool error ", t);
+            transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withCause(t)
+                .withDescription("Consumer's error"));
+        }
     }
 
     protected byte[] encodeRequest(Object value) {
