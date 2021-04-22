@@ -42,6 +42,7 @@ import java.util.concurrent.Executor;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
+
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Request) {
@@ -64,7 +65,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         }
     }
 
-    private void writeRequest(ChannelHandlerContext ctx, final Request req, ChannelPromise promise) {
+    private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
@@ -76,7 +77,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url).req(req);
+            stream = AbstractClientStream.unary(url).req(req.getId());
         } else {
             stream = AbstractClientStream.stream(url);
         }
@@ -85,7 +86,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)
                 .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-                .subscribe(new ClientTransportObserver(ctx, stream));
+                .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);

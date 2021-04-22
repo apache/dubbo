@@ -33,12 +33,14 @@ public class ClientTransportObserver implements TransportObserver {
     private static final AsciiString SCHEME = AsciiString.of("http");
     private final ChannelHandlerContext ctx;
     private final Http2StreamChannel streamChannel;
+    private final ChannelPromise promise;
     private boolean headerSent = false;
     private boolean endStreamSent = false;
 
 
-    public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream) {
+    public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
         this.ctx = ctx;
+        this.promise = promise;
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
@@ -60,7 +62,12 @@ public class ClientTransportObserver implements TransportObserver {
                     .method(HttpMethod.POST.asciiName());
             metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
             headerSent = true;
-            streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream));
+            streamChannel.writeAndFlush(new DefaultHttp2HeadersFrame(headers, endStream))
+                    .addListener(future -> {
+                        if (!future.isSuccess()) {
+                            promise.tryFailure(future.cause());
+                        }
+                    });
         }
     }
 
@@ -70,7 +77,6 @@ public class ClientTransportObserver implements TransportObserver {
         buf.writeByte(0);
         buf.writeInt(data.length);
         buf.writeBytes(data);
-        final ChannelPromise promise = ctx.newPromise();
         promise.addListener(future -> {
             if (future.isSuccess()) {
                 handler.operationDone(Stream.OperationResult.OK, null);
@@ -78,14 +84,26 @@ public class ClientTransportObserver implements TransportObserver {
                 handler.operationDone(Stream.OperationResult.NETWORK_FAIL, future.cause());
             }
         });
-        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream));
+        streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
+                .addListener(future -> {
+                    if (!future.isSuccess()) {
+                        promise.tryFailure(future.cause());
+                    }
+                });
     }
 
     @Override
     public void onComplete(Stream.OperationHandler handler) {
         if (!endStreamSent) {
             endStreamSent = true;
-            streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true));
+            streamChannel.writeAndFlush(new DefaultHttp2DataFrame(true))
+                    .addListener(future -> {
+                        if (future.isSuccess()) {
+                            promise.trySuccess();
+                        } else {
+                            promise.tryFailure(future.cause());
+                        }
+                    });
         }
     }
 }

@@ -19,20 +19,20 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
-    private Request req;
+
+    private long id;
 
     protected UnaryClientStream(URL url) {
         super(url);
     }
 
-    protected UnaryClientStream req(Request req) {
-        this.req = req;
+    protected UnaryClientStream req(long id) {
+        this.id = id;
         return this;
     }
 
@@ -49,11 +49,11 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
     private class UnaryClientTransportObserver extends UnaryTransportObserver implements TransportObserver {
 
         @Override
-        public void onComplete(OperationHandler handler) {
+        public void doOnComplete(OperationHandler handler) {
             callbackExecutorInvoke(() -> {
                 try {
                     final Object resp = deserializeResponse(getData());
-                    Response response = new Response(req.getId(), req.getVersion());
+                    Response response = new Response(id, TripleConstant.TRI_VERSION);
                     final AppResponse result = new AppResponse(resp);
                     result.setObjectAttachments(parseMetadataToMap(getTrailers()));
                     response.setResult(result);
@@ -67,8 +67,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             });
         }
 
-        private void onError(GrpcStatus status) {
-            Response response = new Response(req.getId(), req.getVersion());
+        protected void onError(GrpcStatus status) {
+            Response response = new Response(id, TripleConstant.TRI_VERSION);
             if (status.description != null) {
                 response.setErrorMessage(status.description);
             } else {
