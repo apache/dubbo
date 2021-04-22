@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import java.util.ArrayList;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -33,6 +31,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
 import org.apache.dubbo.rpc.protocol.AbstractProtocol;
 
+import java.util.ArrayList;
+
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 
@@ -43,9 +43,9 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
 
     private static final Logger logger = LoggerFactory.getLogger(TripleProtocol.class);
     private final PathResolver pathResolver = ExtensionLoader.getExtensionLoader(PathResolver.class)
-        .getDefaultExtension();
+            .getDefaultExtension();
     private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
-        .getDefaultExtension();
+            .getDefaultExtension();
 
     @Override
     public int getDefaultPort() {

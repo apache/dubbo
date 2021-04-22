@@ -74,17 +74,17 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (service != null) {
             ClassLoadUtil.switchContextLoader(service.getServiceInterfaceClass().getClassLoader());
         }
-        final Executor callback = (Executor) inv.getAttributes().remove("callback.executor");
+        final Executor executor = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url).req(req.getId());
+            stream = AbstractClientStream.unary(url, executor).req(req.getId());
         } else {
-            stream = AbstractClientStream.stream(url);
+            stream = AbstractClientStream.stream(url, executor);
         }
         stream.service(service)
-                .callback(callback)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)
+                .methodName(methodDescriptor.getMethodName())
                 .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
                 .subscribe(new ClientTransportObserver(ctx, stream, promise));
 

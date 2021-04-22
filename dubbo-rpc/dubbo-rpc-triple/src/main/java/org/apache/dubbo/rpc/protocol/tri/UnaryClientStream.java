@@ -23,12 +23,14 @@ import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 
+import java.util.concurrent.Executor;
+
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
     private long id;
 
-    protected UnaryClientStream(URL url) {
-        super(url);
+    protected UnaryClientStream(URL url, Executor executor) {
+        super(url, executor);
     }
 
     protected UnaryClientStream req(long id) {
@@ -50,7 +52,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         @Override
         public void doOnComplete(OperationHandler handler) {
-            callbackExecutorInvoke(() -> {
+            execute(() -> {
                 try {
                     final Object resp = deserializeResponse(getData());
                     Response response = new Response(id, TripleConstant.TRI_VERSION);

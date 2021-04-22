@@ -77,13 +77,6 @@ public class ClientTransportObserver implements TransportObserver {
         buf.writeByte(0);
         buf.writeInt(data.length);
         buf.writeBytes(data);
-        promise.addListener(future -> {
-            if (future.isSuccess()) {
-                handler.operationDone(Stream.OperationResult.OK, null);
-            } else {
-                handler.operationDone(Stream.OperationResult.NETWORK_FAIL, future.cause());
-            }
-        });
         streamChannel.writeAndFlush(new DefaultHttp2DataFrame(buf, endStream))
                 .addListener(future -> {
                     if (!future.isSuccess()) {

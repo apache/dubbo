@@ -17,36 +17,18 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http2.Http2Headers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.Iterator;
-import java.util.Map;
+class GrpcStatusTest {
 
-public class Http2HeaderMeta implements Metadata {
-    private final Http2Headers headers;
-
-    public Http2HeaderMeta(Http2Headers headers) {
-        this.headers = headers;
-    }
-
-    @Override
-    public Metadata put(CharSequence key, CharSequence value) {
-        headers.set(key, value);
-        return this;
-    }
-
-    @Override
-    public CharSequence get(CharSequence key) {
-        return headers.get(key);
-    }
-
-    @Override
-    public boolean contains(CharSequence key) {
-        return headers.contains(key);
-    }
-
-    @Override
-    public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
-        return headers.iterator();
+    @Test
+    void fromMessage() {
+        String origin = "haha test 😊";
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(origin);
+        Assertions.assertNotEquals(origin, status.toMessage());
+        final String decoded = GrpcStatus.fromMessage(status.toMessage());
+        Assertions.assertEquals(origin, decoded);
     }
 }

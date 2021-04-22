@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.util.concurrent.Executor;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.times;
@@ -38,7 +40,8 @@ class UnaryClientStreamTest {
     @SuppressWarnings("all")
     public void testInit() {
         URL url = new URL("test", "1.2.3.4", 8080);
-        final UnaryClientStream stream = UnaryClientStream.unary(url);
+        final Executor executor = Mockito.mock(Executor.class);
+        final UnaryClientStream stream = UnaryClientStream.unary(url, executor);
         final StreamObserver<Object> observer = stream.asStreamObserver();
         RpcInvocation inv = Mockito.mock(RpcInvocation.class);
         // no invoker

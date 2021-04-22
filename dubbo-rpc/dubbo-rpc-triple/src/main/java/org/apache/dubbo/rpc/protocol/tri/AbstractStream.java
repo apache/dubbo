@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
@@ -43,19 +44,40 @@ public abstract class AbstractStream implements Stream {
     private final MultipleSerialization multipleSerialization;
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
+    private final Executor executor;
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
+    private String methodName;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
 
-    protected AbstractStream(URL url) {
+    protected AbstractStream(URL url, Executor executor) {
         this.url = url;
+        this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
                 .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
+    }
+
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    @Override
+    public void execute(Runnable runnable) {
+        executor.execute(runnable);
+    }
+
+    public String getMethodName() {
+        return methodName;
+    }
+
+    public AbstractStream methodName(String methodName) {
+        this.methodName = methodName;
+        return this;
     }
 
     public AbstractStream method(MethodDescriptor md) {
@@ -142,6 +164,10 @@ public abstract class AbstractStream implements Stream {
         metadata.put(TripleConstant.STATUS_KEY, Integer.toString(Code.UNKNOWN.code));
         metadata.put(TripleConstant.MESSAGE_KEY, throwable.getMessage());
         getTransportSubscriber().tryOnMetadata(metadata, true);
+        if (LOGGER.isErrorEnabled()) {
+            LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
+                    + " method=" + getMethodName(), throwable);
+        }
     }
 
     protected Map<String, Object> parseMetadataToMap(Metadata metadata) {
@@ -251,9 +277,11 @@ public abstract class AbstractStream implements Stream {
 
             if (metadata.contains(TripleConstant.STATUS_KEY)) {
                 final int code = Integer.parseInt(metadata.get(TripleConstant.STATUS_KEY).toString());
+                final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
+
                 if (!GrpcStatus.Code.isOk(code)) {
                     onError(GrpcStatus.fromCode(code)
-                            .withDescription(metadata.get(TripleConstant.MESSAGE_KEY).toString()));
+                            .withDescription(GrpcStatus.fromMessage(raw)));
                     return;
                 }
             }

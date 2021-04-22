@@ -20,9 +20,11 @@ package org.apache.dubbo.rpc.protocol.tri;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 
+import java.util.concurrent.Executor;
+
 public class ClientStream extends AbstractClientStream implements Stream {
-    protected ClientStream(URL url) {
-        super(url);
+    protected ClientStream(URL url, Executor executor) {
+        super(url, executor);
     }
 
     @Override
@@ -30,7 +32,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
         return new ClientStreamObserver() {
             @Override
             public void onNext(Object data) {
-                callbackExecutorInvoke(() -> {
+                execute(() -> {
                     getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
                     final byte[] bytes = encodeRequest(data);
                     getTransportSubscriber().tryOnData(bytes, false);
@@ -53,7 +55,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
             @Override
             public void onData(byte[] data, boolean endStream, OperationHandler handler) {
-                callbackExecutorInvoke(() -> {
+                execute(() -> {
                     final Object resp = deserializeResponse(data);
                     getStreamSubscriber().onNext(resp);
                 });
@@ -61,9 +63,7 @@ public class ClientStream extends AbstractClientStream implements Stream {
 
             @Override
             public void onComplete(OperationHandler handler) {
-                callbackExecutorInvoke(() -> {
-                    getStreamSubscriber().onCompleted();
-                });
+                execute(() -> getStreamSubscriber().onCompleted());
             }
         };
     }

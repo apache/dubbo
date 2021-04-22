@@ -30,24 +30,22 @@ import io.netty.handler.codec.http.HttpHeaderValues;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 public abstract class AbstractClientStream extends AbstractStream implements Stream {
-    protected Executor callbackExecutor;
     private ConsumerModel consumerModel;
     private Connection connection;
 
-    protected AbstractClientStream(URL url) {
-        super(url);
+    protected AbstractClientStream(URL url, Executor executor) {
+        super(url, executor);
     }
 
-    public static UnaryClientStream unary(URL url) {
-        return new UnaryClientStream(url);
+    public static UnaryClientStream unary(URL url, Executor executor) {
+        return new UnaryClientStream(url, executor);
     }
 
-    public static AbstractClientStream stream(URL url) {
-        return new ClientStream(url);
+    public static AbstractClientStream stream(URL url, Executor executor) {
+        return new ClientStream(url, executor);
     }
 
     public AbstractClientStream service(ConsumerModel model) {
@@ -59,15 +57,6 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return consumerModel;
     }
 
-    public Executor getCallbackExecutor() {
-        return callbackExecutor;
-    }
-
-    public AbstractClientStream callback(Executor callbackExecutor) {
-        this.callbackExecutor = callbackExecutor;
-        return this;
-    }
-
     public AbstractClientStream connection(Connection connection) {
         this.connection = connection;
         return this;
@@ -77,18 +66,20 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return connection;
     }
 
-    protected void callbackExecutorInvoke(Runnable runnable) {
+    @Override
+    public void execute(Runnable runnable) {
         try {
-            callbackExecutor.execute(runnable);
+            super.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
-            transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                .withDescription("Consumer's thread pool is full"));
+            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
+                    .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
-            transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(t)
-                .withDescription("Consumer's error"));
+            getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                    .withCause(t)
+                    .withDescription("Consumer's error")
+                    .asException());
         }
     }
 
@@ -152,14 +143,12 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
                 .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
                 .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion());
-
-        metadata.putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY));
-        metadata.putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY));
-
-        metadata.putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
+        metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion())
+                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                        (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
+                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                        (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
+                .putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
         inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         inv.getObjectAttachments().remove(CommonConstants.INTERFACE_KEY);
         inv.getObjectAttachments().remove(CommonConstants.PATH_KEY);

@@ -35,10 +35,12 @@ import com.google.protobuf.Message;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 
 public abstract class AbstractServerStream extends AbstractStream implements Stream {
+
     protected static final ExecutorRepository EXECUTOR_REPOSITORY =
             ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     private final ProviderModel providerModel;
@@ -46,8 +48,31 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     private Invoker<?> invoker;
 
     protected AbstractServerStream(URL url) {
-        super(url);
-        this.providerModel = lookupProviderModel(url);
+        this(url, lookupProviderModel(url));
+    }
+
+    protected AbstractServerStream(URL url, ProviderModel providerModel) {
+        this(url, lookupExecutor(url, providerModel), providerModel);
+    }
+
+    protected AbstractServerStream(URL url, Executor executor, ProviderModel providerModel) {
+        super(url, executor);
+        this.providerModel = providerModel;
+    }
+
+    private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
+        ExecutorService executor = null;
+        if (providerModel != null) {
+            executor = (ExecutorService) providerModel.getServiceMetadata()
+                    .getAttribute(CommonConstants.THREADPOOL_KEY);
+        }
+        if (executor == null) {
+            executor = EXECUTOR_REPOSITORY.getExecutor(url);
+        }
+        if (executor == null) {
+            executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(url);
+        }
+        return executor;
     }
 
     public static AbstractServerStream unary(URL url) {
@@ -56,6 +81,15 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     public static AbstractServerStream stream(URL url) {
         return new ServerStream(url);
+    }
+
+    private static ProviderModel lookupProviderModel(URL url) {
+        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
+        if (model != null) {
+            ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
+        }
+        return model;
     }
 
     public List<MethodDescriptor> getMethodDescriptors() {
@@ -73,15 +107,6 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
 
     public ProviderModel getProviderModel() {
         return providerModel;
-    }
-
-    private ProviderModel lookupProviderModel(URL url) {
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
-        final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
-        if (model != null) {
-            ClassLoadUtil.switchContextLoader(model.getServiceInterfaceClass().getClassLoader());
-        }
-        return model;
     }
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
@@ -128,10 +153,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                         }
                     }
                     if (getMethodDescriptor() == null) {
-                        final MethodDescriptor defaultDescriptor = getMethodDescriptors().get(0);
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNIMPLEMENTED)
-                                .withDescription("Method :" + defaultDescriptor.getMethodName()
-                                        + "[" + Arrays.toString(paramTypes) + "] not found of service:" + getServiceDescriptor().getServiceName()));
+                                .withDescription("Method :" + getMethodName() + "[" + Arrays.toString(paramTypes) + "] " +
+                                        "not found of service:" + getServiceDescriptor().getServiceName()));
 
                         return null;
                     }
@@ -158,21 +182,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         return TripleUtil.pack(message);
     }
 
-    protected void executorInvoke(Runnable runnable) {
-        ExecutorService executor = null;
-        if (getProviderModel() != null) {
-            executor = (ExecutorService) getProviderModel().getServiceMetadata().getAttribute(
-                    CommonConstants.THREADPOOL_KEY);
-        }
-        if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.getExecutor(getUrl());
-        }
-        if (executor == null) {
-            executor = EXECUTOR_REPOSITORY.createExecutorIfAbsent(getUrl());
-        }
-
+    @Override
+    public void execute(Runnable runnable) {
         try {
-            executor.execute(runnable);
+            super.execute(runnable);
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)

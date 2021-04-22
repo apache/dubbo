@@ -52,6 +52,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
     private static final PathResolver PATH_RESOLVER = ExtensionLoader.getExtensionLoader(PathResolver.class)
             .getDefaultExtension();
 
+
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof Http2HeadersFrame) {
@@ -192,6 +193,7 @@ public class TripleHttp2FrameServerHandler extends ChannelDuplexHandler {
         }
         stream.service(serviceDescriptor)
                 .invoker(invoker)
+                .methodName(methodName)
                 .subscribe(new ServerTransportObserver(ctx));
         if (methodDescriptor != null) {
             stream.method(methodDescriptor);

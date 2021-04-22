@@ -61,7 +61,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                         .withDescription("Missing request data"));
                 return;
             }
-            executorInvoke(this::invoke);
+            execute(this::invoke);
         }
 
         public void invoke() {
@@ -110,7 +110,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     metadata.put(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO);
                     getTransportSubscriber().tryOnMetadata(metadata, false);
 
-                    ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                    final ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     final byte[] data;
                     try {
                         ClassLoadUtil.switchContextLoader(

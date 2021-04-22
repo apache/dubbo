@@ -16,9 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Response;
+
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 /**
  * See https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
@@ -84,6 +86,13 @@ public class GrpcStatus {
         } else {
             return desc.substring(0, 4086);
         }
+    }
+
+    public static String fromMessage(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return "";
+        }
+        return QueryStringDecoder.decodeComponent(raw);
     }
 
     public GrpcStatus withCause(Throwable cause) {

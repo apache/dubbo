@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -33,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SingleProtobufSerialization {
     private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     private static final ExtensionRegistryLite globalRegistry =
-        ExtensionRegistryLite.getEmptyRegistry();
+            ExtensionRegistryLite.getEmptyRegistry();
     private final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> marshallers = new ConcurrentHashMap<>();
 
     @SuppressWarnings("all")
@@ -43,7 +42,7 @@ public class SingleProtobufSerialization {
             return defaultInst;
         }
         try {
-            defaultInst = (Message)clz.getMethod("getDefaultInstance").invoke(null);
+            defaultInst = (Message) clz.getMethod("getDefaultInstance").invoke(null);
         } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("Create default protobuf instance failed ", e);
         }
@@ -54,7 +53,7 @@ public class SingleProtobufSerialization {
     @SuppressWarnings("all")
     public static <T> Parser<T> getParser(Class<T> clz) {
         Message defaultInst = defaultInst(clz);
-        return (Parser<T>)defaultInst.getParserForType();
+        return (Parser<T>) defaultInst.getParserForType();
     }
 
     public Object deserialize(InputStream in, Class<?> clz) throws IOException {
@@ -66,7 +65,7 @@ public class SingleProtobufSerialization {
     }
 
     public void serialize(Object obj, OutputStream os) throws IOException {
-        final MessageLite msg = (MessageLite)obj;
+        final MessageLite msg = (MessageLite) obj;
         msg.writeTo(os);
     }
 
@@ -74,43 +73,16 @@ public class SingleProtobufSerialization {
         return marshallers.computeIfAbsent(clz, k -> new SingleMessageMarshaller(k));
     }
 
-    private SingleMessageMarshaller<?> getMarshaller(Object obj) {
-        return getMarshaller(obj.getClass());
-    }
-
     public static final class SingleMessageMarshaller<T extends MessageLite> {
         private final Parser<T> parser;
-        private final T defaultInstance;
 
-        @SuppressWarnings("unchecked")
         SingleMessageMarshaller(Class<T> clz) {
-            this.defaultInstance = (T)defaultInst(clz);
-            this.parser = (Parser<T>)defaultInstance.getParserForType();
-        }
-
-        @SuppressWarnings("unchecked")
-        public Class<T> getMessageClass() {
-            // Precisely T since protobuf doesn't let messages extend other messages.
-            return (Class<T>)defaultInstance.getClass();
-        }
-
-        public T getMessagePrototype() {
-            return defaultInstance;
+            final T inst = (T) defaultInst(clz);
+            this.parser = (Parser<T>) inst.getParserForType();
         }
 
         public T parse(InputStream stream) throws InvalidProtocolBufferException {
             return parser.parseFrom(stream, globalRegistry);
-        }
-
-        private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {
-            T message = parser.parseFrom(stream, globalRegistry);
-            try {
-                stream.checkLastTagWas(0);
-                return message;
-            } catch (InvalidProtocolBufferException e) {
-                e.setUnfinishedMessage(message);
-                throw e;
-            }
         }
     }
 

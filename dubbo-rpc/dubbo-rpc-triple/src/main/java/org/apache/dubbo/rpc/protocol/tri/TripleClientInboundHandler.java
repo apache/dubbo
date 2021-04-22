@@ -24,10 +24,10 @@ public class TripleClientInboundHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         final AbstractClientStream clientStream = TripleUtil.getClientStream(ctx);
 
-        final byte[] data = (byte[])msg;
+        final byte[] data = (byte[]) msg;
         if (clientStream != null) {
             clientStream.asTransportObserver()
-                .tryOnData(data, false);
+                    .tryOnData(data, false);
         }
     }
 }

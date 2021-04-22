@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.remoting.api.Http2WireProtocol;
+
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -24,8 +27,6 @@ import io.netty.handler.codec.http2.Http2FrameCodecBuilder;
 import io.netty.handler.codec.http2.Http2MultiplexHandler;
 import io.netty.handler.codec.http2.Http2Settings;
 import io.netty.handler.ssl.SslContext;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
 @Activate
 public class TripleHttp2Protocol extends Http2WireProtocol {
@@ -38,35 +39,35 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
     @Override
     public void configServerPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forServer()
-            .gracefulShutdownTimeoutMillis(10000)
-            .initialSettings(new Http2Settings()
-                .maxHeaderListSize(8192)
-                .maxFrameSize(2 << 16)
-                .maxConcurrentStreams(Integer.MAX_VALUE)
-                .initialWindowSize(1048576))
-            .frameLogger(SERVER_LOGGER)
-            .build();
+                .gracefulShutdownTimeoutMillis(10000)
+                .initialSettings(new Http2Settings()
+                        .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
+                        .initialWindowSize(1048576))
+                .frameLogger(SERVER_LOGGER)
+                .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
         pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
-            new SimpleChannelInboundHandler<Object>() {
-                @Override
-                protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                    // empty
-                }
-            });
+                new SimpleChannelInboundHandler<Object>() {
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+                        // empty
+                    }
+                });
     }
 
     @Override
     public void configClientPipeline(ChannelPipeline pipeline, SslContext sslContext) {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
-            .initialSettings(new Http2Settings()
-                .maxHeaderListSize(8192)
-                .maxFrameSize(2 << 16)
-                .maxConcurrentStreams(Integer.MAX_VALUE)
-                .initialWindowSize(1048576))
-            .gracefulShutdownTimeoutMillis(10000)
-            .frameLogger(CLIENT_LOGGER)
-            .build();
+                .initialSettings(new Http2Settings()
+                        .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
+                        .initialWindowSize(1048576))
+                .gracefulShutdownTimeoutMillis(10000)
+                .frameLogger(CLIENT_LOGGER)
+                .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new SimpleChannelInboundHandler<Object>() {
             @Override
             protected void channelRead0(ChannelHandlerContext ctx, Object msg) {

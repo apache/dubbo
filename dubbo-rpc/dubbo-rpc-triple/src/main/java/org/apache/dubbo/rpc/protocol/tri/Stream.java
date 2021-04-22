@@ -32,6 +32,8 @@ public interface Stream {
 
     StreamObserver<Object> asStreamObserver();
 
+    void execute(Runnable runnable);
+
     enum OperationResult {
         OK,
         FAILURE,

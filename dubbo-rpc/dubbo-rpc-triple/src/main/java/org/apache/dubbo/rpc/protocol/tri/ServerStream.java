@@ -53,8 +53,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                .withCause(throwable)
-                .withDescription("Biz exception");
+                    .withCause(throwable)
+                    .withDescription("Biz exception");
             transportError(status);
         }
 
@@ -73,13 +73,13 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
             super.onMetadata(metadata, endStream, handler);
             final RpcInvocation inv = buildInvocation(metadata);
-            inv.setArguments(new Object[] {asStreamObserver()});
+            inv.setArguments(new Object[]{asStreamObserver()});
             final Result result = getInvoker().invoke(inv);
             try {
-                subscribe((StreamObserver<Object>)result.getValue());
+                subscribe((StreamObserver<Object>) result.getValue());
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Failed to create server's observer"));
+                        .withDescription("Failed to create server's observer"));
             }
         }
 
@@ -87,13 +87,13 @@ public class ServerStream extends AbstractServerStream implements Stream {
         public void onData(byte[] in, boolean endStream, OperationHandler handler) {
             try {
                 final Object[] arguments = deserializeRequest(in);
-                if(arguments!=null) {
+                if (arguments != null) {
                     getStreamSubscriber().onNext(arguments[0]);
                 }
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withDescription("Deserialize request failed")
-                    .withCause(t));
+                        .withDescription("Deserialize request failed")
+                        .withCause(t));
             }
         }
 
