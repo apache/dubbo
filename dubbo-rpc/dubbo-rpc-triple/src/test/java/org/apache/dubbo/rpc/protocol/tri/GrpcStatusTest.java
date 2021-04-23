@@ -23,12 +23,20 @@ import org.junit.jupiter.api.Test;
 class GrpcStatusTest {
 
     @Test
-    void fromMessage() {
+    public void fromMessage() {
         String origin = "haha test 😊";
         final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
                 .withDescription(origin);
         Assertions.assertNotEquals(origin, status.toMessage());
         final String decoded = GrpcStatus.fromMessage(status.toMessage());
         Assertions.assertEquals(origin, decoded);
+    }
+
+    @Test
+    public void toMessage() {
+        String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(content);
+        Assertions.assertNotEquals(content, status.toMessage());
     }
 }

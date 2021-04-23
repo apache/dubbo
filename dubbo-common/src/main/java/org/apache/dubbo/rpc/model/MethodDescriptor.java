@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import com.google.protobuf.Message;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
-import java.io.InputStream;
+import com.google.protobuf.Message;
+
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -52,10 +52,10 @@ public class MethodDescriptor {
         this.method = method;
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
-            this.parameterClasses = new Class<?>[] {
-                (Class<?>)((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[0]};
-            this.returnClass = (Class<?>)((ParameterizedType)method.getGenericParameterTypes()[0])
-                .getActualTypeArguments()[0];
+            this.parameterClasses = new Class<?>[]{
+                    (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
+            this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
+                    .getActualTypeArguments()[0];
             if (needWrap()) {
                 rpcType = RpcType.STREAM_WRAP;
             } else {
@@ -73,10 +73,14 @@ public class MethodDescriptor {
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
-            .map(Class::getName)
-            .toArray(String[]::new);
+                .map(Class::getName)
+                .toArray(String[]::new);
         this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
+    }
+
+    private static boolean isStreamType(Class<?> clz) {
+        return StreamObserver.class.isAssignableFrom(clz);
     }
 
     public boolean isStream() {
@@ -102,10 +106,6 @@ public class MethodDescriptor {
             }
             return !Message.class.isAssignableFrom(parameterClasses[0]);
         }
-    }
-
-    private static boolean isStreamType(Class<?> clz) {
-        return StreamObserver.class.isAssignableFrom(clz);
     }
 
     public boolean matchParams(String params) {
