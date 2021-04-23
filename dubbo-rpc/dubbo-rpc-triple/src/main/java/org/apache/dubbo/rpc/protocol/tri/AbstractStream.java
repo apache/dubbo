@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -32,15 +33,34 @@ import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
             ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
+    private static final List<Executor> CALLBACK_EXECUTORS = new ArrayList<>(4);
+
+    static {
+        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callbcak", true);
+        for (int i = 0; i < 4; i++) {
+            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS, new LinkedBlockingQueue<>(1024),
+                    tripleTF, new ThreadPoolExecutor.AbortPolicy());
+            CALLBACK_EXECUTORS.add(tp);
+        }
+
+    }
+
     private final URL url;
     private final MultipleSerialization multipleSerialization;
     private final StreamObserver<Object> streamObserver;
@@ -53,6 +73,11 @@ public abstract class AbstractStream implements Stream {
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
+
+    protected AbstractStream(URL url) {
+        this(url, allocateCallbackExecutor());
+    }
+
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
         this.executor = executor;
@@ -61,6 +86,10 @@ public abstract class AbstractStream implements Stream {
                 .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
+    }
+
+    private static Executor allocateCallbackExecutor() {
+        return CALLBACK_EXECUTORS.get(ThreadLocalRandom.current().nextInt(4));
     }
 
     public Request getRequest() {
@@ -262,7 +291,23 @@ public abstract class AbstractStream implements Stream {
             } else {
                 trailers = metadata;
             }
+        }
 
+        protected GrpcStatus extractStatusFromMeta(Metadata metadata) {
+            if (metadata.contains(TripleConstant.STATUS_KEY)) {
+                final int code = Integer.parseInt(metadata.get(TripleConstant.STATUS_KEY).toString());
+
+                if (!GrpcStatus.Code.isOk(code)) {
+                    GrpcStatus status = GrpcStatus.fromCode(code);
+                    if (metadata.contains(TripleConstant.MESSAGE_KEY)) {
+                        final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
+                        status = status.withDescription(GrpcStatus.fromMessage(raw));
+                    }
+                    return status;
+                }
+                return GrpcStatus.fromCode(Code.OK);
+            }
+            return GrpcStatus.fromCode(Code.OK);
         }
 
     }
@@ -285,20 +330,12 @@ public abstract class AbstractStream implements Stream {
                 metadata = getTrailers();
             }
 
-            if (metadata.contains(TripleConstant.STATUS_KEY)) {
-                final int code = Integer.parseInt(metadata.get(TripleConstant.STATUS_KEY).toString());
-
-                if (!GrpcStatus.Code.isOk(code)) {
-                    GrpcStatus status = GrpcStatus.fromCode(code);
-                    if (metadata.contains(TripleConstant.MESSAGE_KEY)) {
-                        final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
-                        status = status.withDescription(GrpcStatus.fromMessage(raw));
-                    }
-                    onError(status);
-                    return;
-                }
+            final GrpcStatus status = extractStatusFromMeta(metadata);
+            if (GrpcStatus.Code.isOk(status.code.code)) {
+                doOnComplete(handler);
+            } else {
+                onError(status);
             }
-            doOnComplete(handler);
         }
 
         protected abstract void doOnComplete(OperationHandler handler);

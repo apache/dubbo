@@ -42,7 +42,6 @@ import java.util.concurrent.Executor;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
-
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         if (msg instanceof Request) {
@@ -79,7 +78,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (methodDescriptor.isUnary()) {
             stream = AbstractClientStream.unary(url, executor);
         } else {
-            stream = AbstractClientStream.stream(url, executor);
+            stream = AbstractClientStream.stream(url);
         }
         stream.service(service)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))

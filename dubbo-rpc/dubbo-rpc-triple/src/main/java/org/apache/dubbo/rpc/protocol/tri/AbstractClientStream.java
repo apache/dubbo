@@ -36,6 +36,10 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     private ConsumerModel consumerModel;
     private Connection connection;
 
+    protected AbstractClientStream(URL url) {
+        super(url);
+    }
+
     protected AbstractClientStream(URL url, Executor executor) {
         super(url, executor);
     }
@@ -44,8 +48,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         return new UnaryClientStream(url, executor);
     }
 
-    public static AbstractClientStream stream(URL url, Executor executor) {
-        return new ClientStream(url, executor);
+    public static AbstractClientStream stream(URL url) {
+        return new ClientStream(url);
     }
 
     public AbstractClientStream service(ConsumerModel model) {
