@@ -16,12 +16,18 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
+import com.google.protobuf.Message;
+
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.stream.Stream;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 
@@ -31,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 public class MethodDescriptor {
     private final Method method;
     //    private final boolean isCallBack;
-//    private final boolean isFuture;
+    //    private final boolean isFuture;
     private final String paramDesc;
     // duplicate filed as paramDesc, but with different format.
     private final String[] compatibleParamSignatures;
@@ -40,11 +46,30 @@ public class MethodDescriptor {
     private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
+    private final RpcType rpcType;
 
     public MethodDescriptor(Method method) {
         this.method = method;
-        this.parameterClasses = method.getParameterTypes();
-        this.returnClass = method.getReturnType();
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
+            this.parameterClasses = new Class<?>[]{
+                    (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
+            this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
+                    .getActualTypeArguments()[0];
+            if (needWrap()) {
+                rpcType = RpcType.STREAM_WRAP;
+            } else {
+                rpcType = RpcType.STREAM_UNWRAP;
+            }
+        } else {
+            this.parameterClasses = method.getParameterTypes();
+            this.returnClass = method.getReturnType();
+            if (needWrap()) {
+                rpcType = RpcType.UNARY_WRAP;
+            } else {
+                rpcType = RpcType.UNARY_UNWRAP;
+            }
+        }
         this.returnTypes = ReflectUtils.getReturnTypes(method);
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
@@ -54,7 +79,36 @@ public class MethodDescriptor {
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
 
-    public boolean matchParams (String params) {
+    private static boolean isStreamType(Class<?> clz) {
+        return StreamObserver.class.isAssignableFrom(clz);
+    }
+
+    public boolean isStream() {
+        return rpcType.equals(RpcType.STREAM_WRAP) || rpcType.equals(RpcType.STREAM_UNWRAP);
+    }
+
+    public boolean isUnary() {
+        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.UNARY_UNWRAP);
+    }
+
+    public boolean isNeedWrap() {
+        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.STREAM_WRAP);
+    }
+
+    private boolean needWrap() {
+        if (CommonConstants.$INVOKE.equals(methodName) || CommonConstants.$INVOKE_ASYNC.equals(methodName)) {
+            return true;
+        } else if ($ECHO.equals(methodName)) {
+            return true;
+        } else {
+            if (parameterClasses.length != 1) {
+                return true;
+            }
+            return !Message.class.isAssignableFrom(parameterClasses[0]);
+        }
+    }
+
+    public boolean matchParams(String params) {
         return paramDesc.equalsIgnoreCase(params);
     }
 
@@ -88,6 +142,13 @@ public class MethodDescriptor {
 
     public boolean isGeneric() {
         return generic;
+    }
+
+    public enum RpcType {
+        UNARY_WRAP,
+        UNARY_UNWRAP,
+        STREAM_WRAP,
+        STREAM_UNWRAP;
     }
 
 }

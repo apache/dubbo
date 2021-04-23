@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-
-import com.google.protobuf.CodedInputStream;
 import com.google.protobuf.ExtensionRegistryLite;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -66,53 +64,25 @@ public class SingleProtobufSerialization {
         }
     }
 
-    public int serialize(Object obj, OutputStream os) throws IOException {
+    public void serialize(Object obj, OutputStream os) throws IOException {
         final MessageLite msg = (MessageLite) obj;
         msg.writeTo(os);
-        return msg.getSerializedSize();
     }
 
     private SingleMessageMarshaller<?> getMarshaller(Class<?> clz) {
         return marshallers.computeIfAbsent(clz, k -> new SingleMessageMarshaller(k));
     }
 
-    private SingleMessageMarshaller<?> getMarshaller(Object obj) {
-        return getMarshaller(obj.getClass());
-    }
-
     public static final class SingleMessageMarshaller<T extends MessageLite> {
         private final Parser<T> parser;
-        private final T defaultInstance;
 
-        @SuppressWarnings("unchecked")
         SingleMessageMarshaller(Class<T> clz) {
-            this.defaultInstance = (T) defaultInst(clz);
-            this.parser = (Parser<T>) defaultInstance.getParserForType();
-        }
-
-        @SuppressWarnings("unchecked")
-        public Class<T> getMessageClass() {
-            // Precisely T since protobuf doesn't let messages extend other messages.
-            return (Class<T>) defaultInstance.getClass();
-        }
-
-        public T getMessagePrototype() {
-            return defaultInstance;
+            final T inst = (T) defaultInst(clz);
+            this.parser = (Parser<T>) inst.getParserForType();
         }
 
         public T parse(InputStream stream) throws InvalidProtocolBufferException {
             return parser.parseFrom(stream, globalRegistry);
-        }
-
-        private T parseFrom(CodedInputStream stream) throws InvalidProtocolBufferException {
-            T message = parser.parseFrom(stream, globalRegistry);
-            try {
-                stream.checkLastTagWas(0);
-                return message;
-            } catch (InvalidProtocolBufferException e) {
-                e.setUnfinishedMessage(message);
-                throw e;
-            }
         }
     }
 

@@ -226,6 +226,10 @@ public interface CommonConstants {
     String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
+     * echo call
+     */
+    String $ECHO = "$echo";
+    /**
      * package version in the manifest
      */
     String RELEASE_KEY = "release";

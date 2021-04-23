@@ -168,6 +168,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         return closed.get();
     }
 
+    //TODO replace channelFuture with intermediate future
     public ChannelFuture write(Object request) throws RemotingException {
         if (!isAvailable()) {
             throw new RemotingException(null, null, "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
