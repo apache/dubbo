@@ -32,17 +32,16 @@ public class ClientStream extends AbstractClientStream implements Stream {
     protected StreamObserver<Object> createStreamObserver() {
         return new ClientStreamObserver() {
             boolean metaSent;
+
             @Override
             public void onNext(Object data) {
-                execute(() -> {
-                    if(!metaSent){
-                        metaSent=true;
-                        final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
-                        getTransportSubscriber().tryOnMetadata(metadata, false);
-                    }
-                    final byte[] bytes = encodeRequest(data);
-                    getTransportSubscriber().tryOnData(bytes, false);
-                });
+                if (!metaSent) {
+                    metaSent = true;
+                    final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
+                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                }
+                final byte[] bytes = encodeRequest(data);
+                getTransportSubscriber().tryOnData(bytes, false);
             }
 
             @Override
