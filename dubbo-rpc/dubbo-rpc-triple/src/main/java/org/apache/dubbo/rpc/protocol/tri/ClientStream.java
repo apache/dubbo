@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.rpc.RpcInvocation;
 
 import java.util.concurrent.Executor;
 
@@ -30,10 +31,15 @@ public class ClientStream extends AbstractClientStream implements Stream {
     @Override
     protected StreamObserver<Object> createStreamObserver() {
         return new ClientStreamObserver() {
+            boolean metaSent;
             @Override
             public void onNext(Object data) {
                 execute(() -> {
-                    getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
+                    if(!metaSent){
+                        metaSent=true;
+                        final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
+                        getTransportSubscriber().tryOnMetadata(metadata, false);
+                    }
                     final byte[] bytes = encodeRequest(data);
                     getTransportSubscriber().tryOnData(bytes, false);
                 });

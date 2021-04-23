@@ -27,15 +27,9 @@ import java.util.concurrent.Executor;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
-    private long id;
 
     protected UnaryClientStream(URL url, Executor executor) {
         super(url, executor);
-    }
-
-    protected UnaryClientStream req(long id) {
-        this.id = id;
-        return this;
     }
 
     @Override
@@ -55,7 +49,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             execute(() -> {
                 try {
                     final Object resp = deserializeResponse(getData());
-                    Response response = new Response(id, TripleConstant.TRI_VERSION);
+                    Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
                     final AppResponse result = new AppResponse(resp);
                     result.setObjectAttachments(parseMetadataToMap(getTrailers()));
                     response.setResult(result);
@@ -70,7 +64,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         }
 
         protected void onError(GrpcStatus status) {
-            Response response = new Response(id, TripleConstant.TRI_VERSION);
+            Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
             if (status.description != null) {
                 response.setErrorMessage(status.description);
             } else {

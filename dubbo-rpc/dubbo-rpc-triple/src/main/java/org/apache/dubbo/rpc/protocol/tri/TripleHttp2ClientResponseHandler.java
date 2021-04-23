@@ -76,8 +76,7 @@ public final class TripleHttp2ClientResponseHandler extends SimpleChannelInbound
         metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
         clientStream.asTransportObserver().onMetadata(metadata, true, null);
         ctx.close();
-        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code + " description: "
-                + status.description);
+        logger.warn("Meet Exception on ClientResponseHandler, status code is: " + status.code, cause);
     }
 
     public void onDataRead(ChannelHandlerContext ctx, Http2DataFrame msg) throws Exception {

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.Constants;
+import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
@@ -48,10 +49,10 @@ public abstract class AbstractStream implements Stream {
     private ServiceDescriptor serviceDescriptor;
     private MethodDescriptor methodDescriptor;
     private String methodName;
+    private Request request;
     private String serializeType;
     private StreamObserver<Object> streamSubscriber;
     private TransportObserver transportSubscriber;
-
     protected AbstractStream(URL url, Executor executor) {
         this.url = url;
         this.executor = executor;
@@ -60,6 +61,15 @@ public abstract class AbstractStream implements Stream {
                 .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
+    }
+
+    public Request getRequest() {
+        return request;
+    }
+
+    public AbstractStream request(Request request) {
+        this.request = request;
+        return this;
     }
 
     public Executor getExecutor() {
@@ -277,11 +287,14 @@ public abstract class AbstractStream implements Stream {
 
             if (metadata.contains(TripleConstant.STATUS_KEY)) {
                 final int code = Integer.parseInt(metadata.get(TripleConstant.STATUS_KEY).toString());
-                final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
 
                 if (!GrpcStatus.Code.isOk(code)) {
-                    onError(GrpcStatus.fromCode(code)
-                            .withDescription(GrpcStatus.fromMessage(raw)));
+                    GrpcStatus status = GrpcStatus.fromCode(code);
+                    if (metadata.contains(TripleConstant.MESSAGE_KEY)) {
+                        final String raw = metadata.get(TripleConstant.MESSAGE_KEY).toString();
+                        status = status.withDescription(GrpcStatus.fromMessage(raw));
+                    }
+                    onError(status);
                     return;
                 }
             }

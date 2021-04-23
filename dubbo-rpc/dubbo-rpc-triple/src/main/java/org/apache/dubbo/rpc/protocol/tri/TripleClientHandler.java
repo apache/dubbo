@@ -77,7 +77,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final Executor executor = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url, executor).req(req.getId());
+            stream = AbstractClientStream.unary(url, executor);
         } else {
             stream = AbstractClientStream.stream(url, executor);
         }
@@ -85,6 +85,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)
                 .methodName(methodDescriptor.getMethodName())
+                .request(req)
                 .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
                 .subscribe(new ClientTransportObserver(ctx, stream, promise));
 
