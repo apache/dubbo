@@ -276,6 +276,10 @@ public interface MethodUtils {
         Method method = findMethod(type, methodName, parameterTypes);
         T value = null;
 
+        if (method == null) {
+            throw new IllegalStateException("method is null");
+        }
+
         try {
             ReflectUtils.makeAccessible(method);
             value = (T) method.invoke(object, methodParameters);
