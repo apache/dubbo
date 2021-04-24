@@ -441,6 +441,9 @@ public class RegistryProtocol implements Protocol {
 
     protected Registry getRegistry(URL url) {
         try {
+            /**
+             * RegistryFactoryWrapper
+             */
             return registryFactory.getRegistry(url);
         } catch (Throwable t) {
             LOGGER.error(t.getMessage(), t);
@@ -621,7 +624,7 @@ public class RegistryProtocol implements Protocol {
          */
         for (RegistryProtocolListener listener : listeners) {
             /**
-             * 调用
+             * 调用   MigrationRuleListener
              */
             listener.onRefer(this, invoker, consumerUrl);
         }
@@ -639,6 +642,9 @@ public class RegistryProtocol implements Protocol {
      */
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
+        /**
+         *
+         */
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
@@ -687,6 +693,8 @@ public class RegistryProtocol implements Protocol {
          * 2、访问元数据服务获取服务提供端真正对外暴露的服务
          * 3、创建对应的invoker并缓存
          * 4、订阅注册中心服务提供者实例（实为元数据服务）   如有变动则重复1-3操作
+         *
+         * DynamicDirectory
          */
         directory.subscribe(toSubscribeUrl(urlToRegistry));
 

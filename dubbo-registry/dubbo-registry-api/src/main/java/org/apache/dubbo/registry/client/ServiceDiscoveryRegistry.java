@@ -273,7 +273,7 @@ public class ServiceDiscoveryRegistry implements Registry {
      */
     @Override
     public final void subscribe(URL url, NotifyListener listener) {
-        // 过滤
+        // 过滤  provider
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
@@ -288,8 +288,12 @@ public class ServiceDiscoveryRegistry implements Registry {
     }
 
     public void doSubscribe(URL url, NotifyListener listener) {
+        //本地缓存 订阅的url
         writableMetadataService.subscribeURL(url);
 
+        /**
+         *
+         */
         Set<String> serviceNames = getServices(url, listener);
 
         if (CollectionUtils.isEmpty(serviceNames)) {
@@ -418,6 +422,9 @@ public class ServiceDiscoveryRegistry implements Registry {
          * 从配置中心中检查url对应的应用程序名称
          */
         if (isEmpty(subscribedServices)) {
+            /**
+             *
+             */
             Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener));
             logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by remote metadata center.");
             subscribedServices.addAll(mappedServices);
@@ -457,7 +464,8 @@ public class ServiceDiscoveryRegistry implements Registry {
      */
     protected Set<String> findMappedServices(URL subscribedURL, MappingListener listener) {
         /**
-         * 获取url对应的serviceName  CompositeServiceNameMapping
+         * 配置中心中  获取subscribedURL中group对应的dataId
+         * DynamicConfigurationServiceNameMapping
          */
         return serviceNameMapping.getAndListen(subscribedURL, listener);
     }

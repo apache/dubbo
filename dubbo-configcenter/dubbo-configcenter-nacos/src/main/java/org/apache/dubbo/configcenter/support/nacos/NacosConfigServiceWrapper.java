@@ -42,6 +42,9 @@ public class NacosConfigServiceWrapper {
     }
 
     public String getConfig(String dataId, String group, long timeout) throws NacosException {
+        /**
+         * 获取配置信息
+         */
         return configService.getConfig(handleInnerSymbol(dataId), handleInnerSymbol(group), timeout);
     }
 

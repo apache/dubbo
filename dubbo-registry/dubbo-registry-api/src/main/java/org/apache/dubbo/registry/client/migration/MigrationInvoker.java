@@ -290,19 +290,19 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public synchronized void refreshServiceDiscoveryInvoker() {
         /**
-         *
+         * 清空invoker对应的Listener
          */
         clearListener(serviceDiscoveryInvoker);
 
         /**
-         *
+         * serviceDiscoveryInvoker为null或者已经被销毁  则刷新
          */
         if (needRefresh(serviceDiscoveryInvoker)) {
             if (logger.isDebugEnabled()) {
                 logger.debug("Re-subscribing instance addresses, current interface " + type.getName());
             }
             /**
-             *
+             * RegistryProtocol
              */
             serviceDiscoveryInvoker = registryProtocol.getServiceDiscoveryInvoker(cluster, registry, type, url);
 
@@ -314,6 +314,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
+    /**
+     * 清空Listener
+     * @param invoker
+     */
     private void clearListener(ClusterInvoker<T> invoker) {
         if (migrationMultiRegistry) {
             return;
@@ -322,6 +326,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (invoker == null) {
             return;
         }
+        /**
+         * 清空invoker对应的Listener
+         */
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         directory.setInvokersChangedListener(null);
     }

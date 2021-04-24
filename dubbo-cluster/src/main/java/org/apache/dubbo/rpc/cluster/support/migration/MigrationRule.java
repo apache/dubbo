@@ -61,9 +61,17 @@ public class MigrationRule {
         if (null == configuration) {
             return getMigrationRule(null);
         }
-
+        //为空或INIT
         if (StringUtils.isBlank(rawRule) || INIT.equals(rawRule)) {
+            /**
+             * dubbo.application.service-discovery.migration
+             * NacosDynamicConfiguration
+             * 获取配置信息   nacos
+             */
             String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
+            /**
+             * 返回step对应的rule
+             */
             return getMigrationRule(step);
 
         }
@@ -82,8 +90,16 @@ public class MigrationRule {
         return parse(rawRule);
     }
 
+    /**
+     * 根据step  返回对应的rule
+     * @param step
+     * @return
+     */
     private  static MigrationRule getMigrationRule(String step) {
         MigrationRule rule = new MigrationRule();
+        /**
+         * 为空则返回APPLICATION_FIRST
+         */
         rule.setStep(Enum.valueOf(MigrationStep.class, StringUtils.isBlank(step) ? MigrationStep.APPLICATION_FIRST.name() : step));
         return rule;
     }

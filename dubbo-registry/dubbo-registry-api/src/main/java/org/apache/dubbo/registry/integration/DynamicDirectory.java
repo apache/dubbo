@@ -148,6 +148,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     public void subscribe(URL url) {
         setConsumerUrl(url);
+        //ListenerRegistryWrapper
         registry.subscribe(url, this);
     }
 

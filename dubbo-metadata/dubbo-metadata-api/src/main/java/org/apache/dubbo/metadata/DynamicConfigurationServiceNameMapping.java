@@ -103,7 +103,9 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         execute(() -> {
             /**
              * nacos：从配置中心中按group分页检索  并获取对应配置的dataId
+             *
              * ps :	mapping-org.apache.dubbo.demo.DemoService
+             *
              * {
              * 	"totalCount": 1,
              * 	"pageNumber": 1,
@@ -119,6 +121,8 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
              * 		"type": null
              *        }]
              * }
+             *
+             * CompositeDynamicConfiguration
              */
             Set<String> keys = dynamicConfiguration
                     .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol));

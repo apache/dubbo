@@ -57,7 +57,7 @@ public class MigrationRuleHandler<T> {
         }
 
         /**
-         *
+         * 赋值
          */
         migrationInvoker.setMigrationRule(rule);
 
@@ -83,7 +83,7 @@ public class MigrationRuleHandler<T> {
             switch (rule.getStep()) {
                 case APPLICATION_FIRST:
                     /**
-                     *
+                     * 服务自省 ServiceDiscoveryMigrationInvoker
                      */
                     migrationInvoker.migrateToServiceDiscoveryInvoker(false);
                     break;
