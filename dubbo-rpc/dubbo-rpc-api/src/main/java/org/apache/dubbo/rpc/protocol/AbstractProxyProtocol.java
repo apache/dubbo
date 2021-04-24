@@ -21,18 +21,9 @@ import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.RemotingServer;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.ProxyFactory;
-import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.remoting.*;
+import org.apache.dubbo.rpc.*;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -77,7 +68,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     @SuppressWarnings("unchecked")
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         final String uri = serviceKey(invoker.getUrl());
-        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        Exporter<T> exporter = (Exporter<T>) getExporterMap().get(uri);
         if (exporter != null) {
             // When modifying the configuration through override, you need to re-expose the newly modified service.
             if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
@@ -85,21 +76,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             }
         }
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
-        exporter = new AbstractExporter<T>(invoker) {
-            @Override
-            public void afterUnExport() {
-                exporterMap.remove(uri);
-                if (runnable != null) {
-                    try {
-                        runnable.run();
-                    } catch (Throwable t) {
-                        logger.warn(t.getMessage(), t);
-                    }
-                }
-            }
-        };
-        exporterMap.put(uri, exporter);
-        return exporter;
+        return createExporter(invoker, runnable);
     }
 
     @Override

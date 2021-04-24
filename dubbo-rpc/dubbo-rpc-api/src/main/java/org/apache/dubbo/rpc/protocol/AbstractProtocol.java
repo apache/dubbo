@@ -21,19 +21,10 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.ProtocolServer;
-import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.*;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -89,9 +80,9 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected <T> Exporter<T> createExporter(Invoker<T> invoker, Runnable unexportCallback, String serviceKey) {
         Exporter<T> exporter = new AbstractExporter<T>(invoker) {
+
             @Override
-            public void unexport() {
-                super.unexport();
+            public void afterUnExport() {
                 unregisterExporter(serviceKey);
                 if (unexportCallback != null) {
                     try {
@@ -159,10 +150,6 @@ public abstract class AbstractProtocol implements Protocol {
     }
 
     protected abstract <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException;
-
-    public Map<String, Exporter<?>> getExporterMap() {
-        return exporterMap;
-    }
 
     public Collection<Exporter<?>> getExporters() {
         return Collections.unmodifiableCollection(exporterMap.values());
