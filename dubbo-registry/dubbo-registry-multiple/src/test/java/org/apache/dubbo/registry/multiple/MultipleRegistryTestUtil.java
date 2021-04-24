@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.redis.RedisRegistry;
 import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
@@ -49,6 +50,9 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTE_PROTOCOL
 public class MultipleRegistryTestUtil {
     public static ZookeeperRegistry getZookeeperRegistry(Collection<Registry> registryCollection) {
         for (Registry registry : registryCollection) {
+            if (registry instanceof ListenerRegistryWrapper) {
+                registry = ((ListenerRegistryWrapper) registry).getRegistry();
+            }
             if (registry instanceof ZookeeperRegistry) {
                 return (ZookeeperRegistry) registry;
             }
@@ -58,6 +62,9 @@ public class MultipleRegistryTestUtil {
 
     public static RedisRegistry getRedisRegistry(Collection<Registry> registryCollection) {
         for (Registry registry : registryCollection) {
+            if (registry instanceof ListenerRegistryWrapper) {
+                registry = ((ListenerRegistryWrapper) registry).getRegistry();
+            }
             if (registry instanceof RedisRegistry) {
                 return (RedisRegistry) registry;
             }

@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
 
 public class MinaTransporter implements Transporter {
@@ -28,7 +28,7 @@ public class MinaTransporter implements Transporter {
     public static final String NAME = "mina";
 
     @Override
-    public Server bind(URL url, ChannelHandler handler) throws RemotingException {
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
         return new MinaServer(url, handler);
     }
 

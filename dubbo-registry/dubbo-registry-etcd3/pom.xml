@@ -22,6 +22,7 @@
         <artifactId>dubbo-registry</artifactId>
         <groupId>org.apache.dubbo</groupId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>dubbo-registry-etcd3</artifactId>

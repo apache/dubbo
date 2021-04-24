@@ -260,7 +260,6 @@ public class ConfigUtils {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
                         fileName, list.size(), list.toString());
                 logger.warn(errMsg);
-                // throw new IllegalStateException(errMsg); // see http://code.alibabatech.com/jira/browse/DUBBO-133
             }
 
             // fall back to use method getResourceAsStream

@@ -66,7 +66,7 @@ public class UnsafeStringWriter extends Writer {
 
     @Override
     public void write(String str, int off, int len) {
-        mBuffer.append(str.substring(off, off + len));
+        mBuffer.append(str, off, off + len);
     }
 
     @Override

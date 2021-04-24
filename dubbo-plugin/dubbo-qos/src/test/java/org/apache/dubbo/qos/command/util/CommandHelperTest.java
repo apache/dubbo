@@ -21,16 +21,20 @@ import org.apache.dubbo.qos.command.impl.Help;
 import org.apache.dubbo.qos.command.impl.Ls;
 import org.apache.dubbo.qos.command.impl.Offline;
 import org.apache.dubbo.qos.command.impl.Online;
+import org.apache.dubbo.qos.command.impl.PublishMetadata;
 import org.apache.dubbo.qos.command.impl.Quit;
+import org.apache.dubbo.qos.command.impl.Ready;
+import org.apache.dubbo.qos.command.impl.Version;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CommandHelperTest {
@@ -43,7 +47,9 @@ public class CommandHelperTest {
     @Test
     public void testGetAllCommandClass() throws Exception {
         List<Class<?>> classes = CommandHelper.getAllCommandClass();
-        assertThat(classes, containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class));
+        assertThat(classes,
+                containsInAnyOrder(GreetingCommand.class, Help.class, Ls.class, Offline.class, Online.class, Quit.class,
+                        Ready.class, Version.class, PublishMetadata.class));
     }
 
     @Test

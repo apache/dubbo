@@ -1,5 +1,111 @@
 # Release Notes
 
+## 2.7.6 
+
+### Features
+* Support Service Authentication https://github.com/apache/dubbo/issues/5461
+
+### Enhancement
+* Removing the internal JDK API from FileSystemDynamicConfiguration
+* Refactor the APT test-cases implementation of dubbo-metadata-processor in Java 9+
+* Remove feature envy
+* JsonRpcProtocol support Generalization 
+* Reduce object allocation for ProtocolUtils.serviceKey
+* Reduce object allocation for ContextFilter.invoke
+
+### Bugfixes
+* Fixed bugs reported from 2.7.5 or lower versions, check [2.7.6 milestone](https://github.com/apache/dubbo/milestone/30) for details.
+
+### Compatibility
+1. Filter refactor, the callback method `onResponse` annotated as @Deprecated has been removed, users of lower versions that 
+have extended Filter implementations and enabled Filter callbacks should be careful of this change.
+2. RpcContext added some experimental APIs to support generic Object transmission.
+
+## 2.7.5
+
+### Features
+* Support HTTP/2 through gRPC, offers all features supported by HTTP/2 and gRPC
+    * Stream communication: client stream, server stream and bi-stream.
+    * Reactive stream style RPC call.
+    * Back pressure based on HTTP/2 flow-control mechanism.
+    * TLS secure transport layer.
+    * Define service using IDL
+* Protobuf support for native Dubbo
+    * Define service using IDL
+    * Protobuf serialization
+* TLS for netty4 server
+* New SPI for dynamically adding extra parameters into provider URL, especially env parameters.
+* **[BETA]** Brand new Service Discovery mechanism: Service Reflection - instance (application) level service discovery.
+* **[BETA]** Brand new API for bootstraping Dubbo projects
+
+### Performance Tuning
+* Overall performance improved by nearly 30% compared to v2.7.3 (by QPS in certain circumstances)
+* Improved consumer side thread model to avoid thread allocation and context switch, especially useful for services serving big traffic.
+
+### Enhancement
+* Load balance strategy among multiple registries:
+    * Preferred
+    * Same zone first
+    * Weighted LB
+    * The first one available
+* New callback SPI for receiving address change notifications
+* Refactoring of config module
+
+### Bugfixes
+check 2.7.5 milestone for details.
+
+## 2.7.4.1
+
+### Enhancement
+
+* Enhance ProtobufTypeBuilder support generate type definition which contains Bytes List or Bytes Map. #5083
+* Using the ID of Dubbo Config as the alias of Bean. #5094
+* tag router supports anyhost. #4431
+* optimize generic invoke. #4076
+* dubbo zookeeper registry too slow #4828
+* use consul with group and version. #4755
+* qos support host config. #4720
+* migrate http protocol #4781
+* Some unit test optimization. #5026 #4803 #4687
+
+### Bugfixes
+
+* Apollo namespace optimization.  #5105
+* Simplify dubbo-common transitive dependencies. #5107 
+* Delete 'config.' prefix for url generated from ConfigCenterConfig. #5001
+* fix set generic method error. #5079
+* Add support for overriding Map properties in AbstractConfig.refresh. #4882
+* Fix travis javax.ex dependency issue. (unit test)
+* Fix: ExtensionLoader load duplicate filter，no log or exception. #4340 
+* When the provider interrupts abnormally, the consumer cannot return quickly and still waits for the timeout to end. #4694
+* Fix register config not take effect because of url simplified。 #4397
+* Don't support metadata for generic service. #4641 
+* Avoid resize in ClassUtils.java. #5009 
+* default attribute in <dubbo:registry> doesn't work as expected. #4412
+* make RegistryDirectory can refresh the invokers when providers number become 0 when using nacos registry. #4793
+* Multiple @Reference annotations only have one effect #4674
+* Fix RpcContext.getContext().getRemoteApplicationName() returns null #4351
+* Security issue: upgrade fastjson version to 1.2.60. #5018
+* nacos-registry:serviceName split error #4974
+* AbstractConfig.java-getMetaData set default depend on getmethod sequence #4678
+* fix protocol register set false not work. #4776 
+* Fix: In Rest protocol, the limitation of Dubbo-Attachments. #4898
+* The logic of org.apache.dubbo.config.MonitorConfig#isValid is incorrect #4892
+* protostuff return stackoverflow and other error msg #4861
+* fix method parameter bean generation. #3796 
+* replace hardcode with regex pattern #4810
+* Fix warm up issue when provider's timestamp is bigger than local machine's timestamp. #4870
+* Fix use generic invocation via API , lost #4238 ion" value #4784
+* In consumer side the app cannot catch the exception from provider that is configured serialization="kryo". #4238
+* fix StringUtils#isBlank #4725
+* when the interfaceName of the Reference annotation has duplicated,the exception is puzzled #4160
+* when anonymity  bean is defined in spirng context，dubbo throw npe #
+* add Thread ContextClassLoader #4712
+* Fix judgment ipv4 address #4729
+* The compilation of static methods should be excluded when generating the proxy. #4647
+* check EOF of inputstream in IOUtils.write #4648
+
+
 ## 2.7.3
 
 ### Change List

@@ -82,7 +82,7 @@ public class ExecuteLimitFilterTest {
             executeLimitFilter.invoke(invoker, invocation);
         } catch (Exception e) {
             Assertions.assertTrue(e instanceof RpcException);
-            executeLimitFilter.listener().onError(e, invoker, invocation);
+            executeLimitFilter.onError(e, invoker, invocation);
         }
         Assertions.assertEquals(1, RpcStatus.getStatus(url, invocation.getMethodName()).getFailed());
     }

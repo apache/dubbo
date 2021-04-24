@@ -23,11 +23,11 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.Person;
 
+import com.alibaba.dubbo.rpc.service.GenericException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,11 +36,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
-
-import static org.apache.dubbo.rpc.Constants.$INVOKE;
-import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 public class GenericImplFilterTest {
 
@@ -49,8 +48,8 @@ public class GenericImplFilterTest {
     @Test
     public void testInvoke() throws Exception {
 
-        RpcInvocation invocation = new RpcInvocation("getPerson",
-                new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+        RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
+                "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
@@ -68,7 +67,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.listener().onResponse(result, invoker, invocation);
+        genericImplFilter.onResponse(result, invoker, invocation);
 
         Assertions.assertEquals(Person.class, result.getValue().getClass());
         Assertions.assertEquals(10, ((Person) result.getValue()).getAge());
@@ -77,8 +76,8 @@ public class GenericImplFilterTest {
     @Test
     public void testInvokeWithException() throws Exception {
 
-        RpcInvocation invocation = new RpcInvocation("getPerson",
-                new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
+        RpcInvocation invocation = new RpcInvocation("getPerson", "org.apache.dubbo.rpc.support.DemoService",
+                "org.apache.dubbo.rpc.support.DemoService:dubbo", new Class[]{Person.class}, new Object[]{new Person("dubbo", 10)});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");
@@ -91,7 +90,7 @@ public class GenericImplFilterTest {
 
         Result asyncResult = genericImplFilter.invoke(invoker, invocation);
         Result result = asyncResult.get();
-        genericImplFilter.listener().onResponse(result, invoker, invocation);
+        genericImplFilter.onResponse(result, invoker, invocation);
         Assertions.assertEquals(RuntimeException.class, result.getException().getClass());
 
     }
@@ -105,8 +104,8 @@ public class GenericImplFilterTest {
         person.put("name", "dubbo");
         person.put("age", 10);
 
-        RpcInvocation invocation = new RpcInvocation($INVOKE, genericInvoke.getParameterTypes(),
-                new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
+        RpcInvocation invocation = new RpcInvocation($INVOKE, GenericService.class.getName(), "org.apache.dubbo.rpc.support.DemoService:dubbo",
+                genericInvoke.getParameterTypes(), new Object[]{"getPerson", new String[]{Person.class.getCanonicalName()}, new Object[]{person}});
 
         URL url = URL.valueOf("test://test:11/org.apache.dubbo.rpc.support.DemoService?" +
                 "accesslog=true&group=dubbo&version=1.1&generic=true");

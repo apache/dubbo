@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -41,8 +42,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 import static org.apache.dubbo.remoting.Constants.CONNECTIONS_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KEY;
 
 
 public class ReferenceCountExchangeClientTest {
@@ -244,7 +245,7 @@ public class ReferenceCountExchangeClientTest {
             ReferenceCountExchangeClient client = getReferenceClient(invoker);
             try {
                 Field clientField = ReferenceCountExchangeClient.class.getDeclaredField("client");
-                clientField.setAccessible(true);
+                ReflectUtils.makeAccessible(clientField);
                 return (ExchangeClient) clientField.get(client);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -278,7 +279,7 @@ public class ReferenceCountExchangeClientTest {
         @SuppressWarnings("rawtypes") DubboInvoker dInvoker = (DubboInvoker) ((AsyncToSyncInvoker) invoker).getInvoker();
         try {
             Field clientField = DubboInvoker.class.getDeclaredField("clients");
-            clientField.setAccessible(true);
+            ReflectUtils.makeAccessible(clientField);
             ExchangeClient[] clients = (ExchangeClient[]) clientField.get(dInvoker);
 
             List<ExchangeClient> clientList = new ArrayList<ExchangeClient>(clients.length);

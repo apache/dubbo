@@ -20,7 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.Transporter;
 
 /**
@@ -31,13 +31,13 @@ public class GrizzlyTransporter implements Transporter {
     public static final String NAME = "grizzly";
 
     @Override
-    public Server bind(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyServer(url, listener);
+    public RemotingServer bind(URL url, ChannelHandler handler) throws RemotingException {
+        return new GrizzlyServer(url, handler);
     }
 
     @Override
-    public Client connect(URL url, ChannelHandler listener) throws RemotingException {
-        return new GrizzlyClient(url, listener);
+    public Client connect(URL url, ChannelHandler handler) throws RemotingException {
+        return new GrizzlyClient(url, handler);
     }
 
 }

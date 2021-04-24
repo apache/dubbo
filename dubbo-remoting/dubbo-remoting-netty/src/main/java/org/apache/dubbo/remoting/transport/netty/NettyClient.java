@@ -163,4 +163,8 @@ public class NettyClient extends AbstractClient {
         return NettyChannel.getOrAddChannel(c, getUrl(), this);
     }
 
+    Channel getNettyChannel() {
+        return channel;
+    }
+
 }

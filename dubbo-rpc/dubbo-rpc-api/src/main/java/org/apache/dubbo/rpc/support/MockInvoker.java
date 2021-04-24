@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -39,12 +40,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
-import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
-import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FAIL_PREFIX;
 import static org.apache.dubbo.rpc.Constants.FORCE_PREFIX;
+import static org.apache.dubbo.rpc.Constants.MOCK_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
+import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
 final public class MockInvoker<T> implements Invoker<T> {
     private final static ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -95,9 +96,12 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @Override
     public Result invoke(Invocation invocation) throws RpcException {
-        String mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(this);
+        }
+        String mock = null;
+        if (getUrl().hasMethodParameter(invocation.getMethodName())) {
+            mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
         }
         if (StringUtils.isBlank(mock)) {
             mock = getUrl().getParameter(MOCK_KEY);
@@ -174,12 +178,29 @@ final public class MockInvoker<T> implements Invoker<T> {
 
     @SuppressWarnings("unchecked")
     public static Object getMockObject(String mockService, Class serviceType) {
-        if (ConfigUtils.isDefault(mockService)) {
+        boolean isDefault = ConfigUtils.isDefault(mockService);
+        if (isDefault) {
             mockService = serviceType.getName() + "Mock";
         }
 
-        Class<?> mockClass = ReflectUtils.forName(mockService);
-        if (!serviceType.isAssignableFrom(mockClass)) {
+        Class<?> mockClass;
+        try {
+            mockClass = ReflectUtils.forName(mockService);
+        } catch (Exception e) {
+            if (!isDefault) {// does not check Spring bean if it is default config.
+                ExtensionFactory extensionFactory =
+                        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
+                Object obj = extensionFactory.getExtension(serviceType, mockService);
+                if (obj != null) {
+                    return obj;
+                }
+            }
+            throw new IllegalStateException("Did not find mock class or instance "
+                    + mockService
+                    + ", please check if there's mock class or instance implementing interface "
+                    + serviceType.getName(), e);
+        }
+        if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
             throw new IllegalStateException("The mock class " + mockClass.getName() +
                     " not implement interface " + serviceType.getName());
         }

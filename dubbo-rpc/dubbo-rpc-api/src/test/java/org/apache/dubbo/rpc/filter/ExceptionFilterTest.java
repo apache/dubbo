@@ -28,7 +28,6 @@ import org.apache.dubbo.rpc.support.DemoService;
 import org.apache.dubbo.rpc.support.LocalException;
 
 import com.alibaba.com.caucho.hessian.HessianException;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -52,7 +51,7 @@ public class ExceptionFilterTest {
         RpcException exception = new RpcException("TestRpcException");
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
         Invoker<DemoService> invoker = mock(Invoker.class);
         given(invoker.getInterface()).willReturn(DemoService.class);
         given(invoker.invoke(eq(invocation))).willThrow(exception);
@@ -61,8 +60,8 @@ public class ExceptionFilterTest {
             exceptionFilter.invoke(invoker, invocation);
         } catch (RpcException e) {
             assertEquals("TestRpcException", e.getMessage());
-            ((ExceptionFilter.ExceptionListener) exceptionFilter.listener()).setLogger(logger);
-            exceptionFilter.listener().onError(e, invoker, invocation);
+            exceptionFilter.setLogger(logger);
+            exceptionFilter.onError(e, invoker, invocation);
         }
 
         Mockito.verify(logger).error(eq("Got unchecked and undeclared exception which called by 127.0.0.1. service: "
@@ -76,7 +75,7 @@ public class ExceptionFilterTest {
     public void testJavaException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
 
         AppResponse appResponse = new AppResponse();
         appResponse.setException(new IllegalArgumentException("java"));
@@ -96,7 +95,7 @@ public class ExceptionFilterTest {
     public void testRuntimeException() {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
 
         AppResponse appResponse = new AppResponse();
         appResponse.setException(new LocalException("localException"));
@@ -116,7 +115,7 @@ public class ExceptionFilterTest {
     public void testConvertToRunTimeException() throws Exception {
 
         ExceptionFilter exceptionFilter = new ExceptionFilter();
-        RpcInvocation invocation = new RpcInvocation("sayHello", new Class<?>[]{String.class}, new Object[]{"world"});
+        RpcInvocation invocation = new RpcInvocation("sayHello", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{"world"});
 
         AppResponse mockRpcResult = new AppResponse();
         mockRpcResult.setException(new HessianException("hessian"));
@@ -130,7 +129,7 @@ public class ExceptionFilterTest {
         Result asyncResult = exceptionFilter.invoke(invoker, invocation);
 
         AppResponse appResponse = (AppResponse) asyncResult.get();
-        exceptionFilter.listener().onResponse(appResponse, invoker, invocation);
+        exceptionFilter.onResponse(appResponse, invoker, invocation);
 
         Assertions.assertFalse(appResponse.getException() instanceof HessianException);
 

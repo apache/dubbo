@@ -29,6 +29,7 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -81,13 +82,23 @@ public class MockedClient implements ExchangeClient {
     }
 
     public CompletableFuture<Object> request(Object msg) throws RemotingException {
-        return request(msg, 0);
+        return request(msg, null);
     }
 
     public CompletableFuture<Object> request(Object msg, int timeout) throws RemotingException {
+        return this.request(msg, timeout, null);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object msg, ExecutorService executor) throws RemotingException {
+        return this.request(msg, 0, executor);
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object msg, int timeout, ExecutorService executor) throws RemotingException {
         this.invoked = msg;
         return new CompletableFuture<Object>() {
-            public Object get()  throws InterruptedException, ExecutionException {
+            public Object get() throws InterruptedException, ExecutionException {
                 return received;
             }
 

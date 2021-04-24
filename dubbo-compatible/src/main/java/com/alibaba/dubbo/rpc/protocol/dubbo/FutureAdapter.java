@@ -17,13 +17,13 @@
 
 package com.alibaba.dubbo.rpc.protocol.dubbo;
 
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.Result;
+
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ResponseCallback;
 import com.alibaba.dubbo.remoting.exchange.ResponseFuture;
 import com.alibaba.dubbo.rpc.RpcException;
-
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Result;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -45,15 +45,28 @@ public class FutureAdapter<V> implements Future<V> {
         this.future = future;
     }
 
+    public FutureAdapter(ResponseFuture responseFuture) {
+        this.future = new CompletableFuture<>();
+        responseFuture.setCallback(new ResponseCallback() {
+            @Override
+            public void done(Object response) {
+                future.complete(response);
+            }
+
+            @Override
+            public void caught(Throwable exception) {
+                future.completeExceptionally(exception);
+            }
+        });
+    }
+
     public ResponseFuture getFuture() {
         return new ResponseFuture() {
             @Override
             public Object get() throws RemotingException {
                 try {
                     return future.get();
-                } catch (InterruptedException e) {
-                    throw new RemotingException(e);
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     throw new RemotingException(e);
                 }
             }
@@ -62,11 +75,7 @@ public class FutureAdapter<V> implements Future<V> {
             public Object get(int timeoutInMillis) throws RemotingException {
                 try {
                     return future.get(timeoutInMillis, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException e) {
-                    throw new RemotingException(e);
-                } catch (ExecutionException e) {
-                    throw new RemotingException(e);
-                } catch (TimeoutException e) {
+                } catch (InterruptedException | TimeoutException | ExecutionException e) {
                     throw new RemotingException(e);
                 }
             }

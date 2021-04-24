@@ -35,6 +35,9 @@ import redis.embedded.RedisServer;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
+import static redis.embedded.RedisServer.newRedisServer;
+
 /**
  * 2019-04-30
  */
@@ -66,10 +69,13 @@ public class MultipleRegistry2S2RTest {
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
         redisServerPort = NetUtils.getAvailablePort();
-        redisServer = new RedisServer(redisServerPort);
+        redisServer = newRedisServer()
+                .port(redisServerPort)
+                // set maxheap to fix Windows error 0x70 while starting redis
+                .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
+                .build();
         redisServer.start();
         redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
-
 
         URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
                 MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperRegistryURLStr + "," + redisRegistryURLStr + "&"

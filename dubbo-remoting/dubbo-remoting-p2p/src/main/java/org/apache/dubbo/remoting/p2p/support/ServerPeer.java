@@ -23,7 +23,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.p2p.Group;
 import org.apache.dubbo.remoting.p2p.Peer;
 import org.apache.dubbo.remoting.transport.ServerDelegate;
@@ -44,7 +44,7 @@ public class ServerPeer extends ServerDelegate implements Peer {
 
     private final Group group;
 
-    public ServerPeer(Server server, Map<URL, Client> clients, Group group) {
+    public ServerPeer(RemotingServer server, Map<URL, Client> clients, Group group) {
         super(server);
         this.clients = clients;
         this.group = group;

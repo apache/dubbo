@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Invoker;
 
 import org.junit.jupiter.api.Assertions;
@@ -64,27 +65,24 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
         List<Thread> threads = new ArrayList<Thread>();
         int threadNum = 10;
         for (int i = 0; i < threadNum; i++) {
-            threads.add(new Thread() {
-                @Override
-                public void run() {
-                    while (!shouldBegin.get()) {
-                        try {
-                            sleep(5);
-                        } catch (InterruptedException e) {
-                        }
+            threads.add(new Thread(() -> {
+                while (!shouldBegin.get()) {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException e) {
                     }
-                    Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(runs, RoundRobinLoadBalance.NAME);
-                    synchronized (totalMap) {
-                        for (Entry<Invoker, InvokeResult> entry : resultMap.entrySet()) {
-                            if (!totalMap.containsKey(entry.getKey())) {
-                                totalMap.put(entry.getKey(), entry.getValue());
-                            } else {
-                                totalMap.get(entry.getKey()).getCount().addAndGet(entry.getValue().getCount().get());
-                            }
+                }
+                Map<Invoker, InvokeResult> resultMap = getWeightedInvokeResult(runs, RoundRobinLoadBalance.NAME);
+                synchronized (totalMap) {
+                    for (Entry<Invoker, InvokeResult> entry : resultMap.entrySet()) {
+                        if (!totalMap.containsKey(entry.getKey())) {
+                            totalMap.put(entry.getKey(), entry.getValue());
+                        } else {
+                            totalMap.get(entry.getKey()).getCount().addAndGet(entry.getValue().getCount().get());
                         }
                     }
                 }
-            });
+            }));
         }
         for (Thread thread : threads) {
             thread.start();
@@ -132,15 +130,9 @@ public class RoundRobinLoadBalanceTest extends LoadBalanceBaseTest {
             try {
                 //change recycle time to 1 ms
                 recycleTimeField = RoundRobinLoadBalance.class.getDeclaredField("RECYCLE_PERIOD");
-                recycleTimeField.setAccessible(true);
+                ReflectUtils.makeAccessible(recycleTimeField);
                 recycleTimeField.setInt(RoundRobinLoadBalance.class, 10);
-            } catch (NoSuchFieldException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (SecurityException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalArgumentException e) {
-                Assertions.assertTrue(true, "getField failed");
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchFieldException | IllegalAccessException | IllegalArgumentException | SecurityException e) {
                 Assertions.assertTrue(true, "getField failed");
             }
         }

@@ -24,11 +24,14 @@ import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +49,11 @@ public abstract class AbstractProtocol implements Protocol {
     private final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     private final static Set<Exporter<?>> ALL_EXPORTERS = new ConcurrentHashSet<>();
+
+    /**
+     * <host:port, ProtocolServer>
+     */
+    protected final Map<String, ProtocolServer> serverMap = new ConcurrentHashMap<>();
 
     //TODO SoftReference
     protected final Set<Invoker<?>> invokers = new ConcurrentHashSet<Invoker<?>>();
@@ -111,6 +119,10 @@ public abstract class AbstractProtocol implements Protocol {
         return ALL_EXPORTERS;
     }
 
+    public List<ProtocolServer> getServers() {
+        return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
+    }
+
     @Override
     public void destroy() {
         for (Invoker<?> invoker : invokers) {
@@ -147,4 +159,12 @@ public abstract class AbstractProtocol implements Protocol {
     }
 
     protected abstract <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException;
+
+    public Map<String, Exporter<?>> getExporterMap() {
+        return exporterMap;
+    }
+
+    public Collection<Exporter<?>> getExporters() {
+        return Collections.unmodifiableCollection(exporterMap.values());
+    }
 }

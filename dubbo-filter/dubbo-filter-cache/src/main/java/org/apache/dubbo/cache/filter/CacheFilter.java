@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
 /**
  * CacheFilter is a core component of dubbo.Enabling <b>cache</b> key of service,method,consumer or provider dubbo will cache method return value.
  * Along with cache key we need to configure cache type. Dubbo default implemented cache types are
- * <li>lur</li>
+ * <li>lru</li>
  * <li>threadlocal</li>
  * <li>jcache</li>
  * <li>expiring</li>
@@ -82,7 +82,7 @@ public class CacheFilter implements Filter {
 
     /**
      * If cache is configured, dubbo will invoke method on each method call. If cache value is returned by cache store
-     * then it will return otherwise call the remote method and return value. If remote method's return valeu has error
+     * then it will return otherwise call the remote method and return value. If remote method's return value has error
      * then it will not cache the value.
      * @param invoker    service
      * @param invocation invocation.

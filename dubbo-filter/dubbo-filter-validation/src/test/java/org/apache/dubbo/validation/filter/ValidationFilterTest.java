@@ -49,7 +49,7 @@ public class ValidationFilterTest {
 
     @Test
     public void testItWithNotExistClass() throws Exception {
-        URL url = URL.valueOf("test://test:11/test?default.validation=true");
+        URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willThrow(new IllegalStateException("Not found class test, cause: test"));
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
@@ -67,7 +67,7 @@ public class ValidationFilterTest {
 
     @Test
     public void testItWithExistClass() throws Exception {
-        URL url = URL.valueOf("test://test:11/test?default.validation=true");
+        URL url = URL.valueOf("test://test:11/test?validation=true");
 
         given(validation.getValidator(url)).willReturn(validator);
         given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));
@@ -121,7 +121,7 @@ public class ValidationFilterTest {
     @Test
     public void testItWhileThrowoutRpcException() throws Exception {
         Assertions.assertThrows(RpcException.class, () -> {
-            URL url = URL.valueOf("test://test:11/test?default.validation=true");
+            URL url = URL.valueOf("test://test:11/test?validation=true");
 
             given(validation.getValidator(url)).willThrow(new RpcException("rpc exception"));
             given(invoker.invoke(invocation)).willReturn(new AppResponse("success"));

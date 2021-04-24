@@ -16,12 +16,12 @@
  */
 package org.apache.dubbo.common.beanutil;
 
-import org.apache.dubbo.common.model.person.BigPerson;
-import org.apache.dubbo.common.model.person.FullAddress;
-import org.apache.dubbo.common.model.person.PersonInfo;
-import org.apache.dubbo.common.model.person.PersonStatus;
-import org.apache.dubbo.common.model.person.Phone;
 import org.apache.dubbo.common.utils.PojoUtilsTest;
+import org.apache.dubbo.rpc.model.person.BigPerson;
+import org.apache.dubbo.rpc.model.person.FullAddress;
+import org.apache.dubbo.rpc.model.person.PersonInfo;
+import org.apache.dubbo.rpc.model.person.PersonStatus;
+import org.apache.dubbo.rpc.model.person.Phone;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

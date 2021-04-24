@@ -32,7 +32,7 @@ public class DubboHessianURLConnectionFactory extends HessianURLConnectionFactor
     public HessianConnection open(URL url) throws IOException {
         HessianConnection connection = super.open(url);
         RpcContext context = RpcContext.getContext();
-        for (String key : context.getAttachments().keySet()) {
+        for (String key : context.getObjectAttachments().keySet()) {
             connection.addHeader(Constants.DEFAULT_EXCHANGER + key, context.getAttachment(key));
         }
 

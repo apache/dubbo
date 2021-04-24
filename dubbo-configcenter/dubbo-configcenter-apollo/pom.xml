@@ -20,6 +20,7 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-configcenter</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-configcenter-apollo</artifactId>
     <packaging>jar</packaging>
@@ -27,17 +28,24 @@
     <description>The Apollo implementation of the configcenter api</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <apollo_mock_server_version>1.1.1</apollo_mock_server_version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-configcenter-api</artifactId>
+            <artifactId>dubbo-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.ctrip.framework.apollo</groupId>
             <artifactId>apollo-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.ctrip.framework.apollo</groupId>
+            <artifactId>apollo-mockserver</artifactId>
+            <version>${apollo_mock_server_version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

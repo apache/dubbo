@@ -16,12 +16,18 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.Experimental;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 
 /**
@@ -38,7 +44,7 @@ import java.util.function.BiConsumer;
  * @see org.apache.dubbo.rpc.Invoker#invoke(Invocation)
  * @see AppResponse
  */
-public interface Result extends CompletionStage<Result>, Future<Result>, Serializable {
+public interface Result extends Serializable {
 
     /**
      * Get invoke result.
@@ -89,11 +95,27 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
     Map<String, String> getAttachments();
 
     /**
+     * get attachments.
+     *
+     * @return attachments.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Map<String, Object> getObjectAttachments();
+
+    /**
      * Add the specified map to existing attachments in this instance.
      *
      * @param map
      */
     void addAttachments(Map<String, String> map);
+
+    /**
+     * Add the specified map to existing attachments in this instance.
+     *
+     * @param map
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    void addObjectAttachments(Map<String, Object> map);
 
     /**
      * Replace the existing attachments with the specified param.
@@ -103,11 +125,27 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
     void setAttachments(Map<String, String> map);
 
     /**
+     * Replace the existing attachments with the specified param.
+     *
+     * @param map
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachments(Map<String, Object> map);
+
+    /**
      * get attachment by key.
      *
      * @return attachment value.
      */
     String getAttachment(String key);
+
+    /**
+     * get attachment by key.
+     *
+     * @return attachment value.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key);
 
     /**
      * get attachment by key with default value.
@@ -116,15 +154,21 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      */
     String getAttachment(String key, String defaultValue);
 
+    /**
+     * get attachment by key with default value.
+     *
+     * @return attachment value.
+     */
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key, Object defaultValue);
+
     void setAttachment(String key, String value);
 
-    /**
-     * Returns the specified {@code valueIfAbsent} when not complete, or
-     * returns the result value or throws an exception when complete.
-     *
-     * @see CompletableFuture#getNow(Object)
-     */
-    Result getNow(Result valueIfAbsent);
+    @Experimental("Experiment api for supporting Object transmission")
+    void setAttachment(String key, Object value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachment(String key, Object value);
 
     /**
      * Add a callback which can be triggered when the RPC call finishes.
@@ -137,7 +181,9 @@ public interface Result extends CompletionStage<Result>, Future<Result>, Seriali
      */
     Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn);
 
-    default CompletableFuture<Result> completionFuture() {
-        return toCompletableFuture();
-    }
+    <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn);
+
+    Result get() throws InterruptedException, ExecutionException;
+
+    Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException;
 }

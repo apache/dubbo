@@ -126,7 +126,7 @@ public class GsonJsonObjectOutputTest {
 
     @Test
     public void testWriteObject() throws IOException, ClassNotFoundException {
-        Image image = new Image("http://dubbo.io/logo.png", "logo", 300, 480, Image.Size.SMALL);
+        Image image = new Image("http://dubbo.apache.org/img/dubbo_white.png", "logo", 300, 480, Image.Size.SMALL);
         this.gsonJsonObjectOutput.writeObject(image);
         this.flushToInput();
 

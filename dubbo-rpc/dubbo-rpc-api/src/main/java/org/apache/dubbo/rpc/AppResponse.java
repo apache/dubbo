@@ -16,11 +16,19 @@
  */
 package org.apache.dubbo.rpc;
 
-import java.io.Serializable;
-import java.lang.reflect.Field;
+
+import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
 
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
@@ -28,7 +36,7 @@ import java.util.function.BiConsumer;
  *     <li>AsyncRpcResult is the object that is actually passed in the call chain</li>
  *     <li>AppResponse only simply represents the business result</li>
  * </ul>
- *
+ * <p>
  *  The relationship between them can be described as follow, an abstraction of the definition of AsyncRpcResult:
  *  <pre>
  *  {@code
@@ -37,11 +45,11 @@ import java.util.function.BiConsumer;
  *  }
  * </pre>
  * AsyncRpcResult is a future representing an unfinished RPC call, while AppResponse is the actual return type of this call.
- * In theory, AppResponse does'n have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
+ * In theory, AppResponse doesn't have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
  *
  * @serial Do not change the class name and properties.
  */
-public class AppResponse extends AbstractResult implements Serializable {
+public class AppResponse implements Result {
 
     private static final long serialVersionUID = -6925924956850004727L;
 
@@ -49,9 +57,15 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     private Throwable exception;
 
-    private Map<String, String> attachments = new HashMap<String, String>();
+    private Map<String, Object> attachments = new HashMap<>();
+
+    private Map<String, Object> attributes = new HashMap<>();
 
     public AppResponse() {
+    }
+
+    public AppResponse(Invocation invocation) {
+        this.setAttribute(INVOCATION_KEY, invocation);
     }
 
     public AppResponse(Object result) {
@@ -67,15 +81,7 @@ public class AppResponse extends AbstractResult implements Serializable {
         if (exception != null) {
             // fix issue#619
             try {
-                // get Throwable class
-                Class clazz = exception.getClass();
-                while (!clazz.getName().equals(Throwable.class.getName())) {
-                    clazz = clazz.getSuperclass();
-                }
-                // get stackTrace value
-                Field stackTraceField = clazz.getDeclaredField("stackTrace");
-                stackTraceField.setAccessible(true);
-                Object stackTrace = stackTraceField.get(exception);
+                Object stackTrace = InvokerInvocationHandler.stackTraceField.get(exception);
                 if (stackTrace == null) {
                     exception.setStackTrace(new StackTraceElement[0]);
                 }
@@ -113,7 +119,13 @@ public class AppResponse extends AbstractResult implements Serializable {
     }
 
     @Override
+    @Deprecated
     public Map<String, String> getAttachments() {
+        return new AttachmentsAdapter.ObjectToStringMap(attachments);
+    }
+
+    @Override
+    public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
 
@@ -122,31 +134,66 @@ public class AppResponse extends AbstractResult implements Serializable {
      *
      * @param map contains all key-value pairs to append
      */
-    @Override
     public void setAttachments(Map<String, String> map) {
-        this.attachments = map == null ? new HashMap<String, String>() : map;
+        this.attachments = map == null ? new HashMap<>() : new HashMap<>(map);
     }
 
     @Override
+    public void setObjectAttachments(Map<String, Object> map) {
+        this.attachments = map == null ? new HashMap<>() : map;
+    }
+
     public void addAttachments(Map<String, String> map) {
         if (map == null) {
             return;
         }
         if (this.attachments == null) {
-            this.attachments = new HashMap<String, String>();
+            this.attachments = new HashMap<>();
+        }
+        this.attachments.putAll(map);
+    }
+
+    @Override
+    public void addObjectAttachments(Map<String, Object> map) {
+        if (map == null) {
+            return;
+        }
+        if (this.attachments == null) {
+            this.attachments = new HashMap<>();
         }
         this.attachments.putAll(map);
     }
 
     @Override
     public String getAttachment(String key) {
+        Object value = attachments.get(key);
+        if (value instanceof String) {
+            return (String) value;
+        }
+        return null;
+    }
+
+    @Override
+    public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
 
     @Override
     public String getAttachment(String key, String defaultValue) {
-        String result = attachments.get(key);
-        if (result == null || result.length() == 0) {
+        Object result = attachments.get(key);
+        if (result == null) {
+            return defaultValue;
+        }
+        if (result instanceof String) {
+            return (String) result;
+        }
+        return defaultValue;
+    }
+
+    @Override
+    public Object getObjectAttachment(String key, Object defaultValue) {
+        Object result = attachments.get(key);
+        if (result == null) {
             result = defaultValue;
         }
         return result;
@@ -154,12 +201,51 @@ public class AppResponse extends AbstractResult implements Serializable {
 
     @Override
     public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
         attachments.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     @Override
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public <U> CompletableFuture<U> thenApply(Function<Result, ? extends U> fn) {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get() throws InterruptedException, ExecutionException {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    @Override
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    public void clear() {
+        this.result = null;
+        this.exception = null;
+        this.attachments.clear();
     }
 
     @Override

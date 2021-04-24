@@ -33,11 +33,11 @@ import java.beans.PropertyEditorSupport;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttribute;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.getAttributes;
-import static org.apache.dubbo.config.spring.util.AnnotationUtils.resolveServiceInterfaceClass;
-import static org.apache.dubbo.config.spring.util.BeanFactoryUtils.getOptionalBean;
-import static org.apache.dubbo.config.spring.util.ObjectUtils.of;
+import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static com.alibaba.spring.util.AnnotationUtils.getAttributes;
+import static com.alibaba.spring.util.ObjectUtils.of;
+import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.getOptionalBean;
 import static org.springframework.core.annotation.AnnotationAttributes.fromMap;
 import static org.springframework.util.StringUtils.commaDelimitedListToStringArray;
 

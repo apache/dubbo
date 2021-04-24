@@ -17,8 +17,14 @@
 
 package com.alibaba.dubbo.rpc;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 @Deprecated
 public interface Result extends org.apache.dubbo.rpc.Result {
@@ -33,10 +39,55 @@ public interface Result extends org.apache.dubbo.rpc.Result {
 
     }
 
-    abstract class AbstractResult extends org.apache.dubbo.rpc.AbstractResult implements Result {
+    @Override
+    default Map<String, Object> getObjectAttachments() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    default void addObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default void setObjectAttachments(Map<String, Object> map) {
+
+    }
+
+    @Override
+    default Object getObjectAttachment(String key) {
+        return null;
+    }
+
+    @Override
+    default Object getObjectAttachment(String key, Object defaultValue) {
+        return null;
+    }
+
+    abstract class AbstractResult implements Result {
+
+        @Override
+        public void setValue(Object value) {
+
+        }
 
         @Override
         public org.apache.dubbo.rpc.Result whenCompleteWithContext(BiConsumer<org.apache.dubbo.rpc.Result, Throwable> fn) {
+            return null;
+        }
+
+        @Override
+        public <U> CompletableFuture<U> thenApply(Function<org.apache.dubbo.rpc.Result, ? extends U> fn) {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get() throws InterruptedException, ExecutionException {
+            return null;
+        }
+
+        @Override
+        public org.apache.dubbo.rpc.Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             return null;
         }
     }
@@ -110,6 +161,16 @@ public interface Result extends org.apache.dubbo.rpc.Result {
         @Override
         public void setAttachment(String key, String value) {
             delegate.setAttachment(key, value);
+        }
+
+        @Override
+        public void setAttachment(String key, Object value) {
+            delegate.setAttachment(key, value);
+        }
+
+        @Override
+        public void setObjectAttachment(String key, Object value) {
+            delegate.setObjectAttachment(key, value);
         }
     }
 }

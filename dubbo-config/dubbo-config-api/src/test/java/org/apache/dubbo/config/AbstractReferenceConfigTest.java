@@ -17,22 +17,33 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.remoting.Constants;
-
+import org.apache.dubbo.rpc.cluster.RouterFactory;
+import org.apache.dubbo.rpc.cluster.router.condition.ConditionRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.condition.config.AppRouterFactory;
+import org.apache.dubbo.rpc.cluster.router.tag.TagRouterFactory;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.CLUSTER_STICKY_KEY;
-import static org.apache.dubbo.rpc.Constants.INVOKER_LISTENER_KEY;
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.rpc.Constants.STUB_EVENT_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AbstractReferenceConfigTest {
 
@@ -77,6 +88,26 @@ public class AbstractReferenceConfigTest {
         parameters.put(REFERENCE_FILTER_KEY, "prefilter");
         AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
         assertThat(parameters, hasValue("prefilter,mockfilter"));
+    }
+
+    @Test
+    public void testRouter() throws Exception {
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setRouter("condition");
+        assertThat(referenceConfig.getRouter(), equalTo("condition"));
+        Map<String, String> parameters = new HashMap<String, String>();
+        parameters.put(ROUTER_KEY, "tag");
+        AbstractInterfaceConfig.appendParameters(parameters, referenceConfig);
+        assertThat(parameters, hasValue("tag,condition"));
+        URL url = mock(URL.class);
+        when(url.getParameter(ROUTER_KEY)).thenReturn("condition");
+        List<RouterFactory> routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
+        assertThat(routerFactories.stream().anyMatch(routerFactory -> routerFactory.getClass().equals(ConditionRouterFactory.class)), is(true));
+        when(url.getParameter(ROUTER_KEY)).thenReturn("-tag,-app");
+        routerFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class).getActivateExtension(url, ROUTER_KEY);
+        assertThat(routerFactories.stream()
+                .allMatch(routerFactory -> !routerFactory.getClass().equals(TagRouterFactory.class)
+                        && !routerFactory.getClass().equals(AppRouterFactory.class)), is(true));
     }
 
     @Test
@@ -154,6 +185,25 @@ public class AbstractReferenceConfigTest {
         ReferenceConfig referenceConfig = new ReferenceConfig();
         referenceConfig.setGroup("group");
         assertThat(referenceConfig.getGroup(), equalTo("group"));
+    }
+
+    @Test
+    public void testGenericOverride() {
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setGeneric("false");
+        referenceConfig.refresh();
+        Assertions.assertFalse(referenceConfig.isGeneric());
+        Assertions.assertEquals("false", referenceConfig.getGeneric());
+
+        ReferenceConfig referenceConfig1 = new ReferenceConfig();
+        referenceConfig1.setGeneric(GENERIC_SERIALIZATION_NATIVE_JAVA);
+        referenceConfig1.refresh();
+        Assertions.assertEquals(GENERIC_SERIALIZATION_NATIVE_JAVA, referenceConfig1.getGeneric());
+        Assertions.assertTrue(referenceConfig1.isGeneric());
+
+        ReferenceConfig referenceConfig2 = new ReferenceConfig();
+        referenceConfig2.refresh();
+        Assertions.assertNull(referenceConfig2.getGeneric());
     }
 
     private static class ReferenceConfig extends AbstractReferenceConfig {
