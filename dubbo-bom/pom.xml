@@ -174,7 +174,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-jsonrpc</artifactId>
+                <artifactId>dubbo-rpc-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -189,7 +189,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-rpc-http</artifactId>
+                <artifactId>dubbo-rpc-http-invoker</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
