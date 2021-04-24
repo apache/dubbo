@@ -100,15 +100,18 @@ public class MethodDescriptor {
         } else if ($ECHO.equals(methodName)) {
             return true;
         } else {
-            if (parameterClasses.length != 1) {
+            if (parameterClasses.length != 1 || parameterClasses[0] == null) {
                 return true;
             }
 
             Class<?> clazz = parameterClasses[0];
             while (clazz != Object.class) {
-                for (Class<?> clazzInterface : clazz.getInterfaces()) {
-                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
-                        return false;
+                Class<?>[] interfaces = clazz.getInterfaces();
+                if (interfaces.length > 0) {
+                    for (Class<?> clazzInterface : interfaces) {
+                        if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
+                            return false;
+                        }
                     }
                 }
 
