@@ -20,16 +20,16 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
-import com.google.protobuf.Message;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
 /**
  *
@@ -101,10 +101,25 @@ public class MethodDescriptor {
         } else if ($ECHO.equals(methodName)) {
             return true;
         } else {
-            if (parameterClasses.length != 1) {
+            if (parameterClasses.length != 1 || parameterClasses[0] == null) {
                 return true;
             }
-            return !Message.class.isAssignableFrom(parameterClasses[0]);
+
+            Class<?> clazz = parameterClasses[0];
+            while (clazz != Object.class && clazz != null) {
+                Class<?>[] interfaces = clazz.getInterfaces();
+                if (interfaces.length > 0) {
+                    for (Class<?> clazzInterface : interfaces) {
+                        if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
+                            return false;
+                        }
+                    }
+                }
+
+                clazz = clazz.getSuperclass();
+            }
+
+            return true;
         }
     }
 
