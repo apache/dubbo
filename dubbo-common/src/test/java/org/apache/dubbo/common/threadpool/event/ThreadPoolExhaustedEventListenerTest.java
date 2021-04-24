@@ -16,7 +16,8 @@
  */
 package org.apache.dubbo.common.threadpool.event;
 
-import org.apache.dubbo.event.*;
+import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.event.EventListener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
