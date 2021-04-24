@@ -157,6 +157,19 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * publish config mapped to this given key and given group with md5s.
+     * @param key
+     * @param group
+     * @param content
+     * @param casMd5
+     * @return
+     * @throws UnsupportedOperationException
+     */
+    default boolean publishConfigCas(String key, String group, String content, String casMd5) throws UnsupportedOperationException {
+        return false;
+    }
+
+    /**
      * Get the config keys by the specified group
      *
      * @param group the specified group
@@ -241,5 +254,14 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      */
     default boolean removeConfig(String key, String group) {
         return true;
+    }
+
+    /**
+     * support cas or not.
+     *
+     * @return
+     */
+    default boolean hasSupportCas() {
+        return false;
     }
 }

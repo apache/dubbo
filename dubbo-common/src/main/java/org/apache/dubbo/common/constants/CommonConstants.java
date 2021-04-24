@@ -388,4 +388,5 @@ public interface CommonConstants {
 
     String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
 
+    String UTF8ENCODE = "UTF-8";
 }
