@@ -17,23 +17,19 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.context.ConfigManager;
+import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl2;
-import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,6 +46,7 @@ public class ChangeTelnetHandlerTest {
 
     private static TelnetHandler change = new ChangeTelnetHandler();
     private Channel mockChannel;
+    private Invoker<DemoService> mockInvoker;
 
     @AfterAll
     public static void tearDown() {
@@ -60,6 +57,7 @@ public class ChangeTelnetHandlerTest {
     @BeforeEach
     public void setUp() {
         mockChannel = mock(Channel.class);
+        mockInvoker = mock(Invoker.class);
         given(mockChannel.getAttribute("telnet.service")).willReturn("org.apache.dubbo.rpc.protocol.dubbo.support.DemoService");
         mockChannel.setAttribute("telnet.service", "DemoService");
         givenLastCall();
@@ -69,6 +67,8 @@ public class ChangeTelnetHandlerTest {
         givenLastCall();
         mockChannel.removeAttribute("telnet.service");
         givenLastCall();
+        given(mockInvoker.getInterface()).willReturn(DemoService.class);
+        given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:20884/demo"));
 
         ServiceConfig<DemoService> service = new ServiceConfig<>();
         service.setApplication(new ApplicationConfig("app"));
@@ -97,7 +97,6 @@ public class ChangeTelnetHandlerTest {
     public void after() {
         ProtocolUtils.closeAll();
         ApplicationModel.reset();
-        ConfigManager.getInstance().clear();
     }
 
     @Test
