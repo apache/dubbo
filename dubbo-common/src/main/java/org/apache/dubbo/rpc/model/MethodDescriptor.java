@@ -20,8 +20,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
-import com.google.protobuf.Message;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -30,6 +28,7 @@ import java.util.stream.Stream;
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
+import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE_CLASS_NAME;
 
 /**
  *
@@ -104,7 +103,19 @@ public class MethodDescriptor {
             if (parameterClasses.length != 1) {
                 return true;
             }
-            return !Message.class.isAssignableFrom(parameterClasses[0]);
+
+            Class<?> clazz = parameterClasses[0];
+            while (clazz != Object.class) {
+                for (Class<?> clazzInterface : clazz.getInterfaces()) {
+                    if (PROTOBUF_MESSAGE_CLASS_NAME.equalsIgnoreCase(clazzInterface.getName())) {
+                        return false;
+                    }
+                }
+
+                clazz = clazz.getSuperclass();
+            }
+
+            return true;
         }
     }
 
