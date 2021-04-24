@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.legacy;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -25,12 +26,8 @@ import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ProviderMethodModel;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
-
-import com.alibaba.fastjson.JSON;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
