@@ -31,7 +31,6 @@ import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
-import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
