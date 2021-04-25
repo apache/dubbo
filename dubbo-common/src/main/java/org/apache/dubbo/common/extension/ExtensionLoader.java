@@ -42,6 +42,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,7 +99,9 @@ public class ExtensionLoader<T> {
 
     private final Holder<Map<String, Class<?>>> cachedClasses = new Holder<>();
 
-    private final Map<String, Object> cachedActivates = new ConcurrentHashMap<>();
+    private final Map<String, Object> cachedActivates = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, Set<String>> cachedActivateGroups = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<String, String[]> cachedActivateValues = Collections.synchronizedMap(new LinkedHashMap<>());
     private final ConcurrentMap<String, Holder<Object>> cachedInstances = new ConcurrentHashMap<>();
     private final Holder<Object> cachedAdaptiveInstance = new Holder<>();
     private volatile Class<?> cachedAdaptiveClass = null;
@@ -261,29 +265,40 @@ public class ExtensionLoader<T> {
         List<T> activateExtensions = new ArrayList<>();
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
-            getExtensionClasses();
-            for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
-                String name = entry.getKey();
-                Object activate = entry.getValue();
+            if (cachedActivateGroups.size() == 0) {
+                synchronized (cachedActivateGroups) {
+                    if (cachedActivateGroups.size() == 0) {
+                        getExtensionClasses();
+                        for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
+                            String name = entry.getKey();
+                            Object activate = entry.getValue();
 
-                String[] activateGroup, activateValue;
+                            String[] activateGroup, activateValue;
 
-                if (activate instanceof Activate) {
-                    activateGroup = ((Activate) activate).group();
-                    activateValue = ((Activate) activate).value();
-                } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
-                    activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
-                    activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
-                } else {
-                    continue;
+                            if (activate instanceof Activate) {
+                                activateGroup = ((Activate) activate).group();
+                                activateValue = ((Activate) activate).value();
+                            } else if (activate instanceof com.alibaba.dubbo.common.extension.Activate) {
+                                activateGroup = ((com.alibaba.dubbo.common.extension.Activate) activate).group();
+                                activateValue = ((com.alibaba.dubbo.common.extension.Activate) activate).value();
+                            } else {
+                                continue;
+                            }
+                            cachedActivateGroups.put(name, new HashSet<>(Arrays.asList(activateGroup)));
+                            cachedActivateValues.put(name, activateValue);
+                        }
+                    }
                 }
+            }
+
+            cachedActivateGroups.forEach((name, activateGroup)->{
                 if (isMatchGroup(group, activateGroup)
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
-                        && isActive(activateValue, url)) {
+                        && isActive(cachedActivateValues.get(name), url)) {
                     activateExtensions.add(getExtension(name));
                 }
-            }
+            });
             activateExtensions.sort(ActivateComparator.COMPARATOR);
         }
         List<T> loadedExtensions = new ArrayList<>();
@@ -322,16 +337,12 @@ public class ExtensionLoader<T> {
         return activateExtensions;
     }
 
-    private boolean isMatchGroup(String group, String[] groups) {
+    private boolean isMatchGroup(String group, Set<String> groups) {
         if (StringUtils.isEmpty(group)) {
             return true;
         }
-        if (groups != null && groups.length > 0) {
-            for (String g : groups) {
-                if (group.equals(g)) {
-                    return true;
-                }
-            }
+        if(CollectionUtils.isNotEmpty(groups)){
+            return groups.contains(group);
         }
         return false;
     }

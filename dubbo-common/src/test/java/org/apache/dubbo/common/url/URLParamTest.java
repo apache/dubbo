@@ -258,4 +258,16 @@ public class URLParamTest {
         set.add(urlParam4.getParameters());
         Assertions.assertEquals(2,set.size());
     }
+
+    @Test
+    public void testMethodParameters() {
+        URLParam urlParam1 = URLParam.parse("aaa.method1=aaa&bbb.method2=bbb");
+        Assertions.assertEquals("aaa",urlParam1.getAnyMethodParameter("method1"));
+        Assertions.assertEquals("bbb",urlParam1.getAnyMethodParameter("method2"));
+
+
+        URLParam urlParam2 = URLParam.parse("methods=aaa&aaa.method1=aaa&bbb.method2=bbb");
+        Assertions.assertEquals("aaa",urlParam2.getAnyMethodParameter("method1"));
+        Assertions.assertNull(urlParam2.getAnyMethodParameter("method2"));
+    }
 }

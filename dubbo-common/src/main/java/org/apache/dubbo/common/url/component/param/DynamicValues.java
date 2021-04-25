@@ -50,12 +50,12 @@ public class DynamicValues implements ParamValue {
     }
 
     @Override
-    public String getN(int n) {
+    public String getN(Integer n) {
         return index2Value.get(n);
     }
 
     @Override
-    public int getIndex(String value) {
+    public Integer getIndex(String value) {
         Integer index = value2Index.get(value);
         if (index == null) {
             return add(value);

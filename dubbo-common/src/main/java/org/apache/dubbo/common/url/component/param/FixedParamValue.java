@@ -45,14 +45,15 @@ public class FixedParamValue implements ParamValue {
 
     /**
      * DEFAULT value will be returned if n = 0
+     * @param n
      */
     @Override
-    public String getN(int n) {
+    public String getN(Integer n) {
         return values[n];
     }
 
     @Override
-    public int getIndex(String value) {
+    public Integer getIndex(String value) {
         Integer offset = val2Index.get(value.toLowerCase(Locale.ROOT));
         if (offset == null) {
             throw new IllegalArgumentException("unrecognized value " + value
