@@ -45,7 +45,7 @@ public class ServiceConfigURL extends URL {
                int port,
                String path,
                Map<String, String> parameters) {
-        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), null);
+        this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), null);
     }
 
     public ServiceConfigURL(String protocol,
@@ -56,7 +56,7 @@ public class ServiceConfigURL extends URL {
                             String path,
                             Map<String, String> parameters,
                             Map<String, Object> attributes) {
-        this(new PathURLAddress(protocol, username, password, path, host, port), new URLParam(parameters), attributes);
+        this(new PathURLAddress(protocol, username, password, path, host, port), URLParam.parse(parameters), attributes);
     }
 
     protected <T extends URL> T newURL(URLAddress urlAddress, URLParam urlParam) {
