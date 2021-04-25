@@ -85,18 +85,17 @@ public final class DynamicParamTable {
         keys.add("side");
         values.add(new FixedParamValue("consumer", "provider"));
 
-
-        for (int i = 0; i < keys.size(); i++) {
-            if (!keys.get(i).isEmpty()) {
-                key2Index.put(keys.get(i), i);
-            }
-        }
-
         KEYS.addAll(keys);
         VALUES.addAll(values);
-        KEY2INDEX.putAll(key2Index);
 
         ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
-                .getSupportedExtensionInstances().forEach(source -> source.init(KEYS, VALUES, KEY2INDEX));
+                .getSupportedExtensionInstances().forEach(source -> source.init(KEYS, VALUES));
+
+        for (int i = 0; i < KEYS.size(); i++) {
+            if (!KEYS.get(i).isEmpty()) {
+                key2Index.put(KEYS.get(i), i);
+            }
+        }
+        KEY2INDEX.putAll(key2Index);
     }
 }

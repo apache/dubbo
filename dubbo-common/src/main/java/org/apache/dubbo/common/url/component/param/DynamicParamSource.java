@@ -19,10 +19,8 @@ package org.apache.dubbo.common.url.component.param;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.List;
-import java.util.Map;
-
 @SPI
 public interface DynamicParamSource {
 
-    void init(List<String> KEYS, List<ParamValue> VALUES, Map<String, Integer> KEY2INDEX);
+    void init(List<String> KEYS, List<ParamValue> VALUES);
 }
