@@ -235,7 +235,9 @@ public class NetUtils {
             return configIp;
         }
 
-        return getIpByHost(getLocalAddress().getHostName());
+        InetAddress localAddress = getLocalAddress();
+        String hostName = localAddress == null ? LOCALHOST_VALUE : localAddress.getHostName();
+        return getIpByHost(hostName);
     }
 
     /**
@@ -248,9 +250,6 @@ public class NetUtils {
             return LOCAL_ADDRESS;
         }
         InetAddress localAddress = getLocalAddress0();
-        if (localAddress == null) {
-            throw new IllegalStateException("cannot get localAddress");
-        }
         LOCAL_ADDRESS = localAddress;
         return localAddress;
     }
