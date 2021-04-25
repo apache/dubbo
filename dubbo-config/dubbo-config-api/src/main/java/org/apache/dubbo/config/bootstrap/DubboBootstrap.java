@@ -79,7 +79,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -182,9 +182,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private volatile MetadataServiceExporter metadataServiceExporter;
 
-    private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
-
-    private Set<String> exportedServiceNames = new HashSet<>();
+    private Map<String, ServiceConfigBase<?>> exportedServices = new HashMap<>();
 
     private List<Future<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -1083,11 +1081,11 @@ public class DubboBootstrap extends GenericEventListener {
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
-                  try{
-                    exportService(serviceConfig);
-                  }catch(Throwable t){
-                    logger.error("export async catch error : " + t.getMessage(), t);
-                  }
+                    try {
+                        exportService(serviceConfig);
+                    } catch (Throwable t) {
+                        logger.error("export async catch error : " + t.getMessage(), t);
+                    }
                 });
                 asyncExportingFutures.add(future);
             } else {
@@ -1096,20 +1094,20 @@ public class DubboBootstrap extends GenericEventListener {
         });
     }
 
-    private void exportService(ServiceConfig sc){
-        if (exportedServiceNames.contains(sc.getServiceName())) {
-            throw new IllegalArgumentException("The Duplicated BeanDefinition of ServiceBean[ServiceConfig:" +
-                    sc.toString() + "] try to export");
+    private void exportService(ServiceConfig sc) {
+        if (exportedServices.containsKey(sc.getServiceName())) {
+            throw new IllegalStateException("The Duplicated BeanDefinition of ServiceBean[ServiceName: " +
+                    sc.getServiceName() + "ServiceConfig:" +
+                    exportedServices.get(sc.getServiceName()).toString() + "] try to export, you may declare the " +
+                    "ServiceBean more than one, triples (group, interface, version) cannot be repeated. " +
+                    "if you want to export an interface multiple times, please keep </version> or </group> different");
         }
-        exportedServiceNames.add(sc.getServiceName());
         sc.export();
-        exportedServices.add(sc);
+        exportedServices.put(sc.getServiceName(), sc);
     }
 
     private void unexportServices() {
-        exportedServices.forEach(sc -> {
-            ServiceConfig serviceConfig = (ServiceConfig) sc;
-            exportedServiceNames.remove(serviceConfig.getServiceName());
+        exportedServices.forEach((serviceName, sc) -> {
             configManager.removeConfig(sc);
             sc.unexport();
         });
