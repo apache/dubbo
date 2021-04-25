@@ -42,6 +42,7 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -148,6 +149,6 @@ public class InjvmProtocolTest {
         Exporter<?> exporter = protocol.export(invoker);
         exporters.add(exporter);
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
-        assertEquals(service.getAsyncResult(), null);
+        assertNull(service.getAsyncResult());
     }
 }
