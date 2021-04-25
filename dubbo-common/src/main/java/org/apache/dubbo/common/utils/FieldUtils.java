@@ -64,7 +64,7 @@ public interface FieldUtils {
         }
 
         if (field == null) {
-           throw new IllegalStateException(String.format("cannot find field %s,field is null",fieldName));
+           throw new IllegalStateException(String.format("cannot find field %s,field is null", fieldName));
         }
 
         return field;
