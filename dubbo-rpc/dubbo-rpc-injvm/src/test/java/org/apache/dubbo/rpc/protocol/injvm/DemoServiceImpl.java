@@ -80,7 +80,7 @@ public class DemoServiceImpl implements DemoService {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            // do nothing
+            System.out.println("getAsyncResult() Interrupted");
         }
         return "DONE";
     }
