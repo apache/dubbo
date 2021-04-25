@@ -292,7 +292,9 @@ public class ServiceDiscoveryRegistry implements Registry {
         writableMetadataService.subscribeURL(url);
 
         /**
-         *
+         * 获取url对应得服务提供者对应得serviceName
+         * 1、显示配置再url得参数中
+         * 2、配置中心  获取group为mapping-XXXX得所有dataid集合   即当前url对应得服务提供者所在得应用名称
          */
         Set<String> serviceNames = getServices(url, listener);
 
@@ -301,6 +303,9 @@ public class ServiceDiscoveryRegistry implements Registry {
             return;
         }
 
+        /**
+         * 订阅服务
+         */
         subscribeURLs(url, listener, serviceNames);
     }
 
@@ -348,6 +353,12 @@ public class ServiceDiscoveryRegistry implements Registry {
         });
     }
 
+    /**
+     *
+     * @param url consumer://172.203.144.32/org.apache.dubbo.demo.DemoService?REGISTRY_CLUSTER=org.apache.dubbo.config.RegistryConfig#0&application=dubbo-demo-annotation-consumer&category=providers,configurators,routers&check=false&dubbo=2.0.2&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=10672&side=consumer&sticky=false&timestamp=1619340658116
+     * @param listener
+     * @param serviceNames  订阅的服务名称
+     */
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         String serviceNamesKey = serviceNames.toString();
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
@@ -357,15 +368,24 @@ public class ServiceDiscoveryRegistry implements Registry {
         ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
                 k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
         serviceListener.setUrl(url);
+        //DynamicDirectory
         listener.addServiceListener(serviceListener);
 
         serviceListener.addListener(protocolServiceKey, listener);
+
+        /**
+         * 添加监听
+         */
         registerServiceInstancesChangedListener(url, serviceListener);
 
         // FIXME: This will cause redundant duplicate notifications
         serviceNames.forEach(serviceName -> {
+            //
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                /**
+                 *
+                 */
                 serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
             } else {
                 logger.info("getInstances by serviceName=" + serviceName + " is empty, waiting for serviceListener callback. url=" + url);
@@ -383,7 +403,7 @@ public class ServiceDiscoveryRegistry implements Registry {
      * @param listener the {@link ServiceInstancesChangedListener}
      */
     private void registerServiceInstancesChangedListener(URL url, ServiceInstancesChangedListener listener) {
-        // dubbo-demo-api-provider:consumer://192.168.50.39/org.apache.dubbo.rpc.service.GenericService
+        // [dubbo-demo-annotation-provider]:consumer://172.203.144.32/org.apache.dubbo.demo.DemoService
         String listenerId = createListenerId(url, listener);
         if (registeredListeners.add(listenerId)) {
             /**
@@ -410,7 +430,7 @@ public class ServiceDiscoveryRegistry implements Registry {
         Set<String> subscribedServices = new TreeSet<>();
 
         /**
-         * subscribedURL显式指定此接口所属的应用程序名称
+         * subscribedURL显式指定此接口所属的应用程序名称   不再获取配置中心数据
          */
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
@@ -423,7 +443,7 @@ public class ServiceDiscoveryRegistry implements Registry {
          */
         if (isEmpty(subscribedServices)) {
             /**
-             *
+             * 再配置中心   获取group为mapping-org.apache.dubbo.demo.DemoService得dataid集合
              */
             Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener));
             logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by remote metadata center.");

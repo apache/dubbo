@@ -154,11 +154,11 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         execute(namingService, service -> {
             listener.getServiceNames().forEach(serviceName -> {
                 try {
-                    // 注册中心监听
+                    // 注册中心监听  返回服务对应的实例
                     service.subscribe(serviceName, e -> { // Register Nacos EventListener
                         if (e instanceof NamingEvent) {
                             NamingEvent event = (NamingEvent) e;
-                            // 回调
+                            // 回调   处理返回的实例
                             handleEvent(event, listener);
                         }
                     });

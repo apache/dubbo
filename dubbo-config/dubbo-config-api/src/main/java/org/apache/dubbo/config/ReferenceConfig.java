@@ -329,7 +329,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         //将map赋值到元数据服务中
         serviceMetadata.getAttachments().putAll(map);
 
-        // 创建代理类
+        /**
+         * 创建代理类
+         * 创建代理类
+         * 创建代理类
+         */
         ref = createProxy(map);
 
         serviceMetadata.setTarget(ref);
