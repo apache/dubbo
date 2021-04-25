@@ -87,6 +87,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -182,7 +183,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private volatile MetadataServiceExporter metadataServiceExporter;
 
-    private Map<String, ServiceConfigBase<?>> exportedServices = new HashMap<>();
+    private Map<String, ServiceConfigBase<?>> exportedServices = new ConcurrentHashMap<>();
 
     private List<Future<?>> asyncExportingFutures = new ArrayList<>();
 
@@ -1096,11 +1097,11 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void exportService(ServiceConfig sc) {
         if (exportedServices.containsKey(sc.getServiceName())) {
-            throw new IllegalStateException("The Duplicated BeanDefinition of ServiceBean[ServiceName: " +
-                    sc.getServiceName() + "ServiceConfig:" +
-                    exportedServices.get(sc.getServiceName()).toString() + "] try to export, you may declare the " +
-                    "ServiceBean more than one, triples (group, interface, version) cannot be repeated. " +
-                    "if you want to export an interface multiple times, please keep </version> or </group> different");
+            throw new IllegalStateException("There are multiple ServiceBean instances with the same service name: [" +
+                    sc.getServiceName() + "], instances: [" +
+                    exportedServices.get(sc.getServiceName()).toString() + ", " +
+                    sc.toString() + "]. Only one service can be exported for the same triple (group, interface, version), " +
+                    "please modify the group or version if you really need to export multiple services of the same interface.");
         }
         sc.export();
         exportedServices.put(sc.getServiceName(), sc);
