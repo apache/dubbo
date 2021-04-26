@@ -14,37 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.Invoker;
+import io.netty.handler.codec.http2.Http2Headers;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Iterator;
+import java.util.Map;
 
-public class TriplePathResolver implements PathResolver {
-    private static final Logger logger = LoggerFactory.getLogger(TriplePathResolver.class);
+public class Http2HeaderMeta implements Metadata {
+    private final Http2Headers headers;
 
-    private final ConcurrentHashMap<String, Invoker<?>> path2Invoker = new ConcurrentHashMap<>();
-
-    @Override
-    public void add(String path, Invoker<?> invoker) {
-        path2Invoker.put(path, invoker);
+    public Http2HeaderMeta(Http2Headers headers) {
+        this.headers = headers;
     }
 
     @Override
-    public Invoker<?> resolve(String path) {
-        return path2Invoker.get(path);
+    public Metadata put(CharSequence key, CharSequence value) {
+        headers.set(key, value);
+        return this;
     }
 
     @Override
-    public void remove(String path) {
-        path2Invoker.remove(path);
+    public CharSequence get(CharSequence key) {
+        return headers.get(key);
     }
 
     @Override
-    public void destroy() {
-        path2Invoker.clear();
+    public boolean contains(CharSequence key) {
+        return headers.contains(key);
     }
 
+    @Override
+    public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
+        return headers.iterator();
+    }
 }

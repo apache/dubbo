@@ -14,22 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.common.url.component.param;
+
+public interface ParamValue {
+    /**
+     * get value at the specified index.
+     *
+     * @param n the nth value
+     * @return the value stored at index = n
+     */
+    String getN(int n);
 
 
-import org.apache.dubbo.common.utils.MD5Utils;
+    /**
+     * max index is 2^31 - 1
+     *
+     * @param value the stored value
+     * @return the index of value
+     */
+    int getIndex(String value);
 
-public class RevisionResolver {
-
-    public static final String EMPTY_REVISION = "0";
-
-
-    public static String calRevision(String metadata) {
-        return MD5Utils.getMd5(metadata);
-    }
-
-    public static String getEmptyRevision(String app) {
-        return EMPTY_REVISION;
-    }
-
+    /**
+     * get default value
+     *
+     * @return the default value stored at index = 0
+     */
+    String defaultVal();
 }

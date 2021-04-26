@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
+import java.util.Collections;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_MAPPING_TYPE;
@@ -42,11 +43,33 @@ public interface ServiceNameMapping {
     void map(URL url);
 
     /**
+     * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name with cas.
+     *
+     * @param url
+     */
+    default void mapWithCas(URL url) {
+
+    }
+
+    /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
      *
      * @return
      */
     Set<String> getAndListen(URL url, MappingListener mappingListener);
+
+    /**
+     * service name mapping new store structure.
+     * interface(key)
+     *   -- mapping(group)
+     *     --appName1,appName2,appName3(content)
+     * @param url
+     * @param mappingListener
+     * @return
+     */
+    default Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener){
+        return Collections.emptySet();
+    };
 
     default Set<String> get(URL url) {
         return getAndListen(url, null);
@@ -83,5 +106,4 @@ public interface ServiceNameMapping {
         //        return groupBuilder.toString();
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
-
 }

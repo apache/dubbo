@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
 
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.utils.MD5Utils;
+import java.util.Map;
 
-public class RevisionResolver {
+public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>> {
 
-    public static final String EMPTY_REVISION = "0";
+    Metadata put(CharSequence key, CharSequence value);
 
-
-    public static String calRevision(String metadata) {
-        return MD5Utils.getMd5(metadata);
+    default Metadata putIfNotNull(CharSequence key, CharSequence value) {
+        if (value != null) {
+            put(key, value);
+        }
+        return this;
     }
 
-    public static String getEmptyRevision(String app) {
-        return EMPTY_REVISION;
-    }
+    CharSequence get(CharSequence key);
+
+    boolean contains(CharSequence key);
 
 }

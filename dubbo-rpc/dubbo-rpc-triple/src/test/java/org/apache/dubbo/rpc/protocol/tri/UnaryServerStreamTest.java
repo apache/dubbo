@@ -14,22 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
 
+package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.utils.MD5Utils;
+import org.apache.dubbo.common.URL;
 
-public class RevisionResolver {
+import org.junit.jupiter.api.Test;
 
-    public static final String EMPTY_REVISION = "0";
+class UnaryServerStreamTest {
 
-
-    public static String calRevision(String metadata) {
-        return MD5Utils.getMd5(metadata);
+    @Test
+    @SuppressWarnings("all")
+    public void testInit() {
+        URL url = new URL("test", "1.2.3.4", 8080);
     }
-
-    public static String getEmptyRevision(String app) {
-        return EMPTY_REVISION;
-    }
-
 }

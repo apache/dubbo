@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
@@ -31,7 +30,6 @@ import io.netty.handler.ssl.SslContext;
 
 @Activate
 public class TripleHttp2Protocol extends Http2WireProtocol {
-
 
     @Override
     public void close() {
@@ -50,12 +48,13 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 .frameLogger(SERVER_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new SimpleChannelInboundHandler<Object>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                // empty
-            }
-        });
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
+                new SimpleChannelInboundHandler<Object>() {
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+                        // empty
+                    }
+                });
     }
 
     @Override

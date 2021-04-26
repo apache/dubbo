@@ -14,22 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
 
+package org.apache.dubbo.common.stream;
 
-import org.apache.dubbo.common.utils.MD5Utils;
+public interface StreamObserver<T> {
+    /**
+     * onNext
+     * @param data
+     */
+    void onNext(T data);
 
-public class RevisionResolver {
+    /**
+     * onError
+     * @param throwable
+     */
+    void onError(Throwable throwable);
 
-    public static final String EMPTY_REVISION = "0";
-
-
-    public static String calRevision(String metadata) {
-        return MD5Utils.getMd5(metadata);
-    }
-
-    public static String getEmptyRevision(String app) {
-        return EMPTY_REVISION;
-    }
-
+    /**
+     * onCompleted
+     */
+    void onCompleted();
 }

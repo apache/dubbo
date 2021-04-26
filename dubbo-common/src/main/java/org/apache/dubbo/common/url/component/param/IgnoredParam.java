@@ -14,38 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.common.url.component.param;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.stream.StreamObserver;
+import java.util.HashSet;
 
-public interface Stream {
+public class IgnoredParam {
+    private static final HashSet<String> IGNORED = new HashSet<>();
 
-    Logger LOGGER = LoggerFactory.getLogger(Stream.class);
-
-    void subscribe(TransportObserver observer);
-
-    TransportObserver asTransportObserver();
-
-    void subscribe(StreamObserver<Object> observer);
-
-    StreamObserver<Object> asStreamObserver();
-
-    void execute(Runnable runnable);
-
-    enum OperationResult {
-        OK,
-        FAILURE,
-        NETWORK_FAIL
+    static {
+        IGNORED.add("timestamp");
     }
 
-    interface OperationHandler {
-
-        /**
-         * @param result operation's result
-         * @param cause  null if the operation succeed
-         */
-        void operationDone(OperationResult result, Throwable cause);
+    static boolean ignore(String key) {
+        return IGNORED.contains(key);
     }
+
 }

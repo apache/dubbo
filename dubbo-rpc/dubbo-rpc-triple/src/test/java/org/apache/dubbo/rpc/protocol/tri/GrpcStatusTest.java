@@ -14,24 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-public interface TripleConstant {
-    String AUTHORITY_KEY = ":authority";
-    String PATH_KEY = ":path";
-    String HTTP_STATUS_KEY = "http-status";
-    String STATUS_KEY = "grpc-status";
-    String MESSAGE_KEY = "grpc-message";
-    String TIMEOUT = "grpc-timeout";
-    String CONTENT_TYPE_KEY = "content-type";
-    String CONTENT_PROTO = "application/grpc+proto";
-    String APPLICATION_GRPC = "application/grpc";
-    String TRICE_ID_KEY = "tri-trace-traceid";
-    String RPC_ID_KEY = "tri-trace-rpcid";
-    String CONSUMER_APP_NAME_KEY = "tri-consumer-appname";
-    String UNIT_INFO_KEY = "tri-unit-info";
-    String SERVICE_VERSION = "tri-service-version";
-    String SERVICE_GROUP = "tri-service-group";
-    String TRI_VERSION = "1.0.0";
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+class GrpcStatusTest {
+
+    @Test
+    public void fromMessage() {
+        String origin = "haha test 😊";
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(origin);
+        Assertions.assertNotEquals(origin, status.toMessage());
+        final String decoded = GrpcStatus.fromMessage(status.toMessage());
+        Assertions.assertEquals(origin, decoded);
+    }
+
+    @Test
+    public void toMessage() {
+        String content = "\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
+        final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                .withDescription(content);
+        Assertions.assertNotEquals(content, status.toMessage());
+    }
 }
