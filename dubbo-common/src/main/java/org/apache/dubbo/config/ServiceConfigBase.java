@@ -194,7 +194,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         if (provider == null) {
             provider = ApplicationModel.getConfigManager()
                     .getDefaultProvider()
-                    .orElse(new ProviderConfig());
+                    .orElseGet(ProviderConfig::new);
         }
     }
 

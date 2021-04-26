@@ -109,7 +109,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         if (consumer == null) {
             consumer = ApplicationModel.getConfigManager()
                     .getDefaultConsumer()
-                    .orElse(new ConsumerConfig());
+                    .orElseGet(ConsumerConfig::new);
         }
     }
 
