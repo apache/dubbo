@@ -277,7 +277,7 @@ public interface MethodUtils {
         T value = null;
 
         if (method == null) {
-            throw new IllegalStateException("method is null");
+            throw new IllegalStateException(String.format("cannot find method %s,class: %s", methodName, type.getName()));
         }
 
         try {
