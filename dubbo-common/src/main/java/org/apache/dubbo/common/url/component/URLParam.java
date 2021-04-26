@@ -88,6 +88,16 @@ public class URLParam implements Serializable {
      */
     private final Map<String, String> EXTRA_PARAMS;
 
+    /**
+     * store method related parameters
+     * <p>
+     * K - key
+     * V -
+     * K - method
+     * V - value
+     * <p>
+     * e.g. method1.mock=true => ( mock, (method1, true) )
+     */
     private final Map<String, Map<String, String>> METHOD_PARAMETERS;
 
     private transient long timestamp;
@@ -137,23 +147,53 @@ public class URLParam implements Serializable {
         this.timestamp = System.currentTimeMillis();
     }
 
+    /**
+     * Weather there contains some parameter match method
+     *
+     * @param method method name
+     * @return contains or not
+     */
     public boolean hasMethodParameter(String method) {
         if (method == null) {
             return false;
         }
+
+        String methodsString = getParameter(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            if (!methodsString.contains(method)) {
+                return false;
+            }
+        }
+
         for (Map.Entry<String, Map<String, String>> methods : METHOD_PARAMETERS.entrySet()) {
-            if(methods.getValue().containsKey(method)) {
+            if (methods.getValue().containsKey(method)) {
                 return true;
             }
         }
         return false;
     }
 
+    /**
+     * Get method related parameter. If not contains, use getParameter(key) instead.
+     * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
+     *
+     * @param method method name
+     * @param key key
+     * @return value
+     */
     public String getMethodParameter(String method, String key) {
         String strictResult = getMethodParameterStrict(method, key);
         return StringUtils.isNotEmpty(strictResult) ? strictResult : getParameter(key);
     }
 
+    /**
+     * Get method related parameter. If not contains, return null.
+     * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
+     *
+     * @param method method name
+     * @param key key
+     * @return value
+     */
     public String getMethodParameterStrict(String method, String key) {
         String methodsString = getParameter(METHODS_KEY);
         if (StringUtils.isNotEmpty(methodsString)) {
@@ -402,6 +442,12 @@ public class URLParam implements Serializable {
         return new URLParamMap(this);
     }
 
+    /**
+     * Get any method related parameter which match key
+     *
+     * @param key key
+     * @return result ( if any, random choose one )
+     */
     public String getAnyMethodParameter(String key) {
         Map<String, String> methodMap = METHOD_PARAMETERS.get(key);
         if (CollectionUtils.isNotEmptyMap(methodMap)) {
@@ -965,7 +1011,7 @@ public class URLParam implements Serializable {
 
         if (keyIndex == null) {
             extraParam.put(key, value);
-            String[] methodSplit = key.split("\\.",2);
+            String[] methodSplit = key.split("\\.", 2);
             if (methodSplit.length == 2) {
                 Map<String, String> methodMap = methodParameters.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
                 methodMap.put(methodSplit[0], value);
