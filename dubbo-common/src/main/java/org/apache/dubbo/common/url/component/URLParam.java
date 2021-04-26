@@ -813,14 +813,19 @@ public class URLParam implements Serializable {
                 && Objects.equals(EXTRA_PARAMS, urlParam.EXTRA_PARAMS);
     }
 
-    private int extraParamsHashCodeCache = -1;
+    private int hashCodeCache = -1;
 
     @Override
     public int hashCode() {
-        if (extraParamsHashCodeCache == -1) {
-            extraParamsHashCodeCache = EXTRA_PARAMS.hashCode();
+        if (hashCodeCache == -1) {
+            hashCodeCache = EXTRA_PARAMS.hashCode();
+            for (Integer value : VALUE) {
+                hashCodeCache = hashCodeCache * 31 + value;
+            }
+            hashCodeCache = hashCodeCache * 31 + ((KEY == null) ? 0 : KEY.hashCode());
+            hashCodeCache = hashCodeCache * 31 + ((DEFAULT_KEY == null) ? 0 : DEFAULT_KEY.hashCode());
         }
-        return Objects.hash(KEY, DEFAULT_KEY, Arrays.hashCode(VALUE)) + extraParamsHashCodeCache;
+        return hashCodeCache;
     }
 
     @Override
