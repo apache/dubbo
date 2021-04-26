@@ -173,15 +173,23 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         return invokers;
     }
 
+    // The currently effective consumer url
     @Override
     public URL getConsumerUrl() {
         return this.overrideDirectoryUrl;
     }
 
+    // The original consumer url
+    public URL getOriginalConsumerUrl() {
+        return this.overrideDirectoryUrl;
+    }
+
+    // The url registered to registry or metadata center
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
     }
 
+    // The url used to subscribe from registry
     public URL getSubscribeUrl() {
         return subscribeUrl;
     }
