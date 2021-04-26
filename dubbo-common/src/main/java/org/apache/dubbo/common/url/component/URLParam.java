@@ -960,7 +960,7 @@ public class URLParam implements Serializable {
 
         if (keyIndex == null) {
             extraParam.put(key, value);
-            String[] methodSplit = key.split("\\.");
+            String[] methodSplit = key.split("\\.",2);
             if (methodSplit.length == 2) {
                 Map<String, String> methodMap = methodParameters.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
                 methodMap.put(methodSplit[0], value);
