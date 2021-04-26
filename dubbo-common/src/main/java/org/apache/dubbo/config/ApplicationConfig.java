@@ -110,11 +110,6 @@ public class ApplicationConfig extends AbstractConfig {
     private MonitorConfig monitor;
 
     /**
-     * Is default or not
-     */
-    private Boolean isDefault;
-
-    /**
      * Directory for saving thread dump
      */
     private String dumpDirectory;
@@ -296,14 +291,6 @@ public class ApplicationConfig extends AbstractConfig {
     public void setLogger(String logger) {
         this.logger = logger;
         LoggerFactory.setLoggerAdapter(logger);
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     @Parameter(key = DUMP_DIRECTORY)

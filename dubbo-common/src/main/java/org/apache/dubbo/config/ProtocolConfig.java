@@ -198,11 +198,6 @@ public class ProtocolConfig extends AbstractConfig {
      */
     private Map<String, String> parameters;
 
-    /**
-     * If it's default
-     */
-    private Boolean isDefault;
-
     private Boolean sslEnabled;
 
     public ProtocolConfig() {
@@ -493,14 +488,6 @@ public class ProtocolConfig extends AbstractConfig {
 
     public void setParameters(Map<String, String> parameters) {
         this.parameters = parameters;
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     @Parameter(key = SSL_ENABLED_KEY)
