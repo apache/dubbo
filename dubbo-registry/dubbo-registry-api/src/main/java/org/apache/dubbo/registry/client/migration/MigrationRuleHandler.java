@@ -55,7 +55,7 @@ public class MigrationRuleHandler<T> {
             return;
         }
 
-        MigrationStep step = MigrationStep.INTERFACE_FIRST;
+        MigrationStep step = MigrationStep.APPLICATION_FIRST;
         Float threshold = -1f;
         step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
 
