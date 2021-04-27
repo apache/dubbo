@@ -112,6 +112,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
 
     protected void evictURLCache(URL url) {
         Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
+        logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
         try {
             if (oldURLs != null && oldURLs.size() > 0) {
                 Long currentTimestamp = System.currentTimeMillis();
