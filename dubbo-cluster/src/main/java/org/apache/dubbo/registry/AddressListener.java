@@ -28,7 +28,7 @@ public interface AddressListener {
     /**
      * processing when receiving the address list
      *
-     * @param addresses            provider address list
+     * @param addresses         provider address list
      * @param consumerUrl
      * @param registryDirectory
      */

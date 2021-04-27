@@ -14,18 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+public interface TransportObserver {
+    Stream.OperationHandler EMPTY_HANDLER = (result, cause) -> {
+    };
 
-class TripleUtilTest {
-
-    @Test
-    void percentEncoding() {
-        String content="\t\ntest with whitespace\r\nand Unicode BMP ☺ and non-BMP 😈\t\n";
-        final String encoded = TripleUtil.percentEncode(content);
-        final String decoded = TripleUtil.percentDecode(encoded);
-        Assertions.assertEquals(content,decoded);
+    default void tryOnMetadata(Metadata metadata, boolean endStream) {
+        onMetadata(metadata, endStream, EMPTY_HANDLER);
     }
+
+    default void tryOnData(byte[] data, boolean endStream) {
+        onData(data, endStream, EMPTY_HANDLER);
+    }
+
+    default void tryOnComplete() {
+        onComplete(EMPTY_HANDLER);
+    }
+
+    void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler);
+
+    void onData(byte[] data, boolean endStream, Stream.OperationHandler handler);
+
+    void onComplete(Stream.OperationHandler handler);
+
 }
