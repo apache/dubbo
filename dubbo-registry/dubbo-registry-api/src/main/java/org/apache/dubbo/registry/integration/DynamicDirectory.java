@@ -234,8 +234,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
         // unsubscribe.
         try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
+            if (getSubscribeConsumerurl() != null && registry != null && registry.isAvailable()) {
+                registry.unsubscribe(getSubscribeConsumerurl(), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);

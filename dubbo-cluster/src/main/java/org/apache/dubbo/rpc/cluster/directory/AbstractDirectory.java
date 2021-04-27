@@ -86,6 +86,10 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
         setRouterChain(routerChain);
     }
 
+    public URL getSubscribeConsumerurl() {
+        return this.consumerUrl;
+    }
+
     @Override
     public List<Invoker<T>> list(Invocation invocation) throws RpcException {
         if (destroyed) {
