@@ -72,7 +72,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     protected boolean shouldSimplified;
 
     protected volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
-
+    protected volatile URL subscribeUrl;
     protected volatile URL registeredConsumerUrl;
 
     /**
@@ -129,12 +129,12 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     public void subscribe(URL url) {
-        setConsumerUrl(url);
+        setSubscribeUrl(url);
         registry.subscribe(url, this);
     }
 
     public void unSubscribe(URL url) {
-        setConsumerUrl(null);
+        setSubscribeUrl(null);
         registry.unsubscribe(url, this);
     }
 
@@ -173,17 +173,29 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         return invokers;
     }
 
+    // The currently effective consumer url
     @Override
     public URL getConsumerUrl() {
         return this.overrideDirectoryUrl;
     }
 
+    // The original consumer url
     public URL getOriginalConsumerUrl() {
-        return this.consumerUrl;
+        return this.overrideDirectoryUrl;
     }
 
+    // The url registered to registry or metadata center
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
+    }
+
+    // The url used to subscribe from registry
+    public URL getSubscribeUrl() {
+        return subscribeUrl;
+    }
+
+    public void setSubscribeUrl(URL subscribeUrl) {
+        this.subscribeUrl = subscribeUrl;
     }
 
     public void setRegisteredConsumerUrl(URL url) {
@@ -221,7 +233,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         // unsubscribe.
         try {
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
+                registry.unsubscribe(getSubscribeUrl(), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);

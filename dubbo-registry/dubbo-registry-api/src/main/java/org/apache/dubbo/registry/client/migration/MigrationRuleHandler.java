@@ -21,7 +21,6 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
@@ -56,35 +55,37 @@ public class MigrationRuleHandler<T> {
             return;
         }
 
-        MigrationStep step = MigrationStep.INTERFACE_FIRST;
+        MigrationStep step = MigrationStep.APPLICATION_FIRST;
         Float threshold = -1f;
-        if (rule == MigrationRule.INIT) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
-        } else {
-            try {
-                String serviceKey = consumerURL.getDisplayServiceKey();
-                Set<String> apps = writableMetadataService.getCachedMapping(consumerURL);
-                // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isNotEmpty(apps)) { //empty only happens when meta server does not work properly
-                    if (CollectionUtils.isEmpty(rule.getTargetIps())) {
-                        setMigrationRule(rule);
-                        step = getMigrationStep(rule, step, serviceKey, apps);
-                        threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
-                    } else {
-                        if (rule.getTargetIps().contains(consumerURL.getHost())) {
-                            setMigrationRule(rule);
-                            step = getMigrationStep(rule, step, serviceKey, apps);
-                            threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
-                        } else {
-                            setMigrationRule(null); // clear previous rule
-                            logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                logger.error("Failed to get step and threshold info from rule: " + rule, e);
-            }
-        }
+        step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+
+//        if (rule == MigrationRule.INIT) {
+//            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+//        } else {
+//            try {
+//                String serviceKey = consumerURL.getDisplayServiceKey();
+//                Set<String> apps = writableMetadataService.getCachedMapping(consumerURL);
+//                // FIXME, consumerURL.getHost() might not exactly the ip expected.
+//                if (CollectionUtils.isNotEmpty(apps)) { //empty only happens when meta server does not work properly
+//                    if (CollectionUtils.isEmpty(rule.getTargetIps())) {
+//                        setMigrationRule(rule);
+//                        step = getMigrationStep(rule, step, serviceKey, apps);
+//                        threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
+//                    } else {
+//                        if (rule.getTargetIps().contains(consumerURL.getHost())) {
+//                            setMigrationRule(rule);
+//                            step = getMigrationStep(rule, step, serviceKey, apps);
+//                            threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
+//                        } else {
+//                            setMigrationRule(null); // clear previous rule
+//                            logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
+//                        }
+//                    }
+//                }
+//            } catch (Exception e) {
+//                logger.error("Failed to get step and threshold info from rule: " + rule, e);
+//            }
+//        }
 
         if (!isCallback) {
             initInvoker(step, threshold);
