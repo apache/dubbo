@@ -55,6 +55,8 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService nextScheduledExecutor();
 
+    ExecutorService nextExecutorExecutor();
+
     ScheduledExecutorService getServiceExporterExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
@@ -68,6 +70,7 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService getRegistryNotificationExecutor();
 
+    ScheduledExecutorService getStateRouterScheduledExecutor();
 
     /**
      * Get the default shared threadpool.
@@ -75,5 +78,7 @@ public interface ExecutorRepository {
      * @return
      */
     ExecutorService getSharedExecutor();
+
+    ExecutorService getPoolRouterExecutor();
 
 }
