@@ -235,7 +235,9 @@ public class NetUtils {
             return configIp;
         }
 
-        return getIpByHost(getLocalAddress().getHostName());
+        InetAddress localAddress = getLocalAddress();
+        String hostName = localAddress == null ? LOCALHOST_VALUE : localAddress.getHostName();
+        return getIpByHost(hostName);
     }
 
     /**
