@@ -177,7 +177,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     protected URL(String protocol,
@@ -194,7 +194,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     public static URL cacheableValueOf(String url) {
