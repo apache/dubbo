@@ -211,7 +211,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         @Override
         public void onEvent(MappingChangedEvent event) {
-            logger.info("Received mapping notification from meta server, " +  event);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Received mapping notification from meta server, " + event);
+            }
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
             oldApps = newApps;

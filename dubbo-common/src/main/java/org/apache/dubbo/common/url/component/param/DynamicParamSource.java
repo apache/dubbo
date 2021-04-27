@@ -16,28 +16,11 @@
  */
 package org.apache.dubbo.common.url.component.param;
 
-public interface ParamValue {
-    /**
-     * get value at the specified index.
-     *
-     * @param n the nth value
-     * @return the value stored at index = n
-     */
-    String getN(Integer n);
+import org.apache.dubbo.common.extension.SPI;
 
+import java.util.List;
+@SPI
+public interface DynamicParamSource {
 
-    /**
-     * max index is 2^31 - 1
-     *
-     * @param value the stored value
-     * @return the index of value
-     */
-    Integer getIndex(String value);
-
-    /**
-     * get default value
-     *
-     * @return the default value stored at index = 0
-     */
-    String defaultVal();
+    void init(List<String> KEYS, List<ParamValue> VALUES);
 }

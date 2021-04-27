@@ -82,8 +82,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     static {
         ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
-        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
-        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 30 * 60 * 1000);
+        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
 
     public CacheableFailbackRegistry(URL url) {

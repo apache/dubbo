@@ -124,7 +124,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
                 if (EMPTY_REVISION.equals(revision)) {
-                    logger.info("Find instance without valid service metadata: " + instance.getAddress());
+                    if(logger.isDebugEnabled()) {
+                        logger.debug("Find instance without valid service metadata: " + instance.getAddress());
+                    }
                     continue;
                 }
                 List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
@@ -138,7 +140,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             }
         }
 
-        logger.info(newRevisionToMetadata.size() + " unique revisions: " + newRevisionToMetadata.keySet());
+        if(logger.isDebugEnabled()) {
+            logger.debug(newRevisionToMetadata.size() + " unique revisions: " + newRevisionToMetadata.keySet());
+        }
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
@@ -270,9 +274,16 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
 
+        if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
+            }
+        }
+
         if (metadata == null
                 || (metadata == MetadataInfo.EMPTY && (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)))) {
             metadata = getMetadataInfo(instance);
+
             if (metadata != MetadataInfo.EMPTY) {
                 failureCounter.set(0);
                 revisionToMetadata.putIfAbsent(revision, metadata);
@@ -309,7 +320,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         MetadataInfo metadataInfo;
         try {
             if (logger.isDebugEnabled()) {
-                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+                logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
@@ -318,7 +329,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
-            logger.info("Metadata " + metadataInfo);
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
             metadataInfo = null;
