@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
@@ -88,7 +89,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
-        this.listeners = new HashMap<>();
+        this.listeners = new ConcurrentHashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
         this.revisionToMetadata = new HashMap<>();
@@ -101,6 +102,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
+        if (destroyed.get()) {
+            return;
+        }
         if (this.isRetryAndExpired(event)) {
             return;
         }
@@ -182,6 +186,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             logger.info("No interface listeners exist, will stop instance listener for " + this.getServiceNames());
             serviceDiscovery.removeServiceInstancesChangedListener(this);
         }
+    }
+
+    public boolean hasListeners() {
+        return CollectionUtils.isNotEmptyMap(listeners);
     }
 
     /**
@@ -332,7 +340,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     DefaultServiceInstance.Endpoint endpoint = ServiceInstanceMetadataUtils.getEndpoint(i, protocol);
                     if (endpoint != null && !endpoint.getPort().equals(i.getPort())) {
                         urls.add(((DefaultServiceInstance) i).copy(endpoint).toURL());
-                        break;
+                        continue;
                     }
                 }
                 urls.add(i.toURL());
@@ -364,14 +372,16 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     /**
      * Since this listener is shared among interfaces, destroy this listener only when all interface listener are unsubscribed
      */
-    public void destroy() {
-        if (destroyed.compareAndSet(false, true)) {
+    public synchronized void destroy() {
+        if (!destroyed.get()) {
             if (CollectionUtils.isEmptyMap(listeners)) {
-                allInstances.clear();
-                serviceUrls.clear();
-                revisionToMetadata.clear();
-                if (retryFuture != null && !retryFuture.isDone()) {
-                    retryFuture.cancel(true);
+                if (destroyed.compareAndSet(false, true)) {
+                    allInstances.clear();
+                    serviceUrls.clear();
+                    revisionToMetadata.clear();
+                    if (retryFuture != null && !retryFuture.isDone()) {
+                        retryFuture.cancel(true);
+                    }
                 }
             }
         }

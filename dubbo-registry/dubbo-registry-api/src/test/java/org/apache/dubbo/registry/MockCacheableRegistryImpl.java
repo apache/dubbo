@@ -75,7 +75,7 @@ public class MockCacheableRegistryImpl extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-
+        super.doUnsubscribe(url, listener);
     }
 
     @Override

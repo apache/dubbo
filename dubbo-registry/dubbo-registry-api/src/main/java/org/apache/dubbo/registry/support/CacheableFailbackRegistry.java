@@ -31,6 +31,7 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.registry.NotifyListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -104,6 +105,31 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         return result;
     }
 
+    @Override
+    public void doUnsubscribe(URL url, NotifyListener listener) {
+        this.evictURLCache(url);
+    }
+
+    protected void evictURLCache(URL url) {
+        Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
+        logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
+        try {
+            if (oldURLs != null && oldURLs.size() > 0) {
+                Long currentTimestamp = System.currentTimeMillis();
+                for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
+                    waitForRemove.put(entry.getValue(), currentTimestamp);
+                }
+                if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
+                    if (semaphore.tryAcquire()) {
+                        cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to evict url for " + url.getServiceKey(), e);
+        }
+    }
+
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
         // keep old urls
         Map<String, ServiceAddressURL> oldURLs = stringUrls.get(consumer);
@@ -164,8 +190,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         List<URL> urls;
         if (CollectionUtils.isEmpty(providers)) {
             urls = new ArrayList<>(1);
-            // clear cache on empty notification: unsubscribe or provider offline
-            stringUrls.remove(consumer);
         } else {
             String rawProvider = providers.iterator().next();
             if (rawProvider.startsWith(OVERRIDE_PROTOCOL) || rawProvider.startsWith(ROUTE_PROTOCOL) || rawProvider.startsWith(ROUTE_SCRIPT_PROTOCOL)) {
