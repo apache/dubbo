@@ -84,12 +84,16 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     /**
      * On {@link ServiceInstancesChangedEvent the service instances change event}
+     * 监听的服务实例发生变化
      *
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
         logger.info("Received instance notification, serviceName: " + event.getServiceName() + ", instances: " + event.getServiceInstances().size());
         String appName = event.getServiceName();
+        /**
+         * 缓存注册中心中  服务以及对应的注册实例
+         */
         allInstances.put(appName, event.getServiceInstances());
         if (logger.isDebugEnabled()) {
             logger.debug(event.getServiceInstances().toString());
@@ -99,28 +103,49 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         Map<String, Set<String>> localServiceToRevisions = new HashMap<>();
         Map<Set<String>, List<URL>> revisionsToUrls = new HashMap();
         Map<String, List<URL>> tmpServiceUrls = new HashMap<>();
+        /**
+         *
+         */
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
+                /**
+                 *
+                 */
                 String revision = getExportedServicesRevision(instance);
                 if (DEFAULT_REVISION.equals(revision)) {
                     logger.info("Find instance without valid service metadata: " + instance.getAddress());
                     continue;
                 }
+                /**
+                 *
+                 */
                 List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
                 subInstances.add(instance);
 
+                /**
+                 *
+                 */
                 MetadataInfo metadata = revisionToMetadata.get(revision);
                 if (metadata == null) {
+                    /**
+                     *
+                     */
                     metadata = getMetadataInfo(instance);
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
                     if (metadata != null) {
+                        /**
+                         *
+                         */
                         revisionToMetadata.put(revision, metadata);
                     } else {
 
                     }
                 }
 
+                /**
+                 *
+                 */
                 if (metadata != null) {
                     parseMetadata(revision, metadata, localServiceToRevisions);
                     ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
@@ -132,11 +157,20 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 //                }
             }
 
+            /**
+             *
+             */
             localServiceToRevisions.forEach((serviceKey, revisions) -> {
+                /**
+                 *
+                 */
                 List<URL> urls = revisionsToUrls.get(revisions);
                 if (urls != null) {
                     tmpServiceUrls.put(serviceKey, urls);
                 } else {
+                    /**
+                     *
+                     */
                     urls = new ArrayList<>();
                     for (String r : revisions) {
                         for (ServiceInstance i : revisionToInstances.get(r)) {
@@ -150,6 +184,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         }
 
         this.serviceUrls = tmpServiceUrls;
+        /**
+         *
+         */
         this.notifyAddressChanged();
     }
 

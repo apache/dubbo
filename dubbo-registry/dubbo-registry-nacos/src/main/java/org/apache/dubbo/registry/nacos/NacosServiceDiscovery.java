@@ -142,6 +142,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
+                /**
+                 * 在nacos（注册中心）中获取serviceName对应的服务实例
+                 * 优先从本地缓存获取
+                 */
                 service.selectInstances(serviceName, true)
                         .stream().map(NacosNamingServiceUtils::toServiceInstance)
                         .collect(Collectors.toList())
@@ -151,6 +155,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
+        //异步执行
         execute(namingService, service -> {
             listener.getServiceNames().forEach(serviceName -> {
                 try {
@@ -184,7 +189,9 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 // 转换
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
-        //
+        /**
+         * 发布事件   再次异步
+         */
         dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
     }
 

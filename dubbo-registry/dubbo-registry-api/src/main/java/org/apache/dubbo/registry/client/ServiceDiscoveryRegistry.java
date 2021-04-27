@@ -374,17 +374,20 @@ public class ServiceDiscoveryRegistry implements Registry {
         serviceListener.addListener(protocolServiceKey, listener);
 
         /**
-         * 添加监听
+         * 对注册中心实例   添加监听
          */
         registerServiceInstancesChangedListener(url, serviceListener);
 
         // FIXME: This will cause redundant duplicate notifications
         serviceNames.forEach(serviceName -> {
-            //
+            /**
+             * 从注册中心获取serviceName对应的注册服务实例
+             * 优先从缓存中获取
+             */
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
             if (CollectionUtils.isNotEmpty(serviceInstances)) {
                 /**
-                 *
+                 * ServiceInstancesChangedListener
                  */
                 serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
             } else {
