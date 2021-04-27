@@ -301,15 +301,15 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         return destroyed.get();
     }
 
-    protected void assertInitialized(String action) throws IllegalStateException {
-        if (!isInitialized()) {
-            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not initialized yet.");
-        }
-    }
-
     protected void assertDestroyed(String action) throws IllegalStateException {
         if (isDestroyed()) {
             throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is destroyed already.");
+        }
+    }
+
+    protected void assertInitialized(String action) throws IllegalStateException {
+        if (!isInitialized()) {
+            throw new IllegalStateException("The action[" + action + "] is rejected, because the ServiceDiscovery is not initialized yet.");
         }
     }
 }
