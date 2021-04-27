@@ -65,14 +65,22 @@ public final class AccessLogData {
     /**
      * Default constructor.
      */
-    private AccessLogData() {
-        RpcContext context = RpcContext.getContext();
-        data = new HashMap<>();
-        setLocalHost(context.getLocalHost());
-        setLocalPort(context.getLocalPort());
-        setRemoteHost(context.getRemoteHost());
-        setRemotePort(context.getRemotePort());
-    }
+   private AccessLogData() {
+       RpcContext context = RpcContext.getContext();
+       data = new HashMap<>();
+       setPort(context);
+       setHost(context);        
+   }
+
+   private void setPort(RpcContext context){
+       setLocalPort(context.getLocalPort());
+       setRemotePort(context.getRemotePort());
+   }
+
+   private void setHost(RpcContext context){
+       setLocalHost(context.getLocalHost());
+       setRemoteHost(context.getRemoteHost());
+   }
 
     /**
      * Get new instance of log data.
