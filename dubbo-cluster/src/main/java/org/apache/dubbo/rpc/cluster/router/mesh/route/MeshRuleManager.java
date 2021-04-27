@@ -33,7 +33,7 @@ public final class MeshRuleManager {
     private static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
     private static final String GROUP = "DEFAULT_GROUP";
 
-    private static ConcurrentHashMap<String, MeshAppRuleListener> appRuleListeners = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, MeshAppRuleListener> APP_RULE_LISTENERS = new ConcurrentHashMap<>();
 
     public synchronized static void subscribeAppRule(String app) {
 
@@ -57,11 +57,11 @@ public final class MeshRuleManager {
         }
 
         configuration.addListener(appRuleDataId, GROUP, meshAppRuleListener);
-        appRuleListeners.put(app, meshAppRuleListener);
+        APP_RULE_LISTENERS.put(app, meshAppRuleListener);
     }
 
     public static void register(String app, MeshRuleRouter subscriber) {
-        MeshAppRuleListener meshAppRuleListener = appRuleListeners.get(app);
+        MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
         if (meshAppRuleListener == null) {
             logger.warn("appRuleListener can't find when Router register");
             return;
@@ -70,7 +70,7 @@ public final class MeshRuleManager {
     }
 
     public static void unregister(MeshRuleRouter subscriber) {
-        Collection<MeshAppRuleListener> listeners = appRuleListeners.values();
+        Collection<MeshAppRuleListener> listeners = APP_RULE_LISTENERS.values();
         for (MeshAppRuleListener listener : listeners) {
             listener.unregister(subscriber);
         }
