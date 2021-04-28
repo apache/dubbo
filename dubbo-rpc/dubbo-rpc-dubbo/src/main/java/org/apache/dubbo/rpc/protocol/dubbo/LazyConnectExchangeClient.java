@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CLOSE_STATE_KEY;
 
 /**
  * dubbo protocol support class.
