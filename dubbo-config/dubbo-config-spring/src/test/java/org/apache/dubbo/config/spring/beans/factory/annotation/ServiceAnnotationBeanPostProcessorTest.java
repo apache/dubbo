@@ -54,11 +54,6 @@ import java.util.Map;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceAnnotationBeanPostProcessorTest {
 
-    @BeforeEach
-    public void setUp() {
-        DubboBootstrap.reset();
-    }
-
     @AfterEach
     public void tearDown() {
         DubboBootstrap.reset();
