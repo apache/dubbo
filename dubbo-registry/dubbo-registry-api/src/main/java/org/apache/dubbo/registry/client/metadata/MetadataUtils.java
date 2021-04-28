@@ -59,7 +59,7 @@ public class MetadataUtils {
             synchronized (REMOTE_LOCK) {
                 if (remoteMetadataService == null) {
                     /**
-                     * 实际为InMemoryWritableMetadataService
+                     * WritableMetadataService实际为InMemoryWritableMetadataService
                      */
                     remoteMetadataService = new RemoteMetadataServiceImpl(WritableMetadataService.getDefaultExtension());
                 }

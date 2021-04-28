@@ -110,16 +110,36 @@ public class RemoteMetadataServiceImpl {
         });
     }
 
+    /**
+     *
+     * @param instance
+     * @return
+     */
     public MetadataInfo getMetadata(ServiceInstance instance) {
+        /**
+         * 实例化SubscriberMetadataIdentifier
+         */
         SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(instance.getServiceName(),
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
 
+        /**
+         * 获取REGISTRY_CLUSTER对应的值
+         */
         String registryCluster = instance.getExtendParams().get(REGISTRY_CLUSTER_KEY);
 
+        /**
+         * 在metadataReports中获取registryCluster对应的值
+         */
         MetadataReport metadataReport = getMetadataReports().get(registryCluster);
         if (metadataReport == null) {
+            /**
+             * 为空则获取默认
+             */
             metadataReport = getMetadataReports().entrySet().iterator().next().getValue();
         }
+        /**
+         * nacos目前没有实现   走接口的默认实现返回null
+         */
         return metadataReport.getAppMetadata(identifier, instance.getExtendParams());
     }
 

@@ -110,7 +110,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 /**
-                 *
+                 * 获取实例中元数据对应的revision
                  */
                 String revision = getExportedServicesRevision(instance);
                 if (DEFAULT_REVISION.equals(revision)) {
@@ -118,18 +118,18 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     continue;
                 }
                 /**
-                 *
+                 * 将revision与对应的实例缓存到revisionToInstances
                  */
                 List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
                 subInstances.add(instance);
 
                 /**
-                 *
+                 * 获取revisionToMetadata对应的缓存
                  */
                 MetadataInfo metadata = revisionToMetadata.get(revision);
                 if (metadata == null) {
                     /**
-                     *
+                     * 获取instance对应的metadata  nacos返回null
                      */
                     metadata = getMetadataInfo(instance);
                     logger.info("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + " is " + metadata);
@@ -143,10 +143,10 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                     }
                 }
 
-                /**
-                 *
-                 */
                 if (metadata != null) {
+                    /**
+                     * 向localServiceToRevisions缓存metadata内的服务与revision
+                     */
                     parseMetadata(revision, metadata, localServiceToRevisions);
                     ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
                 }
@@ -158,7 +158,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             }
 
             /**
-             *
+             * 注册中心为nacos  localServiceToRevisions为空
              */
             localServiceToRevisions.forEach((serviceKey, revisions) -> {
                 /**
@@ -185,7 +185,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         this.serviceUrls = tmpServiceUrls;
         /**
-         *
+         * 通知地址发生变化
          */
         this.notifyAddressChanged();
     }
@@ -200,9 +200,19 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return localServiceToRevisions;
     }
 
+    /**
+     * @param instance
+     * @return
+     */
     private MetadataInfo getMetadataInfo(ServiceInstance instance) {
+        /**
+         * 获取instance对应的dubbo.metadata.storage-type
+         */
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
+        /**
+         * 向instance的extendParams中缓存REGISTRY_CLUSTER  值为url参数map中registry-cluster-type的值
+         */
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
         MetadataInfo metadataInfo;
         try {
@@ -210,7 +220,13 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
+                /**
+                 * 实例化RemoteMetadataServiceImpl
+                 */
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+                /**
+                 * 获取instance对应的metadataInfo  nacos没有实现  返回null
+                 */
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
@@ -230,6 +246,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     private void notifyAddressChanged() {
         listeners.forEach((key, notifyListeners) -> {
             notifyListeners.forEach(notifyListener -> {
+                /**
+                 * ServiceDiscoveryRegistryDirectory
+                 */
                 notifyListener.notify(toUrlsWithEmpty(serviceUrls.get(key)));
             });
         });

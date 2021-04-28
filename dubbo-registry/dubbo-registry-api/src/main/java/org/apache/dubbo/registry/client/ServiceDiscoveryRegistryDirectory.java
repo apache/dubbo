@@ -73,7 +73,8 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
         // Set the context of the address notification thread.
-         RpcContext.setRpcContext(getConsumerUrl());
+        //dubbo://172.203.144.103/org.apache.dubbo.demo.DemoService?application=dubbo-demo-annotation-consumer&check=false&dubbo=2.0.2&init=false&interface=org.apache.dubbo.demo.DemoService&metadata-type=remote&methods=sayHello,sayHelloAsync&pid=6876&register.ip=172.203.144.103&side=consumer&sticky=false&timestamp=1619590317664
+        RpcContext.setRpcContext(getConsumerUrl());
 
         /**
          * 3.x added for extend URL address
@@ -86,9 +87,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
         }
 
+        /**
+         *
+         */
         refreshInvoker(instanceUrls);
     }
 
+    /**
+     *
+     * @param invokerUrls
+     */
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
 
