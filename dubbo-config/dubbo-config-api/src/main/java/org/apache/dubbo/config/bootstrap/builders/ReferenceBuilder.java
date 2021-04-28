@@ -31,7 +31,7 @@ import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
  *
  * @since 2.7
  */
-public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfig, ReferenceBuilder<T>> {
+public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfig<T>, ReferenceBuilder<T>> {
     /**
      * The interface name of the reference service
      */
@@ -74,8 +74,8 @@ public class ReferenceBuilder<T> extends AbstractReferenceBuilder<ReferenceConfi
      */
     private String services;
 
-    public static ReferenceBuilder newBuilder() {
-        return new ReferenceBuilder();
+    public static <T> ReferenceBuilder<T> newBuilder() {
+        return new ReferenceBuilder<>();
     }
 
     public ReferenceBuilder<T> id(String id) {

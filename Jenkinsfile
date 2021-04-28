@@ -12,12 +12,12 @@ pipeline {
     }
 
     environment {
-        JAVA_HOME = "${tool 'JDK 1.8 (latest)'}"
+        JAVA_HOME = "${tool 'jdk_1.8_latest'}"
     }
 
     tools {
-        maven 'Maven 3 (latest)'
-        jdk 'JDK 1.8 (latest)'
+        maven 'maven_3_latest'
+        jdk 'jdk_1.8_latest'
     }
 
     triggers {
@@ -38,7 +38,7 @@ pipeline {
         stage('Duplicate deploy check') {
             steps {
                 script {
-                    def deployedCommitId = sh(returnStdout: true, script: "curl --silent https://builds.apache.org/job/Apache%20Dubbo/job/${env.JOB_BASE_NAME}/lastSuccessfulBuild/artifact/DEPLOY_COMMIT_ID || true").trim()
+                    def deployedCommitId = sh(returnStdout: true, script: "curl --silent https://ci-builds.apache.org/job/Dubbo/job/${env.JOB_BASE_NAME}/lastSuccessfulBuild/artifact/DEPLOY_COMMIT_ID || true").trim()
                     env.DEPLOYED_COMMIT_ID = deployedCommitId
                     def commitId = sh(returnStdout: true, script: 'git rev-parse HEAD').trim()
                     env.COMMIT_ID = commitId
@@ -65,22 +65,26 @@ pipeline {
                     def commitId = env.COMMIT_ID
                     println "Current commit id: $commitId"
 
-                    def commitStatusJson = sh(script: "curl --silent https://api.github.com/repos/apache/dubbo/commits/$commitId/status", returnStdout: true).trim()
-                    println "Commit status: \r\n$commitStatusJson"
+                    def commitStatusJson = sh(script: "curl --silent https://api.github.com/repos/apache/dubbo/actions/runs", returnStdout: true).trim()
 
                     def jsonSlurper = new JsonSlurper()
                     def jsonObject = jsonSlurper.parseText(commitStatusJson)
 
-                    def status = jsonObject.state
+                    def runs = jsonObject.workflow_runs
 
-                    println "Current commit status is $status"
-
-                    if (status == "success") {
-                        env.STATUS_CHECK = "true"
-                        println "Continue to deploy snapshot"
-                    } else {
-                        env.STATUS_CHECK = "false"
-                        println "Current commit status not allow to deploy snapshot"
+                    for (def run in runs) {
+                        if (run.workflow_id == 5030221 && run.head_sha == commitId &&
+                                run.event == "push" && run.head_branch == "master") {
+                            println "Find github action for current commit: $run"
+                            if (run.status == "completed" && run.conclusion == "success") {
+                                env.STATUS_CHECK = "true"
+                                println "CI status is success for commitId:$commitId, continue to deploy"
+                            } else {
+                                env.STATUS_CHECK = "false"
+                                println "CI status is not success for commitId:$commitId"
+                            }
+                            break;
+                        }
                     }
                 }
             }

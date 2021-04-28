@@ -24,6 +24,7 @@ import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -81,7 +82,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * The nacos configService
      */
-    private final ConfigService configService;
+    private final NacosConfigServiceWrapper configService;
 
     private HttpAgent httpAgent;
 
@@ -93,11 +94,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
-        this.httpAgent = getHttpAgent(configService);
+        this.httpAgent = getHttpAgent(configService.getConfigService());
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
-    private ConfigService buildConfigService(URL url) {
+    private NacosConfigServiceWrapper buildConfigService(URL url) {
         ConfigService configService = null;
         try {
             configService = NacosFactory.createConfigService(nacosProperties);
@@ -107,14 +108,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             throw new IllegalStateException(e);
         }
-        return configService;
+        return new NacosConfigServiceWrapper(configService);
     }
 
     private HttpAgent getHttpAgent(ConfigService configService) {
         HttpAgent agent = null;
         try {
             Field field = configService.getClass().getDeclaredField("agent");
-            field.setAccessible(true);
+            ReflectUtils.makeAccessible(field);
             agent = (HttpAgent) field.get(configService);
         } catch (Exception e) {
             throw new IllegalStateException(e);
