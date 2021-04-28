@@ -109,17 +109,15 @@ public class DubboBootstrapTest {
         interfaceConfig.checkRegistry();
         ApplicationModel.getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
         List<URL> urls = ConfigValidationUtils.loadRegistries(interfaceConfig, true);
-        Assertions.assertEquals(2, urls.size());
-        Assertions.assertEquals("service-discovery-registry", urls.get(0).getProtocol());
-        Assertions.assertEquals("registry", urls.get(1).getProtocol());
-        for (URL url : urls) {
-            Assertions.assertEquals("addr1:9090", url.getAddress());
-            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
-            Assertions.assertTrue(url.getParameters().containsKey("pid"));
-            Assertions.assertTrue(url.getParameters().containsKey("registry"));
-            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
-        }
+        Assertions.assertEquals(1, urls.size());
+        URL url = urls.get(0);
+        Assertions.assertEquals("registry", url.getProtocol());
+        Assertions.assertEquals("addr1:9090", url.getAddress());
+        Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+        Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
+        Assertions.assertTrue(url.getParameters().containsKey("pid"));
+        Assertions.assertTrue(url.getParameters().containsKey("registry"));
+        Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
     }
 
 
