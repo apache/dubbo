@@ -1298,7 +1298,7 @@ class URL implements Serializable {
     }
 
     public static String buildKey(String path, String group, String version) {
-        return BaseServiceMetadata.buildServiceKey(path, group, version);
+        return BaseServiceMetadata.buildServiceKey(path, group, version).intern();
     }
 
     public String getProtocolServiceKey() {
