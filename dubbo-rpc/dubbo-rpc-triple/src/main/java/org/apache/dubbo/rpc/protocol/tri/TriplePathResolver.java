@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.Invoker;

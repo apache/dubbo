@@ -31,6 +31,7 @@ import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
+import org.apache.dubbo.registry.NotifyListener;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -79,8 +80,8 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     static {
         ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         cacheRemovalScheduler = executorRepository.nextScheduledExecutor();
-        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 10 * 60 * 1000);
-        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 30 * 60 * 1000);
+        cacheRemovalTaskIntervalInMillis = getIntConfig(CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
+        cacheClearWaitingThresholdInMillis = getIntConfig(CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
 
     public CacheableFailbackRegistry(URL url) {
@@ -100,6 +101,31 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             }
         }
         return result;
+    }
+
+    @Override
+    public void doUnsubscribe(URL url, NotifyListener listener) {
+        this.evictURLCache(url);
+    }
+
+    protected void evictURLCache(URL url) {
+        Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(url);
+        try {
+            if (oldURLs != null && oldURLs.size() > 0) {
+                logger.info("Evicting urls for service " + url.getServiceKey() + ", size " + oldURLs.size());
+                Long currentTimestamp = System.currentTimeMillis();
+                for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
+                    waitForRemove.put(entry.getValue(), currentTimestamp);
+                }
+                if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
+                    if (semaphore.tryAcquire()) {
+                        cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to evict url for " + url.getServiceKey(), e);
+        }
     }
 
     protected List<URL> toUrlsWithoutEmpty(URL consumer, Collection<String> providers) {
@@ -136,7 +162,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
             }
         }
 
-        evictUrlForConsumer(consumer);
+        evictURLCache(consumer);
         stringUrls.put(consumer, newURLs);
 
         return new ArrayList<>(newURLs.values());
@@ -150,7 +176,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
                 urls = toUrlsWithoutEmpty(consumer, providers);
             } else {
                 // clear cache on empty notification: unsubscribe or provider offline
-                evictUrlForConsumer(consumer);
+                evictURLCache(consumer);
             }
         } else {
             if (CollectionUtils.isNotEmpty(providers)) {
@@ -169,25 +195,6 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         }
 
         return urls;
-    }
-
-    private void evictUrlForConsumer(URL consumer) {
-        Map<String, ServiceAddressURL> oldURLs = stringUrls.remove(consumer);
-        try {
-            if (oldURLs != null && oldURLs.size() > 0) {
-                Long currentTimestamp = System.currentTimeMillis();
-                for (Map.Entry<String, ServiceAddressURL> entry : oldURLs.entrySet()) {
-                    waitForRemove.put(entry.getValue(), currentTimestamp);
-                }
-                if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
-                    if (semaphore.tryAcquire()) {
-                        cacheRemovalScheduler.schedule(new RemovalTask(), cacheRemovalTaskIntervalInMillis, TimeUnit.MILLISECONDS);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("Failed to evict url for " + consumer, e);
-        }
     }
 
     protected ServiceAddressURL createURL(String rawProvider, URL consumerURL, Map<String, String> extraParameters) {

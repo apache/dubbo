@@ -16,20 +16,36 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2Headers;
-
-import java.io.InputStream;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.stream.StreamObserver;
 
 public interface Stream {
 
-    void onHeaders(Http2Headers headers);
+    Logger LOGGER = LoggerFactory.getLogger(Stream.class);
 
-    void onData(InputStream in);
+    void subscribe(TransportObserver observer);
 
-    void onError(GrpcStatus status);
+    TransportObserver asTransportObserver();
 
-    void write(Object obj, ChannelPromise promise) throws Exception;
+    void subscribe(StreamObserver<Object> observer);
 
-    void halfClose() throws Exception;
+    StreamObserver<Object> asStreamObserver();
+
+    void execute(Runnable runnable);
+
+    enum OperationResult {
+        OK,
+        FAILURE,
+        NETWORK_FAIL
+    }
+
+    interface OperationHandler {
+
+        /**
+         * @param result operation's result
+         * @param cause  null if the operation succeed
+         */
+        void operationDone(OperationResult result, Throwable cause);
+    }
 }

@@ -18,47 +18,196 @@ package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
+import org.apache.dubbo.common.url.component.param.DynamicParamTable;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
-import org.eclipse.collections.impl.map.mutable.UnifiedMap;
-
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.StringJoiner;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
+/**
+ * A class which store parameters for {@link URL}
+ * <br/>
+ * Using {@link DynamicParamTable} to compress common keys (i.e. side, version)
+ * <br/>
+ * {@link DynamicParamTable} allow to use only two integer value named `key` and
+ * `value-offset` to find a unique string to string key-pair. Also, `value-offset`
+ * is not required if the real value is the default value.
+ * <br/>
+ * URLParam should operate as Copy-On-Write, each modify actions will return a new Object
+ *
+ * @since 3.0
+ */
 public class URLParam implements Serializable {
     private static final long serialVersionUID = -1985165475234910535L;
 
-    private final String rawParam;
-    private final Map<String, String> params;
+    /**
+     * Maximum size of key-pairs requested using array moving to add into URLParam.
+     * If user request like addParameter for only one key-pair, adding value into a array
+     * on moving is more efficient. However when add more than ADD_PARAMETER_ON_MOVE_THRESHOLD
+     * size of key-pairs, recover compressed array back to map can reduce operation count
+     * when putting objects.
+     */
+    private static final int ADD_PARAMETER_ON_MOVE_THRESHOLD = 1;
 
-    //cache
-    private transient Map<String, Map<String, String>> methodParameters;
+    /**
+     * the original parameters string, empty if parameters have been modified or init by {@link Map}
+     */
+    private final String rawParam;
+
+    /**
+     * using bit to save if index exist even if value is default value
+     */
+    private final BitSet KEY;
+
+    /**
+     * using bit to save if value is default value (reduce VALUE size)
+     */
+    private final BitSet DEFAULT_KEY;
+
+    /**
+     * a compressed (those key not exist or value is default value are bring removed in this array) array which contains value-offset
+     */
+    private final Integer[] VALUE;
+
+    /**
+     * store extra parameters which key not match in {@link DynamicParamTable}
+     */
+    private final Map<String, String> EXTRA_PARAMS;
+
+    /**
+     * store method related parameters
+     * <p>
+     * K - key
+     * V -
+     * K - method
+     * V - value
+     * <p>
+     * e.g. method1.mock=true => ( mock, (method1, true) )
+     */
+    private final Map<String, Map<String, String>> METHOD_PARAMETERS;
+
     private transient long timestamp;
 
-    public URLParam(Map<String, String> params) {
-        this(params, null);
+    private final static URLParam EMPTY_PARAM = new URLParam(new BitSet(0), Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap(), "");
+
+    private URLParam() {
+        this.rawParam = null;
+        this.KEY = null;
+        this.DEFAULT_KEY = null;
+        this.VALUE = null;
+        this.EXTRA_PARAMS = null;
+        this.METHOD_PARAMETERS = null;
     }
 
-    public URLParam(Map<String, String> params, String rawParam) {
-        this.params = Collections.unmodifiableMap((params == null ? new HashMap<>() : new HashMap<>(params)));
+    private URLParam(BitSet key, Map<Integer, Integer> value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+        this.KEY = key;
+        this.DEFAULT_KEY = new BitSet(KEY.size());
+        this.VALUE = new Integer[value.size()];
+
+        // compress VALUE
+        for (int i = key.nextSetBit(0), offset = 0; i >= 0; i = key.nextSetBit(i + 1)) {
+            if (value.containsKey(i)) {
+                VALUE[offset++] = value.get(i);
+            } else {
+                DEFAULT_KEY.set(i);
+            }
+        }
+
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
 
         this.timestamp = System.currentTimeMillis();
     }
 
-    public Map<String, Map<String, String>> getMethodParameters() {
-        if (methodParameters == null) {
-            methodParameters = Collections.unmodifiableMap(initMethodParameters(this.params));
+    private URLParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
+        this.KEY = key;
+        this.DEFAULT_KEY = defaultKey;
+
+        this.VALUE = value;
+
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
+        this.rawParam = rawParam;
+
+        this.timestamp = System.currentTimeMillis();
+    }
+
+    /**
+     * Weather there contains some parameter match method
+     *
+     * @param method method name
+     * @return contains or not
+     */
+    public boolean hasMethodParameter(String method) {
+        if (method == null) {
+            return false;
         }
-        return methodParameters;
+
+        String methodsString = getParameter(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            if (!methodsString.contains(method)) {
+                return false;
+            }
+        }
+
+        for (Map.Entry<String, Map<String, String>> methods : METHOD_PARAMETERS.entrySet()) {
+            if (methods.getValue().containsKey(method)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get method related parameter. If not contains, use getParameter(key) instead.
+     * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
+     *
+     * @param method method name
+     * @param key key
+     * @return value
+     */
+    public String getMethodParameter(String method, String key) {
+        String strictResult = getMethodParameterStrict(method, key);
+        return StringUtils.isNotEmpty(strictResult) ? strictResult : getParameter(key);
+    }
+
+    /**
+     * Get method related parameter. If not contains, return null.
+     * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
+     *
+     * @param method method name
+     * @param key key
+     * @return value
+     */
+    public String getMethodParameterStrict(String method, String key) {
+        String methodsString = getParameter(METHODS_KEY);
+        if (StringUtils.isNotEmpty(methodsString)) {
+            if (!methodsString.contains(method)) {
+                return null;
+            }
+        }
+
+        Map<String, String> methodMap = METHOD_PARAMETERS.get(key);
+        if (CollectionUtils.isNotEmptyMap(methodMap)) {
+            return methodMap.get(method);
+        } else {
+            return null;
+        }
     }
 
     public static Map<String, Map<String, String>> initMethodParameters(Map<String, String> parameters) {
@@ -94,45 +243,266 @@ public class URLParam implements Serializable {
         return methodParameters;
     }
 
+    /**
+     * An embedded Map adapt to URLParam
+     * <br/>
+     * copy-on-write mode, urlParam reference will be changed after modify actions.
+     * If wishes to get the result after modify, please use {@link URLParamMap#getUrlParam()}
+     */
+    public static class URLParamMap implements Map<String, String> {
+        private URLParam urlParam;
+
+        public URLParamMap(URLParam urlParam) {
+            this.urlParam = urlParam;
+        }
+
+        public static class Node implements Map.Entry<String, String> {
+            private final String key;
+            private String value;
+
+            public Node(String key, String value) {
+                this.key = key;
+                this.value = value;
+            }
+
+            @Override
+            public String getKey() {
+                return key;
+            }
+
+            @Override
+            public String getValue() {
+                return value;
+            }
+
+            @Override
+            public String setValue(String value) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                Node node = (Node) o;
+                return Objects.equals(key, node.key) && Objects.equals(value, node.value);
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(key, value);
+            }
+        }
+
+        @Override
+        public int size() {
+            return urlParam.KEY.cardinality() + urlParam.EXTRA_PARAMS.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return size() == 0;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            if (key instanceof String) {
+                return urlParam.hasParameter((String) key);
+            } else {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean containsValue(Object value) {
+            return values().contains(value);
+        }
+
+        @Override
+        public String get(Object key) {
+            if (key instanceof String) {
+                return urlParam.getParameter((String) key);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public String put(String key, String value) {
+            String previous = urlParam.getParameter(key);
+            urlParam = urlParam.addParameter(key, value);
+            return previous;
+        }
+
+        @Override
+        public String remove(Object key) {
+            if (key instanceof String) {
+                String previous = urlParam.getParameter((String) key);
+                urlParam = urlParam.removeParameters((String) key);
+                return previous;
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public void putAll(Map<? extends String, ? extends String> m) {
+            urlParam = urlParam.addParameters((Map<String, String>) m);
+        }
+
+        @Override
+        public void clear() {
+            urlParam = urlParam.clearParameters();
+        }
+
+        @Override
+        public Set<String> keySet() {
+            Set<String> set = new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                set.add(DynamicParamTable.getKey(i));
+            }
+            for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
+                set.add(entry.getKey());
+            }
+            return Collections.unmodifiableSet(set);
+        }
+
+        @Override
+        public Collection<String> values() {
+            Set<String> set = new LinkedHashSet<>((int) ((urlParam.VALUE.length + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                String value;
+                if (urlParam.DEFAULT_KEY.get(i)) {
+                    value = DynamicParamTable.getDefaultValue(i);
+                } else {
+                    Integer offset = urlParam.keyIndexToOffset(i);
+                    value = DynamicParamTable.getValue(i, offset);
+                }
+                set.add(value);
+            }
+
+            for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
+                set.add(entry.getValue());
+            }
+            return Collections.unmodifiableSet(set);
+        }
+
+        @Override
+        public Set<Entry<String, String>> entrySet() {
+            Set<Entry<String, String>> set = new LinkedHashSet<>((int) ((urlParam.KEY.cardinality() + urlParam.EXTRA_PARAMS.size()) / 0.75) + 1);
+            for (int i = urlParam.KEY.nextSetBit(0); i >= 0; i = urlParam.KEY.nextSetBit(i + 1)) {
+                String value;
+                if (urlParam.DEFAULT_KEY.get(i)) {
+                    value = DynamicParamTable.getDefaultValue(i);
+                } else {
+                    Integer offset = urlParam.keyIndexToOffset(i);
+                    value = DynamicParamTable.getValue(i, offset);
+                }
+                set.add(new Node(DynamicParamTable.getKey(i), value));
+            }
+
+            for (Entry<String, String> entry : urlParam.EXTRA_PARAMS.entrySet()) {
+                set.add(new Node(entry.getKey(), entry.getValue()));
+            }
+            return Collections.unmodifiableSet(set);
+        }
+
+        public URLParam getUrlParam() {
+            return urlParam;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            URLParamMap that = (URLParamMap) o;
+            return Objects.equals(urlParam, that.urlParam);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(urlParam);
+        }
+    }
+
+    /**
+     * Get a Map like URLParam
+     *
+     * @return a {@link URLParamMap} adapt to URLParam
+     */
     public Map<String, String> getParameters() {
-        return params;
+        return new URLParamMap(this);
     }
 
+    /**
+     * Get any method related parameter which match key
+     *
+     * @param key key
+     * @return result ( if any, random choose one )
+     */
+    public String getAnyMethodParameter(String key) {
+        Map<String, String> methodMap = METHOD_PARAMETERS.get(key);
+        if (CollectionUtils.isNotEmptyMap(methodMap)) {
+            String methods = getParameter(METHODS_KEY);
+            if (StringUtils.isNotEmpty(methods)) {
+                for (String method : methods.split(",")) {
+                    String value = methodMap.get(method);
+                    if (StringUtils.isNotEmpty(value)) {
+                        return value;
+                    }
+                }
+            } else {
+                return methodMap.values().iterator().next();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Add parameters to a new URLParam.
+     *
+     * @param key   key
+     * @param value value
+     * @return A new URLParam
+     */
     public URLParam addParameter(String key, String value) {
-        if (StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
-        // if value doesn't change, return immediately
-        if (value.equals(getParameters().get(key))) { // value != null
-            return this;
-        }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(key, value);
-        return new URLParam(map, rawParam);
+        return addParameters(Collections.singletonMap(key, value));
     }
 
+    /**
+     * Add absent parameters to a new URLParam.
+     *
+     * @param key   key
+     * @param value value
+     * @return A new URLParam
+     */
     public URLParam addParameterIfAbsent(String key, String value) {
-        if (StringUtils.isEmpty(key)
-                || StringUtils.isEmpty(value)) {
+        if (StringUtils.isEmpty(key) || StringUtils.isEmpty(value)) {
             return this;
         }
         if (hasParameter(key)) {
             return this;
         }
-
-        Map<String, String> map = new HashMap<>(getParameters());
-        map.put(key, value);
-
-        return new URLParam(map, rawParam);
+        return addParametersIfAbsent(Collections.singletonMap(key, value));
     }
 
     /**
-     * Add parameters to a new url.
+     * Add parameters to a new URLParam.
+     * If key-pair is present, this will cover it.
      *
      * @param parameters parameters in key-value pairs
-     * @return A new URL
+     * @return A new URLParam
      */
     public URLParam addParameters(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
@@ -159,53 +529,311 @@ public class URLParam implements Serializable {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>((int)(getParameters().size() + parameters.size() / 0.75f) + 1);
-        map.putAll(getParameters());
-        map.putAll(parameters);
-        return new URLParam(map, rawParam);
+        return doAddParameters(parameters, false);
     }
 
+    /**
+     * Add absent parameters to a new URLParam.
+     *
+     * @param parameters parameters in key-value pairs
+     * @return A new URL
+     */
     public URLParam addParametersIfAbsent(Map<String, String> parameters) {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
 
-        Map<String, String> map = new HashMap<>((int)(getParameters().size() + parameters.size() / 0.75f) + 1);
-        map.putAll(parameters);
-        map.putAll(getParameters());
-        return new URLParam(map, rawParam);
+        return doAddParameters(parameters, true);
     }
 
+    private URLParam doAddParameters(Map<String, String> parameters, boolean skipIfPresent) {
+        // lazy init, null if no modify
+        BitSet newKey = null;
+        BitSet defaultKey = null;
+        Integer[] newValueArray = null;
+        Map<Integer, Integer> newValueMap = null;
+        Map<String, String> newExtraParams = null;
+        Map<String, Map<String, String>> newMethodParams = null;
+        for (Map.Entry<String, String> entry : parameters.entrySet()) {
+            if (skipIfPresent && hasParameter(entry.getKey())) {
+                continue;
+            }
+            Integer keyIndex = DynamicParamTable.getKeyIndex(entry.getKey());
+            if (keyIndex == null) {
+                // entry key is not present in DynamicParamTable, add it to EXTRA_PARAMS
+                if (newExtraParams == null) {
+                    newExtraParams = new HashMap<>(EXTRA_PARAMS);
+                }
+                newExtraParams.put(entry.getKey(), entry.getValue());
+                String[] methodSplit = entry.getKey().split("\\.");
+                if (methodSplit.length == 2) {
+                    if (newMethodParams == null) {
+                        newMethodParams = new HashMap<>(METHOD_PARAMETERS);
+                    }
+                    Map<String, String> methodMap = newMethodParams.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
+                    methodMap.put(methodSplit[0], entry.getValue());
+                }
+            } else {
+                if (newKey == null) {
+                    newKey = (BitSet) KEY.clone();
+                }
+                newKey.set(keyIndex);
+
+                if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
+                    // recover VALUE back to Map
+                    if (newValueMap == null) {
+                        newValueMap = recoverCompressedValue();
+                    }
+                    newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
+                    // add parameter by moving array, only support for adding once
+                    newValueArray = addByMove(VALUE, keyIndexToCompressIndex(newKey, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                } else {
+                    // value is default value, add to defaultKey directly
+                    if (defaultKey == null) {
+                        defaultKey = (BitSet) DEFAULT_KEY.clone();
+                    }
+                    defaultKey.set(keyIndex);
+                }
+            }
+        }
+        if (newKey == null) {
+            newKey = KEY;
+        }
+        if (defaultKey == null) {
+            defaultKey = DEFAULT_KEY;
+        }
+        if (newValueArray == null && newValueMap == null) {
+            newValueArray = VALUE;
+        }
+        if (newExtraParams == null) {
+            newExtraParams = EXTRA_PARAMS;
+        }
+        if (newMethodParams == null) {
+            newMethodParams = METHOD_PARAMETERS;
+        }
+        if (newValueMap == null) {
+            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, newMethodParams, null);
+        } else {
+            return new URLParam(newKey, newValueMap, newExtraParams, newMethodParams, null);
+        }
+    }
+
+    private Map<Integer, Integer> recoverCompressedValue() {
+        Map<Integer, Integer> map = new HashMap<>((int) (KEY.size() / 0.75) + 1);
+        for (int i = KEY.nextSetBit(0), offset = 0; i >= 0; i = KEY.nextSetBit(i + 1)) {
+            if (!DEFAULT_KEY.get(i)) {
+                map.put(i, VALUE[offset++]);
+            }
+        }
+        return map;
+    }
+
+    private Integer[] addByMove(Integer[] array, int index, Integer value) {
+        if (index < 0 || index > array.length) {
+            throw new IllegalArgumentException();
+        }
+        // copy-on-write
+        Integer[] result = new Integer[array.length + 1];
+
+        System.arraycopy(array, 0, result, 0, index);
+        result[index] = value;
+        System.arraycopy(array, index, result, index + 1, array.length - index);
+
+        return result;
+    }
+
+    /**
+     * remove specified parameters in URLParam
+     *
+     * @param keys keys to being removed
+     * @return A new URLParam
+     */
     public URLParam removeParameters(String... keys) {
         if (keys == null || keys.length == 0) {
             return this;
         }
-
-        Map<String, String> map = new HashMap<>(getParameters());
+        // lazy init, null if no modify
+        BitSet newKey = null;
+        BitSet defaultKey = null;
+        Integer[] newValueArray = null;
+        Map<String, String> newExtraParams = null;
+        Map<String, Map<String, String>> newMethodParams = null;
         for (String key : keys) {
-            map.remove(key);
+            Integer keyIndex = DynamicParamTable.getKeyIndex(key);
+            if (keyIndex != null && KEY.get(keyIndex)) {
+                if (newKey == null) {
+                    newKey = (BitSet) KEY.clone();
+                }
+                newKey.clear(keyIndex);
+                if (DEFAULT_KEY.get(keyIndex)) {
+                    // is default value, remove in DEFAULT_KEY
+                    if (defaultKey == null) {
+                        defaultKey = (BitSet) DEFAULT_KEY.clone();
+                    }
+                    defaultKey.clear(keyIndex);
+                } else {
+                    // which offset is in VALUE array, set value as -1, compress in the end
+                    if (newValueArray == null) {
+                        newValueArray = new Integer[VALUE.length];
+                        System.arraycopy(VALUE, 0, newValueArray, 0, VALUE.length);
+                    }
+                    // KEY is immutable
+                    newValueArray[keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex)] = -1;
+                }
+            }
+            if (EXTRA_PARAMS.containsKey(key)) {
+                if (newExtraParams == null) {
+                    newExtraParams = new HashMap<>(EXTRA_PARAMS);
+                }
+                newExtraParams.remove(key);
+
+                String[] methodSplit = key.split("\\.");
+                if (methodSplit.length == 2) {
+                    if (newMethodParams == null) {
+                        newMethodParams = new HashMap<>(METHOD_PARAMETERS);
+                    }
+                    Map<String, String> methodMap = newMethodParams.get(methodSplit[1]);
+                    if (CollectionUtils.isNotEmptyMap(methodMap)) {
+                        methodMap.remove(methodSplit[0]);
+                    }
+                }
+            }
+            // ignore if key is absent
         }
-        if (map.size() == getParameters().size()) {
-            return this;
+        if (newKey == null) {
+            newKey = KEY;
         }
-        return new URLParam(map, rawParam);
+        if (defaultKey == null) {
+            defaultKey = DEFAULT_KEY;
+        }
+        if (newValueArray == null) {
+            newValueArray = VALUE;
+        } else {
+            // remove -1 value
+            newValueArray = compressArray(newValueArray);
+        }
+        if (newExtraParams == null) {
+            newExtraParams = EXTRA_PARAMS;
+        }
+        if (newMethodParams == null) {
+            newMethodParams = METHOD_PARAMETERS;
+        }
+        if (newKey.cardinality() + newExtraParams.size() == 0) {
+            // empty, directly return cache
+            return EMPTY_PARAM;
+        } else {
+            return new URLParam(newKey, defaultKey, newValueArray, newExtraParams, newMethodParams, null);
+        }
     }
 
+    private Integer[] compressArray(Integer[] array) {
+        int total = 0;
+        for (int i : array) {
+            if (i > -1) {
+                total++;
+            }
+        }
+        if (total == 0) {
+            return new Integer[0];
+        }
+
+        Integer[] result = new Integer[total];
+        for (int i = 0, offset = 0; i < array.length; i++) {
+            // skip if value if less than 0
+            if (array[i] > -1) {
+                result[offset++] = array[i];
+            }
+        }
+        return result;
+    }
+
+    /**
+     * remove all of the parameters in URLParam
+     *
+     * @return An empty URLParam
+     */
     public URLParam clearParameters() {
-        return new URLParam(new HashMap<>());
+        return EMPTY_PARAM;
     }
 
+    /**
+     * check if specified key is present in URLParam
+     *
+     * @param key specified key
+     * @return present or not
+     */
     public boolean hasParameter(String key) {
-        String value = getParameter(key);
-        return value != null && value.length() > 0;
+        Integer keyIndex = DynamicParamTable.getKeyIndex(key);
+        if (keyIndex == null) {
+            return EXTRA_PARAMS.containsKey(key);
+        }
+        return KEY.get(keyIndex);
     }
 
+    /**
+     * get value of specified key in URLParam
+     *
+     * @param key specified key
+     * @return value, null if key is absent
+     */
     public String getParameter(String key) {
-        return params.get(key);
+        Integer keyIndex = DynamicParamTable.getKeyIndex(key);
+        if (keyIndex == null) {
+            if (EXTRA_PARAMS.containsKey(key)) {
+                return EXTRA_PARAMS.get(key);
+            }
+            return null;
+        }
+        if (KEY.get(keyIndex)) {
+            String value;
+            if (DEFAULT_KEY.get(keyIndex)) {
+                value = DynamicParamTable.getDefaultValue(keyIndex);
+            } else {
+                Integer offset = keyIndexToOffset(keyIndex);
+                value = DynamicParamTable.getValue(keyIndex, offset);
+            }
+            if (StringUtils.isEmpty(value)) {
+                // Forward compatible, make sure key dynamic increment can work.
+                // In that case, some values which are proceed before increment will set in EXTRA_PARAMS.
+                return EXTRA_PARAMS.get(key);
+            } else {
+                return value;
+            }
+        }
+        return null;
     }
 
+
+    private int keyIndexToCompressIndex(BitSet key, BitSet defaultKey, int keyIndex) {
+        int index = 0;
+        for (int i = 0; i < keyIndex; i++) {
+            if (key.get(i)) {
+                if (!defaultKey.get(i)) {
+                    index++;
+                }
+            }
+        }
+        return index;
+    }
+
+    private Integer keyIndexToOffset(int keyIndex) {
+        int arrayOffset = keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex);
+        return VALUE[arrayOffset];
+    }
+
+    /**
+     * get raw string like parameters
+     *
+     * @return raw string like parameters
+     */
     public String getRawParam() {
-        return rawParam;
+        if (StringUtils.isNotEmpty(rawParam)) {
+            return rawParam;
+        } else {
+            // empty if parameters have been modified or init by Map
+            return toString();
+        }
     }
 
     public long getTimestamp() {
@@ -217,16 +845,33 @@ public class URLParam implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(params);
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        URLParam urlParam = (URLParam) o;
+        return Objects.equals(KEY, urlParam.KEY)
+                && Objects.equals(DEFAULT_KEY, urlParam.DEFAULT_KEY)
+                && Arrays.equals(VALUE, urlParam.VALUE)
+                && Objects.equals(EXTRA_PARAMS, urlParam.EXTRA_PARAMS);
     }
 
+    private int hashCodeCache = -1;
+
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof URLParam)) return false;
-        URLParam that = (URLParam) obj;
-        return Objects.equals(this.getParameters(), that.getParameters());
+    public int hashCode() {
+        if (hashCodeCache == -1) {
+            hashCodeCache = EXTRA_PARAMS.hashCode();
+            for (Integer value : VALUE) {
+                hashCodeCache = hashCodeCache * 31 + value;
+            }
+            hashCodeCache = hashCodeCache * 31 + ((KEY == null) ? 0 : KEY.hashCode());
+            hashCodeCache = hashCodeCache * 31 + ((DEFAULT_KEY == null) ? 0 : DEFAULT_KEY.hashCode());
+        }
+        return hashCodeCache;
     }
 
     @Override
@@ -234,38 +879,72 @@ public class URLParam implements Serializable {
         if (StringUtils.isNotEmpty(rawParam)) {
             return rawParam;
         }
-        if (params == null) {
+        if ((KEY.cardinality() + EXTRA_PARAMS.size()) == 0) {
             return "";
         }
 
-        StringBuilder buf = new StringBuilder();
-        boolean first = true;
-        for (Map.Entry<String, String> entry : new TreeMap<>(params).entrySet()) {
-            if (StringUtils.isNotEmpty(entry.getKey())) {
-                if (first) {
-                    first = false;
-                } else {
-                    buf.append("&");
-                }
-                buf.append(entry.getKey());
-                buf.append("=");
-                buf.append(entry.getValue() == null ? "" : entry.getValue().trim());
-            }
+        StringJoiner stringJoiner = new StringJoiner("&");
+        for (int i = KEY.nextSetBit(0); i >= 0; i = KEY.nextSetBit(i + 1)) {
+            String key = DynamicParamTable.getKey(i);
+            String value = DEFAULT_KEY.get(i) ?
+                    DynamicParamTable.getDefaultValue(i) : DynamicParamTable.getValue(i, keyIndexToOffset(i));
+            value = value == null ? "" : value.trim();
+            stringJoiner.add(String.format("%s=%s", key, value));
         }
-        return buf.toString();
+        for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+            value = value == null ? "" : value.trim();
+            stringJoiner.add(String.format("%s=%s", key, value));
+        }
+
+        return stringJoiner.toString();
     }
 
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     * rawParam field in result will be null while {@link URLParam#getRawParam()} will automatically create it
+     *
+     * @param params params map added into URLParam
+     * @return a new URLParam
+     */
+    public static URLParam parse(Map<String, String> params) {
+        return parse(params, null);
+    }
+
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param rawParam        original rawParam string
+     * @param encoded         if parameters are URL encoded
+     * @param extraParameters extra parameters to add into URLParam
+     * @return a new URLParam
+     */
     public static URLParam parse(String rawParam, boolean encoded, Map<String, String> extraParameters) {
         Map<String, String> parameters = URLStrParser.parseParams(rawParam, encoded);
         if (CollectionUtils.isNotEmptyMap(extraParameters)) {
             parameters.putAll(extraParameters);
         }
-        return new URLParam(parameters, rawParam);
+        return parse(parameters, rawParam);
     }
 
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param rawParam original rawParam string
+     * @return a new URLParam
+     */
     public static URLParam parse(String rawParam) {
         String[] parts = rawParam.split("&");
-        Map<String, String> parameters = new UnifiedMap<>((int) (parts.length/.75f) + 1);
+
+        BitSet keyBit = new BitSet((int) (parts.length / .75f) + 1);
+        Map<Integer, Integer> valueMap = new HashMap<>((int) (parts.length / .75f) + 1);
+        Map<String, String> extraParam = new HashMap<>((int) (parts.length / .75f) + 1);
+        Map<String, Map<String, String>> methodParameters = new HashMap<>((int) (parts.length / .75f) + 1);
+
         for (String part : parts) {
             part = part.trim();
             if (part.length() > 0) {
@@ -273,16 +952,75 @@ public class URLParam implements Serializable {
                 if (j >= 0) {
                     String key = part.substring(0, j);
                     String value = part.substring(j + 1);
-                    parameters.put(key, value);
+                    addParameter(keyBit, valueMap, extraParam, methodParameters, key, value, false);
                     // compatible with lower versions registering "default." keys
                     if (key.startsWith(DEFAULT_KEY_PREFIX)) {
-                        parameters.putIfAbsent(key.substring(DEFAULT_KEY_PREFIX.length()), value);
+                        addParameter(keyBit, valueMap, extraParam, methodParameters, key.substring(DEFAULT_KEY_PREFIX.length()), value, true);
                     }
                 } else {
-                    parameters.put(part, part);
+                    addParameter(keyBit, valueMap, extraParam, methodParameters, part, part, false);
                 }
             }
         }
-        return new URLParam(parameters, rawParam);
+        return new URLParam(keyBit, valueMap, extraParam, methodParameters, rawParam);
+    }
+
+    /**
+     * Parse URLParam
+     * Init URLParam by constructor is not allowed
+     *
+     * @param params   params map added into URLParam
+     * @param rawParam original rawParam string, directly add to rawParam field,
+     *                 will not effect real key-pairs store in URLParam.
+     *                 Please make sure it can correspond with params or will
+     *                 cause unexpected result when calling {@link URLParam#getRawParam()}
+     *                 and {@link URLParam#toString()} ()}. If you not sure, you can call
+     *                 {@link URLParam#parse(String)} to init.
+     * @return a new URLParam
+     */
+    public static URLParam parse(Map<String, String> params, String rawParam) {
+        if (CollectionUtils.isNotEmptyMap(params)) {
+            BitSet keyBit = new BitSet((int) (params.size() / .75f) + 1);
+            Map<Integer, Integer> valueMap = new HashMap<>((int) (params.size() / .75f) + 1);
+            Map<String, String> extraParam = new HashMap<>((int) (params.size() / .75f) + 1);
+            Map<String, Map<String, String>> methodParameters = new HashMap<>((int) (params.size() / .75f) + 1);
+
+            for (Map.Entry<String, String> entry : params.entrySet()) {
+                addParameter(keyBit, valueMap, extraParam, methodParameters, entry.getKey(), entry.getValue(), false);
+            }
+            return new URLParam(keyBit, valueMap, extraParam, methodParameters, rawParam);
+        } else {
+            return EMPTY_PARAM;
+        }
+    }
+
+    private static void addParameter(BitSet keyBit, Map<Integer, Integer> valueMap, Map<String, String> extraParam,
+                                     Map<String, Map<String, String>> methodParameters, String key, String value, boolean skipIfPresent) {
+        Integer keyIndex = DynamicParamTable.getKeyIndex(key);
+        if (skipIfPresent) {
+            if (keyIndex == null) {
+                if (extraParam.containsKey(key)) {
+                    return;
+                }
+            } else {
+                if (keyBit.get(keyIndex)) {
+                    return;
+                }
+            }
+        }
+
+        if (keyIndex == null) {
+            extraParam.put(key, value);
+            String[] methodSplit = key.split("\\.", 2);
+            if (methodSplit.length == 2) {
+                Map<String, String> methodMap = methodParameters.computeIfAbsent(methodSplit[1], (k) -> new HashMap<>());
+                methodMap.put(methodSplit[0], value);
+            }
+        } else {
+            if (!DynamicParamTable.isDefaultValue(key, value)) {
+                valueMap.put(keyIndex, DynamicParamTable.getValueIndex(key, value));
+            }
+            keyBit.set(keyIndex);
+        }
     }
 }

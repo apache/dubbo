@@ -177,7 +177,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     protected URL(String protocol,
@@ -194,7 +194,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     public static URL cacheableValueOf(String url) {
@@ -469,10 +469,6 @@ class URL implements Serializable {
         return Collections.unmodifiableMap(selectedParameters);
     }
 
-    public Map<String, Map<String, String>> getMethodParameters() {
-        return urlParam.getMethodParameters();
-    }
-
     public String getParameterAndDecoded(String key) {
         return getParameterAndDecoded(key, null);
     }
@@ -732,24 +728,11 @@ class URL implements Serializable {
     }
 
     public String getMethodParameter(String method, String key) {
-        Map<String, String> keyMap = getMethodParameters().get(method);
-        String value = null;
-        if (keyMap != null) {
-            value = keyMap.get(key);
-        }
-        if (StringUtils.isEmpty(value)) {
-            value = urlParam.getParameter(key);
-        }
-        return value;
+        return urlParam.getMethodParameter(method, key);
     }
 
     public String getMethodParameterStrict(String method, String key) {
-        Map<String, String> keyMap = getMethodParameters().get(method);
-        String value = null;
-        if (keyMap != null) {
-            value = keyMap.get(key);
-        }
-        return value;
+        return urlParam.getMethodParameterStrict(method, key);
     }
 
     public String getMethodParameter(String method, String key, String defaultValue) {
@@ -936,20 +919,11 @@ class URL implements Serializable {
     }
 
     public String getAnyMethodParameter(String key) {
-        String suffix = "." + key;
-        for (String fullKey : getParameters().keySet()) {
-            if (fullKey.endsWith(suffix)) {
-                return getParameter(fullKey);
-            }
-        }
-        return null;
+        return urlParam.getAnyMethodParameter(key);
     }
 
     public boolean hasMethodParameter(String method) {
-        if (method == null) {
-            return false;
-        }
-        return getMethodParameters().containsKey(method);
+        return urlParam.hasMethodParameter(method);
     }
 
     public boolean isLocalHost() {
