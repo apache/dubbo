@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.redis;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.ObjectInput;
@@ -39,52 +38,72 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.embedded.RedisServer;
-import redis.embedded.RedisServerBuilder;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
+import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static redis.embedded.RedisServer.newRedisServer;
 
 public class RedisProtocolTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-    private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    private static final String
+            REDIS_URL_TEMPLATE = "redis://%slocalhost:%d",
+            REDIS_PASSWORD = "123456",
+            REDIS_URL_AUTH_SECTION = "username:" + REDIS_PASSWORD + "@";
+
+    private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private static final ProxyFactory PROXY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
     private RedisServer redisServer;
     private URL registryUrl;
 
     @BeforeEach
-    public void setUp(TestInfo testInfo) {
-        int redisPort = NetUtils.getAvailablePort();
-        String methodName = testInfo.getTestMethod().get().getName();
-        if ("testAuthRedis".equals(methodName) || ("testWrongAuthRedis".equals(methodName))) {
-            String password = "123456";
-            RedisServerBuilder builder = RedisServer.builder().port(redisPort).setting("requirepass " + password);
-            if (SystemUtils.IS_OS_WINDOWS) {
-                // set maxheap to fix Windows error 0x70 while starting redis
-                builder.setting("maxheap 128mb");
+    public void setUp(final TestInfo testInfo) throws IOException {
+        final int redisPort = NetUtils.getAvailablePort();
+
+        final boolean usesAuthentication = usesAuthentication(testInfo);
+
+        redisServer = newRedisServer()
+            .port(redisPort)
+            .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+            .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
+            .build();
+        IOException exception = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                this.redisServer.start();
+            } catch (IOException e) {
+                exception = e;
             }
-            redisServer = builder.build();
-            this.registryUrl = URL.valueOf("redis://username:" + password + "@localhost:" + redisPort + "?db.index=0");
-        } else {
-            RedisServerBuilder builder = RedisServer.builder().port(redisPort);
-            if (SystemUtils.IS_OS_WINDOWS) {
-                // set maxheap to fix Windows error 0x70 while starting redis
-                builder.setting("maxheap 128mb");
+            if (exception == null) {
+                break;
             }
-            redisServer = builder.build();
-            this.registryUrl = URL.valueOf("redis://localhost:" + redisPort);
         }
-        this.redisServer.start();
+        Assertions.assertNull(exception);
+        registryUrl = newRedisUrl(usesAuthentication, redisPort);
+    }
+
+    private static boolean usesAuthentication(final TestInfo testInfo) {
+        final String methodName = testInfo.getTestMethod().get().getName();
+        return "testAuthRedis".equals(methodName) || "testWrongAuthRedis".equals(methodName);
+    }
+    private static URL newRedisUrl(final boolean usesAuthentication, final int redisPort) {
+        final String urlAuthSection = usesAuthentication ? REDIS_URL_AUTH_SECTION : "";
+        final String urlSuffix = usesAuthentication ? "?db.index=0" : "";
+        return URL.valueOf(String.format(REDIS_URL_TEMPLATE, urlAuthSection, redisPort) + urlSuffix);
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
         this.redisServer.stop();
     }
     @Test
     public void testReferClass() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
+        Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class, registryUrl);
 
         Class<IDemoService> serviceClass = refer.getInterface();
         assertThat(serviceClass.getName(), is("org.apache.dubbo.rpc.protocol.redis.IDemoService"));
@@ -92,11 +111,11 @@ public class RedisProtocolTest {
 
     @Test
     public void testInvocation() {
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class,
+        Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class,
                 registryUrl
                         .addParameter("max.idle", 10)
                         .addParameter("max.active", 20));
-        IDemoService demoService = this.proxy.getProxy(refer);
+        IDemoService demoService = PROXY.getProxy(refer);
 
         String value = demoService.get("key");
         assertThat(value, is(nullValue()));
@@ -115,8 +134,8 @@ public class RedisProtocolTest {
     @Test
     public void testUnsupportedMethod() {
         Assertions.assertThrows(RpcException.class, () -> {
-            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-            IDemoService demoService = this.proxy.getProxy(refer);
+            Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.PROXY.getProxy(refer);
 
             demoService.unsupported(null);
         });
@@ -125,8 +144,8 @@ public class RedisProtocolTest {
     @Test
     public void testWrongParameters() {
         Assertions.assertThrows(RpcException.class, () -> {
-            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, registryUrl);
-            IDemoService demoService = this.proxy.getProxy(refer);
+            Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class, registryUrl);
+            IDemoService demoService = this.PROXY.getProxy(refer);
 
             demoService.set("key", "value", "wrongValue");
         });
@@ -135,8 +154,8 @@ public class RedisProtocolTest {
     @Test
     public void testWrongRedis() {
         Assertions.assertThrows(RpcException.class, () -> {
-            Invoker<IDemoService> refer = protocol.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
-            IDemoService demoService = this.proxy.getProxy(refer);
+            Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class, URL.valueOf("redis://localhost:1"));
+            IDemoService demoService = this.PROXY.getProxy(refer);
 
             demoService.get("key");
         });
@@ -144,17 +163,17 @@ public class RedisProtocolTest {
 
     @Test
     public void testExport() {
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> protocol.export(protocol.refer(IDemoService.class, registryUrl)));
+        Assertions.assertThrows(UnsupportedOperationException.class, () -> PROTOCOL.export(PROTOCOL.refer(IDemoService.class, registryUrl)));
     }
 
     @Test
     public void testAuthRedis() {
         // default db.index=0
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class,
+        Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class,
                 registryUrl
                         .addParameter("max.idle", 10)
                         .addParameter("max.active", 20));
-        IDemoService demoService = this.proxy.getProxy(refer);
+        IDemoService demoService = this.PROXY.getProxy(refer);
 
         String value = demoService.get("key");
         assertThat(value, is(nullValue()));
@@ -173,11 +192,11 @@ public class RedisProtocolTest {
         String password = "123456";
         int database = 1;
         this.registryUrl = this.registryUrl.setPassword(password).addParameter("db.index", database);
-        refer = protocol.refer(IDemoService.class,
+        refer = PROTOCOL.refer(IDemoService.class,
                 registryUrl
                         .addParameter("max.idle", 10)
                         .addParameter("max.active", 20));
-        demoService = this.proxy.getProxy(refer);
+        demoService = this.PROXY.getProxy(refer);
 
         demoService.set("key", "newValue");
         value = demoService.get("key");
@@ -208,11 +227,11 @@ public class RedisProtocolTest {
     public void testWrongAuthRedis() {
         String password = "1234567";
         this.registryUrl = this.registryUrl.setPassword(password);
-        Invoker<IDemoService> refer = protocol.refer(IDemoService.class,
+        Invoker<IDemoService> refer = PROTOCOL.refer(IDemoService.class,
                 registryUrl
                         .addParameter("max.idle", 10)
                         .addParameter("max.active", 20));
-        IDemoService demoService = this.proxy.getProxy(refer);
+        IDemoService demoService = this.PROXY.getProxy(refer);
 
         try {
             String value = demoService.get("key");

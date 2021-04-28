@@ -42,6 +42,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -261,7 +262,8 @@ public class DubboTelnetDecodeTest {
      *
      * @throws InterruptedException
      */
-    // @Test
+    @Disabled
+    @Test
     public void testTelnetTelnetDecoded() throws InterruptedException {
         ByteBuf firstByteBuf = Unpooled.wrappedBuffer("ls\r".getBytes());
         ByteBuf secondByteBuf = Unpooled.wrappedBuffer("\nls\r\n".getBytes());
