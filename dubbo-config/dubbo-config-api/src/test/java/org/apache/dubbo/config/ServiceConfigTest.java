@@ -20,6 +20,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
 import org.apache.dubbo.config.mock.TestProxyFactory;
@@ -36,7 +37,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
@@ -249,6 +249,7 @@ public class ServiceConfigTest {
             ServiceConfig service = new ServiceConfig();
             service.setGeneric("illegal");
         });
+        DubboBootstrap.reset();
     }
 
 //    @Test

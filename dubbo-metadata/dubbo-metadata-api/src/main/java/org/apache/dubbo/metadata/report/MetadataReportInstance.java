@@ -83,4 +83,11 @@ public class MetadataReportInstance {
             throw new IllegalStateException("the metadata report was not inited.");
         }
     }
+
+    public static void destroy() {
+        if (init.get()) {
+            metadataReports.clear();
+            init.compareAndSet(true, false);
+        }
+    }
 }

@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
@@ -51,7 +52,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class DubboNamespaceHandlerTest {
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
@@ -227,8 +228,8 @@ public class DubboNamespaceHandlerTest {
             ctx.start();
             ctx.stop();
             ctx.close();
-        } catch (IllegalArgumentException e) {
-            Assertions.assertTrue(e.getMessage().contains("The Duplicated BeanDefinition of ServiceBean"));
+        } catch (IllegalStateException e) {
+            Assertions.assertTrue(e.getMessage().contains("There are multiple ServiceBean instances with the same service name"));
             return;
         }
         Assertions.fail();
