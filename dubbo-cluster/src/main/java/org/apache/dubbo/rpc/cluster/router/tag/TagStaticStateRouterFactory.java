@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.router.tag;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.CacheableStateRouterFactory;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 
@@ -30,7 +31,7 @@ public class TagStaticStateRouterFactory extends CacheableStateRouterFactory {
     public static final String NAME = "tag-dynamic";
 
     @Override
-    protected StateRouter createRouter(URL url) {
-        return new TagStaticStateRouter(url);
+    protected StateRouter createRouter(URL url, RouterChain chain) {
+        return new TagStaticStateRouter(url, chain);
     }
 }

@@ -90,4 +90,6 @@ public interface StateRouter extends Comparable<StateRouter> {
     boolean shouldRePool();
 
     <T> RouterCache pool(List<Invoker<T>> invokers);
+
+    void pool();
 }

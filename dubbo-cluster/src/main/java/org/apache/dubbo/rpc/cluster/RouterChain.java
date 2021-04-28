@@ -102,18 +102,12 @@ public class RouterChain<T> {
             .getActivateExtension(url, "stateRouter");
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
-            .map(factory -> factory.getRouter(url))
+            .map(factory -> factory.getRouter(url, this))
             .sorted(StateRouter::compareTo)
             .collect(Collectors.toList());
 
         // init state routers
         initWithStateRouters(stateRouters);
-        executorRepository.getStateRouterScheduledExecutor().scheduleAtFixedRate(new Runnable() {
-            @Override
-            public void run() {
-                loop(false);
-            }
-        }, 5, 5, TimeUnit.SECONDS);
     }
 
     /**
@@ -276,7 +270,7 @@ public class RouterChain<T> {
         return false;
     }
 
-    private void loop(boolean notify) {
+    public void loop(boolean notify) {
         // 1、多个服务并行执行 buildCache
         // 2、notify true/false
         if (notify) {

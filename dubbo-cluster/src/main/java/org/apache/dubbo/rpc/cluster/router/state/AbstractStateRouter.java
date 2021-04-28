@@ -9,6 +9,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 public abstract class AbstractStateRouter implements StateRouter {
@@ -18,14 +19,12 @@ public abstract class AbstractStateRouter implements StateRouter {
     protected List<Invoker> invokers;
     protected AtomicReference<AddrCache> cache;
     protected GovernanceRuleRepository ruleRepository;
+    final protected RouterChain chain;
 
-    public AbstractStateRouter(URL url) {
+    public AbstractStateRouter(URL url, RouterChain chain) {
         this.ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
+        this.chain = chain;
         this.url = url;
-    }
-
-    public AbstractStateRouter() {
-
     }
 
     @Override
@@ -92,5 +91,10 @@ public abstract class AbstractStateRouter implements StateRouter {
 
     public <T> Boolean tagMatchFail(BitList<Invoker<T>> invokers) {
         return invokers.size() <= 0;
+    }
+
+    @Override
+    public void pool() {
+        chain.loop(false);
     }
 }

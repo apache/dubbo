@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.router.state.AbstractStateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
@@ -44,8 +45,8 @@ public class TagStaticStateRouter extends AbstractStateRouter {
 
     private TagRouterRule tagRouterRule;
 
-    public TagStaticStateRouter(URL url) {
-        super(url);
+    public TagStaticStateRouter(URL url, RouterChain chain) {
+        super(url, chain);
         this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
     }
 

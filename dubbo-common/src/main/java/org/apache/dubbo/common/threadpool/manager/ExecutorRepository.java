@@ -70,8 +70,6 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService getRegistryNotificationExecutor();
 
-    ScheduledExecutorService getStateRouterScheduledExecutor();
-
     /**
      * Get the default shared threadpool.
      *

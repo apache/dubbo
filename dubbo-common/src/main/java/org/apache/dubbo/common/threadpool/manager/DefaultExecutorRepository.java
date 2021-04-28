@@ -63,8 +63,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> data = new ConcurrentHashMap<>();
 
-    private ScheduledExecutorService stateRouterScheduledExecutor;
-
     private ExecutorService poolRouterExecutor;
 
     private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
@@ -82,8 +80,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         }
 //
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
-        stateRouterScheduledExecutor = new ScheduledThreadPoolExecutor(1,
-            new NamedInternalThreadFactory("Dubbo-state-router-scheduled", true));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
@@ -208,11 +204,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ExecutorService createExecutor(URL url) {
         return (ExecutorService) ExtensionLoader.getExtensionLoader(ThreadPool.class).getAdaptiveExtension().getExecutor(url);
-    }
-
-    @Override
-    public ScheduledExecutorService getStateRouterScheduledExecutor() {
-        return stateRouterScheduledExecutor;
     }
 
     @Override
