@@ -249,9 +249,12 @@ public class ServiceDiscoveryRegistry implements Registry {
         if (!shouldSubscribe(url)) { // Should Not Subscribe
             return;
         }
-        String registryCluster = serviceDiscovery.getUrl().getParameter(ID_KEY);
-        if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
-            url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
+        URL _url = serviceDiscovery.getUrl();
+        if (_url != null) {
+            String registryCluster = _url.getParameter(ID_KEY);
+            if (registryCluster != null && url.getParameter(REGISTRY_CLUSTER_KEY) == null) {
+                url = url.addParameter(REGISTRY_CLUSTER_KEY, registryCluster);
+            }
         }
         doSubscribe(url, listener);
     }
