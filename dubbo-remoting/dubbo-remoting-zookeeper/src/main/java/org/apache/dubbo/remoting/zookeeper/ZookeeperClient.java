@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -60,7 +61,11 @@ public interface ZookeeperClient {
 
     void create(String path, String content, boolean ephemeral);
 
+    void createOrUpdate(String path, String content, boolean ephemeral, Object stat);
+
     String getContent(String path);
+
+    ConfigItem getConfigItem(String path);
 
     boolean checkExists(String path);
 
