@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.cluster.router.tag;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.dubbo.common.URL;
@@ -73,6 +74,17 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         return invokers.intersect((BitList)res, invokers.getUnmodifiableList());
     }
 
+    @Override
+    protected List<String> getTags(URL url, Invocation invocation) {
+        List<String> tags = new ArrayList<>();
+        String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
+            invocation.getAttachment(TAG_KEY);
+        if (StringUtils.isEmpty(tag)) {
+            tag = NO_TAG;
+        }
+        tags.add(tag);
+        return tags;
+    }
 
     @Override
     public boolean isRuntime() {

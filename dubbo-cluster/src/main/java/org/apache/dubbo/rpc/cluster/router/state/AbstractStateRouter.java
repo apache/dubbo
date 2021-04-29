@@ -75,7 +75,7 @@ public abstract class AbstractStateRouter implements StateRouter {
         }
         for (String tag : tags) {
             BitList tagInvokers = cache.getAddrPool().get(tag);
-            if (tagMatchFail(invokers)) {
+            if (tagMatchFail(tagInvokers)) {
                 continue;
             }
             return tagInvokers.intersect(invokers, (List)invokers.getUnmodifiableList());
@@ -85,12 +85,12 @@ public abstract class AbstractStateRouter implements StateRouter {
         return invokers;
     }
 
-    public List<String> getTags(URL url, Invocation invocation) {
+    protected List<String> getTags(URL url, Invocation invocation) {
         return new ArrayList<String>();
     }
 
     public <T> Boolean tagMatchFail(BitList<Invoker<T>> invokers) {
-        return invokers.size() <= 0;
+        return invokers == null || invokers.size() <= 0;
     }
 
     @Override
