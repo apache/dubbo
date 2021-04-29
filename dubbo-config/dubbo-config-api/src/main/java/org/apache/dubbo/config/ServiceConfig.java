@@ -63,6 +63,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -140,6 +141,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      * The exported services
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+
+    private static final ConcurrentHashMap<Integer, Integer> randomPortSet = new ConcurrentHashMap<>();
 
     public ServiceConfig() {
     }
@@ -642,10 +645,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 portToBind = defaultPort;
             }
             if (portToBind <= 0) {
-                portToBind = getRandomPort(name);
+                portToBind = getRandomPort(protocolConfig.getId());
                 if (portToBind == null || portToBind < 0) {
-                    portToBind = getAvailablePort(defaultPort);
-                    putRandomPort(name, portToBind);
+                    portToBind = getAndSaveAvailablePort(protocolConfig.getId(), 20880);
                 }
             }
         }
@@ -661,6 +663,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         return portToRegistry;
+    }
+
+
+    private int getAndSaveAvailablePort(String id, int port) {
+        int portToBind = 0;
+        do {
+            portToBind = getAvailablePort(port++);
+        } while (null == randomPortSet.putIfAbsent(portToBind, portToBind));
+        putRandomPort(id, portToBind);
+        return portToBind;
     }
 
     private Integer parsePort(String configPort) {
