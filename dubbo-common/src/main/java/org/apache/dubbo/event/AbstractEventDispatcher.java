@@ -43,7 +43,9 @@ import static org.apache.dubbo.event.EventListener.findEventType;
  * @see EventListener
  * @see Event
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public abstract class AbstractEventDispatcher implements EventDispatcher {
 
     private final Object mutex = new Object();

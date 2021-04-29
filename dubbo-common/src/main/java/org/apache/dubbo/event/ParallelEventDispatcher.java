@@ -23,7 +23,9 @@ import java.util.concurrent.ForkJoinPool;
  *
  * @see ForkJoinPool#commonPool()
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ParallelEventDispatcher extends AbstractEventDispatcher {
 
     public ParallelEventDispatcher() {

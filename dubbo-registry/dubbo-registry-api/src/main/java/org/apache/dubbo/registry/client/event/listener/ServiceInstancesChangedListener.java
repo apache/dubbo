@@ -22,8 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.event.ConditionalEventListener;
-import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -60,12 +58,12 @@ import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
- * The Service Discovery Changed {@link EventListener Event Listener}
+ * The Service Discovery Changed Listener
  *
  * @see ServiceInstancesChangedEvent
  * @since 2.7.5
  */
-public class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+public class ServiceInstancesChangedListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
 
@@ -102,10 +100,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get()) {
-            return;
-        }
-        if (this.isRetryAndExpired(event)) {
+        if (destroyed.get() || this.isRetryAndExpired(event) || !accept(event)) {
             return;
         }
 
@@ -158,20 +153,17 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
         localServiceToRevisions.forEach((serviceInfo, revisions) -> {
             String protocol = serviceInfo.getProtocol();
-            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> {
-                return new HashMap<>();
-            });
+            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
             Object urls = revisionsToUrls.get(revisions);
-            if (urls != null) {
-                newServiceUrls.put(serviceInfo.getMatchKey(), urls);
-            } else {
+            if (urls == null) {
                 urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
                 revisionsToUrls.put(revisions, urls);
-                newServiceUrls.put(serviceInfo.getMatchKey(), urls);
             }
-        });
-        this.serviceUrls = newServiceUrls;
 
+            newServiceUrls.put(serviceInfo.getMatchKey(), urls);
+        });
+
+        this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
     }
 
@@ -233,7 +225,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
      */
-    public final boolean accept(ServiceInstancesChangedEvent event) {
+    private boolean accept(ServiceInstancesChangedEvent event) {
         return serviceNames.contains(event.getServiceName());
     }
 

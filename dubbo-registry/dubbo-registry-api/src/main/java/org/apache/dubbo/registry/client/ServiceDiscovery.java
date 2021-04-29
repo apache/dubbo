@@ -20,11 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.registry.NotifyListener;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import java.util.LinkedHashMap;
@@ -32,12 +30,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableMap;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_NOTIFICATION_KEY;
-import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
 
 /**
  * The common operations of Service Discovery
@@ -46,7 +42,6 @@ import static org.apache.dubbo.event.EventDispatcher.getDefaultExtension;
  */
 @SPI("zookeeper")
 public interface ServiceDiscovery extends Prioritized {
-
     // ==================================== Lifecycle ==================================== //
 
     /**
@@ -228,49 +223,6 @@ public interface ServiceDiscovery extends Prioritized {
 
     default ServiceInstancesChangedListener createListener(Set<String> serviceNames) {
         return new ServiceInstancesChangedListener(serviceNames, this);
-    }
-
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName the name of service whose service instances have been changed
-     */
-    default void dispatchServiceInstancesChangedEvent(String serviceName) {
-        dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
-    }
-
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName       the name of service whose service instances have been changed
-     * @param otherServiceNames the names of other services
-     */
-    default void dispatchServiceInstancesChangedEvent(String serviceName, String... otherServiceNames) {
-        dispatchServiceInstancesChangedEvent(serviceName, getInstances(serviceName));
-        if (otherServiceNames != null) {
-            Stream.of(otherServiceNames)
-                    .filter(StringUtils::isNotEmpty)
-                    .forEach(this::dispatchServiceInstancesChangedEvent);
-        }
-    }
-
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param serviceName      the name of service whose service instances have been changed
-     * @param serviceInstances the service instances have been changed
-     */
-    default void dispatchServiceInstancesChangedEvent(String serviceName, List<ServiceInstance> serviceInstances) {
-        dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
-    }
-
-    /**
-     * Dispatch the {@link ServiceInstancesChangedEvent}
-     *
-     * @param event the {@link ServiceInstancesChangedEvent}
-     */
-    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
-        getDefaultExtension().dispatch(event);
     }
 
     // ==================================================================================== //

@@ -29,7 +29,6 @@ import org.apache.dubbo.metadata.RevisionResolver;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -47,7 +46,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
+public abstract class SelfHostMetaServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -235,7 +234,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
         }
     }
 
-    public final void notifyListener(String serviceName, ServiceInstancesChangedListener listener, List<ServiceInstance> instances) {
+    public final void notifyListener(String serviceName, List<ServiceInstance> instances) {
         String serviceInstanceRevision = RevisionResolver.calRevision(JSONObject.toJSONString(instances));
         boolean changed = !serviceInstanceRevision.equalsIgnoreCase(
                 serviceInstanceRevisionMap.put(serviceName, serviceInstanceRevision));
@@ -260,7 +259,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             });
 
             cachedServiceInstances.put(serviceName, instances);
-            listener.onEvent(new ServiceInstancesChangedEvent(serviceName, instances));
+            dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, instances));
         }
     }
 

@@ -27,7 +27,9 @@ import org.apache.dubbo.event.Event;
  * @see ReferenceConfig#destroy()
  * @see Event
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ReferenceConfigDestroyedEvent extends Event {
 
     public ReferenceConfigDestroyedEvent(ReferenceConfig referenceConfig) {

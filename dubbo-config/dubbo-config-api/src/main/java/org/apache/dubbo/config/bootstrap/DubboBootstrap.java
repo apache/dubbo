@@ -58,9 +58,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.event.GenericEventListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -122,7 +119,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.5
  */
-public class DubboBootstrap extends GenericEventListener {
+public class DubboBootstrap {
 
     public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
 
@@ -151,8 +148,6 @@ public class DubboBootstrap extends GenericEventListener {
     private final Lock destroyLock = new ReentrantLock();
 
     private final ExecutorService executorService = newSingleThreadExecutor();
-
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
@@ -541,8 +536,6 @@ public class DubboBootstrap extends GenericEventListener {
 
         initMetadataService();
 
-        initEventListener();
-
         if (logger.isInfoEnabled()) {
             logger.info(NAME + " has been initialized!");
         }
@@ -877,14 +870,6 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * Initialize {@link EventListener}
-     */
-    private void initEventListener() {
-        // Add current instance into listeners
-        addEventListener(this);
-    }
-
-    /**
      * Start the bootstrap
      */
     public DubboBootstrap start() {
@@ -1053,17 +1038,6 @@ public class DubboBootstrap extends GenericEventListener {
             return dynamicConfiguration;
         }
         return null;
-    }
-
-    /**
-     * Add an instance of {@link EventListener}
-     *
-     * @param listener {@link EventListener}
-     * @return {@link DubboBootstrap}
-     */
-    public DubboBootstrap addEventListener(EventListener<?> listener) {
-        eventDispatcher.addEventListener(listener);
-        return this;
     }
 
     /**

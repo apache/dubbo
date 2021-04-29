@@ -28,7 +28,9 @@ import org.apache.dubbo.rpc.Invoker;
  * @see ReferenceConfig#get()
  * @see Event
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ReferenceConfigInitializedEvent extends Event {
 
     private final Invoker<?> invoker;

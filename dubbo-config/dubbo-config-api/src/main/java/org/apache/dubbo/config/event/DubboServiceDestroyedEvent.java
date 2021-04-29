@@ -23,7 +23,9 @@ import org.apache.dubbo.event.Event;
  *
  * @see Event
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class DubboServiceDestroyedEvent extends Event {
 
     public DubboServiceDestroyedEvent(Object source) {

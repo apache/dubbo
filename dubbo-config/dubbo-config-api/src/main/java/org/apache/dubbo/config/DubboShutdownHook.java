@@ -111,7 +111,10 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the resources, including registries and protocols.
      */
     public void doDestroy() {
-        // dispatch the DubboDestroyedEvent @since 2.7.5
+        if (logger.isInfoEnabled()) {
+            logger.info("Dubbo Service has been destroyed.");
+        }
+
         dispatch(new DubboServiceDestroyedEvent(this));
     }
 

@@ -22,7 +22,9 @@ package org.apache.dubbo.event;
  *
  * @see EventListener
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public interface ConditionalEventListener<E extends Event> extends EventListener<E> {
 
     /**

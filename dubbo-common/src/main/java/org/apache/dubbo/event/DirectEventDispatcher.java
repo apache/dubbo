@@ -21,7 +21,9 @@ package org.apache.dubbo.event;
  *
  * @see EventDispatcher
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public final class DirectEventDispatcher extends AbstractEventDispatcher {
 
     public DirectEventDispatcher() {

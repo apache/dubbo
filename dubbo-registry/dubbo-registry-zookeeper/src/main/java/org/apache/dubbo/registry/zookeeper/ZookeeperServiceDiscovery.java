@@ -110,9 +110,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.unregisterService(build(serviceInstance));
-        });
+        doInServiceRegistry(serviceDiscovery -> serviceDiscovery.unregisterService(build(serviceInstance)));
     }
 
     @Override
@@ -166,11 +164,13 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
+        super.addServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
+        super.removeServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> {
             ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
             watcher.stopWatching();
@@ -178,9 +178,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
-        ThrowableConsumer.execute(serviceDiscovery, s -> {
-            consumer.accept(s);
-        });
+        ThrowableConsumer.execute(serviceDiscovery, s -> consumer.accept(s));
     }
 
     private <R> R doInServiceDiscovery(ThrowableFunction<org.apache.curator.x.discovery.ServiceDiscovery, R> function) {
@@ -202,7 +200,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         CountDownLatch latch = new CountDownLatch(1);
-        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(path, key -> {
+        watcherCaches.computeIfAbsent(path, key -> {
             ZookeeperServiceDiscoveryChangeWatcher tmpWatcher = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, path, latch);
             try {
                 curatorFramework.getChildren().usingWatcher(tmpWatcher).forPath(path);
@@ -216,7 +214,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
             }
             return tmpWatcher;
         });
-        watcher.addListener(listener);
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
         latch.countDown();
     }

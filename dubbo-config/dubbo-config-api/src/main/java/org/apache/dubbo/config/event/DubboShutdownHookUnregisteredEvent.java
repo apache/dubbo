@@ -26,7 +26,9 @@ import org.apache.dubbo.event.Event;
  * @see DubboShutdownHook
  * @see ApplicationShutdownHooks
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class DubboShutdownHookUnregisteredEvent extends Event {
 
     /**

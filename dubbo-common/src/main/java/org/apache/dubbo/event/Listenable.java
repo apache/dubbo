@@ -28,7 +28,9 @@ import static java.util.stream.StreamSupport.stream;
  *
  * @see EventDispatcher
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public interface Listenable<E extends EventListener<?>> {
 
     /**

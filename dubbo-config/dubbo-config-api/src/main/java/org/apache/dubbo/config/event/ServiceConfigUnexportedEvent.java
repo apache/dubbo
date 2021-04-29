@@ -23,7 +23,9 @@ import org.apache.dubbo.event.Event;
  * {@link ServiceConfig} event post-{@link ServiceConfig#unexport() unexport}
  *
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ServiceConfigUnexportedEvent extends Event {
 
     public ServiceConfigUnexportedEvent(ServiceConfig source) {

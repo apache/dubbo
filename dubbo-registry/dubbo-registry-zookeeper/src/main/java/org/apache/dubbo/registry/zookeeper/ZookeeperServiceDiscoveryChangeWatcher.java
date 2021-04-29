@@ -16,19 +16,16 @@
  */
 package org.apache.dubbo.registry.zookeeper;
 
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.rpc.model.ApplicationModel.getExecutorRepository;
@@ -43,8 +40,6 @@ import static org.apache.zookeeper.Watcher.Event.EventType.NodeDataChanged;
  * @since 2.7.5
  */
 public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
-    private Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
-
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
     private final RegistryNotifier notifier;
@@ -55,7 +50,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final String path;
 
-    private CountDownLatch latch;
+    private final CountDownLatch latch;
 
     public ZookeeperServiceDiscoveryChangeWatcher(ZookeeperServiceDiscovery zookeeperServiceDiscovery,
                                                   String serviceName,
@@ -68,7 +63,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(), getExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
             @Override
             protected void doNotify(Object rawAddresses) {
-                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent)rawAddresses));
+                zookeeperServiceDiscovery.dispatchServiceInstancesChangedEvent((ServiceInstancesChangedEvent)rawAddresses);
             }
         };
     }
@@ -77,7 +72,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
     public void process(WatchedEvent event) throws Exception {
         try {
             latch.await();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException ignore) {
         }
 
         Watcher.Event.EventType eventType = event.getType();
@@ -93,10 +88,6 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     public String getPath() {
         return path;
-    }
-
-    public void addListener(ServiceInstancesChangedListener listener) {
-        listeners.add(listener);
     }
 
     public boolean shouldKeepWatching() {

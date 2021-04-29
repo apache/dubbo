@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class KubernetesServiceDiscovery implements ServiceDiscovery {
+public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private KubernetesClient kubernetesClient;
@@ -194,21 +194,22 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
+        super.addServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> {
             SERVICE_UPDATE_TIME.put(serviceName, new AtomicLong(0L));
 
             // Watch Service Endpoint Modification
-            watchEndpoints(listener, serviceName);
+            watchEndpoints(serviceName);
 
             // Watch Pods Modification, happens when ServiceInstance updated
-            watchPods(listener, serviceName);
+            watchPods(serviceName);
 
             // Watch Service Modification, happens when Service Selector updated, used to update pods watcher
-            watchService(listener, serviceName);
+            watchService(serviceName);
         });
     }
 
-    private void watchEndpoints(ServiceInstancesChangedListener listener, String serviceName) {
+    private void watchEndpoints(String serviceName) {
         Watch watch = kubernetesClient
                 .endpoints()
                 .inNamespace(namespace)
@@ -221,7 +222,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                     ". Current pod name: " + currentHostname);
                         }
 
-                        notifyServiceChanged(serviceName, listener);
+                        notifyServiceChanged(serviceName);
                     }
 
                     @Override
@@ -233,7 +234,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         ENDPOINTS_WATCHER.put(serviceName, watch);
     }
 
-    private void watchPods(ServiceInstancesChangedListener listener, String serviceName) {
+    private void watchPods(String serviceName) {
         Map<String, String> serviceSelector = getServiceSelector(serviceName);
         if (serviceSelector == null) {
             return;
@@ -251,7 +252,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 logger.debug("Received Pods Update Event. Current pod name: " + currentHostname);
                             }
 
-                            notifyServiceChanged(serviceName, listener);
+                            notifyServiceChanged(serviceName);
                         }
                     }
 
@@ -264,7 +265,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         PODS_WATCHER.put(serviceName, watch);
     }
 
-    private void watchService(ServiceInstancesChangedListener listener, String serviceName) {
+    private void watchService(String serviceName) {
         Watch watch = kubernetesClient
                 .services()
                 .inNamespace(namespace)
@@ -282,7 +283,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                                 PODS_WATCHER.get(serviceName).close();
                                 PODS_WATCHER.remove(serviceName);
                             }
-                            watchPods(listener, serviceName);
+                            watchPods(serviceName);
                         }
                     }
 
@@ -295,7 +296,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
         SERVICE_WATCHER.put(serviceName, watch);
     }
 
-    private void notifyServiceChanged(String serviceName, ServiceInstancesChangedListener listener) {
+    private void notifyServiceChanged(String serviceName) {
         long receivedTime = System.nanoTime();
 
         ServiceInstancesChangedEvent event;
@@ -307,7 +308,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
 
         if (lastUpdateTime <= receivedTime) {
             if (updateTime.compareAndSet(lastUpdateTime, receivedTime)) {
-                listener.onEvent(event);
+                dispatchServiceInstancesChangedEvent(event);
                 return;
             }
         }

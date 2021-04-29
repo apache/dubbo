@@ -119,13 +119,14 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
+        super.addServiceInstancesChangedListener(listener);
         execute(namingService, service -> {
             listener.getServiceNames().forEach(serviceName -> {
                 try {
                     service.subscribe(serviceName, e -> { // Register Nacos EventListener
                         if (e instanceof NamingEvent) {
                             NamingEvent event = (NamingEvent) e;
-                            handleEvent(event, listener);
+                            handleEvent(event);
                         }
                     });
                 } catch (NacosException e) {
@@ -140,7 +141,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         return registryURL;
     }
 
-    private void handleEvent(NamingEvent event, ServiceInstancesChangedListener listener) {
+    private void handleEvent(NamingEvent event) {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
                 .stream()

@@ -45,7 +45,9 @@ import static org.apache.dubbo.common.function.ThrowableFunction.execute;
  * @see Event
  * @see EventListener
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public abstract class GenericEventListener implements EventListener<Event> {
 
     private final Method onEventMethod;

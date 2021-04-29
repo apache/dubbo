@@ -23,7 +23,9 @@ import org.apache.dubbo.event.Event;
  * {@link ServiceConfig} event post-{@link ServiceConfig#export() export}
  *
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ServiceConfigExportedEvent extends Event {
 
     public ServiceConfigExportedEvent(ServiceConfig source) {

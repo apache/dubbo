@@ -22,7 +22,9 @@ import org.apache.dubbo.event.Event;
  * An {@link Event Dubbo event} when the Dubbo thread pool is exhausted.
  *
  * @see Event
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class ThreadPoolExhaustedEvent extends Event {
 
     final String msg;

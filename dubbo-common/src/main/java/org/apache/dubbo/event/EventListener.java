@@ -36,7 +36,9 @@ import static org.apache.dubbo.common.utils.ReflectUtils.findParameterizedTypes;
  * @see Event 
  * @see java.util.EventListener
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 @SPI
 @FunctionalInterface
 public interface EventListener<E extends Event> extends java.util.EventListener, Prioritized {

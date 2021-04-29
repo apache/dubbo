@@ -22,7 +22,9 @@ import java.util.EventObject;
  * An event object of Dubbo is based on the Java standard {@link EventObject event}
  *
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public abstract class Event extends EventObject {
 
     private static final long serialVersionUID = -1704315605423947137L;

@@ -21,7 +21,9 @@ package org.apache.dubbo.event;
  *
  * @param <S> the type of event source
  * @since 2.7.5
+ * @deprecated This will be deleted in the future
  */
+@Deprecated
 public class GenericEvent<S> extends Event {
 
     public GenericEvent(S source) {
