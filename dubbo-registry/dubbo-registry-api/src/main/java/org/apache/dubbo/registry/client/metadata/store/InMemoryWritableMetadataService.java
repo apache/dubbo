@@ -231,6 +231,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return serviceDefinitions.get(serviceKey);
     }
 
+    /**
+     * 服务消费者会访问当前方法获取revision对应的导出服务
+     * @param revision
+     * @return
+     */
     @Override
     public MetadataInfo getMetadataInfo(String revision) {
         if (StringUtils.isEmpty(revision)) {

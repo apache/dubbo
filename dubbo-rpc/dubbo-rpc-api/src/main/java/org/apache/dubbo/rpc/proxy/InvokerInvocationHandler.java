@@ -62,13 +62,30 @@ public class InvokerInvocationHandler implements InvocationHandler {
         }
     }
 
+    /**
+     * 代理类   远程调用
+     * @param proxy
+     * @param method
+     * @param args
+     * @return
+     * @throws Throwable
+     */
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (method.getDeclaringClass() == Object.class) {
             return method.invoke(invoker, args);
         }
+        /**
+         * 方法名称
+         */
         String methodName = method.getName();
+        /**
+         * 参数类型
+         */
         Class<?>[] parameterTypes = method.getParameterTypes();
+        /**
+         * 无参 或者 equals方法
+         */
         if (parameterTypes.length == 0) {
             if ("toString".equals(methodName)) {
                 return invoker.toString();
@@ -81,18 +98,32 @@ public class InvokerInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
+        /**
+         * 实例化
+         */
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), protocolServiceKey, args);
+        /**
+         * dubbo-demo-annotation-provider/org.apache.dubbo.metadata.MetadataService:1.0.0
+         */
         String serviceKey = invoker.getUrl().getServiceKey();
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
         // invoker.getUrl() returns consumer url.
         RpcContext.setRpcContext(invoker.getUrl());
 
+        /**
+         *
+         */
         if (consumerModel != null) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
             rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));
         }
 
+        /**
+         * 远程服务调用
+         * 远程服务调用
+         * 远程服务调用
+         */
         return invoker.invoke(rpcInvocation).recreate();
     }
 }

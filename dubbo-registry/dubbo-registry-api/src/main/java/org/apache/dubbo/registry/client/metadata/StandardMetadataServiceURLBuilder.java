@@ -87,6 +87,9 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
             // add the default parameters
             urlBuilder.addParameter(GROUP_KEY, serviceName);
 
+            /**
+             * 缓存服务提供方对应的元数据服务的url
+             */
             urls.add(urlBuilder.build());
         }
 

@@ -83,16 +83,28 @@ public class MetadataUtils {
 //        }
     }
 
+    /**
+     *
+     * @param instance
+     * @param serviceDiscovery
+     * @return
+     */
     public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+        //dubbo-demo-annotation-provider##8BE83CC30467D06A691D5E9CAA26F913
         String key = instance.getServiceName() + "##" +
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(instance);
         return metadataServiceProxies.computeIfAbsent(key, k -> {
             MetadataServiceURLBuilder builder = null;
             ExtensionLoader<MetadataServiceURLBuilder> loader
                     = ExtensionLoader.getExtensionLoader(MetadataServiceURLBuilder.class);
-
+            /**
+             * 获取元数据
+             */
             Map<String, String> metadata = instance.getMetadata();
             // METADATA_SERVICE_URLS_PROPERTY_NAME is a unique key exists only on instances of spring-cloud-alibaba.
+            /**
+             * dubbo.metadata-service.urls  spring-cloud-alibaba独有
+             */
             String dubboURLsJSON = metadata.get(METADATA_SERVICE_URLS_PROPERTY_NAME);
             if (StringUtils.isNotEmpty(dubboURLsJSON)) {
                 builder = loader.getExtension(SpringCloudMetadataServiceURLBuilder.NAME);
@@ -100,6 +112,9 @@ public class MetadataUtils {
                 builder = loader.getExtension(StandardMetadataServiceURLBuilder.NAME);
             }
 
+            /**
+             * 获取instance对应的服务提供方元数据服务的url
+             */
             List<URL> urls = builder.build(instance);
             if (CollectionUtils.isEmpty(urls)) {
                 throw new IllegalStateException("You have enabled introspection service discovery mode for instance "
@@ -107,6 +122,9 @@ public class MetadataUtils {
             }
 
             // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
+            /**
+             * 根据元数据服务的url  生成对应的invoker   AbstractProtocol----DubboProtocol
+             */
             Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
 
             return proxyFactory.getProxy(invoker);

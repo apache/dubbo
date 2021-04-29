@@ -427,7 +427,9 @@ public class DubboProtocol extends AbstractProtocol {
 
         // create rpc invoker.
         /**
-         * getClients 这个方法用于获取客户端实例，实例类型为 ExchangeClient。ExchangeClient 实际上并不具备通信能力，它需要基于更底层的客户端实例进行通信。比如 NettyClient、MinaClient 等，默认情况下，Dubbo 使用 NettyClient 进行通信。
+         * getClients 这个方法用于获取客户端实例，实例类型为 ExchangeClient。
+         * ExchangeClient 实际上并不具备通信能力，它需要基于更底层的客户端实例进行通信。
+         * 比如 NettyClient、MinaClient 等，默认情况下，Dubbo 使用 NettyClient 进行通信。
          */
         DubboInvoker<T> invoker = new DubboInvoker<T>(serviceType, url, getClients(url), invokers);
         invokers.add(invoker);
