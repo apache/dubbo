@@ -25,17 +25,11 @@ import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
-
-    @BeforeEach
-    public void setUp() {
-        DubboBootstrap.reset();
-    }
 
     @AfterEach
     public void tearDown() {
