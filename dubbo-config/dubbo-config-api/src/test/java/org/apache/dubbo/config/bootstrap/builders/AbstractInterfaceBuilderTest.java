@@ -247,6 +247,7 @@ class AbstractInterfaceBuilderTest {
     void build() {
         MonitorConfig monitorConfig = new MonitorConfig("123");
         ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("appName");
         ModuleConfig moduleConfig = new ModuleConfig();
         RegistryConfig registryConfig = new RegistryConfig();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
