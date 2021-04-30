@@ -117,6 +117,7 @@ public class ReferenceConfigTest {
             e.printStackTrace();
         } finally {
             sc.unexport();
+            rc.destroy();
             System.clearProperty("java.net.preferIPv4Stack");
         }
         Assertions.assertTrue(success);

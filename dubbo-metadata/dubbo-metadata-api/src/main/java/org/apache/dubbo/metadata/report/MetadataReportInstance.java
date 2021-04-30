@@ -84,6 +84,8 @@ public class MetadataReportInstance {
         }
     }
 
+    // only for unit test
+    @Deprecated
     public static void destroy() {
         if (init.get()) {
             metadataReports.clear();

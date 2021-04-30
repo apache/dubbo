@@ -47,7 +47,7 @@ public class RegistryStatusCheckerTest {
 
     @BeforeEach
     public void setUp() {
-        AbstractRegistryFactory.clearRegistryNotDestroy();
+        AbstractRegistryFactory.reset();
         ApplicationModel.getServiceRepository().registerService(RegistryService.class);
     }
 

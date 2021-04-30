@@ -1446,6 +1446,7 @@ public class DubboBootstrap extends GenericEventListener {
                 instance = null;
             }
             ApplicationModel.reset();
+            AbstractRegistryFactory.reset();
             MetadataReportInstance.destroy();
             AbstractMetadataReportFactory.clear();
             ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);

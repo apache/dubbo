@@ -60,6 +60,8 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
 
     protected abstract MetadataReport createMetadataReport(URL url);
 
+    // only for unit test
+    @Deprecated
     public static void clear() {
         LOCK.lock();
         try {
