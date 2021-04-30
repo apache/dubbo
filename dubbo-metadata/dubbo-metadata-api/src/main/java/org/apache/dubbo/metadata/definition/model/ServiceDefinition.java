@@ -54,13 +54,13 @@ public class ServiceDefinition implements Serializable {
         }
         return types;
     }
-    
-	public List<Annotation> getAnnotations() {
-		if (annotations == null) {
-			annotations = new ArrayList<>();
-		}
-		return annotations;
-	}
+
+    public List<Annotation> getAnnotations() {
+        if (annotations == null) {
+            annotations = new ArrayList<>();
+        }
+        return annotations;
+    }
 
     public String getUniqueId() {
         return canonicalName + "@" + codeSource;
@@ -81,10 +81,10 @@ public class ServiceDefinition implements Serializable {
     public void setTypes(List<TypeDefinition> types) {
         this.types = types;
     }
-  
-	public void setAnnotations(List<Annotation> annotations) {
-		this.annotations = annotations;
-	}
+
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
+    }
 
     @Override
     public String toString() {

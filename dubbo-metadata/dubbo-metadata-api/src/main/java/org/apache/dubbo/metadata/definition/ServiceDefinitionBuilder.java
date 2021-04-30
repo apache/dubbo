@@ -65,8 +65,8 @@ public final class ServiceDefinitionBuilder {
         sd.setCanonicalName(interfaceClass.getCanonicalName());
         sd.setCodeSource(ClassUtils.getCodeSource(interfaceClass));
         Annotation[] classAnnotations = interfaceClass.getAnnotations();
-		sd.setAnnotations(classAnnotations == null ? new ArrayList<>() : Arrays.asList(classAnnotations));
-        
+        sd.setAnnotations(classAnnotations == null ? new ArrayList<>() : Arrays.asList(classAnnotations));
+
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         List<Method> methods = ClassUtils.getPublicNonStaticMethods(interfaceClass);
         for (Method method : methods) {

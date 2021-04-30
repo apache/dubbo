@@ -72,18 +72,18 @@ public class MethodDefinition implements Serializable {
         this.returnType = formatType(returnType);
     }
 
-	public List<Annotation> getAnnotations() {
-		if (annotations == null) {
-			return new ArrayList<>();
-		}
-		return annotations;
-	}
+    public List<Annotation> getAnnotations() {
+        if (annotations == null) {
+            return new ArrayList<>();
+        }
+        return annotations;
+    }
 
-	public void setAnnotations(List<Annotation> annotations) {
-		this.annotations = annotations;
-	}
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
+    }
 
-	@Override
+    @Override
     public String toString() {
         return "MethodDefinition [name=" + name + ", parameterTypes=" + Arrays.toString(parameterTypes)
                 + ", returnType=" + returnType + "]";
