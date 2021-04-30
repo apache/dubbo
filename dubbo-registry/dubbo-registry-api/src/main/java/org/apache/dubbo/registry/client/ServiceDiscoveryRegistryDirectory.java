@@ -77,6 +77,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
+        if (isDestroyed()) {
+            return;
+        }
         // Set the context of the address notification thread.
         RpcContext.setRpcContext(getConsumerUrl());
 
@@ -106,7 +109,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
      */
     @Override
     public boolean isNotificationReceived() {
-        return serviceListener.isDestroyed()
+        return serviceListener == null || serviceListener.isDestroyed()
                 || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
     }
 
@@ -237,7 +240,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
+
+        this.urlInvokerMap = null;
+        this.invokers = null;
     }
 
     /**

@@ -226,9 +226,15 @@ public interface CommonConstants {
     String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
+     * echo call
+     */
+    String $ECHO = "$echo";
+    /**
      * package version in the manifest
      */
     String RELEASE_KEY = "release";
+
+    String PROTOBUF_MESSAGE_CLASS_NAME = "com.google.protobuf.Message";
 
     int MAX_PROXY_COUNT = 65535;
 
@@ -382,4 +388,5 @@ public interface CommonConstants {
 
     String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
 
+    String UTF8ENCODE = "UTF-8";
 }

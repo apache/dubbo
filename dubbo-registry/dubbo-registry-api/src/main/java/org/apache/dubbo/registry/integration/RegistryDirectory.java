@@ -118,6 +118,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     @Override
     public synchronized void notify(List<URL> urls) {
+        if (isDestroyed()) {
+            return;
+        }
+
         Map<String, List<URL>> categoryUrls = urls.stream()
                 .filter(Objects::nonNull)
                 .filter(this::isValidCategory)

@@ -28,10 +28,14 @@ public interface AddressListener {
     /**
      * processing when receiving the address list
      *
-     * @param addresses            provider address list
+     * @param addresses         provider address list
      * @param consumerUrl
      * @param registryDirectory
      */
     List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory);
+
+    default void destroy(URL consumerUrl, Directory registryDirectory) {
+
+    }
 
 }

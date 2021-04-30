@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.event.listener;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.EchoService;
@@ -65,8 +66,12 @@ public class PublishingServiceDefinitionListenerTest {
      */
     @Test
     public void testOnServiceConfigExportedEvent() {
+        ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
+        protocolConfig.setPort(-1);
+
         ServiceConfig<EchoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(EchoService.class);
+        serviceConfig.setProtocol(protocolConfig);
         serviceConfig.setRef(new EchoServiceImpl());
         serviceConfig.setRegistry(new RegistryConfig("N/A"));
         serviceConfig.export();

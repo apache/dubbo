@@ -14,22 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
+package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http2.Http2Headers;
 
-/**
- * An event raised after a {@link ServiceInstance service instance}
- * {@link ServiceDiscovery#unregister(ServiceInstance) unregistered}
- *
- * @see ServiceInstanceEvent
- * @since 2.7.5
- */
-public class ServiceInstanceUnregisteredEvent extends ServiceInstanceEvent {
+import java.util.Iterator;
+import java.util.Map;
 
-    public ServiceInstanceUnregisteredEvent(Object source, ServiceInstance serviceInstance) {
-        super(source, serviceInstance);
+public class Http2HeaderMeta implements Metadata {
+    private final Http2Headers headers;
+
+    public Http2HeaderMeta(Http2Headers headers) {
+        this.headers = headers;
+    }
+
+    @Override
+    public Metadata put(CharSequence key, CharSequence value) {
+        headers.set(key, value);
+        return this;
+    }
+
+    @Override
+    public CharSequence get(CharSequence key) {
+        return headers.get(key);
+    }
+
+    @Override
+    public boolean contains(CharSequence key) {
+        return headers.contains(key);
+    }
+
+    @Override
+    public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
+        return headers.iterator();
     }
 }

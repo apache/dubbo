@@ -101,6 +101,17 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
+     * get configItem which contains content and stat info.
+     * @param key
+     * @param group
+     * @return
+     */
+    default ConfigItem getConfigItem(String key, String group) {
+        String content = getConfig(key, group);
+        return new ConfigItem(content, null);
+    }
+
+    /**
      * Get the configuration mapped to the given key and the given group. If the
      * configuration fails to fetch after timeout exceeds, IllegalStateException will be thrown.
      *
@@ -153,6 +164,19 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @since 2.7.5
      */
     default boolean publishConfig(String key, String group, String content) throws UnsupportedOperationException {
+        return false;
+    }
+
+    /**
+     * publish config mapped to this given key and given group with stat.
+     * @param key
+     * @param group
+     * @param content
+     * @param stat
+     * @return
+     * @throws UnsupportedOperationException
+     */
+    default boolean publishConfigCas(String key, String group, String content, Object stat) throws UnsupportedOperationException {
         return false;
     }
 
@@ -241,5 +265,14 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      */
     default boolean removeConfig(String key, String group) {
         return true;
+    }
+
+    /**
+     * support cas or not.
+     *
+     * @return
+     */
+    default boolean hasSupportCas() {
+        return false;
     }
 }

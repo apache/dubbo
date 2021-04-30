@@ -22,6 +22,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -71,7 +72,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     protected boolean shouldSimplified;
 
     protected volatile URL overrideDirectoryUrl; // Initialization at construction time, assertion not null, and always assign non null value
-
+    protected volatile URL subscribeUrl;
     protected volatile URL registeredConsumerUrl;
 
     /**
@@ -128,12 +129,12 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     public void subscribe(URL url) {
-        setConsumerUrl(url);
+        setSubscribeUrl(url);
         registry.subscribe(url, this);
     }
 
     public void unSubscribe(URL url) {
-        setConsumerUrl(null);
+        setSubscribeUrl(null);
         registry.unsubscribe(url, this);
     }
 
@@ -172,17 +173,29 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         return invokers;
     }
 
+    // The currently effective consumer url
     @Override
     public URL getConsumerUrl() {
         return this.overrideDirectoryUrl;
     }
 
+    // The original consumer url
     public URL getOriginalConsumerUrl() {
-        return this.consumerUrl;
+        return this.overrideDirectoryUrl;
     }
 
+    // The url registered to registry or metadata center
     public URL getRegisteredConsumerUrl() {
         return registeredConsumerUrl;
+    }
+
+    // The url used to subscribe from registry
+    public URL getSubscribeUrl() {
+        return subscribeUrl;
+    }
+
+    public void setSubscribeUrl(URL subscribeUrl) {
+        this.subscribeUrl = subscribeUrl;
     }
 
     public void setRegisteredConsumerUrl(URL url) {
@@ -220,19 +233,32 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         // unsubscribe.
         try {
             if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
+                registry.unsubscribe(getSubscribeUrl(), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
         }
-        super.destroy(); // must be executed after unsubscribing
-        try {
-            destroyAllInvokers();
-        } catch (Throwable t) {
-            logger.warn("Failed to destroy service " + serviceKey, t);
+
+        ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
+        List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
+        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+            for (AddressListener addressListener : supportedListeners) {
+                addressListener.destroy(getConsumerUrl(), this);
+            }
         }
 
-        invokersChangedListener = null;
+        synchronized (this) {
+            try {
+                destroyAllInvokers();
+            } catch (Throwable t) {
+                logger.warn("Failed to destroy service " + serviceKey, t);
+            }
+            routerChain.destroy();
+            invokersChangedListener = null;
+            serviceListener = null;
+
+            super.destroy(); // must be executed after unsubscribing
+        }
     }
 
     @Override
