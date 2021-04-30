@@ -25,16 +25,14 @@ import java.util.concurrent.TimeUnit;
 public class TimeoutCountDownTest {
 
     @Test
-    public void testTimeoutCountDown() {
+    public void testTimeoutCountDown() throws InterruptedException {
         TimeoutCountDown timeoutCountDown = TimeoutCountDown.newCountDown(5, TimeUnit.SECONDS);
         Assertions.assertEquals(5 * 1000, timeoutCountDown.getTimeoutInMilli());
         Assertions.assertFalse(timeoutCountDown.isExpired());
         Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) > 0);
-        try {
-            Thread.sleep(6 * 1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+        Thread.sleep(6 * 1000);
+
         Assertions.assertTrue(timeoutCountDown.isExpired());
         Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) <= 0);
     }
