@@ -43,7 +43,7 @@ import java.util.concurrent.Future;
  * Imaging a situation like this, A is calling B, and B will call C, after that, B wants to return some attachments back to A.
  * ClientAttachment is using to pass attachments to next hop as a consumer. ( A --> B , in A side)
  * ServerAttachment is using to fetch attachments from previous hop as a provider. ( A --> B , in B side)
- * ServiceContext is using to return some attachments back to client as a provider. ( A <-- B , in B side)
+ * ServerContext is using to return some attachments back to client as a provider. ( A <-- B , in B side)
  * The reason why using `ServiceContext` is to make API compatible with previous.
  *
  * @export
