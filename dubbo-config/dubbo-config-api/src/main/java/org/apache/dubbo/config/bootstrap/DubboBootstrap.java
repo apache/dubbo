@@ -66,6 +66,7 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -202,12 +203,21 @@ public class DubboBootstrap extends GenericEventListener {
         return instance;
     }
 
+    /**
+     * Try reset dubbo status for new instance.
+     * For testing purposes only
+     */
     public static void reset() {
         if (instance != null) {
             instance.destroy();
+            instance = null;
         }
         ApplicationModel.reset();
-        instance = null;
+        MetadataReportInstance.destroy();
+        AbstractMetadataReportFactory.clear();
+        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
+        ExtensionLoader.destroyAll();
     }
 
     private DubboBootstrap() {

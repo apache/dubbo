@@ -26,7 +26,6 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.DisposableBean;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -34,8 +33,8 @@ import org.springframework.beans.factory.config.InstantiationAwareBeanPostProces
 import org.springframework.beans.factory.support.MergedBeanDefinitionPostProcessor;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.EnvironmentAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.Ordered;
-import org.springframework.core.PriorityOrdered;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
@@ -65,7 +64,7 @@ import static org.springframework.core.BridgeMethodResolver.isVisibilityBridgeMe
  */
 @SuppressWarnings("unchecked")
 public abstract class AbstractAnnotationBeanPostProcessor extends
-        InstantiationAwareBeanPostProcessorAdapter implements MergedBeanDefinitionPostProcessor, PriorityOrdered,
+        InstantiationAwareBeanPostProcessorAdapter implements MergedBeanDefinitionPostProcessor, Ordered,
         BeanFactoryAware, BeanClassLoaderAware, EnvironmentAware, DisposableBean {
 
     private final static int CACHE_SIZE = Integer.getInteger("", 32);
@@ -85,10 +84,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
     private ClassLoader classLoader;
 
-    /**
-     * make sure higher priority than {@link AutowiredAnnotationBeanPostProcessor}
-     */
-    private int order = Ordered.LOWEST_PRECEDENCE - 3;
+    private int order = Ordered.LOWEST_PRECEDENCE;
 
     /**
      * @param annotationTypes the multiple types of {@link Annotation annotations}
@@ -136,20 +132,20 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             try {
                 prepareInjection(metadata);
             } catch (Exception e) {
-                logger.warn("Prepare injection of @"+getAnnotationType().getSimpleName()+" failed", e);
+                logger.error("Prepare injection of @"+getAnnotationType().getSimpleName()+" failed", e);
             }
         }
     }
 
     @Override
     public PropertyValues postProcessPropertyValues(
-            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeanCreationException {
+            PropertyValues pvs, PropertyDescriptor[] pds, Object bean, String beanName) throws BeansException {
 
         try {
             AnnotatedInjectionMetadata metadata = findInjectionMetadata(beanName, bean.getClass(), pvs);
             prepareInjection(metadata);
             metadata.inject(bean, beanName, pvs);
-        } catch (BeanCreationException ex) {
+        } catch (BeansException ex) {
             throw ex;
         } catch (Throwable ex) {
             throw new BeanCreationException(beanName, "Injection of @" + getAnnotationType().getSimpleName()
@@ -216,6 +212,10 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
                     return;
                 }
 
+                if (method.getAnnotation(Bean.class) != null) {
+                    // DO NOT inject to Java-config class's @Bean method
+                    return;
+                }
 
                 for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
 
@@ -223,16 +223,10 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
                     if (attributes != null && method.equals(ClassUtils.getMostSpecificMethod(method, beanClass))) {
                         if (Modifier.isStatic(method.getModifiers())) {
-                            if (logger.isWarnEnabled()) {
-                                logger.warn("@" + annotationType.getName() + " annotation is not supported on static methods: " + method);
-                            }
-                            return;
+                            throw new IllegalStateException("When using @"+annotationType.getName() +" to inject interface proxy, it is not supported on static methods: "+method);
                         }
-                        if (method.getParameterTypes().length == 0) {
-                            if (logger.isWarnEnabled()) {
-                                logger.warn("@" + annotationType.getName() + " annotation should only be used on methods with parameters: " +
-                                        method);
-                            }
+                        if (method.getParameterTypes().length != 1) {
+                            throw new IllegalStateException("When using @"+annotationType.getName() +" to inject interface proxy, the method must have only one parameter: "+method);
                         }
                         PropertyDescriptor pd = BeanUtils.findPropertyForMethod(bridgedMethod, beanClass);
                         elements.add(new AnnotatedMethodElement(method, pd, attributes));
@@ -243,7 +237,6 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
         return elements;
     }
-
 
     private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
@@ -259,6 +252,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         if (InjectionMetadata.needsRefresh(metadata, clazz)) {
             synchronized (this.injectionMetadataCache) {
                 metadata = this.injectionMetadataCache.get(cacheKey);
+
                 if (InjectionMetadata.needsRefresh(metadata, clazz)) {
                     if (metadata != null) {
                         metadata.clear(pvs);
@@ -343,18 +337,18 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
     protected Object getInjectedObject(AnnotationAttributes attributes, Object bean, String beanName, Class<?> injectedType,
                                        AnnotatedInjectElement injectedElement) throws Exception {
 
-        String cacheKey = buildInjectedObjectCacheKey(attributes, bean, beanName, injectedType, injectedElement);
+//        String cacheKey = buildInjectedObjectCacheKey(attributes, bean, beanName, injectedType, injectedElement);
+//
+//        Object injectedObject = injectedObjectsCache.get(cacheKey);
+//
+//        if (injectedObject == null) {
+//            injectedObject = doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
+//            // Customized inject-object if necessary
+//            injectedObjectsCache.put(cacheKey, injectedObject);
+//        }
+//        return injectedObject;
 
-        Object injectedObject = injectedObjectsCache.get(cacheKey);
-
-        if (injectedObject == null) {
-            injectedObject = doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
-            // Customized inject-object if necessary
-            injectedObjectsCache.put(cacheKey, injectedObject);
-        }
-
-        return injectedObject;
-
+        return doGetInjectedBean(attributes, bean, beanName, injectedType, injectedElement);
     }
 
     /**
@@ -401,15 +395,16 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
      * @param injectedElement {@link AnnotatedInjectElement}
      * @return Bean cache key
      */
-    protected abstract String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
-                                                          Class<?> injectedType,
-                                                          AnnotatedInjectElement injectedElement);
+//    protected abstract String buildInjectedObjectCacheKey(AnnotationAttributes attributes, Object bean, String beanName,
+//                                                          Class<?> injectedType,
+//                                                          AnnotatedInjectElement injectedElement);
 
     /**
      * {@link Annotation Annotated} {@link InjectionMetadata} implementation
      */
     protected class AnnotatedInjectionMetadata extends InjectionMetadata {
 
+        private Class<?> targetClass;
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
 
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements;
@@ -417,6 +412,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         public AnnotatedInjectionMetadata(Class<?> targetClass, Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements,
                                           Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements) {
             super(targetClass, combine(fieldElements, methodElements));
+            this.targetClass = targetClass;
             this.fieldElements = fieldElements;
             this.methodElements = methodElements;
         }
@@ -428,6 +424,18 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         public Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> getMethodElements() {
             return methodElements;
         }
+
+        @Override
+        protected boolean needsRefresh(Class<?> clazz) {
+            if (this.targetClass == clazz) {
+                return false;
+            }
+            //IGNORE Spring CGLIB enhanced class
+            if (targetClass.isAssignableFrom(clazz) &&  clazz.getName().contains("$$EnhancerBySpringCGLIB$$")) {
+                return false;
+            }
+            return true;
+        }
     }
 
     /**
@@ -437,7 +445,9 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
 
         protected final AnnotationAttributes attributes;
 
-        protected volatile String refKey;
+        protected volatile Object injectedObject;
+
+        private Class<?> injectedType;
 
         protected AnnotatedInjectElement(Member member, PropertyDescriptor pd, AnnotationAttributes attributes) {
             super(member, pd);
@@ -447,8 +457,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         @Override
         protected void inject(Object bean, String beanName, PropertyValues pvs) throws Throwable {
 
-            Class<?> injectedType = getResourceType();
-            Object injectedObject = getInjectedObject(attributes, bean, beanName, injectedType, this);
+            Object injectedObject = getInjectedObject(attributes, bean, beanName, getInjectedType(), this);
 
             if (member instanceof Field) {
                 Field field = (Field) member;
@@ -461,8 +470,37 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             }
         }
 
-        public Class<?> getInjectedType() {
-            return getResourceType();
+        public Class<?> getInjectedType() throws ClassNotFoundException {
+            if (injectedType == null) {
+                if (this.isField) {
+                    injectedType = ((Field) this.member).getType();
+                }
+                else if (this.pd != null) {
+                    return this.pd.getPropertyType();
+                }
+                else {
+                    Method method = (Method) this.member;
+                    if (method.getParameterTypes().length > 0) {
+                        injectedType = method.getParameterTypes()[0];
+                    } else {
+                        throw new IllegalStateException("get injected type failed");
+                    }
+                }
+            }
+            return injectedType;
+        }
+
+        public String getPropertyName() {
+            if (member instanceof Field) {
+                Field field = (Field) member;
+                return field.getName();
+            } else if (this.pd != null) {
+                // If it is method element, using propertyName of PropertyDescriptor
+                return pd.getName();
+            } else {
+                Method method = (Method) this.member;
+                return method.getName();
+            }
         }
     }
 
@@ -484,6 +522,5 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             super(field, null, attributes);
             this.field = field;
         }
-
     }
 }
