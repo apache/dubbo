@@ -25,6 +25,9 @@ public class RpcContextAttachment extends RpcContext{
     protected final Map<String, Object> attachments = new HashMap<>();
     private final Map<String, Object> values = new HashMap<String, Object>();
 
+    protected RpcContextAttachment() {
+    }
+
     /**
      * also see {@link #getObjectAttachment(String)}.
      *

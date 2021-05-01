@@ -37,6 +37,10 @@ import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
 
 public class RpcServiceContext extends RpcContext {
+
+    protected RpcServiceContext() {
+    }
+
     private List<URL> urls;
 
     private URL url;

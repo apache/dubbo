@@ -90,7 +90,7 @@ public class RpcContext {
     }
 
     /**
-     * get server side context.
+     * get server side context. ( A <-- B , in B side)
      *
      * @return server context
      */
@@ -122,7 +122,7 @@ public class RpcContext {
     }
 
     /**
-     * get consumer side attachment
+     * get consumer side attachment ( A --> B , in A side)
      *
      * @return context
      */
@@ -131,7 +131,7 @@ public class RpcContext {
     }
 
     /**
-     * get provider side attachment from consumer
+     * get provider side attachment from consumer ( A --> B , in B side)
      *
      * @return context
      */
@@ -139,6 +139,12 @@ public class RpcContext {
         return SERVER_ATTACHMENT.get();
     }
 
+    /**
+     * Using to pass environment parameters in the whole invocation. For example, `remotingApplicationName`,
+     * `remoteAddress`, etc. {@link RpcServiceContext}
+     *
+     * @return context
+     */
     public static RpcServiceContext getServiceContext() {
         return SERVICE_CONTEXT.get();
     }
