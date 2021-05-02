@@ -18,12 +18,13 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.spring.DubboConfigInitializationPostProcessor;
-import org.apache.dubbo.config.spring.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -79,7 +80,11 @@ public interface DubboBeanUtils {
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
+        // Dubbo config initialization processor
         registerInfrastructureBean(registry, DubboConfigInitializationPostProcessor.BEAN_NAME, DubboConfigInitializationPostProcessor.class);
+
+        // register infra bean if not exists later
+        registerInfrastructureBean(registry, DubboInfraBeanRegisterPostProcessor.BEAN_NAME, DubboInfraBeanRegisterPostProcessor.class);
     }
 
     /**
@@ -112,8 +117,11 @@ public interface DubboBeanUtils {
     }
 
     /**
-     * Call this method in postProcessBeanFactory()
-     *
+     * Register some beans later
+     * Call this method in BeanDefinitionRegistryPostProcessor,
+     * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
+     * @see DubboInfraBeanRegisterPostProcessor
+     * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
      * @param registry
      */
     static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {

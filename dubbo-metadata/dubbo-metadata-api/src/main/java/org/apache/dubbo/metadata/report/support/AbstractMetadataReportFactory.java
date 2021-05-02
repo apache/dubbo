@@ -58,5 +58,15 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
+    public static void clear() {
+        LOCK.lock();
+        try {
+            SERVICE_STORE_MAP.clear();
+        } finally {
+            LOCK.unlock();
+        }
+
+    }
+
     protected abstract MetadataReport createMetadataReport(URL url);
 }

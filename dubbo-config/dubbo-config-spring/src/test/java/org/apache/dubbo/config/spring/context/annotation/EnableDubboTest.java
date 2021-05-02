@@ -57,7 +57,8 @@ public class EnableDubboTest {
 
     @AfterEach
     public void tearDown() {
-        //context.close();
+        context.close();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -87,21 +88,19 @@ public class EnableDubboTest {
     public void testConsumer() {
 
         context.register(TestProviderConfiguration.class, TestConsumerConfiguration.class);
-
         context.refresh();
 
         TestConsumerConfiguration consumerConfiguration = context.getBean(TestConsumerConfiguration.class);
 
         DemoService demoService = consumerConfiguration.getDemoService();
-
         String value = demoService.sayName("Mercy");
-
         Assertions.assertEquals("Hello,Mercy", value);
 
         DemoService autowiredDemoService = consumerConfiguration.getAutowiredDemoService();
-
         Assertions.assertEquals("Hello,Mercy", autowiredDemoService.sayName("Mercy"));
 
+        DemoService autowiredReferDemoService = consumerConfiguration.getAutowiredReferDemoService();
+        Assertions.assertEquals("Hello,Mercy", autowiredReferDemoService.sayName("Mercy"));
 
         TestConsumerConfiguration.Child child = context.getBean(TestConsumerConfiguration.Child.class);
 

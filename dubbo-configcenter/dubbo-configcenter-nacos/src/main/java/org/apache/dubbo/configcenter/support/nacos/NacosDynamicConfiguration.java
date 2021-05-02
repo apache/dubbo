@@ -20,10 +20,12 @@ package org.apache.dubbo.configcenter.support.nacos;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -217,6 +219,16 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
+    public ConfigItem getConfigItem(String key, String group) {
+        String content = getConfig(key, group);
+        String casMd5 = "";
+        if (StringUtils.isNotEmpty(content)) {
+            casMd5 = MD5Utils.getMd5(content);
+        }
+        return new ConfigItem(content, casMd5);
+    }
+
+    @Override
     public Object getInternalProperty(String key) {
         try {
             return configService.getConfig(key, DEFAULT_GROUP, getDefaultTimeout());
@@ -239,11 +251,14 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public boolean publishConfigCas(String key, String group, String content, String casMd5) {
+    public boolean publishConfigCas(String key, String group, String content, Object stat) {
         boolean published = false;
         String resolvedGroup = resolveGroup(group);
         try {
-            published = configService.publishConfigCas(key, resolvedGroup, content, casMd5);
+            if (!(null != stat && stat instanceof String)) {
+                throw new IllegalArgumentException("nacos publishConfigCas requires stat of string type");
+            }
+            published = configService.publishConfigCas(key, resolvedGroup, content, (String) stat);
         } catch (NacosException e) {
             logger.error(e.getErrMsg(), e);
         }
