@@ -118,6 +118,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     private static final ScheduledExecutorService DELAY_EXPORT_EXECUTOR =
             Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboServiceDelayExporter", true));
 
+    private String serviceName;
+
     private static final Protocol PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
 
     /**
@@ -741,5 +743,37 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
+    }
+
+    public String getServiceName() {
+
+        if(!StringUtils.isBlank(serviceName)){
+            return serviceName;
+        }
+        String generateVersion = version;
+        String generateGroup = group;
+
+        if (StringUtils.isBlank(version) && provider != null) {
+            generateVersion = provider.getVersion();
+        }
+
+        if (StringUtils.isBlank(group) && provider != null) {
+            generateGroup = provider.getGroup();
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("ServiceBean:");
+
+        if (!StringUtils.isBlank(generateGroup)) {
+            stringBuilder.append(generateGroup);
+        }
+
+        stringBuilder.append("/").append(interfaceName);
+
+        if (!StringUtils.isBlank(generateVersion)) {
+            stringBuilder.append(":").append(generateVersion);
+        }
+
+        serviceName = stringBuilder.toString();
+        return serviceName;
     }
 }

@@ -229,8 +229,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     }
 
     // for unit test
-    public static void clearRegistryNotDestroy() {
+    @Deprecated
+    public static void reset() {
         REGISTRIES.clear();
+        destroyed.set(false);
     }
 
 }

@@ -208,6 +208,8 @@ public class InvokerSideConfigUrlTest extends UrlTestBase {
         try {
             refConf.destroy();
         } catch (Exception e) {
+        }finally {
+            servConf.unexport();
         }
     }
 
