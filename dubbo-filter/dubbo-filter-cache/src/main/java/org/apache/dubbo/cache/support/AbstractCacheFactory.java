@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.METHOD_KEY;
 
@@ -42,11 +43,14 @@ public abstract class AbstractCacheFactory implements CacheFactory {
     /**
      * This is used to store factory level-1 cached data.
      */
-    private final ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+    private final static ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
+
+    private final static ReentrantLock LOCK = new ReentrantLock();
 
     /**
-     *  Takes URL and invocation instance and return cache instance for a given url.
-     * @param url url of the method
+     * Takes URL and invocation instance and return cache instance for a given url.
+     *
+     * @param url        url of the method
      * @param invocation invocation context.
      * @return Instance of cache store used as storage for caching return values.
      */
@@ -55,15 +59,33 @@ public abstract class AbstractCacheFactory implements CacheFactory {
         url = url.addParameter(METHOD_KEY, invocation.getMethodName());
         String key = url.toFullString();
         Cache cache = caches.get(key);
-        if (cache == null) {
-            caches.put(key, createCache(url));
-            cache = caches.get(key);
+
+        // get from cache first.
+        if (null != cache) {
+            return cache;
         }
+
+        LOCK.lock();
+
+        try {
+            // double check.
+            cache = caches.get(key);
+            if (null != cache) {
+                return cache;
+            }
+
+            cache = createCache(url);
+            caches.put(key, cache);
+        } finally {
+            LOCK.unlock();
+        }
+
         return cache;
     }
 
     /**
      * Takes url as an method argument and return new instance of cache store implemented by AbstractCacheFactory subclass.
+     *
      * @param url url of the method
      * @return Create and return new instance of cache store used as storage for caching return values.
      */
