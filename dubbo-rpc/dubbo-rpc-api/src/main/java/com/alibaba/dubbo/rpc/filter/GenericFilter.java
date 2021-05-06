@@ -82,7 +82,7 @@ public class GenericFilter implements Filter {
                         value = System.getenv(StringUtils.toOSStyleKey(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE));
                     }
 
-                    if (StringUtils.isEmpty(value)) {
+                    if (!Boolean.parseBoolean(value)) {
                         String notice = "Trigger the safety barrier! " +
                                 "Native Java Serializer is not allowed by default." +
                                 "This means currently maybe being attacking by others. " +
