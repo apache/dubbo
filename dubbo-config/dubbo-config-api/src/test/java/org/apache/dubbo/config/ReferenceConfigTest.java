@@ -54,7 +54,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    @Disabled
+    @Disabled("Disabled due to Github Actions environment")
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
