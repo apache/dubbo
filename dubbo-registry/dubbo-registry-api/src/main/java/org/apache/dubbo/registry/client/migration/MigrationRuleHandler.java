@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
