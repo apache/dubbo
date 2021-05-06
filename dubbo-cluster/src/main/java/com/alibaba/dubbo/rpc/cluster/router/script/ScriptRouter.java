@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcContext;
@@ -32,6 +33,13 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.Permissions;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -53,17 +61,51 @@ public class ScriptRouter extends AbstractRouter {
 
     private final String rule;
 
+    private CompiledScript function;
+
+    private AccessControlContext accessControlContext;
+
+    {
+        //Just give permission of reflect to access member.
+        Permissions perms = new Permissions();
+        perms.add(new RuntimePermission("accessDeclaredMembers"));
+        // Cast to Certificate[] required because of ambiguity:
+        ProtectionDomain domain = new ProtectionDomain(new CodeSource(null, (Certificate[]) null), perms);
+        accessControlContext = new AccessControlContext(new ProtectionDomain[]{domain});
+    }
+
     public ScriptRouter(URL url) {
         this.url = url;
-        String type = url.getParameter(Constants.TYPE_KEY);
         this.priority = url.getParameter(Constants.PRIORITY_KEY, DEFAULT_PRIORITY);
-        String rule = url.getParameterAndDecoded(Constants.RULE_KEY);
-        if (type == null || type.length() == 0) {
-            type = Constants.DEFAULT_SCRIPT_TYPE_KEY;
+
+        this.engine = getEngine(url);
+        this.rule = getRule(url);
+
+        try {
+            Compilable compilable = (Compilable) engine;
+            function = compilable.compile(rule);
+        } catch (ScriptException e) {
+            logger.error("route error, rule has been ignored. rule: " + rule +
+                    ", url: " + RpcContext.getContext().getUrl(), e);
         }
-        if (rule == null || rule.length() == 0) {
-            throw new IllegalStateException(new IllegalStateException("route rule can not be empty. rule:" + rule));
+    }
+
+    /**
+     * get rule from url parameters.
+     */
+    private String getRule(URL url) {
+        String vRule = url.getParameterAndDecoded(Constants.RULE_KEY);
+        if (StringUtils.isEmpty(vRule)) {
+            throw new IllegalStateException("route rule can not be empty.");
         }
+        return vRule;
+    }
+
+    /**
+     * create ScriptEngine instance by type from url parameters, then cache it
+     */
+    private ScriptEngine getEngine(URL url) {
+        String type = url.getParameter(Constants.TYPE_KEY, Constants.DEFAULT_SCRIPT_TYPE_KEY);
         ScriptEngine engine = engines.get(type);
         if (engine == null) {
             engine = new ScriptEngineManager().getEngineByName(type);
@@ -72,38 +114,61 @@ public class ScriptRouter extends AbstractRouter {
             }
             engines.put(type, engine);
         }
-        this.engine = engine;
-        this.rule = rule;
+
+        return engine;
     }
+
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        try {
-            List<Invoker<T>> invokersCopy = new ArrayList<Invoker<T>>(invokers);
-            Compilable compilable = (Compilable) engine;
-            Bindings bindings = engine.createBindings();
-            bindings.put("invokers", invokersCopy);
-            bindings.put("invocation", invocation);
-            bindings.put("context", RpcContext.getContext());
-            CompiledScript function = compilable.compile(rule);
-            Object obj = function.eval(bindings);
-            if (obj instanceof Invoker[]) {
-                invokersCopy = Arrays.asList((Invoker<T>[]) obj);
-            } else if (obj instanceof Object[]) {
-                invokersCopy = new ArrayList<Invoker<T>>();
-                for (Object inv : (Object[]) obj) {
-                    invokersCopy.add((Invoker<T>) inv);
-                }
-            } else {
-                invokersCopy = (List<Invoker<T>>) obj;
-            }
-            return invokersCopy;
-        } catch (ScriptException e) {
-            //fail then ignore rule .invokers.
-            logger.error("route error , rule has been ignored. rule: " + rule + ", method:" + invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+    public <T> List<Invoker<T>> route(final List<Invoker<T>> invokers, URL url, final Invocation invocation) throws RpcException {
+        if (engine == null || function == null) {
             return invokers;
+        }
+        final Bindings bindings = createBindings(invokers, invocation);
+        return getRoutedInvokers(AccessController.doPrivileged(new PrivilegedAction() {
+            @Override
+            public Object run() {
+                try {
+                    return function.eval(bindings);
+                } catch (ScriptException e) {
+                    logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
+                            invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                    return invokers;
+                }
+            }
+        }, accessControlContext));
+    }
+
+    /**
+     * get routed invokers from result of script rule evaluation
+     */
+    @SuppressWarnings("unchecked")
+    protected <T> List<Invoker<T>> getRoutedInvokers(Object obj) {
+        if (obj instanceof Invoker[]) {
+            return Arrays.asList((Invoker<T>[]) obj);
+        } else if (obj instanceof Object[]) {
+            Object[] objects = (Object[]) obj;
+            List<Invoker<T>> invokers = new ArrayList<Invoker<T>>();
+            for (Object object : objects) {
+                invokers.add((Invoker<T>) object);
+            }
+
+            return invokers;
+        } else {
+            return (List<Invoker<T>>) obj;
         }
     }
 
+    /**
+     * create bindings for script engine
+     */
+    private <T> Bindings createBindings(List<Invoker<T>> invokers, Invocation invocation) {
+        Bindings bindings = engine.createBindings();
+        // create a new List of invokers
+        bindings.put("invokers", new ArrayList<Invoker<T>>(invokers));
+        bindings.put("invocation", invocation);
+        bindings.put("context", RpcContext.getContext());
+        return bindings;
+    }
 }

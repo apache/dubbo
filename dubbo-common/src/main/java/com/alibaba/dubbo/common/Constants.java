@@ -647,8 +647,17 @@ public class Constants {
 
     public static final String TELNET = "telnet";
 
-    /*
-     * private Constants(){ }
-     */
+    public static final String DOT_REGEX = "\\.";
 
+    public static final String UNDERLINE_SEPARATOR = "_";
+
+    public static final String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    public static final String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    public static final String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    public static final String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    public static final String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 }

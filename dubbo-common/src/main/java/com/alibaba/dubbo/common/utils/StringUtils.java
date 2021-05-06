@@ -427,4 +427,12 @@ public final class StringUtils {
         }
         return buf.toString();
     }
+
+    public static String toOSStyleKey(String key) {
+        key = key.toUpperCase().replaceAll(Constants.DOT_REGEX, Constants.UNDERLINE_SEPARATOR);
+        if (!key.startsWith("DUBBO_")) {
+            key = "DUBBO_" + key;
+        }
+        return key;
+    }
 }
