@@ -45,7 +45,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
      */
     private final static ConcurrentMap<String, Cache> caches = new ConcurrentHashMap<String, Cache>();
 
-    private final static ReentrantLock LOCK = new ReentrantLock();
+    private final static Object MONITOR = new Object();
 
     /**
      * Takes URL and invocation instance and return cache instance for a given url.
@@ -65,9 +65,7 @@ public abstract class AbstractCacheFactory implements CacheFactory {
             return cache;
         }
 
-        LOCK.lock();
-
-        try {
+        synchronized (MONITOR) {
             // double check.
             cache = caches.get(key);
             if (null != cache) {
@@ -76,8 +74,6 @@ public abstract class AbstractCacheFactory implements CacheFactory {
 
             cache = createCache(url);
             caches.put(key, cache);
-        } finally {
-            LOCK.unlock();
         }
 
         return cache;
