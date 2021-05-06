@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public final class ServiceDefinitionBuilder {
         sd.setCanonicalName(interfaceClass.getCanonicalName());
         sd.setCodeSource(ClassUtils.getCodeSource(interfaceClass));
         Annotation[] classAnnotations = interfaceClass.getAnnotations();
-        sd.setAnnotations(classAnnotations == null ? new ArrayList<>() : Arrays.asList(classAnnotations));
+        sd.setAnnotations(classAnnotations == null ? Collections.emptyList() : Arrays.asList(classAnnotations));
 
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         List<Method> methods = ClassUtils.getPublicNonStaticMethods(interfaceClass);
@@ -74,7 +75,7 @@ public final class ServiceDefinitionBuilder {
             md.setName(method.getName());
 
             Annotation[] methodAnnotations = method.getAnnotations();
-            md.setAnnotations(methodAnnotations == null ? new ArrayList<>() : Arrays.asList(methodAnnotations));
+            md.setAnnotations(methodAnnotations == null ? Collections.emptyList() : Arrays.asList(methodAnnotations));
 
             // Process parameter types.
             Class<?>[] paramTypes = method.getParameterTypes();

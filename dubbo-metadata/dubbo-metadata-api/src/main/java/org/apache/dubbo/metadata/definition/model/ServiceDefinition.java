@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.definition.model;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +58,7 @@ public class ServiceDefinition implements Serializable {
 
     public List<Annotation> getAnnotations() {
         if (annotations == null) {
-            annotations = new ArrayList<>();
+            annotations = Collections.emptyList();
         }
         return annotations;
     }

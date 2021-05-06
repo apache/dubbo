@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -74,7 +75,7 @@ public class MethodDefinition implements Serializable {
 
     public List<Annotation> getAnnotations() {
         if (annotations == null) {
-            return new ArrayList<>();
+            annotations = Collections.emptyList();
         }
         return annotations;
     }
