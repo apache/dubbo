@@ -22,7 +22,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 
-@Activate
 public class MigrationRuleHandler<T> {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
