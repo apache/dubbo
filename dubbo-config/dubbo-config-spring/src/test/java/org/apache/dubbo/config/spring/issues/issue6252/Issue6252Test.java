@@ -14,18 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.issues;
+package org.apache.dubbo.config.spring.issues.issue6252;
 
 import org.apache.dubbo.config.annotation.DubboReference;
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
-
-import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
@@ -36,17 +34,27 @@ import org.springframework.context.annotation.PropertySource;
  */
 @Configuration
 @EnableDubboConfig
-@PropertySource("classpath:/META-INF/issue-6252-test.properties")
+@PropertySource("classpath:/META-INF/issues/issue6252/config.properties")
 public class Issue6252Test {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
 
     @DubboReference
     private DemoService demoService;
 
     @Test
     public void test() throws Exception {
+        ZooKeeperServer.start();
+
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue6252Test.class);
-        DemoService demoService = context.getBean(DemoService.class);
-        context.close();
+        try {
+            DemoService demoService = context.getBean(DemoService.class);
+        } finally {
+            context.close();
+        }
     }
 
 }

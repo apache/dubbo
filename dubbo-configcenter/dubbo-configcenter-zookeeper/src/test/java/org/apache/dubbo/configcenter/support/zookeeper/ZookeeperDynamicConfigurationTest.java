@@ -18,6 +18,7 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
@@ -75,7 +76,8 @@ public class ZookeeperDynamicConfigurationTest {
 
         configUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
 
-        configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol()).getDynamicConfiguration(configUrl);
+        configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol())
+                .getDynamicConfiguration(configUrl);
     }
 
     @AfterAll
@@ -135,6 +137,24 @@ public class ZookeeperDynamicConfigurationTest {
 
         assertTrue(configuration.publishConfig(key, group, content));
         assertEquals("test", configuration.getProperties(key, group));
+    }
+
+    @Test
+    public void testPublishConfigCas() {
+        String key = "user-service-cas";
+        String group = "org.apache.dubbo.service.UserService";
+        String content = "test";
+        ConfigItem configItem = configuration.getConfigItem(key, group);
+        assertTrue(configuration.publishConfigCas(key, group, content, configItem.getStat()));
+        configItem = configuration.getConfigItem(key, group);
+        assertEquals("test", configItem.getContent());
+        assertTrue(configuration.publishConfigCas(key, group, "newtest", configItem.getStat()));
+        try {
+            configuration.publishConfigCas(key, group, "newtest2", configItem.getStat());
+        } catch (Exception e) {
+            assertTrue(e.getMessage().contains("KeeperErrorCode = BadVersion"));
+        }
+        assertEquals("newtest", configuration.getConfigItem(key, group).getContent());
     }
 
     @Test
