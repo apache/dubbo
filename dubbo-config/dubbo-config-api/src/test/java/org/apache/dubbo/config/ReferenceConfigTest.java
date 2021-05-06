@@ -28,6 +28,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -53,6 +54,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
+    @Disabled
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
