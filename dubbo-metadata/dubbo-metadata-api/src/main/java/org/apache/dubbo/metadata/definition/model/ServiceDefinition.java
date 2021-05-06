@@ -17,7 +17,9 @@
 package org.apache.dubbo.metadata.definition.model;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,6 +32,7 @@ public class ServiceDefinition implements Serializable {
     private String codeSource;
     private List<MethodDefinition> methods;
     private List<TypeDefinition> types;
+    private List<Annotation> annotations;
 
     public String getCanonicalName() {
         return canonicalName;
@@ -53,6 +56,13 @@ public class ServiceDefinition implements Serializable {
         return types;
     }
 
+    public List<Annotation> getAnnotations() {
+        if (annotations == null) {
+            annotations = Collections.emptyList();
+        }
+        return annotations;
+    }
+
     public String getUniqueId() {
         return canonicalName + "@" + codeSource;
     }
@@ -71,6 +81,10 @@ public class ServiceDefinition implements Serializable {
 
     public void setTypes(List<TypeDefinition> types) {
         this.types = types;
+    }
+
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
     }
 
     @Override
