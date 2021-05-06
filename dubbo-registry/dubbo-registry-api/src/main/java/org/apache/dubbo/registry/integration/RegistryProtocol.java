@@ -681,7 +681,7 @@ public class RegistryProtocol implements Protocol {
             //The current, may have been merged many times
             URL currentUrl = exporter.getInvoker().getUrl();
             //Merged with this configuration
-            URL newUrl = getConfiguredInvokerUrl(configurators, currentUrl);
+            URL newUrl = getConfiguredInvokerUrl(configurators, originUrl);
             newUrl = getConfiguredInvokerUrl(providerConfigurationListener.getConfigurators(), newUrl);
             newUrl = getConfiguredInvokerUrl(serviceConfigurationListeners.get(originUrl.getServiceKey())
                     .getConfigurators(), newUrl);

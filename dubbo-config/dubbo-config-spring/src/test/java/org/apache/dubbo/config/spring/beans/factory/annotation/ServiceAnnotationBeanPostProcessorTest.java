@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -54,14 +54,9 @@ import java.util.Map;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ServiceAnnotationBeanPostProcessorTest {
 
-    @BeforeEach
-    public void setUp() {
-        ApplicationModel.reset();
-    }
-
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Autowired

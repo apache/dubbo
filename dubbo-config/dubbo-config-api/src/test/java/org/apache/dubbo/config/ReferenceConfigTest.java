@@ -20,26 +20,20 @@ import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 
 public class ReferenceConfigTest {
 
-    @BeforeEach
-    public void setUp() {
-        ApplicationModel.reset();
-    }
-
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -122,6 +116,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            sc.unexport();
+            rc.destroy();
             System.clearProperty("java.net.preferIPv4Stack");
         }
         Assertions.assertTrue(success);
