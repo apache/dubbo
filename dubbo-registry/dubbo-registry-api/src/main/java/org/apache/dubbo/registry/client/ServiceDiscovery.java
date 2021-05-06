@@ -209,7 +209,7 @@ public interface ServiceDiscovery extends Prioritized {
         dispatchServiceInstancesChangedEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 
-    void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event);
+    default void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {}
 
     /**
      * Add an instance of {@link ServiceInstancesChangedListener} for specified service

@@ -71,11 +71,6 @@ public class InMemoryServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
-
-    }
-
-    @Override
     public URL getUrl() {
         return registryURL;
     }
