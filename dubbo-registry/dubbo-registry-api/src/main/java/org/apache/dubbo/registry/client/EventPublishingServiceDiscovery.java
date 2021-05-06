@@ -236,7 +236,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
     @Override
     public void initialize(URL registryURL) {
 
-        assertInitialized(INITIALIZE_ACTION);
+        assertDestroyed(INITIALIZE_ACTION);
 
         if (isInitialized()) {
             if (logger.isWarnEnabled()) {
