@@ -112,8 +112,7 @@ public class ServiceDiscoveryRegistry implements Registry {
      * @return non-null
      */
     protected ServiceDiscovery createServiceDiscovery(URL registryURL) {
-        ServiceDiscovery originalServiceDiscovery = getServiceDiscovery(registryURL);
-        ServiceDiscovery serviceDiscovery = enhanceEventPublishing(originalServiceDiscovery);
+        ServiceDiscovery serviceDiscovery = getServiceDiscovery(registryURL);
         execute(() -> {
             serviceDiscovery.initialize(registryURL.addParameter(INTERFACE_KEY, ServiceDiscovery.class.getName())
                     .removeParameter(REGISTRY_TYPE_KEY));
@@ -136,16 +135,6 @@ public class ServiceDiscoveryRegistry implements Registry {
     private ServiceDiscovery getServiceDiscovery(URL registryURL) {
         ServiceDiscoveryFactory factory = getExtension(registryURL);
         return factory.getServiceDiscovery(registryURL);
-    }
-
-    /**
-     * Enhance the original {@link ServiceDiscovery} with event publishing feature
-     *
-     * @param original the original {@link ServiceDiscovery}
-     * @return {@link EventPublishingServiceDiscovery} instance
-     */
-    private ServiceDiscovery enhanceEventPublishing(ServiceDiscovery original) {
-        return new EventPublishingServiceDiscovery(original);
     }
 
     protected boolean shouldRegister(URL providerURL) {
@@ -256,8 +245,14 @@ public class ServiceDiscoveryRegistry implements Registry {
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
         Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
         if (CollectionUtils.isNotEmpty(serviceNames)) {
-            ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(toStringKeys(serviceNames));
-            instancesChangedListener.removeListener(protocolServiceKey);
+            String serviceNamesKey = toStringKeys(serviceNames);
+            ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+            if (instancesChangedListener != null) {
+                instancesChangedListener.removeListener(protocolServiceKey);
+                if (!instancesChangedListener.hasListeners()) {
+                    serviceListeners.remove(serviceNamesKey);
+                }
+            }
         }
     }
 

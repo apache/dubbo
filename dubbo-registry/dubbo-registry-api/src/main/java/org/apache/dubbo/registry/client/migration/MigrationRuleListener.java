@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -181,7 +182,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     protected Set<String> findMappedServices(URL registryURL, URL subscribedURL, MappingListener listener) {
-        return ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY)).getAndListen(subscribedURL, listener);
+        Set<String> result = new LinkedHashSet<>();
+        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
+        result.addAll(serviceNameMapping.getAndListen(subscribedURL, listener));
+        result.addAll(serviceNameMapping.getAndListenWithNewStore(subscribedURL, listener));
+        return result;
     }
 
     public static Set<String> parseServices(String literalServices) {
@@ -206,7 +211,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         @Override
         public void onEvent(MappingChangedEvent event) {
-            logger.info("Received mapping notification from meta server, " +  event);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Received mapping notification from meta server, " + event);
+            }
             Set<String> newApps = event.getApps();
             Set<String> tempOldApps = oldApps;
             oldApps = newApps;

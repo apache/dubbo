@@ -28,7 +28,6 @@ import org.apache.dubbo.registry.retry.FailedUnregisteredTask;
 import org.apache.dubbo.registry.retry.FailedUnsubscribedTask;
 import org.apache.dubbo.remoting.Constants;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -365,9 +364,6 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         try {
             // Sending a canceling subscription request to the server side
             doUnsubscribe(url, listener);
-            //FIXME, the current thread and the registry event notification thread may have concurrency issue, but when the unsubscribe occurs, we don't care much about the accuracy of the address list.
-            // The notify here is to try its best to clean up the invalid address cache when the unsubscribe action occurs
-            this.notify(url, listener, Collections.emptyList());
         } catch (Exception e) {
             Throwable t = e;
 

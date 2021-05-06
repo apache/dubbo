@@ -258,14 +258,17 @@ public class ServiceInstanceMetadataUtils {
         remoteMetadataService.publishMetadata(ApplicationModel.getName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
-            ServiceInstance instance = serviceDiscovery.getLocalInstance() == null ? serviceInstance : serviceDiscovery.getLocalInstance();
+            ServiceInstance instance = serviceDiscovery.getLocalInstance();
             if (instance == null) {
-                LOGGER.error("Error refreshing service instance, instance not registered yet.");
+                LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
+                instance = serviceInstance;
             }
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
-            // update service instance revision
-            serviceDiscovery.update(instance);
+            if (serviceInstance.getPort() > 0) {
+                // update service instance revision
+                serviceDiscovery.update(instance);
+            }
         });
     }
 

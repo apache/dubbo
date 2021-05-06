@@ -17,6 +17,7 @@
 package org.apache.dubbo.configcenter.support.zookeeper;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
@@ -89,8 +90,21 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
+    public boolean publishConfigCas(String key, String group, String content, Object stat) {
+        String pathKey = buildPathKey(group, key);
+        zkClient.createOrUpdate(pathKey, content, false, stat);
+        return true;
+    }
+
+    @Override
     protected String doGetConfig(String pathKey) throws Exception {
         return zkClient.getContent(pathKey);
+    }
+
+    @Override
+    public ConfigItem getConfigItem(String key, String group) {
+        String pathKey = buildPathKey(group, key);
+        return zkClient.getConfigItem(pathKey);
     }
 
     @Override
@@ -112,5 +126,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
         cacheListener.removeListener(pathKey, listener);
+    }
+
+    @Override
+    public boolean hasSupportCas() {
+        return true;
     }
 }

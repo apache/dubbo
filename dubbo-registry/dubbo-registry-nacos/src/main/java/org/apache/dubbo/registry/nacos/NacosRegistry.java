@@ -327,7 +327,7 @@ public class NacosRegistry extends FailbackRegistry {
 
     private void appendIfPresent(StringBuilder target, URL url, String parameterName) {
         String parameterValue = url.getParameter(parameterName);
-        if (!org.apache.commons.lang3.StringUtils.isBlank(parameterValue)) {
+        if (!StringUtils.isBlank(parameterValue)) {
             target.append(SERVICE_NAME_SEPARATOR).append(parameterValue);
         }
     }

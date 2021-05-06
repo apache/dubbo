@@ -14,21 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.common.url.component.param;
 
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
+public interface ParamValue {
+    /**
+     * get value at the specified index.
+     *
+     * @param n the nth value
+     * @return the value stored at index = n
+     */
+    String getN(Integer n);
 
 
-/**
- * An event raised after a {@link ServiceInstance service instance}
- * {@link ServiceDiscovery#register(ServiceInstance) registered}
- *
- * @since 2.7.5
- */
-public class ServiceInstanceRegisteredEvent extends ServiceInstanceEvent {
+    /**
+     * max index is 2^31 - 1
+     *
+     * @param value the stored value
+     * @return the index of value
+     */
+    Integer getIndex(String value);
 
-    public ServiceInstanceRegisteredEvent(Object source, ServiceInstance serviceInstance) {
-        super(source, serviceInstance);
-    }
+    /**
+     * get default value
+     *
+     * @return the default value stored at index = 0
+     */
+    String defaultVal();
 }

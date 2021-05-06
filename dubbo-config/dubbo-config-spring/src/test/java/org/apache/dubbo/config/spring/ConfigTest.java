@@ -47,7 +47,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

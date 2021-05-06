@@ -17,6 +17,7 @@
 package org.apache.dubbo.remoting.zookeeper.curator;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
@@ -39,6 +40,7 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -49,7 +51,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 
-public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
+public class CuratorZookeeperClient
+        extends AbstractZookeeperClient<CuratorZookeeperClient.CuratorWatcherImpl, CuratorZookeeperClient.CuratorWatcherImpl> {
 
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
@@ -145,6 +148,47 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
+    protected void update(String path, String data, Object stat) {
+        byte[] dataBytes = data.getBytes(CHARSET);
+        try {
+            if (null == stat || !(stat instanceof Stat)) {
+                throw new IllegalArgumentException("unable to get the version information of zookeeper data");
+            }
+            client.setData().withVersion(((Stat) stat).getVersion()).forPath(path, dataBytes);
+        } catch (NoNodeException e) {
+            logger.warn("ZNode " + path + "does not exists.", e);
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createOrUpdatePersistent(String path, String data, Object stat) {
+        try {
+            if (checkExists(path)) {
+                update(path, data, stat);
+            } else {
+                createPersistent(path, data);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    protected void createOrUpdateEphemeral(String path, String data, Object stat) {
+        try {
+            if (checkExists(path)) {
+                update(path, data, stat);
+            } else {
+                createEphemeral(path, data);
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     protected void deletePath(String path) {
         try {
             client.delete().deletingChildrenIfNeeded().forPath(path);
@@ -192,6 +236,22 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             throw new IllegalStateException(e.getMessage(), e);
         }
         return null;
+    }
+
+    @Override
+    public ConfigItem doGetConfigItem(String path) {
+        String content = null;
+        Stat stat = null;
+        try {
+            stat = new Stat();
+            byte[] dataBytes = client.getData().storingStatIn(stat).forPath(path);
+            content = (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, CHARSET);
+        } catch (NoNodeException e) {
+            // ignore NoNode Exception.
+        } catch (Exception e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return new ConfigItem(content, stat);
     }
 
     @Override

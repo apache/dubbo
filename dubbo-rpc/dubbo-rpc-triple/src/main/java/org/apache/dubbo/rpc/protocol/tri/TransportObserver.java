@@ -14,21 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
+package org.apache.dubbo.rpc.protocol.tri;
 
+public interface TransportObserver {
+    Stream.OperationHandler EMPTY_HANDLER = (result, cause) -> {
+    };
 
-/**
- * An event raised before a {@link ServiceInstance service instance}
- * {@link ServiceDiscovery#unregister(ServiceInstance) unregistered}
- *
- * @since 2.7.5
- */
-public class ServiceInstancePreUnregisteredEvent extends ServiceInstanceEvent {
-
-    public ServiceInstancePreUnregisteredEvent(Object source, ServiceInstance serviceInstance) {
-        super(source, serviceInstance);
+    default void tryOnMetadata(Metadata metadata, boolean endStream) {
+        onMetadata(metadata, endStream, EMPTY_HANDLER);
     }
+
+    default void tryOnData(byte[] data, boolean endStream) {
+        onData(data, endStream, EMPTY_HANDLER);
+    }
+
+    default void tryOnComplete() {
+        onComplete(EMPTY_HANDLER);
+    }
+
+    void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler);
+
+    void onData(byte[] data, boolean endStream, Stream.OperationHandler handler);
+
+    void onComplete(Stream.OperationHandler handler);
+
 }

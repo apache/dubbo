@@ -14,21 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
 
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-
+package org.apache.dubbo.common.config.configcenter;
 
 /**
- * An event raised before a {@link ServiceInstance service instance}
- * {@link ServiceDiscovery#register(ServiceInstance) registered}
- *
- * @since 2.7.5
+ * Hold content and version information
  */
-public class ServiceInstancePreRegisteredEvent extends ServiceInstanceEvent {
+public class ConfigItem {
 
-    public ServiceInstancePreRegisteredEvent(Object source, ServiceInstance serviceInstance) {
-        super(source, serviceInstance);
+    /**
+     * configure item content.
+     */
+    private String content;
+    /**
+     * version information corresponding to the current configure item.
+     */
+    private Object stat;
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Object getStat() {
+        return stat;
+    }
+
+    public void setStat(Object stat) {
+        this.stat = stat;
+    }
+
+    public ConfigItem(String content, Object stat) {
+        this.content = content;
+        this.stat = stat;
+    }
+
+    public ConfigItem() {
+
     }
 }

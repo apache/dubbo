@@ -18,7 +18,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -26,15 +25,10 @@ import org.apache.dubbo.triple.TripleWrapper;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.ByteBufUtil;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
 import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
@@ -48,29 +42,24 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
-
-    public static final AttributeKey<ServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance("tri_server_stream");
-    public static final AttributeKey<ClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance("tri_client_stream");
+    public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
+            "tri_server_stream");
+    public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
+            "tri_client_stream");
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
-    public static ServerStream getServerStream(ChannelHandlerContext ctx) {
+    public static AbstractServerStream getServerStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.SERVER_STREAM_KEY).get();
     }
 
-    public static void setClientStream(Channel channel, ClientStream clientStream) {
-        channel.attr(TripleUtil.CLIENT_STREAM_KEY).set(clientStream);
-    }
-
-    public static ClientStream getClientStream(ChannelHandlerContext ctx) {
+    public static AbstractClientStream getClientStream(ChannelHandlerContext ctx) {
         return ctx.channel().attr(TripleUtil.CLIENT_STREAM_KEY).get();
     }
 
@@ -89,49 +78,8 @@ public class TripleUtil {
                 .status(OK.codeAsText())
                 .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
                 .setInt(TripleConstant.STATUS_KEY, status.code.code)
-                .set(TripleConstant.MESSAGE_KEY, getErrorMsg(status));
+                .set(TripleConstant.MESSAGE_KEY, status.toMessage());
         ctx.writeAndFlush(new DefaultHttp2HeadersFrame(trailers, true));
-    }
-
-    public static String getErrorMsg(GrpcStatus status) {
-        final String msg;
-        if (status.cause == null) {
-            msg = status.description;
-        } else {
-            String placeHolder = status.description == null ? "" : status.description;
-            msg = StringUtils.toString(placeHolder, status.cause);
-        }
-        return percentEncode(msg);
-    }
-
-    public static String limitSizeTo4KB(String desc) {
-        if (desc.length() < 4096) {
-            return desc;
-        } else {
-            return desc.substring(0, 4086);
-        }
-    }
-
-    public static String percentDecode(CharSequence corpus) {
-        if (corpus == null) {
-            return "";
-        }
-        QueryStringDecoder decoder = new QueryStringDecoder("?=" + corpus);
-        for (Map.Entry<String, List<String>> e : decoder.parameters().entrySet()) {
-            return e.getKey();
-        }
-        return "";
-    }
-
-    public static String percentEncode(String corpus) {
-        if (corpus == null) {
-            return "";
-        }
-        corpus = limitSizeTo4KB(corpus);
-        QueryStringEncoder encoder = new QueryStringEncoder("");
-        encoder.addParam("", corpus);
-        // ?=
-        return encoder.toString().substring(2);
     }
 
     public static void responsePlainTextError(ChannelHandlerContext ctx, int code, GrpcStatus status) {
@@ -145,14 +93,8 @@ public class TripleUtil {
         ctx.write(new DefaultHttp2DataFrame(buf, true));
     }
 
-    public static boolean needWrapper(Class<?>[] parameterTypes) {
-        if (parameterTypes.length != 1) {
-            return true;
-        }
-        return !Message.class.isAssignableFrom(parameterTypes[0]);
-    }
-
-    public static Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap, MultipleSerialization serialization) {
+    public static Object unwrapResp(URL url, TripleWrapper.TripleResponseWrapper wrap,
+                                    MultipleSerialization serialization) {
         String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
         try {
             final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
@@ -164,7 +106,8 @@ public class TripleUtil {
         }
     }
 
-    public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap, MultipleSerialization multipleSerialization) {
+    public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap,
+                                     MultipleSerialization multipleSerialization) {
         String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
         try {
             Object[] arguments = new Object[wrap.getArgsCount()];
@@ -180,7 +123,8 @@ public class TripleUtil {
         }
     }
 
-    public static TripleWrapper.TripleResponseWrapper wrapResp(URL url, String serializeType, Object resp, MethodDescriptor desc,
+    public static TripleWrapper.TripleResponseWrapper wrapResp(URL url, String serializeType, Object resp,
+                                                               MethodDescriptor desc,
                                                                MultipleSerialization multipleSerialization) {
         try {
             final TripleWrapper.TripleResponseWrapper.Builder builder = TripleWrapper.TripleResponseWrapper.newBuilder()
@@ -194,6 +138,46 @@ public class TripleUtil {
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack wrapper req", e);
         }
+    }
+
+    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
+                                                             String type,
+                                                             MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                    .addArgTypes(type)
+                    .setSerializeType(convertHessianToWrapper(serializeType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            multipleSerialization.serialize(url, serializeType, type, req, bos);
+            builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation,
+                                                             MultipleSerialization serialization) {
+        try {
+            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
+            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
+                    .setSerializeType(convertHessianToWrapper(serializationName));
+            for (int i = 0; i < invocation.getArguments().length; i++) {
+                final String clz = invocation.getParameterTypes()[i].getName();
+                builder.addArgTypes(clz);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
+                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
+            }
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public static <T> T unpack(byte[] data, Class<T> clz) {
+        return unpack(new ByteArrayInputStream(data), clz);
     }
 
     public static <T> T unpack(InputStream is, Class<T> clz) {
@@ -218,40 +202,18 @@ public class TripleUtil {
         }
     }
 
-
-    public static ByteBuf pack(ChannelHandlerContext ctx, Object obj) {
+    public static byte[] pack(Object obj) {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            final ByteBuf buf = ctx.alloc().buffer();
-            buf.writeByte(0);
-            buf.writeInt(0);
-            final ByteBufOutputStream bos = new ByteBufOutputStream(buf);
-            final int size = pbSerialization.serialize(obj, bos);
-            buf.setInt(1, size);
-            return buf;
+            pbSerialization.serialize(obj, baos);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to pack req", e);
+            throw new RuntimeException("Failed to pack protobuf object", e);
         }
+        return baos.toByteArray();
     }
 
-    public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, RpcInvocation invocation, MultipleSerialization serialization) {
-        try {
-            String serializationName = (String) invocation.getObjectAttachment(Constants.SERIALIZATION_KEY);
-            final TripleWrapper.TripleRequestWrapper.Builder builder = TripleWrapper.TripleRequestWrapper.newBuilder()
-                    .setSerializeType(convertHessianToWrapper(serializationName));
-            for (int i = 0; i < invocation.getArguments().length; i++) {
-                final String clz = invocation.getParameterTypes()[i].getName();
-                builder.addArgTypes(clz);
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                serialization.serialize(url, serializationName, clz, invocation.getArguments()[i], bos);
-                builder.addArgs(ByteString.copyFrom(bos.toByteArray()));
-            }
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper req", e);
-        }
-    }
-
-    public static String encodeWrapper(URL url, Object obj, String serializeType, MultipleSerialization serialization) throws IOException {
+    public static String encodeWrapper(URL url, Object obj, String serializeType, MultipleSerialization serialization)
+            throws IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         serialization.serialize(url, serializeType, obj.getClass().getName(), obj, bos);
         final TripleWrapper.TripleRequestWrapper wrap = TripleWrapper.TripleRequestWrapper.newBuilder()
@@ -271,7 +233,8 @@ public class TripleUtil {
         return BASE64_ENCODER.encode(in);
     }
 
-    public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization) throws InvalidProtocolBufferException {
+    public static Object decodeObjFromHeader(URL url, CharSequence value, MultipleSerialization serialization)
+            throws InvalidProtocolBufferException {
         final byte[] decode = decodeASCIIByte(value);
         final TripleWrapper.TripleRequestWrapper wrapper = TripleWrapper.TripleRequestWrapper.parseFrom(decode);
         final Object[] objects = TripleUtil.unwrapReq(url, wrapper, serialization);
@@ -295,6 +258,5 @@ public class TripleUtil {
         }
         return serializeType;
     }
-
 
 }
