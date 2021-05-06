@@ -72,7 +72,7 @@ public final class ServiceDefinitionBuilder {
         for (Method method : methods) {
             MethodDefinition md = new MethodDefinition();
             md.setName(method.getName());
-            
+
             Annotation[] methodAnnotations = method.getAnnotations();
             md.setAnnotations(methodAnnotations == null ? new ArrayList<>() : Arrays.asList(methodAnnotations));
 
