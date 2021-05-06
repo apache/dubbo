@@ -31,6 +31,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
     private TestingServer zkServer;
@@ -60,7 +61,7 @@ public class ReferenceConfigTest {
         registry.setAddress(registryUrl);
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
@@ -74,7 +75,7 @@ public class ReferenceConfigTest {
         rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
-        rc.setInjvm(false);
+        rc.setScope(SCOPE_REMOTE);
 
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
