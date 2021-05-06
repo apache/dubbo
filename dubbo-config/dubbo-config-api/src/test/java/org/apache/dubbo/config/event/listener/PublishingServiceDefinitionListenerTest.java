@@ -31,7 +31,7 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ public class PublishingServiceDefinitionListenerTest {
 
         ServiceDefinition serviceDefinitionBuild = ServiceDefinitionBuilder.build(serviceConfig.getInterfaceClass());
 
-        assertEquals(serviceDefinition, new Gson().toJson(serviceDefinitionBuild));
+        assertEquals(serviceDefinition, JSON.toJSONString(serviceDefinitionBuild));
         serviceConfig.unexport();
     }
 }
