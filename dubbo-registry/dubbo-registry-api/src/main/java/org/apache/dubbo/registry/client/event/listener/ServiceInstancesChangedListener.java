@@ -49,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.metadata.MetadataInfo.DEFAULT_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
 
 /**
  * The Service Discovery Changed {@link EventListener Event Listener}
@@ -75,7 +76,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
     public ServiceInstancesChangedListener(Set<String> serviceNames, ServiceDiscovery serviceDiscovery) {
         this.serviceNames = serviceNames;
         this.serviceDiscovery = serviceDiscovery;
-        this.registryId = serviceDiscovery.getUrl().getParameter("id");
+        this.registryId = serviceDiscovery.getUrl().getParameter(ID_KEY);
         this.listeners = new HashMap<>();
         this.allInstances = new HashMap<>();
         this.serviceUrls = new HashMap<>();
