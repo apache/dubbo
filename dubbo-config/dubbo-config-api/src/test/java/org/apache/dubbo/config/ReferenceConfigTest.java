@@ -20,6 +20,7 @@ import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -77,6 +78,9 @@ public class ReferenceConfigTest {
             System.clearProperty("java.net.preferIPv4Stack");
             demoService.unexport();
         }
+
+        // Manually trigger dubbo resource recycling.
+        DubboBootstrap.getInstance().destroy();
     }
 
     /**
