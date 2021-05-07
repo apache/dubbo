@@ -80,9 +80,15 @@ public class ProtocolFilterWrapper implements Protocol {
 
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
+        /**
+         * url对应的protocol为registry或service-discovery-registry
+         */
         if (UrlUtils.isRegistry(url)) {
             return protocol.refer(type, url);
         }
+        /**
+         * AbstractProtocol
+         */
         return buildInvokerChain(protocol.refer(type, url), REFERENCE_FILTER_KEY, CommonConstants.CONSUMER);
     }
 

@@ -283,6 +283,12 @@ public class InstanceAddressURL extends URL {
         return this;
     }
 
+    /**
+     * 修改metadataInfo内部protocolServiceKey对应的services中的consumerParams
+     * @param protocolServiceKey
+     * @param params
+     * @return
+     */
     public URL addConsumerParams(String protocolServiceKey, Map<String, String> params) {
         getMetadataInfo().getServiceInfo(protocolServiceKey).addConsumerParams(params);
         return this;

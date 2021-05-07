@@ -78,6 +78,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
         /**
          * 3.x added for extend URL address
+         * 使用3.x
          */
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
@@ -88,7 +89,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         /**
-         *
+         * 刷新Invoker
          */
         refreshInvoker(instanceUrls);
     }
@@ -100,6 +101,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     private void refreshInvoker(List<URL> invokerUrls) {
         Assert.notNull(invokerUrls, "invokerUrls should not be null, use empty url list to clear address.");
 
+        /**
+         * 为空
+         */
         if (invokerUrls.size() == 0) {
             this.forbidden = true; // Forbid to access
             this.invokers = Collections.emptyList();
@@ -114,6 +118,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             return;
         }
 
+        /**
+         *
+         */
         Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
         if (CollectionUtils.isEmptyMap(newUrlInvokerMap)) {
@@ -142,7 +149,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     /**
      * Turn urls into invokers, and if url has been refer, will not re-reference.
-     *
+     * 将url调整为invokers   当url已经被引用时   不会重新引用
      * @param urls
      * @return invokers
      */
@@ -151,6 +158,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         if (urls == null || urls.isEmpty()) {
             return newUrlInvokerMap;
         }
+
         for (URL url : urls) {
             InstanceAddressURL instanceAddressURL = (InstanceAddressURL) url;
             if (EMPTY_PROTOCOL.equals(instanceAddressURL.getProtocol())) {
@@ -165,9 +173,15 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
 
             // FIXME, some keys may need to be removed.
+            /**
+             * 修改metadataInfo内部protocolServiceKey对应的services中的consumerParams
+             */
             instanceAddressURL.addConsumerParams(getConsumerUrl().getProtocolServiceKey(), queryMap);
 
             Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
+            /**
+             * invoker为空或有变化
+             */
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -177,6 +191,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
                         enabled = instanceAddressURL.getParameter(ENABLED_KEY, true);
                     }
                     if (enabled) {
+                        /**
+                         * 创建instanceAddressURL对应的invoker   消费端
+                         * 创建instanceAddressURL对应的invoker   消费端
+                         * 创建instanceAddressURL对应的invoker   消费端
+                         *
+                         * ProtocolFilterWrapper--
+                         */
                         invoker = protocol.refer(serviceType, instanceAddressURL);
                     }
                 } catch (Throwable t) {
