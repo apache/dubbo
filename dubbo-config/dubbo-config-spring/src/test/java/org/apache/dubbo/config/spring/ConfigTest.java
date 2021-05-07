@@ -993,7 +993,7 @@ public class ConfigTest {
 
     @Test
     public void testDubboProtocolPortOverride() throws Exception {
-        int port = 55555;
+        int port = NetUtils.getAvailablePort();
         System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
         DubboBootstrap bootstrap = null;
