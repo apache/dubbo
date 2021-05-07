@@ -187,6 +187,11 @@ public final class URL implements Serializable {
         int port = 0;
         String path = null;
         Map<String, String> parameters = null;
+        // ignore the url content following '#'
+        int poundIndex = url.indexOf('#');
+        if (poundIndex != -1) {
+            url = url.substring(0, poundIndex);
+        }
         int i = url.indexOf("?"); // seperator between body and parameters 
         if (i >= 0) {
             String[] parts = url.substring(i + 1).split("\\&");
