@@ -83,10 +83,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (isAsync(exporter.getInvoker().getUrl(), getUrl())) {
             ((RpcInvocation) invocation).setInvokeMode(InvokeMode.ASYNC);
             // use consumer executor
-            ExecutorService executor = executorRepository.getExecutor(getUrl());
-            if (executor == null) {
-                executor = executorRepository.createExecutorIfAbsent(getUrl());
-            }
+            ExecutorService executor = executorRepository.createExecutorIfAbsent(getUrl());
             CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
                 Result result = exporter.getInvoker().invoke(invocation);
                 if (result.hasException()) {
