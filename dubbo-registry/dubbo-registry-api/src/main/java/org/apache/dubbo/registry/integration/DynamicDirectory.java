@@ -119,15 +119,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     }
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
-        return URLBuilder.from(url)
-                .setHost(queryMap.get(REGISTER_IP_KEY) == null ? url.getHost() : queryMap.get(REGISTER_IP_KEY))
-                .setPort(0)
-                .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
-                .setPath(queryMap.get(INTERFACE_KEY))
-                .clearParameters()
-                .addParameters(queryMap)
-                .removeParameter(MONITOR_KEY)
-                .build();
+        String host = queryMap.get(REGISTER_IP_KEY) == null ? url.getHost() : queryMap.get(REGISTER_IP_KEY);
+        return consumerUrl.setHost(host).setPort(0);
     }
 
     public void setProtocol(Protocol protocol) {
