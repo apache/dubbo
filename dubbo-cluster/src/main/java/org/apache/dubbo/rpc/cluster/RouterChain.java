@@ -104,6 +104,9 @@ public class RouterChain<T> {
     /**
      * Notify router chain of the initial addresses from registry at the first time.
      * Notify whenever addresses in registry change.
+     *
+     * 在第一时间从注册表通知路由器链初始地址。
+     * 每当注册表中的地址更改时通知
      */
     public void setInvokers(List<Invoker<T>> invokers) {
         this.invokers = (invokers == null ? Collections.emptyList() : invokers);

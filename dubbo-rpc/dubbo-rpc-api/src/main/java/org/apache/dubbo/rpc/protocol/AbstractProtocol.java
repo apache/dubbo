@@ -102,7 +102,7 @@ public abstract class AbstractProtocol implements Protocol {
     @Override
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         /**
-         * DubboProtocol
+         * DubboProtocol   获取客户端实例
          */
         return new AsyncToSyncInvoker<>(protocolBindingRefer(type, url));
     }

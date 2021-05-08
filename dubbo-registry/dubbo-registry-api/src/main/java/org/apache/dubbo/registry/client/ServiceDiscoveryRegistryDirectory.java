@@ -119,7 +119,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         /**
-         *
+         * 创建invokerUrls对应的invoker   消费端
+         * 创建invokerUrls对应的invoker   消费端
+         * 创建invokerUrls对应的invoker   消费端
          */
         Map<String, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
@@ -131,12 +133,25 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         List<Invoker<T>> newInvokers = Collections.unmodifiableList(new ArrayList<>(newUrlInvokerMap.values()));
         // pre-route and build cache, notice that route cache should build on original Invoker list.
         // toMergeMethodInvokerMap() will wrap some invokers having different groups, those wrapped invokers not should be routed.
+        /**
+         * 预路由和构建缓存，注意路由缓存应该构建在原始调用器列表上
+         * toMergeMethodInvokerMap（）将包装一些具有不同组的调用程序，这些包装的调用程序不应被路由
+         *
+         * 在第一时间从注册表通知路由器链初始地址。
+         * 每当注册表中的地址更改时通知
+         */
         routerChain.setInvokers(newInvokers);
         this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
+        /**
+         * 赋值
+         */
         this.urlInvokerMap = newUrlInvokerMap;
 
         if (oldUrlInvokerMap != null) {
             try {
+                /**
+                 * 销毁不需要的invoker
+                 */
                 destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
@@ -196,17 +211,23 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
                          * 创建instanceAddressURL对应的invoker   消费端
                          * 创建instanceAddressURL对应的invoker   消费端
                          *
-                         * ProtocolFilterWrapper--
+                         * ProtocolFilterWrapper--AbstractProtocol--DubboProtocol
                          */
                         invoker = protocol.refer(serviceType, instanceAddressURL);
                     }
                 } catch (Throwable t) {
                     logger.error("Failed to refer invoker for interface:" + serviceType + ",url:(" + instanceAddressURL + ")" + t.getMessage(), t);
                 }
+                /**
+                 * 缓存invoker
+                 */
                 if (invoker != null) { // Put new invoker in cache
                     newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
                 }
             } else {
+                /**
+                 * 缓存invoker
+                 */
                 newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
             }
         }
@@ -263,7 +284,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         List<String> deleted = null;
         if (oldUrlInvokerMap != null) {
             Collection<Invoker<T>> newInvokers = newUrlInvokerMap.values();
+            /**
+             * 遍历oldUrlInvokerMap
+             */
             for (Map.Entry<String, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
+                /**
+                 * 两者不一直
+                 */
                 if (!newInvokers.contains(entry.getValue())) {
                     if (deleted == null) {
                         deleted = new ArrayList<>();
@@ -274,11 +301,20 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
         }
 
         if (deleted != null) {
+            /**
+             * 遍历待删除的key
+             */
             for (String addressKey : deleted) {
                 if (addressKey != null) {
+                    /**
+                     * 在原有缓存中删除addressKey对应的invoker
+                     */
                     Invoker<T> invoker = oldUrlInvokerMap.remove(addressKey);
                     if (invoker != null) {
                         try {
+                            /**
+                             * 销毁
+                             */
                             invoker.destroy();
                             if (logger.isDebugEnabled()) {
                                 logger.debug("destroy invoker[" + invoker.getUrl() + "] success. ");
