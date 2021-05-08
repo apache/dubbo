@@ -28,7 +28,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
