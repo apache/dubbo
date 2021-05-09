@@ -54,7 +54,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private String group;
 
-    private NamingService namingService;
+    private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
 

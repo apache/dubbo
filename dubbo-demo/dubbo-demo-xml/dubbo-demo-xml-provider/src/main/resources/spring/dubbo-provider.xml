@@ -25,9 +25,9 @@
         <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
-    <dubbo:config-center address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:registry id="registry1" address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:config-center address="nacos://127.0.0.1:8848"/>
+    <dubbo:metadata-report address="nacos://127.0.0.1:8848"/>
+    <dubbo:registry id="registry1" address="nacos://127.0.0.1:8848?registry-type=service"/>
 
     <dubbo:protocol name="dubbo" port="-1"/>
     <dubbo:protocol name="rest" port="-1"/>

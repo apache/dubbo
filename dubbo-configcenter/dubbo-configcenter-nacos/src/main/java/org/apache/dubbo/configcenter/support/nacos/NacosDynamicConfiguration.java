@@ -77,7 +77,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     /**
      * The nacos configService
      */
-    private final ConfigService configService;
+    private final NacosConfigServiceWrapper configService;
 
     private HttpAgent httpAgent;
 
@@ -89,11 +89,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     NacosDynamicConfiguration(URL url) {
         this.nacosProperties = buildNacosProperties(url);
         this.configService = buildConfigService(url);
-        this.httpAgent = getHttpAgent(configService);
+        this.httpAgent = getHttpAgent(configService.getConfigService());
         watchListenerMap = new ConcurrentHashMap<>();
     }
 
-    private ConfigService buildConfigService(URL url) {
+    private NacosConfigServiceWrapper buildConfigService(URL url) {
         ConfigService configService = null;
         try {
             configService = NacosFactory.createConfigService(nacosProperties);
@@ -103,7 +103,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             }
             throw new IllegalStateException(e);
         }
-        return configService;
+        return new NacosConfigServiceWrapper(configService);
     }
 
     private HttpAgent getHttpAgent(ConfigService configService) {
@@ -255,7 +255,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         boolean published = false;
         String resolvedGroup = resolveGroup(group);
         try {
-            if (!(null != stat && stat instanceof String)) {
+            if (!(stat instanceof String)) {
                 throw new IllegalArgumentException("nacos publishConfigCas requires stat of string type");
             }
             published = configService.publishConfigCas(key, resolvedGroup, content, (String) stat);

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -99,7 +100,7 @@ public class NacosNamingServiceUtils {
      * @return {@link NamingService}
      * @since 2.7.5
      */
-    public static NamingService createNamingService(URL connectionURL) {
+    public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
         Properties nacosProperties = buildNacosProperties(connectionURL);
         NamingService namingService;
         try {
@@ -110,7 +111,7 @@ public class NacosNamingServiceUtils {
             }
             throw new IllegalStateException(e);
         }
-        return namingService;
+        return new NacosNamingServiceWrapper(namingService);
     }
 
     private static Properties buildNacosProperties(URL url) {
