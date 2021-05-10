@@ -86,7 +86,7 @@ public class FailfastClusterInvokerTest {
             resetInvoker1ToException();
             FailfastClusterInvoker<FailfastClusterInvokerTest> invoker = new FailfastClusterInvoker<FailfastClusterInvokerTest>(dic);
             invoker.invoke(invocation);
-            Assertions.assertSame(invoker1, RpcContext.getContext().getInvoker());
+            Assertions.assertSame(invoker1, RpcContext.getServiceContext().getInvoker());
         });
     }
 

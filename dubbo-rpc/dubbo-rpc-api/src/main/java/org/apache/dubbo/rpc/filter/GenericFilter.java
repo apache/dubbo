@@ -77,7 +77,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                 String generic = inv.getAttachment(GENERIC_KEY);
 
                 if (StringUtils.isBlank(generic)) {
-                    generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
+                    generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
                 }
 
                 if (StringUtils.isEmpty(generic)
@@ -161,7 +161,7 @@ public class GenericFilter implements Filter, Filter.Listener {
 
             String generic = inv.getAttachment(GENERIC_KEY);
             if (StringUtils.isBlank(generic)) {
-                generic = RpcContext.getContext().getAttachment(GENERIC_KEY);
+                generic = RpcContext.getClientAttachment().getAttachment(GENERIC_KEY);
             }
 
             if (appResponse.hasException()) {

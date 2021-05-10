@@ -60,7 +60,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
-        RpcContext.getContext().setRemoteAddress(LOCALHOST_VALUE, 0);
+        RpcContext.getServiceContext().setRemoteAddress(LOCALHOST_VALUE, 0);
         // Solve local exposure, the server opens the token, and the client call fails.
         URL serverURL = exporter.getInvoker().getUrl();
         boolean serverHasToken = serverURL.hasParameter(Constants.TOKEN_KEY);
