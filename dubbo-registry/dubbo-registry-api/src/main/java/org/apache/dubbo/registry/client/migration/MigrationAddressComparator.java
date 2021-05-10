@@ -20,7 +20,10 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import java.util.Map;
+
 @SPI
 public interface MigrationAddressComparator {
     <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule);
+    Map<String, Integer> getAddressSize(String displayServiceKey);
 }

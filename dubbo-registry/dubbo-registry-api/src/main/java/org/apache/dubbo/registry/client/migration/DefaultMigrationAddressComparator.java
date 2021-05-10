@@ -27,31 +27,44 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultMigrationAddressComparator implements MigrationAddressComparator {
     private static final Logger logger = LoggerFactory.getLogger(DefaultMigrationAddressComparator.class);
     private static final String MIGRATION_THRESHOLD = "dubbo.application.migration.threshold";
-    private static final String DEFAULT_THRESHOLD_STRING = "0.8";
-    private static final float DEFAULT_THREAD = 0.8f;
+    private static final String DEFAULT_THRESHOLD_STRING = "1.0";
+    private static final float DEFAULT_THREAD = 1.0f;
+
+    public static final String OLD_ADDRESS_SIZE = "OLD_ADDRESS_SIZE";
+    public static final String NEW_ADDRESS_SIZE = "NEW_ADDRESS_SIZE";
 
     private static final WritableMetadataService localMetadataService = WritableMetadataService.getDefaultExtension();
 
+    private Map<String, Map<String, Integer>> serviceMigrationData = new ConcurrentHashMap<>();
+
     @Override
     public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
+        Map<String, Integer> migrationData = serviceMigrationData.computeIfAbsent(invoker.getUrl().getDisplayServiceKey(), _k -> new ConcurrentHashMap<>());
+
         if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
+            migrationData.put(OLD_ADDRESS_SIZE, getAddressSize(invoker));
+            migrationData.put(NEW_ADDRESS_SIZE, -1);
             logger.info("No instance address available, stop compare.");
             return false;
         }
         if (!invoker.hasProxyInvokers()) {
+            migrationData.put(OLD_ADDRESS_SIZE, -1);
+            migrationData.put(NEW_ADDRESS_SIZE, getAddressSize(serviceDiscoveryInvoker));
             logger.info("No interface address available, stop compare.");
             return true;
         }
 
-        List<Invoker<T>> invokers1 = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
-        List<Invoker<T>> invokers2 = invoker.getDirectory().getAllInvokers();
+        int newAddressSize = getAddressSize(serviceDiscoveryInvoker);
+        int oldAddressSize = getAddressSize(invoker);
 
-        int newAddressSize = CollectionUtils.isNotEmpty(invokers1) ? invokers1.size() : 0;
-        int oldAddressSize = CollectionUtils.isNotEmpty(invokers2) ? invokers2.size() : 0;
+        migrationData.put(OLD_ADDRESS_SIZE, oldAddressSize);
+        migrationData.put(NEW_ADDRESS_SIZE, newAddressSize);
 
         String rawThreshold = null;
         String serviceKey = invoker.getUrl().getDisplayServiceKey();
@@ -82,4 +95,17 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         }
         return false;
     }
+
+    private <T> int getAddressSize(ClusterInvoker<T> invoker) {
+        if (invoker == null) {
+            return -1;
+        }
+        List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
+        return CollectionUtils.isNotEmpty(invokers) ? invokers.size() : 0;
+    }
+
+    public Map<String, Integer> getAddressSize(String displayServiceKey) {
+        return serviceMigrationData.get(displayServiceKey);
+    }
+
 }
