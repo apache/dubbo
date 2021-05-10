@@ -77,8 +77,8 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
-        if (port != null && port < 1) {
-            throw new IllegalArgumentException("The port must be greater than zero!");
+        if (port == null || port < 1) {
+            throw new IllegalArgumentException("The port value is illegal, the value is " + port);
         }
         this.serviceName = serviceName;
         this.host = host;
