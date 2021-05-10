@@ -31,9 +31,8 @@ import com.googlecode.jsonrpc4j.JsonRpcServer;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
-import org.apache.dubbo.shaded.com.fasterxml.jackson.databind.DeserializationFeature;
-import org.apache.dubbo.shaded.com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.dubbo.shaded.org.apache.http.HttpException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.support.RemoteInvocation;
 
