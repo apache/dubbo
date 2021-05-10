@@ -40,6 +40,8 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private static final long serialVersionUID = 1149677083747278100L;
 
+    private String rawAddress;
+
     private String serviceName;
 
     private String host;
@@ -85,6 +87,10 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.port = port;
         this.enabled = true;
         this.healthy = true;
+    }
+
+    public void setRawAddress(String rawAddress) {
+        this.rawAddress = rawAddress;
     }
 
     public DefaultServiceInstance(String serviceName) {
@@ -249,6 +255,10 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public String toString() {
+        return rawAddress == null ? toFullString() : rawAddress;
+    }
+
+    public String toFullString() {
         return "DefaultServiceInstance{" +
                 ", serviceName='" + serviceName + '\'' +
                 ", host='" + host + '\'' +

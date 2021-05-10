@@ -14,18 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.reporter;
+package org.apache.dubbo.common.status.reporter;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import com.google.gson.Gson;
+
+import java.util.HashMap;
 import java.util.Set;
 
 @SPI
 public interface FrameworkStatusReporter {
+    static final Gson gson = new Gson();
     Logger logger = LoggerFactory.getLogger(FrameworkStatusReporter.class);
     String REGISTRATION_STATUS = "registration";
     String ADDRESS_CONSUMPTION_STATUS = "consumption";
@@ -51,5 +56,24 @@ public interface FrameworkStatusReporter {
         } catch (Exception e) {
             logger.info("Report " + type + " status failed because of " + e.getMessage());
         }
+    }
+
+    static String createRegistrationReport(String status) {
+        return "{\"application\":\"" +
+                ApplicationModel.getName() +
+                "\",\"status\":\"" +
+                status +
+                "\"}";
+    }
+
+    static String createConsumptionReport(String interfaceName, String version, String group, String status) {
+        HashMap<String, String> migrationStatus = new HashMap<>();
+        migrationStatus.put("type", "consumption");
+        migrationStatus.put("application", ApplicationModel.getName());
+        migrationStatus.put("service", interfaceName);
+        migrationStatus.put("version", version);
+        migrationStatus.put("group", group);
+        migrationStatus.put("status", status);
+        return gson.toJson(migrationStatus);
     }
 }

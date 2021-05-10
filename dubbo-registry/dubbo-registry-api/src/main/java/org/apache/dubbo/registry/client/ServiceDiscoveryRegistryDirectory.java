@@ -103,7 +103,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     }
 
     /**
-     * This implementation wants to make sure all application names related to serviceListener received  address notification.
+     * This implementation makes sure all application names related to serviceListener received address notification.
      *
      * FIXME, make sure deprecated "interface-application" mapping item be cleared in time.
      */

@@ -40,8 +40,6 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
-    public static String DEFAULT_MAPPING_GROUP = "mapping";
-
     private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
