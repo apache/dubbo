@@ -14,20 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.event;
 
-import java.util.concurrent.ForkJoinPool;
+package org.apache.dubbo.common.constants;
 
 /**
- * Parallel {@link EventDispatcher} implementation uses {@link ForkJoinPool#commonPool() JDK common thread pool}
- *
- * @see ForkJoinPool#commonPool()
- * @since 2.7.5
+ * Common configuration for configCenter, metadata, and registry modules
  */
-public class ParallelEventDispatcher extends AbstractEventDispatcher {
-    public static final String NAME = "parallel";
+public interface ConsulConstants {
 
-    public ParallelEventDispatcher() {
-        super(ForkJoinPool.commonPool());
-    }
+    int DEFAULT_PORT = 8500;
+
+    int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
+
+    String WATCH_TIMEOUT = "consul-watch-timeout";
+
+    int INVALID_PORT = 0;
+
+
 }

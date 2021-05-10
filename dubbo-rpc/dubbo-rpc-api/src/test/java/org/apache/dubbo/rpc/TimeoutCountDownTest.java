@@ -14,20 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.event;
 
-import java.util.concurrent.ForkJoinPool;
+package org.apache.dubbo.rpc;
 
-/**
- * Parallel {@link EventDispatcher} implementation uses {@link ForkJoinPool#commonPool() JDK common thread pool}
- *
- * @see ForkJoinPool#commonPool()
- * @since 2.7.5
- */
-public class ParallelEventDispatcher extends AbstractEventDispatcher {
-    public static final String NAME = "parallel";
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-    public ParallelEventDispatcher() {
-        super(ForkJoinPool.commonPool());
+import java.util.concurrent.TimeUnit;
+
+public class TimeoutCountDownTest {
+
+    @Test
+    public void testTimeoutCountDown() throws InterruptedException {
+        TimeoutCountDown timeoutCountDown = TimeoutCountDown.newCountDown(5, TimeUnit.SECONDS);
+        Assertions.assertEquals(5 * 1000, timeoutCountDown.getTimeoutInMilli());
+        Assertions.assertFalse(timeoutCountDown.isExpired());
+        Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) > 0);
+
+        Thread.sleep(6 * 1000);
+
+        Assertions.assertTrue(timeoutCountDown.isExpired());
+        Assertions.assertTrue(timeoutCountDown.timeRemaining(TimeUnit.SECONDS) <= 0);
     }
 }
