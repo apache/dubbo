@@ -37,8 +37,10 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.AbstractSharedListener;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.client.config.http.HttpAgent;
+import com.alibaba.nacos.common.http.HttpRestResult;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -50,9 +52,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
 import java.util.stream.Stream;
 
+import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
+import static java.util.Collections.emptyMap;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
@@ -280,6 +284,25 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     public SortedSet<String> getConfigKeys(String group) {
         // TODO use Nacos Client API to replace HTTP Open API
         SortedSet<String> keys = new TreeSet<>();
+        try {
+
+            Map<String, String> paramsValues = new HashMap<>();
+            paramsValues.put("search", "accurate");
+            paramsValues.put("dataId", "");
+            paramsValues.put("group", resolveGroup(group));
+            paramsValues.put("pageNo", "1");
+            paramsValues.put("pageSize", String.valueOf(Integer.MAX_VALUE));
+
+            String encoding = getProperty(ENCODE, "UTF-8");
+
+            HttpRestResult<String> result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyMap(), paramsValues, encoding, 5 * 1000);
+            Stream<String> keysStream = toKeysStream(result.getData());
+            keysStream.forEach(keys::add);
+        } catch (Exception e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(e.getMessage(), e);
+            }
+        }
         return keys;
     }
 
