@@ -27,7 +27,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
-import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.DEFAULT_MAPPING_GROUP;
 
 /**
  * The interface for Dubbo service name Mapping
@@ -36,6 +35,7 @@ import static org.apache.dubbo.metadata.DynamicConfigurationServiceNameMapping.D
  */
 @SPI("config")
 public interface ServiceNameMapping {
+    String DEFAULT_MAPPING_GROUP = "mapping";
 
     /**
      * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name

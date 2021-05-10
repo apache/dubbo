@@ -60,30 +60,30 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceInterface() {
-        return RpcContext.getContext().getInterfaceName();
+        return RpcContext.getServiceContext().getInterfaceName();
     }
 
     public String getGroup() {
-        return RpcContext.getContext().getGroup();
+        return RpcContext.getServiceContext().getGroup();
     }
 
     public String getVersion() {
-        return RpcContext.getContext().getVersion();
+        return RpcContext.getServiceContext().getVersion();
     }
 
     @Override
     public String getProtocol() {
-        return RpcContext.getContext().getProtocol();
+        return RpcContext.getServiceContext().getProtocol();
     }
 
     @Override
     public String getProtocolServiceKey() {
-        return RpcContext.getContext().getProtocolServiceKey();
+        return RpcContext.getServiceContext().getProtocolServiceKey();
     }
 
     @Override
     public String getServiceKey() {
-        return RpcContext.getContext().getServiceKey();
+        return RpcContext.getServiceContext().getServiceKey();
     }
 
     @Override
@@ -408,7 +408,7 @@ public class InstanceAddressURL extends URL {
             return instance.toString();
         }
 
-        String protocolServiceKey = RpcContext.getContext().getProtocolServiceKey();
+        String protocolServiceKey = RpcContext.getServiceContext().getProtocolServiceKey();
         if (StringUtils.isNotEmpty(protocolServiceKey)) {
             return instance.toString() + ", " + metadataInfo.getServiceString(protocolServiceKey);
         }

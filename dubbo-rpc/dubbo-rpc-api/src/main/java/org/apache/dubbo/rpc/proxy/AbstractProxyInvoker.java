@@ -98,7 +98,7 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
             });
             return new AsyncRpcResult(appResponseFuture, invocation);
         } catch (InvocationTargetException e) {
-            if (RpcContext.getContext().isAsyncStarted() && !RpcContext.getContext().stopAsync()) {
+            if (RpcContext.getServiceContext().isAsyncStarted() && !RpcContext.getServiceContext().stopAsync()) {
                 logger.error("Provider async started, but got an exception from the original method, cannot write the exception back to consumer because an async result may have returned the new thread.", e);
             }
             return AsyncRpcResult.newDefaultAsyncResult(null, e.getTargetException(), invocation);
@@ -108,8 +108,8 @@ public abstract class AbstractProxyInvoker<T> implements Invoker<T> {
     }
 
 	private CompletableFuture<Object> wrapWithFuture(Object value) {
-        if (RpcContext.getContext().isAsyncStarted()) {
-            return ((AsyncContextImpl)(RpcContext.getContext().getAsyncContext())).getInternalFuture();
+        if (RpcContext.getServiceContext().isAsyncStarted()) {
+            return ((AsyncContextImpl)(RpcContext.getServiceContext().getAsyncContext())).getInternalFuture();
         } else if (value instanceof CompletableFuture) {
             return (CompletableFuture<Object>) value;
         }

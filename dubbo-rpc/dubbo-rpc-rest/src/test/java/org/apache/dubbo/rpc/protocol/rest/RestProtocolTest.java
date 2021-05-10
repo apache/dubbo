@@ -112,7 +112,7 @@ public class RestProtocolTest {
 
         this.registerProvider(exportUrl, server, DemoService.class);
 
-        RpcContext.getContext().setAttachment("timeout", "200");
+        RpcContext.getClientAttachment().setAttachment("timeout", "200");
         Exporter<DemoService> exporter = protocol.export(proxy.getInvoker(server, DemoService.class, exportUrl));
 
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, exportUrl));
@@ -216,11 +216,11 @@ public class RestProtocolTest {
         DemoService demoService = this.proxy.getProxy(protocol.refer(DemoService.class, nettyUrl));
 
         // make sure null and base64 encoded string can work
-        RpcContext.getContext().setAttachment("key1", null);
-        RpcContext.getContext().setAttachment("key2", "value");
-        RpcContext.getContext().setAttachment("key3", "=value");
-        RpcContext.getContext().setAttachment("key4", "YWJjZGVmCg==");
-        RpcContext.getContext().setAttachment("key5", "val=ue");
+        RpcContext.getClientAttachment().setAttachment("key1", null);
+        RpcContext.getClientAttachment().setAttachment("key2", "value");
+        RpcContext.getClientAttachment().setAttachment("key3", "=value");
+        RpcContext.getClientAttachment().setAttachment("key4", "YWJjZGVmCg==");
+        RpcContext.getClientAttachment().setAttachment("key5", "val=ue");
         Integer result = demoService.hello(1, 2);
 
         assertThat(result, is(3));

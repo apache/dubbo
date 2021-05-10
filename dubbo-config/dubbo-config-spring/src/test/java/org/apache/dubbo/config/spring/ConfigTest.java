@@ -535,7 +535,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 3 times"));
                 }
 
-                assertEquals(3, RpcContext.getContext().getUrls().size());
+                assertEquals(3, RpcContext.getServiceContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -566,7 +566,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 1 times"));
                 }
 
-                assertEquals(1, RpcContext.getContext().getUrls().size());
+                assertEquals(1, RpcContext.getServiceContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -993,7 +993,7 @@ public class ConfigTest {
 
     @Test
     public void testDubboProtocolPortOverride() throws Exception {
-        int port = 55555;
+        int port = NetUtils.getAvailablePort();
         System.setProperty("dubbo.protocol.dubbo.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
         DubboBootstrap bootstrap = null;

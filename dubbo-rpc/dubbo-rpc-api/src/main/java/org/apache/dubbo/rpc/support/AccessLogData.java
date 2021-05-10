@@ -61,7 +61,7 @@ public final class AccessLogData {
      * Default constructor.
      */
     private AccessLogData() {
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
         data = new HashMap<>();
         setLocalHost(context.getLocalHost());
         setLocalPort(context.getLocalPort());

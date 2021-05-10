@@ -77,7 +77,7 @@ public class FailoverClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
             Invoker<T> invoker = select(loadbalance, invocation, copyInvokers, invoked);
             invoked.add(invoker);
-            RpcContext.getContext().setInvokers((List) invoked);
+            RpcContext.getServiceContext().setInvokers((List) invoked);
             try {
                 Result result = invokeWithContext(invoker, invocation);
                 if (le != null && logger.isWarnEnabled()) {
