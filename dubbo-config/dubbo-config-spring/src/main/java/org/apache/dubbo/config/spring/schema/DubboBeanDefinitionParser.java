@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
@@ -31,6 +32,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.springframework.beans.PropertyValue;
+import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
@@ -201,7 +203,9 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                                 }
                                 reference = new RuntimeBeanReference(value);
                             }
-                            beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                            if (reference != null) {
+                                beanDefinition.getPropertyValues().addPropertyValue(beanProperty, reference);
+                            }
                         }
                     }
                 }
@@ -239,7 +243,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {
         // process interface class
-        String interfaceClassName = resolveAttribute(element, "interface", parserContext);
+        String interfaceName = resolveAttribute(element, "interface", parserContext);
         String generic = resolveAttribute(element, "generic", parserContext);
         if (StringUtils.isBlank(generic) && consumerDefinition != null) {
             // get generic from consumerConfig
@@ -251,14 +255,27 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
             beanDefinition.getPropertyValues().add("generic", generic);
         }
 
-        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceClassName);
+        Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
+        Class actualInterface = null;
+        try {
+            actualInterface = ClassUtils.forName(interfaceName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        beanDefinition.setAttribute("interfaceClass", interfaceClass);
+        beanDefinition.setAttribute("actualInterface", actualInterface);
+
+        // TODO Only register one reference bean for same (group, interface, version)
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
-        // refer to org.springframework.beans.factory.support.AbstractBeanFactory#getType()
+        // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()
         GenericBeanDefinition targetDefinition = new GenericBeanDefinition();
         targetDefinition.setBeanClass(interfaceClass);
         String id = (String) beanDefinition.getPropertyValues().get("id");
         beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
+
+        // signal object type since Spring 5.2
+        beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
 
         //mark property value as optional
         List<PropertyValue> propertyValues = beanDefinition.getPropertyValues().getPropertyValueList();

@@ -317,6 +317,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
+    }
+
+    @Override
     public void setMetadataServiceURL(URL url) {
         this.metadataServiceURL = url;
     }

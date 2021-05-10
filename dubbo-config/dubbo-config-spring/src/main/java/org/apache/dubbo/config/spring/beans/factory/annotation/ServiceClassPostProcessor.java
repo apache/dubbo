@@ -305,6 +305,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         } else {
 
+            //TODO throw exception
             if (logger.isWarnEnabled()) {
                 logger.warn("The Duplicated BeanDefinition[" + serviceBeanDefinition +
                         "] of ServiceBean[ bean name : " + beanName +

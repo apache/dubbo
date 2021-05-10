@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -26,6 +26,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.spring.ConfigCenterBean;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -48,7 +50,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  */
 public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware, Ordered {
 
-    public static String BEAN_NAME = "dubboBeanFactoryPostProcessor";
+    public static String BEAN_NAME = "dubboConfigInitializationPostProcessor";
 
     /**
      * This bean post processor should run before seata GlobalTransactionScanner(1024)

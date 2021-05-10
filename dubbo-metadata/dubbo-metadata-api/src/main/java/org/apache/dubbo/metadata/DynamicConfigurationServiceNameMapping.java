@@ -17,11 +17,11 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collections;
@@ -39,8 +39,6 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  * The {@link ServiceNameMapping} implementation based on {@link DynamicConfiguration}
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
-
-    public static String DEFAULT_MAPPING_GROUP = "mapping";
 
     private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
 
@@ -133,17 +131,16 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         String newConfigContent = appName;
         do {
-            String oldConfigContent = dynamicConfiguration.getConfig(key, group);
-            String casMd5 = "";
+            ConfigItem configItem = dynamicConfiguration.getConfigItem(key, group);
+            String oldConfigContent = configItem.getContent();
             if (StringUtils.isNotEmpty(oldConfigContent)) {
-                casMd5 = MD5Utils.getMd5(oldConfigContent);
-                boolean contains = StringUtils.isContains(oldConfigContent, appName);
+                boolean contains = StringUtils.isContains(configItem.getContent(), appName);
                 if (contains) {
                     return true;
                 }
-                newConfigContent = oldConfigContent.length() > 0 ? oldConfigContent + COMMA_SEPARATOR + appName : appName;
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
             }
-            result = dynamicConfiguration.publishConfigCas(key, group, newConfigContent, casMd5);
+            result = dynamicConfiguration.publishConfigCas(key, group, newConfigContent, configItem.getStat());
         } while (!result && currentRetryTimes++ <= PUBLISH_CONFIG_RETRY_TIMES);
 
         return result;

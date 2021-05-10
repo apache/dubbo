@@ -22,9 +22,9 @@ import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -99,6 +99,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createRegistrationReport;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
@@ -217,8 +218,9 @@ public class ConfigValidationUtils {
         registryList.forEach(registryURL -> {
             if (provider) {
                 // for registries enabled service discovery, automatically register interface compatible addresses.
+                String registerMode;
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
-                    String registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getString(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getString(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
                     }
@@ -232,7 +234,7 @@ public class ConfigValidationUtils {
                         result.add(interfaceCompatibleRegistryURL);
                     }
                 } else {
-                    String registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getString(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INTERFACE));
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getString(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INTERFACE));
                     if (!isValidRegisterMode(registerMode)) {
                         registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
                     }
@@ -250,21 +252,12 @@ public class ConfigValidationUtils {
                     }
                 }
 
+                FrameworkStatusReporter.reportRegistrationStatus(createRegistrationReport(registerMode));
             } else {
                 result.add(registryURL);
             }
         });
 
-//        application;
-//
-//        result.size() == 2; SERVICE_REGISTRY_PROTOCOL + Registry 双注册
-//        result.size() == 1; SERVICE_REGISTRY_PROTOCOL 应用
-//        result.size() == 1; Registry 接口
-       // group
-//
-//        ip 与 meta 保持一致
-
-        FrameworkStatusReporter.reportRegistrationStatus("{\"type\":\"registration\", \"data\":{\"status\":0}}");
         return result;
     }
 
