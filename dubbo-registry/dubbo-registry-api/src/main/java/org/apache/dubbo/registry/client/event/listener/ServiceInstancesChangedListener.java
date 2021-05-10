@@ -170,7 +170,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         MetadataInfo metadataInfo;
         try {
             if (logger.isDebugEnabled()) {
-                logger.info("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
+                logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
@@ -180,7 +180,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
             if (logger.isDebugEnabled()) {
-                logger.info("Metadata " + metadataInfo.toString());
+                logger.debug("Metadata " + metadataInfo.toString());
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
