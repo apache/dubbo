@@ -141,8 +141,9 @@ public class ExplicitCallbackTest {
                 return "callback2 onChanged ," + msg;
             }
         };
-        {
+
             System.out.println("add callback");
+
             if (callback == null) {
                 System.out.println("callback is null");
             }
@@ -165,8 +166,8 @@ public class ExplicitCallbackTest {
             Assert.assertEquals(1, demoProxy.getCallbackCount());
             demoProxy.unxxx2(callback);
             Assert.assertEquals(0, demoProxy.getCallbackCount());
-        }
-        {
+
+
             demoProxy.xxx2(callback);
             Assert.assertEquals(1, demoProxy.getCallbackCount());
 
@@ -175,7 +176,7 @@ public class ExplicitCallbackTest {
 
             demoProxy.xxx2(callback2);
             Assert.assertEquals(2, demoProxy.getCallbackCount());
-        }
+
         destroyService();
     }
 
