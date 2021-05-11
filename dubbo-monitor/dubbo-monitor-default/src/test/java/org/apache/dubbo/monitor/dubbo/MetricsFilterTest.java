@@ -21,12 +21,14 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.monitor.dubbo.service.DemoService;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import com.alibaba.metrics.FastCompass;
@@ -95,11 +97,13 @@ public class MetricsFilterTest {
         RpcContext.getServiceContext().setRemoteAddress(NetUtils.getLocalHost(), 20880).setLocalAddress(NetUtils.getLocalHost(), 2345);
         URL url = getUrl().addParameter(SIDE_KEY, CONSUMER_SIDE);
         Invoker<DemoService> invoker = invokerFunction.apply(url);
-        AppResponse response = AppResponseBuilder.create()
-            .build();
-        onInvokeReturns(invoker, response);
+        given(invoker.invoke(Mockito.any(Invocation.class))).willAnswer((invocation1)->AsyncRpcResult.newDefaultAsyncResult(1 ,(Invocation) invocation1.getArgument(0)));
+
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> serviceInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(invoker, invoker, metricsFilter);
+
         for (int i = 0; i < 100; i++) {
-            metricsFilter.invoke(invoker, invocation);
+            serviceInvokerNode.invoke(invocation);
         }
         FastCompass dubboClient = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER, MetricLevel.MAJOR));
         FastCompass dubboMethod = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_CONSUMER_METHOD, new HashMap<String, String>(4) {
@@ -126,9 +130,13 @@ public class MetricsFilterTest {
                 .addParameter(TIMEOUT_KEY, 300);
         Invoker<DemoService> invoker = invokerFunction.apply(url);
         onInvokerThrows(invoker);
+
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> serviceInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(invoker, invoker, metricsFilter);
+
         for (int i = 0; i < 10; i++) {
             try {
-                metricsFilter.invoke(invoker, invocation);
+                serviceInvokerNode.invoke(invocation);
             } catch (RpcException e) {
                 //ignore
             }
@@ -157,11 +165,13 @@ public class MetricsFilterTest {
         URL url = getUrl().addParameter(SIDE_KEY, PROVIDER)
                 .addParameter(TIMEOUT_KEY, 300);
         Invoker<DemoService> invoker = invokerFunction.apply(url);
-        AppResponse response = AppResponseBuilder.create()
-                .build();
-        onInvokeReturns(invoker, response);
+        given(invoker.invoke(Mockito.any(Invocation.class))).willAnswer((invocation1)->AsyncRpcResult.newDefaultAsyncResult(1 ,(Invocation) invocation1.getArgument(0)));
+
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> serviceInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(invoker, invoker, metricsFilter);
+
         for (int i = 0; i < 100; i++) {
-            metricsFilter.invoke(invoker, invocation);
+            serviceInvokerNode.invoke(invocation);
         }
         FastCompass dubboClient = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_PROVIDER, MetricLevel.MAJOR));
         FastCompass dubboMethod = metricManager.getFastCompass(DUBBO_GROUP, new MetricName(DUBBO_PROVIDER_METHOD, new HashMap<String, String>(4) {
@@ -187,13 +197,17 @@ public class MetricsFilterTest {
                 .addParameter(TIMEOUT_KEY, 300);
         Invoker<DemoService> serviceInvoker = invokerFunction.apply(url);
         Invoker<DemoService> timeoutInvoker = invokerFunction.apply(url);
-        AppResponse response = AppResponseBuilder.create().build();
-        onInvokeReturns(serviceInvoker, response);
+        given(serviceInvoker.invoke(Mockito.any(Invocation.class))).willAnswer((invocation1)->AsyncRpcResult.newDefaultAsyncResult(1 ,(Invocation) invocation1.getArgument(0)));
         onInvokerThrows(timeoutInvoker);
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> serviceInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(serviceInvoker, serviceInvoker, metricsFilter);
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> timeoutInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(timeoutInvoker, timeoutInvoker, metricsFilter);
+
         for (int i = 0; i < 50; i++) {
             try {
-                metricsFilter.invoke(serviceInvoker, invocation);
-                metricsFilter.invoke(timeoutInvoker, invocation);
+                serviceInvokerNode.invoke(invocation);
+                timeoutInvokerNode.invoke(invocation);
             } catch (RpcException e) {
                 //ignore
             }
@@ -237,19 +251,23 @@ public class MetricsFilterTest {
                 .addParameter(TIMEOUT_KEY, 300);
         Invoker<DemoService> serviceInvoker = invokerFunction.apply(url);
         Invoker<DemoService> timeoutInvoker = invokerFunction.apply(url);
-        AppResponse response = AppResponseBuilder.create().build();
-        onInvokeReturns(serviceInvoker, response);
+        given(serviceInvoker.invoke(Mockito.any(Invocation.class))).willAnswer((invocation)->AsyncRpcResult.newDefaultAsyncResult(1 ,(Invocation) invocation.getArgument(0)));
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> serviceInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(serviceInvoker, serviceInvoker, metricsFilter);
+        FilterChainBuilder.LoopFilterChainNode<DemoService, Invoker<DemoService>, MetricsFilter> timeoutInvokerNode =
+                new FilterChainBuilder.LoopFilterChainNode<>(timeoutInvoker, timeoutInvoker, metricsFilter);
+
         onInvokerThrows(timeoutInvoker);
         for (int i = 0; i < 50; i++) {
-            metricsFilter.invoke(serviceInvoker, sayNameInvocation);
-            metricsFilter.invoke(serviceInvoker, echoInvocation);
+            serviceInvokerNode.invoke(sayNameInvocation);
+            serviceInvokerNode.invoke(echoInvocation);
             try {
-                metricsFilter.invoke(timeoutInvoker, sayNameInvocation);
+                timeoutInvokerNode.invoke(sayNameInvocation);
             } catch (RpcException e) {
                 // ignore
             }
             try {
-                metricsFilter.invoke(timeoutInvoker, echoInvocation);
+                timeoutInvokerNode.invoke(echoInvocation);
             } catch (RpcException e) {
                 // ignore
             }

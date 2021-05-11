@@ -104,21 +104,14 @@ public class MetricsFilter implements Filter, BaseFilter.Request, BaseFilter.Lis
         return null;
     }
 
-
     @Override
-    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
-        Invocation invocation = invocationWrapper.getInvocation();
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
         Object startTime = invocation.getAttributes().get(METRICS_START_TIME);
         if (startTime instanceof Long) {
             long duration = System.currentTimeMillis() - (long) startTime;
             boolean isProvider = invoker.getUrl().getSide(PROVIDER).equalsIgnoreCase(PROVIDER);
             reportMetrics(invoker, invocation, duration, "success", isProvider);
         }
-
-    }
-
-    @Override
-    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
 
     }
 

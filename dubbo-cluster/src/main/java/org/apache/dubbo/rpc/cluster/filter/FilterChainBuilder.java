@@ -182,7 +182,7 @@ public interface FilterChainBuilder {
             InvocationWrapper invocationWrapper = new InvocationWrapper(invocation);
 
             try {
-                while (currentNode < filterChain.size()) {
+                while (currentNode < filterChain.size() - 1) {
                     currentNode++;
                     asyncResult = filterChain.get(currentNode).onBefore(nextNode, invocationWrapper);
                     if (asyncResult != null) {
