@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY_LOWER;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.rpc.Constants.$ECHO;
 import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
@@ -237,7 +238,10 @@ public class RpcUtils {
 
     public static long getTimeout(Invocation invocation, long defaultTimeout) {
         long timeout = defaultTimeout;
-        Object genericTimeout = invocation.getObjectAttachment(TIMEOUT_ATTACHMENT_KEY);
+        Object genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY);
+        if(genericTimeout == null) {
+            genericTimeout = invocation.getObjectAttachmentWithoutConvert(TIMEOUT_ATTACHMENT_KEY_LOWER);
+        }
         if (genericTimeout != null) {
             timeout = convertToNumber(genericTimeout, defaultTimeout);
         }

@@ -18,8 +18,10 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -28,17 +30,27 @@ import org.apache.dubbo.rpc.RpcException;
  * Set the current execution thread class loader to service interface's class loader.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -30000)
-public class ClassLoaderFilter implements Filter {
+public class ClassLoaderFilter implements Filter, BaseFilter.Request {
+
+    private final static String CLASS_LOADER_FILTER_CACHE = "ClassLoaderFilterCache";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         ClassLoader ocl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(invoker.getInterface().getClassLoader());
-        try {
-            return invoker.invoke(invocation);
-        } finally {
-            Thread.currentThread().setContextClassLoader(ocl);
-        }
+        invocation.getAttributes().put(CLASS_LOADER_FILTER_CACHE, ocl);
+
+        return null;
     }
 
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
+        Object ocl = invocation.getAttributes().get(CLASS_LOADER_FILTER_CACHE);
+        if(ocl instanceof ClassLoader) {
+            Thread.currentThread().setContextClassLoader((ClassLoader) ocl);
+        }
+
+    }
 }

@@ -19,8 +19,10 @@ package org.apache.dubbo.validation.filter;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -61,7 +63,7 @@ import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
  * @see org.apache.dubbo.validation.support.AbstractValidation
  */
 @Activate(group = {CONSUMER, PROVIDER}, value = VALIDATION_KEY, order = 10000)
-public class ValidationFilter implements Filter {
+public class ValidationFilter implements Filter, BaseFilter.Request {
 
     private Validation validation;
 
@@ -76,12 +78,13 @@ public class ValidationFilter implements Filter {
     /**
      * Perform the validation of before invoking the actual method based on <b>validation</b> attribute value.
      * @param invoker    service
-     * @param invocation invocation.
+     * @param invocationWrapper
      * @return Method invocation result
      * @throws RpcException Throws RpcException if  validation failed or any other runtime exception occurred.
      */
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         if (validation != null && !invocation.getMethodName().startsWith("$")
                 && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), VALIDATION_KEY))) {
             try {
@@ -98,7 +101,12 @@ public class ValidationFilter implements Filter {
                 return AsyncRpcResult.newDefaultAsyncResult(t, invocation);
             }
         }
-        return invoker.invoke(invocation);
+
+        return null;
     }
 
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
+    }
 }

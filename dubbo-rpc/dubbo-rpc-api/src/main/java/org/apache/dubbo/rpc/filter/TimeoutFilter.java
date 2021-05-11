@@ -21,8 +21,10 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -37,13 +39,18 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
  * Log any invocation timeout, but don't stop server from running
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class TimeoutFilter implements Filter, Filter.Listener {
+public class TimeoutFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
 
     private static final Logger logger = LoggerFactory.getLogger(TimeoutFilter.class);
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     @Override

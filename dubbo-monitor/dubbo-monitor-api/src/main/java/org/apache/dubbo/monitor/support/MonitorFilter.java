@@ -24,8 +24,10 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -49,7 +51,7 @@ import static org.apache.dubbo.rpc.Constants.OUTPUT_KEY;
  * MonitorFilter. (SPI, Singleton, ThreadSafe)
  */
 @Activate(group = {PROVIDER})
-public class MonitorFilter implements Filter, Filter.Listener {
+public class MonitorFilter implements Filter, Filter.Listener, BaseFilter.Request {
 
     private static final Logger logger = LoggerFactory.getLogger(MonitorFilter.class);
     private static final String MONITOR_FILTER_START_TIME = "monitor_filter_start_time";
@@ -73,17 +75,24 @@ public class MonitorFilter implements Filter, Filter.Listener {
      * The invocation interceptor,it will collect the invoke data about this invocation and send it to monitor center
      *
      * @param invoker    service
-     * @param invocation invocation.
+     * @param invocationWrapper
      * @return {@link Result} the invoke result
      * @throws RpcException
      */
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }
-        return invoker.invoke(invocation); // proceed invocation chain
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     // concurrent counter

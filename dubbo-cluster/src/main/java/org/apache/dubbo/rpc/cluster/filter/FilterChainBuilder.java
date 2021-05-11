@@ -21,12 +21,16 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ListenableFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SPI("default")
 public interface FilterChainBuilder {
@@ -42,10 +46,11 @@ public interface FilterChainBuilder {
 
     /**
      * Works on provider side
+     *
      * @param <T>
      * @param <TYPE>
      */
-    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T>{
+    class FilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter> implements Invoker<T> {
         TYPE originalInvoker;
         Invoker<T> nextNode;
         FILTER filter;
@@ -136,14 +141,165 @@ public interface FilterChainBuilder {
         }
     }
 
+    class LoopFilterChainNode<T, TYPE extends Invoker<T>, FILTER extends BaseFilter.Request> implements Invoker<T> {
+        TYPE originalInvoker;
+        Invoker<T> nextNode;
+        List<FILTER> filterChain = new ArrayList<>();
+
+        public LoopFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
+            this.originalInvoker = originalInvoker;
+            this.nextNode = nextNode;
+            this.filterChain.add(filter);
+        }
+
+        public void addFirstFilter(FILTER filter) {
+            this.filterChain.add(0, filter);
+        }
+
+        public TYPE getOriginalInvoker() {
+            return originalInvoker;
+        }
+
+        @Override
+        public Class<T> getInterface() {
+            return originalInvoker.getInterface();
+        }
+
+        @Override
+        public URL getUrl() {
+            return originalInvoker.getUrl();
+        }
+
+        @Override
+        public boolean isAvailable() {
+            return originalInvoker.isAvailable();
+        }
+
+        @Override
+        public Result invoke(Invocation invocation) throws RpcException {
+            int currentNode = -1, resultReturnNode = -1;
+            Result asyncResult = null;
+            InvocationWrapper invocationWrapper = new InvocationWrapper(invocation);
+
+            try {
+                while (currentNode < filterChain.size()) {
+                    currentNode++;
+                    asyncResult = filterChain.get(currentNode).onBefore(nextNode, invocationWrapper);
+                    if (asyncResult != null) {
+                        resultReturnNode = currentNode;
+                        break;
+                    }
+                }
+                if (asyncResult == null) {
+                    asyncResult = nextNode.invoke(invocationWrapper.getInvocation());
+                    resultReturnNode = currentNode;
+                }
+                while (currentNode > -1) {
+                    FILTER node = filterChain.get(currentNode);
+                    asyncResult = node.onAfter(asyncResult, nextNode, invocationWrapper);
+                    node.onFinish(nextNode, invocationWrapper);
+                    currentNode--;
+                }
+            } catch (RuntimeException t) {
+                while (currentNode > -1) {
+                    FILTER node = filterChain.get(currentNode);
+                    try {
+                        node.onFinish(nextNode, invocationWrapper);
+                    } catch (Throwable ignore) {
+
+                    }
+                    try {
+                        if (node instanceof BaseFilter.Listener) {
+                            ((BaseFilter.Listener) node).onError(t, nextNode, invocationWrapper.getInvocation());
+                        }
+                    } catch (RuntimeException throwableFromError) {
+                        t = throwableFromError;
+                    }
+                    currentNode--;
+                }
+                throw t;
+            }
+
+            final int depthNode = resultReturnNode;
+            return asyncResult.whenCompleteWithContext((r, t) -> {
+                int node = depthNode;
+                while (node > -1) {
+                    FILTER filter = filterChain.get(node);
+                    try {
+                        if (filter instanceof ListenableFilter) {
+                            ListenableFilter listenableFilter = ((ListenableFilter) filter);
+                            Filter.Listener listener = listenableFilter.listener(invocation);
+                            try {
+                                if (listener != null) {
+                                    if (t == null) {
+                                        listener.onResponse(r, originalInvoker, invocation);
+                                    } else {
+                                        listener.onError(t, originalInvoker, invocation);
+                                    }
+                                }
+                            } finally {
+                                listenableFilter.removeListener(invocation);
+                            }
+                        } else if (filter instanceof BaseFilter.Listener) {
+                            BaseFilter.Listener listener = (BaseFilter.Listener) filter;
+                            if (t == null) {
+                                listener.onResponse(r, originalInvoker, invocation);
+                            } else {
+                                listener.onError(t, originalInvoker, invocation);
+                            }
+                        }
+                    } catch (Throwable ignore) {
+                    }
+
+                    node--;
+                }
+            });
+        }
+
+        @Override
+        public void destroy() {
+            originalInvoker.destroy();
+        }
+
+        @Override
+        public String toString() {
+            return originalInvoker.toString();
+        }
+    }
+
     /**
      * Works on consumer side
+     *
      * @param <T>
      * @param <TYPE>
      */
     class ClusterFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter>
             extends FilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
         public ClusterFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
+            super(originalInvoker, nextNode, filter);
+        }
+
+
+        @Override
+        public URL getRegistryUrl() {
+            return getOriginalInvoker().getRegistryUrl();
+        }
+
+        @Override
+        public Directory<T> getDirectory() {
+            return getOriginalInvoker().getDirectory();
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return getOriginalInvoker().isDestroyed();
+        }
+    }
+
+
+    class ClusterLoopFilterChainNode<T, TYPE extends ClusterInvoker<T>, FILTER extends BaseFilter.Request>
+            extends LoopFilterChainNode<T, TYPE, FILTER> implements ClusterInvoker<T> {
+        public ClusterLoopFilterChainNode(TYPE originalInvoker, Invoker<T> nextNode, FILTER filter) {
             super(originalInvoker, nextNode, filter);
         }
 

@@ -33,32 +33,32 @@ import org.apache.dubbo.common.extension.SPI;
  *    Caching is implemented in dubbo using filter approach. If cache is configured for invocation then before
  *    remote call configured caching type's (e.g. Thread Local, JCache etc) implementation invoke method gets called.
  * </pre>
- *
+ * <p>
  * Start from 3.0, the semantics of the Filter component at the consumer side has changed.
  * Instead of intercepting a specific instance of invoker, Filter in 3.0 now intercepts ClusterInvoker. A new SPI named
  * InstanceFilter is introduced to work as the same semantic as Filter in 2.x.
- *
+ * <p>
  * The difference of Filter is as follows:
- *
+ * <p>
  * 3.x Filter
- *
- *                                             -> InstanceFilter -> Invoker
- *
+ * <p>
+ * -> InstanceFilter -> Invoker
+ * <p>
  * Proxy -> Filter -> Filter -> ClusterInvoker -> InstanceFilter -> Invoker
- *
- *                                             -> InstanceFilter -> Invoker
- *
- *
+ * <p>
+ * -> InstanceFilter -> Invoker
+ * <p>
+ * <p>
  * 2.x Filter
- *
- *                            Filter -> Filter -> Invoker
- *
+ * <p>
+ * Filter -> Filter -> Invoker
+ * <p>
  * Proxy -> ClusterInvoker -> Filter -> Filter -> Invoker
- *
- *                            Filter -> Filter -> Invoker
- *
+ * <p>
+ * Filter -> Filter -> Invoker
+ * <p>
  * If you want to a Filter
- *
+ * <p>
  * Filter. (SPI, Singleton, ThreadSafe)
  *
  * @see org.apache.dubbo.rpc.filter.GenericFilter

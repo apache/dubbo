@@ -18,8 +18,10 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -42,12 +44,13 @@ import static org.apache.dubbo.rpc.Constants.ACTIVES_KEY;
  * @see Filter
  */
 @Activate(group = CONSUMER, value = ACTIVES_KEY)
-public class ActiveLimitFilter implements Filter, Filter.Listener {
+public class ActiveLimitFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
 
     private static final String ACTIVELIMIT_FILTER_START_TIME = "activelimit_filter_start_time";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
         int max = invoker.getUrl().getMethodParameter(methodName, ACTIVES_KEY, 0);
@@ -78,7 +81,12 @@ public class ActiveLimitFilter implements Filter, Filter.Listener {
 
         invocation.put(ACTIVELIMIT_FILTER_START_TIME, System.currentTimeMillis());
 
-        return invoker.invoke(invocation);
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     @Override

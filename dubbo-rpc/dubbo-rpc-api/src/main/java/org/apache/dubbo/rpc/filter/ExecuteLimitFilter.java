@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -35,12 +37,13 @@ import static org.apache.dubbo.rpc.Constants.EXECUTES_KEY;
  * continue the same behaviour un till it is <10.
  */
 @Activate(group = CommonConstants.PROVIDER, value = EXECUTES_KEY)
-public class ExecuteLimitFilter implements Filter, Filter.Listener {
+public class ExecuteLimitFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
 
     private static final String EXECUTE_LIMIT_FILTER_START_TIME = "execute_limit_filter_start_time";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         URL url = invoker.getUrl();
         String methodName = invocation.getMethodName();
         int max = url.getMethodParameter(methodName, EXECUTES_KEY, 0);
@@ -52,15 +55,13 @@ public class ExecuteLimitFilter implements Filter, Filter.Listener {
         }
 
         invocation.put(EXECUTE_LIMIT_FILTER_START_TIME, System.currentTimeMillis());
-        try {
-            return invoker.invoke(invocation);
-        } catch (Throwable t) {
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            } else {
-                throw new RpcException("unexpected exception when ExecuteLimitFilter", t);
-            }
-        }
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     @Override

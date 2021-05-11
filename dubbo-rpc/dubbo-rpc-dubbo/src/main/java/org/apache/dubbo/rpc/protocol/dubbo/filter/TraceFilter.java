@@ -24,8 +24,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -43,13 +45,15 @@ import java.util.concurrent.atomic.AtomicInteger;
  * TraceFilter
  */
 @Activate(group = CommonConstants.PROVIDER)
-public class TraceFilter implements Filter {
+public class TraceFilter implements Filter , BaseFilter.Request, BaseFilter.Listener{
 
     private static final Logger logger = LoggerFactory.getLogger(TraceFilter.class);
 
     private static final String TRACE_MAX = "trace.max";
 
     private static final String TRACE_COUNT = "trace.count";
+
+    private static final String TRACE_START_TIME = "TraceStartTime";
 
     private static final ConcurrentMap<String, Set<Channel>> TRACERS = new ConcurrentHashMap<>();
 
@@ -72,56 +76,72 @@ public class TraceFilter implements Filter {
     }
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        long start = System.currentTimeMillis();
-        Result result = invoker.invoke(invocation);
-        long end = System.currentTimeMillis();
-        if (TRACERS.size() > 0) {
-            String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
-            Set<Channel> channels = TRACERS.get(key);
-            if (channels == null || channels.isEmpty()) {
-                key = invoker.getInterface().getName();
-                channels = TRACERS.get(key);
-            }
-            if (CollectionUtils.isNotEmpty(channels)) {
-                for (Channel channel : new ArrayList<>(channels)) {
-                    if (channel.isConnected()) {
-                        try {
-                            int max = 1;
-                            Integer m = (Integer) channel.getAttribute(TRACE_MAX);
-                            if (m != null) {
-                                max = m;
-                            }
-                            int count = 0;
-                            AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);
-                            if (c == null) {
-                                c = new AtomicInteger();
-                                channel.setAttribute(TRACE_COUNT, c);
-                            }
-                            count = c.getAndIncrement();
-                            if (count < max) {
-                                String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
-                                channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
-                                        + invoker.getInterface().getName()
-                                        + "." + invocation.getMethodName()
-                                        + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(result.getValue())
-                                        + "\r\nelapsed: " + (end - start) + " ms."
-                                        + "\r\n\r\n" + prompt);
-                            }
-                            if (count >= max - 1) {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        invocationWrapper.getInvocation().getAttributes().put(TRACE_START_TIME, System.currentTimeMillis());
+
+        return null;
+    }
+
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        Object start = invocation.getAttributes().get(TRACE_START_TIME);
+        if(start instanceof Long) {
+            long end = System.currentTimeMillis();
+            if (TRACERS.size() > 0) {
+                String key = invoker.getInterface().getName() + "." + invocation.getMethodName();
+                Set<Channel> channels = TRACERS.get(key);
+                if (channels == null || channels.isEmpty()) {
+                    key = invoker.getInterface().getName();
+                    channels = TRACERS.get(key);
+                }
+                if (CollectionUtils.isNotEmpty(channels)) {
+                    for (Channel channel : new ArrayList<>(channels)) {
+                        if (channel.isConnected()) {
+                            try {
+                                int max = 1;
+                                Integer m = (Integer) channel.getAttribute(TRACE_MAX);
+                                if (m != null) {
+                                    max = m;
+                                }
+                                int count = 0;
+                                AtomicInteger c = (AtomicInteger) channel.getAttribute(TRACE_COUNT);
+                                if (c == null) {
+                                    c = new AtomicInteger();
+                                    channel.setAttribute(TRACE_COUNT, c);
+                                }
+                                count = c.getAndIncrement();
+                                if (count < max) {
+                                    String prompt = channel.getUrl().getParameter(Constants.PROMPT_KEY, Constants.DEFAULT_PROMPT);
+                                    channel.send("\r\n" + RpcContext.getServiceContext().getRemoteAddress() + " -> "
+                                            + invoker.getInterface().getName()
+                                            + "." + invocation.getMethodName()
+                                            + "(" + JSON.toJSONString(invocation.getArguments()) + ")" + " -> " + JSON.toJSONString(appResponse.getValue())
+                                            + "\r\nelapsed: " + (end - (Long) start) + " ms."
+                                            + "\r\n\r\n" + prompt);
+                                }
+                                if (count >= max - 1) {
+                                    channels.remove(channel);
+                                }
+                            } catch (Throwable e) {
                                 channels.remove(channel);
+                                logger.warn(e.getMessage(), e);
                             }
-                        } catch (Throwable e) {
+                        } else {
                             channels.remove(channel);
-                            logger.warn(e.getMessage(), e);
                         }
-                    } else {
-                        channels.remove(channel);
                     }
                 }
             }
         }
-        return result;
     }
 
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
+    }
 }

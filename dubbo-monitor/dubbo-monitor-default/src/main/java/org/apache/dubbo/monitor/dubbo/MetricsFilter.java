@@ -24,8 +24,10 @@ import org.apache.dubbo.common.store.DataStore;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.monitor.MetricsService;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
@@ -67,15 +69,17 @@ import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
 import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
 
-public class MetricsFilter implements Filter {
+public class MetricsFilter implements Filter, BaseFilter.Request, BaseFilter.Listener {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
     private static volatile AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
+    private static final String METRICS_START_TIME = "metricsStartTime";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         if (exported.compareAndSet(false, true)) {
             this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
                     DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
@@ -95,16 +99,37 @@ public class MetricsFilter implements Filter {
             }
         }
 
-        boolean isProvider = invoker.getUrl().getSide(PROVIDER).equalsIgnoreCase(PROVIDER);
-        long start = System.currentTimeMillis();
-        try {
-            Result result = invoker.invoke(invocation); // proceed invocation chain
-            long duration = System.currentTimeMillis() - start;
+        invocation.getAttributes().put(METRICS_START_TIME, System.currentTimeMillis());
+
+        return null;
+    }
+
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
+        Object startTime = invocation.getAttributes().get(METRICS_START_TIME);
+        if (startTime instanceof Long) {
+            long duration = System.currentTimeMillis() - (long) startTime;
+            boolean isProvider = invoker.getUrl().getSide(PROVIDER).equalsIgnoreCase(PROVIDER);
             reportMetrics(invoker, invocation, duration, "success", isProvider);
-            return result;
-        } catch (RpcException e) {
-            long duration = System.currentTimeMillis() - start;
+        }
+
+    }
+
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+        Object startTime = invocation.getAttributes().get(METRICS_START_TIME);
+        if (startTime instanceof Long && t instanceof RpcException) {
+            boolean isProvider = invoker.getUrl().getSide(PROVIDER).equalsIgnoreCase(PROVIDER);
+            long duration = System.currentTimeMillis() - (long) startTime;
             String result = "error";
+            RpcException e = (RpcException) t;
             if (e.isTimeout()) {
                 result = "timeoutError";
             }
@@ -118,7 +143,6 @@ public class MetricsFilter implements Filter {
                 result = "serializationError";
             }
             reportMetrics(invoker, invocation, duration, result, isProvider);
-            throw e;
         }
     }
 
@@ -135,7 +159,7 @@ public class MetricsFilter implements Filter {
         method.append(")");
         Class<?> returnType = RpcUtils.getReturnType(invocation);
         String typeName = null;
-        if(returnType != null) {
+        if (returnType != null) {
             typeName = returnType.getTypeName();
             typeName = typeName.substring(typeName.lastIndexOf(".") + 1);
         }

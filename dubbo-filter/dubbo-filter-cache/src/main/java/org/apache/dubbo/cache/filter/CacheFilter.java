@@ -19,11 +19,14 @@ package org.apache.dubbo.cache.filter;
 import org.apache.dubbo.cache.Cache;
 import org.apache.dubbo.cache.CacheFactory;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -48,10 +51,10 @@ import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
  *        3)&lt;dubbo:provider cache="expiring" /&gt;
  *        4)&lt;dubbo:consumer cache="jcache" /&gt;
  *
- *If cache type is defined in method level then method level type will get precedence. According to above provided
- *example, if service has two method, method1 and method2, method2 will have cache type as <b>threadlocal</b> where others will
- *be backed by <b>lru</b>
- *</pre>
+ * If cache type is defined in method level then method level type will get precedence. According to above provided
+ * example, if service has two method, method1 and method2, method2 will have cache type as <b>threadlocal</b> where others will
+ * be backed by <b>lru</b>
+ * </pre>
  *
  * @see org.apache.dubbo.rpc.Filter
  * @see org.apache.dubbo.cache.support.lru.LruCacheFactory
@@ -62,10 +65,9 @@ import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
  * @see org.apache.dubbo.cache.support.threadlocal.ThreadLocalCache
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCacheFactory
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
- *
  */
 @Activate(group = {CONSUMER, PROVIDER}, value = CACHE_KEY)
-public class CacheFilter implements Filter {
+public class CacheFilter implements Filter, BaseFilter.Request, BaseFilter.Listener {
 
     private CacheFactory cacheFactory;
 
@@ -80,17 +82,21 @@ public class CacheFilter implements Filter {
         this.cacheFactory = cacheFactory;
     }
 
+    private static final InternalThreadLocal<Cache> cacheTransformer = new InternalThreadLocal<>();
+
     /**
      * If cache is configured, dubbo will invoke method on each method call. If cache value is returned by cache store
      * then it will return otherwise call the remote method and return value. If remote method's return value has error
      * then it will not cache the value.
+     *
      * @param invoker    service
-     * @param invocation invocation.
+     * @param invocationWrapper
      * @return Cache returned value if found by the underlying cache store. If cache miss it will call target method.
      * @throws RpcException
      */
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         if (cacheFactory != null && ConfigUtils.isNotEmpty(invoker.getUrl().getMethodParameter(invocation.getMethodName(), CACHE_KEY))) {
             Cache cache = cacheFactory.getCache(invoker.getUrl(), invocation);
             if (cache != null) {
@@ -103,14 +109,34 @@ public class CacheFilter implements Filter {
                         return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
                     }
                 }
-                Result result = invoker.invoke(invocation);
-                if (!result.hasException()) {
-                    cache.put(key, new ValueWrapper(result.getValue()));
-                }
-                return result;
+                cacheTransformer.set(cache);
             }
         }
-        return invoker.invoke(invocation);
+
+        return null;
+    }
+
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        Cache cache = cacheTransformer.get();
+        if (cache != null) {
+            cacheTransformer.remove();
+            if (!appResponse.hasException()) {
+                String key = StringUtils.toArgumentString(invocation.getArguments());
+                cache.put(key, new ValueWrapper(appResponse.getValue()));
+            }
+        }
+
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     /**
@@ -122,7 +148,7 @@ public class CacheFilter implements Filter {
 
         private final Object value;
 
-        public ValueWrapper (Object value) {
+        public ValueWrapper(Object value) {
             this.value = value;
         }
 

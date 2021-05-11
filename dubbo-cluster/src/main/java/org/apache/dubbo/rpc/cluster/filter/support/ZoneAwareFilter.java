@@ -20,7 +20,9 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -37,10 +39,11 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_ZONE_
  * active only when url has key 'cluster=zone-aware'
  */
 @Activate(group = CommonConstants.CONSUMER, value = "cluster:zone-aware")
-public class ZoneAwareFilter implements ClusterFilter {
+public class ZoneAwareFilter implements ClusterFilter, BaseFilter.Request {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         RpcContext rpcContext = RpcContext.getClientAttachment();
         String zone = (String) rpcContext.getAttachment(REGISTRY_ZONE);
         String force = (String) rpcContext.getAttachment(REGISTRY_ZONE_FORCE);
@@ -58,6 +61,11 @@ public class ZoneAwareFilter implements ClusterFilter {
             invocation.setAttachment(REGISTRY_ZONE_FORCE, force);
         }
 
-        return invoker.invoke(invocation);
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 }

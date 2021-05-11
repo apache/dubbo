@@ -20,8 +20,10 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CompatibleTypeUtils;
 import org.apache.dubbo.common.utils.PojoUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -45,13 +47,18 @@ import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
  * @see Filter
  *
  */
-public class CompatibleFilter implements Filter, Filter.Listener {
+public class CompatibleFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
 
     private static Logger logger = LoggerFactory.getLogger(CompatibleFilter.class);
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        return invoker.invoke(invocation);
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     @Override

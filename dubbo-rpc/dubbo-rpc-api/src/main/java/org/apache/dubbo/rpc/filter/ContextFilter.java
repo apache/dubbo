@@ -18,8 +18,10 @@ package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -29,7 +31,7 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -56,14 +58,14 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * @see RpcContext
  */
 @Activate(group = PROVIDER, order = -10000)
-public class ContextFilter implements Filter, Filter.Listener {
+public class ContextFilter implements Filter, Filter.Listener, BaseFilter.Request {
 
     private static final String TAG_KEY = "dubbo.tag";
 
     private static final Set<String> UNLOADING_KEYS;
 
     static {
-        UNLOADING_KEYS = new HashSet<>(128);
+        UNLOADING_KEYS = new LinkedHashSet<>(128);
         UNLOADING_KEYS.add(PATH_KEY);
         UNLOADING_KEYS.add(INTERFACE_KEY);
         UNLOADING_KEYS.add(GROUP_KEY);
@@ -80,15 +82,14 @@ public class ContextFilter implements Filter, Filter.Listener {
     }
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         Map<String, Object> attachments = invocation.getObjectAttachments();
         if (attachments != null) {
-            Map<String, Object> newAttach = new HashMap<>(attachments.size());
-            for (Map.Entry<String, Object> entry : attachments.entrySet()) {
-                String key = entry.getKey();
-                if (!UNLOADING_KEYS.contains(key)) {
-                    newAttach.put(key, entry.getValue());
-                }
+            Map<String, Object> newAttach = new HashMap<>((int) (attachments.size() / 0.75) + 1);
+            newAttach.putAll(attachments);
+            for (String unloadingKey : UNLOADING_KEYS) {
+                newAttach.remove(unloadingKey);
             }
             attachments = newAttach;
         }
@@ -113,31 +114,34 @@ public class ContextFilter implements Filter, Filter.Listener {
             RpcContext.getClientAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
-        // merged from dubbox
-        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
-        if (attachments != null) {
-            if (context.getObjectAttachments() != null) {
-                context.getObjectAttachments().putAll(attachments);
-            } else {
-                context.setObjectAttachments(attachments);
-            }
-        }
+//        // merged from dubbox
+//        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+//        if (attachments != null) {
+//            if (context.getObjectAttachments() != null) {
+//                context.getObjectAttachments().putAll(attachments);
+//            } else {
+//                context.setObjectAttachments(attachments);
+//            }
+//        }
 
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        try {
-            context.clearAfterEachInvoke(false);
-            return invoker.invoke(invocation);
-        } finally {
-            context.clearAfterEachInvoke(true);
-            RpcContext.removeServerAttachment();
-            RpcContext.removeServiceContext();
-            // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
-            RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
-            RpcContext.removeServerContext();
-        }
+        context.clearAfterEachInvoke(false);
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        RpcContext.getServerAttachment().clearAfterEachInvoke(true);
+        RpcContext.removeServerAttachment();
+        RpcContext.removeServiceContext();
+        // IMPORTANT! For async scenario, we must remove context from current thread, so we always create a new RpcContext for the next invoke for the same thread.
+        RpcContext.getClientAttachment().removeAttachment(TIME_COUNTDOWN_KEY);
+        RpcContext.removeServerContext();
+
     }
 
     @Override

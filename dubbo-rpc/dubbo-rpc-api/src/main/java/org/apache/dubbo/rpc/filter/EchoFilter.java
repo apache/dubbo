@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -31,14 +33,20 @@ import static org.apache.dubbo.rpc.Constants.$ECHO;
  * Dubbo provided default Echo echo service, which is available for all dubbo provider service interface.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -110000)
-public class EchoFilter implements Filter {
+public class EchoFilter implements Filter, BaseFilter.Request {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation inv = invocationWrapper.getInvocation();
         if (inv.getMethodName().equals($ECHO) && inv.getArguments() != null && inv.getArguments().length == 1) {
             return AsyncRpcResult.newDefaultAsyncResult(inv.getArguments()[0], inv);
         }
-        return invoker.invoke(inv);
+
+        return null;
     }
 
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
+    }
 }

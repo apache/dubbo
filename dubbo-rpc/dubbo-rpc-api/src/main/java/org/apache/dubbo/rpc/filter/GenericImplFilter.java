@@ -25,9 +25,11 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -50,7 +52,8 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericImplInvokerFilter
  */
 @Activate(group = CommonConstants.CONSUMER, value = GENERIC_KEY, order = 20000)
-public class GenericImplFilter implements Filter, Filter.Listener {
+public class GenericImplFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
+    private final static String OLD_GENERIC_IMPL_INVOCATION = "OldGenericImplInvocation";
 
     private static final Logger logger = LoggerFactory.getLogger(GenericImplFilter.class);
 
@@ -59,7 +62,8 @@ public class GenericImplFilter implements Filter, Filter.Listener {
     private static final String GENERIC_IMPL_MARKER = "GENERIC_IMPL";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         String generic = invoker.getUrl().getParameter(GENERIC_KEY);
         // calling a generic impl service
         if (isCallingGenericImpl(generic, invocation)) {
@@ -98,7 +102,9 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             invocation2.setParameterTypes(GENERIC_PARAMETER_TYPES);
             invocation2.setParameterTypesDesc(GENERIC_PARAMETER_DESC);
             invocation2.setArguments(new Object[]{methodName, types, args});
-            return invoker.invoke(invocation2);
+
+            invocation2.getAttributes().put(OLD_GENERIC_IMPL_INVOCATION, invocation);
+            invocationWrapper.setInvocation(invocation2);
         }
         // making a generic call to a normal service
         else if (isMakingGenericCall(generic, invocation)) {
@@ -122,7 +128,17 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             invocation.setAttachment(
                     GENERIC_KEY, invoker.getUrl().getParameter(GENERIC_KEY));
         }
-        return invoker.invoke(invocation);
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
+        Object oldInvocation = invocation.getAttributes().get(OLD_GENERIC_IMPL_INVOCATION);
+        if (oldInvocation instanceof Invocation) {
+            invocationWrapper.setInvocation((Invocation) oldInvocation);
+        }
     }
 
     private void error(String generic, String expected, String actual) throws RpcException {

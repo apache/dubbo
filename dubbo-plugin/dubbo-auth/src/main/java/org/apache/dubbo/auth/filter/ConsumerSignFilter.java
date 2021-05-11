@@ -22,8 +22,10 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -34,10 +36,11 @@ import org.apache.dubbo.rpc.RpcException;
  * @see org.apache.dubbo.rpc.Filter
  */
 @Activate(group = CommonConstants.CONSUMER, value = Constants.SERVICE_AUTH, order = -10000)
-public class ConsumerSignFilter implements Filter {
+public class ConsumerSignFilter implements Filter, BaseFilter.Request {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
@@ -45,6 +48,11 @@ public class ConsumerSignFilter implements Filter {
                     .getExtension(url.getParameter(Constants.AUTHENTICATOR, Constants.DEFAULT_AUTHENTICATOR));
             authenticator.sign(invocation, url);
         }
-        return invoker.invoke(invocation);
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 }

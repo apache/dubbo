@@ -28,8 +28,10 @@ import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -53,10 +55,12 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * GenericInvokerFilter.
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
-public class GenericFilter implements Filter, Filter.Listener {
+public class GenericFilter implements Filter, BaseFilter.Listener, BaseFilter.Request {
+    private final static String OLD_GENERIC_INVOCATION = "OldGenericInvocation";
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation inv = invocationWrapper.getInvocation();
         if ((inv.getMethodName().equals($INVOKE) || inv.getMethodName().equals($INVOKE_ASYNC))
                 && inv.getArguments() != null
                 && inv.getArguments().length == 3
@@ -143,13 +147,24 @@ public class GenericFilter implements Filter, Filter.Listener {
                 RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args, inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
-
-                return invoker.invoke(rpcInvocation);
+                rpcInvocation.getAttributes().put(OLD_GENERIC_INVOCATION, inv);
+                invocationWrapper.setInvocation(rpcInvocation);
             } catch (NoSuchMethodException | ClassNotFoundException e) {
                 throw new RpcException(e.getMessage(), e);
             }
         }
-        return invoker.invoke(inv);
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
+        Object oldInvocation = invocation.getAttributes().get(OLD_GENERIC_INVOCATION);
+        if (oldInvocation instanceof Invocation) {
+            invocationWrapper.setInvocation((Invocation) oldInvocation);
+        }
+
     }
 
     @Override
@@ -200,7 +215,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                             GENERIC_SERIALIZATION_PROTOBUF +
                             "] serialize result failed.", e);
                 }
-            } else if(ProtocolUtils.isGenericReturnRawResult(generic)) {
+            } else if (ProtocolUtils.isGenericReturnRawResult(generic)) {
                 return;
             } else {
                 appResponse.setValue(PojoUtils.generalize(appResponse.getValue()));

@@ -23,17 +23,20 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.AsyncRpcResult;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 
 @Activate(group = CommonConstants.PROVIDER, order = -10000)
-public class ProviderAuthFilter implements Filter {
+public class ProviderAuthFilter implements Filter, BaseFilter.Request {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation invocation = invocationWrapper.getInvocation();
         URL url = invoker.getUrl();
         boolean shouldAuth = url.getParameter(Constants.SERVICE_AUTH, false);
         if (shouldAuth) {
@@ -45,8 +48,12 @@ public class ProviderAuthFilter implements Filter {
                 return AsyncRpcResult.newDefaultAsyncResult(e, invocation);
             }
         }
-        return invoker.invoke(invocation);
+
+        return null;
     }
 
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
 
+    }
 }

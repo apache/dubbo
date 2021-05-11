@@ -42,7 +42,7 @@ public class BaseServiceMetadata {
         if (version != null && version.length() > 0) {
             buf.append(":").append(version);
         }
-        return buf.toString();
+        return buf.toString().intern();
     }
 
     public static String versionFromServiceKey(String serviceKey) {

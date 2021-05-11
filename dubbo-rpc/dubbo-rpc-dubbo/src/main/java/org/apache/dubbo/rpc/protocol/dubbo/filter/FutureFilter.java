@@ -20,7 +20,9 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -39,16 +41,20 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.ASYNC_METHOD_INFO;
  * EventFilter
  */
 @Activate(group = CommonConstants.CONSUMER)
-public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
+public class FutureFilter implements ClusterFilter, BaseFilter.Listener, BaseFilter.Request {
 
     protected static final Logger logger = LoggerFactory.getLogger(FutureFilter.class);
 
     @Override
-    public Result invoke(final Invoker<?> invoker, final Invocation invocation) throws RpcException {
-        fireInvokeCallback(invoker, invocation);
-        // need to configure if there's return value before the invocation in order to help invoker to judge if it's
-        // necessary to return future.
-        return invoker.invoke(invocation);
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        fireInvokeCallback(invoker, invocationWrapper.getInvocation());
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     @Override

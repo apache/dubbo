@@ -20,7 +20,34 @@ public interface BaseFilter {
     /**
      * Make sure call invoker.invoke() in your implementation.
      */
-    Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
+    default Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        if (this instanceof BaseFilter.Request) {
+            InvocationWrapper invocationWrapper = new InvocationWrapper(invocation);
+            try {
+                Result result = ((Request) this).onBefore(invoker, invocationWrapper);
+                if (result == null) {
+                    result = invoker.invoke(invocationWrapper.getInvocation());
+                }
+                result = ((Request) this).onAfter(result, invoker, invocationWrapper);
+                return result;
+            } finally {
+                ((Request) this).onFinish(invoker, invocationWrapper);
+            }
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    interface Request {
+        Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException;
+
+        default Result onAfter(Result appResponse, Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+            return appResponse;
+        }
+
+        default void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
+        }
+    }
 
     interface Listener {
 

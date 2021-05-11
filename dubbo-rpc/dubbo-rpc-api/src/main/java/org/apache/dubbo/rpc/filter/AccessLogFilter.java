@@ -22,8 +22,10 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
@@ -61,7 +63,7 @@ import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
  * </pre></code>
  */
 @Activate(group = PROVIDER, value = ACCESS_LOG_KEY)
-public class AccessLogFilter implements Filter {
+public class AccessLogFilter implements Filter, BaseFilter.Request {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessLogFilter.class);
 
@@ -91,13 +93,15 @@ public class AccessLogFilter implements Filter {
     /**
      * This method logs the access log for service method invocation call.
      *
-     * @param invoker service
      * @param inv     Invocation service method.
+     * @param invoker service
+     * @param invocationWrapper
      * @return Result from service method.
      * @throws RpcException
      */
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation inv = invocationWrapper.getInvocation();
         try {
             String accessLogKey = invoker.getUrl().getParameter(ACCESS_LOG_KEY);
             if (ConfigUtils.isNotEmpty(accessLogKey)) {
@@ -107,7 +111,13 @@ public class AccessLogFilter implements Filter {
         } catch (Throwable t) {
             logger.warn("Exception in AccessLogFilter of service(" + invoker + " -> " + inv + ")", t);
         }
-        return invoker.invoke(inv);
+
+        return null;
+    }
+
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
     }
 
     private void log(String accessLog, AccessLogData accessLogData) {

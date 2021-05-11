@@ -19,8 +19,10 @@ package org.apache.dubbo.rpc.filter;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvocationWrapper;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
@@ -37,11 +39,11 @@ import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
  * @see Filter
  */
 @Activate(group = CommonConstants.PROVIDER, value = TOKEN_KEY)
-public class TokenFilter implements Filter {
+public class TokenFilter implements Filter, BaseFilter.Request {
 
     @Override
-    public Result invoke(Invoker<?> invoker, Invocation inv)
-            throws RpcException {
+    public Result onBefore(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+        Invocation inv = invocationWrapper.getInvocation();
         String token = invoker.getUrl().getParameter(TOKEN_KEY);
         if (ConfigUtils.isNotEmpty(token)) {
             Class<?> serviceType = invoker.getInterface();
@@ -51,7 +53,12 @@ public class TokenFilter implements Filter {
                 throw new RpcException("Invalid token! Forbid invoke remote service " + serviceType + " method " + inv.getMethodName() + "() from consumer " + RpcContext.getServiceContext().getRemoteHost() + " to provider " + RpcContext.getServiceContext().getLocalHost());
             }
         }
-        return invoker.invoke(inv);
+
+        return null;
     }
 
+    @Override
+    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
+
+    }
 }
