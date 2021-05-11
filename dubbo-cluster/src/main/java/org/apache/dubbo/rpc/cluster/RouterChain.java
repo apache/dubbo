@@ -184,7 +184,6 @@ public class RouterChain<T> {
             }
         }
 
-        // FIXME 看一下高版本的RoaringBitMap，是否有内置函数支持更高效的遍历
         List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
         Iterator<Invoker<T>> iter = finalBitListInvokers.iterator();
         while (iter.hasNext()) {
@@ -213,35 +212,23 @@ public class RouterChain<T> {
             return;
         }
         AddrCache origin = cache.get();
-        List copyInvokers = new ArrayList<>(this.invokers);
+        List<Invoker<T>> copyInvokers = new ArrayList<Invoker<T>>(this.invokers);
         CountDownLatch cdl = new CountDownLatch(stateRouters.size());
         AddrCache newCache = new AddrCache();
         newCache.setInvokers((List)invokers);
         final AtomicBoolean poolSuccess = new AtomicBoolean(true);
-        for (StateRouter stateRouter : (List<StateRouter>)stateRouters) {
-            if (stateRouter.isEnable()) {
-                executorRepository.getPoolRouterExecutor().execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        RouterCache routerCache = null;
-                        try {
-                            routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
-                            //file cache
-                            newCache.getCache().put(stateRouter.getName(), routerCache);
-                        } catch (Throwable t) {
-                            poolSuccess.set(false);
-                            logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
-                        } finally {
-                            cdl.countDown();
-                        }
-                    }
-                });
+        for (StateRouter stateRouter : stateRouters) {
+            RouterCache routerCache;
+            try {
+                routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
+                //file cache
+                newCache.getCache().put(stateRouter.getName(), routerCache);
+            } catch (Throwable t) {
+                poolSuccess.set(false);
+                logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
+            } finally {
+                cdl.countDown();
             }
-        }
-        try {
-            cdl.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
 
         if (poolSuccess.get()) {
@@ -271,28 +258,30 @@ public class RouterChain<T> {
     }
 
     public void loop(boolean notify) {
-        // 1、多个服务并行执行 buildCache
-        // 2、notify true/false
         if (notify) {
             if (loopPermitNotify.tryAcquire()) {
-                LOOP_THREAD_POOL.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        loopPermitNotify.release();
-                        buildCache(true);
-                    }
-                });
+                LOOP_THREAD_POOL.submit(new NotifyLoopRunnable(true));
             }
         } else {
             if (loopPermit.tryAcquire()) {
-                LOOP_THREAD_POOL.submit(new Runnable() {
-                    @Override
-                    public void run() {
-                        loopPermit.release();
-                        buildCache(false);
-                    }
-                });
+                LOOP_THREAD_POOL.submit(new NotifyLoopRunnable(false));
             }
         }
     }
+
+    class NotifyLoopRunnable implements Runnable {
+
+        private final boolean notify;
+
+        public NotifyLoopRunnable(boolean notify) {
+            this.notify = notify;
+        }
+
+        @Override
+        public void run() {
+            loopPermitNotify.release();
+            buildCache(notify);
+        }
+    }
+
 }
