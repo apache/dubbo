@@ -107,6 +107,7 @@ public class ExplicitCallbackTest {
         final AtomicInteger count = new AtomicInteger(0);
 
         demoProxy.xxx(new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("Recived callback: " + msg);
                 count.incrementAndGet();
@@ -126,6 +127,7 @@ public class ExplicitCallbackTest {
         initOrResetUrl(2, 1000);
         initOrResetService();
         IDemoCallback callback = new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("callback1:" + msg);
                 return "callback1 onChanged ," + msg;
@@ -133,6 +135,7 @@ public class ExplicitCallbackTest {
         };
 
         IDemoCallback callback2 = new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("callback2:" + msg);
                 return "callback2 onChanged ," + msg;
@@ -181,6 +184,7 @@ public class ExplicitCallbackTest {
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
         demoProxy.xxx(new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("Recived callback: " + msg);
                 count.incrementAndGet();
@@ -189,6 +193,7 @@ public class ExplicitCallbackTest {
         }, "other custom args", 10, 100);
 
         demoProxy.xxx(new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("Recived callback: " + msg);
                 count.incrementAndGet();
@@ -207,6 +212,7 @@ public class ExplicitCallbackTest {
         initOrResetService();
         final AtomicInteger count = new AtomicInteger(0);
         demoProxy.xxx(new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("Recived callback: " + msg);
                 count.incrementAndGet();
@@ -215,6 +221,7 @@ public class ExplicitCallbackTest {
         }, "other custom args", 10, 100);
 
         demoProxy.xxx(new IDemoCallback() {
+            @Override
             public String yyy(String msg) {
                 System.out.println("Recived callback: " + msg);
                 count.incrementAndGet();
@@ -327,6 +334,7 @@ public class ExplicitCallbackTest {
                                     List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
                                     for (IDemoCallback callback : callbacksCopy) {
                                         try {
+                                            System.out.println("callback toString: " + callback.toString());
                                             callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
                                         } catch (Exception e) {
                                             e.printStackTrace();
