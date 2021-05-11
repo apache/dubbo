@@ -338,6 +338,7 @@ public class ExplicitCallbackTest {
                                             callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
                                         } catch (Exception e) {
                                             e.printStackTrace();
+                                            System.out.println("remote callback: " + callback.toString());
                                             callbacks.remove(callback);
                                         }
                                     }
@@ -357,10 +358,17 @@ public class ExplicitCallbackTest {
         }
 
         public void unxxx2(IDemoCallback callback) {
-            if (!callbacks.contains(callback)) {
-                throw new IllegalStateException("callback instance not found");
+            try {
+                lock.lock();
+                if (!callbacks.contains(callback)) {
+                    throw new IllegalStateException("callback instance not found");
+                }
+                System.out.println("remove callback: " + callback.toString());
+                callbacks.remove(callback);
+            } finally {
+                lock.unlock();
             }
-            callbacks.remove(callback);
+
         }
     }
 }
