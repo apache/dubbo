@@ -28,7 +28,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
@@ -77,8 +77,11 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
 
     @Override
     public synchronized void notify(List<URL> instanceUrls) {
+        if (isDestroyed()) {
+            return;
+        }
         // Set the context of the address notification thread.
-        RpcContext.setRpcContext(getConsumerUrl());
+        RpcServiceContext.setRpcContext(getConsumerUrl());
 
         /**
          * 3.x added for extend URL address
@@ -100,13 +103,13 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     }
 
     /**
-     * This implementation wants to make sure all application names related to serviceListener received  address notification.
+     * This implementation makes sure all application names related to serviceListener received address notification.
      *
      * FIXME, make sure deprecated "interface-application" mapping item be cleared in time.
      */
     @Override
     public boolean isNotificationReceived() {
-        return serviceListener.isDestroyed()
+        return serviceListener == null || serviceListener.isDestroyed()
                 || serviceListener.getAllInstances().size() == serviceListener.getServiceNames().size();
     }
 
@@ -237,7 +240,9 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             }
             localUrlInvokerMap.clear();
         }
-        invokers = null;
+
+        this.urlInvokerMap = null;
+        this.invokers = null;
     }
 
     /**

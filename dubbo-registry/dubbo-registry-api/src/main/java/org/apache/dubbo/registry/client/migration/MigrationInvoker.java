@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
@@ -37,7 +38,10 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
+import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createConsumptionReport;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
@@ -55,6 +59,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private volatile ClusterInvoker<T> currentAvailableInvoker;
     private volatile MigrationStep step;
     private volatile MigrationRule rule;
+    private volatile boolean migrated;
+
+    private static final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 
     public MigrationInvoker(RegistryProtocol registryProtocol,
                             Cluster cluster,
@@ -81,6 +88,11 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
+
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
+        if (consumerModel != null) {
+            consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", this);
+        }
     }
 
     public ClusterInvoker<T> getInvoker() {
@@ -133,9 +145,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     @Override
     public void fallbackToInterfaceInvoker() {
+        migrated = false;
         refreshInterfaceInvoker();
         setListener(invoker, () -> {
-            this.destroyServiceDiscoveryInvoker(this.serviceDiscoveryInvoker, true);
+            if (!migrated) {
+                migrated = true;
+                this.destroyServiceDiscoveryInvoker();
+                FrameworkStatusReporter.reportConsumptionStatus(
+                        createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
+                );
+            }
         });
     }
 
@@ -145,6 +164,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             fallbackToInterfaceInvoker();
             return;
         }
+
+        migrated = false;
         if (!forceMigrate) {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
@@ -157,7 +178,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         } else {
             refreshServiceDiscoveryInvoker();
             setListener(serviceDiscoveryInvoker, () -> {
-                this.destroyInterfaceInvoker(this.invoker, true);
+                if (!migrated) {
+                    migrated = true;
+                    this.destroyInterfaceInvoker();
+                    FrameworkStatusReporter.reportConsumptionStatus(
+                            createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
+                    );
+                }
             });
         }
     }
@@ -175,7 +202,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     public void refreshServiceDiscoveryInvokerOnMappingCallback(boolean forceMigrate) {
         if (this.serviceDiscoveryInvoker != null) {
             DynamicDirectory dynamicDirectory = (DynamicDirectory) this.serviceDiscoveryInvoker.getDirectory();
-            dynamicDirectory.subscribe(dynamicDirectory.getOriginalConsumerUrl());
+            dynamicDirectory.subscribe(dynamicDirectory.getSubscribeUrl());
         } else {
             migrateToServiceDiscoveryInvoker(forceMigrate);
         }
@@ -221,6 +248,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
+        }
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
+        if (consumerModel != null) {
+            consumerModel.getServiceMetadata().getAttributeMap().remove("currentClusterInvoker");
         }
     }
 
@@ -305,29 +336,53 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
      */
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged = true;
+        if (migrated) {
+            return;
+        }
+        if (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed()) {
+            currentAvailableInvoker = invoker;
+            return;
+        } else if (invoker == null || invoker.isDestroyed()) {
+            currentAvailableInvoker = serviceDiscoveryInvoker;
+            return;
+        }
+
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
             logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            destroyInterfaceInvoker(invoker, false);
+            scheduler.submit(() -> {
+                if (invoker.getDirectory().isNotificationReceived()) {
+                    destroyInterfaceInvoker();
+                    migrated = true;
+                    FrameworkStatusReporter.reportConsumptionStatus(
+                            createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_app")
+                    );
+                }
+            });
         } else {
-            logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to Service Level address");
-            destroyServiceDiscoveryInvoker(serviceDiscoveryInvoker, false);
+            logger.info("serviceKey:" + serviceDiscoveryInvoker.getUrl().getServiceKey() + " switch to Service Level address");
+            scheduler.submit(() -> {
+                if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
+                    destroyServiceDiscoveryInvoker();
+                    migrated = true;
+                    FrameworkStatusReporter.reportConsumptionStatus(
+                            createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_interface")
+                    );
+                }
+            });
         }
     }
 
-    protected synchronized void destroyServiceDiscoveryInvoker(ClusterInvoker<?> serviceDiscoveryInvoker, boolean force) {
+    protected void destroyServiceDiscoveryInvoker() {
         if (this.invoker != null) {
             this.currentAvailableInvoker = this.invoker;
-//            clearListener(this.serviceDiscoveryInvoker);
-            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
         }
         if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
-            if (force || serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
-                }
-                serviceDiscoveryInvoker.destroy();
+            if (logger.isInfoEnabled()) {
+                logger.info("Destroying instance address invokers, will not listen for address changes until re-subscribed, " + type.getName());
             }
+            serviceDiscoveryInvoker.destroy();
+            serviceDiscoveryInvoker = null;
         }
     }
 
@@ -367,19 +422,16 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
     }
 
-    protected synchronized void destroyInterfaceInvoker(ClusterInvoker<T> invoker, boolean force) {
+    protected void destroyInterfaceInvoker() {
         if (this.serviceDiscoveryInvoker != null) {
             this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
-//            clearListener(this.serviceDiscoveryInvoker);
-            updateConsumerModel(currentAvailableInvoker, invoker);
         }
         if (invoker != null && !invoker.isDestroyed()) {
-            if (force || invoker.getDirectory().isNotificationReceived()) {
-                if (logger.isInfoEnabled()) {
-                    logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
-                }
-                invoker.destroy();
+            if (logger.isInfoEnabled()) {
+                logger.info("Destroying interface address invokers, will not listen for address changes until re-subscribed, " + type.getName());
             }
+            invoker.destroy();
+            invoker = null;
         }
     }
 
@@ -419,17 +471,5 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     public boolean checkInvokerAvailable(ClusterInvoker<T> invoker) {
         return invoker != null && !invoker.isDestroyed() && invoker.isAvailable();
-    }
-
-    private void updateConsumerModel(ClusterInvoker<?> workingInvoker, ClusterInvoker<?> backInvoker) {
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
-        if (consumerModel != null) {
-            if (workingInvoker != null) {
-                consumerModel.getServiceMetadata().addAttribute("currentClusterInvoker", workingInvoker);
-            }
-            if (backInvoker != null) {
-                consumerModel.getServiceMetadata().addAttribute("backupClusterInvoker", backInvoker);
-            }
-        }
     }
 }

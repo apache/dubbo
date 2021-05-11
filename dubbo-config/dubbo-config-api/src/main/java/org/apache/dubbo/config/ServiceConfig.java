@@ -581,7 +581,9 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (isInvalidLocalHost(hostToBind)) {
                 anyhost = true;
                 try {
-                    logger.info("No valid ip found from environment, try to find valid host from DNS.");
+                    if(logger.isDebugEnabled()) {
+                        logger.info("No valid ip found from environment, try to find valid host from DNS.");
+                    }
                     hostToBind = InetAddress.getLocalHost().getHostAddress();
                 } catch (UnknownHostException e) {
                     logger.warn(e.getMessage(), e);

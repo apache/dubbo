@@ -79,7 +79,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
                     }
                 }
             }
-            RpcContext.getContext().setInvokers((List) selected);
+            RpcContext.getServiceContext().setInvokers((List) selected);
             final AtomicInteger count = new AtomicInteger();
             final BlockingQueue<Object> ref = new LinkedBlockingQueue<>();
             for (final Invoker<T> invoker : selected) {
@@ -107,7 +107,7 @@ public class ForkingClusterInvoker<T> extends AbstractClusterInvoker<T> {
             }
         } finally {
             // clear attachments which is binding to current thread.
-            RpcContext.getContext().clearAttachments();
+            RpcContext.getClientAttachment().clearAttachments();
         }
     }
 }

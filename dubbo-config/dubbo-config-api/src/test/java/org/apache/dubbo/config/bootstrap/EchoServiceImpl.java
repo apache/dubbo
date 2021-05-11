@@ -30,7 +30,7 @@ public class EchoServiceImpl implements EchoService {
 
     @Override
     public String echo(String message) {
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getServiceContext();
         return format("[%s:%s] ECHO - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), message);
     }
 }

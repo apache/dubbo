@@ -188,6 +188,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
+        super.doUnsubscribe(url, listener);
         ConcurrentMap<NotifyListener, org.apache.dubbo.remoting.zookeeper.ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
             org.apache.dubbo.remoting.zookeeper.ChildListener zkListener = listeners.get(listener);

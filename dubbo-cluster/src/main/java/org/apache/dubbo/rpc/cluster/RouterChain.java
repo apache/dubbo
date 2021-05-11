@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
  * Router chain
  */
 public class RouterChain<T> {
+    public static final Logger LOGGER = LoggerFactory.getLogger(RouterChain.class);
 
     // full list of addresses from registry, classified by method name.
     private List<Invoker<T>> invokers = Collections.emptyList();
@@ -282,6 +283,29 @@ public class RouterChain<T> {
             loopPermitNotify.release();
             buildCache(notify);
         }
+    }
+
+    public void destroy() {
+        invokers = Collections.emptyList();
+        for (Router router : routers) {
+            try {
+                router.stop();
+            } catch (Exception e) {
+                LOGGER.error("Error trying to stop router " + router.getClass(), e);
+            }
+        }
+        routers = Collections.emptyList();
+        builtinRouters = Collections.emptyList();
+
+        for (StateRouter router : stateRouters) {
+            try {
+                router.stop();
+            } catch (Exception e) {
+                LOGGER.error("Error trying to stop stateRouter " + router.getClass(), e);
+            }
+        }
+        stateRouters = Collections.emptyList();
+        builtinStateRouters = Collections.emptyList();
     }
 
 }

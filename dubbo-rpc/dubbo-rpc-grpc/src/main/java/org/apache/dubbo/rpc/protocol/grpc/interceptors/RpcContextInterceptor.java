@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.grpc.interceptors;
 
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.RpcContext;
+
 import io.grpc.CallOptions;
 import io.grpc.Channel;
 import io.grpc.ClientCall;
@@ -25,8 +28,6 @@ import io.grpc.Metadata;
 import io.grpc.MethodDescriptor;
 import io.grpc.ServerCall;
 import io.grpc.ServerCallHandler;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.RpcContext;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +47,7 @@ public class RpcContextInterceptor implements ClientInterceptor, ServerIntercept
 
     @Override
     public <ReqT, RespT> ClientCall<ReqT, RespT> interceptCall(MethodDescriptor<ReqT, RespT> method, CallOptions callOptions, Channel next) {
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getClientAttachment();
         Map<String, Object> attachments = new HashMap<>(rpcContext.getObjectAttachments());
 
         return new ForwardingClientCall.SimpleForwardingClientCall<ReqT, RespT>(next.newCall(method, callOptions)) {
@@ -81,7 +82,7 @@ public class RpcContextInterceptor implements ClientInterceptor, ServerIntercept
             public void onHalfClose() {
                 // the client completed all message sending and server will call the biz method if client is not the streaming
                 if (call.getMethodDescriptor().getType().clientSendsOneMessage()) {
-                    RpcContext.getContext().setObjectAttachments(attachments);
+                    RpcContext.getServerAttachment().setObjectAttachments(attachments);
                 }
                 super.onHalfClose();
             }
@@ -90,7 +91,7 @@ public class RpcContextInterceptor implements ClientInterceptor, ServerIntercept
             public void onMessage(ReqT message) {
                 //server receive the request from client and call the biz method if client is streaming
                 if (!call.getMethodDescriptor().getType().clientSendsOneMessage()) {
-                    RpcContext.getContext().setObjectAttachments(attachments);
+                    RpcContext.getServerAttachment().setObjectAttachments(attachments);
                 }
                 super.onMessage(message);
             }

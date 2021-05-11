@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.url.component.param;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Global Param Cache Table
+ * Not support method parameters
  */
 public final class DynamicParamTable {
     private static final List<String> KEYS = new CopyOnWriteArrayList<>();
@@ -43,7 +46,7 @@ public final class DynamicParamTable {
         return KEY2INDEX.get(key);
     }
 
-    public static int getValueIndex(String key, String value) {
+    public static Integer getValueIndex(String key, String value) {
         Integer idx = getKeyIndex(key);
         if (idx == null) {
             throw new IllegalArgumentException("Cannot found key in url param:" + key);
@@ -60,7 +63,7 @@ public final class DynamicParamTable {
         return Objects.equals(value, VALUES.get(getKeyIndex(key)).defaultVal());
     }
 
-    public static String getValue(int vi, int offset) {
+    public static String getValue(int vi, Integer offset) {
         return VALUES.get(vi).getN(offset);
     }
 
@@ -80,16 +83,19 @@ public final class DynamicParamTable {
         values.add(new DynamicValues(null));
 
         keys.add("side");
-        values.add(new FixedParamValue("consumer","provider"));
-
-        for (int i = 0; i < keys.size(); i++) {
-            if (!keys.get(i).isEmpty()) {
-                key2Index.put(keys.get(i), i);
-            }
-        }
+        values.add(new FixedParamValue("consumer", "provider"));
 
         KEYS.addAll(keys);
         VALUES.addAll(values);
+
+        ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
+                .getSupportedExtensionInstances().forEach(source -> source.init(KEYS, VALUES));
+
+        for (int i = 0; i < KEYS.size(); i++) {
+            if (!KEYS.get(i).isEmpty()) {
+                key2Index.put(KEYS.get(i), i);
+            }
+        }
         KEY2INDEX.putAll(key2Index);
     }
 }

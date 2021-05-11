@@ -466,7 +466,9 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         this.application = application;
         if (application != null) {
             ConfigManager configManager = ApplicationModel.getConfigManager();
-            if (!configManager.getApplication().isPresent()) {
+            // FIXME, revert this change after spring bean initialization process fixed.
+            if (!configManager.getApplication().isPresent()
+                    || !configManager.getApplication().get().getName().equalsIgnoreCase(application.getName())) {
                 configManager.setApplication(application);
             } else {
                 application.refresh();

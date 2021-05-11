@@ -53,7 +53,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     private VsDestinationGroup vsDestinationGroup;
 
-    private Map<String, String> sourcesLables = new HashMap<>();
+    private Map<String, String> sourcesLabels = new HashMap<>();
 
     protected List<Invoker<?>> invokerList = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     public MeshRuleRouter(URL url) {
         this.url = url;
-        sourcesLables.putAll(url.getParameters());
+        sourcesLabels.putAll(url.getParameters());
     }
 
     @Override
@@ -146,6 +146,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
     }
 
 
+    @Override
     public void onRuleChange(VsDestinationGroup vsDestinationGroup) {
         this.vsDestinationGroup = vsDestinationGroup;
         computeSubset();
@@ -236,7 +237,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
             //FIXME to deal with headers
             for (DubboMatchRequest dubboMatchRequest : matchRequestList) {
                 if (!DubboMatchRequest.isMatch(dubboMatchRequest, methodName, parameterTypeList, parameters,
-                        sourcesLables,
+                        sourcesLabels,
                         new HashMap<>(), invocation.getAttachments(),
                         new HashMap<>())) {
                     match = false;
@@ -320,22 +321,34 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
     }
 
 
-    // just for test
+    /**
+     * just for test
+     * @param vsDestinationGroup
+     */
     protected void setVsDestinationGroup(VsDestinationGroup vsDestinationGroup) {
         this.vsDestinationGroup = vsDestinationGroup;
     }
 
-    // just for test
-    protected void setSourcesLables(Map<String, String> sourcesLables) {
-        this.sourcesLables = sourcesLables;
+    /**
+     * just for test
+     * @param sourcesLabels
+     */
+    protected void setSourcesLabels(Map<String, String> sourcesLabels) {
+        this.sourcesLabels = sourcesLabels;
     }
 
-    // just for test
+    /**
+     * just for test
+     * @param invokerList
+     */
     protected void setInvokerList(List<Invoker<?>> invokerList) {
         this.invokerList = invokerList;
     }
 
-    // just for test
+    /**
+     * just for test
+     * @param subsetMap
+     */
     protected void setSubsetMap(Map<String, List<Invoker<?>>> subsetMap) {
         this.subsetMap = subsetMap;
     }
@@ -345,8 +358,8 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         return vsDestinationGroup;
     }
 
-    public Map<String, String> getSourcesLables() {
-        return sourcesLables;
+    public Map<String, String> getSourcesLabels() {
+        return sourcesLabels;
     }
 
     public List<Invoker<?>> getInvokerList() {

@@ -24,9 +24,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_LOADBALANCE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_RETRIES;
-
 /**
  * Class-level annotation used for declaring Dubbo service
  *
@@ -91,7 +88,7 @@ public @interface DubboService {
     /**
      * Maximum concurrent executes for the service, default value is 0 - no limits
      */
-    int executes() default 0;
+    int executes() default -1;
 
     /**
      * Whether to register the service to register center, default value is true
@@ -101,7 +98,7 @@ public @interface DubboService {
     /**
      * Service weight value, default value is 0
      */
-    int weight() default 0;
+    int weight() default -1;
 
     /**
      * Service doc, default value is ""
@@ -111,7 +108,7 @@ public @interface DubboService {
     /**
      * Delay time for service registration, default value is 0
      */
-    int delay() default 0;
+    int delay() default -1;
 
     /**
      * @see DubboService#stub()
@@ -137,14 +134,14 @@ public @interface DubboService {
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
      */
-    int connections() default 0;
+    int connections() default -1;
 
     /**
      * The callback instance limit peer connection
      * <p>
-     * see org.apache.dubbo.rpc.Constants#DEFAULT_CALLBACK_INSTANCES
+     * see org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES
      */
-    int callbacks() default org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CALLBACK_INSTANCES;
+    int callbacks() default -1;
 
     /**
      * Callback method name when connected, default value is empty string
@@ -171,14 +168,14 @@ public @interface DubboService {
      *
      * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_RETRIES
      */
-    int retries() default DEFAULT_RETRIES;
+    int retries() default -1;
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
      * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_LOADBALANCE
      */
-    String loadbalance() default DEFAULT_LOADBALANCE;
+    String loadbalance() default "";
 
     /**
      * Whether to enable async invocation, default value is false
@@ -188,7 +185,7 @@ public @interface DubboService {
     /**
      * Maximum active requests allowed, default value is 0
      */
-    int actives() default 0;
+    int actives() default -1;
 
     /**
      * Whether the async request has already been sent, the default value is false
@@ -208,7 +205,7 @@ public @interface DubboService {
     /**
      * Timeout value for service invocation, default value is 0
      */
-    int timeout() default 0;
+    int timeout() default -1;
 
     /**
      * Specify cache implementation for service invocation, legal values include: lru, threadlocal, jcache
@@ -275,4 +272,12 @@ public @interface DubboService {
      * @return
      */
     Method[] methods() default {};
+
+    /**
+     * the scope for referring/exporting a service, if it's local, it means searching in current JVM only.
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_LOCAL
+     * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
+     */
+    String scope() default "";
+
 }

@@ -23,7 +23,7 @@ public interface ParamValue {
      * @param n the nth value
      * @return the value stored at index = n
      */
-    String getN(int n);
+    String getN(Integer n);
 
 
     /**
@@ -32,7 +32,7 @@ public interface ParamValue {
      * @param value the stored value
      * @return the index of value
      */
-    int getIndex(String value);
+    Integer getIndex(String value);
 
     /**
      * get default value

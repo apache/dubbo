@@ -92,4 +92,8 @@ public interface StateRouter extends Comparable<StateRouter> {
     <T> RouterCache pool(List<Invoker<T>> invokers);
 
     void pool();
+
+    default void stop() {
+        //do nothing by default
+    }
 }

@@ -130,11 +130,16 @@ public class MethodConfig extends AbstractMethodConfig {
     public MethodConfig() {
     }
 
+    /**
+     * TODO remove this construct, the callback method processing logic needs to rely on Spring context
+     */
+    @Deprecated
     public MethodConfig(Method method) {
         appendAnnotation(Method.class, method);
 
         this.setReturn(method.isReturn());
 
+        //TODO callback method processing is not completed
         if(!"".equals(method.oninvoke())){
             this.setOninvoke(method.oninvoke());
         }
@@ -155,6 +160,12 @@ public class MethodConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * TODO remove constructMethodConfig
+     * @param methods
+     * @return
+     */
+    @Deprecated
     public static List<MethodConfig> constructMethodConfig(Method[] methods) {
         if (methods != null && methods.length != 0) {
             List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
