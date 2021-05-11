@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -257,15 +258,15 @@ public class ExplicitCallbackTest {
         }
     }
 
-    interface IDemoCallback {
+    interface IDemoCallback extends Serializable {
         String yyy(String msg);
     }
 
-    interface IHelloService {
+    interface IHelloService extends Serializable {
         public String sayHello();
     }
 
-    interface IDemoService {
+    interface IDemoService extends Serializable {
         public String get();
 
         public int getCallbackCount();
