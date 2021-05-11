@@ -111,7 +111,7 @@ public class KryoObjectInput2 implements ObjectInput, Cleanable {
             if (len < 0) {
                 return null;
             } else if (len == 0) {
-                return new byte[]{};
+                return new byte[] {};
             } else {
                 return input.readBytes(len);
             }
@@ -134,7 +134,7 @@ public class KryoObjectInput2 implements ObjectInput, Cleanable {
         try {
             return kryo.readObjectOrNull(input, String.class);
         } catch (KryoException e) {
-            throw new UnsupportedOperationException("Kryo serialization must know the input type when deserialize.", e);
+            throw new IOException("Kryo serialization must know the input type when deserialize.", e);
         }
     }
 
@@ -145,13 +145,21 @@ public class KryoObjectInput2 implements ObjectInput, Cleanable {
 
     @Override
     public Object readEvent() throws IOException, ClassNotFoundException {
-        return kryo.readObjectOrNull(input, String.class);
+        try {
+            return kryo.readObjectOrNull(input, String.class);
+        } catch (KryoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T readObject(Class<T> clazz) throws IOException, ClassNotFoundException {
-        return kryo.readObjectOrNull(input, clazz);
+        try {
+            return kryo.readObjectOrNull(input, clazz);
+        } catch (KryoException e) {
+            throw new IOException(e);
+        }
     }
 
     @Override
