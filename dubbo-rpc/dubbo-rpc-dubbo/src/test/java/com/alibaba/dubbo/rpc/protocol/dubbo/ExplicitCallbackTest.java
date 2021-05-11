@@ -24,6 +24,7 @@ import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.RpcException;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import com.alibaba.fastjson.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -138,7 +139,9 @@ public class ExplicitCallbackTest {
             }
         };
         {
+            System.out.println("add callback");
             demoProxy.xxx2(callback);
+            System.out.println("callback added");
             Assert.assertEquals(1, demoProxy.getCallbackCount());
             Thread.sleep(500);
             demoProxy.unxxx2(callback);
@@ -304,9 +307,12 @@ public class ExplicitCallbackTest {
         }
 
         public void xxx2(IDemoCallback callback) {
+            System.out.println("callbacks: " + JSONObject.toJSONString(callbacks));
             if (!callbacks.contains(callback)) {
+                System.out.println("adding callback");
                 callbacks.add(callback);
             }
+            System.out.println("callbacks size: " + callbacks.size());
             startThread();
         }
 
