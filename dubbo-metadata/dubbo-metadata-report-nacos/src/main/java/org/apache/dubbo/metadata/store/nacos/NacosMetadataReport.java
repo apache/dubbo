@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
@@ -98,13 +97,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     private static void setProperties(URL url, Properties properties) {
-
         // Get the parameters from constants
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
-
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
