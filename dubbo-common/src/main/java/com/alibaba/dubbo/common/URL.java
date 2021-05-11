@@ -204,6 +204,13 @@ public final class URL implements Serializable {
             }
             url = url.substring(0, i);
         }
+
+        // ignore the url content following '#'
+        int poundIndex = url.indexOf('#');
+        if (poundIndex != -1) {
+            url = url.substring(0, poundIndex);
+        }
+
         i = url.indexOf("://");
         if (i >= 0) {
             if (i == 0) throw new IllegalStateException("url missing protocol: \"" + url + "\"");
