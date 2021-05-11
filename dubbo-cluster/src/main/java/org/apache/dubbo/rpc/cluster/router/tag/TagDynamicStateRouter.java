@@ -66,10 +66,9 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
-        setForce(true);
         if (logger.isDebugEnabled()) {
             logger.debug("Notification of tag rule, change type is: " + event.getChangeType() + ", raw rule is:\n " +
-                    event.getContent());
+                event.getContent());
         }
 
         try {
@@ -80,7 +79,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
             }
         } catch (Exception e) {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the " +
-                    "rule matches with the template, the raw rule is:\n ", e);
+                "rule matches with the template, the raw rule is:\n ", e);
         }
     }
 
@@ -164,7 +163,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         for (String tag : tagNames) {
             List<String> addresses = tagnameToAddresses.get(tag);
             BitList<Invoker<T>> list = new BitList<>(invokers, true);
-            // 地址为空，则动态路由不生效，直接看静态路由
+
             if (CollectionUtils.isEmpty(addresses)) {
                 list.addAll(invokers);
             } else {
@@ -233,11 +232,11 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
         Invoker<T> invoker = invokers.get(0);
         URL url = invoker.getUrl();
-        String providerApplication = url.getParameter(CommonConstants.REMOTE_APPLICATION_KEY);
+        String providerApplication = url.getRemoteApplication();
 
         if (StringUtils.isEmpty(providerApplication)) {
             logger.error("TagRouter must getConfig from or subscribe to a specific application, but the application " +
-                    "in this TagRouter is not specified.");
+                "in this TagRouter is not specified.");
             return;
         }
 
