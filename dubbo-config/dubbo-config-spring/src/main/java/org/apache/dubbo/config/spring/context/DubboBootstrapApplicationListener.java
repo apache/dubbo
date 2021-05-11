@@ -64,8 +64,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        dubboBootstrap.stop();
-        DubboShutdownHook.getDubboShutdownHook().doDestroy();
+        DubboShutdownHook.getDubboShutdownHook().run();
     }
 
     @Override
