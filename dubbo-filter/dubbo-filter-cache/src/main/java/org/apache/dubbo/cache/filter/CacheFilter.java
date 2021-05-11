@@ -67,7 +67,7 @@ import static org.apache.dubbo.common.constants.FilterConstants.CACHE_KEY;
  * @see org.apache.dubbo.cache.support.expiring.ExpiringCache
  */
 @Activate(group = {CONSUMER, PROVIDER}, value = CACHE_KEY)
-public class CacheFilter implements Filter, BaseFilter.Request, BaseFilter.Listener {
+public class CacheFilter implements Filter, BaseFilter.Request {
 
     private CacheFactory cacheFactory;
 
@@ -117,26 +117,16 @@ public class CacheFilter implements Filter, BaseFilter.Request, BaseFilter.Liste
     }
 
     @Override
-    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+    public Result onAfter(Result appResponse, Invoker<?> invoker, InvocationWrapper invocationWrapper) {
         Cache cache = cacheTransformer.get();
         if (cache != null) {
             cacheTransformer.remove();
             if (!appResponse.hasException()) {
-                String key = StringUtils.toArgumentString(invocation.getArguments());
+                String key = StringUtils.toArgumentString(invocationWrapper.getInvocation().getArguments());
                 cache.put(key, new ValueWrapper(appResponse.getValue()));
             }
         }
-
-    }
-
-    @Override
-    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-
-    }
-
-    @Override
-    public void onFinish(Invoker<?> invoker, InvocationWrapper invocationWrapper) throws RpcException {
-
+        return appResponse;
     }
 
     /**
