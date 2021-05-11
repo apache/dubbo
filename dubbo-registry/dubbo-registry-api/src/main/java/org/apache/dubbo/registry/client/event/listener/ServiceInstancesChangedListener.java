@@ -167,7 +167,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
         instance.getExtendParams().putIfAbsent(REGISTRY_CLUSTER_KEY, RegistryClusterIdentifier.getExtension(url).consumerKey(url));
-        MetadataInfo metadataInfo;
+        MetadataInfo metadataInfo = null;
         try {
             if (logger.isDebugEnabled()) {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
@@ -184,7 +184,6 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, metadata type is " + metadataType, e);
-            metadataInfo = null;
             // TODO, load metadata backup. Stop getting metadata after x times of failure for one revision?
         }
         return metadataInfo;
