@@ -143,6 +143,9 @@ public class ExplicitCallbackTest {
         };
         {
             System.out.println("add callback");
+            if (callback == null) {
+                System.out.println("callback is null");
+            }
             demoProxy.xxx2(callback);
             System.out.println("callback added");
             Assert.assertEquals(1, demoProxy.getCallbackCount());
@@ -314,6 +317,9 @@ public class ExplicitCallbackTest {
         }
 
         public void xxx2(IDemoCallback callback) {
+            if (callback == null) {
+                System.out.println("callback is null");
+            }
             System.out.println("callbacks: " + JSONObject.toJSONString(callbacks));
             if (!callbacks.contains(callback)) {
                 System.out.println("adding callback");
@@ -334,6 +340,9 @@ public class ExplicitCallbackTest {
                                     List<IDemoCallback> callbacksCopy = new ArrayList<IDemoCallback>(callbacks);
                                     for (IDemoCallback callback : callbacksCopy) {
                                         try {
+                                            if (callback == null) {
+                                                System.out.println("callback is null");
+                                            }
                                             System.out.println("callback toString: " + callback.toString());
                                             callback.yyy("this is callback msg,current time is :" + System.currentTimeMillis());
                                         } catch (Exception e) {
