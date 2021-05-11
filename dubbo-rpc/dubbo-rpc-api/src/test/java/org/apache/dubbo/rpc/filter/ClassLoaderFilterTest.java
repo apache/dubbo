@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.URLClassLoader;
+import java.util.HashMap;
 
 public class ClassLoaderFilterTest {
 
@@ -64,7 +65,11 @@ public class ClassLoaderFilterTest {
             }
         };
         Invocation invocation = Mockito.mock(Invocation.class);
+        Mockito.when(invocation.getAttributes()).thenReturn(new HashMap<>());
 
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         classLoaderFilter.invoke(invoker, invocation);
+
+        Assertions.assertEquals(classLoader, Thread.currentThread().getContextClassLoader());
     }
 }
