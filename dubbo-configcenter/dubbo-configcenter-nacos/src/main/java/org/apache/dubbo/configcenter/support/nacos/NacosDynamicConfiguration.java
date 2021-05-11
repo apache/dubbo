@@ -145,14 +145,10 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     private static void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
-
         // Get the parameters from constants
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
         // Put all parameters
         properties.putAll(parameters);
-
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
