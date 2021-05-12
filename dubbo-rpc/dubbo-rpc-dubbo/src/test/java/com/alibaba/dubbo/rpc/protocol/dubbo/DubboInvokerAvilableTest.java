@@ -52,7 +52,7 @@ public class DubboInvokerAvilableTest {
 
     @Before
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = DubboProtocol.getDubboProtocol();
     }
 
     @Test
