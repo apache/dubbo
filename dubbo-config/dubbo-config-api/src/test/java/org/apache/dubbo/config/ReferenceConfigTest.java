@@ -90,6 +90,9 @@ public class ReferenceConfigTest {
             rc.destroy();
             demoService.unexport();
         }
+
+        // Manually trigger dubbo resource recycling.
+        DubboBootstrap.getInstance().destroy();
     }
 
     /**

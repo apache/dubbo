@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.injvm;
 
-/**
- * <code>TestService</code>
- */
+package org.apache.dubbo.common.serialize.gson;
 
-public interface DemoService {
-    void sayHello(String name);
+public class ExceptionWrapper {
 
-    String echo(String text);
 
-    long timestamp();
+    private final Object exception;
 
-    String getThreadName();
+    private final String clazz;
 
-    int getSize(String[] strs);
 
-    int getSize(Object[] os);
+    public ExceptionWrapper(Object exception, String clazz) {
+        this.exception = exception;
+        this.clazz = clazz;
+    }
 
-    Object invoke(String service, String method) throws Exception;
+    public Object getException() {
+        return exception;
+    }
 
-    int stringLength(String str);
 
-    Type enumlength(Type... types);
+    public String getClazz() {
+        return clazz;
+    }
 
-    String getRemoteApplicationName();
-
-    String getAsyncResult();
 }

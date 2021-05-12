@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -323,6 +324,39 @@ public class RpcUtilsTest {
         }
     }
 
+    @Test
+    public void testIsAsync() {
+        Object[] args = new Object[] {"hello", "dubbo", 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        URL url = URL.valueOf(
+                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService");
+
+        RpcInvocation inv = new RpcInvocation("test", serviceName, "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[] {}, args},
+                null, invoker, null);
+
+        Assertions.assertFalse(RpcUtils.isAsync(url, inv));
+        inv.setInvokeMode(InvokeMode.ASYNC);
+        Assertions.assertTrue(RpcUtils.isAsync(url, inv));
+    }
+
+    @Test
+    public void testIsGenericCall() {
+        Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invoke"));
+        Assertions.assertTrue(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "$invokeAsync"));
+        Assertions.assertFalse(RpcUtils.isGenericCall("Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;", "testMethod"));
+    }
+
+    @Test
+    public void testIsEcho() {
+        Assertions.assertTrue(RpcUtils.isEcho("Ljava/lang/Object;", "$echo"));
+        Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/Object;", "testMethod"));
+        Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/String;", "$echo"));
+    }
     @Test
     public void testIsReturnTypeFuture() {
         Class<?> demoServiceClass = DemoService.class;
