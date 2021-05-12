@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
@@ -40,6 +41,10 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
 
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
+
+    private final AtomicInteger disconnectCount = new AtomicInteger(0);
+
+    private final Integer maxDisconnectCount = 50;
 
     private ExchangeClient client;
 
@@ -182,8 +187,12 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
                 //.addParameter(RECONNECT_KEY, Boolean.FALSE)
                 .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
-                // use user side value or default value
-                //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+        //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+
+        if (disconnectCount.incrementAndGet() > maxDisconnectCount) {
+            disconnectCount.set(0);
+            lazyUrl.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+        }
 
         /**
          * the order of judgment in the if statement cannot be changed.
