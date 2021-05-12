@@ -181,8 +181,9 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
         // this is a defensive operation to avoid client is closed by accident, the initial state of the client is false
         URL lazyUrl = url.addParameter(LAZY_CONNECT_INITIAL_STATE_KEY, Boolean.TRUE)
                 //.addParameter(RECONNECT_KEY, Boolean.FALSE)
-                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString())
-                .addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+                .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
+                // use user side value or default value
+                //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
 
         /**
          * the order of judgment in the if statement cannot be changed.
