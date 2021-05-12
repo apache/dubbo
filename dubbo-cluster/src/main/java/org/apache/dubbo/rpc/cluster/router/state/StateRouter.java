@@ -52,10 +52,9 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @return routed invokers
      * @throws RpcException
      */
-    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url, Invocation invocation) throws
+    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url, Invocation invocation)
+        throws
         RpcException;
-
-
 
     default <T> void notify(List<Invoker<T>> invokers) {
 
@@ -71,9 +70,7 @@ public interface StateRouter extends Comparable<StateRouter> {
 
     boolean isEnable();
 
-
     boolean isForce();
-
 
     int getPriority();
 

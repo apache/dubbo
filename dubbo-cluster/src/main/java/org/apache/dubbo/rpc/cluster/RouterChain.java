@@ -16,14 +16,23 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
-import org.apache.dubbo.common.threadpool.manager.Ring;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
@@ -35,23 +44,6 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 /**
  * Router chain
@@ -71,7 +63,8 @@ public class RouterChain<T> {
 
     private List<StateRouter> builtinStateRouters = Collections.emptyList();
     private List<StateRouter> stateRouters = Collections.emptyList();
-    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class)
+        .getDefaultExtension();
 
     protected URL url;
 
@@ -91,15 +84,16 @@ public class RouterChain<T> {
     private RouterChain(URL url) {
         LOOP_THREAD_POOL = executorRepository.nextExecutorExecutor();
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
-                .getActivateExtension(url, "router");
+            .getActivateExtension(url, "router");
 
         List<Router> routers = extensionFactories.stream()
-                .map(factory -> factory.getRouter(url))
-                .collect(Collectors.toList());
+            .map(factory -> factory.getRouter(url))
+            .collect(Collectors.toList());
 
         initWithRouters(routers);
 
-        List<StateRouterFactory> extensionStateRouterFactories = ExtensionLoader.getExtensionLoader(StateRouterFactory.class)
+        List<StateRouterFactory> extensionStateRouterFactories = ExtensionLoader.getExtensionLoader(
+            StateRouterFactory.class)
             .getActivateExtension(url, "stateRouter");
 
         List<StateRouter> stateRouters = extensionStateRouterFactories.stream()
@@ -153,6 +147,7 @@ public class RouterChain<T> {
         CollectionUtils.sort(newStateRouters);
         this.stateRouters = newStateRouters;
     }
+
     public List<Router> getRouters() {
         return routers;
     }
@@ -162,7 +157,6 @@ public class RouterChain<T> {
     }
 
     /**
-     *
      * @param url
      * @param invocation
      * @return
@@ -181,7 +175,8 @@ public class RouterChain<T> {
         BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
         for (StateRouter stateRouter : stateRouters) {
             if (stateRouter.isEnable()) {
-                finalBitListInvokers = stateRouter.route(finalBitListInvokers, cache.getCache().get(stateRouter.getName()), url, invocation);
+                finalBitListInvokers = stateRouter.route(finalBitListInvokers,
+                    cache.getCache().get(stateRouter.getName()), url, invocation);
             }
         }
 
@@ -252,7 +247,8 @@ public class RouterChain<T> {
     }
 
     private boolean isCacheMiss(AddrCache cache, String routerName) {
-        if (cache == null || cache.getCache() == null || cache.getInvokers() == null || cache.getCache().get(routerName) == null) {
+        if (cache == null || cache.getCache() == null || cache.getInvokers() == null || cache.getCache().get(routerName)
+            == null) {
             return true;
         }
         return false;

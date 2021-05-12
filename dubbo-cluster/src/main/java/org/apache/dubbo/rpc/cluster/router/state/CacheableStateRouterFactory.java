@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
  * For 2.6.x style router, please implement and use RouterFactory directly.
  */
 public abstract class CacheableStateRouterFactory implements StateRouterFactory {
-    private ConcurrentMap<String, StateRouter> routerMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, StateRouter> routerMap = new ConcurrentHashMap<>();
 
     @Override
     public StateRouter getRouter(URL url, RouterChain chain) {

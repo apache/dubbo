@@ -25,7 +25,7 @@ import java.util.ListIterator;
 import org.roaringbitmap.IntIterator;
 import org.roaringbitmap.RoaringBitmap;
 
-public class BitList<E> implements List<E>{
+public class BitList<E> implements List<E> {
     private final RoaringBitmap rootMap;
     private final List<E> unmodifiableList;
 
@@ -56,7 +56,7 @@ public class BitList<E> implements List<E>{
 
     public BitList<E> intersect(List<E> b, List<E> totalList) {
         RoaringBitmap resultMap = rootMap.clone();
-        resultMap.and(((BitList) b).rootMap);
+        resultMap.and(((BitList)b).rootMap);
         return new BitList<>(totalList, resultMap);
     }
 
@@ -88,7 +88,7 @@ public class BitList<E> implements List<E>{
 
             @Override
             public E next() {
-                prev = (int) rootMap.nextValue(prev + 1);
+                prev = (int)rootMap.nextValue(prev + 1);
                 return unmodifiableList.get(prev);
             }
 
@@ -114,11 +114,10 @@ public class BitList<E> implements List<E>{
         int size = size();
         Object[] arr = toArray();
         if (a.length < size)
-            // Make a new array of a's runtime type, but my contents:
-            return (T[]) Arrays.copyOf(arr, size, a.getClass());
+        // Make a new array of a's runtime type, but my contents:
+        { return (T[])Arrays.copyOf(arr, size, a.getClass()); }
         System.arraycopy(arr, 0, a, 0, size);
-        if (a.length > size)
-            a[size] = null;
+        if (a.length > size) { a[size] = null; }
         return null;
     }
 
@@ -210,23 +209,19 @@ public class BitList<E> implements List<E>{
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public ListIterator<E> listIterator() {
         throw new UnsupportedOperationException();
     }
-
 
     @Override
     public ListIterator<E> listIterator(int index) {
         throw new UnsupportedOperationException();
     }
 
-
     @Override
     public List<E> subList(int fromIndex, int toIndex) {
         throw new UnsupportedOperationException();
     }
-
 
 }

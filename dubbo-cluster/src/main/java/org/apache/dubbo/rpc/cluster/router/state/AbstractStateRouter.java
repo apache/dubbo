@@ -29,13 +29,13 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 public abstract class AbstractStateRouter implements StateRouter {
+    final protected RouterChain chain;
     protected int priority = DEFAULT_PRIORITY;
     protected boolean force = false;
     protected URL url;
     protected List<Invoker> invokers;
     protected AtomicReference<AddrCache> cache;
     protected GovernanceRuleRepository ruleRepository;
-    final protected RouterChain chain;
 
     public AbstractStateRouter(URL url, RouterChain chain) {
         this.ruleRepository = ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension();
@@ -45,7 +45,7 @@ public abstract class AbstractStateRouter implements StateRouter {
 
     @Override
     public <T> void notify(List<Invoker<T>> invokers) {
-        this.invokers = (List) invokers;
+        this.invokers = (List)invokers;
     }
 
     @Override
@@ -94,9 +94,8 @@ public abstract class AbstractStateRouter implements StateRouter {
             if (tagMatchFail(tagInvokers)) {
                 continue;
             }
-            return tagInvokers.intersect(invokers, (List)invokers.getUnmodifiableList());
+            return tagInvokers.intersect(invokers, invokers.getUnmodifiableList());
         }
-
 
         return invokers;
     }

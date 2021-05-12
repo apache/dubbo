@@ -31,10 +31,10 @@
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
     <dependencies>
-        <dpendency>
+        <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-        </dpendency>
+        </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-rpc-api</artifactId>
