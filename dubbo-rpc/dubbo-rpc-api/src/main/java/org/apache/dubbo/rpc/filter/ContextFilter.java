@@ -114,15 +114,15 @@ public class ContextFilter implements Filter, Filter.Listener, BaseFilter.Reques
             RpcContext.getClientAttachment().setObjectAttachment(TIME_COUNTDOWN_KEY, TimeoutCountDown.newCountDown(timeout, TimeUnit.MILLISECONDS));
         }
 
-//        // merged from dubbox
-//        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
-//        if (attachments != null) {
-//            if (context.getObjectAttachments() != null) {
-//                context.getObjectAttachments().putAll(attachments);
-//            } else {
-//                context.setObjectAttachments(attachments);
-//            }
-//        }
+        // merged from dubbox
+        // we may already added some attachments into RpcContext before this filter (e.g. in rest protocol)
+        if (attachments != null) {
+            if (context.getObjectAttachments() != null) {
+                context.getObjectAttachments().putAll(attachments);
+            } else {
+                context.setObjectAttachments(attachments);
+            }
+        }
 
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.cluster.filter;
 
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.rpc.BaseFilter;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -39,7 +40,15 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final Filter filter = filters.get(i);
                 final Invoker<T> next = last;
-                last = new FilterChainNode<>(originalInvoker, next, filter);
+                if (filter instanceof BaseFilter.Request) {
+                    if (last instanceof LoopFilterChainNode) {
+                        ((LoopFilterChainNode<T, Invoker<T>, BaseFilter.Request>) last).addFirstFilter((BaseFilter.Request) filter);
+                    } else {
+                        last = new LoopFilterChainNode<>(originalInvoker, next, (BaseFilter.Request) filter);
+                    }
+                } else {
+                    last = new FilterChainNode<>(originalInvoker, next, filter);
+                }
             }
         }
 
@@ -58,7 +67,15 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
             for (int i = filters.size() - 1; i >= 0; i--) {
                 final ClusterFilter filter = filters.get(i);
                 final Invoker<T> next = last;
-                last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
+                if (filter instanceof BaseFilter.Request) {
+                    if (last instanceof ClusterLoopFilterChainNode) {
+                        ((ClusterLoopFilterChainNode<T, ClusterInvoker<T>, BaseFilter.Request>) last).addFirstFilter((BaseFilter.Request) filter);
+                    } else {
+                        last = new ClusterLoopFilterChainNode<>(originalInvoker, next, (BaseFilter.Request) filter);
+                    }
+                } else {
+                    last = new ClusterFilterChainNode<>(originalInvoker, next, filter);
+                }
             }
         }
 
