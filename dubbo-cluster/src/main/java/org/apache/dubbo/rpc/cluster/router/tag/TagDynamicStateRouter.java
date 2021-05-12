@@ -20,6 +20,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
@@ -97,7 +98,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
 
-        ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = cache.getAddrPool();
+        ConcurrentMap<String, BitList<Invoker<T>>> addrPool = cache.getAddrPool();
 
         if (StringUtils.isEmpty(tag)) {
             return invokers.intersect(addrPool.get(NO_TAG), invokers.getUnmodifiableList());

@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.cluster.router.tag;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -65,7 +67,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             tag = NO_TAG;
         }
 
-        ConcurrentHashMap<String, BitList<Invoker<T>>> pool = routerCache.getAddrPool();
+        ConcurrentMap<String, BitList<Invoker<T>>> pool = routerCache.getAddrPool();
         BitList<Invoker<T>> res = pool.get(tag);
         if (res == null) {
             return invokers;

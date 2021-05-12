@@ -176,7 +176,7 @@ public class RouterChain<T> {
         }
 
         List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
-        Iterator<Invoker<T>> iter = finalBitListInvokers.iterator();
+
         for(Invoker<T> invoker: finalBitListInvokers) {
             finalInvokers.add(invoker);
         }
