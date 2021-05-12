@@ -159,6 +159,7 @@ public class RpcInvocation implements Invocation, Serializable {
                     this.parameterTypesDesc = methodDescriptor.getParamDesc();
                     this.compatibleParamSignatures = methodDescriptor.getCompatibleParamSignatures();
                     this.returnTypes = methodDescriptor.getReturnTypes();
+                    this.returnType = methodDescriptor.getReturnClass();
                 }
             }
         }
@@ -167,6 +168,7 @@ public class RpcInvocation implements Invocation, Serializable {
             this.parameterTypesDesc = ReflectUtils.getDesc(this.getParameterTypes());
             this.compatibleParamSignatures = Stream.of(this.parameterTypes).map(Class::getName).toArray(String[]::new);
             this.returnTypes = RpcUtils.getReturnTypes(this);
+            this.returnType = RpcUtils.getReturnType(this);
         }
     }
 
