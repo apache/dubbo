@@ -52,7 +52,7 @@ public interface StateRouter extends Comparable<StateRouter> {
      * @return routed invokers
      * @throws RpcException
      */
-    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url, Invocation invocation)
+    <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
         throws
         RpcException;
 
@@ -86,7 +86,7 @@ public interface StateRouter extends Comparable<StateRouter> {
 
     boolean shouldRePool();
 
-    <T> RouterCache pool(List<Invoker<T>> invokers);
+    <T> RouterCache<T> pool(List<Invoker<T>> invokers);
 
     void pool();
 

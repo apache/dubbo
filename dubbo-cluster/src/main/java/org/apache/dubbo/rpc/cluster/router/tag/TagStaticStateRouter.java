@@ -41,7 +41,6 @@ public class TagStaticStateRouter extends AbstractStateRouter {
     public static final String NAME = "TAG_ROUTER";
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
     private static final Logger logger = LoggerFactory.getLogger(TagStaticStateRouter.class);
-    private static final String RULE_SUFFIX = ".tag-router";
     private static final String NO_TAG = "noTag";
 
     private TagRouterRule tagRouterRule;
@@ -57,7 +56,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
     }
 
     @Override
-    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache routerCache, URL url, Invocation invocation)
+    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> routerCache, URL url, Invocation invocation)
         throws RpcException {
 
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
@@ -66,12 +65,12 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             tag = NO_TAG;
         }
 
-        ConcurrentHashMap<String, BitList<Invoker>> pool = routerCache.getAddrPool();
-        BitList res = pool.get(tag);
+        ConcurrentHashMap<String, BitList<Invoker<T>>> pool = routerCache.getAddrPool();
+        BitList<Invoker<T>> res = pool.get(tag);
         if (res == null) {
             return invokers;
         }
-        return invokers.intersect((BitList)res, invokers.getUnmodifiableList());
+        return invokers.intersect(res, invokers.getUnmodifiableList());
     }
 
     @Override
@@ -113,9 +112,9 @@ public class TagStaticStateRouter extends AbstractStateRouter {
     }
 
     @Override
-    public <T> RouterCache pool(List<Invoker<T>> invokers) {
+    public <T> RouterCache<T> pool(List<Invoker<T>> invokers) {
 
-        RouterCache routerCache = new RouterCache();
+        RouterCache<T> routerCache = new RouterCache<>();
         ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = new ConcurrentHashMap<>();
 
         for (int index = 0; index < invokers.size(); index++) {
@@ -136,7 +135,7 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             }
         }
 
-        routerCache.setAddrPool((ConcurrentHashMap)addrPool);
+        routerCache.setAddrPool(addrPool);
 
         return routerCache;
     }

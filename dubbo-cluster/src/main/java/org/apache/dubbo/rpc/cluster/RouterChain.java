@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,12 +67,12 @@ public class RouterChain<T> {
 
     protected URL url;
 
-    protected AtomicReference<AddrCache> cache = new AtomicReference<>();
+    protected AtomicReference<AddrCache<T>> cache = new AtomicReference<>();
 
-    private Semaphore loopPermit = new Semaphore(1);
-    private Semaphore loopPermitNotify = new Semaphore(1);
+    private final Semaphore loopPermit = new Semaphore(1);
+    private final Semaphore loopPermitNotify = new Semaphore(1);
 
-    private final ExecutorService LOOP_THREAD_POOL;
+    private final ExecutorService loopPool;
 
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
@@ -82,7 +81,7 @@ public class RouterChain<T> {
     }
 
     private RouterChain(URL url) {
-        LOOP_THREAD_POOL = executorRepository.nextExecutorExecutor();
+        loopPool = executorRepository.nextExecutorExecutor();
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
             .getActivateExtension(url, "router");
 
@@ -118,10 +117,6 @@ public class RouterChain<T> {
     public void initWithStateRouters(List<StateRouter> builtinRouters) {
         this.builtinStateRouters = builtinRouters;
         this.stateRouters = new ArrayList<>(builtinRouters);
-    }
-
-    private void sortStateRouters() {
-        Collections.sort(stateRouters);
     }
 
     /**
@@ -163,7 +158,7 @@ public class RouterChain<T> {
      */
     public List<Invoker<T>> route(URL url, Invocation invocation) {
 
-        AddrCache cache = this.cache.get();
+        AddrCache<T> cache = this.cache.get();
         if (cache == null) {
             throw new RpcException(RpcException.ROUTER_CACHE_NOT_BUILD, "Failed to invoke the method "
                 + invocation.getMethodName() + " in the service " + url.getServiceInterface()
@@ -172,18 +167,18 @@ public class RouterChain<T> {
                 + " using the dubbo version " + Version.getVersion()
                 + ".");
         }
-        BitList<Invoker<T>> finalBitListInvokers = new BitList<Invoker<T>>(invokers, false);
+        BitList<Invoker<T>> finalBitListInvokers = new BitList<>(invokers, false);
         for (StateRouter stateRouter : stateRouters) {
             if (stateRouter.isEnable()) {
-                finalBitListInvokers = stateRouter.route(finalBitListInvokers,
-                    cache.getCache().get(stateRouter.getName()), url, invocation);
+                RouterCache<T> routerCache = cache.getCache().get(stateRouter.getName());
+                finalBitListInvokers = stateRouter.route(finalBitListInvokers, routerCache, url, invocation);
             }
         }
 
         List<Invoker<T>> finalInvokers = new ArrayList<>(finalBitListInvokers.size());
         Iterator<Invoker<T>> iter = finalBitListInvokers.iterator();
-        while (iter.hasNext()) {
-            finalInvokers.add(iter.next());
+        for(Invoker<T> invoker: finalBitListInvokers) {
+            finalInvokers.add(invoker);
         }
 
         for (Router router : routers) {
@@ -207,12 +202,10 @@ public class RouterChain<T> {
         if (invokers == null || invokers.size() <= 0) {
             return;
         }
-        AddrCache origin = cache.get();
-        List<Invoker<T>> copyInvokers = new ArrayList<Invoker<T>>(this.invokers);
-        CountDownLatch cdl = new CountDownLatch(stateRouters.size());
-        AddrCache newCache = new AddrCache();
-        newCache.setInvokers((List)invokers);
-        final AtomicBoolean poolSuccess = new AtomicBoolean(true);
+        AddrCache<T> origin = cache.get();
+        List<Invoker<T>> copyInvokers = new ArrayList<>(this.invokers);
+        AddrCache<T> newCache = new AddrCache<T>();
+        newCache.setInvokers(invokers);
         for (StateRouter stateRouter : stateRouters) {
             RouterCache routerCache;
             try {
@@ -220,21 +213,17 @@ public class RouterChain<T> {
                 //file cache
                 newCache.getCache().put(stateRouter.getName(), routerCache);
             } catch (Throwable t) {
-                poolSuccess.set(false);
                 logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
-            } finally {
-                cdl.countDown();
+                return;
             }
         }
 
-        if (poolSuccess.get()) {
-            this.cache.set(newCache);
-        }
+        this.cache.set(newCache);
     }
 
-    private RouterCache poolRouter(StateRouter router, AddrCache orign, List<Invoker<T>> invokers, boolean notify) {
+    private RouterCache poolRouter(StateRouter router, AddrCache<T> orign, List<Invoker<T>> invokers, boolean notify) {
         String routerName = router.getName();
-        RouterCache routerCache = null;
+        RouterCache routerCache;
         if (isCacheMiss(orign, routerName) || router.shouldRePool() || notify) {
             return router.pool(invokers);
         } else {
@@ -246,22 +235,20 @@ public class RouterChain<T> {
         return routerCache;
     }
 
-    private boolean isCacheMiss(AddrCache cache, String routerName) {
-        if (cache == null || cache.getCache() == null || cache.getInvokers() == null || cache.getCache().get(routerName)
-            == null) {
-            return true;
-        }
-        return false;
+    private boolean isCacheMiss(AddrCache<T> cache, String routerName) {
+        return cache == null || cache.getCache() == null || cache.getInvokers() == null || cache.getCache().get(
+            routerName)
+            == null;
     }
 
     public void loop(boolean notify) {
         if (notify) {
             if (loopPermitNotify.tryAcquire()) {
-                LOOP_THREAD_POOL.submit(new NotifyLoopRunnable(true));
+                loopPool.submit(new NotifyLoopRunnable(true));
             }
         } else {
             if (loopPermit.tryAcquire()) {
-                LOOP_THREAD_POOL.submit(new NotifyLoopRunnable(false));
+                loopPool.submit(new NotifyLoopRunnable(false));
             }
         }
     }

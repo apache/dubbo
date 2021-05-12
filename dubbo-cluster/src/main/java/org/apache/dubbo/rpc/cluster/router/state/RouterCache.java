@@ -17,19 +17,20 @@
 package org.apache.dubbo.rpc.cluster.router.state;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.dubbo.rpc.Invoker;
 
-public class RouterCache {
-    protected ConcurrentHashMap<String, BitList<Invoker>> addrPool = new ConcurrentHashMap<>();
+public class RouterCache<T> {
+    private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, BitList<Invoker<T>>> addrPool = EMPTY_MAP;
     protected Object addrMetadata;
 
-    public ConcurrentHashMap<String, BitList<Invoker>> getAddrPool() {
+    public ConcurrentMap<String, BitList<Invoker<T>>> getAddrPool() {
         return addrPool;
     }
 
-    public void setAddrPool(
-        ConcurrentHashMap<String, BitList<Invoker>> addrPool) {
+    public void setAddrPool(ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool) {
         this.addrPool = addrPool;
     }
 

@@ -26,7 +26,6 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -89,7 +88,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     }
 
     @Override
-    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url,
+    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
         Invocation invocation) throws RpcException {
 
 
@@ -98,16 +97,16 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
         String tag = StringUtils.isEmpty(invocation.getAttachment(TAG_KEY)) ? url.getParameter(TAG_KEY) :
             invocation.getAttachment(TAG_KEY);
 
-        ConcurrentHashMap<String, BitList<Invoker>> addrPool = cache.getAddrPool();
+        ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = cache.getAddrPool();
 
         if (StringUtils.isEmpty(tag)) {
-            return invokers.intersect((BitList)addrPool.get(NO_TAG), invokers.getUnmodifiableList());
+            return invokers.intersect(addrPool.get(NO_TAG), invokers.getUnmodifiableList());
         } else {
-            BitList<Invoker> result = addrPool.get(tag);
+            BitList<Invoker<T>> result = addrPool.get(tag);
 
             if (CollectionUtils.isNotEmpty(result) || (tagRouterRuleCopy != null && tagRouterRuleCopy.isForce())
                 || isForceUseTag(invocation)) {
-                return invokers.intersect((BitList)result, invokers.getUnmodifiableList());
+                return invokers.intersect(result, invokers.getUnmodifiableList());
             } else {
                 invocation.setAttachment(TAG_KEY, NO_TAG);
                 return invokers;
@@ -145,9 +144,9 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     }
 
     @Override
-    public <T> RouterCache pool(List<Invoker<T>> invokers) {
+    public <T> RouterCache<T> pool(List<Invoker<T>> invokers) {
 
-        RouterCache routerCache = new RouterCache();
+        RouterCache<T> routerCache = new RouterCache<>();
         ConcurrentHashMap<String, BitList<Invoker<T>>> addrPool = new ConcurrentHashMap<>();
 
         final TagRouterRule tagRouterRuleCopy = tagRouterRule;
@@ -188,7 +187,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
             }
         }
         addrPool.put(NO_TAG, noTagList);
-        routerCache.setAddrPool((ConcurrentHashMap)addrPool);
+        routerCache.setAddrPool(addrPool);
         routerCache.setAddrMetadata(tagRouterRuleCopy);
 
         return routerCache;

@@ -81,7 +81,7 @@ public abstract class AbstractStateRouter implements StateRouter {
     }
 
     @Override
-    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache cache, URL url,
+    public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
         Invocation invocation) throws RpcException {
 
         List<String> tags = getTags(url, invocation);
@@ -90,7 +90,7 @@ public abstract class AbstractStateRouter implements StateRouter {
             return invokers;
         }
         for (String tag : tags) {
-            BitList tagInvokers = cache.getAddrPool().get(tag);
+            BitList<Invoker<T>> tagInvokers = cache.getAddrPool().get(tag);
             if (tagMatchFail(tagInvokers)) {
                 continue;
             }
@@ -105,7 +105,7 @@ public abstract class AbstractStateRouter implements StateRouter {
     }
 
     public <T> Boolean tagMatchFail(BitList<Invoker<T>> invokers) {
-        return invokers == null || invokers.size() <= 0;
+        return invokers == null || invokers.isEmpty();
     }
 
     @Override

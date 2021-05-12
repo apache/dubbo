@@ -18,27 +18,29 @@ package org.apache.dubbo.rpc.cluster.router.state;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.dubbo.rpc.Invoker;
 
-public class AddrCache {
-    protected List<Invoker> invokers;
-    protected ConcurrentHashMap<String, RouterCache> cache = new ConcurrentHashMap<>();
+public class AddrCache<T> {
+    private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();
 
-    public List<Invoker> getInvokers() {
+    protected List<Invoker<T>> invokers;
+    protected ConcurrentMap<String, RouterCache<T>> cache = EMPTY_MAP;
+
+    public List<Invoker<T>> getInvokers() {
         return invokers;
     }
 
-    public void setInvokers(List<Invoker> invokers) {
+    public void setInvokers(List<Invoker<T>> invokers) {
         this.invokers = invokers;
     }
 
-    public ConcurrentHashMap<String, RouterCache> getCache() {
+    public ConcurrentMap<String, RouterCache<T>> getCache() {
         return cache;
     }
 
-    public void setCache(
-        ConcurrentHashMap<String, RouterCache> cache) {
+    public void setCache(ConcurrentHashMap<String, RouterCache<T>> cache) {
         this.cache = cache;
     }
 }
