@@ -593,7 +593,7 @@ public class RegistryProtocol implements Protocol {
         URL consumerUrl = new URL(CONSUMER_PROTOCOL, parameters.remove(REGISTER_IP_KEY), 0, type.getName(), parameters);
         ClusterInvoker<T> migrationInvoker = getMigrationInvoker(this, cluster, registry, type, url, consumerUrl);
         /**
-         *
+         * 生成消费端Invoker
          */
         return interceptInvoker(migrationInvoker, url, consumerUrl);
     }
@@ -643,7 +643,7 @@ public class RegistryProtocol implements Protocol {
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         /**
-         *
+         * 生成Invoker
          */
         return doCreateInvoker(directory, cluster, registry, type);
     }

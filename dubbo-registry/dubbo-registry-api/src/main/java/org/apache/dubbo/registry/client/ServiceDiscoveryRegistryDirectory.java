@@ -237,10 +237,16 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     private boolean urlChanged(Invoker<T> invoker, InstanceAddressURL newURL) {
         InstanceAddressURL oldURL = (InstanceAddressURL) invoker.getUrl();
 
+        /**
+         * url是否有变化
+         */
         if (!newURL.getInstance().equals(oldURL.getInstance())) {
             return true;
         }
 
+        /**
+         * 元数据信息是否有变化
+         */
         return !oldURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey())
                 .equals(newURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey()));
     }

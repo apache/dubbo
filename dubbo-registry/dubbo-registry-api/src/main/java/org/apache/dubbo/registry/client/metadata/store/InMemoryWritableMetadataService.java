@@ -243,6 +243,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         }
         for (Map.Entry<String, MetadataInfo> entry : metadataInfos.entrySet()) {
             MetadataInfo metadataInfo = entry.getValue();
+            /**
+             * revision一致则返回当前metadataInfo
+             */
             if (revision.equals(metadataInfo.calAndGetRevision())) {
                 return metadataInfo;
             }

@@ -124,6 +124,8 @@ public class MetadataUtils {
             // Simply rely on the first metadata url, as stated in MetadataServiceURLBuilder.
             /**
              * 根据元数据服务的url  生成对应的invoker   AbstractProtocol----DubboProtocol
+             * 根据元数据服务的url  生成对应的invoker   AbstractProtocol----DubboProtocol
+             * 根据元数据服务的url  生成对应的invoker   AbstractProtocol----DubboProtocol
              */
             Invoker<MetadataService> invoker = protocol.refer(MetadataService.class, urls.get(0));
 

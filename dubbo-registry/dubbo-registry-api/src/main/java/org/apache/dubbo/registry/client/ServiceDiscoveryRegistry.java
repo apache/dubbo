@@ -371,6 +371,9 @@ public class ServiceDiscoveryRegistry implements Registry {
         //DynamicDirectory
         listener.addServiceListener(serviceListener);
 
+        /**
+         * 添加监听
+         */
         serviceListener.addListener(protocolServiceKey, listener);
 
         /**
@@ -388,6 +391,9 @@ public class ServiceDiscoveryRegistry implements Registry {
             if (CollectionUtils.isNotEmpty(serviceInstances)) {
                 /**
                  * ServiceInstancesChangedListener
+                 * 访问服务提供者的元数据服务  获取提供的服务 并建立对应的invoker
+                 * 访问服务提供者的元数据服务  获取提供的服务 并建立对应的invoker
+                 * 访问服务提供者的元数据服务  获取提供的服务 并建立对应的invoker
                  */
                 serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
             } else {
@@ -395,6 +401,10 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
         });
 
+        /**
+         * ServiceDiscoveryRegistryDirectory
+         * 刷新url对应的invoker   不访问元数据服务
+         */
         listener.notify(serviceListener.getUrls(protocolServiceKey));
 
     }
