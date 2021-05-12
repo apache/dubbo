@@ -35,6 +35,7 @@ import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
 import com.alibaba.dubbo.rpc.service.GenericService;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -47,6 +48,11 @@ import static org.junit.Assert.fail;
  * HessianProtocolTest
  */
 public class HessianProtocolTest {
+
+    @Before
+    public void setup() {
+        System.setProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+    }
 
     @Test
     public void testHessianProtocol() {

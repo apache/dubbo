@@ -77,12 +77,7 @@ public class GenericFilter implements Filter {
                         || ProtocolUtils.isDefaultGenericSerialization(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
-                    String value = System.getenv(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
-                    if (StringUtils.isEmpty(value)) {
-                        value = System.getenv(StringUtils.toOSStyleKey(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE));
-                    }
-
-                    if (!Boolean.parseBoolean(value)) {
+                    if (!nativeJavaSerializerEnabled()) {
                         String notice = "Trigger the safety barrier! " +
                                 "Native Java Serializer is not allowed by default." +
                                 "This means currently maybe being attacking by others. " +
@@ -160,4 +155,9 @@ public class GenericFilter implements Filter {
         return invoker.invoke(inv);
     }
 
+    private boolean nativeJavaSerializerEnabled() {
+        return Boolean.parseBoolean(System.getProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE))
+                || Boolean.parseBoolean(System.getenv(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE))
+                || Boolean.parseBoolean(System.getenv(StringUtils.toOSStyleKey(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE)));
+    }
 }
