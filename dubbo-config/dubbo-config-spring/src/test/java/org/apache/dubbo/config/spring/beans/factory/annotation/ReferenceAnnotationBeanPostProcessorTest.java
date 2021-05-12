@@ -17,12 +17,15 @@
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.config.annotation.Argument;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.api.Notify;
+import org.apache.dubbo.config.spring.impl.NotifyImpl;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -94,6 +97,11 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         return new TestBean();
     }
 
+    @Bean("notify")
+    public Notify testNotify() {
+        return new NotifyImpl();
+    }
+
     @Bean(BEAN_NAME)
     public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
         return new ReferenceAnnotationBeanPostProcessor();
@@ -142,6 +150,9 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
     @Reference(check = false, filter = {"echo"}, parameters = {"a", "1"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
     private HelloService helloServiceWithArgument2;
+
+    @DubboReference(check = false,methods = {@Method(name = "sayHello",oninvoke = "notify.oninvoke",onreturn = "notify.onreturn",onthrow = "notify.onthrow")})
+    private HelloService helloServiceMethodCallBack;
 
     @Test
     public void test() throws Exception {
@@ -338,6 +349,14 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         if ("helloService".equals(referenceBean.getId())) {
             Assertions.assertNotNull(referenceBean.getMethods());
         }
+    }
+
+    @Test
+    public void testMethodAnnotationCallBack() {
+        helloServiceMethodCallBack.sayHello("dubbo");
+        Notify notify = (Notify) context.getBean("notify");
+        Assertions.assertEquals("dubbo invoke success", notify.getOnInvoke());
+        Assertions.assertEquals("dubbo return success", notify.getOnReturn());
     }
 
 }
