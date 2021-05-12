@@ -23,6 +23,7 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SslConfig extends AbstractConfig {
@@ -39,6 +40,16 @@ public class SslConfig extends AbstractConfig {
     private String clientPrivateKeyPath;
     private String clientKeyPassword;
     private String clientTrustCertCollectionPath;
+
+    /**
+     * set support cipher
+     */
+    private List<String> ciphers;
+
+    /**
+     * set support protocal
+     */
+    private List<String> protocals;
 
     private InputStream serverKeyCertChainPathStream;
     private InputStream serverPrivateKeyPathStream;
@@ -118,6 +129,24 @@ public class SslConfig extends AbstractConfig {
 
     public void setClientTrustCertCollectionPath(String clientTrustCertCollectionPath) {
         this.clientTrustCertCollectionPath = clientTrustCertCollectionPath;
+    }
+
+    @Parameter(key = "ciphers")
+    public List<String> getCiphers() {
+        return ciphers;
+    }
+
+    public void setCiphers(List<String> ciphers) {
+        this.ciphers = ciphers;
+    }
+
+    @Parameter(key = "protocals")
+    public List<String> getProtocals() {
+        return protocals;
+    }
+
+    public void setProtocals(List<String> protocals) {
+        this.protocals = protocals;
     }
 
     public InputStream getServerKeyCertChainPathStream() throws IOException {
