@@ -136,13 +136,25 @@ public class MethodConfig extends AbstractMethodConfig {
         this.setReturn(method.isReturn());
 
         if(!"".equals(method.oninvoke())){
-            this.setOninvoke(method.oninvoke());
+            int index = method.oninvoke().lastIndexOf(".");
+            String ref = method.oninvoke().substring(0, index);
+            String methodName = method.oninvoke().substring(index + 1);
+            this.setOninvoke(ref);
+            this.setOninvokeMethod(methodName);
         }
         if(!"".equals(method.onreturn())){
-            this.setOnreturn(method.onreturn());
+            int index = method.onreturn().lastIndexOf(".");
+            String ref = method.onreturn().substring(0, index);
+            String methodName = method.onreturn().substring(index + 1);
+            this.setOnreturn(ref);
+            this.setOnreturnMethod(methodName);
         }
         if(!"".equals(method.onthrow())){
-            this.setOnthrow(method.onthrow());
+            int index = method.onthrow().lastIndexOf(".");
+            String ref = method.onthrow().substring(0, index);
+            String methodName = method.onthrow().substring(index + 1);
+            this.setOnthrow(ref);
+            this.setOnthrowMethod(methodName);
         }
 
         if (method.arguments() != null && method.arguments().length != 0) {
