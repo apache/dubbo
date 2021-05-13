@@ -38,11 +38,7 @@ public class Application {
         @Bean
         public RegistryConfig registryConfig() {
             RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setId("service-discovery");
-            registryConfig.setProtocol("zookeeper");
-            registryConfig.setAddress("192.168.2.133:2181?registry-type=service");
-            registryConfig.setTimeout(60000);
-            registryConfig.setSimplified(true);
+            registryConfig.setAddress("zookeeper://127.0.0.1:2181");
             return registryConfig;
         }
     }
