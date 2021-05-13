@@ -154,6 +154,13 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
 
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
+            BitList<Invoker<T>> noTagList = new BitList<>(invokers, true);
+
+            for (int index = 0; index < invokers.size(); index++) {
+                noTagList.addIndex(index);
+            }
+            addrPool.put(NO_TAG, noTagList);
+            routerCache.setAddrPool(addrPool);
             return routerCache;
         }
 

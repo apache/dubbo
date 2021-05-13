@@ -72,6 +72,8 @@ public class RouterChain<T> {
 
     private final ExecutorService loopPool;
 
+    private boolean firstBuildCache = true;
+
     private static final Logger logger = LoggerFactory.getLogger(StaticDirectory.class);
 
     public static <T> RouterChain<T> buildChain(URL url) {
@@ -240,6 +242,10 @@ public class RouterChain<T> {
     }
 
     public void loop(boolean notify) {
+        if (firstBuildCache) {
+            firstBuildCache = false;
+            buildCache(notify);
+        }
         if (notify) {
             if (loopPermitNotify.tryAcquire()) {
                 loopPool.submit(new NotifyLoopRunnable(true));
