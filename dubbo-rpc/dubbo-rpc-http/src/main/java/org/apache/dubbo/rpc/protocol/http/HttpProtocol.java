@@ -31,6 +31,8 @@ import com.googlecode.jsonrpc4j.JsonRpcServer;
 import com.googlecode.jsonrpc4j.spring.JsonProxyFactoryBean;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.remoting.RemoteAccessException;
 import org.springframework.remoting.support.RemoteInvocation;
 
@@ -112,8 +114,10 @@ public class HttpProtocol extends AbstractProxyProtocol {
         }
         final String path = url.getAbsolutePath();
         final String genericPath = path + "/" + GENERIC_KEY;
-        JsonRpcServer skeleton = new JsonRpcServer(impl, type);
-        JsonRpcServer genericServer = new JsonRpcServer(impl, GenericService.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        JsonRpcServer skeleton = new JsonRpcServer(mapper, impl, type);
+        JsonRpcServer genericServer = new JsonRpcServer(mapper, impl, GenericService.class);
         skeletonMap.put(path, skeleton);
         skeletonMap.put(genericPath, genericServer);
         return () -> {
