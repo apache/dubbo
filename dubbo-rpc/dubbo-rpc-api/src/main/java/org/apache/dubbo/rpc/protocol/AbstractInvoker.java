@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -43,6 +44,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -145,9 +147,22 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
             invocation.addObjectAttachmentsIfAbsent(attachment);
         }
 
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
         if (contextAttachments != null && contextAttachments.size() != 0) {
             invocation.addObjectAttachmentsIfAbsent(contextAttachments);
+        }
+
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ExtensionLoader.getExtensionLoader(PenetrateAttachmentSelector.class);
+        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (String supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(selected);
+                }
+            }
+        } else {
+            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(RpcContext.getServerAttachment().getObjectAttachments());
         }
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
@@ -175,7 +190,7 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         } catch (Throwable e) {
             asyncResult = AsyncRpcResult.newDefaultAsyncResult(null, e, invocation);
         }
-        RpcContext.getContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
+        RpcContext.getServiceContext().setFuture(new FutureAdapter<>(asyncResult.getResponseFuture()));
 
         waitForResultIfSync(asyncResult, invocation);
         return asyncResult;

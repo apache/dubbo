@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.dns.util;
+package org.apache.dubbo.rpc;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.apache.dubbo.common.extension.SPI;
 
-public class DNSResolverTest {
+import java.util.Map;
 
-    @Test
-    public void testResolve() {
-        DNSResolver dnsResolver = new DNSResolver("8.8.8.8", 53, 1);
-        ResolveResult resolve = dnsResolver.resolve("aliyun.com");
-        Assertions.assertTrue(resolve.getHostnameList().size() > 0);
-    }
+@SPI
+public interface PenetrateAttachmentSelector {
+
+    /**
+     * Select some attachments to pass to next hop.
+     * These attachments can fetch from {@link RpcContext#getServerAttachment()} or user defined.
+     *
+     * @return attachment pass to next hop
+     */
+    Map<String, Object> select();
+
 }

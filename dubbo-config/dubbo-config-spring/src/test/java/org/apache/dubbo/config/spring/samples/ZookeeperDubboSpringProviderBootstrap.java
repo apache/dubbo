@@ -49,7 +49,7 @@ class DefaultDemoService implements DemoService {
 
     @Override
     public String sayName(String name) {
-        RpcContext rpcContext = RpcContext.getContext();
+        RpcContext rpcContext = RpcContext.getServiceContext();
         return format("[%s:%s] Say - %s", rpcContext.getLocalHost(), rpcContext.getLocalPort(), name);
     }
 

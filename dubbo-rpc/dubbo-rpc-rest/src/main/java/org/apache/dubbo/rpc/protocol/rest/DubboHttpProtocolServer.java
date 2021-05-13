@@ -85,7 +85,7 @@ public class DubboHttpProtocolServer extends BaseRestProtocolServer {
 
         @Override
         public void handle(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-            RpcContext.getContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
+            RpcContext.getServiceContext().setRemoteAddress(request.getRemoteAddr(), request.getRemotePort());
             dispatcher.service(request, response);
         }
     }
