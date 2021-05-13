@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata.store.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -29,11 +30,13 @@ import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
@@ -65,6 +68,8 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 public class NacosMetadataReport extends AbstractMetadataReport {
 
     private NacosConfigServiceWrapper configService;
+
+    private Gson gson = new Gson();
 
     /**
      * The group used to store metadata in Nacos
@@ -151,6 +156,26 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
+    public void publishAppMetadata(SubscriberMetadataIdentifier identifier, MetadataInfo metadataInfo) {
+        String content = gson.toJson(metadataInfo);
+        try {
+            configService.publishConfig(identifier.getApplication(), identifier.getRevision(), content);
+        } catch (NacosException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public MetadataInfo getAppMetadata(SubscriberMetadataIdentifier identifier, Map<String, String> instanceMetadata) {
+        try {
+            String content = configService.getConfig(identifier.getApplication(), identifier.getRevision(), 3000L);
+            return gson.fromJson(content, MetadataInfo.class);
+        } catch (NacosException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+    }
+
+    @Override
     protected void doStoreProviderMetadata(MetadataIdentifier providerMetadataIdentifier, String serviceDefinitions) {
         this.storeMetadata(providerMetadataIdentifier, serviceDefinitions);
     }
@@ -226,4 +251,5 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
     }
+
 }
