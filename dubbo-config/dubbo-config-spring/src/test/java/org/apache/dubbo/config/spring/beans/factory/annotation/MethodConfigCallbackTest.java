@@ -35,8 +35,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.event.annotation.AfterTestMethod;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import static org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor.BEAN_NAME;
-
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
@@ -57,7 +55,7 @@ public class MethodConfigCallbackTest {
         DubboBootstrap.reset();
     }
 
-    @Bean(BEAN_NAME)
+    @Bean("referenceAnnotationBeanPostProcessor")
     public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
         return new ReferenceAnnotationBeanPostProcessor();
     }
