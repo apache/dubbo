@@ -147,8 +147,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         directory.unSubscribe(RegistryProtocol.toSubscribeUrl(oldSubscribeUrl));
         if (directory.isShouldRegister()) {
             registry.register(directory.getRegisteredConsumerUrl());
+            directory.setRegisteredConsumerUrl(newSubscribeUrl);
         }
-        directory.setRegisteredConsumerUrl(newSubscribeUrl);
         directory.buildRouterChain(newSubscribeUrl);
         directory.subscribe(RegistryProtocol.toSubscribeUrl(newSubscribeUrl));
     }
