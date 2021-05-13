@@ -63,6 +63,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -332,17 +333,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         List<URL> registryURLs = ConfigValidationUtils.loadRegistries(this, true);
 
+        int protocolConfigNum = protocols.size();
         for (ProtocolConfig protocolConfig : protocols) {
             String pathKey = URL.buildKey(getContextPath(protocolConfig)
                     .map(p -> p + "/" + path)
                     .orElse(path), group, version);
             // In case user specified path, register service one more time to map it to path.
             repository.registerService(pathKey, interfaceClass);
-            doExportUrlsFor1Protocol(protocolConfig, registryURLs);
+            doExportUrlsFor1Protocol(protocolConfig, registryURLs, protocolConfigNum);
         }
     }
 
-    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
+    private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs, int protocolConfigNum) {
         String name = protocolConfig.getName();
         if (StringUtils.isEmpty(name)) {
             name = DUBBO;
@@ -463,7 +465,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // export service
         String host = findConfigedHosts(protocolConfig, registryURLs, map);
-        Integer port = findConfigedPorts(protocolConfig, name, map);
+        Integer port = findConfigedPorts(protocolConfig, name, map, protocolConfigNum);
         URL url = new URL(name, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
 
         // You can customize Configurator to append extra parameters
@@ -647,11 +649,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      *
      * @param protocolConfig
      * @param name
+     * @param protocolConfigNum
      * @return
      */
     private Integer findConfigedPorts(ProtocolConfig protocolConfig,
                                       String name,
-                                      Map<String, String> map) {
+                                      Map<String, String> map, int protocolConfigNum) {
         Integer portToBind = null;
 
         // parse bind port from environment
@@ -677,17 +680,26 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
 
-        // save bind port, used as url's key later
-        map.put(BIND_PORT_KEY, String.valueOf(portToBind));
-
         // registry port, not used as bind port by default
-        String portToRegistryStr = getValueFromConfig(protocolConfig, DUBBO_PORT_TO_REGISTRY);
+        String key = DUBBO_PORT_TO_REGISTRY;
+        if (protocolConfigNum > 1) {
+            key = getProtocolConfigId(protocolConfig).toUpperCase() + "_" + key;
+        }
+        String portToRegistryStr = getValueFromConfig(protocolConfig, key);
         Integer portToRegistry = parsePort(portToRegistryStr);
         if (portToRegistry == null) {
             portToRegistry = portToBind;
         }
 
+        // save bind port, used as url's key later
+        map.put(BIND_PORT_KEY, String.valueOf(portToRegistry));
+
         return portToRegistry;
+    }
+
+
+    private String getProtocolConfigId(ProtocolConfig config) {
+        return Optional.ofNullable(config.getId()).orElse("dubbo");
     }
 
     private Integer parsePort(String configPort) {
