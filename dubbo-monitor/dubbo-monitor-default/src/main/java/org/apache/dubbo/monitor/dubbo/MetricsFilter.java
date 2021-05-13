@@ -29,7 +29,6 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
-import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
@@ -59,6 +58,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_PROTOCOL
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PORT;
 import static org.apache.dubbo.common.constants.CommonConstants.METRICS_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER;
 import static org.apache.dubbo.monitor.Constants.DUBBO_CONSUMER_METHOD;
 import static org.apache.dubbo.monitor.Constants.DUBBO_GROUP;
@@ -95,8 +95,7 @@ public class MetricsFilter implements Filter {
             }
         }
 
-        RpcContext context = RpcContext.getContext();
-        boolean isProvider = context.isProviderSide();
+        boolean isProvider = invoker.getUrl().getSide(PROVIDER).equalsIgnoreCase(PROVIDER);
         long start = System.currentTimeMillis();
         try {
             Result result = invoker.invoke(invocation); // proceed invocation chain

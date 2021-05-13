@@ -535,7 +535,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 3 times"));
                 }
 
-                assertEquals(3, RpcContext.getContext().getUrls().size());
+                assertEquals(3, RpcContext.getServiceContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
@@ -566,7 +566,7 @@ public class ConfigTest {
                     assertThat(expected.getMessage(), containsString("Tried 1 times"));
                 }
 
-                assertEquals(1, RpcContext.getContext().getUrls().size());
+                assertEquals(1, RpcContext.getServiceContext().getUrls().size());
             } finally {
                 ctx.stop();
                 ctx.close();
