@@ -213,8 +213,9 @@ public class ReferenceCountExchangeClientTest {
         Assertions.assertTrue(shareConnections >= 1);
 
         int port = NetUtils.getAvailablePort();
-        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
-        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections);
+        // set REQUEST_WITH_WARNING_KEY true
+        URL demoUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/demo?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections + "&lazyclient_request_with_warning=true");
+        URL helloUrl = URL.valueOf("dubbo://127.0.0.1:" + port + "/hello?" + CONNECTIONS_KEY + "=" + connections + "&" + SHARE_CONNECTIONS_KEY + "=" + shareConnections + "&lazyclient_request_with_warning=true");
 
         demoExporter = export(new DemoServiceImpl(), IDemoService.class, demoUrl);
         helloExporter = export(new HelloServiceImpl(), IHelloService.class, helloUrl);
