@@ -49,7 +49,7 @@ public class SslConfig extends AbstractConfig {
     /**
      * set support protocal
      */
-    private List<String> protocals;
+    private List<String> protocols;
 
     private InputStream serverKeyCertChainPathStream;
     private InputStream serverPrivateKeyPathStream;
@@ -140,13 +140,13 @@ public class SslConfig extends AbstractConfig {
         this.ciphers = ciphers;
     }
 
-    @Parameter(key = "protocals")
-    public List<String> getProtocals() {
-        return protocals;
+    @Parameter(key = "protocols")
+    public List<String> getProtocols() {
+        return protocols;
     }
 
-    public void setProtocals(List<String> protocals) {
-        this.protocals = protocals;
+    public void setProtocols(List<String> protocols) {
+        this.protocols = protocols;
     }
 
     public InputStream getServerKeyCertChainPathStream() throws IOException {

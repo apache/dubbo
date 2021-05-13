@@ -60,8 +60,8 @@ public class SslContexts {
             if (sslConfig.getCiphers() != null) {
                 sslClientContextBuilder.ciphers(sslConfig.getCiphers());
             }
-            if (sslConfig.getProtocals() != null) {
-                sslClientContextBuilder.protocols(sslConfig.getProtocals());
+            if (sslConfig.getProtocols() != null) {
+                sslClientContextBuilder.protocols(sslConfig.getProtocols());
             }
 
         } catch (Exception e) {
@@ -97,8 +97,8 @@ public class SslContexts {
             if (sslConfig.getCiphers() != null) {
                 builder.ciphers(sslConfig.getCiphers());
             }
-            if (sslConfig.getProtocals() != null) {
-                builder.protocols(sslConfig.getProtocals());
+            if (sslConfig.getProtocols() != null) {
+                builder.protocols(sslConfig.getProtocols());
             }
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not find certificate file or find invalid certificate.", e);
