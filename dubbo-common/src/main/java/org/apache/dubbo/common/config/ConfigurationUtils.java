@@ -99,7 +99,7 @@ public class ConfigurationUtils {
     }
 
     public static String getCachedDynamicProperty(String key, String defaultValue) {
-        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(key));
+        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(key, ""));
         return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
