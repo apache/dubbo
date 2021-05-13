@@ -125,7 +125,6 @@ public class RpcInvocation implements Invocation, Serializable {
 
     public RpcInvocation(Method method, String serviceName, String protocolServiceKey, Object[] arguments, Map<String, Object> attachment, Map<Object, Object> attributes) {
         this(method.getName(), serviceName, protocolServiceKey, method.getParameterTypes(), arguments, attachment, null, attributes);
-        this.returnType = method.getReturnType();
     }
 
     public RpcInvocation(String methodName, String serviceName, String protocolServiceKey, Class<?>[] parameterTypes, Object[] arguments) {
@@ -181,10 +180,12 @@ public class RpcInvocation implements Invocation, Serializable {
         this.invoker = invoker;
     }
 
+    @Override
     public Object put(Object key, Object value) {
         return attributes.put(key, value);
     }
 
+    @Override
     public Object get(Object key) {
         return attributes.get(key);
     }
@@ -243,6 +244,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.parameterTypesDesc = parameterTypesDesc;
     }
 
+    @Override
     public String[] getCompatibleParamSignatures() {
         return compatibleParamSignatures;
     }
@@ -287,6 +289,7 @@ public class RpcInvocation implements Invocation, Serializable {
         this.attachments = attachments == null ? new HashMap<>() : attachments;
     }
 
+    @Override
     public void setAttachment(String key, Object value) {
        setObjectAttachment(key, value);
     }
@@ -304,6 +307,7 @@ public class RpcInvocation implements Invocation, Serializable {
         setObjectAttachmentIfAbsent(key, value);
     }
 
+    @Override
     public void setAttachmentIfAbsent(String key, Object value) {
         setObjectAttachmentIfAbsent(key, value);
     }
@@ -398,6 +402,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Deprecated
+    @Override
     public Object getObjectAttachment(String key, Object defaultValue) {
         if (attachments == null) {
             return defaultValue;
