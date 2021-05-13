@@ -53,9 +53,15 @@ public class MethodConfigTest {
     private static final int EXECUTES = 5;
     private static final boolean DEPERECATED = true;
     private static final boolean STICKY = true;
-    private static final String ONINVOKE = "i";
-    private static final String ONTHROW = "t";
-    private static final String ONRETURN = "r";
+    private static final String ONINVOKE = "instance";
+    private static final String ONTHROW = "instance";
+    private static final String ONRETURN = "instance";
+    private static final String ONINVOKEMETHOD = "i";
+    private static final String ONTHROWMETHOD = "t";
+    private static final String ONRETURNMETHOD = "r";
+    private static final String REFERONINVOKE = "instance.i";
+    private static final String REFERONTHROW = "instance.t";
+    private static final String REFERONRETURN = "instance.r";
     private static final String CACHE = "c";
     private static final String VALIDATION = "v";
     private static final int ARGUMENTS_INDEX = 24;
@@ -63,7 +69,7 @@ public class MethodConfigTest {
     private static final String ARGUMENTS_TYPE = "sss";
 
     @Reference(methods = {@Method(name = METHOD_NAME, timeout = TIMEOUT, retries = RETRIES, loadbalance = LOADBALANCE, async = ASYNC,
-            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = ONINVOKE, onthrow = ONTHROW, onreturn = ONRETURN, cache = CACHE, validation = VALIDATION,
+            actives = ACTIVES, executes = EXECUTES, deprecated = DEPERECATED, sticky = STICKY, oninvoke = REFERONINVOKE, onthrow = REFERONTHROW, onreturn = REFERONRETURN, cache = CACHE, validation = VALIDATION,
             arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
     private String testField;
 
@@ -82,9 +88,12 @@ public class MethodConfigTest {
         assertThat(EXECUTES, equalTo(methodConfig.getExecutes().intValue()));
         assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
         assertThat(STICKY, equalTo(methodConfig.getSticky()));
+        assertThat(ONINVOKEMETHOD, equalTo(methodConfig.getOninvokeMethod()));
+        assertThat(ONTHROWMETHOD, equalTo(methodConfig.getOnthrowMethod()));
+        assertThat(ONRETURNMETHOD, equalTo(methodConfig.getOnreturnMethod()));
         assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
-        assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
-        assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
+        assertThat(ONRETURN, equalTo(methodConfig.getOnthrow()));
+        assertThat(ONTHROW, equalTo(methodConfig.getOnreturn()));
         assertThat(CACHE, equalTo(methodConfig.getCache()));
         assertThat(VALIDATION, equalTo(methodConfig.getValidation()));
         assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));
