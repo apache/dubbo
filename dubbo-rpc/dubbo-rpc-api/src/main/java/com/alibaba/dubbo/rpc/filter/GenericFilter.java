@@ -24,6 +24,8 @@ import com.alibaba.dubbo.common.extension.Activate;
 import com.alibaba.dubbo.common.extension.ExtensionLoader;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayInputStream;
 import com.alibaba.dubbo.common.io.UnsafeByteArrayOutputStream;
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.PojoUtils;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
@@ -48,6 +50,7 @@ import java.lang.reflect.Method;
  */
 @Activate(group = Constants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter {
+    private static final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -74,6 +77,17 @@ public class GenericFilter implements Filter {
                         || ProtocolUtils.isDefaultGenericSerialization(generic)) {
                     args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
+                    if (!nativeJavaSerializerEnabled()) {
+                        String notice = "Trigger the safety barrier! " +
+                                "Native Java Serializer is not allowed by default." +
+                                "This means currently maybe being attacking by others. " +
+                                "If you are sure this is a mistake, " +
+                                "please set `" + Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE + "` enable in configuration! " +
+                                "Before doing so, please make sure you have configure JEP290 to prevent serialization attack.";
+                        logger.error(notice);
+                        throw new RpcException(new IllegalStateException(notice));
+                    }
+
                     for (int i = 0; i < args.length; i++) {
                         if (byte[].class == args[i].getClass()) {
                             try {
@@ -141,4 +155,9 @@ public class GenericFilter implements Filter {
         return invoker.invoke(inv);
     }
 
+    private boolean nativeJavaSerializerEnabled() {
+        return Boolean.parseBoolean(System.getProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE))
+                || Boolean.parseBoolean(System.getenv(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE))
+                || Boolean.parseBoolean(System.getenv(StringUtils.toOSStyleKey(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE)));
+    }
 }

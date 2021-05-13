@@ -27,6 +27,7 @@ import com.alibaba.dubbo.rpc.Exporter;
 import com.alibaba.dubbo.rpc.ProxyFactory;
 import com.alibaba.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 import junit.framework.Assert;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -52,7 +53,12 @@ public class DubboInvokerAvilableTest {
 
     @Before
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = DubboProtocol.getDubboProtocol();
+    }
+
+    @After
+    public void tearDown() {
+        protocol.destroy();
     }
 
     @Test
