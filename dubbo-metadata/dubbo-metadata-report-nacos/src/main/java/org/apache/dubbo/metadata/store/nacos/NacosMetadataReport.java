@@ -29,6 +29,7 @@ import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.NacosFactory;
+import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.google.gson.Gson;
 
@@ -39,28 +40,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.alibaba.nacos.api.PropertyKeyConst.ACCESS_KEY;
-import static com.alibaba.nacos.api.PropertyKeyConst.CLUSTER_NAME;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_LONG_POLL_TIMEOUT;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONFIG_RETRY_TIME;
-import static com.alibaba.nacos.api.PropertyKeyConst.CONTEXT_PATH;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENABLE_REMOTE_SYNC_CONFIG;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENCODE;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT;
-import static com.alibaba.nacos.api.PropertyKeyConst.ENDPOINT_PORT;
-import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_CLOUD_NAMESPACE_PARSING;
-import static com.alibaba.nacos.api.PropertyKeyConst.IS_USE_ENDPOINT_PARSING_RULE;
-import static com.alibaba.nacos.api.PropertyKeyConst.MAX_RETRY;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMESPACE;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_CLIENT_BEAT_THREAD_COUNT;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
-import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_POLLING_THREAD_COUNT;
-import static com.alibaba.nacos.api.PropertyKeyConst.RAM_ROLE_NAME;
-import static com.alibaba.nacos.api.PropertyKeyConst.SECRET_KEY;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
-import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
 /**
  * metadata report impl for nacos
@@ -118,25 +101,10 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     private static void setProperties(URL url, Properties properties) {
-        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
-        putPropertyIfAbsent(url, properties, IS_USE_CLOUD_NAMESPACE_PARSING);
-        putPropertyIfAbsent(url, properties, IS_USE_ENDPOINT_PARSING_RULE);
-        putPropertyIfAbsent(url, properties, ENDPOINT);
-        putPropertyIfAbsent(url, properties, ENDPOINT_PORT);
-        putPropertyIfAbsent(url, properties, NAMESPACE);
-        putPropertyIfAbsent(url, properties, ACCESS_KEY);
-        putPropertyIfAbsent(url, properties, SECRET_KEY);
-        putPropertyIfAbsent(url, properties, RAM_ROLE_NAME);
-        putPropertyIfAbsent(url, properties, CONTEXT_PATH);
-        putPropertyIfAbsent(url, properties, CLUSTER_NAME);
-        putPropertyIfAbsent(url, properties, ENCODE);
-        putPropertyIfAbsent(url, properties, CONFIG_LONG_POLL_TIMEOUT);
-        putPropertyIfAbsent(url, properties, CONFIG_RETRY_TIME);
-        putPropertyIfAbsent(url, properties, MAX_RETRY);
-        putPropertyIfAbsent(url, properties, ENABLE_REMOTE_SYNC_CONFIG);
-        putPropertyIfAbsent(url, properties, NAMING_LOAD_CACHE_AT_START, "true");
-        putPropertyIfAbsent(url, properties, NAMING_CLIENT_BEAT_THREAD_COUNT);
-        putPropertyIfAbsent(url, properties, NAMING_POLLING_THREAD_COUNT);
+        // Get the parameters from constants
+        Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
+        // Put all parameters
+        properties.putAll(parameters);
     }
 
     private static void putPropertyIfAbsent(URL url, Properties properties, String propertyName) {
