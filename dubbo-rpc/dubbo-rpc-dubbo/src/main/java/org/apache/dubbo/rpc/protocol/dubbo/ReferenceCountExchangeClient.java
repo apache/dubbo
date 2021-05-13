@@ -188,9 +188,10 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
 
-        if (disconnectCount.incrementAndGet() > maxDisconnectCount) {
-            disconnectCount.set(0);
+        if (disconnectCount.get() >= maxDisconnectCount) {
             lazyUrl.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
+        } else {
+            disconnectCount.incrementAndGet();
         }
 
         /**
