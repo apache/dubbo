@@ -72,7 +72,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         if (configedThreshold != null && configedThreshold >= 0) {
             rawThreshold = String.valueOf(configedThreshold);
         }
-        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
+        rawThreshold = StringUtils.isNotEmpty(rawThreshold) ? rawThreshold : ConfigurationUtils.getCachedDynamicProperty(MIGRATION_THRESHOLD, DEFAULT_THRESHOLD_STRING);
         float threshold;
         try {
             threshold = Float.parseFloat(rawThreshold);
