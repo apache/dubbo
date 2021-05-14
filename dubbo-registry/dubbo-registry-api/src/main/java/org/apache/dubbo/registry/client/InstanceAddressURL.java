@@ -102,11 +102,6 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
-    public String getIp() {
-        return instance.getHost();
-    }
-
-    @Override
     public String getPath() {
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
         if (serviceInfo == null) {
