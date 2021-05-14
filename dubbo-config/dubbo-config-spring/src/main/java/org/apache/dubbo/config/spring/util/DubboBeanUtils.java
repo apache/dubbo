@@ -36,6 +36,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static java.util.Collections.emptyList;
@@ -51,6 +52,8 @@ public abstract class DubboBeanUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(DubboBeanUtils.class);
 
+    private static AtomicBoolean registered = new AtomicBoolean(false);
+
     /**
      * Register the common beans
      *
@@ -62,6 +65,9 @@ public abstract class DubboBeanUtils {
      * @see DubboBootstrapApplicationListener
      */
     public static void registerCommonBeans(BeanDefinitionRegistry registry) {
+        if (!registered.compareAndSet(false, true)) {
+            return;
+        }
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
