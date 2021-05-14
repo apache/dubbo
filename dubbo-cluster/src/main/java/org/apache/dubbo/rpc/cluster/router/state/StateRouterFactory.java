@@ -31,5 +31,5 @@ public interface StateRouterFactory {
      * @return router instance
      */
     @Adaptive("protocol")
-    StateRouter getRouter(URL url, RouterChain chain);
+    <T> StateRouter getRouter(URL url, RouterChain<T> chain);
 }
