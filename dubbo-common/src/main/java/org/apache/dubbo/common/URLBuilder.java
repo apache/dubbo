@@ -327,7 +327,7 @@ public final class URLBuilder {
             return this;
         }
         for(Map.Entry<String, String> entry : parameters.entrySet()) {
-            this.parameters.putIfAbsent(entry.getKey(), entry.getValue());
+            addParameterIfAbsent(entry.getKey(), entry.getValue());
         }
         return this;
     }
