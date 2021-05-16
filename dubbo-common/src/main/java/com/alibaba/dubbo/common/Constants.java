@@ -647,6 +647,10 @@ public class Constants {
 
     public static final String TELNET = "telnet";
 
+    public static final String BACKLOG_KEY = "backlog";
+
+    public static final int DEFAULT_BACKLOG = 1024;
+
     public static final String DOT_REGEX = "\\.";
 
     public static final String UNDERLINE_SEPARATOR = "_";

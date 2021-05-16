@@ -75,6 +75,7 @@ public class NettyServer extends AbstractServer implements Server {
         // https://issues.jboss.org/browse/NETTY-379
         // final Timer timer = new HashedWheelTimer(new NamedThreadFactory("NettyIdleTimer", true));
         bootstrap.setOption("child.tcpNoDelay", true);
+        bootstrap.setOption("backlog", getUrl().getPositiveParameter(Constants.BACKLOG_KEY, Constants.DEFAULT_BACKLOG));
         bootstrap.setPipelineFactory(new ChannelPipelineFactory() {
             @Override
             public ChannelPipeline getPipeline() {
