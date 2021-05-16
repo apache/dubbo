@@ -113,5 +113,6 @@ public class Hessian2ObjectOutput implements ObjectOutput, Cleanable {
         if(mH2o != null) {
             mH2o.reset();
         }
+        OUTPUT_TL.remove();
     }
 }

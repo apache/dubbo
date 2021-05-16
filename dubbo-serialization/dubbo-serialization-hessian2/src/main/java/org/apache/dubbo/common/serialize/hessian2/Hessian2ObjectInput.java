@@ -116,5 +116,6 @@ public class Hessian2ObjectInput implements ObjectInput, Cleanable {
         if(mH2i != null) {
             mH2i.reset();
         }
+        INPUT_TL.remove();
     }
 }
