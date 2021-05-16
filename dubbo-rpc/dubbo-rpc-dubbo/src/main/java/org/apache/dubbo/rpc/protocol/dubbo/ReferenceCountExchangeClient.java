@@ -19,6 +19,8 @@ package org.apache.dubbo.rpc.protocol.dubbo;
 
 import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
@@ -38,6 +40,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
+    private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
 
@@ -188,10 +191,8 @@ final class ReferenceCountExchangeClient implements ExchangeClient {
                 .addParameter(SEND_RECONNECT_KEY, Boolean.TRUE.toString());
         //.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
 
-        if (disconnectCount.get() >= maxDisconnectCount) {
-            lazyUrl.addParameter(LazyConnectExchangeClient.REQUEST_WITH_WARNING_KEY, true);
-        } else {
-            disconnectCount.incrementAndGet();
+        if (disconnectCount.getAndIncrement() % maxDisconnectCount == 0) {
+            logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
         }
 
         /**
