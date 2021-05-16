@@ -198,6 +198,10 @@ public class RouterChain<T> {
         loop(true);
     }
 
+    /**
+     * Build the asynchronous address cache.
+     * @param notify Whether the addresses in registry has changed.
+     */
     private void buildCache(boolean notify) {
         if (invokers == null || invokers.size() <= 0) {
             return;
@@ -221,6 +225,14 @@ public class RouterChain<T> {
         this.cache.set(newCache);
     }
 
+    /**
+     * Cache the address list for each Router.
+     * @param router router
+     * @param orign The original address cache
+     * @param invokers The full address list
+     * @param notify Whether the addresses in registry has changed.
+     * @return
+     */
     private RouterCache poolRouter(StateRouter router, AddrCache<T> orign, List<Invoker<T>> invokers, boolean notify) {
         String routerName = router.getName();
         RouterCache routerCache;
