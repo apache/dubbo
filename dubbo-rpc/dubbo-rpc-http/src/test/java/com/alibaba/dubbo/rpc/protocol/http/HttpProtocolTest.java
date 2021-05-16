@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.http;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
 import com.alibaba.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -27,6 +28,7 @@ import com.alibaba.dubbo.common.serialize.nativejava.NativeJavaSerialization;
 import com.alibaba.dubbo.rpc.*;
 import com.alibaba.dubbo.rpc.service.GenericService;
 import junit.framework.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -39,6 +41,11 @@ import static org.junit.Assert.fail;
  * HttpProtocolTest
  */
 public class HttpProtocolTest {
+
+    @Before
+    public void setup() {
+        System.setProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+    }
 
     @Test
     public void testHttpProtocol() {

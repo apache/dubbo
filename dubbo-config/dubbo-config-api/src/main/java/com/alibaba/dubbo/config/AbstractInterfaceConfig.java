@@ -222,6 +222,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         appendProperties(monitor);
         Map<String, String> map = new HashMap<String, String>();
         map.put(Constants.INTERFACE_KEY, MonitorService.class.getName());
+        map.put(Constants.SIDE_KEY, Constants.CONSUMER_SIDE);
         map.put("dubbo", Version.getProtocolVersion());
         map.put(Constants.TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {

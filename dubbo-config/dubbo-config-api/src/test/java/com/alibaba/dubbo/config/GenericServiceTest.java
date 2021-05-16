@@ -31,6 +31,7 @@ import com.alibaba.dubbo.rpc.service.GenericException;
 import com.alibaba.dubbo.rpc.service.GenericService;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -45,6 +46,11 @@ import java.util.concurrent.atomic.AtomicReference;
  * GenericServiceTest
  */
 public class GenericServiceTest {
+
+    @Before
+    public void setup() {
+        System.setProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+    }
 
     @Test
     public void testGenericServiceException() {

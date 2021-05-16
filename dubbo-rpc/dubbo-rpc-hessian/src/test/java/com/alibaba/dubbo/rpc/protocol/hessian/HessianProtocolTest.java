@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.rpc.protocol.hessian;
 
+import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.beanutil.JavaBeanDescriptor;
 import com.alibaba.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -34,6 +35,7 @@ import com.alibaba.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 
 import com.alibaba.dubbo.rpc.service.GenericService;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -46,6 +48,11 @@ import static org.junit.Assert.fail;
  * HessianProtocolTest
  */
 public class HessianProtocolTest {
+
+    @Before
+    public void setup() {
+        System.setProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
+    }
 
     @Test
     public void testHessianProtocol() {
@@ -83,6 +90,8 @@ public class HessianProtocolTest {
 
     @Test
     public void testGenericInvokeWithNativeJava() throws IOException, ClassNotFoundException {
+        // temporary enable native java generic serialize
+        System.setProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
         HessianServiceImpl server = new HessianServiceImpl();
         Assert.assertFalse(server.isCalled());
         ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -106,6 +115,7 @@ public class HessianProtocolTest {
         Assert.assertEquals("Hello, haha", objectInput.readObject());
         invoker.destroy();
         exporter.unexport();
+        System.clearProperty(Constants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
     }
 
     @Test

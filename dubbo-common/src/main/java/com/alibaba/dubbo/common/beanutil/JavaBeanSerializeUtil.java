@@ -20,6 +20,7 @@ import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.LogHelper;
 import com.alibaba.dubbo.common.utils.ReflectUtils;
+import com.alibaba.dubbo.common.utils.SerializeClassChecker;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -439,6 +440,7 @@ public final class JavaBeanSerializeUtil {
         if (isReferenceType(name)) {
             name = name.substring(1, name.length() - 1);
         }
+        SerializeClassChecker.getInstance().validateClass(name);
         return Class.forName(name, false, loader);
     }
 
