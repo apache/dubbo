@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
@@ -183,12 +184,21 @@ public class AsyncRpcResult implements Result {
 
     @Override
     public Object recreate() throws Throwable {
-        RpcInvocation rpcInvocation = (RpcInvocation) invocation;
-        if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            return RpcContext.getContext().getFuture();
-        }
+        try {
+            RpcInvocation rpcInvocation = (RpcInvocation) invocation;
+            if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
+                // get future reference before remove
+                Future<Object> future = RpcContext.getContext().getFuture();
+                return future;
+            }
 
-        return getAppResponse().recreate();
+            return getAppResponse().recreate();
+        } finally {
+            RpcContext.removeContext(true);
+            FutureContext.getContext().setFuture(null);
+            FutureContext.getContext().setCompatibleFuture(null);
+            FutureContext.getContext().remove();
+        }
     }
 
     public Result whenCompleteWithContext(BiConsumer<Result, Throwable> fn) {
