@@ -64,10 +64,6 @@ public class FutureContext {
         this.future = future;
     }
 
-    public void remove() {
-        futureTL.remove();
-    }
-
     @Deprecated
     @SuppressWarnings("unchecked")
     public <T> CompletableFuture<T> getCompatibleCompletableFuture() {
