@@ -160,7 +160,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         cacheInjectedReferenceBean(referenceBean, injectedElement);
 
-        return referenceBean.get();
+        return getBeanFactory().applyBeanPostProcessorsAfterInitialization(referenceBean.get(), referenceBeanName);
     }
 
     /**
