@@ -25,7 +25,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 /**
- * Router. (SPI, Prototype, ThreadSafe)
+ * State Router. (SPI, Prototype, ThreadSafe)
  * <p>
  * <a href="http://en.wikipedia.org/wiki/Routing">Routing</a>
  *

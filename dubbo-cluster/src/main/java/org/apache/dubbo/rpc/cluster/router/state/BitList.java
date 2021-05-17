@@ -25,6 +25,10 @@ import java.util.ListIterator;
 import org.roaringbitmap.IntIterator;
 import org.roaringbitmap.RoaringBitmap;
 
+/**
+ * BitList based on BitMap implementation.
+ * @param <E>
+ */
 public class BitList<E> implements List<E> {
     private final RoaringBitmap rootMap;
     private final List<E> unmodifiableList;

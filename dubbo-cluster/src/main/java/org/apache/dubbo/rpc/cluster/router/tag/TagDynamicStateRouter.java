@@ -47,7 +47,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.rpc.Constants.FORCE_USE_TAG;
 
 /**
- * TagRouter, "application.tag-router"
+ * TagDynamicStateRouter, "application.tag-router"
  */
 public class TagDynamicStateRouter extends AbstractStateRouter implements ConfigurationListener {
     public static final String NAME = "TAG_ROUTER";

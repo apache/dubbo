@@ -24,7 +24,7 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 @SPI
 public interface StateRouterFactory {
     /**
-     * Create router.
+     * Create state router.
      * Since 2.7.0, most of the time, we will not use @Adaptive feature, so it's kept only for compatibility.
      *
      * @param url url

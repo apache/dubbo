@@ -253,6 +253,10 @@ public class RouterChain<T> {
             == null;
     }
 
+    /***
+     * Build the asynchronous address cache.
+     * @param notify Whether the addresses in registry has changed.
+     */
     public void loop(boolean notify) {
         if (firstBuildCache) {
             firstBuildCache = false;

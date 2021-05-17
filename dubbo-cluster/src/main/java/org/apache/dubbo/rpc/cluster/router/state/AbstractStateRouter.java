@@ -28,6 +28,9 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
+/***
+ * The abstract class of StateRoute.
+ */
 public abstract class AbstractStateRouter implements StateRouter {
     final protected RouterChain chain;
     protected int priority = DEFAULT_PRIORITY;

@@ -37,7 +37,7 @@ import org.apache.dubbo.rpc.cluster.router.tag.model.TagRouterRule;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 
 /**
- * TagRouter, "application.tag-router"
+ * TagStaticStateRouter, "application.tag-router"
  */
 public class TagStaticStateRouter extends AbstractStateRouter {
     public static final String NAME = "TAG_ROUTER";

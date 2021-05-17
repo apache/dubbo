@@ -21,6 +21,10 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.apache.dubbo.rpc.Invoker;
 
+/***
+ * Cache the address list for each Router.
+ * @param <T>
+ */
 public class RouterCache<T> {
     private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();
     protected ConcurrentMap<String, BitList<Invoker<T>>> addrPool = EMPTY_MAP;
