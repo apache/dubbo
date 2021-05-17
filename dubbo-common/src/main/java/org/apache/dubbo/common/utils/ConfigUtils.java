@@ -148,7 +148,13 @@ public class ConfigUtils {
         return sb.toString();
     }
 
+    /**
+     * Get dubbo properties.
+     * It is not recommended to use this method to modify dubbo properties.
+     * @return
+     */
     public static Properties getProperties() {
+        //TODO remove global instance PROPERTIES from ConfigUtils
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
@@ -166,10 +172,18 @@ public class ConfigUtils {
         return PROPERTIES;
     }
 
+    /**
+     * This method should be called before Dubbo starting.
+     * It is not recommended to use this method to modify dubbo properties.
+     */
     public static void setProperties(Properties properties) {
         PROPERTIES = properties;
     }
 
+    /**
+     * This method should be called before Dubbo starting.
+     * It is not recommended to use this method to modify dubbo properties.
+     */
     public static void addProperties(Properties properties) {
         if (properties != null) {
             getProperties().putAll(properties);
@@ -186,7 +200,10 @@ public class ConfigUtils {
         if (value != null && value.length() > 0) {
             return value;
         }
-        Properties properties = getProperties();
+        return getProperty(getProperties(), key, defaultValue);
+    }
+
+    public static String getProperty(Properties properties, String key, String defaultValue) {
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 

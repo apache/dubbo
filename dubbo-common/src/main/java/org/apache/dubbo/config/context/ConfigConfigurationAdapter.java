@@ -19,6 +19,8 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,14 +32,33 @@ public class ConfigConfigurationAdapter implements Configuration {
 
     private Map<String, String> metaData;
 
-    public ConfigConfigurationAdapter(AbstractConfig config) {
-        Map<String, String> configMetadata = config.getMetaData();
-        metaData = new HashMap<>(configMetadata.size());
-        for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
-            String prefix = config.getPrefix().endsWith(".") ? config.getPrefix() : config.getPrefix() + ".";
-            String id = StringUtils.isEmpty(config.getId()) ? "" : config.getId() + ".";
-            metaData.put(prefix + id + entry.getKey(), entry.getValue());
+    public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
+        // Map<String, String> configMetadata = config.getMetaData();
+        Map<String, String> configMetadata = getConfigProps(config);
+        if (StringUtils.hasText(prefix)) {
+            metaData = new HashMap<>(configMetadata.size());
+            for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
+                metaData.put(prefix + "." + entry.getKey(), entry.getValue());
+            }
+        } else {
+            metaData = configMetadata;
         }
+    }
+
+    protected Map<String, String> getConfigProps(AbstractConfig config) {
+        Map<String, String> map = new HashMap<>();
+        if (config instanceof ReferenceConfigBase) {
+            // use consumer props as default value
+            ReferenceConfigBase referenceConfig = (ReferenceConfigBase) config;
+            AbstractConfig.appendProperties(map, referenceConfig.getConsumer());
+        } else if (config instanceof ServiceConfigBase) {
+            // use provider props as default value
+            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
+            AbstractConfig.appendProperties(map, serviceConfig.getProvider());
+        }
+
+        AbstractConfig.appendProperties(map, config);
+        return map;
     }
 
     @Override
@@ -45,4 +66,7 @@ public class ConfigConfigurationAdapter implements Configuration {
         return metaData.get(key);
     }
 
+    public Map/*<String, String>*/ getProperties() {
+        return metaData;
+    }
 }

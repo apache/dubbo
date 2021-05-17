@@ -140,7 +140,9 @@ public class ConfigManagerTest {
         assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultProvider().isPresent());
 
+        config = new ProviderConfig();
         config.setId(DEFAULT_KEY);
+        config.setQueues(10);
         configManager.addProvider(config);
         assertTrue(configManager.getDefaultProvider().isPresent());
         configs = configManager.getProviders();
@@ -157,7 +159,9 @@ public class ConfigManagerTest {
         assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultConsumer().isPresent());
 
+        config = new ConsumerConfig();
         config.setId(DEFAULT_KEY);
+        config.setThreads(10);
         configManager.addConsumer(config);
         assertTrue(configManager.getDefaultConsumer().isPresent());
         configs = configManager.getConsumers();
@@ -222,7 +226,7 @@ public class ConfigManagerTest {
         assertNull(ConfigManager.isDefaultConfig(providerConfig1));
 
         ProviderConfig providerConfig3 = new ProviderConfig();
-        providerConfig.setDefault(true);
+        providerConfig3.setDefault(true);
         assertTrue(ConfigManager.isDefaultConfig(providerConfig3));
 
         ProtocolConfig protocolConfig = new ProtocolConfig();

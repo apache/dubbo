@@ -63,7 +63,7 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     protected String reconnect;
 
-    protected Boolean sticky = false;
+    protected Boolean sticky;
 
     /**
      * Whether to support event in stub.
@@ -87,6 +87,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
     protected String providedBy;
 
     protected String router;
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (sticky == null) {
+            sticky = false;
+        }
+    }
 
     public Boolean isCheck() {
         return check;

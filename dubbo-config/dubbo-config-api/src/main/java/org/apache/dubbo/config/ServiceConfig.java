@@ -106,7 +106,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
-    public static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
     /**
      * A random port cache, the different protocols who has no port specified have different random port
@@ -188,18 +188,23 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
 
+        // Using DubboBootstrap API will associate bootstrap when registering service.
+        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
+        // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            // Initializing bootstrap here only for compatible with old API usages
             bootstrap.initialize();
             bootstrap.service(this);
-        } else if (!bootstrap.isInitialized()) {
-            // Using DubboBootstrap API will associate bootstrap when registering service
-            // Loading by Spring context will associate bootstrap in afterPropertiesSet() method
+        }
+
+        // check bootstrap state
+        if (!bootstrap.isInitialized()) {
             throw new IllegalStateException("DubboBootstrap is not initialized");
         }
 
-        checkAndUpdateSubConfigs();
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
 
         //init serviceMetadata
         serviceMetadata.setVersion(getVersion());
@@ -232,10 +237,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     private void checkAndUpdateSubConfigs() {
+
         // Use default configs defined explicitly with global scope
         completeCompoundConfigs();
-        checkDefault();
+
         checkProtocol();
+
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
@@ -245,7 +252,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!isOnlyInJvm()) {
             checkRegistry();
         }
-        this.refresh();
 
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
@@ -263,7 +269,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterfaceAndMethods(interfaceClass, getMethods());
+            //checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
             generic = Boolean.FALSE.toString();
         }
@@ -301,6 +307,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         postProcessConfig();
     }
 
+    @Override
+    protected void postProcessRefresh() {
+        super.postProcessRefresh();
+        checkAndUpdateSubConfigs();
+    }
 
     protected synchronized void doExport() {
         if (unexported) {

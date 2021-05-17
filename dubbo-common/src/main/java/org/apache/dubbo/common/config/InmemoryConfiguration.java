@@ -24,8 +24,21 @@ import java.util.Map;
  */
 public class InmemoryConfiguration implements Configuration {
 
+    private String name;
+
     // stores the configuration key-value pairs
-    private Map<String, String> store = new LinkedHashMap<>();
+    private Map<String, Object> store = new LinkedHashMap<>();
+
+    public InmemoryConfiguration() {
+    }
+
+    public InmemoryConfiguration(String name) {
+        this.name = name;
+    }
+
+    public InmemoryConfiguration(Map<String, Object> properties) {
+        this.addProperties(properties);
+    }
 
     @Override
     public Object getInternalProperty(String key) {
@@ -42,7 +55,7 @@ public class InmemoryConfiguration implements Configuration {
     /**
      * Add a set of properties into the store
      */
-    public void addProperties(Map<String, String> properties) {
+    public void addProperties(Map/*<String, Object>*/ properties) {
         if (properties != null) {
             this.store.putAll(properties);
         }
@@ -51,10 +64,15 @@ public class InmemoryConfiguration implements Configuration {
     /**
      * set store
      */
-    public void setProperties(Map<String, String> properties) {
+    public void setProperties(Map/*<String, Object>*/ properties) {
         if (properties != null) {
-            this.store = properties;
+            this.store.clear();
+            this.store.putAll(properties);
         }
+    }
+
+    public Map/*<String, Object>*/ getProperties() {
+        return store;
     }
 
     // for unit test

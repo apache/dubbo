@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -117,15 +115,13 @@ public class MethodConfig extends AbstractMethodConfig {
     private List<ArgumentConfig> arguments;
 
     /**
+     * TODO remove service and serviceId
      * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
      */
     private String service;
     private String serviceId;
 
-    @Parameter(excluded = true)
-    public String getName() {
-        return name;
-    }
+    private AbstractInterfaceConfig parent;
 
     public MethodConfig() {
     }
@@ -176,6 +172,37 @@ public class MethodConfig extends AbstractMethodConfig {
             return methodConfigs;
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Get method prefixes
+     * @return
+     */
+    @Override
+    @Parameter(excluded = true)
+    public List<String> getPrefixes() {
+        // parent prefix + method name
+        if (parent != null) {
+            List<String> prefixes = new ArrayList<>(parent.getPrefixes().size());
+            // excluding dubbo.reference.{method-name} and dubbo.service.{method-name}
+            for (String parentPrefix : parent.getPrefixes()) {
+                prefixes.add(parentPrefix + "." +this.getName());
+            }
+            return prefixes;
+        } else {
+            throw new IllegalStateException("The parent of MethodConfig is null");
+        }
+    }
+
+    @Override
+    public void addIntoConfigManager() {
+        // Don't add MethodConfig to ConfigManager
+        // super.addIntoConfigManager();
+    }
+
+    @Parameter(excluded = true)
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
@@ -328,16 +355,13 @@ public class MethodConfig extends AbstractMethodConfig {
         this.serviceId = serviceId;
     }
 
-    /**
-     * service and name must not be null.
-     *
-     * @return
-     */
-    @Override
     @Parameter(excluded = true)
-    public String getPrefix() {
-        return CommonConstants.DUBBO + "." + service
-                + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
-                + "." + getName();
+    public AbstractInterfaceConfig getParent() {
+        return parent;
     }
+
+    public void setParent(AbstractInterfaceConfig parent) {
+        this.parent = parent;
+    }
+
 }

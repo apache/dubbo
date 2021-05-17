@@ -187,4 +187,15 @@ public class RegistryConfigTest {
         Assertions.assertNotEquals(registry1, registry2);
     }
 
+    @Test
+    public void testDefaultMetaData() {
+        RegistryConfig config = new RegistryConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+    }
+
+    @Test
+    public void testOverrideConfig() {
+        //TODO
+    }
 }

@@ -27,7 +27,6 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -36,7 +35,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -55,7 +53,8 @@ public class JavaConfigReferenceBeanTest {
 
     @Test
     public void testAnnotationBean() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class, AnnotationBeanConfiguration.class);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class,
+                AnnotationBeanConfiguration.class);
 
         Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
         Assertions.assertEquals(1, helloServiceMap.size());
@@ -82,7 +81,8 @@ public class JavaConfigReferenceBeanTest {
 
     @Test
     public void testGenericReferenceBean() {
-        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class, ReferenceBeanConfiguration.class);
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfig.class,
+                ReferenceBeanConfiguration.class);
 
         Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
         Assertions.assertEquals(2, helloServiceMap.size());
@@ -192,13 +192,13 @@ public class JavaConfigReferenceBeanTest {
     public static class AnnotationBeanConfiguration {
 
         @Bean
-        @DubboReference(group = "${myapp.group}", init = false)
+        @DubboReference(group = "${myapp.group}")
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBean();
         }
 
         @Bean
-        @Reference(group = "${myapp.group}", interfaceClass = HelloService.class, init = false)
+        @Reference(group = "${myapp.group}", interfaceClass = HelloService.class)
         public ReferenceBean<GenericService> genericHelloService() {
             return new ReferenceBean();
         }
@@ -212,15 +212,12 @@ public class JavaConfigReferenceBeanTest {
         public ReferenceBean<HelloService> helloService() {
             return new ReferenceBeanBuilder()
                     .setGroup("${myapp.group}")
-                    .setInit(false)
                     .build();
         }
 
         @Bean
         public ReferenceBean<HelloService> helloService2() {
-            return new ReferenceBeanBuilder()
-                    .setInit(false)
-                    .build();
+            return new ReferenceBean();
         }
 
         @Bean
@@ -228,7 +225,6 @@ public class JavaConfigReferenceBeanTest {
             return new ReferenceBeanBuilder()
                     .setGroup("${myapp.group}")
                     .setInterface(HelloService.class)
-                    .setInit(false)
                     .build();
         }
 

@@ -17,8 +17,10 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -33,12 +35,21 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import javax.annotation.PostConstruct;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.MethodDescriptor;
+import java.beans.PropertyDescriptor;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -63,7 +74,16 @@ public abstract class AbstractConfig implements Serializable {
      */
     private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
 
+    /**
+     * The field names cache of config class
+     */
     private static final Map<Class, Set<String>> fieldNamesCache = new ConcurrentHashMap<>();
+
+    /**
+     * The ignored attributes of metadata and override config.
+     * Attributes that cannot be overridden.
+     */
+    private static final Set<String> IGNORED_ATTRIBUTES = new HashSet<>();
 
     /**
      * The suffix container
@@ -79,26 +99,23 @@ public abstract class AbstractConfig implements Serializable {
         LEGACY_PROPERTIES.put("dubbo.consumer.retries", "dubbo.service.max.retry.providers");
         LEGACY_PROPERTIES.put("dubbo.consumer.check", "dubbo.service.allow.no.provider");
         LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
+
+        // The ignored attributes of metadata
+        //IGNORED_ATTRIBUTES.add("id");
+        IGNORED_ATTRIBUTES.add("prefix");
+        IGNORED_ATTRIBUTES.add("prefixes");
+        IGNORED_ATTRIBUTES.add("refreshed");
+        IGNORED_ATTRIBUTES.add("valid");
+        IGNORED_ATTRIBUTES.add("inited");
+        IGNORED_ATTRIBUTES.add("parent");
     }
 
     /**
      * The config id
      */
-    protected String id;
-    protected String prefix;
+    private String id;
 
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
-
-    private static String convertLegacyValue(String key, String value) {
-        if (value != null && value.length() > 0) {
-            if ("dubbo.service.max.retry.providers".equals(key)) {
-                return String.valueOf(Integer.parseInt(value) - 1);
-            } else if ("dubbo.service.allow.no.provider".equals(key)) {
-                return String.valueOf(!Boolean.parseBoolean(value));
-            }
-        }
-        return value;
-    }
 
     public static String getTagName(Class<?> cls) {
         String tag = cls.getSimpleName();
@@ -111,12 +128,32 @@ public abstract class AbstractConfig implements Serializable {
         return StringUtils.camelToSplitName(tag, "-");
     }
 
+    public static String getPluralTagName(Class<?> cls) {
+        String tagName = getTagName(cls);
+        if (tagName.endsWith("y")) {
+            // e.g. registry -> registries
+            return tagName.substring(0, tagName.length() - 1) + "ies";
+        } else if (tagName.endsWith("s")) {
+            // e.g. metrics -> metricses
+            return tagName + "es";
+        }
+        return tagName + "s";
+    }
+
     public static void appendParameters(Map<String, String> parameters, Object config) {
         appendParameters(parameters, config, null);
     }
 
     @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
+        appendParamters0(parameters, config, prefix, false);
+    }
+
+    public static void appendProperties(Map<String, String> parameters, Object config) {
+        appendParamters0(parameters, config, null, true);
+    }
+
+    private static void appendParamters0(Map<String, String> parameters, Object config, String prefix, boolean appendProperty) {
         if (config == null) {
             return;
         }
@@ -130,7 +167,7 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     String key;
-                    if (parameter != null && parameter.key().length() > 0) {
+                    if (!appendProperty && parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = calculatePropertyFromGetter(name);
@@ -138,20 +175,23 @@ public abstract class AbstractConfig implements Serializable {
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        if (parameter != null && parameter.escaped()) {
+                        if (!appendProperty && parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
                             String pre = parameters.get(key);
                             if (pre != null && pre.length() > 0) {
                                 str = pre + "," + str;
+                                //Remove duplicate values
+                                Set<String> set = StringUtils.splitToSet(str, ',');
+                                str = StringUtils.join(set, ",");
                             }
                         }
                         if (prefix != null && prefix.length() > 0) {
                             key = prefix + "." + key;
                         }
                         parameters.put(key, str);
-                    } else if (parameter != null && parameter.required()) {
+                    } else if (!appendProperty && parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
                 } else if (isParametersGetter(method)) {
@@ -269,12 +309,14 @@ public abstract class AbstractConfig implements Serializable {
         } catch (NoSuchMethodException e) {
             getter = clazz.getMethod("is" + propertyName);
         }
-        Parameter parameter = getter.getAnnotation(Parameter.class);
-        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
-            propertyName = parameter.key();
-        } else {
-            propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
-        }
+//        Parameter parameter = getter.getAnnotation(Parameter.class);
+//        if (parameter != null && StringUtils.isNotEmpty(parameter.key()) && parameter.useKeyAsProperty()) {
+//            propertyName = parameter.key();
+//        } else {
+//            propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
+//        }
+
+        propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
         return propertyName;
     }
 
@@ -411,19 +453,33 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     /**
-     * Should be called after Config was fully initialized.
-     * // FIXME: this method should be completely replaced by appendParameters
      *
-     * @return
-     * @see AbstractConfig#appendParameters(Map, Object, String)
      * <p>
-     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters.
+     * <b>The new instance of the AbstractConfig subclass should return empty metadata.</b>
+     * The purpose is is to get the attributes set by the user instead of the default value when the {@link #refresh()} method handles attribute overrides.
+     * </p>
+     *
+     * <p><b>The default value of the field should be set in the {@link #checkDefault()} method</b>,
+     * which will be called at the end of {@link #refresh()}, so that it will not affect the behavior of attribute overrides.</p>
+     *
+     * <p></p>
+     * Should be called after Config was fully initialized.
+     * // FIXME: this method should be completely replaced by appendParameters?
+     * // -- Not complete matched. Url parameter may use key, but props override only use property name
+     * <p>
+     * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters?
+     * </p>
+     *
+     * @see AbstractConfig#checkDefault()
+     * @see AbstractConfig#appendParameters(Map, Object, String)
      */
     public Map<String, String> getMetaData() {
+        BeanInfo beanInfo = getBeanInfo();
+
         Map<String, String> metaData = new HashMap<>();
-        Method[] methods = this.getClass().getMethods();
-        for (Method method : methods) {
+        for (java.beans.MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
             try {
+                Method method = methodDescriptor.getMethod();
                 String name = method.getName();
                 if (MethodUtils.isMetaMethod(method)) {
                     String key;
@@ -433,10 +489,21 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         key = calculateAttributeFromGetter(name);
                     }
+
+                    // filter ignored attribute
+                    if (IGNORED_ATTRIBUTES.contains(key)) {
+                        continue;
+                    }
+
+                    // filter non-property
+                    if (!isWritableProperty(beanInfo, key)) {
+                        continue;
+                    }
+
                     // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
                     //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
                     if (method.getReturnType() == Object.class) {
-                        metaData.put(key, null);
+                        //metaData.put(key, null);
                         continue;
                     }
 
@@ -452,7 +519,7 @@ public abstract class AbstractConfig implements Serializable {
                     if (value != null && str.length() > 0) {
                         metaData.put(key, str);
                     } else {
-                        metaData.put(key, null);
+                        //metaData.put(key, null);
                     }
                 } else if (isParametersGetter(method)) {
                     Map<String, String> map = (Map<String, String>) method.invoke(this, new Object[0]);
@@ -465,37 +532,113 @@ public abstract class AbstractConfig implements Serializable {
         return metaData;
     }
 
+    protected BeanInfo getBeanInfo() {
+        BeanInfo beanInfo = null;
+        try {
+            beanInfo = Introspector.getBeanInfo(this.getClass());
+        } catch (IntrospectionException e) {
+            throw new IllegalStateException(e.getMessage(), e);
+        }
+        return beanInfo;
+    }
+
+    private static boolean isWritableProperty(BeanInfo beanInfo, String key) {
+        for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+            if (key.equals(propertyDescriptor.getName())) {
+                return propertyDescriptor.getWriteMethod() != null;
+            }
+        }
+        return false;
+    }
+
     @Parameter(excluded = true)
-    public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (CommonConstants.DUBBO + "." + getTagName(this.getClass()));
+    public List<String> getPrefixes() {
+        List<String> prefixes = new ArrayList<>();
+        if (StringUtils.hasText(this.getId())) {
+            // dubbo.{tag-name}s.id
+            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getId());
+        }
+
+        // check name
+        BeanInfo beanInfo = getBeanInfo();
+        for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+            if ("name".equals(propertyDescriptor.getName())) {
+                try {
+                    String name = (String) propertyDescriptor.getReadMethod().invoke(this);
+                    if (StringUtils.hasText(name)) {
+                        String prefix = CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + name;
+                        if (!prefixes.contains(prefix)) {
+                            prefixes.add(prefix);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new IllegalStateException("get config name failed: "+this, e);
+                }
+            }
+        }
+
+        // dubbo.{tag-name}
+        prefixes.add(getTypePrefix(this.getClass()));
+        return prefixes;
     }
 
-    public void setPrefix(String prefix) {
-        this.prefix = prefix;
+    public static String getTypePrefix(Class<? extends AbstractConfig> cls) {
+        return CommonConstants.DUBBO + "." + getTagName(cls);
     }
 
+    /**
+     * Dubbo config property override
+     */
     public void refresh() {
         refreshed.set(true);
-        Environment env = ApplicationModel.getEnvironment();
         try {
-            CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(this);
+            preProcessRefresh();
+
+            Configuration instanceConfiguration = null;
+            Environment env = ApplicationModel.getEnvironment();
+            List<Map<String, Object>> configurationMaps = env.getConfigurationMaps();
+
+            // Check in order to see if there are any properties that begin with PREFIX
+            String preferredPrefix = null;
+            for (String prefix : getPrefixes()) {
+                if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
+                    preferredPrefix = prefix;
+                    break;
+                }
+            }
+            if (preferredPrefix == null) {
+                preferredPrefix = getPrefixes().get(0);
+            }
+            Collection<Map<String, Object>> instanceConfigMaps = env.getConfigurationMaps(this, preferredPrefix);
+            Map<String, Object> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
+            instanceConfiguration = new InmemoryConfiguration(subProperties);
+
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
             for (Method method : methods) {
                 if (MethodUtils.isSetter(method)) {
+                    String propertyName = extractPropertyName(getClass(), method);
+                    // convert camelCase/snake_case to kebab-case
+                    propertyName = StringUtils.convertToSplitName(propertyName, "-");
+
+                    // check ignored attributes
+                    if (IGNORED_ATTRIBUTES.contains(propertyName)) {
+                        continue;
+                    }
                     try {
-                        String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                        String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
-                    } catch (NoSuchMethodException e) {
+                    } catch (Exception e) {
                         logger.info("Failed to override the property " + method.getName() + " in " +
                                 this.getClass().getSimpleName() +
                                 ", please make sure every property has getter/setter method provided.");
                     }
                 } else if (isParametersSetter(method)) {
-                    String value = StringUtils.trim(compositeConfiguration.getString(extractPropertyName(getClass(), method)));
+                    String propertyName = extractPropertyName(getClass(), method);
+                    String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
                     if (StringUtils.isNotEmpty(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;
@@ -504,9 +647,51 @@ public abstract class AbstractConfig implements Serializable {
                     }
                 }
             }
+
+            // refresh methodConfig
+            if (this instanceof AbstractInterfaceConfig) {
+                AbstractInterfaceConfig interfaceConfig = (AbstractInterfaceConfig) this;
+                List<MethodConfig> methodConfigs = interfaceConfig.getMethods();
+                if (methodConfigs != null && methodConfigs.size() > 0) {
+                    for (MethodConfig methodConfig : methodConfigs) {
+                        methodConfig.setParent(interfaceConfig);
+                        methodConfig.refresh();
+                    }
+                }
+            }
         } catch (Exception e) {
-            logger.error("Failed to override ", e);
+            logger.error("Failed to override field value of config bean: "+this, e);
+            throw new IllegalStateException("Failed to override field value of config bean: "+this, e);
         }
+
+        postProcessRefresh();
+    }
+
+    protected void preProcessRefresh() {
+        // pre-process refresh
+    }
+
+    protected void postProcessRefresh() {
+        // post-process refresh
+        checkDefault();
+    }
+
+    /**
+     * Check and set default value for some fields.
+     * <p>
+     * This method will be called at the end of {@link #refresh()}, as a post-initializer.
+     * </p>
+     * <p>NOTE: </p>
+     * <p>
+     * To distinguish between user-set property values and default property values,
+     * do not initialize default value at field declare statement. <b>If the field has a default value,
+     * it should be set in the checkDefault() method</b>, which will be called at the end of {@link #refresh()},
+     * so that it will not affect the behavior of attribute overrides.</p>
+     *
+     * @see AbstractConfig#getMetaData()
+     * @see AbstractConfig#appendProperties(Map, Object)
+     */
+    protected void checkDefault() {
     }
 
     @Parameter(excluded = true)
@@ -530,6 +715,7 @@ public abstract class AbstractConfig implements Serializable {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
 
+                        // Fixes #4992, endless recursive call when NetUtils method fails.
                         if (!fieldNames.contains(key)) {
                             continue;
                         }
@@ -577,11 +763,22 @@ public abstract class AbstractConfig implements Serializable {
             return true;
         }
 
-        Method[] methods = this.getClass().getMethods();
-        for (Method method1 : methods) {
+        BeanInfo beanInfo = getBeanInfo();
+        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
+            Method method1 = methodDescriptor.getMethod();
             if (MethodUtils.isGetter(method1)) {
-                Parameter parameter = method1.getAnnotation(Parameter.class);
-                if (parameter != null && parameter.excluded()) {
+                // Some properties may be excluded in url parameters, but it is meaningful and cannot be ignored. e.g., ProtocolConfig's name & port
+//                Parameter parameter = method1.getAnnotation(Parameter.class);
+//                if (parameter != null && parameter.excluded()) {
+//                    continue;
+//                }
+                String propertyName = calculateAttributeFromGetter(method1.getName());
+                // filter ignored attribute
+                if (IGNORED_ATTRIBUTES.contains(propertyName) || "id".equals(propertyName)) {
+                    continue;
+                }
+                // filter non-property
+                if (!isWritableProperty(beanInfo, propertyName)) {
                     continue;
                 }
                 try {
@@ -592,7 +789,7 @@ public abstract class AbstractConfig implements Serializable {
                         return false;
                     }
                 } catch (Exception e) {
-                    return true;
+                    throw new IllegalStateException("compare config instances failed", e);
                 }
             }
         }

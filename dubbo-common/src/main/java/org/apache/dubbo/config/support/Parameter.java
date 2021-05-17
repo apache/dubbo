@@ -56,7 +56,10 @@ public @interface Parameter {
      * }
      *
      * </pre>
+     *
+     * @deprecated config overriding ignores parameter key
      */
+    @Deprecated
     boolean useKeyAsProperty() default true;
 
 }

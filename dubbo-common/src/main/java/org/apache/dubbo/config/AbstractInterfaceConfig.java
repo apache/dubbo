@@ -18,7 +18,6 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
-import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -177,7 +176,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     /**
      * Check whether the registry config is exists, and then conversion it to {@link RegistryConfig}
      */
-    public void checkRegistry() {
+    protected void checkRegistry() {
         convertRegistryIdsToRegistries();
 
         for (RegistryConfig registryConfig : registries) {
@@ -197,44 +196,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    /**
-     * Check whether the remote service interface and the methods meet with Dubbo's requirements.it mainly check, if the
-     * methods configured in the configuration file are included in the interface of remote service
-     *
-     * @param interfaceClass the interface of remote service
-     * @param methods        the methods configured
-     */
-    public void checkInterfaceAndMethods(Class<?> interfaceClass, List<MethodConfig> methods) {
-        // interface cannot be null
-        Assert.notNull(interfaceClass, new IllegalStateException("interface not allow null!"));
-
-        // to verify interfaceClass is an interface
-        if (!interfaceClass.isInterface()) {
-            throw new IllegalStateException("The interface class " + interfaceClass + " is not a interface!");
-        }
-        // check if methods exist in the remote service interface
-        if (CollectionUtils.isNotEmpty(methods)) {
-            for (MethodConfig methodBean : methods) {
-                methodBean.setService(interfaceClass.getName());
-                methodBean.setServiceId(this.getId());
-                methodBean.refresh();
-                String methodName = methodBean.getName();
-                if (StringUtils.isEmpty(methodName)) {
-                    throw new IllegalStateException("<dubbo:method> name attribute is required! Please check: " +
-                            "<dubbo:service interface=\"" + interfaceClass.getName() + "\" ... >" +
-                            "<dubbo:method name=\"\" ... /></<dubbo:reference>");
-                }
-
-                boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
-                if (!hasMethod) {
-                    throw new IllegalStateException("The interface " + interfaceClass.getName()
-                            + " not found method " + methodName);
-                }
-            }
-        }
+    @Override
+    public Map<String, String> getMetaData() {
+        Map<String, String> metaData = super.getMetaData();
+        this.getMethods();
+        return metaData;
     }
-
-
 
     /**
      * Legitimacy check of stub, note that: the local will deprecated, and replace with <code>stub</code>
@@ -242,12 +209,12 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @param interfaceClass for provider side, it is the {@link Class} of the service that will be exported; for consumer
      *                       side, it is the {@link Class} of the remote service interface
      */
-    public void checkStubAndLocal(Class<?> interfaceClass) {
+    protected void checkStubAndLocal(Class<?> interfaceClass) {
         verifyStubAndLocal(local, "Local", interfaceClass);
         verifyStubAndLocal(stub, "Stub", interfaceClass);
     }
-    
-    public void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
+
+    private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
     	if (ConfigUtils.isNotEmpty(className)) {
             Class<?> localClass = ConfigUtils.isDefault(className) ?
                     ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
@@ -276,10 +243,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             if (CollectionUtils.isEmpty(registries)) {
                 List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
                 if (registryConfigs.isEmpty()) {
-                    registryConfigs = new ArrayList<>();
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.refresh();
-                    registryConfigs.add(registryConfig);
+                    throw new IllegalStateException("Default registry is not initialized");
                 } else {
                     registryConfigs = new ArrayList<>(registryConfigs);
                 }
@@ -294,25 +258,16 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     if (globalRegistry.isPresent()) {
                         tmpRegistries.add(globalRegistry.get());
                     } else {
-                        RegistryConfig registryConfig = new RegistryConfig();
-                        registryConfig.setId(id);
-                        registryConfig.refresh();
-                        tmpRegistries.add(registryConfig);
+                        throw new IllegalStateException("Registry not found: " + id);
                     }
                 }
             });
-
-            if (tmpRegistries.size() > ids.length) {
-                throw new IllegalStateException("Too much registries found, the registries assigned to this service " +
-                        "are :" + registryIds + ", but got " + tmpRegistries.size() + " registries!");
-            }
-
             setRegistries(tmpRegistries);
         }
 
     }
 
-    public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
+    protected void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {
         if (interfaceConfig != null) {
             if (application == null) {
                 setApplication(interfaceConfig.getApplication());

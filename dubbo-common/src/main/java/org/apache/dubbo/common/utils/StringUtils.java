@@ -426,6 +426,15 @@ public final class StringUtils {
     }
 
     /**
+     * Check the cs String whether contains non whitespace characters.
+     * @param cs
+     * @return
+     */
+    public static boolean hasText(CharSequence cs) {
+        return !isBlank(cs);
+    }
+
+    /**
      * is empty string.
      *
      * @param str source string.
@@ -894,6 +903,15 @@ public final class StringUtils {
         if (isEmpty(camelName)) {
             return camelName;
         }
+        if (!isWord(camelName)) {
+            // convert Ab-Cd-Ef to ab-cd-ef
+            if (isSplitCase(camelName, split.charAt(0))) {
+                return camelName.toLowerCase();
+            }
+            // not camel case
+            return camelName;
+        }
+
         StringBuilder buf = null;
         for (int i = 0; i < camelName.length(); i++) {
             char ch = camelName.charAt(i);
@@ -912,7 +930,64 @@ public final class StringUtils {
                 buf.append(ch);
             }
         }
-        return buf == null ? camelName : buf.toString();
+        return buf == null ? camelName.toLowerCase() : buf.toString().toLowerCase();
+    }
+
+    private static boolean isSplitCase(String str, char separator) {
+        if (str == null) {
+            return false;
+        }
+        return str.chars().allMatch(ch -> (ch == separator) || isWord((char)ch) );
+    }
+
+    private static boolean isWord(String str) {
+        if (str == null) {
+            return false;
+        }
+        return str.chars().allMatch(ch -> isWord((char)ch));
+    }
+
+    private static boolean isWord(char ch) {
+        if ((ch >= 'A' && ch <= 'Z') ||
+                (ch >= 'a' && ch <= 'z') ||
+                (ch >= '0' && ch <= '9')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Convert snake_case or SNAKE_CASE to kebab-case.
+     * <p>
+     * NOTE: Return itself if it's not a snake case.
+     * @param snakeName
+     * @param split
+     * @return
+     */
+    public static String snakeToSplitName(String snakeName, String split) {
+        String lowerCase = snakeName.toLowerCase();
+        if (isSnakeCase(snakeName)) {
+            return replace(lowerCase, "_", split);
+        }
+        return snakeName;
+    }
+
+    protected static boolean isSnakeCase(String str) {
+        return str.contains("_") || str.equals(str.toLowerCase()) || str.equals(str.toUpperCase());
+    }
+
+    /**
+     * Convert camelCase or snake_case/SNAKE_CASE to kebab-case
+     * @param str
+     * @param split
+     * @return
+     */
+    public static String convertToSplitName(String str, String split) {
+        if (isSnakeCase(str)) {
+            return snakeToSplitName(str, split);
+        } else {
+            return camelToSplitName(str, split);
+        }
     }
 
     public static String toArgumentString(Object[] args) {
@@ -1105,5 +1180,19 @@ public final class StringUtils {
     public static String toCommaDelimitedString(String one, String... others) {
         String another = arrayToDelimitedString(others, COMMA_SEPARATOR);
         return isEmpty(another) ? one : one + COMMA_SEPARATOR + another;
+    }
+
+    /**
+     * Test str whether starts with the prefix ignore case.
+     * @param str
+     * @param prefix
+     * @return
+     */
+    public static boolean startsWithIgnoreCase(String str, String prefix) {
+        if (str == null || prefix == null || str.length() < prefix.length()) {
+            return false;
+        }
+        // return str.substring(0, prefix.length()).equalsIgnoreCase(prefix);
+        return str.regionMatches(true, 0, prefix, 0, prefix.length());
     }
 }

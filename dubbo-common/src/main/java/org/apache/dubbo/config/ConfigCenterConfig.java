@@ -52,25 +52,26 @@ public class ConfigCenterConfig extends AbstractConfig {
     but it's real meaning depends on the actual Config Center you use.
     */
 
-    private String namespace = CommonConstants.DUBBO;
+    private String namespace; // CommonConstants.DUBBO;
     /* The group of the config center, generally it's used to identify an isolated space for a batch of config items,
     but it's real meaning depends on the actual Config Center you use.
     */
-    private String group = CommonConstants.DUBBO;
+    private String group; // CommonConstants.DUBBO;
     private String username;
     private String password;
-    private Long timeout = 3000L;
+    private Long timeout; // 3000L;
 
+    // TODO Not used, removed or reimplemented
     // If the Config Center is given the highest priority, it will override all the other configurations
-    private Boolean highestPriority = true;
+    private Boolean highestPriority; // true;
 
     // Decide the behaviour when initial connection try fails, 'true' means interrupt the whole process once fail.
-    private Boolean check = true;
+    private Boolean check; // true;
 
     /* Used to specify the key that your properties file mapping to, most of the time you do not need to change this parameter.
     Notice that for Apollo, this parameter is meaningless, set the 'namespace' is enough.
     */
-    private String configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
+    private String configFile; // CommonConstants.DEFAULT_DUBBO_PROPERTIES;
 
     /* the .properties file under 'configFile' is global shared while .properties under this one is limited only to this application
     */
@@ -89,6 +90,30 @@ public class ConfigCenterConfig extends AbstractConfig {
     private Map<String, String> appExternalConfiguration;
 
     public ConfigCenterConfig() {
+    }
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+
+        if (namespace == null) {
+            namespace = CommonConstants.DUBBO;
+        }
+        if (group == null) {
+            group = CommonConstants.DUBBO;
+        }
+        if (timeout == null) {
+            timeout = 3000L;
+        }
+        if (highestPriority == null) {
+            highestPriority = true;
+        }
+        if (check == null) {
+            check = true;
+        }
+        if (configFile == null) {
+            configFile = CommonConstants.DEFAULT_DUBBO_PROPERTIES;
+        }
     }
 
     public URL toUrl() {
@@ -145,7 +170,6 @@ public class ConfigCenterConfig extends AbstractConfig {
                 URL url = URL.valueOf(address);
                 setUsername(url.getUsername());
                 setPassword(url.getPassword());
-                updateIdIfAbsent(url.getProtocol());
                 updateProtocolIfAbsent(url.getProtocol());
                 updatePortIfAbsent(url.getPort());
                 updateParameters(url.getParameters());

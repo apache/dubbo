@@ -33,6 +33,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.common.utils.StringUtils.splitToList;
 import static org.apache.dubbo.common.utils.StringUtils.splitToSet;
+import static org.apache.dubbo.common.utils.StringUtils.startsWithIgnoreCase;
 import static org.apache.dubbo.common.utils.StringUtils.toCommaDelimitedString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -337,8 +338,44 @@ public class StringUtilsTest {
     public void testCamelToSplitName() throws Exception {
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("abCdEf", "-"));
         assertEquals("ab-cd-ef", StringUtils.camelToSplitName("AbCdEf", "-"));
-        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
         assertEquals("abcdef", StringUtils.camelToSplitName("abcdef", "-"));
+        //assertEquals("name", StringUtils.camelToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.camelToSplitName("Ab-Cd-Ef", "-"));
+        assertEquals("Ab_Cd_Ef", StringUtils.camelToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("AB_CD_EF", StringUtils.camelToSplitName("AB_CD_EF", "-"));
+
+        assertEquals("ab.cd.ef", StringUtils.camelToSplitName("AbCdEf", "."));
+        //assertEquals("ab.cd.ef", StringUtils.camelToSplitName("ab-cd-ef", "."));
+    }
+
+    @Test
+    public void testSnakeCaseToSplitName() throws Exception {
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.snakeToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.snakeToSplitName("abcdef", "-"));
+        assertEquals("qosEnable", StringUtils.snakeToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.snakeToSplitName("NAME", "-"));
+    }
+
+    @Test
+    public void testConvertToSplitName() {
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab_Cd_Ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab_cd_ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AB_CD_EF", "-"));
+        assertEquals("abcdef", StringUtils.convertToSplitName("abcdef", "-"));
+        assertEquals("qos-enable", StringUtils.convertToSplitName("qosEnable", "-"));
+        assertEquals("name", StringUtils.convertToSplitName("NAME", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("abCdEf", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("AbCdEf", "-"));
+
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("ab-cd-ef", "-"));
+        assertEquals("ab-cd-ef", StringUtils.convertToSplitName("Ab-Cd-Ef", "-"));
     }
 
     @Test
@@ -418,4 +455,11 @@ public class StringUtilsTest {
         assertEquals("one,two,three", value);
     }
 
+    @Test
+    public void testStartsWithIgnoreCase() {
+        assertTrue(startsWithIgnoreCase("dubbo.application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("dubbo.Application.name", "dubbo.application."));
+        assertTrue(startsWithIgnoreCase("Dubbo.application.name", "dubbo.application."));
+
+    }
 }

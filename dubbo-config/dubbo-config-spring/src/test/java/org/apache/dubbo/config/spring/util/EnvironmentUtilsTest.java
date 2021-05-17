@@ -14,17 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.util;
+package org.apache.dubbo.config.spring.util;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.mock.env.MockEnvironment;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+
+import static org.apache.dubbo.config.spring.util.EnvironmentUtils.filterDubboProperties;
 
 /**
  * {@link EnvironmentUtils} Test
@@ -57,7 +61,23 @@ public class EnvironmentUtilsTest {
 
         Map<String, Object> properties = EnvironmentUtils.extractProperties(environment);
 
-        Assert.assertEquals("Mercy", properties.get("user.name"));
+        Assertions.assertEquals("Mercy", properties.get("user.name"));
+
+    }
+
+    @Test
+    public void testFilterDubboProperties() {
+
+        MockEnvironment environment = new MockEnvironment();
+        environment.setProperty("message", "Hello,World");
+        environment.setProperty("dubbo.registry.address", "zookeeper://10.10.10.1:2181");
+        environment.setProperty("dubbo.consumer.check", "false");
+
+        SortedMap<String, Object> dubboProperties = filterDubboProperties(environment);
+
+        Assertions.assertEquals(2, dubboProperties.size());
+        Assertions.assertEquals("zookeeper://10.10.10.1:2181", dubboProperties.get("dubbo.registry.address"));
+        Assertions.assertEquals("false", dubboProperties.get("dubbo.consumer.check"));
 
     }
 }

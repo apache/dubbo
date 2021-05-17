@@ -268,7 +268,9 @@ public @interface DubboReference {
 
     /**
      * Application associated name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**

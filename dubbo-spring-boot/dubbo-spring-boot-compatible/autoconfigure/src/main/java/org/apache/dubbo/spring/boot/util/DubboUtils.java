@@ -18,19 +18,13 @@ package org.apache.dubbo.spring.boot.util;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceClassPostProcessor;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 import org.apache.dubbo.config.spring.context.properties.DubboConfigBinder;
 
 import org.springframework.boot.context.ContextIdApplicationContextInitializer;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.PropertyResolver;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 /**
  * The utilities class for Dubbo
@@ -142,7 +136,7 @@ public abstract class DubboUtils {
     public static final String BASE_PACKAGES_PROPERTY_RESOLVER_BEAN_NAME = "dubboScanBasePackagesPropertyResolver";
 
     /**
-     * The bean name of {@link Set} presenting {@link ServiceClassPostProcessor}'s base-packages
+     * The bean name of {@link Set} presenting {@link ServiceAnnotationBeanPostProcessor}'s base-packages
      *
      * @since 2.7.8
      */
@@ -186,30 +180,5 @@ public abstract class DubboUtils {
      */
     public static final String DUBBO_CONFIG_MULTIPLE_PROPERTY = "dubbo.config.multiple";
 
-
-    /**
-     * Filters Dubbo Properties from {@link ConfigurableEnvironment}
-     *
-     * @param environment {@link ConfigurableEnvironment}
-     * @return Read-only SortedMap
-     */
-    public static SortedMap<String, Object> filterDubboProperties(ConfigurableEnvironment environment) {
-
-        SortedMap<String, Object> dubboProperties = new TreeMap<>();
-
-        Map<String, Object> properties = EnvironmentUtils.extractProperties(environment);
-
-        for (Map.Entry<String, Object> entry : properties.entrySet()) {
-            String propertyName = entry.getKey();
-
-            if (propertyName.startsWith(DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR)
-                    && entry.getValue() != null) {
-                dubboProperties.put(propertyName, environment.resolvePlaceholders(entry.getValue().toString()));
-            }
-
-        }
-
-        return Collections.unmodifiableSortedMap(dubboProperties);
-    }
 
 }

@@ -21,11 +21,17 @@ import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,6 +76,11 @@ public class MethodConfigTest {
             onthrow = ONTHROW+"."+ONTHROW_METHOD, onreturn = ONRETURN+"."+ONRETURN_METHOD, cache = CACHE, validation = VALIDATION,
             arguments = {@Argument(index = ARGUMENTS_INDEX, callback = ARGUMENTS_CALLBACK, type = ARGUMENTS_TYPE)})})
     private String testField;
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
 
     //TODO remove this test
     @Test
@@ -244,5 +255,39 @@ public class MethodConfigTest {
         MethodConfig method = new MethodConfig();
         method.setReturn(true);
         assertThat(method.isReturn(), is(true));
+    }
+
+    @Test
+    public void testOverrideMethodConfig() {
+
+        Map<String,String> props = new LinkedHashMap<>();
+        String interfaceName = DemoService.class.getName();
+        props.put("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
+        props.put("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
+        props.put("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        props.put("dubbo.reference."+ interfaceName +".init", "false");
+        System.getProperties().putAll(props);
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(interfaceName);
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        methodConfig.setTimeout(1000);
+        referenceConfig.setMethods(Arrays.asList(methodConfig));
+
+        DubboBootstrap.getInstance()
+                .application("demo-app")
+                .reference(referenceConfig)
+                .start();
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(false, referenceConfig.isInit());
+
     }
 }

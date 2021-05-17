@@ -17,8 +17,13 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,14 +35,20 @@ import static org.hamcrest.Matchers.is;
 
 public class ProtocolConfigTest {
 
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void testName() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("name");
+        String protocolName = "xprotocol";
+        protocol.setName(protocolName);
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getName(), equalTo("name"));
-        assertThat(protocol.getId(), equalTo("name"));
+        assertThat(protocol.getName(), equalTo(protocolName));
+        assertThat(protocol.getId(), equalTo(null));
         assertThat(parameters.isEmpty(), is(true));
     }
 
@@ -201,4 +212,175 @@ public class ProtocolConfigTest {
         protocol.setExtension("extension");
         assertThat(protocol.getExtension(), equalTo("extension"));
     }
+
+    @Test
+    public void testDefaultMetaData() {
+        ProtocolConfig config = new ProtocolConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "actual: "+metaData);
+    }
+
+    @Test
+    public void testOverrideEmptyConfig() {
+        //dubbo.protocol.name=rest
+        //dubbo.protocol.port=1234
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocol.name", "rest");
+        props.put("dubbo.protocol.port", "1234");
+        System.getProperties().putAll(props);
+
+        try {
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+
+            DubboBootstrap.getInstance()
+                    .application("test-app")
+                    .protocol(protocolConfig)
+                    .initialize();
+
+            Assertions.assertEquals("rest", protocolConfig.getName());
+            Assertions.assertEquals(1234, protocolConfig.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByName() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocols.rest.port", "1234");
+        System.getProperties().putAll(props);
+
+        try {
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.setName("rest");
+
+            DubboBootstrap.getInstance()
+                    .application("test-app")
+                    .protocol(protocolConfig)
+                    .initialize();
+
+            Assertions.assertEquals("rest", protocolConfig.getName());
+            Assertions.assertEquals(1234, protocolConfig.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testOverrideConfigById() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocols.rest1.name", "rest");
+        props.put("dubbo.protocols.rest1.port", "1234");
+        System.getProperties().putAll(props);
+
+        try {
+            ProtocolConfig protocolConfig = new ProtocolConfig();
+            protocolConfig.setName("xxx");
+            protocolConfig.setId("rest1");
+
+            DubboBootstrap.getInstance()
+                    .application("test-app")
+                    .protocol(protocolConfig)
+                    .initialize();
+
+            Assertions.assertEquals("rest", protocolConfig.getName());
+            Assertions.assertEquals(1234, protocolConfig.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateConfigFromPropsWithId() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocols.rest1.name", "rest");
+        props.put("dubbo.protocols.rest1.port", "1234");
+        props.put("dubbo.protocol.name", "dubbo"); // ignore
+        props.put("dubbo.protocol.port", "2346");
+        System.getProperties().putAll(props);
+
+        try {
+
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+            bootstrap.application("test-app")
+                    .initialize();
+
+            ConfigManager configManager = bootstrap.getConfigManager();
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertEquals(1, protocols.size());
+
+            ProtocolConfig protocol = configManager.getProtocol("rest1").get();
+
+            Assertions.assertEquals("rest", protocol.getName());
+            Assertions.assertEquals(1234, protocol.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateConfigFromPropsWithName() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocols.rest.port", "1234");
+        props.put("dubbo.protocol.name", "dubbo"); // ignore
+        props.put("dubbo.protocol.port", "2346");
+        System.getProperties().putAll(props);
+
+        try {
+
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+            bootstrap.application("test-app")
+                    .initialize();
+
+            ConfigManager configManager = bootstrap.getConfigManager();
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertEquals(1, protocols.size());
+
+            ProtocolConfig protocol = configManager.getProtocol("rest").get();
+
+            Assertions.assertEquals("rest", protocol.getName());
+            Assertions.assertEquals(1234, protocol.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testCreateDefaultConfigFromProps() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.protocol.name", "rest");
+        props.put("dubbo.protocol.port", "2346");
+        System.getProperties().putAll(props);
+
+        try {
+
+            DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+            bootstrap.application("test-app")
+                    .initialize();
+
+            ConfigManager configManager = bootstrap.getConfigManager();
+            Collection<ProtocolConfig> protocols = configManager.getProtocols();
+            Assertions.assertEquals(1, protocols.size());
+
+            ProtocolConfig protocol = configManager.getProtocol("rest").get();
+
+            Assertions.assertEquals("rest", protocol.getName());
+            Assertions.assertEquals(2346, protocol.getPort());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
 }

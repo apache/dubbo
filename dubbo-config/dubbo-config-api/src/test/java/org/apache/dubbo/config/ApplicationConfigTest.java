@@ -17,7 +17,9 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -37,13 +39,23 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 public class ApplicationConfigTest {
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void testName() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("app");
         assertThat(application.getName(), equalTo("app"));
+        assertThat(application.getId(), equalTo(null));
+
         application = new ApplicationConfig("app2");
         assertThat(application.getName(), equalTo("app2"));
+        assertThat(application.getId(), equalTo(null));
+
         Map<String, String> parameters = new HashMap<String, String>();
         ApplicationConfig.appendParameters(parameters, application);
         assertThat(parameters, hasEntry(APPLICATION_KEY, "app2"));
@@ -212,6 +224,142 @@ public class ApplicationConfigTest {
         } finally {
             System.clearProperty("dubbo.labels");
             System.clearProperty("dubbo.keys");
+        }
+    }
+
+    @Test
+    public void testDefaultMetaData() {
+        ApplicationConfig config = new ApplicationConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+    }
+
+    @Test
+    public void testOverrideEmptyConfig() {
+        String owner = "tom1";
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.application.name", "demo-app");
+        props.put("dubbo.application.owner", owner);
+        props.put("dubbo.application.version", "1.2.3");
+        System.getProperties().putAll(props);
+
+        try {
+            ApplicationConfig applicationConfig = new ApplicationConfig();
+
+            DubboBootstrap.getInstance()
+                    .application(applicationConfig)
+                    .initialize();
+
+            Assertions.assertEquals(owner, applicationConfig.getOwner());
+            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testOverrideConfigById() {
+        Map<String,String> props = new HashMap<>();
+        String owner = "tom2";
+        props.put("dubbo.applications.demo-app.owner", owner);
+        props.put("dubbo.applications.demo-app.version", "1.2.3");
+        props.put("dubbo.applications.demo-app.name", "demo-app");
+        System.getProperties().putAll(props);
+
+        try {
+            ApplicationConfig applicationConfig = new ApplicationConfig();
+            applicationConfig.setId("demo-app");
+
+            DubboBootstrap.getInstance()
+                    .application(applicationConfig)
+                    .initialize();
+
+            Assertions.assertEquals("demo-app", applicationConfig.getId());
+            Assertions.assertEquals("demo-app", applicationConfig.getName());
+            Assertions.assertEquals(owner, applicationConfig.getOwner());
+            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByName() {
+        Map<String,String> props = new HashMap<>();
+        String owner = "tom3";
+        props.put("dubbo.applications.demo-app.owner", owner);
+        props.put("dubbo.applications.demo-app.version", "1.2.3");
+        System.getProperties().putAll(props);
+
+        try {
+            ApplicationConfig applicationConfig = new ApplicationConfig();
+            applicationConfig.setName("demo-app");
+
+            DubboBootstrap.getInstance()
+                    .application(applicationConfig)
+                    .initialize();
+
+            Assertions.assertEquals(owner, applicationConfig.getOwner());
+            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testLoadConfig() {
+        Map<String,String> props = new HashMap<>();
+        String owner = "tom4";
+        props.put("dubbo.applications.demo-app.owner", owner);
+        props.put("dubbo.applications.demo-app.version", "1.2.3");
+        System.getProperties().putAll(props);
+
+        try {
+            DubboBootstrap.getInstance()
+                    .initialize();
+
+            ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
+
+            Assertions.assertEquals("demo-app", applicationConfig.getId());
+            Assertions.assertEquals("demo-app", applicationConfig.getName());
+            Assertions.assertEquals(owner, applicationConfig.getOwner());
+            Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
+        }
+    }
+
+    @Test
+    public void testOverrideConfigConvertCase() {
+        Map<String,String> props = new HashMap<>();
+        props.put("dubbo.application.NAME", "demo-app");
+        props.put("dubbo.application.qos-Enable", "false");
+        props.put("dubbo.application.qos_host", "127.0.0.1");
+        props.put("dubbo.application.qosPort", "2345");
+        System.getProperties().putAll(props);
+
+        try {
+            DubboBootstrap.getInstance()
+                    .initialize();
+
+            ApplicationConfig applicationConfig = DubboBootstrap.getInstance().getApplication();
+
+            Assertions.assertEquals(false, applicationConfig.getQosEnable());
+            Assertions.assertEquals("127.0.0.1", applicationConfig.getQosHost());
+            Assertions.assertEquals(2345, applicationConfig.getQosPort());
+            Assertions.assertEquals("demo-app", applicationConfig.getName());
+        } finally {
+            for (String key : props.keySet()) {
+                System.clearProperty(key);
+            }
         }
     }
 }

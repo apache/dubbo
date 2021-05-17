@@ -18,14 +18,33 @@
 package org.apache.dubbo.config;
 
 
+import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 public class ConfigCenterConfigTest {
+
+    @BeforeEach
+    public void setUp() {
+        DubboBootstrap.reset();
+    }
+
     @Test
     public void testPrefix() {
         ConfigCenterConfig config = new ConfigCenterConfig();
-        Assertions.assertEquals("dubbo.config-center", config.getPrefix());
+        Assertions.assertEquals(Arrays.asList("dubbo.config-center"), config.getPrefixes());
+
+        config.setId("configcenterA");
+        Assertions.assertEquals(Arrays.asList("dubbo.config-centers.configcenterA", "dubbo.config-center"),
+                config.getPrefixes());
     }
 
     @Test
@@ -34,6 +53,7 @@ public class ConfigCenterConfigTest {
         config.setNamespace("namespace");
         config.setGroup("group");
         config.setAddress("zookeeper://127.0.0.1:2181");
+        config.refresh();
 
         Assertions.assertEquals("zookeeper://127.0.0.1:2181/ConfigCenterConfig?check=true&" +
                         "config-file=dubbo.properties&group=group&highest-priority=true&" +
@@ -41,4 +61,186 @@ public class ConfigCenterConfigTest {
                 config.toUrl().toFullString()
         );
     }
+
+    @Test
+    public void testOverrideConfig() {
+
+        String zkAddr = "zookeeper://127.0.0.1:2181";
+        // sysprops has no id
+        System.setProperty("dubbo.config-center.check", "false");
+        System.setProperty("dubbo.config-center.address", zkAddr);
+
+        try {
+            //No id and no address
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setAddress("N/A");
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(zkAddr, configCenter.getAddress());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            System.clearProperty("dubbo.config-center.check");
+            System.clearProperty("dubbo.config-center.address");
+        }
+    }
+
+    @Test
+    public void testOverrideConfig2() {
+
+        String zkAddr = "nacos://127.0.0.1:8848";
+        // sysprops has no id
+        System.setProperty("dubbo.config-center.check", "false");
+        System.setProperty("dubbo.config-center.address", zkAddr);
+
+        try {
+            //No id but has address
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setAddress("zookeeper://127.0.0.1:2181");
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(zkAddr, configCenter.getAddress());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            System.clearProperty("dubbo.config-center.check");
+            System.clearProperty("dubbo.config-center.address");
+        }
+    }
+
+    @Test
+    public void testOverrideConfigBySystemProps() {
+
+        //Config instance has Id, but sysprops without id
+        System.setProperty("dubbo.config-center.check", "false");
+        System.setProperty("dubbo.config-center.timeout", "1234");
+
+        try {
+            // Config instance has id
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setTimeout(3000L);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(1234, configCenter.getTimeout());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            System.clearProperty("dubbo.config-center.check");
+            System.clearProperty("dubbo.config-center.timeout");
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByDubboProps() {
+
+        // Config instance has id, dubbo props has no id
+        Map props = new HashMap();
+        props.put("dubbo.config-center.check", "false");
+        props.put("dubbo.config-center.timeout", "1234");
+        ConfigUtils.getProperties().putAll(props);
+
+        try {
+            // Config instance has id
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setTimeout(3000L);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(3000L, configCenter.getTimeout());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+        }
+    }
+
+    @Test
+    public void testOverrideConfigBySystemPropsWithId() {
+
+        // Both config instance and sysprops have id
+        System.setProperty("dubbo.config-centers.configcenterA.check", "false");
+        System.setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
+
+        try {
+            // Config instance has id
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setId("configcenterA");
+            configCenter.setTimeout(3000L);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(1234, configCenter.getTimeout());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            System.clearProperty("dubbo.config-centers.configcenterA.check");
+            System.clearProperty("dubbo.config-centers.configcenterA.timeout");
+        }
+    }
+
+    @Test
+    public void testOverrideConfigByDubboPropsWithId() {
+
+        // Config instance has id, dubbo props has id
+        Map props = new HashMap();
+        props.put("dubbo.config-centers.configcenterA.check", "false");
+        props.put("dubbo.config-centers.configcenterA.timeout", "1234");
+        ConfigUtils.getProperties().putAll(props);
+
+        try {
+            // Config instance has id
+            ConfigCenterConfig configCenter = new ConfigCenterConfig();
+            configCenter.setId("configcenterA");
+            configCenter.setTimeout(3000L);
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .configCenter(configCenter)
+                    .start();
+
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Assertions.assertEquals(1, configCenters.size());
+            Assertions.assertEquals(configCenter, configCenters.iterator().next());
+            Assertions.assertEquals(3000L, configCenter.getTimeout());
+            Assertions.assertEquals(false, configCenter.isCheck());
+        } finally {
+            props.keySet().forEach(ConfigUtils.getProperties()::remove);
+        }
+    }
+
+    @Test
+    public void testDefaultMetaData() {
+        ConfigCenterConfig configCenter = new ConfigCenterConfig();
+        Map<String, String> metaData = configCenter.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+    }
+
 }

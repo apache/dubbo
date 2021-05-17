@@ -69,8 +69,8 @@ public interface DubboBeanUtils {
                 DubboConfigAliasPostProcessor.class);
 
         // Since 2.7.5 Register DubboLifecycleComponentApplicationListener as an infrastructure Bean
-        registerInfrastructureBean(registry, DubboLifecycleComponentApplicationListener.BEAN_NAME,
-                DubboLifecycleComponentApplicationListener.class);
+//        registerInfrastructureBean(registry, DubboLifecycleComponentApplicationListener.BEAN_NAME,
+//                DubboLifecycleComponentApplicationListener.class);
 
         // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
         registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,

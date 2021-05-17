@@ -17,16 +17,17 @@
 package org.apache.dubbo.config.bootstrap;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -57,14 +58,14 @@ public class DubboBootstrapTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterEach
     public void tearDown() throws IOException {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -103,12 +104,20 @@ public class DubboBootstrapTest {
     @Test
     public void testLoadRegistries() {
         System.setProperty("dubbo.registry.address", "addr1");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
-        // FIXME: now we need to check first, then load
-        interfaceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
-        interfaceConfig.checkRegistry();
-        ApplicationModel.getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
-        List<URL> urls = ConfigValidationUtils.loadRegistries(interfaceConfig, true);
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+        serviceConfig.setApplication(new ApplicationConfig("testLoadRegistries"));
+
+        // load configs from props
+        DubboBootstrap.getInstance()
+                .initialize();
+
+        serviceConfig.refresh();
+
+        //ApplicationModel.getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
+        List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
         Assertions.assertEquals(1, urls.size());
         URL url = urls.get(0);
         Assertions.assertEquals("registry", url.getProtocol());

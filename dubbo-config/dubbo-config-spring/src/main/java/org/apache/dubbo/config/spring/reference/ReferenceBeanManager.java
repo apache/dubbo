@@ -143,12 +143,6 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                     .defaultInterfaceClass(referenceBean.getObjectType())
                     .build();
 
-            //If the 'init' attribute is not set, the default value is false
-            Object init = referenceConfig.isInit();
-            if (init == null) {
-                referenceConfig.setInit(false);
-            }
-
             // set id
             referenceConfig.setId(referenceBean.getId());
 

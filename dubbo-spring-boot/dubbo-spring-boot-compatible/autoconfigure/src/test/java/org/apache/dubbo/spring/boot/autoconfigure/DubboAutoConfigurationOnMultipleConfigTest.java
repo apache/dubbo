@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +50,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  *
  * @since 2.7.0
  */
+@Ignore
 @RunWith(SpringRunner.class)
 @TestPropertySource(
         properties = {

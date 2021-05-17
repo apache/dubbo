@@ -19,15 +19,14 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -40,7 +39,7 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 /**
  * {@link ServiceAnnotationBeanPostProcessor} Test
  *
- * @since 2.5.8
+ * @since 2.7.7
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
@@ -51,12 +50,12 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {
         "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
-        "packagesToScan = ${provider.package}",
 })
+@EnableDubbo(scanBasePackages = "${provider.package}")
 public class ServiceAnnotationBeanPostProcessorTest {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 
@@ -67,12 +66,6 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
-    @Bean
-    public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor2
-            (@Value("${packagesToScan}") String... packagesToScan) {
-        return new ServiceAnnotationBeanPostProcessor(packagesToScan);
-    }
 
     @Test
     public void test() {
@@ -88,10 +81,7 @@ public class ServiceAnnotationBeanPostProcessorTest {
         Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
 
-        Assertions.assertEquals(2, beanPostProcessorsMap.size());
-
-        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
-        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
+        Assertions.assertEquals(1, beanPostProcessorsMap.size());
 
     }
 

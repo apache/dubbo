@@ -18,23 +18,28 @@ package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
-import java.util.Map;
+public class PrefixedConfiguration implements Configuration {
 
-/**
- * Configuration from system environment
- */
-public class EnvironmentConfiguration implements Configuration {
+    private String prefix;
+
+    private Configuration origin;
+
+    public PrefixedConfiguration(Configuration origin, String prefix) {
+        this.origin = origin;
+        this.prefix = prefix;
+    }
 
     @Override
     public Object getInternalProperty(String key) {
-        String value = System.getenv(key);
-        if (StringUtils.isEmpty(value)) {
-            value = System.getenv(StringUtils.toOSStyleKey(key));
+        if (StringUtils.isBlank(prefix)) {
+            return origin.getInternalProperty(key);
         }
-        return value;
+
+        Object value = origin.getInternalProperty(prefix + "." + key);
+        if (!ConfigurationUtils.isEmptyValue(value)) {
+            return value;
+        }
+        return null;
     }
 
-    public Map/*<String, String>*/ getProperties() {
-        return System.getenv();
-    }
 }

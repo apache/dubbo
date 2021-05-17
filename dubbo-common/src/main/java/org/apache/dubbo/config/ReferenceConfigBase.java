@@ -29,6 +29,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -87,6 +89,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public boolean shouldCheck() {
+        checkDefault();
         Boolean shouldCheck = isCheck();
         if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
@@ -99,6 +102,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public boolean shouldInit() {
+        checkDefault();
         Boolean shouldInit = isInit();
         if (shouldInit == null && getConsumer() != null) {
             shouldInit = getConsumer().isInit();
@@ -110,12 +114,23 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    protected void checkDefault() throws IllegalStateException {
+    @Override
+    protected void preProcessRefresh() {
+        super.preProcessRefresh();
         if (consumer == null) {
             consumer = ApplicationModel.getConfigManager()
                     .getDefaultConsumer()
                     .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }
+    }
+
+    @Override
+    @Parameter(excluded = true)
+    public List<String> getPrefixes() {
+        List<String> prefixes = new ArrayList<>();
+        // dubbo.reference.{interface-name}
+        prefixes.add(DUBBO + ".reference." + interfaceName);
+        return prefixes;
     }
 
     /**
@@ -226,12 +241,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return serviceMetadata;
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".reference." + interfaceName;
-    }
-
     public void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
@@ -268,12 +277,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
-        super.computeValidRegistryIds();
         if (StringUtils.isEmpty(getRegistryIds())) {
             if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
                 setRegistryIds(getConsumer().getRegistryIds());
             }
         }
+        super.computeValidRegistryIds();
     }
 
     @Parameter(excluded = true)
