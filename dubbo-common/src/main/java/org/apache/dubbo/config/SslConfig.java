@@ -47,7 +47,7 @@ public class SslConfig extends AbstractConfig {
     private List<String> ciphers;
 
     /**
-     * set support protocal
+     * set support protocols
      */
     private List<String> protocols;
 
