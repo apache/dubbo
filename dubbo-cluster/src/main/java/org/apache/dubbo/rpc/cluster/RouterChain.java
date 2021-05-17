@@ -199,7 +199,7 @@ public class RouterChain<T> {
     }
 
     /**
-     * Build the asynchronous address cache.
+     * Build the asynchronous address cache for stateRouter.
      * @param notify Whether the addresses in registry has changed.
      */
     private void buildCache(boolean notify) {
@@ -226,7 +226,7 @@ public class RouterChain<T> {
     }
 
     /**
-     * Cache the address list for each Router.
+     * Cache the address list for each StateRouter.
      * @param router router
      * @param orign The original address cache
      * @param invokers The full address list
@@ -254,7 +254,7 @@ public class RouterChain<T> {
     }
 
     /***
-     * Build the asynchronous address cache.
+     * Build the asynchronous address cache for stateRouter.
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {

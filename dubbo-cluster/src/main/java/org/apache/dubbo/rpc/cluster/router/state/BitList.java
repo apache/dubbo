@@ -28,6 +28,7 @@ import org.roaringbitmap.RoaringBitmap;
 /**
  * BitList based on BitMap implementation.
  * @param <E>
+ * @since 3.0
  */
 public class BitList<E> implements List<E> {
     private final RoaringBitmap rootMap;

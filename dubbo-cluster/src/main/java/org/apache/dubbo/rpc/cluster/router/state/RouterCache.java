@@ -24,6 +24,7 @@ import org.apache.dubbo.rpc.Invoker;
 /***
  * Cache the address list for each Router.
  * @param <T>
+ * @since 3.0
  */
 public class RouterCache<T> {
     private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();

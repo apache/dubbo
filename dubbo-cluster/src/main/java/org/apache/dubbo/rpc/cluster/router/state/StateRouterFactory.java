@@ -25,10 +25,10 @@ import org.apache.dubbo.rpc.cluster.RouterChain;
 public interface StateRouterFactory {
     /**
      * Create state router.
-     * Since 2.7.0, most of the time, we will not use @Adaptive feature, so it's kept only for compatibility.
      *
      * @param url url
      * @return router instance
+     * @since 3.0
      */
     @Adaptive("protocol")
     <T> StateRouter getRouter(URL url, RouterChain<T> chain);

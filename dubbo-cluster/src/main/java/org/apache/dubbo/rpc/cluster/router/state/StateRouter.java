@@ -31,6 +31,7 @@ import org.apache.dubbo.rpc.cluster.Directory;
  *
  * @see org.apache.dubbo.rpc.cluster.Cluster#join(Directory)
  * @see Directory#list(Invocation)
+ * @since 3.0
  */
 public interface StateRouter extends Comparable<StateRouter> {
 

@@ -30,6 +30,7 @@ import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 /***
  * The abstract class of StateRoute.
+ * @since 3.0
  */
 public abstract class AbstractStateRouter implements StateRouter {
     final protected RouterChain chain;

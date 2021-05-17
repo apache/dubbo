@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.Invoker;
  * Address cache,
  * used to cache the results of the StaterRouter's asynchronous address list calculations.
  * @param <T>
+ * @since 3.0
  */
 public class AddrCache<T> {
     private final static ConcurrentHashMap EMPTY_MAP = new ConcurrentHashMap<>();
