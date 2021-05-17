@@ -386,6 +386,7 @@ public class PojoUtils {
         if (pojo instanceof Map<?, ?> && type != null) {
             Object className = ((Map<Object, Object>) pojo).get("class");
             if (className instanceof String) {
+                SerializeClassChecker.getInstance().validateClass((String) className);
                 try {
                     type = ClassUtils.forName((String) className);
                 } catch (ClassNotFoundException e) {

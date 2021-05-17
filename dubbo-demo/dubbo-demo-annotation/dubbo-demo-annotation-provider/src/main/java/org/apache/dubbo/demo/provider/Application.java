@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.demo.provider;
 
+import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
@@ -23,6 +25,9 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Application {
     public static void main(String[] args) throws Exception {
@@ -35,10 +40,32 @@ public class Application {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.demo.provider")
     @PropertySource("classpath:/spring/dubbo-provider.properties")
     static class ProviderConfiguration {
+
+        @Bean
+        public MetadataReportConfig metadataReportConfig() {
+            MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+            metadataReportConfig.setAddress("nacos://127.0.0.1:8848");
+            Map<String, String> param = new HashMap<>();
+            param.put("namespace", "dubbo");
+            metadataReportConfig.setParameters(param);
+            return metadataReportConfig;
+        }
+
+        @Bean
+        public ConfigCenterConfig configCenterConfig() {
+            ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+            configCenterConfig.setAddress("nacos://127.0.0.1:8848");
+            configCenterConfig.setNamespace("dubbo");
+            return configCenterConfig;
+        }
+
         @Bean
         public RegistryConfig registryConfig() {
             RegistryConfig registryConfig = new RegistryConfig();
-            registryConfig.setAddress("zookeeper://127.0.0.1:2181");
+            registryConfig.setAddress("nacos://127.0.0.1:8848");
+            Map<String, String> param = new HashMap<>();
+            param.put("namespace", "dubbo");
+            registryConfig.setParameters(param);
             return registryConfig;
         }
     }
