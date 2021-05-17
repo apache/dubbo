@@ -44,14 +44,17 @@ public interface StateRouter extends Comparable<StateRouter> {
      */
     URL getUrl();
 
-    /**
+    /***
      * Filter invokers with current routing rule and only return the invokers that comply with the rule.
-     *
-     * @param invokers   invoker list
+     * Caching address lists in BitMap mode improves routing performance.
+     * @param invokers  invoker bit list
+     * @param cache      router address cache
      * @param url        refer url
      * @param invocation invocation
+     * @param <T>
      * @return routed invokers
      * @throws RpcException
+     * @Since 3.0
      */
     <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url, Invocation invocation)
         throws
