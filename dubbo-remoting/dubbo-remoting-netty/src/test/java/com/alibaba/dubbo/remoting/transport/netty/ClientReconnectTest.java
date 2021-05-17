@@ -52,7 +52,7 @@ public class ClientReconnectTest {
             Client client = startClient(port, 200);
             Assert.assertEquals(false, client.isConnected());
             Server server = startServer(port);
-            for (int i = 0; i < 100 && !client.isConnected(); i++) {
+            for (int i = 0; i < 1000 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
             Assert.assertEquals(true, client.isConnected());

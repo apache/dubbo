@@ -17,6 +17,7 @@
 package com.alibaba.dubbo.remoting.transport.netty;
 
 import com.alibaba.dubbo.common.URL;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
 import com.alibaba.dubbo.remoting.RemotingException;
@@ -39,7 +40,7 @@ public class ThreadNameTest {
 
     @Before
     public void before() throws Exception {
-        int port = 55555;
+        int port = NetUtils.getAvailablePort();
         serverURL = URL.valueOf("netty://localhost").setPort(port);
         clientURL = URL.valueOf("netty://localhost").setPort(port);
 

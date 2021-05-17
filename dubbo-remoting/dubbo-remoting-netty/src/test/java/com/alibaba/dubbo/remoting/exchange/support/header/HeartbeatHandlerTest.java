@@ -21,6 +21,7 @@ import com.alibaba.dubbo.common.Constants;
 import com.alibaba.dubbo.common.URL;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
+import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.ExchangeChannel;
@@ -29,7 +30,6 @@ import com.alibaba.dubbo.remoting.exchange.ExchangeHandler;
 import com.alibaba.dubbo.remoting.exchange.ExchangeServer;
 import com.alibaba.dubbo.remoting.exchange.Exchangers;
 import com.alibaba.dubbo.remoting.transport.dispatcher.FakeChannelHandlers;
-
 import junit.framework.Assert;
 import org.junit.After;
 import org.junit.Test;
@@ -56,7 +56,7 @@ public class HeartbeatHandlerTest {
 
     @Test
     public void testServerHeartbeat() throws Exception {
-        URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
+        URL serverURL = URL.valueOf("header://localhost:" + NetUtils.getAvailablePort() + "?transporter=netty3");
         serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
@@ -72,7 +72,7 @@ public class HeartbeatHandlerTest {
 
     @Test
     public void testHeartbeat() throws Exception {
-        URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
+        URL serverURL = URL.valueOf("header://localhost:" + NetUtils.getAvailablePort() + "?transporter=netty3");
         serverURL = serverURL.addParameter(Constants.HEARTBEAT_KEY, 1000);
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
@@ -89,7 +89,7 @@ public class HeartbeatHandlerTest {
     @Test
     public void testClientHeartbeat() throws Exception {
         FakeChannelHandlers.setTestingChannelHandlers();
-        URL serverURL = URL.valueOf("header://localhost:55555?transporter=netty3");
+        URL serverURL = URL.valueOf("header://localhost:" + NetUtils.getAvailablePort() + "?transporter=netty3");
         TestHeartbeatHandler handler = new TestHeartbeatHandler();
         server = Exchangers.bind(serverURL, handler);
         System.out.println("Server bind successfully");
