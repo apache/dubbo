@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -40,12 +41,14 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createConsumptionReport;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Logger logger = LoggerFactory.getLogger(MigrationInvoker.class);
+    private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
 
     private URL url;
     private URL consumerUrl;
@@ -169,12 +172,17 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (!forceMigrate) {
             refreshServiceDiscoveryInvoker();
             refreshInterfaceInvoker();
-            setListener(invoker, () -> {
-                this.compareAddresses(serviceDiscoveryInvoker, invoker);
-            });
-            setListener(serviceDiscoveryInvoker, () -> {
-                this.compareAddresses(serviceDiscoveryInvoker, invoker);
-            });
+            // By the time the task gets scheduled, the address notifications are expected to be finished for both address
+            // types. Otherwise, migration task will just pick interface invoker.
+            if (!migrated) {
+                scheduler.schedule(new MigrationTask(), getDelay(), TimeUnit.MILLISECONDS);
+                setListener(invoker, () -> {
+                    this.setAvailableInvoker(serviceDiscoveryInvoker, invoker);
+                });
+                setListener(serviceDiscoveryInvoker, () -> {
+                    this.setAvailableInvoker(serviceDiscoveryInvoker, invoker);
+                });
+            }
         } else {
             refreshServiceDiscoveryInvoker();
             setListener(serviceDiscoveryInvoker, () -> {
@@ -186,6 +194,51 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
                     );
                 }
             });
+        }
+    }
+
+    private int getDelay() {
+        int delay = 60000;
+        String delayStr = ConfigurationUtils.getProperty(MIGRATION_DELAY_KEY);
+        if (StringUtils.isEmpty(delayStr)) {
+            return delay;
+        }
+
+        try {
+           delay = Integer.parseInt(delayStr);
+        } catch (Exception e) {
+            logger.warn("Invalid migration delay param " + delayStr);
+        }
+        return delay;
+    }
+
+    private class MigrationTask implements Runnable {
+        @Override
+        public void run() {
+            if (migrated) {
+                return;
+            }
+
+            Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
+            if (CollectionUtils.isEmpty(detectors)) {
+                migrated = true;
+                destroyInterfaceInvoker();
+                return;
+            }
+
+            if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
+                destroyInterfaceInvoker();
+                FrameworkStatusReporter.reportConsumptionStatus(
+                        createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_app")
+                );
+            } else {
+                // by default
+                destroyServiceDiscoveryInvoker();
+                FrameworkStatusReporter.reportConsumptionStatus(
+                        createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_interface")
+                );
+            }
+            migrated = true;
         }
     }
 
@@ -332,44 +385,22 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private volatile boolean invokersChanged;
 
     /**
-     * Need to know which invoker change triggered this compare.
+     * Set the available invoker before migration is determined. Interface invoker goes first.
+     * @param serviceDiscoveryInvoker
+     * @param invoker
      */
-    private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
+    private void setAvailableInvoker(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged = true;
-        if (migrated) {
-            return;
-        }
-        if (serviceDiscoveryInvoker == null || serviceDiscoveryInvoker.isDestroyed()) {
-            currentAvailableInvoker = invoker;
-            return;
-        } else if (invoker == null || invoker.isDestroyed()) {
-            currentAvailableInvoker = serviceDiscoveryInvoker;
-            return;
-        }
 
-        Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
-        if (detectors != null && detectors.stream().allMatch(migrationDetector -> migrationDetector.shouldMigrate(serviceDiscoveryInvoker, invoker, rule))) {
-            logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " switch to APP Level address");
-            scheduler.submit(() -> {
-                if (invoker.getDirectory().isNotificationReceived()) {
-                    destroyInterfaceInvoker();
-                    migrated = true;
-                    FrameworkStatusReporter.reportConsumptionStatus(
-                            createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_app")
-                    );
-                }
-            });
-        } else {
-            logger.info("serviceKey:" + serviceDiscoveryInvoker.getUrl().getServiceKey() + " switch to Service Level address");
-            scheduler.submit(() -> {
-                if (serviceDiscoveryInvoker.getDirectory().isNotificationReceived()) {
-                    destroyServiceDiscoveryInvoker();
-                    migrated = true;
-                    FrameworkStatusReporter.reportConsumptionStatus(
-                            createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app_interface")
-                    );
-                }
-            });
+        if (currentAvailableInvoker == null) {
+            if (invoker != null && !invoker.isDestroyed() && invoker.hasProxyInvokers()) {
+                currentAvailableInvoker = invoker;
+            } else if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed() && serviceDiscoveryInvoker.hasProxyInvokers()) {
+                currentAvailableInvoker = serviceDiscoveryInvoker;
+            }
+            if (currentAvailableInvoker == null) {
+                currentAvailableInvoker = invoker;
+            }
         }
     }
 
@@ -385,20 +416,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             serviceDiscoveryInvoker = null;
         }
     }
-
-//    protected synchronized void discardServiceDiscoveryInvokerAddress(ClusterInvoker<T> serviceDiscoveryInvoker) {
-//        if (this.invoker != null) {
-//            this.currentAvailableInvoker = this.invoker;
-//            updateConsumerModel(currentAvailableInvoker, serviceDiscoveryInvoker);
-//        }
-//        if (serviceDiscoveryInvoker != null && !serviceDiscoveryInvoker.isDestroyed()) {
-//            if (logger.isDebugEnabled()) {
-//                List<Invoker<T>> invokers = serviceDiscoveryInvoker.getDirectory().getAllInvokers();
-//                logger.debug("Discarding instance addresses, total size " + (invokers == null ? 0 : invokers.size()));
-//            }
-//            serviceDiscoveryInvoker.getDirectory().discordAddresses();
-//        }
-//    }
 
     protected void refreshServiceDiscoveryInvoker() {
         clearListener(serviceDiscoveryInvoker);
@@ -434,24 +451,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             invoker = null;
         }
     }
-
-//
-//    protected synchronized void discardInterfaceInvokerAddress(ClusterInvoker<T> invoker) {
-//        if (this.serviceDiscoveryInvoker != null) {
-//            this.currentAvailableInvoker = this.serviceDiscoveryInvoker;
-//            updateConsumerModel(currentAvailableInvoker, invoker);
-//        }
-//        if (invoker != null && !invoker.isDestroyed()) {
-//            if (logger.isDebugEnabled()) {
-//                List<Invoker<T>> invokers = invoker.getDirectory().getAllInvokers();
-//                logger.debug("Discarding interface addresses, total address size " + (invokers == null ? 0 : invokers.size()));
-//            }
-//            invoker.getDirectory().discordAddresses();
-////            if (invokerDestroyStatus == null) {
-////                invokerDestroyStatus = executorService.schedule(new InvokerDestroyTask(), destroyInterval, TimeUnit.MILLISECONDS);
-////            }
-//        }
-//    }
 
     private void clearListener(ClusterInvoker<T> invoker) {
         if (invoker == null) return;

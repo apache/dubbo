@@ -18,5 +18,5 @@
 #
 
 key: demo-consumer
-step: FORCE_APPLICATION
+step: APPLICATION_FIRST
 threshold: 0.1
