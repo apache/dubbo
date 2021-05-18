@@ -211,7 +211,7 @@ public class AbstractInterfaceConfigTest {
     @Test
     public void testApplication() {
         InterfaceConfig interfaceConfig = new InterfaceConfig();
-        ApplicationConfig applicationConfig = new ApplicationConfig();
+        ApplicationConfig applicationConfig = new ApplicationConfig("AbstractInterfaceConfigTest");
         interfaceConfig.setApplication(applicationConfig);
         Assertions.assertSame(applicationConfig, interfaceConfig.getApplication());
     }

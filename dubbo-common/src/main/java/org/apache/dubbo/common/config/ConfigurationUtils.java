@@ -30,6 +30,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -40,6 +41,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
  */
 public class ConfigurationUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationUtils.class);
+    private static Map<String, String> CACHED_DYNAMIC_PROPERTIES = new ConcurrentHashMap<>();
 
     /**
      * Used to get properties from the jvm
@@ -98,6 +100,11 @@ public class ConfigurationUtils {
             }
         }
         return timeout;
+    }
+
+    public static String getCachedDynamicProperty(String key, String defaultValue) {
+        String value = CACHED_DYNAMIC_PROPERTIES.computeIfAbsent(key, _k -> ConfigurationUtils.getDynamicProperty(key, ""));
+        return StringUtils.isEmpty(value) ? defaultValue : value;
     }
 
     public static String getDynamicProperty(String property) {

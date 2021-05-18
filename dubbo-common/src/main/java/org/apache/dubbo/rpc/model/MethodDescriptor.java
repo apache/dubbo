@@ -23,6 +23,8 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
@@ -46,6 +48,8 @@ public class MethodDescriptor {
     private final String methodName;
     private final boolean generic;
     private final RpcType rpcType;
+
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
 
     public MethodDescriptor(Method method) {
         this.method = method;
@@ -156,6 +160,14 @@ public class MethodDescriptor {
 
     public boolean isGeneric() {
         return generic;
+    }
+
+    public void addAttribute(String key, Object value) {
+        this.attributeMap.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return this.attributeMap.get(key);
     }
 
     public enum RpcType {

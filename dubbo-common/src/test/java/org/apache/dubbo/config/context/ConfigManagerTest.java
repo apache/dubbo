@@ -96,7 +96,7 @@ public class ConfigManagerTest {
     // Test ApplicationConfig correlative methods
     @Test
     public void testApplicationConfig() {
-        ApplicationConfig config = new ApplicationConfig();
+        ApplicationConfig config = new ApplicationConfig("ConfigManagerTest");
         configManager.setApplication(config);
         assertTrue(configManager.getApplication().isPresent());
         assertEquals(config, configManager.getApplication().get());
@@ -202,7 +202,7 @@ public class ConfigManagerTest {
 
     @Test
     public void testAddConfig() {
-        configManager.addConfig(new ApplicationConfig());
+        configManager.addConfig(new ApplicationConfig("ConfigManagerTest"));
         configManager.addConfig(new ProviderConfig());
         configManager.addConfig(new ProtocolConfig());
 

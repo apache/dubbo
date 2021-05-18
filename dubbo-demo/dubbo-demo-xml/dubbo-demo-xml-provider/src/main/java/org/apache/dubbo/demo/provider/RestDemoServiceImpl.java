@@ -38,7 +38,7 @@ public class RestDemoServiceImpl implements RestDemoService {
 
     @Override
     public Integer hello(Integer a, Integer b) {
-        context = RpcContext.getContext().getObjectAttachments();
+        context = RpcContext.getServerAttachment().getObjectAttachments();
         return a + b;
     }
 
@@ -53,6 +53,6 @@ public class RestDemoServiceImpl implements RestDemoService {
 
     @Override
     public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
+        return RpcContext.getServiceContext().getRemoteApplicationName();
     }
 }

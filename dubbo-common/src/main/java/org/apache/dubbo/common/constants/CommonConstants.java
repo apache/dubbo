@@ -126,6 +126,8 @@ public interface CommonConstants {
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
     String TIMEOUT_ATTACHMENT_KEY = "_TO";
 
+    String TIMEOUT_ATTACHMENT_KEY_LOWER = "_to";
+
     String TIME_COUNTDOWN_KEY = "timeout-countdown";
 
     String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
