@@ -49,6 +49,7 @@ public class MethodDescriptor {
 
     public MethodDescriptor(Method method) {
         this.method = method;
+        this.methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{
@@ -74,7 +75,6 @@ public class MethodDescriptor {
         this.compatibleParamSignatures = Stream.of(parameterClasses)
                 .map(Class::getName)
                 .toArray(String[]::new);
-        this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
 
