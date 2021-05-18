@@ -38,32 +38,32 @@ public abstract class AbstractRouterRule {
 
         Object runtime = map.get("runtime");
         if (runtime != null) {
-            setRuntime(Boolean.parseBoolean(map.get("runtime").toString()));
+            setRuntime(Boolean.parseBoolean(runtime.toString()));
         }
 
         Object force = map.get("force");
         if (force != null) {
-            setForce(Boolean.parseBoolean(map.get("force").toString()));
+            setForce(Boolean.parseBoolean(force.toString()));
         }
 
         Object valid = map.get("valid");
         if (valid != null) {
-            setValid(Boolean.parseBoolean(map.get("valid").toString()));
+            setValid(Boolean.parseBoolean(valid.toString()));
         }
 
         Object enabled = map.get("enabled");
         if (enabled != null) {
-            setEnabled(Boolean.parseBoolean(map.get("enabled").toString()));
+            setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
 
         Object priority = map.get("priority");
         if (priority != null) {
-            setPriority(Integer.parseInt(map.get("priority").toString()));
+            setPriority(Integer.parseInt(priority.toString()));
         }
 
         Object dynamic = map.get("dynamic");
         if (dynamic != null) {
-            setDynamic(Boolean.parseBoolean(map.get("dynamic").toString()));
+            setDynamic(Boolean.parseBoolean(dynamic.toString()));
         }
 
         setScope((String) map.get("scope"));

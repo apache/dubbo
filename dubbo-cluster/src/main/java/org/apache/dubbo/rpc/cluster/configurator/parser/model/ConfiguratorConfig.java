@@ -42,7 +42,7 @@ public class ConfiguratorConfig {
 
         Object enabled = map.get("enabled");
         if (enabled != null) {
-            configuratorConfig.setEnabled(Boolean.parseBoolean(map.get("enabled").toString()));
+            configuratorConfig.setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
 
         Object configs = map.get("configs");

@@ -45,7 +45,7 @@ public class ConfigItem {
 
         Object enabled = map.get("enabled");
         if (enabled != null) {
-            configItem.setEnabled(Boolean.parseBoolean(map.get("enabled").toString()));
+            configItem.setEnabled(Boolean.parseBoolean(enabled.toString()));
         }
 
         Object addresses = map.get("addresses");
