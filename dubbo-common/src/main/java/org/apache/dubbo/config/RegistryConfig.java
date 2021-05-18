@@ -23,7 +23,9 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
