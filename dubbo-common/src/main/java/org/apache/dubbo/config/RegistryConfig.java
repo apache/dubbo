@@ -23,8 +23,8 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
@@ -486,6 +486,7 @@ public class RegistryConfig extends AbstractConfig {
         this.accepts = accepts;
     }
 
+    @Parameter(key = REGISTRY_KEY + "." + PREFERRED_KEY)
     public Boolean getPreferred() {
         return preferred;
     }
