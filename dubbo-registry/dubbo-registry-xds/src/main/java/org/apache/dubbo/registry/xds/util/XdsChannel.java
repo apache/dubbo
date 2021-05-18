@@ -42,11 +42,11 @@ public class XdsChannel {
     protected XdsChannel(URL url) {
         ManagedChannel channel1 = null;
         try {
-            XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getAdaptiveExtension();
-            XdsCertificateSigner.KeyPair keyPair = signer.request(url);
+            XdsCertificateSigner signer = ExtensionLoader.getExtensionLoader(XdsCertificateSigner.class).getExtension(url.getParameter("Signer","istio"));
+            XdsCertificateSigner.CertPair certPair = signer.request(url);
             SslContext context = GrpcSslContexts.forClient()
                     .trustManager(InsecureTrustManagerFactory.INSTANCE)
-                    .keyManager(new ByteArrayInputStream(keyPair.getPublicKey().getBytes(StandardCharsets.UTF_8)), new ByteArrayInputStream(keyPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
+                    .keyManager(new ByteArrayInputStream(certPair.getPublicKey().getBytes(StandardCharsets.UTF_8)), new ByteArrayInputStream(certPair.getPrivateKey().getBytes(StandardCharsets.UTF_8)))
                     .build();
             channel1 = NettyChannelBuilder.forAddress(url.getHost(), url.getPort())
                     .sslContext(context)
