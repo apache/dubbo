@@ -179,6 +179,8 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
 
         bean.afterPropertiesSet();
 
+        applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(bean, beanName);
+
     }
 
     @Deprecated
