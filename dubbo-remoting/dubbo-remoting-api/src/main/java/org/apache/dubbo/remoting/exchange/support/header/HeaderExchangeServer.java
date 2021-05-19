@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.exchange.support.header;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.logger.Logger;
@@ -224,7 +225,7 @@ public class HeaderExchangeServer implements ExchangeServer {
 
     @Override
     @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
+    public void reset(Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 

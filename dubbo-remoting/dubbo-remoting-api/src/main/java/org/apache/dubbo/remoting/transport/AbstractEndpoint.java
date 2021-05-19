@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.Resetable;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -96,7 +97,7 @@ public abstract class AbstractEndpoint extends AbstractPeer implements Resetable
     }
 
     @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
+    public void reset(Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 
