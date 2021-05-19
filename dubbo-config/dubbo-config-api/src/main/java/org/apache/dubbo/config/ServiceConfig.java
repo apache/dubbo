@@ -84,6 +84,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
@@ -149,6 +150,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
+    private static final String CONFIG_INITIALIZER_PROTOCOL = "configInitializer://";
+
+    private static final String TRUE_VALUE = "true";
+
+    private static final String FALSE_VALUE = "false";
+
+    private static final String STUB_SUFFIX = "Stub";
+
+    private static final String LOCAL_SUFFIX = "Local";
+
+    private static final String CONFIG_POST_PROCESSOR_PROTOCOL = "configPostProcessor://";
+
+    private static final String RETRY_SUFFIX = ".retry";
+
+    private static final String RETRIES_SUFFIX = ".retries";
+
+    private static final String ZERO_VALUE = "0";
+
     public ServiceConfig() {
     }
 
@@ -157,15 +176,18 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
     @Parameter(excluded = true)
+    @Override
     public boolean isExported() {
         return exported;
     }
 
     @Parameter(excluded = true)
+    @Override
     public boolean isUnexported() {
         return unexported;
     }
 
+    @Override
     public void unexport() {
         if (!exported) {
             return;
@@ -189,6 +211,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
+    @Override
     public synchronized void export() {
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
@@ -237,7 +260,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         checkProtocol();
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
-                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+                .getActivateExtension(URL.valueOf(CONFIG_INITIALIZER_PROTOCOL), (String[]) null);
         configInitializers.forEach(e -> e.initServiceConfig(this));
 
         // if protocol is not injvm checkRegistry
@@ -267,8 +290,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             generic = Boolean.FALSE.toString();
         }
         if (local != null) {
-            if ("true".equals(local)) {
-                local = interfaceName + "Local";
+            if (TRUE_VALUE.equals(local)) {
+                local = interfaceName + LOCAL_SUFFIX;
             }
             Class<?> localClass;
             try {
@@ -282,8 +305,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
         }
         if (stub != null) {
-            if ("true".equals(stub)) {
-                stub = interfaceName + "Stub";
+            if (TRUE_VALUE.equals(stub)) {
+                stub = interfaceName + STUB_SUFFIX;
             }
             Class<?> stubClass;
             try {
@@ -369,11 +392,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (CollectionUtils.isNotEmpty(getMethods())) {
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
-                String retryKey = method.getName() + ".retry";
+                String retryKey = method.getName() + RETRY_SUFFIX;
                 if (map.containsKey(retryKey)) {
                     String retryValue = map.remove(retryKey);
-                    if ("false".equals(retryValue)) {
-                        map.put(method.getName() + ".retries", "0");
+                    if (FALSE_VALUE.equals(retryValue)) {
+                        map.put(method.getName() + RETRIES_SUFFIX, ZERO_VALUE);
                     }
                 }
                 List<ArgumentConfig> arguments = method.getArguments();
@@ -603,7 +626,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 if (isInvalidLocalHost(hostToBind)) {
                     if (CollectionUtils.isNotEmpty(registryURLs)) {
                         for (URL registryURL : registryURLs) {
-                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                            if (MULTICAST.equalsIgnoreCase(registryURL.getParameter(REGISTRY_KEY))) {
                                 // skip multicast registry since we cannot connect to it via Socket
                                 continue;
                             }
@@ -699,7 +722,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
 
     private String getProtocolConfigId(ProtocolConfig config) {
-        return Optional.ofNullable(config.getId()).orElse("dubbo");
+        return Optional.ofNullable(config.getId()).orElse(DUBBO);
     }
 
     private Integer parsePort(String configPort) {
@@ -742,7 +765,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+                .getActivateExtension(URL.valueOf(CONFIG_POST_PROCESSOR_PROTOCOL), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 
