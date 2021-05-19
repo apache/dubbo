@@ -103,13 +103,12 @@ public class HeaderExchangeServer implements ExchangeServer {
     public void close(final int timeout) {
         startClose();
         if (timeout > 0) {
-            final long max = (long) timeout;
+            final long max = timeout;
             final long start = System.currentTimeMillis();
             if (getUrl().getParameter(Constants.CHANNEL_SEND_READONLYEVENT_KEY, true)) {
                 sendChannelReadOnlyEvent();
             }
-            while (HeaderExchangeServer.this.isRunning()
-                    && System.currentTimeMillis() - start < max) {
+            while (isRunning() && System.currentTimeMillis() - start < max) {
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
