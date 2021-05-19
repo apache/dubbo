@@ -75,10 +75,14 @@ public class ConfigCenterConfigTest {
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             configCenter.setAddress("N/A");
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .configCenter(configCenter)
-                    .start();
+            try {
+                DubboBootstrap.getInstance()
+                        .application("demo-app")
+                        .configCenter(configCenter)
+                        .initialize();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
             Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());

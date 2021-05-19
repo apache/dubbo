@@ -237,16 +237,17 @@ public class DubboBootstrap extends GenericEventListener {
                 instance = null;
             }
             ApplicationModel.reset();
-            MetadataReportInstance.destroy();
-            AbstractMetadataReportFactory.clear();
+            MetadataReportInstance.reset();
+            AbstractMetadataReportFactory.reset();
+            AbstractRegistryFactory.reset();
             ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
             ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
             ExtensionLoader.destroyAll();
         } else {
             if (instance != null) {
                 instance.ignoreConfigState = true;
+                instance = null;
             }
-            instance = null;
             ApplicationModel.reset();
         }
     }
@@ -645,7 +646,7 @@ public class DubboBootstrap extends GenericEventListener {
                 if (!needValid || config.isValid()) {
                     configManager.addConfig(config);
                 } else {
-                    logger.warn("Ignore invalid config: " + config);
+                    logger.info("Ignore invalid config: " + config);
                 }
             }
         } catch (Exception e) {

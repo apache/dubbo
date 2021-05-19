@@ -110,6 +110,14 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    /**
+     * Reset state of AbstractRegistryFactory
+     */
+    public static void reset() {
+        destroyed.set(false);
+        REGISTRIES.clear();
+    }
+
     @Override
     public Registry getRegistry(URL url) {
         if (destroyed.get()) {

@@ -45,7 +45,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testInjvm() throws Exception {
+    public void test2Injvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
 
@@ -85,7 +85,7 @@ public class ReferenceConfigTest {
      * unit test for dubbo-1765
      */
     @Test
-    public void testReferenceRetry() {
+    public void test1ReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         RegistryConfig registry = new RegistryConfig();

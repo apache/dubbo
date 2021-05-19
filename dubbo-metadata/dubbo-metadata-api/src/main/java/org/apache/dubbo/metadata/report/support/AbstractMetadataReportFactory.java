@@ -58,7 +58,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
-    public static void clear() {
+    public static void reset() {
         LOCK.lock();
         try {
             SERVICE_STORE_MAP.clear();
