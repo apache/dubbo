@@ -30,8 +30,8 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public final void register(ServiceInstance serviceInstance) throws RuntimeException {
-        this.serviceInstance = serviceInstance;
         doRegister(serviceInstance);
+        this.serviceInstance = serviceInstance;
     }
 
     /**
@@ -44,9 +44,9 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
         if (!isInstanceUpdated(serviceInstance)) {
             return;
         }
-        this.serviceInstance = serviceInstance;
         doUpdate(serviceInstance);
         resetInstanceUpdateKey(serviceInstance);
+        this.serviceInstance = serviceInstance;
     }
 
     /**
