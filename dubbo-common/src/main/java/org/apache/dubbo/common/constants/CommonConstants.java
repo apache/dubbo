@@ -306,6 +306,8 @@ public interface CommonConstants {
 
     String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
 
+    String GENERIC_SERIALIZATION_GSON = "gson";
+
     String GENERIC_SERIALIZATION_DEFAULT = "true";
 
     String GENERIC_SERIALIZATION_BEAN = "bean";
