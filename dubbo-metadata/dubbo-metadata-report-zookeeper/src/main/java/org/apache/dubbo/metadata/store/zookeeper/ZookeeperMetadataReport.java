@@ -163,23 +163,21 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         Set<String> appNameSet = new HashSet<>();
         String path = toRootDir() + serviceKey;
-        List<String> appNameList = zkClient.getChildren(path);
-        if (!CollectionUtils.isEmpty(appNameList)) {
-            appNameSet.addAll(appNameList);
-        }
 
         if (null == listenerMap.get(path)) {
             zkClient.create(path, false);
-            addServiceMappingListener(path, serviceKey, listener);
+            appNameSet.addAll(addServiceMappingListener(path, serviceKey, listener));
+        } else {
+            appNameSet.addAll(zkClient.getChildren(path));
         }
 
         return appNameSet;
     }
 
-    private void addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
+    private List<String> addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
         MappingChildListener mappingChildListener = listenerMap.computeIfAbsent(path, _k -> new MappingChildListener(serviceKey, path));
         mappingChildListener.addListener(listener);
-        zkClient.addChildListener(path, mappingChildListener);
+        return zkClient.addChildListener(path, mappingChildListener);
     }
 
     private static class MappingChildListener implements ChildListener {

@@ -90,8 +90,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         serviceDiscovery.close();
     }
 
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) {
         try {
             serviceDiscovery.registerService(build(serviceInstance));
         } catch (Exception e) {
@@ -99,14 +99,11 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
     }
 
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        if (this.serviceInstance == null) {
-            this.register(serviceInstance);
-        } else if (isInstanceUpdated(serviceInstance)) {
-            this.unregister(this.serviceInstance);
-            this.register(serviceInstance);
-            this.serviceInstance = serviceInstance;
-        }
+    @Override
+    public void doUpdate(ServiceInstance serviceInstance) {
+        ServiceInstance oldInstance = this.serviceInstance;
+        this.unregister(oldInstance);
+        this.register(serviceInstance);
     }
 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {

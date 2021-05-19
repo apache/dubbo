@@ -27,7 +27,6 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
 import com.alibaba.nacos.api.exception.NacosException;
-import com.alibaba.nacos.api.naming.NamingService;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
@@ -71,8 +70,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.registerInstance(instance.getServiceName(), group, instance);
@@ -80,15 +78,10 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        // TODO: Nacos should support
-        if (this.serviceInstance == null) {
-            register(serviceInstance);
-        } else {
-            unregister(serviceInstance);
-            register(serviceInstance);
-            this.serviceInstance = serviceInstance;
-        }
+    public void doUpdate(ServiceInstance serviceInstance) {
+        ServiceInstance oldInstance = this.serviceInstance;
+        unregister(oldInstance);
+        register(serviceInstance);
     }
 
     @Override

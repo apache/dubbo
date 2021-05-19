@@ -59,7 +59,6 @@ public class RemoteMetadataServiceImpl {
         metadataInfos.forEach((registryCluster, metadataInfo) -> {
             if (!metadataInfo.hasReported()) {
                 SubscriberMetadataIdentifier identifier = new SubscriberMetadataIdentifier(serviceName, metadataInfo.calAndGetRevision());
-                metadataInfo.calAndGetRevision();
                 metadataInfo.getExtendParams().put(REGISTRY_CLUSTER_KEY, registryCluster);
                 if (getMetadataReports().size() > 0) {
                     MetadataReport metadataReport = getMetadataReports().get(registryCluster);
