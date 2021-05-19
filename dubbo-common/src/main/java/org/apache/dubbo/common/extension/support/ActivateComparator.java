@@ -84,7 +84,7 @@ public class ActivateComparator implements Comparator<Class> {
         if (a1.order > a2.order) {
             return 1;
         } else if (a1.order == a2.order) {
-            return o1.getSimpleName().compareTo(o2.getSimpleName());
+            return o1.getSimpleName().compareTo(o2.getSimpleName()) > 0 ? 1 : -1;
         } else {
             return -1;
         }
