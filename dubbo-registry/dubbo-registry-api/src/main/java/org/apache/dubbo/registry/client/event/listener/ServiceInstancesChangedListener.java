@@ -149,9 +149,9 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
-            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-            this.revisionToMetadata = newRevisionToMetadata;
-            return;
+//            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+//            this.revisionToMetadata = newRevisionToMetadata;
+//            return;
         }
 
         this.revisionToMetadata = newRevisionToMetadata;
@@ -244,7 +244,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
             logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
-            if (retryEvent.getFailureRecordTime() < lastRefreshTime) {
+            if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata(revisionToMetadata)) {
                 logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
                 return true;
             }
