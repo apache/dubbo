@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.config.configcenter.wrapper;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
@@ -39,6 +40,11 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
             this.configurations.add(configuration);
         }
     }
+
+    public Set<DynamicConfiguration> getConfigurations() {
+        return configurations;
+    }
+
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {

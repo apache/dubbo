@@ -17,8 +17,10 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -40,7 +42,7 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
-    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
+    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -49,54 +51,103 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     @Override
     public void map(URL url) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
-
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+        if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+            Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getConfigurations();
+            for (DynamicConfiguration configuration : configurations) {
+                if (configuration.hasSupportCas() && ServiceNameMappingHandler.isBothMapping()) {
+                    doCasMap(configuration, url);
+                    doNormalMap(configuration, url);
+                } else {
+                    doNormalMap(configuration, url);
+                }
+            }
+
+        } else {
+            boolean supportCas = dynamicConfiguration.hasSupportCas();
+            if (supportCas && ServiceNameMappingHandler.isBothMapping()) {
+                doCasMap(dynamicConfiguration, url);
+                doNormalMap(dynamicConfiguration, url);
+            } else {
+                doNormalMap(dynamicConfiguration, url);
+            }
+        }
+    }
+
+    public void doNormalMap(DynamicConfiguration dynamicConfiguration, URL url) {
+        if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+            logger.warn("CompositeDynamicConfiguration can't doNormalMap");
+            return;
+        }
+
+        String serviceInterface = url.getServiceInterface();
 
         // the Dubbo Service Key as group
         // the service(application) name as key
         // It does matter whatever the content is, we just need a record
-        String key = getName();
+        String application = getName();
         String content = valueOf(System.currentTimeMillis());
 
         execute(() -> {
-            dynamicConfiguration.publishConfig(key, ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), content);
+            boolean success = dynamicConfiguration.publishConfig(application, ServiceNameMapping.buildGroup(serviceInterface), content);
             if (logger.isDebugEnabled()) {
-                logger.info(String.format("Dubbo service[%s] mapped to interface name[%s].",
-                        group, serviceInterface, group));
+                if (success) {
+                    logger.debug(String.format("doNormalMap succeed: Dubbo service[%s] mapped to interface name[%s].", application, serviceInterface));
+                } else {
+                    logger.debug(String.format("doNormalMap failed: Dubbo service[%s] mapped to interface name[%s].", application, serviceInterface));
+                }
             }
         });
     }
 
-    @Override
-    public void mapWithCas(URL url) {
-        String serviceInterface = url.getServiceInterface();
-        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+    public void doCasMap(DynamicConfiguration dynamicConfiguration, URL url) {
+        if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+            logger.warn("CompositeDynamicConfiguration can't publish config cas ");
             return;
         }
+
+        String serviceInterface = url.getServiceInterface();
+
         execute(() -> {
-            publishConfigCas(serviceInterface, DEFAULT_MAPPING_GROUP, getName());
+            int currentRetryTimes = 1;
+            boolean success;
+            String newConfigContent = getName();
+            do {
+                ConfigItem configItem = dynamicConfiguration.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
+                String oldConfigContent = configItem.getContent();
+                if (StringUtils.isNotEmpty(oldConfigContent)) {
+                    boolean contains = StringUtils.isContains(oldConfigContent, getName());
+                    if (contains) {
+                        success = true;
+                        break;
+                    }
+                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+                }
+                success = dynamicConfiguration.publishConfigCas(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
+            } while (!success && currentRetryTimes++ <= PUBLISH_CONFIG_RETRY_TIMES);
+            if (logger.isDebugEnabled()) {
+                if (success) {
+                    logger.debug(String.format("doCasMap succeed: Dubbo service[%s] mapped to interface name[%s].", newConfigContent, serviceInterface));
+                } else {
+                    logger.debug(String.format("doCasMap failed: Dubbo service[%s] mapped to interface name[%s].", newConfigContent, serviceInterface));
+                }
+            }
         });
     }
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
 
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
             Set<String> keys = dynamicConfiguration
-                    .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol));
+                    .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface));
             serviceNames.addAll(keys);
         });
         return Collections.unmodifiableSet(serviceNames);
@@ -117,34 +168,6 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         return Collections.unmodifiableSet(serviceNames);
     }
 
-    /**
-     * publish config with cas.
-     *
-     * @param key
-     * @param group
-     * @param appName
-     * @return
-     */
-    private boolean publishConfigCas(String key, String group, String appName) {
-        int currentRetryTimes = 1;
-        boolean result = false;
-        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-        String newConfigContent = appName;
-        do {
-            ConfigItem configItem = dynamicConfiguration.getConfigItem(key, group);
-            String oldConfigContent = configItem.getContent();
-            if (StringUtils.isNotEmpty(oldConfigContent)) {
-                boolean contains = StringUtils.isContains(configItem.getContent(), appName);
-                if (contains) {
-                    return true;
-                }
-                newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
-            }
-            result = dynamicConfiguration.publishConfigCas(key, group, newConfigContent, configItem.getStat());
-        } while (!result && currentRetryTimes++ <= PUBLISH_CONFIG_RETRY_TIMES);
-
-        return result;
-    }
 
     private void execute(Runnable runnable) {
         try {

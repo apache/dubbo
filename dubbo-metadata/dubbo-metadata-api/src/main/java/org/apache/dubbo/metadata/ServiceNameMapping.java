@@ -42,14 +42,6 @@ public interface ServiceNameMapping {
      */
     void map(URL url);
 
-    /**
-     * Map the specified Dubbo service interface, group, version and protocol to current Dubbo service name with cas.
-     *
-     * @param url
-     */
-    default void mapWithCas(URL url) {
-
-    }
 
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
@@ -94,16 +86,11 @@ public interface ServiceNameMapping {
     }
 
     static String buildMappingKey(URL url) {
-        return buildGroup(url.getServiceInterface(), url.getGroup(), url.getVersion(), url.getParameter(PROTOCOL_KEY, DUBBO));
+        return buildGroup(url.getServiceInterface());
     }
 
-    static String buildGroup(String serviceInterface, String group, String version, String protocol) {
-        //        the issue : https://github.com/apache/dubbo/issues/4671
-        //        StringBuilder groupBuilder = new StringBuilder(serviceInterface)
-        //                .append(KEY_SEPARATOR).append(defaultString(group))
-        //                .append(KEY_SEPARATOR).append(defaultString(version))
-        //                .append(KEY_SEPARATOR).append(defaultString(protocol));
-        //        return groupBuilder.toString();
+    static String buildGroup(String serviceInterface) {
+        //the issue : https://github.com/apache/dubbo/issues/4671
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 }

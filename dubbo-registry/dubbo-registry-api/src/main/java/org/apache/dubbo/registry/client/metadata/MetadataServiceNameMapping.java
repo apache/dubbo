@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,31 +35,28 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 public class MetadataServiceNameMapping implements ServiceNameMapping {
-    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
+    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
 
     @Override
     public void map(URL url) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
 
         if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
             return;
         }
+
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
-        metadataReport.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), getName(), url);
+        metadataReport.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), getName(), url);
     }
+
+
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
 
-        String mappingKey = ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol);
+        String mappingKey = ServiceNameMapping.buildGroup(serviceInterface);
         Set<String> serviceNames = new LinkedHashSet<>();
         String registryCluster = getRegistryCluster(url);
         MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
