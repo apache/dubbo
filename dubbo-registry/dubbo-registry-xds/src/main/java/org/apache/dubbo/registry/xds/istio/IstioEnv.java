@@ -68,7 +68,6 @@ public class IstioEnv implements XdsEnv {
                 logger.error("Unable to read token file.", e);
             }
         }
-        logger.error("IstioEnv " + this.toString());
         if (serviceAccount == null) {
             throw new UnsupportedOperationException("Unable to found kubernetes service account token file. " +
                     "Please check if work in Kubernetes and mount service account token file correctly.");
@@ -118,21 +117,5 @@ public class IstioEnv implements XdsEnv {
 
     public String getIstioMetaClusterId() {
         return istioMetaClusterId;
-    }
-
-    @Override
-    public String toString() {
-        return "IstioEnv{" +
-                "caAddr='" + caAddr + '\'' +
-                ", serviceAccount='" + serviceAccount + '\'' +
-                ", csrHost='" + csrHost + '\'' +
-                ", trustDomain='" + trustDomain + '\'' +
-                ", workloadNameSpace='" + workloadNameSpace + '\'' +
-                ", rasKeySize=" + rasKeySize +
-                ", eccSigAlg='" + eccSigAlg + '\'' +
-                ", secretTTL=" + secretTTL +
-                ", secretGracePeriodRatio=" + secretGracePeriodRatio +
-                ", istioMetaClusterId='" + istioMetaClusterId + '\'' +
-                '}';
     }
 }

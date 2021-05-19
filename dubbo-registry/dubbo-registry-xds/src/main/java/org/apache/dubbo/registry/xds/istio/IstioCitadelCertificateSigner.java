@@ -186,7 +186,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
                 for (int i = 0; i < istioCertificateResponse.getCertChainCount(); i++) {
                     publicKeyBuilder.append(istioCertificateResponse.getCertChainBytes(i).toStringUtf8());
                 }
-                logger.error("Receive Cert chain from Istio Citadel. \n" + publicKeyBuilder);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Receive Cert chain from Istio Citadel. \n" + publicKeyBuilder);
                 }
@@ -209,7 +208,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
     private String generatePrivatePemKey(PrivateKey privateKey) throws IOException {
         String key = generatePemKey("RSA PRIVATE KEY", privateKey.getEncoded());
-        logger.error("Generated Private Key. \n" + key);
         if (logger.isDebugEnabled()) {
             logger.debug("Generated Private Key. \n" + key);
         }
@@ -243,7 +241,6 @@ public class IstioCitadelCertificateSigner implements XdsCertificateSigner {
 
         String csr = generatePemKey("CERTIFICATE REQUEST", request.getEncoded());
 
-        logger.error("CSR Request to Istio Citadel. \n" + csr);
         if (logger.isDebugEnabled()) {
             logger.debug("CSR Request to Istio Citadel. \n" + csr);
         }
