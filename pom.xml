@@ -126,6 +126,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
+        <jacoco.skip>true</jacoco.skip>
         <revision>3.0.0-SNAPSHOT</revision>
     </properties>
 
@@ -237,6 +238,13 @@
                 <doclint>none</doclint>
             </properties>
         </profile>
+        <!-- jacoco: mvn validate -Pjacoco  -->
+        <profile>
+            <id>jacoco</id>
+            <properties>
+                <jacoco.skip>false</jacoco.skip>
+            </properties>
+        </profile>
         <!-- check apache license: mvn validate -Prat  -->
         <profile>
             <id>rat</id>
@@ -332,6 +340,7 @@
             <id>release</id>
             <properties>
                 <log4j2_version>2.11.1</log4j2_version>
+                <jacoco.skip>false</jacoco.skip>
             </properties>
             <build>
                 <plugins>
