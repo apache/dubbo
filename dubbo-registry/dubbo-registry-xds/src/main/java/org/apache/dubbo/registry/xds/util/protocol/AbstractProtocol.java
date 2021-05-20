@@ -116,7 +116,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
             return null;
         } finally {
             // close observer
-            requestObserver.onCompleted();
+            //requestObserver.onCompleted();
 
             // remove temp
             streamResult.remove(request);
@@ -163,6 +163,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
 
     protected DiscoveryRequest buildDiscoveryRequest(Set<String> resourceNames, DiscoveryResponse response) {
         // for ACK
+        resourceNames = resourceNames == null ? Collections.emptySet() : resourceNames;
         return DiscoveryRequest.newBuilder()
                 .setNode(node)
                 .setTypeUrl(getTypeUrl())

@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.xds;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.SelfHostMetaServiceDiscovery;
@@ -33,8 +34,7 @@ import java.util.Set;
 
 public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
     private PilotExchanger exchanger;
-    private URL registryURL;
-    private static final org.apache.dubbo.common.logger.Logger logger = LoggerFactory.getLogger(XdsServiceDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(XdsServiceDiscovery.class);
 
     @Override
     public void doInitialize(URL registryURL) throws Exception {
@@ -43,7 +43,6 @@ public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
         } catch (Throwable t) {
             logger.error(t);
         }
-        Thread.sleep(100000000);
     }
 
     @Override

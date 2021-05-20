@@ -34,6 +34,7 @@ import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -57,16 +58,12 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     public void observeListeners(Consumer<ListenerResult> consumer) {
-        observeResource(null,consumer);
+        observeResource(Collections.emptySet(), consumer);
     }
 
     @Override
     protected ListenerResult decodeDiscoveryResponse(DiscoveryResponse response) {
         if (getTypeUrl().equals(response.getTypeUrl())) {
-            ;
-            response.getResourcesList().forEach((e)->{
-                logger.error("Listener " + e.toString());
-            });
             Set<String> set = response.getResourcesList().stream()
                     .map(LdsProtocol::unpackListener)
                     .filter(Objects::nonNull)
@@ -120,6 +117,9 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     private static HttpConnectionManager unpackHttpConnectionManager(Any any) {
         try {
             logger.info(any.getTypeUrl());
+            if (!any.is(HttpConnectionManager.class)) {
+                return null;
+            }
             return any.unpack(HttpConnectionManager.class);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Error occur when decode xDS response.", e);
