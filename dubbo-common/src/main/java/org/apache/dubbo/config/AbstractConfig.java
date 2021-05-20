@@ -146,28 +146,37 @@ public abstract class AbstractConfig implements Serializable {
 
     @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
-        appendParamters0(parameters, config, prefix, false);
+        appendParamters0(parameters, config, prefix, true);
     }
 
-    public static void appendProperties(Map<String, String> parameters, Object config) {
-        appendParamters0(parameters, config, null, true);
+    /**
+     * Put attributes of specify 'config' into 'parameters' argument
+     * @param parameters
+     * @param config
+     */
+    public static void appendAttributes(Map<String, String> parameters, Object config) {
+        appendParamters0(parameters, config, null, false);
     }
 
-    private static void appendParamters0(Map<String, String> parameters, Object config, String prefix, boolean appendProperty) {
+    private static void appendParamters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;
         }
+        // If asParameters=false, ignore @Parameter annotation except 'append'
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
             try {
                 String name = method.getName();
                 if (MethodUtils.isGetter(method)) {
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
+                    if (method.getReturnType() == Object.class ) {
+                        continue;
+                    }
+                    if (asParameters && parameter != null && parameter.excluded()) {
                         continue;
                     }
                     String key;
-                    if (!appendProperty && parameter != null && parameter.key().length() > 0) {
+                    if (asParameters && parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
                     } else {
                         key = calculatePropertyFromGetter(name);
@@ -175,7 +184,7 @@ public abstract class AbstractConfig implements Serializable {
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
                     if (value != null && str.length() > 0) {
-                        if (!appendProperty && parameter != null && parameter.escaped()) {
+                        if (asParameters && parameter != null && parameter.escaped()) {
                             str = URL.encode(str);
                         }
                         if (parameter != null && parameter.append()) {
@@ -191,55 +200,19 @@ public abstract class AbstractConfig implements Serializable {
                             key = prefix + "." + key;
                         }
                         parameters.put(key, str);
-                    } else if (!appendProperty && parameter != null && parameter.required()) {
+                    } else if (asParameters && parameter != null && parameter.required()) {
                         throw new IllegalStateException(config.getClass().getSimpleName() + "." + key + " == null");
                     }
                 } else if (isParametersGetter(method)) {
                     Map<String, String> map = (Map<String, String>) method.invoke(config, new Object[0]);
-                    parameters.putAll(convert(map, prefix));
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
-    }
-
-    /**
-     * Put attributes of specify 'config' into 'parameters' argument
-     * @param parameters
-     * @param config
-     */
-    @Deprecated
-    protected static void appendAttributes(Map<String, Object> parameters, Object config) {
-        appendAttributes(parameters, config, null);
-    }
-
-    @Deprecated
-    protected static void appendAttributes(Map<String, Object> parameters, Object config, String prefix) {
-        if (config == null) {
-            return;
-        }
-        Method[] methods = config.getClass().getMethods();
-        for (Method method : methods) {
-            try {
-                Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter == null || !parameter.attribute()) {
-                    continue;
-                }
-                String name = method.getName();
-                if (MethodUtils.isGetter(method)) {
-                    String key;
-                    if (parameter.key().length() > 0) {
-                        key = parameter.key();
+                    map = convert(map, prefix);
+                    if (asParameters) {
+                        // put all parameters to url
+                        parameters.putAll(map);
                     } else {
-                        key = calculateAttributeFromGetter(name);
-                    }
-                    Object value = method.invoke(config);
-                    if (value != null) {
-                        if (prefix != null && prefix.length() > 0) {
-                            key = prefix + "." + key;
-                        }
-                        parameters.put(key, value);
+                        // encode parameters to string for config overriding, see AbstractConfig#refresh()
+                        String key = calculatePropertyFromGetter(name);
+                        parameters.put(key, StringUtils.encodeParameters(map));
                     }
                 }
             } catch (Exception e) {
@@ -689,7 +662,7 @@ public abstract class AbstractConfig implements Serializable {
      * so that it will not affect the behavior of attribute overrides.</p>
      *
      * @see AbstractConfig#getMetaData()
-     * @see AbstractConfig#appendProperties(Map, Object)
+     * @see AbstractConfig#appendAttributes(Map, Object)
      */
     protected void checkDefault() {
     }

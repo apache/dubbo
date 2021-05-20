@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -148,20 +149,21 @@ public class AbstractConfigTest {
 
     @Test
     public void testAppendAttributes1() throws Exception {
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01), "prefix");
-        Assertions.assertEquals('l', parameters.get("prefix.let"));
-        Assertions.assertEquals(true, parameters.get("prefix.activate"));
-        Assertions.assertFalse(parameters.containsKey("prefix.flag"));
-    }
+        ParameterConfig config = new ParameterConfig(1, "hello/world", 30, "password");
+        Map<String, String> parameters = new HashMap<>();
+        AbstractConfig.appendParameters(parameters, config);
 
-    @Test
-    public void testAppendAttributes2() throws Exception {
-        Map<String, Object> parameters = new HashMap<String, Object>();
-        AbstractConfig.appendAttributes(parameters, new AttributeConfig('l', true, (byte) 0x01));
-        Assertions.assertEquals('l', parameters.get("let"));
-        Assertions.assertEquals(true, parameters.get("activate"));
-        Assertions.assertFalse(parameters.containsKey("flag"));
+        Map<String, String> attributes = new HashMap<>();
+        AbstractConfig.appendAttributes(attributes, config);
+
+        Assertions.assertEquals(null, parameters.get("secret"));
+        Assertions.assertEquals(null, parameters.get("parameters"));
+        // secret is excluded for url parameters, but keep for attributes
+        Assertions.assertEquals(config.getSecret(), attributes.get("secret"));
+        Assertions.assertEquals(config.getName(), attributes.get("name"));
+        Assertions.assertEquals(""+config.getNumber(), attributes.get("number"));
+        Assertions.assertEquals(""+config.getAge(), attributes.get("age"));
+        Assertions.assertEquals(StringUtils.encodeParameters(config.getParameters()), attributes.get("parameters"));
     }
 
     @Test
@@ -808,44 +810,6 @@ public class AbstractConfigTest {
             map.put("key.1", "one");
             map.put("key.2", "two");
             return map;
-        }
-    }
-
-    private static class AttributeConfig {
-        private char letter;
-        private boolean activate;
-        private byte flag;
-
-        public AttributeConfig(char letter, boolean activate, byte flag) {
-            this.letter = letter;
-            this.activate = activate;
-            this.flag = flag;
-        }
-
-        @Parameter(attribute = true, key = "let")
-        public char getLetter() {
-            return letter;
-        }
-
-        public void setLetter(char letter) {
-            this.letter = letter;
-        }
-
-        @Parameter(attribute = true)
-        public boolean isActivate() {
-            return activate;
-        }
-
-        public void setActivate(boolean activate) {
-            this.activate = activate;
-        }
-
-        public byte getFlag() {
-            return flag;
-        }
-
-        public void setFlag(byte flag) {
-            this.flag = flag;
         }
     }
 

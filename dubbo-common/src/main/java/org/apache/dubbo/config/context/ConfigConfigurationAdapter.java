@@ -50,14 +50,14 @@ public class ConfigConfigurationAdapter implements Configuration {
         if (config instanceof ReferenceConfigBase) {
             // use consumer props as default value
             ReferenceConfigBase referenceConfig = (ReferenceConfigBase) config;
-            AbstractConfig.appendProperties(map, referenceConfig.getConsumer());
+            AbstractConfig.appendAttributes(map, referenceConfig.getConsumer());
         } else if (config instanceof ServiceConfigBase) {
             // use provider props as default value
             ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
-            AbstractConfig.appendProperties(map, serviceConfig.getProvider());
+            AbstractConfig.appendAttributes(map, serviceConfig.getProvider());
         }
 
-        AbstractConfig.appendProperties(map, config);
+        AbstractConfig.appendAttributes(map, config);
         return map;
     }
 

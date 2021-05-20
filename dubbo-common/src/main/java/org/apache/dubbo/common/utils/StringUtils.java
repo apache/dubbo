@@ -1126,6 +1126,7 @@ public final class StringUtils {
     }
 
     /**
+     * Decode parameters string to map
      * @param rawParameters format like '[{a:b},{c:d}]'
      * @return
      */
@@ -1147,6 +1148,30 @@ public final class StringUtils {
             }
         }
         return parameters;
+    }
+
+    /**
+     * Encode parameters map to string, like '[{a:b},{c:d}]'
+     * @param params
+     * @return
+     */
+    public static String encodeParameters(Map<String, String> params) {
+        if (params == null || params.isEmpty()) {
+            return null;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        params.forEach((key,value) -> {
+            // {key:value},
+            sb.append("{").append(key).append(":").append(value).append("},");
+        });
+        // delete last separator ','
+        if (sb.charAt(sb.length() - 1) == ',') {
+            sb.deleteCharAt(sb.length()-1);
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     public static int decodeHexNibble(final char c) {
