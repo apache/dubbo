@@ -73,19 +73,19 @@ public class MigrationRule {
         }
 
         Object targetIps = map.get("targetIps");
-        if (targetIps != null) {
+        if (targetIps != null && List.class.isAssignableFrom(targetIps.getClass())) {
             migrationRule.setTargetIps(((List<Object>) targetIps).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object interfaces = map.get("interfaces");
-        if (interfaces != null) {
+        if (interfaces != null && List.class.isAssignableFrom(interfaces.getClass())) {
             migrationRule.setInterfaces(((List<Map<String, Object>>) interfaces).stream()
                     .map(InterfaceMigrationRule::parseFromMap).collect(Collectors.toList()));
         }
 
         Object applications = map.get("applications");
-        if (applications != null) {
+        if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
             migrationRule.setApplications(((List<Map<String, Object>>) applications).stream()
                     .map(ApplicationMigrationRule::parseFromMap).collect(Collectors.toList()));
         }

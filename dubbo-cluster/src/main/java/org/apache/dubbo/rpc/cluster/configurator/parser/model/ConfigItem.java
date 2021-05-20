@@ -49,31 +49,31 @@ public class ConfigItem {
         }
 
         Object addresses = map.get("addresses");
-        if (addresses != null) {
+        if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
             configItem.setAddresses(((List<Object>) addresses).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object providerAddresses = map.get("providerAddresses");
-        if (providerAddresses != null) {
+        if (providerAddresses != null && List.class.isAssignableFrom(providerAddresses.getClass())) {
             configItem.setProviderAddresses(((List<Object>) providerAddresses).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object services = map.get("services");
-        if (services != null) {
+        if (services != null && List.class.isAssignableFrom(services.getClass())) {
             configItem.setServices(((List<Object>) services).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object applications = map.get("applications");
-        if (applications != null) {
+        if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
             configItem.setApplications(((List<Object>) applications).stream()
                     .map(String::valueOf).collect(Collectors.toList()));
         }
 
         Object parameters = map.get("parameters");
-        if (parameters != null) {
+        if (parameters != null && Map.class.isAssignableFrom(parameters.getClass())) {
             configItem.setParameters(((Map<String, Object>) parameters).entrySet()
                     .stream().collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().toString())));
         }

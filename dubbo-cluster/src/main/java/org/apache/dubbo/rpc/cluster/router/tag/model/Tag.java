@@ -33,7 +33,7 @@ public class Tag {
         tag.setName((String) map.get("name"));
 
         Object addresses = map.get("addresses");
-        if (addresses != null) {
+        if (addresses != null && List.class.isAssignableFrom(addresses.getClass())) {
             tag.setAddresses(((List<Object>) addresses).stream().map(String::valueOf).collect(Collectors.toList()));
         }
 

@@ -52,7 +52,7 @@ public class TagRouterRule extends AbstractRouterRule {
         tagRouterRule.parseFromMap0(map);
 
         Object tags = map.get("tags");
-        if (tags != null) {
+        if (tags != null && List.class.isAssignableFrom(tags.getClass())) {
             tagRouterRule.setTags(((List<Map<String, Object>>) tags).stream()
                     .map(Tag::parseFromMap).collect(Collectors.toList()));
         }
