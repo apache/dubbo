@@ -36,7 +36,9 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @see DubboAutoConfiguration
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = CompatibleDubboAutoConfigurationTestWithoutProperties.class)
+@SpringBootTest(classes = CompatibleDubboAutoConfigurationTestWithoutProperties.class, properties = {
+        "dubbo.application.name=demo"
+})
 @EnableAutoConfiguration
 public class CompatibleDubboAutoConfigurationTestWithoutProperties {
 
