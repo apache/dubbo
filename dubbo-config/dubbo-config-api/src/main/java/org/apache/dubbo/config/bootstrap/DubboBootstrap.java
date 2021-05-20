@@ -196,7 +196,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private List<CompletableFuture<Object>> asyncReferringFutures = new ArrayList<>();
 
-    private boolean ignoreConfigState;
+    private static boolean ignoreConfigState;
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -230,9 +230,9 @@ public class DubboBootstrap extends GenericEventListener {
     @Deprecated
     public static void reset(boolean destroy) {
         ConfigUtils.setProperties(null);
+        DubboBootstrap.ignoreConfigState = true;
         if (destroy) {
             if (instance != null) {
-                instance.ignoreConfigState = true;
                 instance.destroy();
                 instance = null;
             }
@@ -244,10 +244,7 @@ public class DubboBootstrap extends GenericEventListener {
             ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
             ExtensionLoader.destroyAll();
         } else {
-            if (instance != null) {
-                instance.ignoreConfigState = true;
-                instance = null;
-            }
+            instance = null;
             ApplicationModel.reset();
         }
     }

@@ -52,6 +52,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -82,6 +83,11 @@ public class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
+    @BeforeAll
+    public static void beforeAll() {
+        ZooKeeperServer.start();
+    }
+
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
@@ -89,11 +95,6 @@ public class ConfigTest {
 
     @AfterEach
     public void tearDown() {
-        try {
-            DubboBootstrap.getInstance().stop();
-        } catch (IllegalStateException e) {
-             e.printStackTrace();
-        }
     }
 
 
