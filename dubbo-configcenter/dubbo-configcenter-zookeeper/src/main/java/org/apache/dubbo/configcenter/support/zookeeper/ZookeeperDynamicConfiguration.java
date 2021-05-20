@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import org.apache.zookeeper.data.Stat;
+
 import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -90,10 +92,18 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    public boolean publishConfigCas(String key, String group, String content, Object stat) {
-        String pathKey = buildPathKey(group, key);
-        zkClient.createOrUpdate(pathKey, content, false, stat);
-        return true;
+    public boolean publishConfigCas(String key, String group, String content, Object ticket) {
+        try {
+            if (!(ticket instanceof Stat)) {
+                throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
+            }
+            String pathKey = buildPathKey(group, key);
+            zkClient.createOrUpdate(pathKey, content, false, ((Stat) ticket).getVersion());
+            return true;
+        } catch (Exception e) {
+            logger.warn("zookeeper publishConfigCas failed.", e);
+            return false;
+        }
     }
 
     @Override

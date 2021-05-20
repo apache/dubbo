@@ -43,6 +43,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,7 +58,7 @@ public class CuratorZookeeperClient
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
 
-    static final Charset CHARSET = Charset.forName("UTF-8");
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
@@ -148,25 +149,20 @@ public class CuratorZookeeperClient
     }
 
     @Override
-    protected void update(String path, String data, Object stat) {
+    protected void update(String path, String data, int version) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
-            if (null == stat || !(stat instanceof Stat)) {
-                throw new IllegalArgumentException("unable to get the version information of zookeeper data");
-            }
-            client.setData().withVersion(((Stat) stat).getVersion()).forPath(path, dataBytes);
-        } catch (NoNodeException e) {
-            logger.warn("ZNode " + path + "does not exists.", e);
+            client.setData().withVersion(version).forPath(path, dataBytes);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, Object stat) {
+    protected void createOrUpdatePersistent(String path, String data, int version) {
         try {
             if (checkExists(path)) {
-                update(path, data, stat);
+                update(path, data, version);
             } else {
                 createPersistent(path, data);
             }
@@ -176,10 +172,10 @@ public class CuratorZookeeperClient
     }
 
     @Override
-    protected void createOrUpdateEphemeral(String path, String data, Object stat) {
+    protected void createOrUpdateEphemeral(String path, String data, int version) {
         try {
             if (checkExists(path)) {
-                update(path, data, stat);
+                update(path, data, version);
             } else {
                 createEphemeral(path, data);
             }
@@ -215,7 +211,7 @@ public class CuratorZookeeperClient
             if (client.checkExists().forPath(path) != null) {
                 return true;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }

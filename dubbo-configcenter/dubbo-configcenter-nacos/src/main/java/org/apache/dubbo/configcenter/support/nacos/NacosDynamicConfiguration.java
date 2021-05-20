@@ -249,18 +249,17 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public boolean publishConfigCas(String key, String group, String content, Object stat) {
-        boolean published = false;
+    public boolean publishConfigCas(String key, String group, String content, Object ticket) {
         String resolvedGroup = resolveGroup(group);
         try {
-            if (!(stat instanceof String)) {
-                throw new IllegalArgumentException("nacos publishConfigCas requires stat of string type");
+            if (!(ticket instanceof String)) {
+                throw new IllegalArgumentException("nacos publishConfigCas requires string type ticket");
             }
-            published = configService.publishConfigCas(key, resolvedGroup, content, (String) stat);
+            return configService.publishConfigCas(key, resolvedGroup, content, (String) ticket);
         } catch (NacosException e) {
-            logger.error(e.getErrMsg(), e);
+            logger.warn("nacos publishConfigCas failed.", e);
+            return false;
         }
-        return published;
     }
 
     @Override

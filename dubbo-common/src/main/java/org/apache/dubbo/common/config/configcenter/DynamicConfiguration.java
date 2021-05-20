@@ -172,11 +172,11 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param key
      * @param group
      * @param content
-     * @param stat
+     * @param ticket
      * @return
      * @throws UnsupportedOperationException
      */
-    default boolean publishConfigCas(String key, String group, String content, Object stat) throws UnsupportedOperationException {
+    default boolean publishConfigCas(String key, String group, String content, Object ticket) throws UnsupportedOperationException {
         return false;
     }
 

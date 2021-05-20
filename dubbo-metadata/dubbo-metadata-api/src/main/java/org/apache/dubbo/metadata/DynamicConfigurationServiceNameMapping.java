@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
@@ -42,7 +41,7 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
-    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
+    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
