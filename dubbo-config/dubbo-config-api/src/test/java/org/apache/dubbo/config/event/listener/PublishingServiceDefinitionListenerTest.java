@@ -60,7 +60,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @AfterEach
     public void reset() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     /**

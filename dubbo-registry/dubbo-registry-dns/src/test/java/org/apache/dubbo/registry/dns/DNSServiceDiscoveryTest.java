@@ -24,6 +24,7 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -59,14 +60,14 @@ public class DNSServiceDiscoveryTest {
 
     @BeforeEach
     public void setup() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
         ApplicationModel.getConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach
     public void destroy() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test

@@ -23,6 +23,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.After;
@@ -131,12 +132,12 @@ public class DubboAutoConfigurationOnMultipleConfigTest {
 
     @Before
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @After
     public void destroy() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Autowired

@@ -16,9 +16,9 @@
  */
 package org.apache.dubbo.spring.boot.autoconfigure;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -48,12 +48,12 @@ public class CompatibleDubboAutoConfigurationTestWithoutProperties {
 
     @Before
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @After
     public void destroy() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test
