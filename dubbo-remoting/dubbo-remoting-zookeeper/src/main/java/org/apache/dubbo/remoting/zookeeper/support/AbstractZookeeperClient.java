@@ -207,9 +207,6 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public ConfigItem getConfigItem(String path) {
-        if (!checkExists(path)) {
-            return new ConfigItem();
-        }
         return doGetConfigItem(path);
     }
 

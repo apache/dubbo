@@ -94,11 +94,11 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     public boolean publishConfigCas(String key, String group, String content, Object ticket) {
         try {
-            if (!(ticket instanceof Stat)) {
+            if (ticket != null && !(ticket instanceof Stat)) {
                 throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
             }
             String pathKey = buildPathKey(group, key);
-            zkClient.createOrUpdate(pathKey, content, false, ((Stat) ticket).getVersion());
+            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
             return true;
         } catch (Exception e) {
             logger.warn("zookeeper publishConfigCas failed.", e);

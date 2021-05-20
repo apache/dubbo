@@ -236,14 +236,14 @@ public class CuratorZookeeperClient
 
     @Override
     public ConfigItem doGetConfigItem(String path) {
-        String content = null;
-        Stat stat = null;
+        String content;
+        Stat stat;
         try {
             stat = new Stat();
             byte[] dataBytes = client.getData().storingStatIn(stat).forPath(path);
             content = (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, CHARSET);
         } catch (NoNodeException e) {
-            // ignore NoNode Exception.
+            return new ConfigItem();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
