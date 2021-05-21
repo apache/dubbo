@@ -135,6 +135,10 @@ public class ConfigUtilsTest {
         String s = ConfigUtils.replaceProperty("zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
         assertEquals("zookeeper://127.0.0.1:2181", s);
 
+        // should not replace inner class name
+        String interfaceName = "dubbo.service.io.grpc.examples.helloworld.DubboGreeterGrpc$IGreeter";
+        s = ConfigUtils.replaceProperty(interfaceName, compositeConfiguration);
+        Assertions.assertEquals(interfaceName, s);
     }
 
     @Test

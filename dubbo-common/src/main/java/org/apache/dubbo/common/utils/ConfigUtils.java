@@ -147,7 +147,8 @@ public class ConfigUtils {
                 value = (val != null) ? val.toString() : null;
             }
             if (value == null) {
-                value = "";
+                // maybe not placeholders, use origin express
+                value = matcher.group();
             }
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
