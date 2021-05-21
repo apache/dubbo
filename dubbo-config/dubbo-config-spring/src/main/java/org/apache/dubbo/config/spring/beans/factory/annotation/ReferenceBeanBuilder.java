@@ -89,6 +89,22 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
     void configureMethodConfig(AnnotationAttributes attributes, ReferenceBean<?> referenceBean) {
         Method[] methods = (Method[]) attributes.get("methods");
         List<MethodConfig> methodConfigs = MethodConfig.constructMethodConfig(methods);
+
+        for (MethodConfig methodConfig : methodConfigs) {
+            if (!StringUtils.isEmpty(methodConfig.getOninvoke())) {
+                Object invokeRef = this.applicationContext.getBean((String) methodConfig.getOninvoke());
+                methodConfig.setOninvoke(invokeRef);
+            }
+            if (!StringUtils.isEmpty(methodConfig.getOnreturn())) {
+                Object returnRef = this.applicationContext.getBean((String) methodConfig.getOnreturn());
+                methodConfig.setOnreturn(returnRef);
+            }
+            if (!StringUtils.isEmpty(methodConfig.getOnthrow())) {
+                Object throwRef = this.applicationContext.getBean((String) methodConfig.getOnthrow());
+                methodConfig.setOnthrow(throwRef);
+            }
+        }
+
         if (!methodConfigs.isEmpty()) {
             referenceBean.setMethods(methodConfigs);
         }
@@ -162,6 +178,8 @@ class ReferenceBeanBuilder extends AnnotatedInterfaceConfigBeanBuilder<Reference
         configureMethodConfig(attributes, bean);
 
         bean.afterPropertiesSet();
+
+        applicationContext.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(bean, beanName);
 
     }
 

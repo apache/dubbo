@@ -77,7 +77,6 @@ public class DubboLifecycleComponentApplicationListener extends OnceApplicationC
 
     private void initLifecycleComponents(ContextRefreshedEvent event) {
         ApplicationContext context = event.getApplicationContext();
-        ClassLoader classLoader = context.getClassLoader();
         lifecycleComponents = new LinkedList<>();
         // load the Beans of Lifecycle from ApplicationContext
         loadLifecycleComponents(lifecycleComponents, context);
