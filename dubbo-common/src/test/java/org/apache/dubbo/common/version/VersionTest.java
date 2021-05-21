@@ -55,6 +55,19 @@ public class VersionTest {
         Assertions.assertEquals(Version.HIGHEST_PROTOCOL_VERSION, Version.getIntVersion("2.0.99"));
         Assertions.assertEquals(2070000, Version.getIntVersion("2.7.0.RC1"));
         Assertions.assertEquals(2070000, Version.getIntVersion("2.7.0-SNAPSHOT"));
+        Assertions.assertEquals(3000000, Version.getIntVersion("3.0.0-SNAPSHOT"));
+        Assertions.assertEquals(3010000, Version.getIntVersion("3.1.0"));
+    }
+
+    @Test
+    public void testCompare() {
+        Assertions.assertEquals(0, Version.compare("3.0.0", "3.0.0"));
+        Assertions.assertEquals(0, Version.compare("3.0.0-SNAPSHOT", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.0.0.1", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.1.0", "3.0.0"));
+        Assertions.assertEquals(1, Version.compare("3.1.2.3", "3.0.0"));
+        Assertions.assertEquals(-1, Version.compare("2.9.9.9", "3.0.0"));
+        Assertions.assertEquals(-1, Version.compare("2.6.3.1", "3.0.0"));
     }
 
     @Test
