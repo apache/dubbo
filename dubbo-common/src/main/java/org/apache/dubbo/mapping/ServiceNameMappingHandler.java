@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.mapping;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import static org.apache.dubbo.metadata.ServiceNameMappingStoreEnum.BOTH_STORAGE;
+import static org.apache.dubbo.mapping.ServiceNameMappingStoreEnum.BOTH_STORAGE;
 
 public class ServiceNameMappingHandler {
 

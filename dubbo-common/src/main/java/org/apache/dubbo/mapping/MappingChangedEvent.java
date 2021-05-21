@@ -14,8 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.mapping;
 
-public interface MappingListener {
-    void onEvent(MappingChangedEvent event);
+import java.util.Set;
+
+public class MappingChangedEvent {
+    private String serviceKey;
+    private Set<String> apps;
+
+    public String getServiceKey() {
+        return serviceKey;
+    }
+
+    public void setServiceKey(String serviceKey) {
+        this.serviceKey = serviceKey;
+    }
+
+    public Set<String> getApps() {
+        return apps;
+    }
+
+    public void setApps(Set<String> apps) {
+        this.apps = apps;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("{serviceKey: ").append(serviceKey).append(", apps: ");
+        sb.append(apps.toString()).append("}");
+        return sb.toString();
+    }
 }

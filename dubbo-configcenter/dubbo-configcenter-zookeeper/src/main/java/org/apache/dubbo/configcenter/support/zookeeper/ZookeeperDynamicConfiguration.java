@@ -21,16 +21,26 @@ import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.mapping.MappingChangedEvent;
+import org.apache.dubbo.mapping.MappingListener;
+import org.apache.dubbo.remoting.zookeeper.ChildListener;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 
 /**
  *
@@ -45,6 +55,8 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     private CacheListener cacheListener;
     private URL url;
+
+    private Map<String, MappingChildListener> listenerMap = new ConcurrentHashMap<>();
 
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
@@ -107,6 +119,28 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
+    public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        Set<String> appNameSet = new HashSet<>();
+        String path = toRootDir() + serviceKey;
+
+        if (null == listenerMap.get(path)) {
+            zkClient.create(path, false);
+            appNameSet.addAll(addServiceMappingListener(path, serviceKey, listener));
+        } else {
+            appNameSet.addAll(zkClient.getChildren(path));
+        }
+
+        return appNameSet;
+    }
+
+    String toRootDir() {
+        if (rootPath.equals(PATH_SEPARATOR)) {
+            return rootPath;
+        }
+        return rootPath + PATH_SEPARATOR;
+    }
+
+    @Override
     protected String doGetConfig(String pathKey) throws Exception {
         return zkClient.getContent(pathKey);
     }
@@ -139,7 +173,37 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    public boolean hasSupportCas() {
+    public boolean isSupportCas() {
         return true;
+    }
+
+    private List<String> addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
+        MappingChildListener mappingChildListener = listenerMap.computeIfAbsent(path, _k -> new MappingChildListener(serviceKey, path));
+        mappingChildListener.addListener(listener);
+        return zkClient.addChildListener(path, mappingChildListener);
+    }
+
+    private static class MappingChildListener implements ChildListener {
+        private String serviceKey;
+        private String path;
+        private Set<MappingListener> listeners;
+
+        public MappingChildListener(String serviceKey, String path) {
+            this.serviceKey = serviceKey;
+            this.path = path;
+            this.listeners = new HashSet<>();
+        }
+
+        public void addListener(MappingListener listener) {
+            this.listeners.add(listener);
+        }
+
+        @Override
+        public void childChanged(String path, List<String> children) {
+            MappingChangedEvent event = new MappingChangedEvent();
+            event.setServiceKey(serviceKey);
+            event.setApps(null != children ? new HashSet<>(children) : null);
+            listeners.forEach(mappingListener -> mappingListener.onEvent(event));
+        }
     }
 }

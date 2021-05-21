@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.mapping;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_MAPPING_TYPE;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
@@ -75,7 +73,6 @@ public interface ServiceNameMapping {
      * Get the default extension of {@link ServiceNameMapping}
      *
      * @return non-null {@link ServiceNameMapping}
-     * @see DynamicConfigurationServiceNameMapping
      */
     static ServiceNameMapping getDefaultExtension() {
         return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();

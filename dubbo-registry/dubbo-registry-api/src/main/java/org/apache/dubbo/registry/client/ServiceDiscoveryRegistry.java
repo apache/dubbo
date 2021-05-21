@@ -54,7 +54,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUST
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
-import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
+import static org.apache.dubbo.mapping.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
 /**

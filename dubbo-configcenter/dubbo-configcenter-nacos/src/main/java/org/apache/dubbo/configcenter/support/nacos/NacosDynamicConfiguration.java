@@ -27,6 +27,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.mapping.MappingListener;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -41,6 +42,7 @@ import com.alibaba.nacos.common.http.HttpRestResult;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -163,6 +165,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         } else {
             properties.setProperty(propertyName, defaultValue);
         }
+    }
+
+    @Override
+    public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        Set<String> appNameSet = new HashSet<>();
+
+        return appNameSet;
     }
 
     /**
@@ -385,7 +394,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     @Override
-    public boolean hasSupportCas() {
+    public boolean isSupportCas() {
         return true;
     }
 }

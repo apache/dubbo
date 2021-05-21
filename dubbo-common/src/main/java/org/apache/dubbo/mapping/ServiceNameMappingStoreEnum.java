@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.mapping;
 
 import java.util.HashMap;
 import java.util.Map;

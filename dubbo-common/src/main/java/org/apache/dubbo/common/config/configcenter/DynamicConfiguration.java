@@ -18,6 +18,7 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.mapping.MappingListener;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
@@ -87,6 +88,10 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      * @param listener configuration listener
      */
     void removeListener(String key, String group, ConfigurationListener listener);
+
+    default Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        return Collections.emptySet();
+    }
 
     /**
      * Get the configuration mapped to the given key and the given group with {@link #getDefaultTimeout() the default
@@ -272,7 +277,7 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
      *
      * @return
      */
-    default boolean hasSupportCas() {
+    default boolean isSupportCas() {
         return false;
     }
 }

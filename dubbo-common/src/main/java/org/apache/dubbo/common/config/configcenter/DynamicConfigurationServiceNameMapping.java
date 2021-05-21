@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.ConfigItem;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.mapping.MappingListener;
+import org.apache.dubbo.mapping.ServiceNameMapping;
+import org.apache.dubbo.mapping.ServiceNameMappingHandler;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -41,7 +42,7 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
-    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
+    private static final List<String> IGNORED_SERVICE_INTERFACES = asList("org.apache.dubbo.metadata.MetadataService");
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -58,16 +59,15 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
         if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
             Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getConfigurations();
             for (DynamicConfiguration configuration : configurations) {
-                if (configuration.hasSupportCas() && ServiceNameMappingHandler.isBothMapping()) {
+                if (configuration.isSupportCas() && ServiceNameMappingHandler.isBothMapping()) {
                     doCasMap(configuration, url);
                     doNormalMap(configuration, url);
                 } else {
                     doNormalMap(configuration, url);
                 }
             }
-
         } else {
-            boolean supportCas = dynamicConfiguration.hasSupportCas();
+            boolean supportCas = dynamicConfiguration.isSupportCas();
             if (supportCas && ServiceNameMappingHandler.isBothMapping()) {
                 doCasMap(dynamicConfiguration, url);
                 doNormalMap(dynamicConfiguration, url);
@@ -140,16 +140,21 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
+        Set<String> serviceNames = new LinkedHashSet<>();
+
         String serviceInterface = url.getServiceInterface();
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-
-        Set<String> serviceNames = new LinkedHashSet<>();
-        execute(() -> {
-            Set<String> keys = dynamicConfiguration
-                    .getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface));
-            serviceNames.addAll(keys);
-        });
-        return Collections.unmodifiableSet(serviceNames);
+        if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+            Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getConfigurations();
+            for (DynamicConfiguration configuration : configurations) {
+                Set<String> apps = configuration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
+                serviceNames.addAll(apps);
+            }
+        } else {
+            Set<String> apps = dynamicConfiguration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
+            serviceNames.addAll(apps);
+        }
+        return serviceNames;
     }
 
     @Override
