@@ -29,8 +29,6 @@ public class ConsumerContextClusterInterceptor implements ClusterInterceptor, Cl
 
     @Override
     public void before(AbstractClusterInvoker<?> invoker, Invocation invocation) {
-        RpcContext context = RpcContext.getContext();
-        context.setInvocation(invocation).setLocalAddress(NetUtils.getLocalHost(), 0);
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
