@@ -1004,7 +1004,8 @@ public class DubboBootstrap extends GenericEventListener {
             }
         });
 
-        if (configManager.getDefaultConfigs(cls).isEmpty()) {
+        // If none config of the type, try load single config
+        if (configManager.getConfigs(cls).isEmpty()) {
             // load single config
             Environment env = ApplicationModel.getEnvironment();
             List<Map<String, Object>> configurationMaps = env.getConfigurationMaps();
