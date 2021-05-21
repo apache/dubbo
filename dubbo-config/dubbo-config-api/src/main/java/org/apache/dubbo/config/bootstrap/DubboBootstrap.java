@@ -1047,6 +1047,10 @@ public class DubboBootstrap extends GenericEventListener {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             startup.set(false);
+            initialized.set(false);
+            shutdown.set(false);
+            awaited.set(false);
+
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
@@ -1389,7 +1393,6 @@ public class DubboBootstrap extends GenericEventListener {
 
                 if (started.compareAndSet(true, false)
                         && destroyed.compareAndSet(false, true)) {
-
                     unregisterServiceInstance();
                     unexportMetadataService();
                     unexportServices();
@@ -1407,6 +1410,8 @@ public class DubboBootstrap extends GenericEventListener {
                     release();
                 }
             } finally {
+                initialized.set(false);
+                startup.set(false);
                 destroyLock.unlock();
             }
         }
@@ -1456,6 +1461,11 @@ public class DubboBootstrap extends GenericEventListener {
                     logger.info(NAME + " is about to shutdown...");
                 }
                 condition.signalAll();
+                // sleep
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
             }
         });
     }
