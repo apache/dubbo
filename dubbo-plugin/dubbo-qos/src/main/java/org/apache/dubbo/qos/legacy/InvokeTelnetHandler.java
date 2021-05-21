@@ -90,29 +90,34 @@ public class InvokeTelnetHandler implements TelnetHandler {
             invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
         } else {
             for (ProviderModel provider : ApplicationModel.allProviderModels()) {
-                if (isServiceMatch(service, provider)) {
-                    selectedProvider = provider;
-                    List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
-                    if (CollectionUtils.isNotEmpty(methodList)) {
-                        if (methodList.size() == 1) {
-                            invokeMethod = methodList.get(0);
-                        } else {
-                            List<Method> matchMethods = findMatchMethods(methodList, list);
-                            if (CollectionUtils.isNotEmpty(matchMethods)) {
-                                if (matchMethods.size() == 1) {
-                                    invokeMethod = matchMethods.get(0);
-                                } else { //exist overridden method
-                                    channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
-                                    channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
-                                    channel.setAttribute(INVOKE_MESSAGE_KEY, message);
-                                    printSelectMessage(buf, matchMethods);
-                                    return buf.toString();
-                                }
-                            }
-                        }
-                    }
+                if (!isServiceMatch(service, provider)) {
+                    continue;
+                }
+
+                selectedProvider = provider;
+                List<Method> methodList = findSameSignatureMethod(provider.getAllMethods(), method, list);
+                if (CollectionUtils.isEmpty(methodList)) {
                     break;
                 }
+
+                if (methodList.size() == 1) {
+                    invokeMethod = methodList.get(0);
+                } else {
+                    List<Method> matchMethods = findMatchMethods(methodList, list);
+                    if (CollectionUtils.isEmpty(matchMethods)) {
+                        break;
+                    }
+                    if (matchMethods.size() == 1) {
+                        invokeMethod = matchMethods.get(0);
+                    } else { //exist overridden method
+                        channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
+                        channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
+                        channel.setAttribute(INVOKE_MESSAGE_KEY, message);
+                        printSelectMessage(buf, matchMethods);
+                        return buf.toString();
+                    }
+                }
+                break;
             }
         }
 
@@ -120,33 +125,33 @@ public class InvokeTelnetHandler implements TelnetHandler {
         if (!StringUtils.isEmpty(service)) {
             buf.append("Use default service ").append(service).append(".");
         }
-        if (selectedProvider != null) {
-            if (invokeMethod != null) {
-                try {
-                    Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
-                            invokeMethod.getGenericParameterTypes());
-                    long start = System.currentTimeMillis();
-                    AppResponse result = new AppResponse();
-                    try {
-                        Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
-                        result.setValue(o);
-                    } catch (Throwable t) {
-                        result.setException(t);
-                    }
-                    long end = System.currentTimeMillis();
-                    buf.append("\r\nresult: ");
-                    buf.append(JSON.toJSONString(result.recreate()));
-                    buf.append("\r\nelapsed: ");
-                    buf.append(end - start);
-                    buf.append(" ms.");
-                } catch (Throwable t) {
-                    return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
-                }
-            } else {
-                buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
-            }
-        } else {
+        if (selectedProvider == null) {
             buf.append("\r\nNo such service ").append(service);
+            return buf.toString();
+        }
+        if (invokeMethod == null) {
+            buf.append("\r\nNo such method ").append(method).append(" in service ").append(service);
+            return buf.toString();
+        }
+        try {
+            Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
+                    invokeMethod.getGenericParameterTypes());
+            long start = System.currentTimeMillis();
+            AppResponse result = new AppResponse();
+            try {
+                Object o = invokeMethod.invoke(selectedProvider.getServiceInstance(), array);
+                result.setValue(o);
+            } catch (Throwable t) {
+                result.setException(t);
+            }
+            long end = System.currentTimeMillis();
+            buf.append("\r\nresult: ");
+            buf.append(JSON.toJSONString(result.recreate()));
+            buf.append("\r\nelapsed: ");
+            buf.append(end - start);
+            buf.append(" ms.");
+        } catch (Throwable t) {
+            return "Failed to invoke method " + invokeMethod.getName() + ", cause: " + StringUtils.toString(t);
         }
         return buf.toString();
     }
