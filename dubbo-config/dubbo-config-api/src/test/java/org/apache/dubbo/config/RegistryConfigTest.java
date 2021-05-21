@@ -203,8 +203,10 @@ public class RegistryConfigTest {
 
         Map<String, String> sysprops = new LinkedHashMap<>();
         sysprops.put("dubbo.registry.address", "zookeeper://${zookeeper.address}:${zookeeper.port}");
+        sysprops.put("dubbo.registry.useAsConfigCenter", "false");
+        sysprops.put("dubbo.registry.useAsMetadataCenter", "false");
         sysprops.put("zookeeper.address", "localhost");
-        sysprops.put("zookeeper.port", "2181");
+        sysprops.put("zookeeper.port", "2188");
         System.getProperties().putAll(sysprops);
 
         try {
@@ -216,7 +218,7 @@ public class RegistryConfigTest {
             Collection<RegistryConfig> registries = ApplicationModel.getConfigManager().getRegistries();
             Assertions.assertEquals(1, registries.size());
             RegistryConfig registryConfig = registries.iterator().next();
-            Assertions.assertEquals("zookeeper://localhost:2181", registryConfig.getAddress());
+            Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
         } finally {
             for (String key : sysprops.keySet()) {
                 System.clearProperty(key);
