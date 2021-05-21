@@ -266,6 +266,10 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         initConfigs();
     }
 
+    public String resolvePlaceholders(String str) {
+        return ConfigUtils.replaceProperty(str, getConfiguration());
+    }
+
     public PropertiesConfiguration getPropertiesConfiguration() {
         return propertiesConfiguration;
     }
@@ -303,4 +307,5 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void clearAppExternalConfigs() {
         this.appExternalConfiguration.clear();
     }
+
 }

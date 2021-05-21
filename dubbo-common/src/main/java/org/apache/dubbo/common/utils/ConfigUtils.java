@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -128,6 +130,10 @@ public class ConfigUtils {
     }
 
     public static String replaceProperty(String expression, Map<String, String> params) {
+        return replaceProperty(expression, new InmemoryConfiguration(params));
+    }
+
+    public static String replaceProperty(String expression, Configuration configuration) {
         if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
             return expression;
         }
@@ -136,8 +142,9 @@ public class ConfigUtils {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
-            if (value == null && params != null) {
-                value = params.get(key);
+            if (value == null && configuration != null) {
+                Object val = configuration.getProperty(key);
+                value = (val != null) ? val.toString() : null;
             }
             if (value == null) {
                 value = "";

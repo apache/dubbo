@@ -17,11 +17,15 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -195,7 +199,28 @@ public class RegistryConfigTest {
     }
 
     @Test
-    public void testOverrideConfig() {
-        //TODO
+    public void testOverrideConfigBySystemProps() {
+
+        Map<String, String> sysprops = new LinkedHashMap<>();
+        sysprops.put("dubbo.registry.address", "zookeeper://${zookeeper.address}:${zookeeper.port}");
+        sysprops.put("zookeeper.address", "localhost");
+        sysprops.put("zookeeper.port", "2181");
+        System.getProperties().putAll(sysprops);
+
+        try {
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .initialize();
+
+            Collection<RegistryConfig> registries = ApplicationModel.getConfigManager().getRegistries();
+            Assertions.assertEquals(1, registries.size());
+            RegistryConfig registryConfig = registries.iterator().next();
+            Assertions.assertEquals("zookeeper://localhost:2181", registryConfig.getAddress());
+        } finally {
+            for (String key : sysprops.keySet()) {
+                System.clearProperty(key);
+            }
+        }
     }
 }

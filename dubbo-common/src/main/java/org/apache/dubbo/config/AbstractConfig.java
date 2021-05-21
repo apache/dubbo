@@ -571,9 +571,9 @@ public abstract class AbstractConfig implements Serializable {
         try {
             preProcessRefresh();
 
-            Configuration instanceConfiguration = null;
-            Environment env = ApplicationModel.getEnvironment();
-            List<Map<String, Object>> configurationMaps = env.getConfigurationMaps();
+            Configuration truncatedConfiguration = null;
+            Environment environment = ApplicationModel.getEnvironment();
+            List<Map<String, Object>> configurationMaps = environment.getConfigurationMaps();
 
             // Check in order to see if there are any properties that begin with PREFIX
             String preferredPrefix = null;
@@ -586,9 +586,9 @@ public abstract class AbstractConfig implements Serializable {
             if (preferredPrefix == null) {
                 preferredPrefix = getPrefixes().get(0);
             }
-            Collection<Map<String, Object>> instanceConfigMaps = env.getConfigurationMaps(this, preferredPrefix);
+            Collection<Map<String, Object>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
             Map<String, Object> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
-            instanceConfiguration = new InmemoryConfiguration(subProperties);
+            truncatedConfiguration = new InmemoryConfiguration(subProperties);
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
@@ -603,9 +603,10 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     try {
-                        String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
+                        String value = StringUtils.trim(truncatedConfiguration.getString(propertyName));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            value = environment.resolvePlaceholders(value);
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (Exception e) {
@@ -615,7 +616,7 @@ public abstract class AbstractConfig implements Serializable {
                     }
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(getClass(), method);
-                    String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
+                    String value = StringUtils.trim(truncatedConfiguration.getString(propertyName));
                     if (StringUtils.hasText(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;

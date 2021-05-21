@@ -143,7 +143,7 @@ public class ConfigCenterConfigTest {
             DubboBootstrap.getInstance()
                     .application("demo-app")
                     .configCenter(configCenter)
-                    .start();
+                    .initialize();
 
             Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
@@ -173,7 +173,7 @@ public class ConfigCenterConfigTest {
             DubboBootstrap.getInstance()
                     .application("demo-app")
                     .configCenter(configCenter)
-                    .start();
+                    .initialize();
 
             Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());

@@ -36,8 +36,8 @@ public class InmemoryConfiguration implements Configuration {
         this.name = name;
     }
 
-    public InmemoryConfiguration(Map<String, Object> properties) {
-        this.addProperties(properties);
+    public InmemoryConfiguration(Map/*<String, Object>*/ properties) {
+        this.setProperties(properties);
     }
 
     @Override
@@ -66,8 +66,7 @@ public class InmemoryConfiguration implements Configuration {
      */
     public void setProperties(Map/*<String, Object>*/ properties) {
         if (properties != null) {
-            this.store.clear();
-            this.store.putAll(properties);
+            this.store = properties;
         }
     }
 
