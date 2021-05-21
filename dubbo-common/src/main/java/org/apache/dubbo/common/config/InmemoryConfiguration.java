@@ -74,8 +74,4 @@ public class InmemoryConfiguration implements Configuration {
         return store;
     }
 
-    // for unit test
-    public void clear() {
-        this.store.clear();
-    }
 }

@@ -327,7 +327,7 @@ public class AbstractConfigTest {
             System.clearProperty("dubbo.override.protocol");
             System.clearProperty("dubbo.override.key1");
             System.clearProperty("dubbo.override.key2");
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
         }
     }
 
@@ -354,7 +354,7 @@ public class AbstractConfigTest {
             System.clearProperty("dubbo.override.address");
             System.clearProperty("dubbo.override.protocol");
             System.clearProperty("dubbo.override.key1");
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
         }
     }
 
@@ -378,7 +378,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
             //Assertions.assertEquals("properties", overrideConfig.getUseKeyAsProperty());
         } finally {
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
             ConfigUtils.setProperties(null);
         }
     }
@@ -414,7 +414,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("external", overrideConfig.getKey2());
         } finally {
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
         }
     }
 
@@ -451,7 +451,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("external", overrideConfig.getKey2());
         } finally {
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
         }
     }
 
@@ -487,7 +487,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
         } finally {
             System.clearProperty("dubbo.override.parameters");
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
         }
     }
 
@@ -517,7 +517,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value-from-config", overrideConfig.getNotConflictKey());
             Assertions.assertEquals("value-from-env", overrideConfig.getNotConflictKey2());
         } finally {
-            ApplicationModel.getEnvironment().clearExternalConfigs();
+            ApplicationModel.getEnvironment().destroy();
 
         }
     }

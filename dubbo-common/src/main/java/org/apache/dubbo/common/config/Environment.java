@@ -257,9 +257,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void destroy() throws IllegalStateException {
-        clearExternalConfigs();
-        clearAppExternalConfigs();
-        appConfiguration.clear();
+        externalConfiguration = null;
+        appExternalConfiguration = null;
+        appConfiguration = null;
         globalConfiguration = null;
         dynamicConfiguration = null;
         dynamicGlobalConfiguration = null;
@@ -296,16 +296,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     public String getLocalMigrationRule() {
         return localMigrationRule;
-    }
-
-    // For test
-    public void clearExternalConfigs() {
-        this.externalConfiguration.clear();
-    }
-
-    // For test
-    public void clearAppExternalConfigs() {
-        this.appExternalConfiguration.clear();
     }
 
 }
