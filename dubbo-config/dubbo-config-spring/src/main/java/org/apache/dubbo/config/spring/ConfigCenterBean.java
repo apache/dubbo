@@ -93,4 +93,19 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
         return applicationContext;
     }
 
+    /**
+     * @deprecated includeSpringEnv is no longer used
+     */
+    @Deprecated
+    public Boolean getIncludeSpringEnv() {
+        return false;
+    }
+
+    /**
+     * @deprecated includeSpringEnv is no longer used
+     */
+    @Deprecated
+    public void setIncludeSpringEnv(Boolean includeSpringEnv) {
+    }
+
 }
