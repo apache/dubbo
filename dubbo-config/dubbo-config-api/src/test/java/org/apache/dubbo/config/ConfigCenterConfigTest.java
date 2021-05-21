@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +29,10 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
 
 public class ConfigCenterConfigTest {
 
@@ -247,4 +251,35 @@ public class ConfigCenterConfigTest {
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 
+    @Test
+    public void testParameters() {
+        ConfigCenterConfig cc = new ConfigCenterConfig();
+        cc.setParameters(new LinkedHashMap<>());
+        cc.getParameters().put(CLIENT_KEY, null);
+
+        Map<String, String> params = new LinkedHashMap<>();
+        ConfigCenterConfig.appendParameters(params, cc);
+
+        Map<String, String> attributes = new LinkedHashMap<>();
+        ConfigCenterConfig.appendAttributes(attributes, cc);
+
+        String encodedParametersStr = attributes.get("parameters");
+        Assertions.assertEquals("[]", encodedParametersStr);
+        Assertions.assertEquals(0, StringUtils.parseParameters(encodedParametersStr).size());
+    }
+
+    @Test
+    public void testAttributes() {
+        ConfigCenterConfig cc = new ConfigCenterConfig();
+        cc.setAddress("zookeeper://127.0.0.1:2181");
+        Map<String, String> attributes = new LinkedHashMap<>();
+        ConfigCenterConfig.appendAttributes(attributes, cc);
+
+        Assertions.assertEquals(cc.getAddress(), attributes.get("address"));
+        Assertions.assertEquals(cc.getProtocol(), attributes.get("protocol"));
+        Assertions.assertEquals(""+cc.getPort(), attributes.get("port"));
+        Assertions.assertEquals(null, attributes.get("valid"));
+        Assertions.assertEquals(null, attributes.get("refreshed"));
+
+    }
 }

@@ -1131,7 +1131,9 @@ public final class StringUtils {
      * @return
      */
     public static Map<String, String> parseParameters(String rawParameters) {
-
+        if (StringUtils.isBlank(rawParameters)) {
+            return Collections.emptyMap();
+        }
         Matcher matcher = PARAMETERS_PATTERN.matcher(rawParameters);
         if (!matcher.matches()) {
             return Collections.emptyMap();
@@ -1164,7 +1166,9 @@ public final class StringUtils {
         sb.append("[");
         params.forEach((key,value) -> {
             // {key:value},
-            sb.append("{").append(key).append(":").append(value).append("},");
+            if (hasText(value)) {
+                sb.append("{").append(key).append(":").append(value).append("},");
+            }
         });
         // delete last separator ','
         if (sb.charAt(sb.length() - 1) == ',') {

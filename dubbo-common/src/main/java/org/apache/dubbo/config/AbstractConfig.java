@@ -168,18 +168,19 @@ public abstract class AbstractConfig implements Serializable {
             try {
                 String name = method.getName();
                 if (MethodUtils.isGetter(method)) {
-                    Parameter parameter = method.getAnnotation(Parameter.class);
                     if (method.getReturnType() == Object.class ) {
                         continue;
                     }
+                    String key = calculatePropertyFromGetter(name);
+                    if (IGNORED_ATTRIBUTES.contains(key)) {
+                        continue;
+                    }
+                    Parameter parameter = method.getAnnotation(Parameter.class);
                     if (asParameters && parameter != null && parameter.excluded()) {
                         continue;
                     }
-                    String key;
                     if (asParameters && parameter != null && parameter.key().length() > 0) {
                         key = parameter.key();
-                    } else {
-                        key = calculatePropertyFromGetter(name);
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
@@ -212,7 +213,10 @@ public abstract class AbstractConfig implements Serializable {
                     } else {
                         // encode parameters to string for config overriding, see AbstractConfig#refresh()
                         String key = calculatePropertyFromGetter(name);
-                        parameters.put(key, StringUtils.encodeParameters(map));
+                        String encodeParameters = StringUtils.encodeParameters(map);
+                        if (encodeParameters != null) {
+                            parameters.put(key, encodeParameters);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -601,7 +605,7 @@ public abstract class AbstractConfig implements Serializable {
                     try {
                         String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
-                        if (StringUtils.isNotEmpty(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                        if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             method.invoke(this, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
                         }
                     } catch (Exception e) {
@@ -612,7 +616,7 @@ public abstract class AbstractConfig implements Serializable {
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(getClass(), method);
                     String value = StringUtils.trim(instanceConfiguration.getString(propertyName));
-                    if (StringUtils.isNotEmpty(value)) {
+                    if (StringUtils.hasText(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;
                         map.putAll(convert(StringUtils.parseParameters(value), ""));

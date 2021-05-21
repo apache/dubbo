@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -440,6 +441,29 @@ public class StringUtilsTest {
 
         str = StringUtils.encodeParameters(illegalMap);
         assertEquals(null, str);
+
+        String emptyMapStr = "[]";
+        Map<String, String> emptyMap = StringUtils.parseParameters(emptyMapStr);
+        assertEquals(0, emptyMap.size());
+    }
+
+    @Test
+    public void testEncodeParameters() {
+        Map<String, String> nullValueMap = new LinkedHashMap<>();
+        nullValueMap.put("client", null);
+        String str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        Map<String, String> blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", " ");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
+        blankValueMap = new LinkedHashMap<>();
+        blankValueMap.put("client", "");
+        str = StringUtils.encodeParameters(nullValueMap);
+        assertEquals("[]", str);
+
     }
 
     private void assertEqualsWithoutSpaces(String expect, String actual) {
