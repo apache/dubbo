@@ -775,6 +775,8 @@ public class RegistryProtocol implements Protocol {
         private URL subscribeUrl;
         private URL registerUrl;
 
+        private volatile boolean unexported;
+
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
             this.originInvoker = originInvoker;
@@ -795,6 +797,10 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         public void unexport() {
+            if (unexported) {
+                return;
+            }
+
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
 
@@ -827,6 +833,8 @@ public class RegistryProtocol implements Protocol {
                     LOGGER.warn(t.getMessage(), t);
                 }
             });
+
+            unexported = true;
         }
 
         public void setSubscribeUrl(URL subscribeUrl) {
