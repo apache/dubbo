@@ -17,7 +17,6 @@
 package org.apache.dubbo.rpc.cluster.interceptor;
 
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
