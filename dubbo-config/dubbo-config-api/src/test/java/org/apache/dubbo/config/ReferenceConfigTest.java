@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -48,6 +49,7 @@ public class ReferenceConfigTest {
     public void test2Injvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
+        application.setEnableFileCache(false);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
@@ -88,8 +90,11 @@ public class ReferenceConfigTest {
     public void test1ReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
+        application.setEnableFileCache(false);
+
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
+
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
