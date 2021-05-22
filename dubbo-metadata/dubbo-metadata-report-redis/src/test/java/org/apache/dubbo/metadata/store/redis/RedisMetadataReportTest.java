@@ -43,6 +43,7 @@ import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
+import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY;
 import static redis.embedded.RedisServer.newRedisServer;
 
 public class RedisMetadataReportTest {
@@ -84,7 +85,8 @@ public class RedisMetadataReportTest {
         Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
-        syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);
+        URL syncRegistryUrl = registryUrl.addParameter(SYNC_REPORT_KEY ,"true");
+        syncRedisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(syncRegistryUrl);
     }
 
     private static boolean usesAuthentication(final TestInfo testInfo) {
