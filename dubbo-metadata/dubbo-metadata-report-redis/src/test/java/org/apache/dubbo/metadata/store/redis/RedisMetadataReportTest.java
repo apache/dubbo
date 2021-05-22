@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.google.gson.Gson;
+import org.apache.commons.lang3.SystemUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,8 +39,8 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static redis.embedded.RedisServer.newRedisServer;
@@ -58,17 +59,19 @@ public class RedisMetadataReportTest {
 
     @BeforeEach
     public void constructor(final TestInfo testInfo) throws IOException {
-        final int redisPort = NetUtils.getAvailablePort();
         final boolean usesAuthentication = usesAuthentication(testInfo);
-
-        redisServer = newRedisServer()
-                .port(redisPort)
-                .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
-                .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
-                .build();
+        int redisPort = 0;
         IOException exception = null;
+
         for (int i = 0; i < 10; i++) {
             try {
+                redisPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
+                redisServer = newRedisServer()
+                        .port(redisPort)
+                        // set maxheap to fix Windows error 0x70 while starting redis
+                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                        .build();
                 this.redisServer.start();
             } catch (IOException e) {
                 exception = e;
@@ -77,6 +80,7 @@ public class RedisMetadataReportTest {
                 break;
             }
         }
+
         Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
         redisMetadataReport = (RedisMetadataReport) new RedisMetadataReportFactory().createMetadataReport(registryUrl);

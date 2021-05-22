@@ -32,6 +32,7 @@ import redis.embedded.RedisServer;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
@@ -51,16 +52,17 @@ public class RedisRegistryTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        final int redisPort = NetUtils.getAvailablePort();
-
-        redisServer = newRedisServer()
-                .port(redisPort)
-                // set maxheap to fix Windows error 0x70 while starting redis
-                .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
-                .build();
+        int redisPort = 0;
         IOException exception = null;
+
         for (int i = 0; i < 10; i++) {
             try {
+                redisPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
+                redisServer = newRedisServer()
+                        .port(redisPort)
+                        // set maxheap to fix Windows error 0x70 while starting redis
+                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        .build();
                 this.redisServer.start();
             } catch (IOException e) {
                 exception = e;
