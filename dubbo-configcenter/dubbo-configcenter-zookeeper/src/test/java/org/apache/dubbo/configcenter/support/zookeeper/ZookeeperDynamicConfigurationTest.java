@@ -28,9 +28,9 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.retry.ExponentialBackoffRetry;
 import org.apache.curator.test.TestingServer;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -47,15 +47,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * TODO refactor using mockito
  */
 public class ZookeeperDynamicConfigurationTest {
-    private static CuratorFramework client;
+    private CuratorFramework client;
 
-    private static URL configUrl;
-    private static int zkServerPort = NetUtils.getAvailablePort();
-    private static TestingServer zkServer;
-    private static DynamicConfiguration configuration;
+    private URL configUrl;
+    private int zkServerPort = NetUtils.getAvailablePort();
+    private TestingServer zkServer;
+    private DynamicConfiguration configuration;
 
-    @BeforeAll
-    public static void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() throws Exception {
         zkServer = new TestingServer(zkServerPort, true);
 
         client = CuratorFrameworkFactory.newClient("127.0.0.1:" + zkServerPort, 60 * 1000, 60 * 1000,
@@ -64,9 +64,7 @@ public class ZookeeperDynamicConfigurationTest {
 
         try {
             setData("/dubbo/config/dubbo/dubbo.properties", "The content from dubbo.properties");
-            setData("/dubbo/config/dubbo/service:version:group.configurators", "The content from configurators");
             setData("/dubbo/config/appname", "The content from higher level node");
-            setData("/dubbo/config/dubbo/appname.tag-router", "The content from appname tagrouters");
             setData("/dubbo/config/dubbo/never.change.DemoService.configurators", "Never change value from configurators");
         } catch (Exception e) {
             e.printStackTrace();
@@ -74,16 +72,16 @@ public class ZookeeperDynamicConfigurationTest {
 
 
         configUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
-
         configuration = ExtensionLoader.getExtensionLoader(DynamicConfigurationFactory.class).getExtension(configUrl.getProtocol()).getDynamicConfiguration(configUrl);
     }
 
-    @AfterAll
-    public static void tearDown() throws Exception {
+    @AfterEach
+    public void tearDown() throws Exception {
+        configuration.close();
         zkServer.stop();
     }
 
-    private static void setData(String path, String data) throws Exception {
+    private void setData(String path, String data) throws Exception {
         if (client.checkExists().forPath(path) == null) {
             client.create().creatingParentsIfNeeded().forPath(path);
         }
@@ -117,10 +115,10 @@ public class ZookeeperDynamicConfigurationTest {
         Thread.sleep(5000);
 
         latch.await();
-        Assertions.assertEquals(2, listener1.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(2, listener2.getCount("service:version:group.configurators"));
-        Assertions.assertEquals(2, listener3.getCount("appname.tag-router"));
-        Assertions.assertEquals(2, listener4.getCount("appname.tag-router"));
+        Assertions.assertEquals(1, listener1.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(1, listener2.getCount("service:version:group.configurators"));
+        Assertions.assertEquals(1, listener3.getCount("appname.tag-router"));
+        Assertions.assertEquals(1, listener4.getCount("appname.tag-router"));
 
         Assertions.assertEquals("new value1", listener1.getValue());
         Assertions.assertEquals("new value1", listener2.getValue());
