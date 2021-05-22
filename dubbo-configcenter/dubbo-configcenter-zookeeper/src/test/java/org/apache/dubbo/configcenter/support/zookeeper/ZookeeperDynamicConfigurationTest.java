@@ -129,6 +129,52 @@ public class ZookeeperDynamicConfigurationTest {
     }
 
     @Test
+    public void tesRemoveListener() throws Exception {
+        String key1 = "service:version:group.configurators.remove";
+        String path1 = "/dubbo/config/dubbo/" + key1;
+        String key2 = "appname.tag-router.remove";
+        String path2 = "/dubbo/config/dubbo/" + key2;
+
+        CountDownLatch latch = new CountDownLatch(2);
+        TestListener listener1 = new TestListener(latch);
+        TestListener listener2 = new TestListener(latch);
+        configuration.addListener(key1, listener1);
+        configuration.addListener(key2, listener2);
+
+        Thread.sleep(100);
+        setData(path1, "new value1");
+        Thread.sleep(100);
+        setData(path2, "new value2");
+        Thread.sleep(100);
+        latch.await();
+
+        Assertions.assertEquals(1, listener1.getCount(key1));
+        Assertions.assertEquals(1, listener2.getCount(key2));
+
+        configuration.removeListener(key1, listener1);
+        setData(path1, "new value11");
+        Thread.sleep(100);
+        Assertions.assertEquals(1, listener1.getCount(key1));
+
+        setData(path2, "new value22");
+        Thread.sleep(100);
+        Assertions.assertEquals(2, listener2.getCount(key2));
+    }
+
+    @Test
+    public void testRemoveConfig() {
+        String key = "remove-config";
+        String group = "test";
+        String content = "test remove config";
+        configuration.publishConfig(key, group, content);
+
+        assertEquals(content, configuration.getConfig(key, group));
+
+        configuration.removeConfig(key, group);
+        assertEquals(null, configuration.getConfig(key, group));
+    }
+
+    @Test
     public void testPublishConfig() {
         String key = "user-service";
         String group = "org.apache.dubbo.service.UserService";
