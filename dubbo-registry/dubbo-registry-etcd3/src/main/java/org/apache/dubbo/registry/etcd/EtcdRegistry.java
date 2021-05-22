@@ -246,7 +246,7 @@ public class EtcdRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = etcdListeners.get(url);
         if (listeners != null) {
-            ChildListener etcdListener = listeners.get(listener);
+            ChildListener etcdListener = listeners.remove(listener);
             if (etcdListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -257,6 +257,10 @@ public class EtcdRegistry extends FailbackRegistry {
                         etcdClient.removeChildListener(path, etcdListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                etcdListeners.remove(url);
             }
         }
     }
