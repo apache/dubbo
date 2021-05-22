@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.config.configcenter.wrapper;
 
-import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
