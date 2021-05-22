@@ -109,6 +109,12 @@ public final class URLStrParser {
      */
     private static URL parseURLBody(String fullURLStr, String decodedBody, Map<String, String> parameters, boolean modifiable) {
         int starIdx = 0, endIdx = decodedBody.length();
+        // ignore the url content following '#'
+        int poundIndex = decodedBody.indexOf('#');
+        if (poundIndex != -1) {
+            endIdx = poundIndex;
+        }
+
         String protocol = null;
         int protoEndIdx = decodedBody.indexOf("://");
         if (protoEndIdx >= 0) {
@@ -132,7 +138,7 @@ public final class URLStrParser {
         String path = null;
         int pathStartIdx = indexOf(decodedBody, '/', starIdx, endIdx);
         if (pathStartIdx >= 0) {
-            path = decodedBody.substring(pathStartIdx + 1);
+            path = decodedBody.substring(pathStartIdx + 1, endIdx);
             endIdx = pathStartIdx;
         }
 

@@ -39,6 +39,22 @@ import static org.junit.jupiter.api.Assertions.fail;
 public class URLTest {
 
     @Test
+    public void test_ignore_pond() {
+        URL url = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path#index?version=1.0.0&id=org.apache.dubbo.config.RegistryConfig#0");
+        assertURLStrDecoder(url);
+        assertEquals("dubbo", url.getProtocol());
+        assertEquals("admin", url.getUsername());
+        assertEquals("hello1234", url.getPassword());
+        assertEquals("10.20.130.230", url.getHost());
+        assertEquals("10.20.130.230:20880", url.getAddress());
+        assertEquals(20880, url.getPort());
+        assertEquals("context/path", url.getPath());
+        assertEquals(2, url.getParameters().size());
+        assertEquals("1.0.0", url.getVersion());
+        assertEquals("org.apache.dubbo.config.RegistryConfig#0", url.getParameter("id"));
+    }
+
+    @Test
     public void test_valueOf_noProtocolAndHost() throws Exception {
         URL url = URL.valueOf("/context/path?version=1.0.0&application=morgan");
         assertURLStrDecoder(url);
