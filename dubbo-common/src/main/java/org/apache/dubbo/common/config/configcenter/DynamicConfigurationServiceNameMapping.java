@@ -26,6 +26,7 @@ import org.apache.dubbo.mapping.ServiceNameMapping;
 import org.apache.dubbo.mapping.ServiceNameMappingHandler;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
