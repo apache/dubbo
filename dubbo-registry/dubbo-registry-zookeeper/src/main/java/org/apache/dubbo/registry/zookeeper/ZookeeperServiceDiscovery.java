@@ -189,7 +189,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
-        String path = buildServicePath(serviceName);
+            String path = buildServicePath(serviceName);
         try {
             curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {

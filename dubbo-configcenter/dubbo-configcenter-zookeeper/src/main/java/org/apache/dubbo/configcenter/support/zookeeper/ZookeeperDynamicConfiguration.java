@@ -43,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.mapping.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
 import static org.apache.dubbo.mapping.ServiceNameMapping.getAppNames;
 
 /**
@@ -139,7 +140,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     public Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        String path = toRootDir() + serviceKey;
+        String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
         if (null == casListenerMap.get(path)) {
             addCasServiceMappingListener(path, serviceKey, listener);
         }
@@ -220,9 +221,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
         @Override
         public void childChanged(String path, List<String> children) {
-            MappingChangedEvent event = new MappingChangedEvent();
-            event.setServiceKey(serviceKey);
-            event.setApps(null != children ? new HashSet<>(children) : null);
+            Set<String> apps = null != children ? new HashSet<>(children) : null;
+
+            MappingChangedEvent event = MappingChangedEvent.buildOldModelEvent(serviceKey, apps);
+
             listeners.forEach(mappingListener -> mappingListener.onEvent(event));
         }
     }
@@ -251,9 +253,9 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
             if (EventType.NodeCreated != eventType && EventType.NodeDataChanged != eventType) {
                 return;
             }
-            MappingChangedEvent event = new MappingChangedEvent();
-            event.setServiceKey(serviceKey);
-            event.setApps(getAppNames((String) value));
+
+            Set<String> apps = getAppNames((String) value);
+            MappingChangedEvent event = MappingChangedEvent.buildCasModelEvent(serviceKey, apps);
 
             listeners.forEach(mappingListener -> mappingListener.onEvent(event));
 

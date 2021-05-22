@@ -36,6 +36,7 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -199,12 +200,17 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private class DefaultMappingListener implements MappingListener {
         private final Logger logger = LoggerFactory.getLogger(DefaultMappingListener.class);
         private URL url;
+
         private Set<String> oldApps;
+
+        private Set<String> casOldApps;
+
         private MigrationRuleHandler handler;
 
         public DefaultMappingListener(URL subscribedURL, Set<String> serviceNames, MigrationRuleHandler handler) {
             this.url = subscribedURL;
-            this.oldApps = serviceNames;
+            this.oldApps = new HashSet<>(serviceNames);
+            this.casOldApps = new HashSet<>(serviceNames);
             this.handler = handler;
         }
 
@@ -213,9 +219,21 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             if (logger.isDebugEnabled()) {
                 logger.debug("Received mapping notification from meta server, " + event);
             }
-            Set<String> newApps = event.getApps();
-            Set<String> tempOldApps = oldApps;
-            oldApps = newApps;
+
+            Set<String> tempOldApps = new HashSet<>();
+            tempOldApps.addAll(oldApps);
+            tempOldApps.addAll(casOldApps);
+
+
+            if (event.isNewModel()) {
+                casOldApps = new HashSet<>(event.getApps());
+            } else {
+                oldApps = new HashSet<>(event.getApps());
+            }
+
+            Set<String> newApps = new HashSet<>();
+            newApps.addAll(oldApps);
+            newApps.addAll(casOldApps);
 
             if (CollectionUtils.isEmpty(newApps)) {
                 return;

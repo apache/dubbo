@@ -19,30 +19,47 @@ package org.apache.dubbo.mapping;
 import java.util.Set;
 
 public class MappingChangedEvent {
-    private String serviceKey;
-    private Set<String> apps;
+
+    //before mapping model, one key -> multi value
+    public static final int BEFORE = 0;
+
+    //the new mapping model, one key -> one value. use cas to ensure the data thread safe
+    public static final int CAS = 1;
+
+    private final String serviceKey;
+    private final Set<String> apps;
+    private final int type;
+
+    private MappingChangedEvent(String serviceKey, Set<String> apps, int type) {
+        this.serviceKey = serviceKey;
+        this.apps = apps;
+        this.type = type;
+    }
+
+    public boolean isNewModel() {
+        return type == CAS;
+    }
+
+    public static MappingChangedEvent buildOldModelEvent(String serviceKey, Set<String> apps) {
+        return new MappingChangedEvent(serviceKey, apps, BEFORE);
+    }
+
+    public static MappingChangedEvent buildCasModelEvent(String serviceKey, Set<String> apps) {
+        return new MappingChangedEvent(serviceKey, apps, CAS);
+    }
+
 
     public String getServiceKey() {
         return serviceKey;
-    }
-
-    public void setServiceKey(String serviceKey) {
-        this.serviceKey = serviceKey;
     }
 
     public Set<String> getApps() {
         return apps;
     }
 
-    public void setApps(Set<String> apps) {
-        this.apps = apps;
-    }
-
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("{serviceKey: ").append(serviceKey).append(", apps: ");
-        sb.append(apps.toString()).append("}");
-        return sb.toString();
+        return "{serviceKey: " + serviceKey + ", apps: " +
+                apps.toString() + "}";
     }
 }

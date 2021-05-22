@@ -387,9 +387,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
                 return;
             }
 
-            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent();
-            mappingChangedEvent.setServiceKey(serviceKey);
-            mappingChangedEvent.setApps(getAppNames(event.getContent()));
+            Set<String> apps = getAppNames(event.getContent());
+
+            MappingChangedEvent mappingChangedEvent = MappingChangedEvent.buildCasModelEvent(serviceKey, apps);
 
             listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
         }

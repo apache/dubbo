@@ -196,9 +196,10 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
 
         @Override
         public void childChanged(String path, List<String> children) {
-            MappingChangedEvent event = new MappingChangedEvent();
-            event.setServiceKey(serviceKey);
-            event.setApps(null != children ? new HashSet<>(children) : null);
+            Set<String> apps = null != children ? new HashSet<>(children) : null;
+
+            MappingChangedEvent event = MappingChangedEvent.buildOldModelEvent(serviceKey, apps);
+
             listeners.forEach(mappingListener -> mappingListener.onEvent(event));
         }
     }
