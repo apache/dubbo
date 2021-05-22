@@ -90,6 +90,7 @@ public class MultipleRegistry2S2RTest {
             }
         }
 
+        Assertions.assertNull(exception);
         redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 
         URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
