@@ -38,6 +38,8 @@ public class MigrationRuleHandler<T> {
     private Float currentThreshold = 0f;
     private URL consumerURL;
 
+    private boolean inited = false;
+
     private final WritableMetadataService writableMetadataService;
 
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
@@ -50,7 +52,11 @@ public class MigrationRuleHandler<T> {
         if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
             if (!isCallback) {
                 initInvoker(MigrationStep.FORCE_APPLICATION, 1.0f);
+                inited = true;
             } else {
+                if (!inited) {
+                    return;
+                }
                 migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
             }
             return;

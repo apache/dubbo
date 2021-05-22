@@ -73,7 +73,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
         this.curatorFramework = buildCuratorFramework(registryURL);
         this.rootPath = ROOT_PATH.getParameterValue(registryURL);
@@ -86,7 +86,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return registryURL;
     }
 
-    public void destroy() throws Exception {
+    public void doDestroy() throws Exception {
         serviceDiscovery.close();
     }
 
@@ -106,7 +106,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         this.register(serviceInstance);
     }
 
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+    @Override
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.unregisterService(build(serviceInstance));
         });
@@ -169,10 +170,13 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
-            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
-            watcher.stopWatching();
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(buildServicePath(serviceName));
+            if (watcher != null) {
+                watcher.stopWatching();
+            }
         });
     }
+
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
         ThrowableConsumer.execute(serviceDiscovery, s -> {

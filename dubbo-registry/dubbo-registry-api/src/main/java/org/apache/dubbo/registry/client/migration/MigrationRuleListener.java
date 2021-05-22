@@ -46,7 +46,6 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.of;
-import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDED_BY;
@@ -130,7 +129,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     @Override
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
         MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey() + consumerUrl.getParameter(TIMESTAMP_KEY), _key -> {
-            return new MigrationRuleHandler<>((MigrationInvoker<?>)invoker, consumerUrl);
+            return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });
 
         try {
@@ -170,7 +169,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         }
 
         if (isEmpty(subscribedServices)) {
-            Set<String> mappedServices = findMappedServices(registryURL, subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, handler));
+            Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, handler));
             logger.info(subscribedURL.getServiceInterface() + " mapping to " + mappedServices + " instructed by remote metadata center.");
             subscribedServices.addAll(mappedServices);
             if (isEmpty(subscribedServices)) {
@@ -181,9 +180,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         return subscribedServices;
     }
 
-    protected Set<String> findMappedServices(URL registryURL, URL subscribedURL, MappingListener listener) {
+    protected Set<String> findMappedServices(URL subscribedURL, MappingListener listener) {
         Set<String> result = new LinkedHashSet<>();
-        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
+        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         result.addAll(serviceNameMapping.getAndListen(subscribedURL, listener));
         result.addAll(serviceNameMapping.getAndListenWithNewStore(subscribedURL, listener));
         return result;
@@ -211,7 +210,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
         @Override
         public void onEvent(MappingChangedEvent event) {
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug("Received mapping notification from meta server, " + event);
             }
             Set<String> newApps = event.getApps();

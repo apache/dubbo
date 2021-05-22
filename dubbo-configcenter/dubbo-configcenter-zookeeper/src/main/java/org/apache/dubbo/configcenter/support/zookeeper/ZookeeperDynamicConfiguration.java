@@ -24,6 +24,8 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.mapping.MappingChangedEvent;
 import org.apache.dubbo.mapping.MappingListener;
 import org.apache.dubbo.remoting.zookeeper.ChildListener;
+import org.apache.dubbo.remoting.zookeeper.DataListener;
+import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
@@ -41,6 +43,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.mapping.ServiceNameMapping.getAppNames;
 
 /**
  *
@@ -57,6 +60,8 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private URL url;
 
     private Map<String, MappingChildListener> listenerMap = new ConcurrentHashMap<>();
+
+    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
@@ -133,6 +138,14 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         return appNameSet;
     }
 
+    public Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        String path = toRootDir() + serviceKey;
+        if (null == casListenerMap.get(path)) {
+            addCasServiceMappingListener(path, serviceKey, listener);
+        }
+        return getAppNames(zkClient.getContent(path));
+    }
+
     String toRootDir() {
         if (rootPath.equals(PATH_SEPARATOR)) {
             return rootPath;
@@ -183,6 +196,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         return zkClient.addChildListener(path, mappingChildListener);
     }
 
+    private void addCasServiceMappingListener(String path, String serviceKey, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> new MappingDataListener(serviceKey, path));
+        mappingDataListener.addListener(listener);
+        zkClient.addDataListener(path, mappingDataListener);
+    }
+
+
     private static class MappingChildListener implements ChildListener {
         private String serviceKey;
         private String path;
@@ -204,6 +224,39 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
             event.setServiceKey(serviceKey);
             event.setApps(null != children ? new HashSet<>(children) : null);
             listeners.forEach(mappingListener -> mappingListener.onEvent(event));
+        }
+    }
+
+    private static class MappingDataListener implements DataListener {
+
+        private String serviceKey;
+        private String path;
+        private Set<MappingListener> listeners;
+
+        public MappingDataListener(String serviceKey, String path) {
+            this.serviceKey = serviceKey;
+            this.path = path;
+            this.listeners = new HashSet<>();
+        }
+
+        public void addListener(MappingListener listener) {
+            this.listeners.add(listener);
+        }
+
+        @Override
+        public void dataChanged(String path, Object value, EventType eventType) {
+            if (!this.path.equals(path)) {
+                return;
+            }
+            if (EventType.NodeCreated != eventType && EventType.NodeDataChanged != eventType) {
+                return;
+            }
+            MappingChangedEvent event = new MappingChangedEvent();
+            event.setServiceKey(serviceKey);
+            event.setApps(getAppNames((String) value));
+
+            listeners.forEach(mappingListener -> mappingListener.onEvent(event));
+
         }
     }
 }

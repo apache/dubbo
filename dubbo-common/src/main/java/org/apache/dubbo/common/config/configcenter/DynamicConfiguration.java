@@ -93,6 +93,10 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
         return Collections.emptySet();
     }
 
+    default Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        return Collections.emptySet();
+    }
+
     /**
      * Get the configuration mapped to the given key and the given group with {@link #getDefaultTimeout() the default
      * timeout}

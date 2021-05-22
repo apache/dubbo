@@ -27,7 +27,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.mapping.MappingChangedEvent;
 import org.apache.dubbo.mapping.MappingListener;
+import org.apache.dubbo.mapping.ServiceNameMapping;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -62,6 +64,8 @@ import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
+import static org.apache.dubbo.mapping.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.mapping.ServiceNameMapping.getAppNames;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -84,6 +88,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     private final NacosConfigServiceWrapper configService;
 
     private HttpAgent httpAgent;
+
+    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
 
     /**
      * The map store the key to {@link NacosConfigListener} mapping
@@ -169,9 +175,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        Set<String> appNameSet = new HashSet<>();
-
-        return appNameSet;
+        String serviceInterface = url.getServiceInterface();
+        return getConfigKeys(ServiceNameMapping.buildGroup(serviceInterface));
     }
 
     /**
@@ -199,6 +204,25 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
+    }
+
+    @Override
+    public Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        String group = DEFAULT_MAPPING_GROUP;
+
+        if (null == casListenerMap.get(buildListenerKey(serviceKey, group))) {
+            addCasServiceMappingListener(serviceKey, group, listener);
+        }
+
+        String content = getConfig(serviceKey, group);
+
+        return ServiceNameMapping.getAppNames(content);
+    }
+
+    private void addCasServiceMappingListener(String serviceKey, String group, MappingListener listener) {
+        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(buildListenerKey(serviceKey, group), k -> new MappingDataListener(serviceKey, group));
+        mappingDataListener.addListeners(listener);
+        addListener(serviceKey, DEFAULT_MAPPING_GROUP, mappingDataListener);
     }
 
     @Override
@@ -331,6 +355,44 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private String getProperty(String name, String defaultValue) {
         return nacosProperties.getProperty(name, defaultValue);
+    }
+
+    static class MappingDataListener implements ConfigurationListener {
+
+        private String dataId;
+
+        private String groupId;
+
+        private String serviceKey;
+
+        private Set<MappingListener> listeners;
+
+        public MappingDataListener(String dataId, String groupId) {
+            this.serviceKey = dataId;
+            this.dataId = dataId;
+            this.groupId = groupId;
+            this.listeners = new HashSet<>();
+        }
+
+        public void addListeners(MappingListener mappingListener) {
+            listeners.add(mappingListener);
+        }
+
+        @Override
+        public void process(ConfigChangedEvent event) {
+            if (ConfigChangeType.DELETED == event.getChangeType()) {
+                return;
+            }
+            if (!dataId.equals(event.getKey()) || !groupId.equals(event.getGroup())) {
+                return;
+            }
+
+            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent();
+            mappingChangedEvent.setServiceKey(serviceKey);
+            mappingChangedEvent.setApps(getAppNames(event.getContent()));
+
+            listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
+        }
     }
 
     public class NacosConfigListener extends AbstractSharedListener {

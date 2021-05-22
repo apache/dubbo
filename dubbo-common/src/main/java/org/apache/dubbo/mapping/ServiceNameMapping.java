@@ -18,11 +18,14 @@ package org.apache.dubbo.mapping;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.utils.StringUtils;
 
-import java.util.Collections;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
-import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_MAPPING_TYPE;
+import static java.util.Collections.EMPTY_SET;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
 
@@ -33,6 +36,7 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH;
  */
 @SPI("config")
 public interface ServiceNameMapping {
+
     String DEFAULT_MAPPING_GROUP = "mapping";
 
     /**
@@ -51,15 +55,14 @@ public interface ServiceNameMapping {
     /**
      * service name mapping new store structure.
      * interface(key)
-     *   -- mapping(group)
-     *     --appName1,appName2,appName3(content)
+     * -- mapping(group)
+     * --appName1,appName2,appName3(content)
+     *
      * @param url
      * @param mappingListener
      * @return
      */
-    default Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener){
-        return Collections.emptySet();
-    };
+    Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener);
 
     default Set<String> get(URL url) {
         return getAndListen(url, null);
@@ -78,10 +81,6 @@ public interface ServiceNameMapping {
         return getExtensionLoader(ServiceNameMapping.class).getDefaultExtension();
     }
 
-    static ServiceNameMapping getExtension(String name) {
-        return getExtensionLoader(ServiceNameMapping.class).getExtension(name == null ? CONFIG_MAPPING_TYPE : name);
-    }
-
     static String buildMappingKey(URL url) {
         return buildGroup(url.getServiceInterface());
     }
@@ -90,4 +89,13 @@ public interface ServiceNameMapping {
         //the issue : https://github.com/apache/dubbo/issues/4671
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
+
+    static Set<String> getAppNames(String content) {
+        if (StringUtils.isBlank(content)) {
+            return EMPTY_SET;
+        }
+        return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
+    }
+
+
 }

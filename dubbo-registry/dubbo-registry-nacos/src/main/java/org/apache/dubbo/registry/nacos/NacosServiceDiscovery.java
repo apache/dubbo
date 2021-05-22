@@ -58,15 +58,15 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryURL;
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         this.namingService = createNamingService(registryURL);
         this.group = getGroup(registryURL);
         this.registryURL = registryURL;
     }
 
     @Override
-    public void destroy() {
-        this.namingService = null;
+    public void doDestroy() throws Exception {
+        this.namingService.shutdown();
     }
 
     @Override
@@ -85,7 +85,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
             service.deregisterInstance(instance.getServiceName(), group, instance);

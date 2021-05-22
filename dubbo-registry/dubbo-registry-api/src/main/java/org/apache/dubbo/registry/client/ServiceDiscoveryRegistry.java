@@ -268,7 +268,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     @Override
     public boolean isAvailable() {
-        return !serviceDiscovery.getServices().isEmpty();
+        return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
     }
 
     @Override

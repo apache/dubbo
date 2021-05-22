@@ -28,7 +28,6 @@ public class NacosConfigServiceWrapper {
 
     private ConfigService configService;
 
-
     public NacosConfigServiceWrapper(ConfigService configService) {
         this.configService = configService;
     }

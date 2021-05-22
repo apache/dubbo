@@ -74,6 +74,10 @@ public class NacosNamingServiceWrapper {
         return namingService.selectInstances(handleInnerSymbol(serviceName), healthy);
     }
 
+    public void shutdown() throws NacosException {
+        this.namingService.shutDown();
+    }
+
     /**
      * see https://github.com/apache/dubbo/issues/7129
      * nacos service name just support `0-9a-zA-Z-._:`, grpc interface is inner interface, need compatible.

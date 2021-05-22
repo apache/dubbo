@@ -64,6 +64,8 @@ public interface ServiceDiscovery extends Prioritized {
      */
     void destroy() throws Exception;
 
+    boolean isDestroy();
+
     // ==================================================================================== //
 
     // =================================== Registration =================================== //

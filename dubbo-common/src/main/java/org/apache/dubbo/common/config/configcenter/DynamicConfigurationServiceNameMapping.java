@@ -32,9 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.valueOf;
-import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
-import static org.apache.dubbo.common.utils.CollectionUtils.ofSet;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 /**
@@ -42,7 +40,7 @@ import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
  */
 public class DynamicConfigurationServiceNameMapping implements ServiceNameMapping {
 
-    private static final List<String> IGNORED_SERVICE_INTERFACES = asList("org.apache.dubbo.metadata.MetadataService");
+    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList("org.apache.dubbo.metadata.MetadataService");
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -57,7 +55,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
         DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
-            Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getConfigurations();
+            Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getInnerConfigurations();
             for (DynamicConfiguration configuration : configurations) {
                 if (configuration.isSupportCas() && ServiceNameMappingHandler.isBothMapping()) {
                     doCasMap(configuration, url);
@@ -141,35 +139,41 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
         Set<String> serviceNames = new LinkedHashSet<>();
-
-        String serviceInterface = url.getServiceInterface();
-        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-        if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
-            Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getConfigurations();
-            for (DynamicConfiguration configuration : configurations) {
-                Set<String> apps = configuration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
+        execute(() -> {
+            String serviceInterface = url.getServiceInterface();
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+                Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getInnerConfigurations();
+                for (DynamicConfiguration configuration : configurations) {
+                    Set<String> apps = configuration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
+                    serviceNames.addAll(apps);
+                }
+            } else {
+                Set<String> apps = dynamicConfiguration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
                 serviceNames.addAll(apps);
             }
-        } else {
-            Set<String> apps = dynamicConfiguration.getServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface), mappingListener, url);
-            serviceNames.addAll(apps);
-        }
+        });
         return serviceNames;
     }
 
     @Override
     public Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener) {
-        String serviceInterface = url.getServiceInterface();
-        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         Set<String> serviceNames = new LinkedHashSet<>();
         execute(() -> {
-            String configContent = dynamicConfiguration.getConfig(serviceInterface, DEFAULT_MAPPING_GROUP);
-            if (null != configContent) {
-                String[] split = StringUtils.split(configContent, CommonConstants.COMMA_SEPARATOR_CHAR);
-                serviceNames.addAll(ofSet(split));
+            String serviceInterface = url.getServiceInterface();
+            DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
+            if (dynamicConfiguration instanceof CompositeDynamicConfiguration) {
+                Set<DynamicConfiguration> configurations = ((CompositeDynamicConfiguration) dynamicConfiguration).getInnerConfigurations();
+                for (DynamicConfiguration configuration : configurations) {
+                    Set<String> apps = configuration.getCasServiceAppMapping(serviceInterface, mappingListener, url);
+                    serviceNames.addAll(apps);
+                }
+            } else {
+                Set<String> apps = dynamicConfiguration.getCasServiceAppMapping(serviceInterface, mappingListener, url);
+                serviceNames.addAll(apps);
             }
         });
-        return Collections.unmodifiableSet(serviceNames);
+        return serviceNames;
     }
 
 

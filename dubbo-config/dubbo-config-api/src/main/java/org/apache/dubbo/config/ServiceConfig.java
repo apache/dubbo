@@ -37,9 +37,9 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.mapping.ServiceNameMapping;
 import org.apache.dubbo.mapping.ServiceNameMappingHandler;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -74,7 +74,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METADATA_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
@@ -219,7 +218,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             Map<String, String> parameters = getApplication().getParameters();
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getExtension(parameters != null ? parameters.get(MAPPING_KEY) : null);
+            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             ServiceNameMappingHandler.map(serviceNameMapping, url);
         });
         // dispatch a ServiceConfigExportedEvent since 2.7.4

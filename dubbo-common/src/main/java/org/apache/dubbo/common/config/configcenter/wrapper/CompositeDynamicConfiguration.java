@@ -41,7 +41,7 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
-    public Set<DynamicConfiguration> getConfigurations() {
+    public Set<DynamicConfiguration> getInnerConfigurations() {
         return configurations;
     }
 
