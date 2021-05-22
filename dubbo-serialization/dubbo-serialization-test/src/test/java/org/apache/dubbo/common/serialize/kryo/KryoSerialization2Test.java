@@ -33,6 +33,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -89,6 +91,31 @@ public class KryoSerialization2Test {
         ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
 
         assertEquals(bigPerson, BigPerson.class.cast(deserialize.readObject(BigPerson.class)));
+
+        try {
+            deserialize.readObject(BigPerson.class);
+            fail();
+        } catch (IOException expected) {
+        }
+    }
+
+    @Test
+    public void testObjectWithAttachments() throws IOException, ClassNotFoundException {
+        ObjectOutput objectOutput = serialization.serialize(url, byteArrayOutputStream);
+        objectOutput.writeObject(bigPerson);
+
+        Map<String, Object> attachments = new HashMap<>();
+        attachments.put("attachments","attachments");
+        objectOutput.writeObject(attachments);
+
+        objectOutput.flushBuffer();
+
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(
+                byteArrayOutputStream.toByteArray());
+        ObjectInput deserialize = serialization.deserialize(url, byteArrayInputStream);
+
+        assertEquals(bigPerson, BigPerson.class.cast(deserialize.readObject(BigPerson.class)));
+        assertEquals(attachments, deserialize.readAttachments());
 
         try {
             deserialize.readObject(BigPerson.class);

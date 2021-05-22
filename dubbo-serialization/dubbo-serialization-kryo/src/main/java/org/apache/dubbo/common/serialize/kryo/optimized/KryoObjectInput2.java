@@ -27,6 +27,8 @@ import com.esotericsoftware.kryo.io.Input;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Kryo object input implementation, kryo object can be clean
@@ -172,5 +174,10 @@ public class KryoObjectInput2 implements ObjectInput, Cleanable {
     public void cleanup() {
         KryoUtils.release(kryo);
         kryo = null;
+    }
+
+    @Override
+    public Map<String, Object> readAttachments() throws IOException, ClassNotFoundException {
+        return readObject(HashMap.class);
     }
 }
