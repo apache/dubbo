@@ -229,7 +229,7 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
+        String registryCluster = serviceDiscovery.getUrl() == null ? DEFAULT_KEY : serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
