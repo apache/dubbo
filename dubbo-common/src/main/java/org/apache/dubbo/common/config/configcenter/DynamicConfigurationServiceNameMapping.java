@@ -18,7 +18,6 @@ package org.apache.dubbo.common.config.configcenter;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -27,7 +26,6 @@ import org.apache.dubbo.mapping.ServiceNameMapping;
 import org.apache.dubbo.mapping.ServiceNameMappingHandler;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
