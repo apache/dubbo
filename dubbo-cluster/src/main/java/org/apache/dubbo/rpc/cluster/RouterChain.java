@@ -18,7 +18,9 @@ package org.apache.dubbo.rpc.cluster;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
@@ -209,19 +211,20 @@ public class RouterChain<T> {
         AddrCache<T> origin = cache.get();
         List<Invoker<T>> copyInvokers = new ArrayList<>(this.invokers);
         AddrCache<T> newCache = new AddrCache<T>();
+        Map<String, RouterCache<T>> routerCacheMap = new HashMap<>((int) (stateRouters.size() / 0.75f) + 1);
         newCache.setInvokers(invokers);
         for (StateRouter stateRouter : stateRouters) {
-            RouterCache routerCache;
             try {
-                routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
+                RouterCache routerCache = poolRouter(stateRouter, origin, copyInvokers, notify);
                 //file cache
-                newCache.getCache().put(stateRouter.getName(), routerCache);
+                routerCacheMap.put(stateRouter.getName(), routerCache);
             } catch (Throwable t) {
                 logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
                 return;
             }
         }
 
+        newCache.setCache(routerCacheMap);
         this.cache.set(newCache);
     }
 
