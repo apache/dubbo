@@ -20,6 +20,7 @@ import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
 
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceClassPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -55,22 +56,22 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
         Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
 
-        registerServiceAnnotationBeanPostProcessor(packagesToScan, registry);
+        registerServiceClassPostProcessor(packagesToScan, registry);
 
         // @since 2.7.6 Register the common beans
         registerCommonBeans(registry);
     }
 
     /**
-     * Registers {@link ServiceAnnotationBeanPostProcessor}
+     * Registers {@link ServiceClassPostProcessor}
      *
      * @param packagesToScan packages to scan without resolving placeholders
      * @param registry       {@link BeanDefinitionRegistry}
      * @since 2.5.8
      */
-    private void registerServiceAnnotationBeanPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+    private void registerServiceClassPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
-        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanPostProcessor.class);
+        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceClassPostProcessor.class);
         builder.addConstructorArgValue(packagesToScan);
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
