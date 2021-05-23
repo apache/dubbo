@@ -525,6 +525,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         List<RegistryConfig> registries = new ArrayList<RegistryConfig>(1);
         registries.add(registry);
         setRegistries(registries);
+
+        if (CollectionUtils.isNotEmpty(registries)) {
+            ConfigManager configManager = ApplicationModel.getConfigManager();
+            configManager.addRegistries(registries);
+        }
     }
 
     public List<RegistryConfig> getRegistries() {
