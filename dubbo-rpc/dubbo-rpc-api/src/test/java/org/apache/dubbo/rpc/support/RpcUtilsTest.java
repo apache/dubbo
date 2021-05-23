@@ -21,9 +21,9 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -311,6 +311,23 @@ public class RpcUtilsTest {
 
     @Test
     public void testIsAsync() {
+        Object[] args = new Object[] {"hello", "dubbo", 520};
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+
+        URL url = URL.valueOf(
+                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService");
+
+        RpcInvocation inv = new RpcInvocation("test", serviceName, "",
+                new Class<?>[] {String.class, String[].class, Object[].class},
+                new Object[] {"method", new String[] {}, args},
+                null, invoker, null);
+
+        Assertions.assertFalse(RpcUtils.isAsync(url, inv));
+        inv.setInvokeMode(InvokeMode.ASYNC);
+        Assertions.assertTrue(RpcUtils.isAsync(url, inv));
+
         URL url1 = URL.valueOf("dubbo://localhost/?test.async=true");
         Invocation inv1 = new RpcInvocation("test", "DemoService", "", new Class[]{}, new String[]{});
         inv1.setAttachment("test." + ASYNC_KEY, Boolean.FALSE.toString());
@@ -416,26 +433,6 @@ public class RpcUtilsTest {
             Assertions.assertEquals(args[i].getClass().getName(), arguments[i].getClass().getName());
             Assertions.assertEquals(args[i], arguments[i]);
         }
-    }
-
-    @Test
-    public void testIsAsync() {
-        Object[] args = new Object[] {"hello", "dubbo", 520};
-        Class<?> demoServiceClass = DemoService.class;
-        String serviceName = demoServiceClass.getName();
-        Invoker invoker = mock(Invoker.class);
-
-        URL url = URL.valueOf(
-                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService");
-
-        RpcInvocation inv = new RpcInvocation("test", serviceName, "",
-                new Class<?>[] {String.class, String[].class, Object[].class},
-                new Object[] {"method", new String[] {}, args},
-                null, invoker, null);
-
-        Assertions.assertFalse(RpcUtils.isAsync(url, inv));
-        inv.setInvokeMode(InvokeMode.ASYNC);
-        Assertions.assertTrue(RpcUtils.isAsync(url, inv));
     }
 
     @Test
