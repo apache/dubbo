@@ -82,7 +82,9 @@ public class MultipleRegistry2S2RTest {
                         .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
                         .build();
                 redisServer.start();
+                exception = null;
             } catch (IOException e) {
+                e.printStackTrace();
                 exception = e;
             }
             if (exception == null) {
