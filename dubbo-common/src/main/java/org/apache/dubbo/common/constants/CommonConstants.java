@@ -401,4 +401,9 @@ public interface CommonConstants {
     String ON_DISCONNECT_KEY = "ondisconnect";
 
     String TOKEN = "token";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
+    String DISPATHER = "dispather";
+
 }
