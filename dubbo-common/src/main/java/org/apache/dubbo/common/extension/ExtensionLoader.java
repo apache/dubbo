@@ -149,7 +149,8 @@ public class ExtensionLoader<T> {
 
     private ExtensionLoader(Class<?> type) {
         this.type = type;
-        objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
+        objectFactory =
+                (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
@@ -299,7 +300,7 @@ public class ExtensionLoader<T> {
                     loadedNames.add(name);
                 }
             }
-            if(!activateExtensionsMap.isEmpty()){
+            if (!activateExtensionsMap.isEmpty()) {
                 activateExtensions.addAll(activateExtensionsMap.values());
             }
         }
@@ -307,17 +308,20 @@ public class ExtensionLoader<T> {
         for (int i = 0; i < names.size(); i++) {
             String name = names.get(i);
             if (!name.startsWith(REMOVE_VALUE_PREFIX)
-                    && !names.contains(REMOVE_VALUE_PREFIX + name)
-                    && !loadedNames.contains(name)) {
-                if (DEFAULT_KEY.equals(name)) {
-                    if (!loadedExtensions.isEmpty()) {
-                        activateExtensions.addAll(0, loadedExtensions);
-                        loadedExtensions.clear();
+                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                if (!loadedNames.contains(name)) {
+                    if (DEFAULT_KEY.equals(name)) {
+                        if (!loadedExtensions.isEmpty()) {
+                            activateExtensions.addAll(0, loadedExtensions);
+                            loadedExtensions.clear();
+                        }
+                    } else {
+                        loadedExtensions.add(getExtension(name));
                     }
+                    loadedNames.add(name);
                 } else {
-                    loadedExtensions.add(getExtension(name));
+                    logger.warn("name " + name + " filter has been duplicated, we will ignore the duplicated filter.");
                 }
-                loadedNames.add(name);
             }
         }
         if (!loadedExtensions.isEmpty()) {
@@ -792,8 +796,10 @@ public class ExtensionLoader<T> {
         Map<String, Class<?>> extensionClasses = new HashMap<>();
 
         for (LoadingStrategy strategy : strategies) {
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
-            loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"), strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
+            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(),
+                    strategy.overridden(), strategy.excludedPackages());
+            loadDirectory(extensionClasses, strategy.directory(), type.getName().replace("org.apache", "com.alibaba"),
+                    strategy.preferExtensionClassLoader(), strategy.overridden(), strategy.excludedPackages());
         }
 
         return extensionClasses;
@@ -886,7 +892,9 @@ public class ExtensionLoader<T> {
                                 loadClass(extensionClasses, resourceURL, Class.forName(clazz, true, classLoader), name, overridden);
                             }
                         } catch (Throwable t) {
-                            IllegalStateException e = new IllegalStateException("Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
+                            IllegalStateException e = new IllegalStateException(
+                                    "Failed to load extension class (interface: " + type + ", class line: " + line + ") in " + resourceURL +
+                                            ", cause: " + t.getMessage(), t);
                             exceptions.put(line, e);
                         }
                     }
@@ -925,7 +933,8 @@ public class ExtensionLoader<T> {
             if (StringUtils.isEmpty(name)) {
                 name = findAnnotationName(clazz);
                 if (name.length() == 0) {
-                    throw new IllegalStateException("No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
+                    throw new IllegalStateException(
+                            "No such extension name for the class " + clazz.getName() + " in the config " + resourceURL);
                 }
             }
 
@@ -959,7 +968,8 @@ public class ExtensionLoader<T> {
         } else if (c != clazz) {
             // duplicate implementation is unacceptable
             unacceptableExceptions.add(name);
-            String duplicateMsg = "Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName();
+            String duplicateMsg =
+                    "Duplicate extension " + type.getName() + " name " + name + " on " + c.getName() + " and " + clazz.getName();
             logger.error(duplicateMsg);
             throw new IllegalStateException(duplicateMsg);
         }
@@ -976,7 +986,8 @@ public class ExtensionLoader<T> {
             cachedActivates.put(name, activate);
         } else {
             // support com.alibaba.dubbo.common.extension.Activate
-            com.alibaba.dubbo.common.extension.Activate oldActivate = clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
+            com.alibaba.dubbo.common.extension.Activate oldActivate =
+                    clazz.getAnnotation(com.alibaba.dubbo.common.extension.Activate.class);
             if (oldActivate != null) {
                 cachedActivates.put(name, oldActivate);
             }
@@ -1056,7 +1067,8 @@ public class ExtensionLoader<T> {
     private Class<?> createAdaptiveExtensionClass() {
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         ClassLoader classLoader = findClassLoader();
-        org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
+        org.apache.dubbo.common.compiler.Compiler compiler =
+                ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         return compiler.compile(code, classLoader);
     }
 
