@@ -320,7 +320,10 @@ public class ExtensionLoader<T> {
                     }
                     loadedNames.add(name);
                 } else {
-                    logger.warn("name " + name + " filter has been duplicated, we will ignore the duplicated filter.");
+                    // If getExtension(name) exists, getExtensionClass(name) must exist, so there is no null pointer processing here.
+                    String simpleName = getExtensionClass(name).getSimpleName();
+                    logger.warn("Catch duplicated filter, ExtensionLoader will ignore one of them. Please check. Filter Name: " + name +
+                            ". Ignored Class Name: " + simpleName);
                 }
             }
         }
