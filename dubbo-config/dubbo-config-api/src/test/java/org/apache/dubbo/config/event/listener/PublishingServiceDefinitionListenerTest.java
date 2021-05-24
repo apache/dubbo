@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.EchoServiceImpl;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -30,7 +31,7 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,7 +52,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @BeforeEach
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         String metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         ConfigManager configManager = ApplicationModel.getConfigManager();
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
@@ -62,7 +63,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @AfterEach
     public void reset() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     /**
@@ -81,6 +82,7 @@ public class PublishingServiceDefinitionListenerTest {
 
         ServiceDefinition serviceDefinitionBuild = ServiceDefinitionBuilder.build(serviceConfig.getInterfaceClass());
 
-        assertEquals(serviceDefinition, new Gson().toJson(serviceDefinitionBuild));
+        assertEquals(serviceDefinition, JSON.toJSONString(serviceDefinitionBuild));
+        serviceConfig.unexport();
     }
 }

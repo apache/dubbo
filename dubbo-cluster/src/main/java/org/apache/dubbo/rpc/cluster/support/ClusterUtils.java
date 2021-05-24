@@ -103,20 +103,22 @@ public class ClusterUtils {
 
             map.putAll(copyOfLocalMap);
 
-            map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
+            if (remoteMap != null) {
+                map.put(REMOTE_APPLICATION_KEY, remoteMap.get(APPLICATION_KEY));
 
-            // Combine filters and listeners on Provider and Consumer
-            String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
-            String localFilter = copyOfLocalMap.get(REFERENCE_FILTER_KEY);
-            if (remoteFilter != null && remoteFilter.length() > 0
-                    && localFilter != null && localFilter.length() > 0) {
-                map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
-            }
-            String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
-            String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
-            if (remoteListener != null && remoteListener.length() > 0
-                    && localListener != null && localListener.length() > 0) {
-                map.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                // Combine filters and listeners on Provider and Consumer
+                String remoteFilter = remoteMap.get(REFERENCE_FILTER_KEY);
+                String localFilter = copyOfLocalMap.get(REFERENCE_FILTER_KEY);
+                if (remoteFilter != null && remoteFilter.length() > 0
+                        && localFilter != null && localFilter.length() > 0) {
+                    map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
+                }
+                String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
+                String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
+                if (remoteListener != null && remoteListener.length() > 0
+                        && localListener != null && localListener.length() > 0) {
+                    map.put(INVOKER_LISTENER_KEY, remoteListener + "," + localListener);
+                }
             }
         }
 

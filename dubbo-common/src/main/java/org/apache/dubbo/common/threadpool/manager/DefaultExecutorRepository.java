@@ -166,6 +166,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
                 });
             }
         });
+
+        data.clear();
     }
 
     private ExecutorService createExecutor(URL url) {

@@ -39,7 +39,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final ZookeeperServiceDiscovery zookeeperServiceDiscovery;
 
-    private boolean keepWatching = true;
+    private volatile boolean keepWatching = true;
 
     private final String serviceName;
 

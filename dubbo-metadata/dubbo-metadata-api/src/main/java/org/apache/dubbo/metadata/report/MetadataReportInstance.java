@@ -82,4 +82,13 @@ public class MetadataReportInstance {
             throw new IllegalStateException("the metadata report was not inited.");
         }
     }
+
+    // only for unit test
+    @Deprecated
+    public static void destroy() {
+        if (init.get()) {
+            metadataReports.clear();
+            init.compareAndSet(true, false);
+        }
+    }
 }
