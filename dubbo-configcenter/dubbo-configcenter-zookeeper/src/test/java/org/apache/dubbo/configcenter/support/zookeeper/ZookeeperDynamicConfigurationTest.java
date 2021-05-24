@@ -128,9 +128,9 @@ public class ZookeeperDynamicConfigurationTest {
 
     @Test
     public void tesRemoveListener() throws Exception {
-        String key1 = "service:version:group.configurators.remove";
+        String key1 = "key1.remove";
         String path1 = "/dubbo/config/dubbo/" + key1;
-        String key2 = "appname.tag-router.remove";
+        String key2 = "key2.remove";
         String path2 = "/dubbo/config/dubbo/" + key2;
 
         CountDownLatch latch = new CountDownLatch(2);
