@@ -59,6 +59,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -775,6 +776,8 @@ public class RegistryProtocol implements Protocol {
         private URL subscribeUrl;
         private URL registerUrl;
 
+        private AtomicBoolean unexported = new AtomicBoolean(false);
+
         public ExporterChangeableWrapper(Exporter<T> exporter, Invoker<T> originInvoker) {
             this.exporter = exporter;
             this.originInvoker = originInvoker;
@@ -795,6 +798,10 @@ public class RegistryProtocol implements Protocol {
 
         @Override
         public void unexport() {
+            if (!unexported.compareAndSet(false,true)) {
+                return;
+            }
+
             String key = getCacheKey(this.originInvoker);
             bounds.remove(key);
 
