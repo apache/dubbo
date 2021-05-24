@@ -61,8 +61,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     private String password;
     private Long timeout; // 3000L;
 
-    // TODO Not used, removed or reimplemented
-    // If the Config Center is given the highest priority, it will override all the other configurations
+    /**
+     * If the Config Center is given the highest priority, it will override all the other configurations
+     * @deprecated no longer used
+     */
     private Boolean highestPriority; // true;
 
     // Decide the behaviour when initial connection try fails, 'true' means interrupt the whole process once fail.
@@ -105,9 +107,9 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (timeout == null) {
             timeout = 3000L;
         }
-        if (highestPriority == null) {
-            highestPriority = true;
-        }
+//        if (highestPriority == null) {
+//            highestPriority = true;
+//        }
         if (check == null) {
             check = true;
         }
@@ -218,11 +220,13 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.check = check;
     }
 
+    @Deprecated
     @Parameter(key = CONFIG_ENABLE_KEY)
     public Boolean isHighestPriority() {
         return highestPriority;
     }
 
+    @Deprecated
     public void setHighestPriority(Boolean highestPriority) {
         this.highestPriority = highestPriority;
     }
