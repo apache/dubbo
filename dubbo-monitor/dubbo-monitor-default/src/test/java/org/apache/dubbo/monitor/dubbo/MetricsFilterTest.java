@@ -122,12 +122,13 @@ public class MetricsFilterTest {
                 try {
                     port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
                     testcase.call();
-                    MetricsFilter.exported.set(false);
                     throwable = null;
                     break;
                 } catch (Throwable t) {
                     t.printStackTrace();
                     throwable = t;
+                } finally {
+                    MetricsFilter.exported.set(false);
                 }
             }
             Assertions.assertNull(throwable);
