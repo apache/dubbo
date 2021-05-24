@@ -79,7 +79,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
             invocation.put(MONITOR_FILTER_START_TIME, System.currentTimeMillis());
             getConcurrent(invoker, invocation).incrementAndGet(); // count up
         }
@@ -94,7 +94,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     @Override
     public void onResponse(Result result, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
             collect(invoker, invocation, result, RpcContext.getServiceContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), false);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
@@ -102,7 +102,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
 
     @Override
     public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
-        if (invoker.getUrl().hasParameter(MONITOR_KEY)) {
+        if (invoker.getUrl().hasAttribute(MONITOR_KEY)) {
             collect(invoker, invocation, null, RpcContext.getServiceContext().getRemoteHost(), (long) invocation.get(MONITOR_FILTER_START_TIME), true);
             getConcurrent(invoker, invocation).decrementAndGet(); // count down
         }
@@ -120,13 +120,16 @@ public class MonitorFilter implements Filter, Filter.Listener {
      */
     private void collect(Invoker<?> invoker, Invocation invocation, Result result, String remoteHost, long start, boolean error) {
         try {
-            URL monitorUrl = invoker.getUrl().getUrlParameter(MONITOR_KEY);
-            Monitor monitor = monitorFactory.getMonitor(monitorUrl);
-            if (monitor == null) {
-                return;
+            Object monitorUrl;
+            monitorUrl = invoker.getUrl().getAttribute(MONITOR_KEY);
+            if(monitorUrl instanceof URL) {
+                Monitor monitor = monitorFactory.getMonitor((URL) monitorUrl);
+                if (monitor == null) {
+                    return;
+                }
+                URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
+                monitor.collect(statisticsURL);
             }
-            URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
-            monitor.collect(statisticsURL);
         } catch (Throwable t) {
             logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);
         }
