@@ -297,6 +297,21 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-filter-cache</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-filter-validation</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
 
         <!-- Transitive dependencies -->
         <dependency>
@@ -414,6 +429,8 @@
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-auth</include>
+                                    <include>org.apache.dubbo:dubbo-filter-cache</include>
+                                    <include>org.apache.dubbo:dubbo-filter-validation</include>
                                 </includes>
                             </artifactSet>
                             <transformers>
