@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.event.listener;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
@@ -33,6 +34,8 @@ import com.google.gson.Gson;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,7 +70,7 @@ public class PublishingServiceDefinitionListenerTest {
     @Test
     public void testOnServiceConfigExportedEvent() {
         ProtocolConfig protocolConfig = new ProtocolConfig("dubbo");
-        protocolConfig.setPort(-1);
+        protocolConfig.setPort(NetUtils.getAvailablePort(20880 + new Random().nextInt(10000)));
 
         ServiceConfig<EchoService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(EchoService.class);
