@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.config.ConfigurationUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
@@ -40,6 +41,8 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
 
     private transient ApplicationContext applicationContext;
 
+    private Boolean includeSpringEnv = false;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
@@ -53,12 +56,12 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
 
     @Override
     public void setEnvironment(Environment environment) {
-//        if (includeSpringEnv) {
-//            // Get PropertySource mapped to 'dubbo.properties' in Spring Environment.
-//            setExternalConfig(getConfigurations(getConfigFile(), environment));
-//            // Get PropertySource mapped to 'application.dubbo.properties' in Spring Environment.
-//            setAppExternalConfig(getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : ("application." + getConfigFile()), environment));
-//        }
+        if (includeSpringEnv) {
+            // Get PropertySource mapped to 'dubbo.properties' in Spring Environment.
+            setExternalConfig(getConfigurations(getConfigFile(), environment));
+            // Get PropertySource mapped to 'application.dubbo.properties' in Spring Environment.
+            setAppExternalConfig(getConfigurations(StringUtils.isNotEmpty(getAppConfigFile()) ? getAppConfigFile() : ("application." + getConfigFile()), environment));
+        }
     }
 
     private Map<String, String> getConfigurations(String key, Environment environment) {
@@ -93,19 +96,12 @@ public class ConfigCenterBean extends ConfigCenterConfig implements ApplicationC
         return applicationContext;
     }
 
-    /**
-     * @deprecated includeSpringEnv is no longer used
-     */
-    @Deprecated
     public Boolean getIncludeSpringEnv() {
-        return false;
+        return includeSpringEnv;
     }
 
-    /**
-     * @deprecated includeSpringEnv is no longer used
-     */
-    @Deprecated
     public void setIncludeSpringEnv(Boolean includeSpringEnv) {
+        this.includeSpringEnv = includeSpringEnv;
     }
 
 }
