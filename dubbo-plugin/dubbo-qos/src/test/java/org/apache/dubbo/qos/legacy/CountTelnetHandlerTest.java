@@ -25,13 +25,15 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -42,10 +44,12 @@ public class CountTelnetHandlerTest {
     private MockChannel mockChannel;
     private Invoker<DemoService> mockInvoker;
     private URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo");
+    private CountDownLatch latch;
 
     @BeforeEach
     public void setUp() {
-        mockChannel = new MockChannel(url);
+        latch = new CountDownLatch(2);
+        mockChannel = new MockChannel(url, latch);
         mockInvoker = mock(Invoker.class);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(url);
@@ -67,14 +71,15 @@ public class CountTelnetHandlerTest {
         RpcStatus.beginCount(url, methodName);
         RpcStatus.endCount(url, methodName, 10L, true);
         handler.telnet(mockChannel, message);
+        latch.await();
 
-        Thread.sleep(1000);
         StringBuilder sb = new StringBuilder();
         for (Object o : mockChannel.getReceivedObjects()) {
             sb.append(o.toString());
         }
-        Assertions.assertEquals("\r\n" + buildTable(methodName,
-                10, 10, "1", "0", "0") + "\r\ntelnet> ", sb.toString());
+
+        assertThat(sb.toString(), containsString(buildTable(methodName,
+                10, 10, "1", "0", "0")));
     }
 
     public static String buildTable(String methodName, long averageElapsed,

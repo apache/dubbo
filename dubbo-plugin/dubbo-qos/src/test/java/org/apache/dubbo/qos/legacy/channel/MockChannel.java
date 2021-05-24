@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class MockChannel implements Channel {
     public static final String ERROR_WHEN_SEND = "error_when_send";
@@ -37,6 +38,7 @@ public class MockChannel implements Channel {
     private volatile boolean closing;
     private Map<String, Object> attributes = new HashMap<String, Object>(1);
     private List<Object> receivedObjects = new LinkedList<>();
+    private CountDownLatch latch;
 
     public MockChannel() {
 
@@ -44,6 +46,11 @@ public class MockChannel implements Channel {
 
     public MockChannel(URL remoteUrl) {
         this.remoteUrl = remoteUrl;
+    }
+
+    public MockChannel(URL remoteUrl, CountDownLatch latch) {
+        this.remoteUrl = remoteUrl;
+        this.latch = latch;
     }
 
     public MockChannel(ChannelHandler handler) {
@@ -71,6 +78,9 @@ public class MockChannel implements Channel {
             throw new RemotingException(localAddress, remoteAddress, "mock error");
         } else {
             receivedObjects.add(message);
+            if (latch != null) {
+                latch.countDown();
+            }
         }
     }
 
