@@ -267,11 +267,11 @@ public class RouterChain<T> {
         }
         if (notify) {
             if (loopPermitNotify.tryAcquire()) {
-                loopPool.submit(new NotifyLoopRunnable(true));
+                loopPool.submit(new NotifyLoopRunnable(true, loopPermitNotify));
             }
         } else {
             if (loopPermit.tryAcquire()) {
-                loopPool.submit(new NotifyLoopRunnable(false));
+                loopPool.submit(new NotifyLoopRunnable(false, loopPermit));
             }
         }
     }
@@ -279,14 +279,16 @@ public class RouterChain<T> {
     class NotifyLoopRunnable implements Runnable {
 
         private final boolean notify;
+        private final Semaphore loopPermit;
 
-        public NotifyLoopRunnable(boolean notify) {
+        public NotifyLoopRunnable(boolean notify, Semaphore loopPermit) {
             this.notify = notify;
+            this.loopPermit = loopPermit;
         }
 
         @Override
         public void run() {
-            loopPermitNotify.release();
+            loopPermit.release();
             buildCache(notify);
         }
     }
