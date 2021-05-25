@@ -17,13 +17,14 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
 
 public class NettyServerTest {
 
     public static void main(String[] args) throws RemotingException {
-        URL url = new URL("transport", "localhost", 8898,
+        URL url = new ServiceConfigURL("transport", "localhost", 8898,
                 new String[]{Constants.BIND_PORT_KEY, String.valueOf(8898)});
 
         final PortUnificationServer server = new PortUnificationServer(url);

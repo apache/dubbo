@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.junit.jupiter.api.Assertions;
@@ -360,11 +361,11 @@ public class URLTest {
 
     @Test
     public void test_getAbsolutePath() throws Exception {
-        URL url = new URL("p1", "1.2.2.2", 33);
+        URL url = new ServiceConfigURL("p1", "1.2.2.2", 33);
         assertURLStrDecoder(url);
         assertNull(url.getAbsolutePath());
 
-        url = new URL("file", null, 90, "/home/user1/route.js");
+        url = new ServiceConfigURL("file", null, 90, "/home/user1/route.js");
         assertURLStrDecoder(url);
         assertEquals("/home/user1/route.js", url.getAbsolutePath());
     }
@@ -377,7 +378,7 @@ public class URLTest {
         Map<String, String> params = new HashMap<String, String>();
         params.put("version", "1.0.0");
         params.put("application", "morgan");
-        URL url2 = new URL("dubbo", "admin", "hello1234", "10.20.130.230", 20880, "context/path", params);
+        URL url2 = new ServiceConfigURL("dubbo", "admin", "hello1234", "10.20.130.230", 20880, "context/path", params);
 
         assertURLStrDecoder(url2);
         assertEquals(url1, url2);
@@ -756,7 +757,7 @@ public class URLTest {
 
     @Test
     public void test_Path() throws Exception {
-        URL url = new URL("dubbo", "localhost", 20880, "////path");
+        URL url = new ServiceConfigURL("dubbo", "localhost", 20880, "////path");
         assertURLStrDecoder(url);
         assertEquals("path", url.getPath());
     }
