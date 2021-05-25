@@ -305,9 +305,9 @@ public class NacosRegistry extends FailbackRegistry {
      *
      * @param serviceName
      * @return
-     * @since 2.7.11
+     * @since 2.7.12
      */
-    public boolean isConformRules(String serviceName) {
+    private boolean isConformRules(String serviceName) {
 
         return serviceName.split(NAME_SEPARATOR, -1).length == 4;
 
