@@ -51,10 +51,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InjvmProtocolTest {
 
-    static {
-        InjvmProtocol injvm = InjvmProtocol.getInjvmProtocol();
-    }
-
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
