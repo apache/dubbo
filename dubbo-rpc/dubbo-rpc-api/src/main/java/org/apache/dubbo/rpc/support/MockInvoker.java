@@ -99,13 +99,8 @@ final public class MockInvoker<T> implements Invoker<T> {
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(this);
         }
-        String mock = null;
-        if (getUrl().hasMethodParameter(invocation.getMethodName())) {
-            mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
-        }
-        if (StringUtils.isBlank(mock)) {
-            mock = getUrl().getParameter(MOCK_KEY);
-        }
+
+        String mock = getUrl().getMethodParameter(invocation.getMethodName(),MOCK_KEY);
 
         if (StringUtils.isBlank(mock)) {
             throw new RpcException(new IllegalAccessException("mock can not be null. url :" + url));

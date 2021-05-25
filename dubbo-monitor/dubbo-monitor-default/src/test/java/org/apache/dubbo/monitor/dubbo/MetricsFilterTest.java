@@ -151,15 +151,14 @@ public class MetricsFilterTest {
                 try {
                     setUp();
                     testcase.call();
+                    throwable = null;
                     break;
                 } catch (Throwable t) {
+                    t.printStackTrace();
                     throwable = t;
                 }
             }
-            if (throwable != null) {
-                throwable.printStackTrace();
-                Assertions.fail();
-            }
+            Assertions.assertNull(throwable);
         }
     }
 

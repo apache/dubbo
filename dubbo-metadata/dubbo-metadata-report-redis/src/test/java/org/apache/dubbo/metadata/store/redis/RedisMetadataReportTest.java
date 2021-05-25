@@ -74,7 +74,9 @@ public class RedisMetadataReportTest {
                         .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
                         .build();
                 this.redisServer.start();
+                exception = null;
             } catch (IOException e) {
+                e.printStackTrace();
                 exception = e;
             }
             if (exception == null) {
