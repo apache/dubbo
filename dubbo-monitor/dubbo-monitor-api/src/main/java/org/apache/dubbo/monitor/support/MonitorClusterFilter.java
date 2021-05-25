@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.dubbo.monitor.support;
 
-package org.apache.dubbo.rpc.protocol.tri;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-import org.junit.jupiter.api.Test;
-
-class UnaryServerStreamTest {
-
-    @Test
-    @SuppressWarnings("all")
-    public void testInit() {
-        URL url = new ServiceConfigURL("test", "1.2.3.4", 8080);
-    }
+@Activate(group = {CONSUMER})
+public class MonitorClusterFilter extends MonitorFilter implements ClusterFilter {
 }
