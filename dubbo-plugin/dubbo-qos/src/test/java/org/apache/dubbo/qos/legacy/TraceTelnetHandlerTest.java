@@ -71,7 +71,8 @@ public class TraceTelnetHandlerTest {
         String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
         Field tracers = TraceFilter.class.getDeclaredField("TRACERS");
         tracers.setAccessible(true);
-        ConcurrentHashMap<String, Set<Channel>> map = (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
+        ConcurrentHashMap<String, Set<Channel>> map =
+                (ConcurrentHashMap<String, Set<Channel>>) tracers.get(new ConcurrentHashMap<String, Set<Channel>>());
 
         Set<Channel> channels = map.getOrDefault(key, null);
         Assertions.assertNotNull(channels);
