@@ -453,13 +453,17 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void clearListener(ClusterInvoker<T> invoker) {
-        if (invoker == null) return;
+        if (invoker == null) {
+            return;
+        }
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         directory.setInvokersChangedListener(null);
     }
 
     private void setListener(ClusterInvoker<T> invoker, InvokersChangedListener listener) {
-        if (invoker == null) return;
+        if (invoker == null) {
+            return;
+        }
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         directory.setInvokersChangedListener(listener);
     }
