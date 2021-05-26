@@ -31,6 +31,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -928,5 +929,24 @@ public class URLTest {
 
         URL url5 = URL.valueOf("10.20.130.230:20880/context/path?interface=org.apache.dubbo.test.interfaceName&weight=10&group=group&version=1.0.0");
         Assertions.assertEquals(url4, url5);
+
+        URL url6 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=1599556506417");
+        URL url7 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&generic=true&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertEquals(url6, url7);
+
+        URL url8 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=false&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url7, url8);
+
+        URL url9 = URL.valueOf("consumer://30.225.20.150/org.apache.dubbo.rpc.service.GenericService?application=" +
+                "dubbo-demo-api-consumer&category=consumers&check=true&dubbo=2.0.2&interface=" +
+                "org.apache.dubbo.demo.DemoService&pid=7375&side=consumer&sticky=false&timestamp=2299556506417");
+        assertNotEquals(url8, url9);
+
     }
 }

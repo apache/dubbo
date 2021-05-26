@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
 /**
  * A class which store parameters for {@link URL}
@@ -127,11 +128,14 @@ public class URLParam implements Serializable {
             }
         }
 
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.timestamp = System.currentTimeMillis();
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() :
+                new HashMap<String, String>(extraParams) {{
+                    String timestampString = remove(TIMESTAMP_KEY);
+                    timestamp = timestampString == null ? timestamp : Long.parseLong(timestampString);
+                }}));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
-
-        this.timestamp = System.currentTimeMillis();
     }
 
     private URLParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
@@ -140,11 +144,14 @@ public class URLParam implements Serializable {
 
         this.VALUE = value;
 
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
+        this.timestamp = System.currentTimeMillis();
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() :
+                new HashMap<String, String>(extraParams) {{
+                    String timestampString = remove(TIMESTAMP_KEY);
+                    timestamp = timestampString == null ? timestamp : Long.parseLong(timestampString);
+                }}));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
-
-        this.timestamp = System.currentTimeMillis();
     }
 
     /**
@@ -178,7 +185,7 @@ public class URLParam implements Serializable {
      * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
      *
      * @param method method name
-     * @param key key
+     * @param key    key
      * @return value
      */
     public String getMethodParameter(String method, String key) {
@@ -191,7 +198,7 @@ public class URLParam implements Serializable {
      * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
      *
      * @param method method name
-     * @param key key
+     * @param key    key
      * @return value
      */
     public String getMethodParameterStrict(String method, String key) {
@@ -778,6 +785,10 @@ public class URLParam implements Serializable {
      * @return value, null if key is absent
      */
     public String getParameter(String key) {
+        if (TIMESTAMP_KEY.equals(key)) {
+            return Long.toString(getTimestamp());
+        }
+
         Integer keyIndex = DynamicParamTable.getKeyIndex(key);
         if (keyIndex == null) {
             if (EXTRA_PARAMS.containsKey(key)) {
