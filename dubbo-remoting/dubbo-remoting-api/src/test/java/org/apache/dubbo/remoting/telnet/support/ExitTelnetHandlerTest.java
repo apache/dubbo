@@ -14,31 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.utils;
+package org.apache.dubbo.remoting.telnet.support;
 
-import org.junit.jupiter.api.Assertions;
+import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.remoting.telnet.support.command.ExitTelnetHandler;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-import java.util.List;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import static java.util.Arrays.asList;
-
-/**
- * {@link DefaultPage}
- *
- * @since 2.7.5
- */
-public class DefaultPageTest {
-
+public class ExitTelnetHandlerTest {
     @Test
     public void test() {
-        List<Integer> data = asList(1, 2, 3, 4, 5);
-        DefaultPage<Integer> page = new DefaultPage<>(0, 1, data.subList(0, 1), data.size());
-        Assertions.assertEquals(page.getOffset(), 0);
-        Assertions.assertEquals(page.getPageSize(), 1);
-        Assertions.assertEquals(page.getTotalSize(), data.size());
-        Assertions.assertEquals(page.getData(), data.subList(0, 1));
-        Assertions.assertEquals(page.getTotalPages(), 5);
-        Assertions.assertTrue(page.hasNext());
+        Channel channel = Mockito.mock(Channel.class);
+
+        ExitTelnetHandler exitTelnetHandler = new ExitTelnetHandler();
+        exitTelnetHandler.telnet(channel, null);
+
+        verify(channel, times(1)).close();
     }
 }
