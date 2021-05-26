@@ -162,9 +162,15 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
-        // If asParameters=false, ignore @Parameter annotation except 'append'
-        Method[] methods = config.getClass().getMethods();
-        for (Method method : methods) {
+        // If asParameters=false, it means as attributes, ignore @Parameter annotation except 'append' and 'attribute'
+
+        // How to select the appropriate one from multiple getter methods of the property?
+        // e.g. Using String getGeneric() or Boolean isGeneric()? Judge by field type ?
+        // Currently use @Parameter.attribute() to determine whether it is an attribute.
+
+        BeanInfo beanInfo = getBeanInfo(config.getClass());
+        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
+            Method method = methodDescriptor.getMethod();
             try {
                 String name = method.getName();
                 if (MethodUtils.isGetter(method)) {
@@ -176,11 +182,18 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (asParameters && parameter != null && parameter.excluded()) {
-                        continue;
-                    }
-                    if (asParameters && parameter != null && parameter.key().length() > 0) {
-                        key = parameter.key();
+                    if (asParameters) {
+                        if (parameter != null && parameter.excluded()) {
+                            continue;
+                        }
+                        if (parameter != null && parameter.key().length() > 0) {
+                            key = parameter.key();
+                        }
+                    } else { // as attributes
+                        // filter non attribute
+                        if (parameter != null && !parameter.attribute()) {
+                            continue;
+                        }
                     }
                     Object value = method.invoke(config);
                     String str = String.valueOf(value).trim();
@@ -220,7 +233,7 @@ public abstract class AbstractConfig implements Serializable {
                     }
                 }
             } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
+                throw new IllegalStateException("Append parameters failed: " + e.getMessage(), e);
             }
         }
     }
@@ -456,10 +469,10 @@ public abstract class AbstractConfig implements Serializable {
         return metaData;
     }
 
-    protected BeanInfo getBeanInfo() {
+    protected static BeanInfo getBeanInfo(Class cls) {
         BeanInfo beanInfo = null;
         try {
-            beanInfo = Introspector.getBeanInfo(this.getClass());
+            beanInfo = Introspector.getBeanInfo(cls);
         } catch (IntrospectionException e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -475,7 +488,7 @@ public abstract class AbstractConfig implements Serializable {
         return false;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         if (StringUtils.hasText(this.getId())) {
@@ -484,7 +497,7 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         // check name
-        BeanInfo beanInfo = getBeanInfo();
+        BeanInfo beanInfo = getBeanInfo(this.getClass());
         for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
             if ("name".equals(propertyDescriptor.getName())) {
                 try {
@@ -619,7 +632,7 @@ public abstract class AbstractConfig implements Serializable {
     protected void checkDefault() {
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isRefreshed() {
         return refreshed.get();
     }
@@ -673,7 +686,7 @@ public abstract class AbstractConfig implements Serializable {
     /**
      * FIXME check @Parameter(required=true) and any conditions that need to match.
      */
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return true;
     }
@@ -688,11 +701,12 @@ public abstract class AbstractConfig implements Serializable {
             return true;
         }
 
-        BeanInfo beanInfo = getBeanInfo();
+        BeanInfo beanInfo = getBeanInfo(this.getClass());
         for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
             Method method1 = methodDescriptor.getMethod();
             if (MethodUtils.isGetter(method1)) {
-                // Some properties may be excluded in url parameters, but it is meaningful and cannot be ignored. e.g., ProtocolConfig's name & port
+                // Some properties may be excluded in url parameters, but it is meaningful and cannot be ignored.
+                // e.g., ProtocolConfig's name & port
 //                Parameter parameter = method1.getAnnotation(Parameter.class);
 //                if (parameter != null && parameter.excluded()) {
 //                    continue;

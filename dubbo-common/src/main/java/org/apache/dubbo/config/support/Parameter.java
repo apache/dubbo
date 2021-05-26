@@ -38,8 +38,7 @@ public @interface Parameter {
 
     boolean escaped() default false;
 
-    @Deprecated
-    boolean attribute() default false;
+    boolean attribute() default true;
 
     boolean append() default false;
 

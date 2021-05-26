@@ -151,12 +151,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isExported() {
         return exported;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
         return unexported;
     }

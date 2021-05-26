@@ -196,13 +196,6 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
-    @Override
-    public Map<String, String> getMetaData() {
-        Map<String, String> metaData = super.getMetaData();
-        this.getMethods();
-        return metaData;
-    }
-
     /**
      * Legitimacy check of stub, note that: the local will deprecated, and replace with <code>stub</code>
      *
