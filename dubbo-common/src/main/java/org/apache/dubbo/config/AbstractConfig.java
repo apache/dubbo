@@ -441,71 +441,18 @@ public abstract class AbstractConfig implements Serializable {
      *
      * <p></p>
      * Should be called after Config was fully initialized.
-     * // FIXME: this method should be completely replaced by appendParameters?
-     * // -- Not complete matched. Url parameter may use key, but props override only use property name
      * <p>
      * Notice! This method should include all properties in the returning map, treat @Parameter differently compared to appendParameters?
      * </p>
+     * // FIXME: this method should be completely replaced by appendParameters?
+     * // -- Url parameter may use key, but props override only use property name. So replace it with appendAttributes().
      *
      * @see AbstractConfig#checkDefault()
      * @see AbstractConfig#appendParameters(Map, Object, String)
      */
     public Map<String, String> getMetaData() {
-        BeanInfo beanInfo = getBeanInfo();
-
         Map<String, String> metaData = new HashMap<>();
-        for (java.beans.MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
-            try {
-                Method method = methodDescriptor.getMethod();
-                String name = method.getName();
-                if (MethodUtils.isMetaMethod(method)) {
-                    String key;
-                    Parameter parameter = method.getAnnotation(Parameter.class);
-                    if (parameter != null && parameter.key().length() > 0 && parameter.useKeyAsProperty()) {
-                        key = parameter.key();
-                    } else {
-                        key = calculateAttributeFromGetter(name);
-                    }
-
-                    // filter ignored attribute
-                    if (IGNORED_ATTRIBUTES.contains(key)) {
-                        continue;
-                    }
-
-                    // filter non-property
-                    if (!isWritableProperty(beanInfo, key)) {
-                        continue;
-                    }
-
-                    // treat url and configuration differently, the value should always present in configuration though it may not need to present in url.
-                    //if (method.getReturnType() == Object.class || parameter != null && parameter.excluded()) {
-                    if (method.getReturnType() == Object.class) {
-                        //metaData.put(key, null);
-                        continue;
-                    }
-
-                    /**
-                     * Attributes annotated as deprecated should not override newly added replacement.
-                     */
-                    if (MethodUtils.isDeprecated(method) && metaData.get(key) != null) {
-                        continue;
-                    }
-
-                    Object value = method.invoke(this);
-                    String str = String.valueOf(value).trim();
-                    if (value != null && str.length() > 0) {
-                        metaData.put(key, str);
-                    } else {
-                        //metaData.put(key, null);
-                    }
-                } else if (isParametersGetter(method)) {
-                    Map<String, String> map = (Map<String, String>) method.invoke(this, new Object[0]);
-                    metaData.putAll(convert(map, ""));
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-        }
+        appendAttributes(metaData, this);
         return metaData;
     }
 
