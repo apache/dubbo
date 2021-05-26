@@ -19,7 +19,6 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
-import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
