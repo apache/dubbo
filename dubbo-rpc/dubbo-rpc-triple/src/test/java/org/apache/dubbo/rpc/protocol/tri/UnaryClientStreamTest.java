@@ -19,6 +19,7 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -39,7 +40,7 @@ class UnaryClientStreamTest {
     @Test
     @SuppressWarnings("all")
     public void testInit() {
-        URL url = new URL("test", "1.2.3.4", 8080);
+        URL url = new ServiceConfigURL("test", "1.2.3.4", 8080);
         final Executor executor = Mockito.mock(Executor.class);
         final UnaryClientStream stream = UnaryClientStream.unary(url, executor);
         final StreamObserver<Object> observer = stream.asStreamObserver();

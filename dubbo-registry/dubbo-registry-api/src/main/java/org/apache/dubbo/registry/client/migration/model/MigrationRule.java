@@ -20,12 +20,14 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * # key = demo-consumer.migration
@@ -54,6 +56,42 @@ public class MigrationRule {
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
     private transient Map<String, ApplicationMigrationRule> applicationRules;
+
+    @SuppressWarnings("unchecked")
+    private static MigrationRule parseFromMap(Map<String, Object> map) {
+        MigrationRule migrationRule = new MigrationRule();
+        migrationRule.setKey((String) map.get("key"));
+
+        Object step = map.get("step");
+        if (step != null) {
+            migrationRule.setStep(MigrationStep.valueOf(step.toString()));
+        }
+
+        Object threshold = map.get("threshold");
+        if (threshold != null) {
+            migrationRule.setThreshold(Float.valueOf(threshold.toString()));
+        }
+
+        Object targetIps = map.get("targetIps");
+        if (targetIps != null && List.class.isAssignableFrom(targetIps.getClass())) {
+            migrationRule.setTargetIps(((List<Object>) targetIps).stream()
+                    .map(String::valueOf).collect(Collectors.toList()));
+        }
+
+        Object interfaces = map.get("interfaces");
+        if (interfaces != null && List.class.isAssignableFrom(interfaces.getClass())) {
+            migrationRule.setInterfaces(((List<Map<String, Object>>) interfaces).stream()
+                    .map(InterfaceMigrationRule::parseFromMap).collect(Collectors.toList()));
+        }
+
+        Object applications = map.get("applications");
+        if (applications != null && List.class.isAssignableFrom(applications.getClass())) {
+            migrationRule.setApplications(((List<Map<String, Object>>) applications).stream()
+                    .map(ApplicationMigrationRule::parseFromMap).collect(Collectors.toList()));
+        }
+
+        return migrationRule;
+    }
 
     public MigrationRule() {
     }
@@ -233,9 +271,9 @@ public class MigrationRule {
     }
 
     public static MigrationRule parse(String rawRule) {
-        Constructor constructor = new Constructor(MigrationRule.class);
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawRule);
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        return parseFromMap(map);
     }
 
     public static String toYaml(MigrationRule rule) {

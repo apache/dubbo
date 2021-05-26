@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.DubboServiceAddressURL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -530,7 +531,7 @@ public class NacosRegistry extends FailbackRegistry {
         Map<String, String> metadata = instance.getMetadata();
         String protocol = metadata.get(PROTOCOL_KEY);
         String path = metadata.get(PATH_KEY);
-        URL url = new URL(protocol,
+        URL url = new ServiceConfigURL(protocol,
                 instance.getIp(),
                 instance.getPort(),
                 path,

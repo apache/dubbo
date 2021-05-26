@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import org.junit.jupiter.api.Assertions;
@@ -30,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 
 public class EagerThreadPoolExecutorTest {
 
-    private static final URL URL = new URL("dubbo", "localhost", 8080);
+    private static final URL URL = new ServiceConfigURL("dubbo", "localhost", 8080);
 
     /**
      * It print like this:

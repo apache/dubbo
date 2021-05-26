@@ -23,15 +23,16 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
 
@@ -50,6 +51,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
         application.setEnableFileCache(false);
+        ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
@@ -61,15 +63,13 @@ public class ReferenceConfigTest {
         demoService = new ServiceConfig<DemoService>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
-        demoService.setApplication(application);
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
-        rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
-        rc.setInjvm(false);
+        rc.setScope(SCOPE_REMOTE);
 
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
@@ -91,6 +91,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         application.setEnableFileCache(false);
+        ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
@@ -99,7 +100,6 @@ public class ReferenceConfigTest {
         protocol.setName("mockprotocol");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
-        rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
 
@@ -117,7 +117,6 @@ public class ReferenceConfigTest {
         ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
         sc.setInterface(DemoService.class);
         sc.setRef(new DemoServiceImpl());
-        sc.setApplication(application);
         sc.setRegistry(registry);
         sc.setProtocol(protocol);
 

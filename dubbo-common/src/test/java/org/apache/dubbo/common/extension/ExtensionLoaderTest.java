@@ -57,6 +57,7 @@ import org.apache.dubbo.common.extension.ext9_empty.impl.Ext9EmptyImpl;
 import org.apache.dubbo.common.extension.injection.InjectExt;
 import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
 import org.apache.dubbo.common.lang.Prioritized;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -149,7 +150,7 @@ public class ExtensionLoaderTest {
         assertThat(impl2, anyOf(instanceOf(Ext5Wrapper1.class), instanceOf(Ext5Wrapper2.class)));
 
 
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1");
+        URL url = new ServiceConfigURL("p1", "1.2.3.4", 1010, "path1");
         int echoCount1 = Ext5Wrapper1.echoCount.get();
         int echoCount2 = Ext5Wrapper2.echoCount.get();
 

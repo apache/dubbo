@@ -377,6 +377,16 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
     String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
 
     String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
