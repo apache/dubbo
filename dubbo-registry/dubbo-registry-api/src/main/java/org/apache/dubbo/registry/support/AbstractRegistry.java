@@ -335,6 +335,9 @@ public abstract class AbstractRegistry implements Registry {
         if (listeners != null) {
             listeners.remove(listener);
         }
+
+        // do not forget remove notified
+        notified.remove(url);
     }
 
     protected void recover() throws Exception {
