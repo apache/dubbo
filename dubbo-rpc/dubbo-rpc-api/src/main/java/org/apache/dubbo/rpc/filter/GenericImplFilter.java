@@ -107,7 +107,7 @@ public class GenericImplFilter implements Filter, Filter.Listener {
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
 
                 for (Object arg : args) {
-                    if (!(byte[].class == arg.getClass())) {
+                    if (byte[].class != arg.getClass()) {
                         error(generic, byte[].class.getName(), arg.getClass().getName());
                     }
                 }
