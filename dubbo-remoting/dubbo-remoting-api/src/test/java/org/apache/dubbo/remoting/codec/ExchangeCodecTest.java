@@ -96,6 +96,22 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         return request;
     }
 
+    private byte[] getReadonlyEventRequestBytes(Object obj, byte[] header) throws IOException {
+        // encode request data.
+        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(1024);
+        ObjectOutput out = serialization.serialize(url, bos);
+        out.writeObject(obj);
+
+        out.flushBuffer();
+        bos.flush();
+        bos.close();
+        byte[] data = bos.toByteArray();
+//        byte[] len = Bytes.int2bytes(data.length);
+        System.arraycopy(data, 0, header, 12, data.length);
+        byte[] request = join(header, data);
+        return request;
+    }
+
     private byte[] assemblyDataProtocol(byte[] header) {
         Person request = new Person();
         byte[] newbuf = join(header, objectToByte(request));

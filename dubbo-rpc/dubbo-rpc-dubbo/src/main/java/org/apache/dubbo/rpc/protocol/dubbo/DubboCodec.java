@@ -86,7 +86,7 @@ public class DubboCodec extends ExchangeCodec {
                             data = null;
                         } else {
                             ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
-                            data = decodeEventData(channel, in);
+                            data = decodeEventData(channel, in, is);
                         }
                     } else {
                         DecodeableRpcResult result;
@@ -131,7 +131,7 @@ public class DubboCodec extends ExchangeCodec {
                         data = null;
                     } else {
                         ObjectInput in = CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto);
-                        data = decodeEventData(channel, in);
+                        data = decodeEventData(channel, in, is);
                     }
                 } else {
                     DecodeableRpcInvocation inv;

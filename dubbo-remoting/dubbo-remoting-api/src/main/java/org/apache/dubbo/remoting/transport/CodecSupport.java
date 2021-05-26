@@ -24,19 +24,20 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.ObjectInput;
 import org.apache.dubbo.common.serialize.ObjectOutput;
 import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ProviderModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import static org.apache.dubbo.common.serialize.Constants.COMPACTED_JAVA_SERIALIZATION_ID;
-import static org.apache.dubbo.common.serialize.Constants.JAVA_SERIALIZATION_ID;
-import static org.apache.dubbo.common.serialize.Constants.NATIVE_JAVA_SERIALIZATION_ID;
 
 public class CodecSupport {
 
@@ -81,16 +82,12 @@ public class CodecSupport {
                 url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
-    public static Serialization getSerialization(URL url, Byte id) throws IOException {
-        Serialization serialization = getSerializationById(id);
-        String serializationName = url.getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
-        // Check if "serialization id" passed from network matches the id on this side(only take effect for JDK serialization), for security purpose.
-        if (serialization == null
-                || ((id == JAVA_SERIALIZATION_ID || id == NATIVE_JAVA_SERIALIZATION_ID || id == COMPACTED_JAVA_SERIALIZATION_ID)
-                && !(serializationName.equals(ID_SERIALIZATIONNAME_MAP.get(id))))) {
-            throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
+    public static Serialization getSerialization(URL url, Byte id) {
+        Serialization result = getSerializationById(id);
+        if (result == null) {
+            result = getSerialization(url);
         }
-        return serialization;
+        return result;
     }
 
     public static ObjectInput deserialize(URL url, InputStream is, byte proto) throws IOException {
@@ -150,5 +147,26 @@ public class CodecSupport {
      */
     public static boolean isHeartBeat(byte[] payload, byte proto) {
         return Arrays.equals(payload, getNullBytesOf(getSerializationById(proto)));
+    }
+
+    public static void checkSerialization(String path, String version, Byte id) throws IOException {
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ProviderModel providerModel = repository.lookupExportedServiceWithoutGroup(path + ":" + version);
+        if (providerModel == null) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("Serialization security check is enabled but cannot work as expected because " +
+                        "there's no matched provider model for path " + path + ", version " + version);
+            }
+        } else {
+            List<URL> urls = providerModel.getServiceConfig().getExportedUrls();
+            if (CollectionUtils.isNotEmpty(urls)) {
+                URL url = urls.get(0);
+                String serializationName = url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION);
+                Byte localId = SERIALIZATIONNAME_ID_MAP.get(serializationName);
+                if (localId != null && !localId.equals(id)) {
+                    throw new IOException("Unexpected serialization id:" + id + " received from network, please check if the peer send the right id.");
+                }
+            }
+        }
     }
 }

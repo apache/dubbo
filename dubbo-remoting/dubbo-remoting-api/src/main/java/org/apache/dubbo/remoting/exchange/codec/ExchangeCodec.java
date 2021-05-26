@@ -157,7 +157,7 @@ public class ExchangeCodec extends TelnetCodec {
                             // heart beat response data is always null;
                             data = null;
                         } else {
-                            data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                            data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), is);
                         }
                     } else {
                         data = decodeResponseData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto), getRequestData(id));
@@ -187,7 +187,7 @@ public class ExchangeCodec extends TelnetCodec {
                         // heart beat response data is always null;
                         data = null;
                     } else {
-                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto));
+                        data = decodeEventData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), is);
                     }
                 } else {
                     data = decodeRequestData(channel, CodecSupport.deserialize(channel.getUrl(), is, proto));
@@ -215,7 +215,7 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     protected void encodeRequest(Channel channel, ChannelBuffer buffer, Request req) throws IOException {
-        Serialization serialization = getSerialization(channel);
+        Serialization serialization = getSerialization(channel, req);
         // header.
         byte[] header = new byte[HEADER_LENGTH];
         // set magic number.
@@ -270,7 +270,7 @@ public class ExchangeCodec extends TelnetCodec {
     protected void encodeResponse(Channel channel, ChannelBuffer buffer, Response res) throws IOException {
         int savedWriteIndex = buffer.writerIndex();
         try {
-            Serialization serialization = getSerialization(channel);
+            Serialization serialization = getSerialization(channel, res);
             // header.
             byte[] header = new byte[HEADER_LENGTH];
             // set magic number.
@@ -374,8 +374,8 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     @Deprecated
-    protected Object decodeHeartbeatData(ObjectInput in) throws IOException {
-        return decodeEventData(null, in);
+    protected Object decodeHeartbeatData(ObjectInput in, InputStream is) throws IOException {
+        return decodeEventData(null, in, is);
     }
 
     protected Object decodeRequestData(ObjectInput in) throws IOException {
@@ -421,8 +421,12 @@ public class ExchangeCodec extends TelnetCodec {
         return decodeRequestData(channel, in);
     }
 
-    protected Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
+    protected Object decodeEventData(Channel channel, ObjectInput in, InputStream is) throws IOException {
         try {
+            int dataLen = is.available();
+            if (dataLen > 100) {
+                throw new IllegalArgumentException("Event data too long, rejected by deserialization security check.");
+            }
             return in.readEvent();
         } catch (IOException | ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Decode dubbo protocol event failed.", e));
@@ -430,8 +434,8 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     @Deprecated
-    protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
-        return decodeEventData(channel, in);
+    protected Object decodeHeartbeatData(Channel channel, ObjectInput in, InputStream is) throws IOException {
+        return decodeEventData(channel, in, is);
     }
 
     protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {
