@@ -128,14 +128,11 @@ public class URLParam implements Serializable {
             }
         }
 
-        this.timestamp = System.currentTimeMillis();
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() :
-                new HashMap<String, String>(extraParams) {{
-                    String timestampString = remove(TIMESTAMP_KEY);
-                    timestamp = timestampString == null ? timestamp : Long.parseLong(timestampString);
-                }}));
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
+
+        this.timestamp = System.currentTimeMillis();
     }
 
     private URLParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
@@ -144,14 +141,11 @@ public class URLParam implements Serializable {
 
         this.VALUE = value;
 
-        this.timestamp = System.currentTimeMillis();
-        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() :
-                new HashMap<String, String>(extraParams) {{
-                    String timestampString = remove(TIMESTAMP_KEY);
-                    timestamp = timestampString == null ? timestamp : Long.parseLong(timestampString);
-                }}));
+        this.EXTRA_PARAMS = Collections.unmodifiableMap((extraParams == null ? new HashMap<>() : new HashMap<>(extraParams)));
         this.METHOD_PARAMETERS = Collections.unmodifiableMap((methodParameters == null) ? Collections.emptyMap() : new LinkedHashMap<>(methodParameters));
         this.rawParam = rawParam;
+
+        this.timestamp = System.currentTimeMillis();
     }
 
     /**
@@ -785,10 +779,6 @@ public class URLParam implements Serializable {
      * @return value, null if key is absent
      */
     public String getParameter(String key) {
-        if (TIMESTAMP_KEY.equals(key)) {
-            return Long.toString(getTimestamp());
-        }
-
         Integer keyIndex = DynamicParamTable.getKeyIndex(key);
         if (keyIndex == null) {
             if (EXTRA_PARAMS.containsKey(key)) {
@@ -864,10 +854,27 @@ public class URLParam implements Serializable {
             return false;
         }
         URLParam urlParam = (URLParam) o;
-        return Objects.equals(KEY, urlParam.KEY)
+
+        if (Objects.equals(KEY, urlParam.KEY)
                 && Objects.equals(DEFAULT_KEY, urlParam.DEFAULT_KEY)
-                && Arrays.equals(VALUE, urlParam.VALUE)
-                && Objects.equals(EXTRA_PARAMS, urlParam.EXTRA_PARAMS);
+                && Arrays.equals(VALUE, urlParam.VALUE)) {
+            if (CollectionUtils.isNotEmptyMap(EXTRA_PARAMS)) {
+                if (CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS) || EXTRA_PARAMS.size() != urlParam.EXTRA_PARAMS.size()) {
+                    return false;
+                }
+                for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+                    if (TIMESTAMP_KEY.equals(entry.getKey())) {
+                        continue;
+                    }
+                    if (!entry.getValue().equals(urlParam.EXTRA_PARAMS.get(entry.getKey()))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS);
+        }
+        return false;
     }
 
     private int hashCodeCache = -1;
@@ -875,6 +882,11 @@ public class URLParam implements Serializable {
     @Override
     public int hashCode() {
         if (hashCodeCache == -1) {
+            for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+                if (!TIMESTAMP_KEY.equals(entry.getKey())) {
+                    hashCodeCache = hashCodeCache * 31 + Objects.hashCode(entry);
+                }
+            }
             hashCodeCache = EXTRA_PARAMS.hashCode();
             for (Integer value : VALUE) {
                 hashCodeCache = hashCodeCache * 31 + value;
