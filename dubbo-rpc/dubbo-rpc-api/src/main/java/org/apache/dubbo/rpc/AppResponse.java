@@ -26,7 +26,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
 
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
@@ -63,7 +63,7 @@ public class AppResponse implements Result {
     }
 
     public AppResponse(Invocation invocation) {
-        this.attributes.put(SERIALIZATION_KEY, invocation);
+        this.setAttribute(INVOCATION_KEY, invocation);
     }
 
     public AppResponse(Object result) {
