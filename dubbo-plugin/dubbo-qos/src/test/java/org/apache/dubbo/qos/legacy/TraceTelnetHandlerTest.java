@@ -59,7 +59,7 @@ public class TraceTelnetHandlerTest {
     }
 
     @Test
-    public void test() throws Exception {
+    public void testTraceTelnetAddTracer() throws Exception {
         String method = "sayHello";
         String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
         Class<?> type = DemoService.class;
@@ -67,8 +67,7 @@ public class TraceTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         handler.telnet(mockChannel, message);
 
-        TraceFilter.addTracer(type, method, mockChannel, 100);
-        String key = method != null && method.length() > 0 ? type.getName() + "." + method : type.getName();
+        String key = type.getName() + "." + method;
         Field tracers = TraceFilter.class.getDeclaredField("TRACERS");
         tracers.setAccessible(true);
         ConcurrentHashMap<String, Set<Channel>> map =
