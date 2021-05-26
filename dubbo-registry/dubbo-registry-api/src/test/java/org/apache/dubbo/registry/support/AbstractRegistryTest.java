@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.registry.NotifyListener;
 
 import org.hamcrest.MatcherAssert;
@@ -54,7 +55,7 @@ public class AbstractRegistryTest {
         //sync update cache file
         url = url.addParameter("save.file", true);
         testUrl = URL.valueOf("http://192.168.0.3:9090/registry?check=false&file=N/A&interface=com.test");
-        mockUrl = new URL("dubbo", "192.168.0.1", 2200);
+        mockUrl = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
 
         parametersConsumer.put("application", "demo-consumer");
         parametersConsumer.put("category", "consumer");
@@ -124,7 +125,7 @@ public class AbstractRegistryTest {
     @Test
     public void testUnregister() throws Exception {
         //test one unregister
-        URL url = new URL("dubbo", "192.168.0.1", 2200);
+        URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.register(url);
         abstractRegistry.unregister(url);
         MatcherAssert.assertThat(false, Matchers.equalTo(abstractRegistry.getRegistered().contains(url)));
@@ -158,7 +159,7 @@ public class AbstractRegistryTest {
         //test subscribe
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-        URL url = new URL("dubbo", "192.168.0.1", 2200);
+        URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
         abstractRegistry.subscribe(url, listener);
         Set<NotifyListener> subscribeListeners = abstractRegistry.getSubscribed().get(url);
         MatcherAssert.assertThat(true, Matchers.equalTo(subscribeListeners.contains(listener)));
@@ -173,7 +174,7 @@ public class AbstractRegistryTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
+            URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(null, listener);
             Assertions.fail("subscribe url == null");
         });
@@ -184,7 +185,7 @@ public class AbstractRegistryTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             NotifyListener listener = urls -> notified.set(Boolean.TRUE);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
+            URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.subscribe(url, null);
             Assertions.fail("listener url == null");
         });
@@ -204,7 +205,7 @@ public class AbstractRegistryTest {
     public void testUnsubscribeIfNotifyNull() throws Exception {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
-            URL url = new URL("dubbo", "192.168.0.1", 2200);
+            URL url = new ServiceConfigURL("dubbo", "192.168.0.1", 2200);
             abstractRegistry.unsubscribe(url, null);
             Assertions.fail("unsubscribe listener == null");
         });
@@ -314,13 +315,13 @@ public class AbstractRegistryTest {
     public void testNotify() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+        URL url1 = new ServiceConfigURL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listener1);
         NotifyListener listener2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+        URL url2 = new ServiceConfigURL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listener2);
         NotifyListener listener3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+        URL url3 = new ServiceConfigURL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listener3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -340,13 +341,13 @@ public class AbstractRegistryTest {
     public void testNotifyList() throws Exception {
         final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
         NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
-        URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+        URL url1 = new ServiceConfigURL("dubbo", "192.168.0.1", 2200, parametersConsumer);
         abstractRegistry.subscribe(url1, listener1);
         NotifyListener listener2 = urls -> notified.set(Boolean.TRUE);
-        URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+        URL url2 = new ServiceConfigURL("dubbo", "192.168.0.2", 2201, parametersConsumer);
         abstractRegistry.subscribe(url2, listener2);
         NotifyListener listener3 = urls -> notified.set(Boolean.TRUE);
-        URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+        URL url3 = new ServiceConfigURL("dubbo", "192.168.0.3", 2202, parametersConsumer);
         abstractRegistry.subscribe(url3, listener3);
         List<URL> urls = new ArrayList<>();
         urls.add(url1);
@@ -364,13 +365,13 @@ public class AbstractRegistryTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
-            URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+            URL url1 = new ServiceConfigURL("dubbo", "192.168.0.1", 2200, parametersConsumer);
             abstractRegistry.subscribe(url1, listener1);
             NotifyListener listener2 = urls -> notified.set(Boolean.TRUE);
-            URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+            URL url2 = new ServiceConfigURL("dubbo", "192.168.0.2", 2201, parametersConsumer);
             abstractRegistry.subscribe(url2, listener2);
             NotifyListener listener3 = urls -> notified.set(Boolean.TRUE);
-            URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+            URL url3 = new ServiceConfigURL("dubbo", "192.168.0.3", 2202, parametersConsumer);
             abstractRegistry.subscribe(url3, listener3);
             List<URL> urls = new ArrayList<>();
             urls.add(url1);
@@ -386,13 +387,13 @@ public class AbstractRegistryTest {
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             final AtomicReference<Boolean> notified = new AtomicReference<Boolean>(false);
             NotifyListener listener1 = urls -> notified.set(Boolean.TRUE);
-            URL url1 = new URL("dubbo", "192.168.0.1", 2200, parametersConsumer);
+            URL url1 = new ServiceConfigURL("dubbo", "192.168.0.1", 2200, parametersConsumer);
             abstractRegistry.subscribe(url1, listener1);
             NotifyListener listener2 = urls -> notified.set(Boolean.TRUE);
-            URL url2 = new URL("dubbo", "192.168.0.2", 2201, parametersConsumer);
+            URL url2 = new ServiceConfigURL("dubbo", "192.168.0.2", 2201, parametersConsumer);
             abstractRegistry.subscribe(url2, listener2);
             NotifyListener listener3 = urls -> notified.set(Boolean.TRUE);
-            URL url3 = new URL("dubbo", "192.168.0.3", 2202, parametersConsumer);
+            URL url3 = new ServiceConfigURL("dubbo", "192.168.0.3", 2202, parametersConsumer);
             abstractRegistry.subscribe(url3, listener3);
             List<URL> urls = new ArrayList<>();
             urls.add(url1);
@@ -532,9 +533,9 @@ public class AbstractRegistryTest {
 
     private List<URL> getList() {
         List<URL> list = new ArrayList<>();
-        URL url1 = new URL("dubbo", "192.168.0.1", 1000);
-        URL url2 = new URL("dubbo", "192.168.0.2", 1001);
-        URL url3 = new URL("dubbo", "192.168.0.3", 1002);
+        URL url1 = new ServiceConfigURL("dubbo", "192.168.0.1", 1000);
+        URL url2 = new ServiceConfigURL("dubbo", "192.168.0.2", 1001);
+        URL url3 = new ServiceConfigURL("dubbo", "192.168.0.3", 1002);
         list.add(url1);
         list.add(url2);
         list.add(url3);

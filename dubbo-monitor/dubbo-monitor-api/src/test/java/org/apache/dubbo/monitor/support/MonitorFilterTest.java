@@ -33,8 +33,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -64,11 +62,9 @@ public class MonitorFilterTest {
         }
 
         public URL getUrl() {
-            try {
-                return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" + APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE + "&" + MONITOR_KEY + "=" + URLEncoder.encode("dubbo://" + NetUtils.getLocalHost() + ":7070", "UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
+            return URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":20880?" +
+                    APPLICATION_KEY + "=abc&" + SIDE_KEY + "=" + CONSUMER_SIDE)
+                    .putAttribute(MONITOR_KEY, URL.valueOf("dubbo://" + NetUtils.getLocalHost() + ":7070"));
         }
 
         @Override

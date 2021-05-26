@@ -96,6 +96,8 @@ public interface Constants {
      */
     String REFER_KEY = "refer";
 
+    String ATTRIBUTE_KEY = "attribute";
+
     /**
      * The key name for export URL in register center
      */
