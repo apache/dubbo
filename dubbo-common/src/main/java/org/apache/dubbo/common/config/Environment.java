@@ -50,13 +50,13 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     // java system environment
     private EnvironmentConfiguration environmentConfiguration;
 
-    // external app config, such as config-center global/default config
+    // external config, such as config-center global/default config
     private InmemoryConfiguration externalConfiguration;
 
-    // external config, such as config-center app config
+    // external app config, such as config-center app config
     private InmemoryConfiguration appExternalConfiguration;
 
-    // application config properties, such as Spring environment/propertySources
+    // local app config , such as Spring Environment/PropertySources/application.properties
     private InmemoryConfiguration appConfiguration;
 
     private CompositeConfiguration globalConfiguration;

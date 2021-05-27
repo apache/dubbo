@@ -337,7 +337,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.isReturn = isReturn;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getService() {
         return service;
     }
@@ -346,7 +346,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.service = service;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getServiceId() {
         return serviceId;
     }
@@ -355,7 +355,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.serviceId = serviceId;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public AbstractInterfaceConfig getParent() {
         return parent;
     }

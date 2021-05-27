@@ -327,10 +327,16 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfig(RegistryConfig.class, id);
     }
 
-    public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String id) {
-        T config = getConfigById(getTagName(cls), id);
+    /**
+     * Get config instance by id or by name
+     * @param cls Config type
+     * @param idOrName  the id or name of the config
+     * @return
+     */
+    public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String idOrName) {
+        T config = getConfigById(getTagName(cls), idOrName);
         if (config == null ) {
-            config = getConfigByName(getTagName(cls), id);
+            config = getConfigByName(getTagName(cls), idOrName);
         }
         return ofNullable(config);
     }
