@@ -680,6 +680,10 @@ public class DubboBootstrap {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
         String id = "config-center-" + protocol + "-" + port;
+        if (configManager.getConfigCenter(id) != null) {
+            return null;
+        }
+
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setId(id);
         if (cc.getParameters() == null) {
