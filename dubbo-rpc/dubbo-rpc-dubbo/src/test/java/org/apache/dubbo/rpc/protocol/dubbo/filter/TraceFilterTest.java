@@ -105,7 +105,7 @@ public class TraceFilterTest {
         // test invoke
         filter.invoke(mockInvoker, mockInvocation);
         String message = listToString(mockChannel.getReceivedObjects());
-        String expectMessage = "null -> org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.sayHello([]) -> \"result\"";
+        String expectMessage = "org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.sayHello([]) -> \"result\"";
         System.out.println("actual message: " + message);
         Assertions.assertTrue(message.contains(expectMessage));
         Assertions.assertTrue(message.contains("elapsed:"));
