@@ -785,6 +785,10 @@ public class DubboBootstrap {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
         String id = "metadata-center-" + protocol + "-" + port;
+        if (configManager.getMetadataConfig(id) != null) {
+            return null;
+        }
+
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setId(id);
         if (metadataReportConfig.getParameters() == null) {
