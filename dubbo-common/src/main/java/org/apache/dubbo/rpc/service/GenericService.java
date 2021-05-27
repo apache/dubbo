@@ -48,11 +48,12 @@ public interface GenericService {
      * @throws GenericException potential exception thrown from the invocation
      */
     default CompletableFuture<Object> $invokeAsync(String method, String[] parameterTypes, Object[] args) throws GenericException {
+        // Use a custom Executor?
         return CompletableFuture.supplyAsync(() -> {
             Object object = $invoke(method, parameterTypes, args);
-            // if (object instanceof CompletableFuture) {
-            //     return ((CompletableFuture) object).get();
-            // }
+            if (object instanceof CompletableFuture) {
+                return ((CompletableFuture) object).get();
+            }
             return object;
         });
     }
