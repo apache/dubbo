@@ -32,6 +32,7 @@ import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -950,4 +951,66 @@ public class URLTest {
         assertNotEquals(url8, url9);
 
     }
+
+
+    @Test
+    public void testEqualsWithPassword() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@4321@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithPath() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path2?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path1?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithPort() {
+        URL url1 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20881/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithProtocol() {
+        URL url1 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("file://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
+    @Test
+    public void testEqualsWithUser() {
+        URL url1 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url2 = URL.valueOf("ad@min2:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        URL url3 = URL.valueOf("ad@min1:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+
+        boolean actual1 = url1.equals(url2);
+        boolean actual2 = url1.equals(url3);
+        assertFalse(actual1);
+        assertTrue(actual2);
+    }
+
 }
