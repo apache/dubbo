@@ -87,17 +87,12 @@ public class NetUtils {
     }
 
     public static int getAvailablePort() {
-        try (ServerSocket ss = new ServerSocket()) {
-            ss.bind(null);
-            return ss.getLocalPort();
-        } catch (IOException e) {
-            return getRandomPort();
-        }
+        return getAvailablePort(MIN_PORT);
     }
 
     public static int getAvailablePort(int port) {
-        if (port <= 0) {
-            return getAvailablePort();
+        if (port < MIN_PORT) {
+            port = MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
             try (ServerSocket ignored = new ServerSocket(i)) {
