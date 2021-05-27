@@ -23,7 +23,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -94,7 +93,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -225,12 +224,7 @@ public class DubboBootstrap extends GenericEventListener {
         environment = ApplicationModel.getEnvironment();
 
         DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
-            @Override
-            public void callback() throws Throwable {
-                DubboBootstrap.this.destroy();
-            }
-        });
+        ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
     }
 
     public void unRegisterShutdownHook() {
@@ -366,7 +360,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap protocol(ProtocolConfig protocolConfig) {
-        return protocols(asList(protocolConfig));
+        return protocols(singletonList(protocolConfig));
     }
 
     public DubboBootstrap protocols(List<ProtocolConfig> protocolConfigs) {
@@ -438,7 +432,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap provider(ProviderConfig providerConfig) {
-        return providers(asList(providerConfig));
+        return providers(singletonList(providerConfig));
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
@@ -462,7 +456,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
-        return consumers(asList(consumerConfig));
+        return consumers(singletonList(consumerConfig));
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
@@ -476,7 +470,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     // {@link ConfigCenterConfig} correlative methods
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
-        return configCenters(asList(configCenterConfig));
+        return configCenters(singletonList(configCenterConfig));
     }
 
     public DubboBootstrap configCenters(List<ConfigCenterConfig> configCenterConfigs) {
