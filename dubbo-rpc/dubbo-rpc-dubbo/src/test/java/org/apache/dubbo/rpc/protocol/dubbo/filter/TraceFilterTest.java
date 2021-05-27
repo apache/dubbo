@@ -106,6 +106,7 @@ public class TraceFilterTest {
         filter.invoke(mockInvoker, mockInvocation);
         String message = listToString(mockChannel.getReceivedObjects());
         String expectMessage = "null -> org.apache.dubbo.rpc.protocol.dubbo.support.DemoService.sayHello([]) -> \"result\"";
+        System.out.println("actual message: " + message);
         Assertions.assertTrue(message.contains(expectMessage));
         Assertions.assertTrue(message.contains("elapsed:"));
         AtomicInteger traceCount = (AtomicInteger) mockChannel.getAttribute(TRACE_COUNT);
