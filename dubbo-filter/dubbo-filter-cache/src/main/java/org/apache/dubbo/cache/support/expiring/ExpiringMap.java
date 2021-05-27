@@ -137,6 +137,9 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
         return delegateMap.equals(obj);
     }
 
@@ -226,6 +229,9 @@ public class ExpiringMap<K, V> implements Map<K, V> {
 
         @Override
         public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
             return value.equals(obj);
         }
 
