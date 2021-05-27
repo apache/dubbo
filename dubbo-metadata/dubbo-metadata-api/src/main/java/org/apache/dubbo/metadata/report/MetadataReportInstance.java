@@ -20,11 +20,13 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.MetadataReportConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_DIRECTORY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.metadata.report.support.Constants.METADATA_REPORT_KEY;
@@ -51,6 +53,7 @@ public class MetadataReportInstance {
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }
+        url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getApplicationConfig().getName());
         String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
 //        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
