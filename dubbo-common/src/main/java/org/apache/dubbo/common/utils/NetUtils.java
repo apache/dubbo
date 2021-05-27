@@ -48,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PREFERRED_NETWORK_INTERFACE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
 
 /**
@@ -305,22 +306,35 @@ public class NetUtils {
     }
 
     /**
-     * @param networkInterface {@link NetworkInterface}
-     * @return if the specified {@link NetworkInterface} should be ignored, return <code>true</code>
+     * Returns {@code true} if the specified {@link NetworkInterface} should be ignored with the given conditions.
+     * @param networkInterface the {@link NetworkInterface} to check
+     * @return {@code true} if the specified {@link NetworkInterface} should be ignored, otherwise {@code false}
      * @throws SocketException SocketException if an I/O error occurs.
-     * @since 2.7.6
      */
     private static boolean ignoreNetworkInterface(NetworkInterface networkInterface) throws SocketException {
-        return networkInterface == null
+        if (networkInterface == null
                 || networkInterface.isLoopback()
                 || networkInterface.isVirtual()
-                || !networkInterface.isUp();
+                || !networkInterface.isUp()){
+            return true;
+        }
+        String ignoredInterfaces = System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        String networkInterfaceDisplayName;
+        if(StringUtils.isNotEmpty(ignoredInterfaces)
+                &&StringUtils.isNotEmpty(networkInterfaceDisplayName=networkInterface.getDisplayName())){
+            for(String ignoredInterface: ignoredInterfaces.split(",")){
+                if(networkInterfaceDisplayName.matches(ignoredInterface.trim())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
      * Get the valid {@link NetworkInterface network interfaces}
      *
-     * @return non-null
+     * @return the valid {@link NetworkInterface}s
      * @throws SocketException SocketException if an I/O error occurs.
      * @since 2.7.6
      */
