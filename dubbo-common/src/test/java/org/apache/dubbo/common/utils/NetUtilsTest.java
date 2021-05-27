@@ -20,8 +20,11 @@ package org.apache.dubbo.common.utils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.net.*;
-import java.util.Collections;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.net.NetworkInterface;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.hamcrest.MatcherAssert.assertThat;
