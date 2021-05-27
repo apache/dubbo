@@ -417,7 +417,7 @@ public class DubboProtocol extends AbstractProtocol {
             String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
             connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(SHARE_CONNECTIONS_KEY,
                     DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
-            return (ExchangeClient[]) getSharedClient(url, connections).toArray();
+            return getSharedClient(url, connections).toArray(new ExchangeClient[0]);
         } else {
             ExchangeClient[] clients = new ExchangeClient[connections];
             for (int i = 0; i < clients.length; i++) {
