@@ -887,7 +887,6 @@ public class URLParam implements Serializable {
                     hashCodeCache = hashCodeCache * 31 + Objects.hashCode(entry);
                 }
             }
-            hashCodeCache = EXTRA_PARAMS.hashCode();
             for (Integer value : VALUE) {
                 hashCodeCache = hashCodeCache * 31 + value;
             }
