@@ -155,8 +155,8 @@ public final class ReflectUtils {
     }
 
     public static boolean isPrimitives(Class<?> cls) {
-        if (cls.isArray()) {
-            return isPrimitive(cls.getComponentType());
+        while (cls.isArray()) {
+            cls = cls.getComponentType();
         }
         return isPrimitive(cls);
     }
