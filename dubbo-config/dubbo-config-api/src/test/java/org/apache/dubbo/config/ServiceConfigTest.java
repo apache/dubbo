@@ -160,6 +160,7 @@ public class ServiceConfigTest {
 
         assertThat(service2.getExportedUrls(), hasSize(1));
         assertEquals(2, TestProxyFactory.count); // local injvm and registry protocol, so expected is 2
+        TestProxyFactory.count = 0;
     }
 
 
