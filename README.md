@@ -33,10 +33,10 @@ The following code snippet comes from [Dubbo Samples](https://github.com/apache/
 
 ```bash
 # git clone https://github.com/apache/dubbo-samples.git
-# cd dubbo-samples/java/dubbo-samples-api
+# cd dubbo-samples/dubbo-samples-api
 ```
 
-There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions:
+There's a [README](https://github.com/apache/dubbo-samples/tree/master/dubbo-samples-api/README.md) file under `dubbo-samples-api` directory. We recommend referencing the samples in that directory by following the below-mentioned instructions: 
 
 ### Maven dependency
 
