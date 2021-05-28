@@ -36,8 +36,8 @@ public class MethodDefinition implements Serializable {
     private String[] parameterTypes;
     private String returnType;
     private List<TypeDefinition> parameters;
-    private List<Annotation> annotations;
-    
+    private List<String> annotations;
+
     public String getName() {
         return name;
     }
@@ -73,14 +73,14 @@ public class MethodDefinition implements Serializable {
         this.returnType = formatType(returnType);
     }
 
-    public List<Annotation> getAnnotations() {
+    public List<String> getAnnotations() {
         if (annotations == null) {
             annotations = Collections.emptyList();
         }
         return annotations;
     }
 
-    public void setAnnotations(List<Annotation> annotations) {
+    public void setAnnotations(List<String> annotations) {
         this.annotations = annotations;
     }
 

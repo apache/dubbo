@@ -32,7 +32,7 @@ public class ServiceDefinition implements Serializable {
     private String codeSource;
     private List<MethodDefinition> methods;
     private List<TypeDefinition> types;
-    private List<Annotation> annotations;
+    private List<String> annotations;
 
     public String getCanonicalName() {
         return canonicalName;
@@ -56,7 +56,7 @@ public class ServiceDefinition implements Serializable {
         return types;
     }
 
-    public List<Annotation> getAnnotations() {
+    public List<String> getAnnotations() {
         if (annotations == null) {
             annotations = Collections.emptyList();
         }
@@ -83,7 +83,7 @@ public class ServiceDefinition implements Serializable {
         this.types = types;
     }
 
-    public void setAnnotations(List<Annotation> annotations) {
+    public void setAnnotations(List<String> annotations) {
         this.annotations = annotations;
     }
 
