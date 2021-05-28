@@ -22,7 +22,6 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
-import sun.jvm.hotspot.utilities.BitMap;
 
 import java.io.IOException;
 import java.net.Inet4Address;
