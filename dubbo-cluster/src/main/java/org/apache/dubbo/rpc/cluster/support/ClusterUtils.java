@@ -98,7 +98,7 @@ public class ClusterUtils {
             copyOfLocalMap.remove(DUBBO_VERSION_KEY);
             copyOfLocalMap.remove(METHODS_KEY);
             copyOfLocalMap.remove(TIMESTAMP_KEY);
-
+            copyOfLocalMap.remove(TAG_KEY);
 
             map.putAll(copyOfLocalMap);
 
