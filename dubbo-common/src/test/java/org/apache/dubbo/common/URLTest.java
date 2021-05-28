@@ -1033,5 +1033,13 @@ public class URLTest {
         assertNotEquals(url3.hashCode(), url4.hashCode());
     }
 
+    @Test
+    public void testParameterContainPound() {
+        URL url = URL.valueOf(
+                "dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&pound=abcd#efg&protocol=registry");
+        Assertions.assertEquals("abcd#efg", url.getParameter("pound"));
+        Assertions.assertEquals("registry", url.getParameter("protocol"));
+    }
+
 
 }
