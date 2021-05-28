@@ -87,7 +87,8 @@ public class NetUtils {
     }
 
     public synchronized static int getAvailablePort() {
-        return getAvailablePort(MIN_PORT);
+        int randomPort = getRandomPort();
+        return getAvailablePort(randomPort);
     }
 
     public synchronized static int getAvailablePort(int port) {
