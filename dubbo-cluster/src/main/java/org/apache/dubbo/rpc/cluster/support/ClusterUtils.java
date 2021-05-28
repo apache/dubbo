@@ -29,6 +29,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
@@ -89,6 +90,9 @@ public class ClusterUtils {
             }
             if(map.containsKey(VERSION_KEY)){
                 copyOfLocalMap.remove(VERSION_KEY);
+            }
+            if (map.containsKey(GENERIC_KEY)) {
+                copyOfLocalMap.remove(GENERIC_KEY);
             }
 
             copyOfLocalMap.remove(RELEASE_KEY);
