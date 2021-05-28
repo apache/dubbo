@@ -69,7 +69,7 @@ public class NetUtils {
     private static final int RND_PORT_RANGE = 10000;
 
     // valid port range is (0, 65535]
-    private static final int MIN_PORT = 0;
+    private static final int MIN_PORT = 1;
     private static final int MAX_PORT = 65535;
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
@@ -105,7 +105,7 @@ public class NetUtils {
     }
 
     public static boolean isInvalidPort(int port) {
-        return port <= MIN_PORT || port > MAX_PORT;
+        return port < MIN_PORT || port > MAX_PORT;
     }
 
     public static boolean isValidAddress(String address) {
