@@ -77,6 +77,7 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -1390,17 +1391,16 @@ public class DubboBootstrap extends GenericEventListener {
         if (destroyLock.tryLock()
                 && shutdown.compareAndSet(false, true)) {
             try {
-                DubboShutdownHook.destroyAll();
-
-                if (started.compareAndSet(true, false)
-                        && destroyed.compareAndSet(false, true)) {
-                    unregisterServiceInstance();
-                    unexportMetadataService();
-                    unexportServices();
-                    unreferServices();
+                if (destroyed.compareAndSet(false, true)) {
+                    if (started.compareAndSet(true, false)) {
+                        unregisterServiceInstance();
+                        unexportMetadataService();
+                        unexportServices();
+                        unreferServices();
+                    }
 
                     destroyRegistries();
-                    DubboShutdownHook.destroyProtocols();
+                    destroyProtocols();
                     destroyServiceDiscoveries();
 
                     // check config
@@ -1428,6 +1428,23 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void destroyRegistries() {
         AbstractRegistryFactory.destroyAll();
+    }
+
+    /**
+     * Destroy all the protocols.
+     */
+    private void destroyProtocols() {
+        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
     }
 
     private void destroyServiceDiscoveries() {
