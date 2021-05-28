@@ -45,11 +45,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_DEFAULT;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.config.Constants.SHUTDOWN_TIMEOUT_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -152,6 +154,23 @@ public class ServiceConfigTest {
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
         Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+    }
+
+    @Test
+    public void testVersionAndGroupConfigFromProvider() {
+        //Service no configuration version , the Provider configured.
+        service.getProvider().setVersion("1.0.0");
+        service.getProvider().setGroup("groupA");
+        service.export();
+
+        String serviceVersion = service.getVersion();
+        String serviceVersion2 = service.toUrl().getParameter(VERSION_KEY);
+
+        String group = service.getGroup();
+        String group2 = service.toUrl().getParameter(GROUP_KEY);
+
+        assertEquals(serviceVersion2, serviceVersion);
+        assertEquals(group, group2);
     }
 
     @Test
