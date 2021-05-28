@@ -247,7 +247,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (ref instanceof GenericService) {
             interfaceClass = GenericService.class;
             if (StringUtils.isEmpty(generic)) {
-                generic = TRUE_VALUE;
+                generic = Boolean.TRUE.toString();
             }
         } else {
             try {
@@ -258,7 +258,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             }
             checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
-            generic = FALSE_VALUE;
+            generic = Boolean.FALSE.toString();
         }
         if (local != null) {
             if ("true".equals(local)) {
