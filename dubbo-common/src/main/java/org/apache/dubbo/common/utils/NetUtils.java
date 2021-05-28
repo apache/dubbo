@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
+import sun.jvm.hotspot.utilities.BitMap;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -33,12 +34,15 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.BitSet;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
@@ -82,6 +86,12 @@ public class NetUtils {
     private static final String SPLIT_IPV4_CHARACTER = "\\.";
     private static final String SPLIT_IPV6_CHARACTER = ":";
 
+    /**
+     * store the used port.
+     * the set used only on the synchronized method.
+     */
+    private static BitSet USED_PORT = new BitSet(65536);
+
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
@@ -96,7 +106,11 @@ public class NetUtils {
             port = MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
+            if (USED_PORT.get(i)) {
+                continue;
+            }
             try (ServerSocket ignored = new ServerSocket(i)) {
+                USED_PORT.set(i);
                 return i;
             } catch (IOException e) {
                 // continue
@@ -554,7 +568,7 @@ public class NetUtils {
         if (!ipPatternContainExpression(pattern)) {
             InetAddress patternAddress = InetAddress.getByName(pattern);
             return patternAddress.getHostAddress().equals(host);
-            }
+        }
 
         String[] ipAddress = host.split(splitCharacter);
         for (int i = 0; i < mask.length; i++) {
@@ -571,7 +585,8 @@ public class NetUtils {
                 if (ip < min || ip > max) {
                     return false;
                 }
-            } else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
+            } else if ("0".equals(ipAddress[i]) &&
+                    ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
                 continue;
             } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
@@ -605,7 +620,8 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException(
+                        "If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);
