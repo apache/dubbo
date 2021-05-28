@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
@@ -23,23 +24,33 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
+    private TestingServer zkServer;
+    private String registryUrl;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         ApplicationModel.reset();
+        int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        this.zkServer = new TestingServer(zkServerPort, true);
+        this.zkServer.start();
+        this.registryUrl = "zookeeper://localhost:" + zkServerPort;
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
+        zkServer.stop();
         ApplicationModel.reset();
     }
 
@@ -50,7 +61,7 @@ public class ReferenceConfigTest {
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("multicast://224.5.6.7:1234");
+        registry.setAddress(registryUrl);
 
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
@@ -75,6 +86,7 @@ public class ReferenceConfigTest {
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
+            rc.destroy();
             demoService.unexport();
         }
     }
@@ -89,7 +101,7 @@ public class ReferenceConfigTest {
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("multicast://224.5.6.7:1234");
+        registry.setAddress(registryUrl);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
@@ -122,6 +134,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            rc.destroy();
+            sc.unexport();
             System.clearProperty("java.net.preferIPv4Stack");
         }
         Assertions.assertTrue(success);
