@@ -154,24 +154,15 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer wait;
 
-    /**
-     * Whether to use the default protocol
-     */
-    private Boolean isDefault;
-
     @Deprecated
     public void setProtocol(String protocol) {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
+    @Override
     @Parameter(excluded = true)
     public Boolean isDefault() {
         return isDefault;
-    }
-
-    @Deprecated
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     @Parameter(excluded = true)
