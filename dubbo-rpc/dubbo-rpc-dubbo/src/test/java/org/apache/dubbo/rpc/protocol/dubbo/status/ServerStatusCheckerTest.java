@@ -50,7 +50,7 @@ public class ServerStatusCheckerTest {
 
     @Test
     public void testServerStatusChecker() throws Exception {
-        int port = NetUtils.getAvailablePort(9001);
+        int port = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange");
         DemoService service = new DemoServiceImpl();
 
