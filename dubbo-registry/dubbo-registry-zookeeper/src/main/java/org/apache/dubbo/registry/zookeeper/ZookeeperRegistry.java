@@ -59,7 +59,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  */
 public class ZookeeperRegistry extends FailbackRegistry {
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 

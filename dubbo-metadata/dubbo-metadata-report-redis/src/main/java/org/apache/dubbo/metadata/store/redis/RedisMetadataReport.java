@@ -50,15 +50,15 @@ import static org.apache.dubbo.metadata.MetadataConstants.META_DATA_STORE_TAG;
  */
 public class RedisMetadataReport extends AbstractMetadataReport {
 
-    private final static String REDIS_DATABASE_KEY = "database";
+    private static final String REDIS_DATABASE_KEY = "database";
     /**
      * maximum number of retries
      */
-    private final static int MAX_ATTEMPTS = 2;
+    private static final int MAX_ATTEMPTS = 2;
     /**
      * the default slot of the redis database
      */
-    private final static int DEFAULT_REDIS_DATABASE_SLOT = 0;
+    private static final int DEFAULT_REDIS_DATABASE_SLOT = 0;
 
     JedisPool pool;
     Set<HostAndPort> jedisClusterNodes;

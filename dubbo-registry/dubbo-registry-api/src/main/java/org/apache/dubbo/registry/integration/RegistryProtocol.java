@@ -132,10 +132,10 @@ public class RegistryProtocol implements Protocol {
             APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
     };
 
-    private final static String REGISTRY_PROTOCOL_LISTENER_KEY = "registry.protocol.listener";
-    private final static int DEFAULT_PORT = 9090;
+    private static final String REGISTRY_PROTOCOL_LISTENER_KEY = "registry.protocol.listener";
+    private static final int DEFAULT_PORT = 9090;
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(RegistryProtocol.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryProtocol.class);
     private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();

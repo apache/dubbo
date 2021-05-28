@@ -58,9 +58,9 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
  */
 public class EtcdRegistry extends FailbackRegistry {
 
-    private final static int DEFAULT_ETCD_PORT = 2379;
+    private static final int DEFAULT_ETCD_PORT = 2379;
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 

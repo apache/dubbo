@@ -52,7 +52,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class EtcdServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
-    private final static Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
+    private static final Logger logger = LoggerFactory.getLogger(EtcdServiceDiscovery.class);
 
     private final String root = "/services";
 

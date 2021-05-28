@@ -90,7 +90,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
+    private static final List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
             DubboService.class,
             // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
