@@ -556,14 +556,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
-                if (entry.getValue().isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+                && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable);
     }
 
     /**
