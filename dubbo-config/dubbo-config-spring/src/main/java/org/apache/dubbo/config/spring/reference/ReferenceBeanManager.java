@@ -143,8 +143,10 @@ public class ReferenceBeanManager implements ApplicationContextAware {
                     .defaultInterfaceClass(referenceBean.getObjectType())
                     .build();
 
-            // set id
-            referenceConfig.setId(referenceBean.getId());
+            // set id if it is not a generated name
+            if (referenceBean.getId() != null && !referenceBean.getId().contains("#")) {
+                referenceConfig.setId(referenceBean.getId());
+            }
 
             //cache referenceConfig
             referenceConfigMap.put(referenceKey, referenceConfig);

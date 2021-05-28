@@ -100,7 +100,6 @@ public abstract class AbstractConfig implements Serializable {
         LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
 
         // The ignored attributes of metadata
-        IGNORED_ATTRIBUTES.add("id");
         IGNORED_ATTRIBUTES.add("prefix");
         IGNORED_ATTRIBUTES.add("prefixes");
         IGNORED_ATTRIBUTES.add("refreshed");
@@ -383,7 +382,7 @@ public abstract class AbstractConfig implements Serializable {
         return result;
     }
 
-    @Parameter(excluded = true, attribute = false)
+    @Parameter(excluded = true, attribute = true)
     public String getId() {
         return id;
     }
@@ -710,6 +709,10 @@ public abstract class AbstractConfig implements Serializable {
                 String propertyName = calculateAttributeFromGetter(method1.getName());
                 // filter ignored attribute
                 if (IGNORED_ATTRIBUTES.contains(propertyName)) {
+                    continue;
+                }
+                // ignore compare 'id' value
+                if (Constants.ID.equals(propertyName)) {
                     continue;
                 }
                 // filter non-property

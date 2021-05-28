@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.config;
 import org.apache.dubbo.config.AbstractConfig;
 
 import com.alibaba.spring.beans.factory.config.GenericBeanPostProcessorAdapter;
+import org.apache.dubbo.config.Constants;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.InitDestroyAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -55,7 +56,7 @@ public class DubboConfigDefaultPropertyValueBeanPostProcessor extends GenericBea
         // ignore auto generate bean name
         if (!beanName.contains("#")) {
             // [Feature] https://github.com/apache/dubbo/issues/5721
-            setPropertyIfAbsent(dubboConfigBean, "id", beanName);
+            setPropertyIfAbsent(dubboConfigBean, Constants.ID, beanName);
 
             // beanName should not be used as config name, fix https://github.com/apache/dubbo/pull/7624
             //setPropertyIfAbsent(dubboConfigBean, "name", beanName);

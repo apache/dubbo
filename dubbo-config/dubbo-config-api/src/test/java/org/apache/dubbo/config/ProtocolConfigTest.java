@@ -340,6 +340,8 @@ public class ProtocolConfigTest {
     public void testCreateDefaultConfigFromProps() {
         SysProps.setProperty("dubbo.protocol.name", "rest");
         SysProps.setProperty("dubbo.protocol.port", "2346");
+        String protocolId = "rest-protocol";
+        SysProps.setProperty("dubbo.protocol.id", protocolId); // Allow override config id from props
 
         try {
 
@@ -352,10 +354,14 @@ public class ProtocolConfigTest {
             Assertions.assertEquals(1, protocols.size());
 
             ProtocolConfig protocol = configManager.getProtocol("rest").get();
-
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(2346, protocol.getPort());
+            Assertions.assertEquals(protocolId, protocol.getId());
+
+            ProtocolConfig protocolConfig = configManager.getProtocol(protocolId).get();
+
         } finally {
+            DubboBootstrap.getInstance().stop();
         }
     }
 
