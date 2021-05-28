@@ -1178,7 +1178,7 @@ public class DubboBootstrap {
         {
             calInstanceRevision(serviceDiscovery, serviceInstance);
             if (logger.isDebugEnabled()) {
-                logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+                logger.debug("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
             }
             // register metadata
             serviceDiscovery.register(serviceInstance);
