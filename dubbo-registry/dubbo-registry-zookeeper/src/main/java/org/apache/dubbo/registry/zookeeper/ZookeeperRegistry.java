@@ -279,6 +279,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
+                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
                 }
             }

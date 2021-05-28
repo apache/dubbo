@@ -143,7 +143,7 @@ public abstract class FailbackRegistry extends AbstractRegistry {
         }
     }
 
-    private void removeFailedSubscribed(URL url, NotifyListener listener) {
+    public void removeFailedSubscribed(URL url, NotifyListener listener) {
         Holder h = new Holder(url, listener);
         FailedSubscribedTask f = failedSubscribed.remove(h);
         if (f != null) {
@@ -380,6 +380,9 @@ public abstract class FailbackRegistry extends AbstractRegistry {
                 logger.info("Recover register url " + recoverRegistered);
             }
             for (URL url : recoverRegistered) {
+                // remove fail registry or unRegistry task first.
+                removeFailedRegistered(url);
+                removeFailedUnregistered(url);
                 addFailedRegistered(url);
             }
         }
@@ -392,6 +395,8 @@ public abstract class FailbackRegistry extends AbstractRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
+                    // First remove other tasks to ensure that addFailedSubscribed can succeed.
+                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
                 }
             }
