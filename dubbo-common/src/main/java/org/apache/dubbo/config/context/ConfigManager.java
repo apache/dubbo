@@ -165,6 +165,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(MetadataReportConfig.class));
     }
 
+    public MetadataReportConfig getMetadataConfig(String id) {
+        return getConfig(getTagName(MetadataReportConfig.class), id);
+    }
+
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
         Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
