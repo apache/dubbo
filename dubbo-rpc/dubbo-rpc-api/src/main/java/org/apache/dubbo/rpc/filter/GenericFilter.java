@@ -93,7 +93,11 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (StringUtils.isEmpty(generic)
                         || ProtocolUtils.isDefaultGenericSerialization(generic)
                         || ProtocolUtils.isGenericReturnRawResult(generic)) {
-                    args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                    try {
+                        args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                    } catch (IllegalArgumentException e) {
+                        throw new RpcException(e);
+                    }
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
@@ -162,7 +166,9 @@ public class GenericFilter implements Filter, Filter.Listener {
                     }
                 }
 
-                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args, inv.getObjectAttachments(), inv.getAttributes());
+                RpcInvocation rpcInvocation =
+                        new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args,
+                                inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
@@ -200,7 +206,8 @@ public class GenericFilter implements Filter, Filter.Listener {
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(appResponse.getValue());
+                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
+                            .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toByteArray());
                 } catch (IOException e) {
                     throw new RpcException(
