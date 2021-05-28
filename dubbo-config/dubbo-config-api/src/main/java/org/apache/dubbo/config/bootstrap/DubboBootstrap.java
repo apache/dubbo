@@ -1099,8 +1099,12 @@ public class DubboBootstrap extends GenericEventListener {
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
-                    sc.export();
-                    exportedServices.add(sc);
+                	try {
+                        sc.export();
+                        exportedServices.add(sc);
+                	}catch (Throwable t) {
+                		logger.error("export async catch error : " + t.getMessage(), t);
+					}
                 });
                 asyncExportingFutures.add(future);
             } else {
