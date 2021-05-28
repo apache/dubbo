@@ -21,6 +21,8 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -355,4 +357,22 @@ public class RpcUtilsTest {
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/Object;", "testMethod"));
         Assertions.assertFalse(RpcUtils.isEcho("Ljava/lang/String;", "$echo"));
     }
+    @Test
+    public void testIsReturnTypeFuture() {
+        Class<?> demoServiceClass = DemoService.class;
+        String serviceName = demoServiceClass.getName();
+        Invoker invoker = mock(Invoker.class);
+        given(invoker.getUrl()).willReturn(URL.valueOf(
+                "test://127.0.0.1:1/org.apache.dubbo.rpc.support.DemoService?interface=org.apache.dubbo.rpc.support.DemoService"));
+
+        RpcInvocation inv = new RpcInvocation("testReturnType", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        Assertions.assertFalse(RpcUtils.isReturnTypeFuture(inv));
+
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        repository.registerService(demoServiceClass);
+
+        inv = new RpcInvocation("testReturnType4", serviceName, "", new Class<?>[] {String.class}, null, null, invoker, null);
+        Assertions.assertTrue(RpcUtils.isReturnTypeFuture(inv));
+    }
+
 }
