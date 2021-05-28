@@ -90,7 +90,6 @@ public class ConfigParser {
 
             parseEnabled(item, config, urlBuilder);
 
-            urlBuilder.append("&category=").append(DYNAMIC_CONFIGURATORS_CATEGORY);
             urlBuilder.append("&configVersion=").append(config.getConfigVersion());
 
             List<String> apps = item.getApplications();
