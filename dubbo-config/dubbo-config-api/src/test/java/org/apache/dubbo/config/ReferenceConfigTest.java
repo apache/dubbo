@@ -28,6 +28,7 @@ import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -55,6 +56,7 @@ public class ReferenceConfigTest {
     }
 
     @Test
+    @Disabled("Disabled due to Github Actions environment")
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
@@ -64,7 +66,7 @@ public class ReferenceConfigTest {
         registry.setAddress(registryUrl);
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
