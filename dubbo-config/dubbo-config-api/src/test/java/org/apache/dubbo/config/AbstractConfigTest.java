@@ -23,6 +23,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +44,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class AbstractConfigTest {
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
 
     //FIXME
     /*@Test
@@ -308,11 +314,11 @@ public class AbstractConfigTest {
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
             ApplicationModel.getEnvironment().initialize();
 
-            System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
-            System.setProperty("dubbo.override.protocol", "system");
+            SysProps.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
+            SysProps.setProperty("dubbo.override.protocol", "system");
             // this will not override, use 'key' instead, @Parameter(key="key1", useKeyAsProperty=false)
-            System.setProperty("dubbo.override.key1", "system");
-            System.setProperty("dubbo.override.key2", "system");
+            SysProps.setProperty("dubbo.override.key1", "system");
+            SysProps.setProperty("dubbo.override.key2", "system");
 
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();
@@ -323,10 +329,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("external", overrideConfig.getKey());
             Assertions.assertEquals("system", overrideConfig.getKey2());
         } finally {
-            System.clearProperty("dubbo.override.address");
-            System.clearProperty("dubbo.override.protocol");
-            System.clearProperty("dubbo.override.key1");
-            System.clearProperty("dubbo.override.key2");
+            SysProps.clear();
             ApplicationModel.getEnvironment().destroy();
         }
     }
@@ -340,9 +343,9 @@ public class AbstractConfigTest {
             overrideConfig.setEscape("override-config://");
             overrideConfig.setExclude("override-config");
 
-            System.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
-            System.setProperty("dubbo.override.protocol", "system");
-            System.setProperty("dubbo.override.key", "system");
+            SysProps.setProperty("dubbo.override.address", "system://127.0.0.1:2181");
+            SysProps.setProperty("dubbo.override.protocol", "system");
+            SysProps.setProperty("dubbo.override.key", "system");
 
             overrideConfig.refresh();
 
@@ -351,9 +354,7 @@ public class AbstractConfigTest {
             Assertions.assertEquals("override-config://", overrideConfig.getEscape());
             Assertions.assertEquals("system", overrideConfig.getKey());
         } finally {
-            System.clearProperty("dubbo.override.address");
-            System.clearProperty("dubbo.override.protocol");
-            System.clearProperty("dubbo.override.key1");
+            SysProps.clear();
             ApplicationModel.getEnvironment().destroy();
         }
     }
@@ -480,13 +481,13 @@ public class AbstractConfigTest {
             Assertions.assertEquals("value3", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
 
-            System.setProperty("dubbo.override.parameters", "[{key3:value6}]");
+            SysProps.setProperty("dubbo.override.parameters", "[{key3:value6}]");
             overrideConfig.refresh();
 
             Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
         } finally {
-            System.clearProperty("dubbo.override.parameters");
+            SysProps.clear();
             ApplicationModel.getEnvironment().destroy();
         }
     }
@@ -890,7 +891,7 @@ public class AbstractConfigTest {
 
 
     @Test
-    public void testDefaultMetaData() throws Exception {
+    public void testMetaData() throws Exception {
 
         // Expect empty metadata for new instance
         // Check and set default value of field in checkDefault() method
@@ -903,7 +904,8 @@ public class AbstractConfigTest {
         for (Class<? extends AbstractConfig> configClass : configClasses) {
             AbstractConfig config = configClass.newInstance();
             Map<String, String> metaData = config.getMetaData();
-            Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass);
+            Assertions.assertEquals(0, metaData.size(), "Expect empty metadata for new instance but found: "+metaData +" of "+configClass.getSimpleName());
+            System.out.println(configClass.getSimpleName()+" metadata is checked.");
         }
     }
 }

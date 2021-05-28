@@ -41,27 +41,32 @@ public class EnvironmentUtilsTest {
     @Test
     public void testExtraProperties() {
 
-        System.setProperty("user.name", "mercyblitz");
+        String key = "test.name";
+        System.setProperty(key, "Tom");
 
-        StandardEnvironment environment = new StandardEnvironment();
+        try {
+            StandardEnvironment environment = new StandardEnvironment();
 
-        Map<String, Object> map = new HashMap<>();
+            Map<String, Object> map = new HashMap<>();
 
-        map.put("user.name", "Mercy");
+            map.put(key, "Mercy");
 
-        MapPropertySource propertySource = new MapPropertySource("first", map);
+            MapPropertySource propertySource = new MapPropertySource("first", map);
 
-        CompositePropertySource compositePropertySource = new CompositePropertySource("comp");
+            CompositePropertySource compositePropertySource = new CompositePropertySource("comp");
 
-        compositePropertySource.addFirstPropertySource(propertySource);
+            compositePropertySource.addFirstPropertySource(propertySource);
 
-        MutablePropertySources propertySources = environment.getPropertySources();
+            MutablePropertySources propertySources = environment.getPropertySources();
 
-        propertySources.addFirst(compositePropertySource);
+            propertySources.addFirst(compositePropertySource);
 
-        Map<String, Object> properties = EnvironmentUtils.extractProperties(environment);
+            Map<String, Object> properties = EnvironmentUtils.extractProperties(environment);
 
-        Assertions.assertEquals("Mercy", properties.get("user.name"));
+            Assertions.assertEquals("Mercy", properties.get(key));
+        } finally {
+            System.clearProperty(key);
+        }
 
     }
 

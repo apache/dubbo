@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +40,11 @@ public class ConfigCenterConfigTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
     }
 
     @Test
@@ -72,8 +78,8 @@ public class ConfigCenterConfigTest {
 
         String zkAddr = "zookeeper://127.0.0.1:2181";
         // sysprops has no id
-        System.setProperty("dubbo.config-center.check", "false");
-        System.setProperty("dubbo.config-center.address", zkAddr);
+        SysProps.setProperty("dubbo.config-center.check", "false");
+        SysProps.setProperty("dubbo.config-center.address", zkAddr);
 
         try {
             //No id and no address
@@ -95,8 +101,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            System.clearProperty("dubbo.config-center.check");
-            System.clearProperty("dubbo.config-center.address");
+            SysProps.clear();
         }
     }
 
@@ -105,8 +110,8 @@ public class ConfigCenterConfigTest {
 
         String zkAddr = "nacos://127.0.0.1:8848";
         // sysprops has no id
-        System.setProperty("dubbo.config-center.check", "false");
-        System.setProperty("dubbo.config-center.address", zkAddr);
+        SysProps.setProperty("dubbo.config-center.check", "false");
+        SysProps.setProperty("dubbo.config-center.address", zkAddr);
 
         try {
             //No id but has address
@@ -124,8 +129,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            System.clearProperty("dubbo.config-center.check");
-            System.clearProperty("dubbo.config-center.address");
+            SysProps.clear();
         }
     }
 
@@ -133,8 +137,8 @@ public class ConfigCenterConfigTest {
     public void testOverrideConfigBySystemProps() {
 
         //Config instance has Id, but sysprops without id
-        System.setProperty("dubbo.config-center.check", "false");
-        System.setProperty("dubbo.config-center.timeout", "1234");
+        SysProps.setProperty("dubbo.config-center.check", "false");
+        SysProps.setProperty("dubbo.config-center.timeout", "1234");
 
         try {
             // Config instance has id
@@ -152,8 +156,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(1234, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            System.clearProperty("dubbo.config-center.check");
-            System.clearProperty("dubbo.config-center.timeout");
+            SysProps.clear();
         }
     }
 
@@ -190,8 +193,8 @@ public class ConfigCenterConfigTest {
     public void testOverrideConfigBySystemPropsWithId() {
 
         // Both config instance and sysprops have id
-        System.setProperty("dubbo.config-centers.configcenterA.check", "false");
-        System.setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
+        SysProps.setProperty("dubbo.config-centers.configcenterA.check", "false");
+        SysProps.setProperty("dubbo.config-centers.configcenterA.timeout", "1234");
 
         try {
             // Config instance has id
@@ -210,8 +213,7 @@ public class ConfigCenterConfigTest {
             Assertions.assertEquals(1234, configCenter.getTimeout());
             Assertions.assertEquals(false, configCenter.isCheck());
         } finally {
-            System.clearProperty("dubbo.config-centers.configcenterA.check");
-            System.clearProperty("dubbo.config-centers.configcenterA.timeout");
+            SysProps.clear();
         }
     }
 
@@ -246,7 +248,7 @@ public class ConfigCenterConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ConfigCenterConfig configCenter = new ConfigCenterConfig();
         Map<String, String> metaData = configCenter.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);

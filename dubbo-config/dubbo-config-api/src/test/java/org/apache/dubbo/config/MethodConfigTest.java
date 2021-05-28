@@ -23,7 +23,9 @@ import org.apache.dubbo.config.annotation.Reference;
 
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,6 +82,11 @@ public class MethodConfigTest {
     @BeforeEach
     public void beforeEach() {
         DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
     }
 
     //TODO remove this test
@@ -260,34 +267,79 @@ public class MethodConfigTest {
     @Test
     public void testOverrideMethodConfig() {
 
-        Map<String,String> props = new LinkedHashMap<>();
         String interfaceName = DemoService.class.getName();
-        props.put("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
-        props.put("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
-        props.put("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
-        props.put("dubbo.reference."+ interfaceName +".init", "false");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".init", "false");
 
-        ReferenceConfig referenceConfig = new ReferenceConfig();
-        referenceConfig.setInterface(interfaceName);
+        try {
+            ReferenceConfig referenceConfig = new ReferenceConfig();
+            referenceConfig.setInterface(interfaceName);
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            methodConfig.setTimeout(1000);
+            referenceConfig.setMethods(Arrays.asList(methodConfig));
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .reference(referenceConfig)
+                    .initialize();
+
+            Map<String, String> params = new LinkedHashMap<>();
+            params.put("a", "1");
+            params.put("b", "2");
+
+            Assertions.assertEquals(1234, methodConfig.getTimeout());
+            Assertions.assertEquals(true, methodConfig.getSticky());
+            Assertions.assertEquals(params, methodConfig.getParameters());
+            Assertions.assertEquals(false, referenceConfig.isInit());
+        } finally {
+        }
+
+    }
+
+    @Test
+    public void testOverrideMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        try {
+            ServiceConfig serviceConfig = new ServiceConfig();
+            serviceConfig.setInterface(interfaceName);
+            serviceConfig.setRef(new DemoServiceImpl());
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            methodConfig.setTimeout(1000);
+            serviceConfig.setMethods(Arrays.asList(methodConfig));
+
+            DubboBootstrap.getInstance()
+                    .application("demo-app")
+                    .service(serviceConfig)
+                    .initialize();
+
+            Map<String, String> params = new LinkedHashMap<>();
+            params.put("a", "1");
+            params.put("b", "2");
+
+            Assertions.assertEquals(1234, methodConfig.getTimeout());
+            Assertions.assertEquals(true, methodConfig.getSticky());
+            Assertions.assertEquals(params, methodConfig.getParameters());
+            Assertions.assertEquals("demo", serviceConfig.getGroup());
+        } finally {
+        }
+
+    }
+
+    @Test
+    public void testMetaData() {
         MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("sayName");
-        methodConfig.setTimeout(1000);
-        referenceConfig.setMethods(Arrays.asList(methodConfig));
-
-        DubboBootstrap.getInstance()
-                .application("demo-app")
-                .reference(referenceConfig)
-                .start();
-
-        Map<String, String> params = new LinkedHashMap<>();
-        params.put("a", "1");
-        params.put("b", "2");
-
-        Assertions.assertEquals(1234, methodConfig.getTimeout());
-        Assertions.assertEquals(true, methodConfig.getSticky());
-        Assertions.assertEquals(params, methodConfig.getParameters());
-        Assertions.assertEquals(false, referenceConfig.isInit());
-
+        Map<String, String> metaData = methodConfig.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
     }
 }

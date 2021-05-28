@@ -95,6 +95,7 @@ public class ConfigTest {
 
     @AfterEach
     public void tearDown() {
+        SysProps.clear();
     }
 
 
@@ -363,9 +364,7 @@ public class ConfigTest {
 
     @Test
     public void testRmiTimeout() throws Exception {
-        if (System.getProperty("sun.rmi.transport.tcp.responseTimeout") != null) {
-            System.setProperty("sun.rmi.transport.tcp.responseTimeout", "");
-        }
+        System.clearProperty("sun.rmi.transport.tcp.responseTimeout");
         ConsumerConfig consumer = new ConsumerConfig();
         consumer.setTimeout(1000);
         assertEquals("1000", System.getProperty("sun.rmi.transport.tcp.responseTimeout"));
@@ -706,9 +705,9 @@ public class ConfigTest {
 
     @Test
     public void testSystemPropertyOverrideProtocol() throws Exception {
-        System.setProperty("dubbo.protocols.tri.port", ""); // empty config should be ignored
-        System.setProperty("dubbo.protocols.dubbo.port", "20812"); // override success
-        System.setProperty("dubbo.protocol.port", "20899"); // override fail
+        SysProps.setProperty("dubbo.protocols.tri.port", ""); // empty config should be ignored
+        SysProps.setProperty("dubbo.protocols.dubbo.port", "20812"); // override success
+        SysProps.setProperty("dubbo.protocol.port", "20899"); // override fail
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
         try {
             providerContext.start();
@@ -716,17 +715,14 @@ public class ConfigTest {
             ProtocolConfig protocol = configManager.getProtocol("dubbo").get();
             assertEquals(20812, protocol.getPort());
         } finally {
-            System.clearProperty("dubbo.protocols.tri.port");
-            System.clearProperty("dubbo.protocols.dubbo.port");
-            System.clearProperty("dubbo.protocol.port");
             providerContext.close();
         }
     }
 
     @Test
     public void testSystemPropertyOverrideMultiProtocol() throws Exception {
-        System.setProperty("dubbo.protocols.dubbo.port", "20814");
-        System.setProperty("dubbo.protocols.tri.port", "10914");
+        SysProps.setProperty("dubbo.protocols.dubbo.port", "20814");
+        SysProps.setProperty("dubbo.protocols.tri.port", "10914");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath +
                 "/override-multi-protocol.xml");
         try {
@@ -738,8 +734,6 @@ public class ConfigTest {
             ProtocolConfig tripleProtocol = configManager.getProtocol("tri").get();
             assertEquals(10914, tripleProtocol.getPort().intValue());
         } finally {
-            System.setProperty("dubbo.protocols.dubbo.port", "");
-            System.setProperty("dubbo.protocols.tri.port", "");
             providerContext.stop();
             providerContext.close();
         }
@@ -749,11 +743,11 @@ public class ConfigTest {
     @Test
     @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideXmlDefault() throws Exception {
-        System.setProperty("dubbo.application.name", "sysover");
-        System.setProperty("dubbo.application.owner", "sysowner");
-        System.setProperty("dubbo.registry.address", "N/A");
-        System.setProperty("dubbo.protocol.name", "dubbo");
-        System.setProperty("dubbo.protocol.port", "20819");
+        SysProps.setProperty("dubbo.application.name", "sysover");
+        SysProps.setProperty("dubbo.application.owner", "sysowner");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo");
+        SysProps.setProperty("dubbo.protocol.port", "20819");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/system-properties-override-default.xml");
         try {
             providerContext.start();
@@ -764,11 +758,6 @@ public class ConfigTest {
             assertEquals("dubbo", service.getProtocol().getName());
             assertEquals(20819, service.getProtocol().getPort().intValue());
         } finally {
-            System.setProperty("dubbo.application.name", "");
-            System.setProperty("dubbo.application.owner", "");
-            System.setProperty("dubbo.registry.address", "");
-            System.setProperty("dubbo.protocol.name", "");
-            System.setProperty("dubbo.protocol.port", "");
             providerContext.stop();
             providerContext.close();
         }
@@ -778,12 +767,12 @@ public class ConfigTest {
     @Test
     @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideXml() throws Exception {
-        System.setProperty("dubbo.application.name", "sysover");
-        System.setProperty("dubbo.application.owner", "sysowner");
-        System.setProperty("dubbo.registry.address", "N/A");
-        System.setProperty("dubbo.protocol.name", "dubbo");
-        System.setProperty("dubbo.protocol.port", "20819");
-        System.setProperty("dubbo.service.register", "false");
+        SysProps.setProperty("dubbo.application.name", "sysover");
+        SysProps.setProperty("dubbo.application.owner", "sysowner");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo");
+        SysProps.setProperty("dubbo.protocol.port", "20819");
+        SysProps.setProperty("dubbo.service.register", "false");
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/system-properties-override.xml");
         try {
             providerContext.start();
@@ -797,12 +786,6 @@ public class ConfigTest {
             assertTrue(register != null && !"".equals(register));
             assertEquals(false, Boolean.valueOf(register));
         } finally {
-            System.setProperty("dubbo.application.name", "");
-            System.setProperty("dubbo.application.owner", "");
-            System.setProperty("dubbo.registry.address", "");
-            System.setProperty("dubbo.protocol.name", "");
-            System.setProperty("dubbo.protocol.port", "");
-            System.setProperty("dubbo.service.register", "");
             providerContext.stop();
             providerContext.close();
         }
@@ -810,11 +793,9 @@ public class ConfigTest {
 
     @Test
     public void testSystemPropertyOverrideReferenceConfig() throws Exception {
-        Map<String, String> props = new HashMap<>();
-        props.put("dubbo.reference.org.apache.dubbo.config.spring.api.DemoService.retries", "5");
-        props.put("dubbo.consumer.check", "false");
-        props.put("dubbo.consumer.timeout", "1234");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.reference.org.apache.dubbo.config.spring.api.DemoService.retries", "5");
+        SysProps.setProperty("dubbo.consumer.check", "false");
+        SysProps.setProperty("dubbo.consumer.timeout", "1234");
 
         try {
             ServiceConfig<DemoService> service = new ServiceConfig<DemoService>();
@@ -843,20 +824,17 @@ public class ConfigTest {
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideApiDefault() throws Exception {
-        System.setProperty("dubbo.application.name", "sysover");
-        System.setProperty("dubbo.application.owner", "sysowner");
-        System.setProperty("dubbo.registry.address", "N/A");
-        System.setProperty("dubbo.protocol.name", "dubbo");
-        System.setProperty("dubbo.protocol.port", "20834");
+        SysProps.setProperty("dubbo.application.name", "sysover");
+        SysProps.setProperty("dubbo.application.owner", "sysowner");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo");
+        SysProps.setProperty("dubbo.protocol.port", "20834");
         try {
             ServiceConfig<DemoService> serviceConfig = new ServiceConfig<DemoService>();
             serviceConfig.setInterface(DemoService.class);
@@ -875,22 +853,17 @@ public class ConfigTest {
                 bootstrap.stop();
             }
         } finally {
-            System.setProperty("dubbo.application.name", "");
-            System.setProperty("dubbo.application.owner", "");
-            System.setProperty("dubbo.registry.address", "");
-            System.setProperty("dubbo.protocol.name", "");
-            System.setProperty("dubbo.protocol.port", "");
         }
     }
 
     @Test
     @Disabled("waiting-to-fix")
     public void testSystemPropertyOverrideApi() throws Exception {
-        System.setProperty("dubbo.application.name", "sysover");
-        System.setProperty("dubbo.application.owner", "sysowner");
-        System.setProperty("dubbo.registry.address", "N/A");
-        System.setProperty("dubbo.protocol.name", "dubbo");
-        System.setProperty("dubbo.protocol.port", "20834");
+        SysProps.setProperty("dubbo.application.name", "sysover");
+        SysProps.setProperty("dubbo.application.owner", "sysowner");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo");
+        SysProps.setProperty("dubbo.protocol.port", "20834");
         try {
             ApplicationConfig application = new ApplicationConfig();
             application.setName("aaa");
@@ -926,11 +899,6 @@ public class ConfigTest {
                 bootstrap.stop();
             }
         } finally {
-            System.setProperty("dubbo.application.name", "");
-            System.setProperty("dubbo.application.owner", "");
-            System.setProperty("dubbo.registry.address", "");
-            System.setProperty("dubbo.protocol.name", "");
-            System.setProperty("dubbo.protocol.port", "");
         }
     }
 
@@ -939,7 +907,7 @@ public class ConfigTest {
     public void testSystemPropertyOverrideProperties() throws Exception {
         try {
             int port = 1234;
-            System.setProperty("dubbo.protocol.port", String.valueOf(port));
+            SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
             ApplicationConfig application = new ApplicationConfig();
             application.setName("aaa");
 
@@ -1015,7 +983,7 @@ public class ConfigTest {
         SimpleRegistryService registryService = new SimpleRegistryService();
         Exporter<RegistryService> exporter = SimpleRegistryExporter.export(4548, registryService);
         try {
-            System.setProperty("provider.version", "1.2");
+            SysProps.setProperty("provider.version", "1.2");
             ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/annotation-provider.xml");
             try {
                 providerContext.start();
@@ -1043,7 +1011,7 @@ public class ConfigTest {
     @Test
     public void testDubboProtocolPortOverride() throws Exception {
         int port = NetUtils.getAvailablePort();
-        System.setProperty("dubbo.protocol.port", String.valueOf(port));
+        SysProps.setProperty("dubbo.protocol.port", String.valueOf(port));
         ServiceConfig<DemoService> service = null;
         DubboBootstrap bootstrap = null;
         try {
@@ -1072,7 +1040,6 @@ public class ConfigTest {
 
             assertEquals(port, service.getExportedUrls().get(0).getPort());
         } finally {
-            System.clearProperty("dubbo.protocol.port");
             if (bootstrap != null) {
                 bootstrap.stop();
             }

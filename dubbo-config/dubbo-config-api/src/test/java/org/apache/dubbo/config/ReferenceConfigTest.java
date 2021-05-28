@@ -136,10 +136,23 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ReferenceConfig config = new ReferenceConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+
+        // test merged and override consumer attributes
+        ConsumerConfig consumerConfig = new ConsumerConfig();
+        consumerConfig.setAsync(true);
+        consumerConfig.setActives(10);
+        config.setConsumer(consumerConfig);
+        config.setAsync(false);// override
+
+        metaData = config.getMetaData();
+        Assertions.assertEquals(2, metaData.size());
+        Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
+        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+
     }
 
     @Test

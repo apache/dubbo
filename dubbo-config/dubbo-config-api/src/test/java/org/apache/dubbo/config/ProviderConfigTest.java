@@ -219,7 +219,7 @@ public class ProviderConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ProtocolConfig config = new ProtocolConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);

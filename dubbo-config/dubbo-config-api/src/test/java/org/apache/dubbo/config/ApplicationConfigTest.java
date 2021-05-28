@@ -18,6 +18,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +44,11 @@ public class ApplicationConfigTest {
     @BeforeEach
     public void beforeEach() {
         DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
     }
 
     @Test
@@ -197,7 +203,7 @@ public class ApplicationConfigTest {
     public void testAppendEnvironmentProperties() {
         try {
             ApplicationConfig application = new ApplicationConfig("app");
-            System.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
+            SysProps.setProperty("dubbo.labels", "tag1=value1;tag2=value2 ; tag3 = value3");
             application.refresh();
             Map<String, String> parameters = application.getParameters();
             Assertions.assertEquals("value1", parameters.get("tag1"));
@@ -205,11 +211,11 @@ public class ApplicationConfigTest {
             Assertions.assertEquals("value3", parameters.get("tag3"));
 
             ApplicationConfig application1 = new ApplicationConfig("app");
-            System.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
+            SysProps.setProperty("dubbo.env.keys", "tag1, tag2,tag3");
             // mock environment variables
-            System.setProperty("tag1", "value1");
-            System.setProperty("tag2", "value2");
-            System.setProperty("tag3", "value3");
+            SysProps.setProperty("tag1", "value1");
+            SysProps.setProperty("tag2", "value2");
+            SysProps.setProperty("tag3", "value3");
             application1.refresh();
             Map<String, String> parameters1 = application1.getParameters();
             Assertions.assertEquals("value1", parameters1.get("tag1"));
@@ -222,13 +228,12 @@ public class ApplicationConfigTest {
             Assertions.assertEquals("value2", urlParameters.get("tag2"));
             Assertions.assertEquals("value3", urlParameters.get("tag3"));
         } finally {
-            System.clearProperty("dubbo.labels");
-            System.clearProperty("dubbo.keys");
+            SysProps.clear();
         }
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ApplicationConfig config = new ApplicationConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
@@ -237,11 +242,9 @@ public class ApplicationConfigTest {
     @Test
     public void testOverrideEmptyConfig() {
         String owner = "tom1";
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.application.name", "demo-app");
-        props.put("dubbo.application.owner", owner);
-        props.put("dubbo.application.version", "1.2.3");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.application.name", "demo-app");
+        SysProps.setProperty("dubbo.application.owner", owner);
+        SysProps.setProperty("dubbo.application.version", "1.2.3");
 
         try {
             ApplicationConfig applicationConfig = new ApplicationConfig();
@@ -253,20 +256,15 @@ public class ApplicationConfigTest {
             Assertions.assertEquals(owner, applicationConfig.getOwner());
             Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testOverrideConfigById() {
-        Map<String,String> props = new HashMap<>();
         String owner = "tom2";
-        props.put("dubbo.applications.demo-app.owner", owner);
-        props.put("dubbo.applications.demo-app.version", "1.2.3");
-        props.put("dubbo.applications.demo-app.name", "demo-app");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
+        SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
+        SysProps.setProperty("dubbo.applications.demo-app.name", "demo-app");
 
         try {
             ApplicationConfig applicationConfig = new ApplicationConfig();
@@ -281,19 +279,14 @@ public class ApplicationConfigTest {
             Assertions.assertEquals(owner, applicationConfig.getOwner());
             Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testOverrideConfigByName() {
-        Map<String,String> props = new HashMap<>();
         String owner = "tom3";
-        props.put("dubbo.applications.demo-app.owner", owner);
-        props.put("dubbo.applications.demo-app.version", "1.2.3");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
+        SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
 
         try {
             ApplicationConfig applicationConfig = new ApplicationConfig();
@@ -306,19 +299,14 @@ public class ApplicationConfigTest {
             Assertions.assertEquals(owner, applicationConfig.getOwner());
             Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testLoadConfig() {
-        Map<String,String> props = new HashMap<>();
         String owner = "tom4";
-        props.put("dubbo.applications.demo-app.owner", owner);
-        props.put("dubbo.applications.demo-app.version", "1.2.3");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.applications.demo-app.owner", owner);
+        SysProps.setProperty("dubbo.applications.demo-app.version", "1.2.3");
 
         try {
             DubboBootstrap.getInstance()
@@ -331,20 +319,15 @@ public class ApplicationConfigTest {
             Assertions.assertEquals(owner, applicationConfig.getOwner());
             Assertions.assertEquals("1.2.3", applicationConfig.getVersion());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testOverrideConfigConvertCase() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.application.NAME", "demo-app");
-        props.put("dubbo.application.qos-Enable", "false");
-        props.put("dubbo.application.qos_host", "127.0.0.1");
-        props.put("dubbo.application.qosPort", "2345");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.application.NAME", "demo-app");
+        SysProps.setProperty("dubbo.application.qos-Enable", "false");
+        SysProps.setProperty("dubbo.application.qos_host", "127.0.0.1");
+        SysProps.setProperty("dubbo.application.qosPort", "2345");
 
         try {
             DubboBootstrap.getInstance()
@@ -357,9 +340,6 @@ public class ApplicationConfigTest {
             Assertions.assertEquals(2345, applicationConfig.getQosPort());
             Assertions.assertEquals("demo-app", applicationConfig.getName());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 }

@@ -21,13 +21,13 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,6 +39,11 @@ public class ConsumerConfigTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
     }
 
     @Test
@@ -98,9 +103,9 @@ public class ConsumerConfigTest {
 
     @Test
     public void testOverrideConfigSingle() {
-        System.setProperty("dubbo.consumer.check", "false");
-        System.setProperty("dubbo.consumer.group", "demo");
-        System.setProperty("dubbo.consumer.threads", "10");
+        SysProps.setProperty("dubbo.consumer.check", "false");
+        SysProps.setProperty("dubbo.consumer.group", "demo");
+        SysProps.setProperty("dubbo.consumer.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -120,18 +125,16 @@ public class ConsumerConfigTest {
             Assertions.assertEquals("demo", consumerConfig.getGroup());
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
-            System.clearProperty("dubbo.consumer.check");
-            System.clearProperty("dubbo.consumer.group");
-            System.clearProperty("dubbo.consumer.threads");
+            SysProps.clear();
         }
     }
 
     @Test
     public void testOverrideConfigByPluralityId() {
-        System.setProperty("dubbo.consumer.group", "demoA");  //ignore
-        System.setProperty("dubbo.consumers.consumerA.check", "false");
-        System.setProperty("dubbo.consumers.consumerA.group", "demoB");
-        System.setProperty("dubbo.consumers.consumerA.threads", "10");
+        SysProps.setProperty("dubbo.consumer.group", "demoA");  //ignore
+        SysProps.setProperty("dubbo.consumers.consumerA.check", "false");
+        SysProps.setProperty("dubbo.consumers.consumerA.group", "demoB");
+        SysProps.setProperty("dubbo.consumers.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -152,22 +155,19 @@ public class ConsumerConfigTest {
             Assertions.assertEquals("demoB", consumerConfig.getGroup());
             Assertions.assertEquals(10, consumerConfig.getThreads());
         } finally {
-            System.clearProperty("dubbo.consumer.group");
-            System.clearProperty("dubbo.consumers.consumerA.check");
-            System.clearProperty("dubbo.consumers.consumerA.group");
-            System.clearProperty("dubbo.consumers.consumerA.threads");
+            SysProps.clear();
         }
     }
 
     @Test
     public void testOverrideConfigBySingularId() {
         // override success
-        System.setProperty("dubbo.consumer.group", "demoA");
-        System.setProperty("dubbo.consumer.threads", "15");
+        SysProps.setProperty("dubbo.consumer.group", "demoA");
+        SysProps.setProperty("dubbo.consumer.threads", "15");
         // ignore singular format: dubbo.{tag-name}.{config-id}.{config-item}={config-value}
-        System.setProperty("dubbo.consumer.consumerA.check", "false");
-        System.setProperty("dubbo.consumer.consumerA.group", "demoB");
-        System.setProperty("dubbo.consumer.consumerA.threads", "10");
+        SysProps.setProperty("dubbo.consumer.consumerA.check", "false");
+        SysProps.setProperty("dubbo.consumer.consumerA.group", "demoB");
+        SysProps.setProperty("dubbo.consumer.consumerA.threads", "10");
 
         try {
             ConsumerConfig consumerConfig = new ConsumerConfig();
@@ -188,10 +188,7 @@ public class ConsumerConfigTest {
             Assertions.assertEquals("demoA", consumerConfig.getGroup());
             Assertions.assertEquals(15, consumerConfig.getThreads());
         } finally {
-            System.clearProperty("dubbo.consumer.group");
-            System.clearProperty("dubbo.consumer.consumerA.check");
-            System.clearProperty("dubbo.consumer.consumerA.group");
-            System.clearProperty("dubbo.consumer.consumerA.threads");
+            SysProps.clear();
         }
     }
 
@@ -227,14 +224,12 @@ public class ConsumerConfigTest {
 
     @Test
     public void testReferenceAndConsumerConfigOverlay() {
-        Map<String, String> props = new LinkedHashMap<>();
-        props.put("dubbo.consumer.group", "demo");
-        props.put("dubbo.consumer.threads", "12");
-        props.put("dubbo.consumer.timeout", "1234");
-        props.put("dubbo.consumer.init", "false");
-        props.put("dubbo.consumer.check", "false");
-        props.put("dubbo.registry.address", "N/A");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.consumer.group", "demo");
+        SysProps.setProperty("dubbo.consumer.threads", "12");
+        SysProps.setProperty("dubbo.consumer.timeout", "1234");
+        SysProps.setProperty("dubbo.consumer.init", "false");
+        SysProps.setProperty("dubbo.consumer.check", "false");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
 
         try {
             ReferenceConfig referenceConfig = new ReferenceConfig();
@@ -250,13 +245,12 @@ public class ConsumerConfigTest {
             Assertions.assertEquals(false, referenceConfig.isInit());
             Assertions.assertEquals(false, referenceConfig.isCheck());
         } finally {
-            props.keySet().forEach(System::clearProperty);
         }
 
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ConsumerConfig consumerConfig = new ConsumerConfig();
         Map<String, String> metaData = consumerConfig.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);

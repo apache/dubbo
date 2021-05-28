@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,11 @@ public class ProtocolConfigTest {
     @BeforeEach
     public void setUp() {
         DubboBootstrap.reset();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
     }
 
     @Test
@@ -214,7 +220,7 @@ public class ProtocolConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         ProtocolConfig config = new ProtocolConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "actual: "+metaData);
@@ -224,10 +230,8 @@ public class ProtocolConfigTest {
     public void testOverrideEmptyConfig() {
         //dubbo.protocol.name=rest
         //dubbo.protocol.port=1234
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocol.name", "rest");
-        props.put("dubbo.protocol.port", "1234");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocol.name", "rest");
+        SysProps.setProperty("dubbo.protocol.port", "1234");
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -240,17 +244,12 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(1234, protocolConfig.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testOverrideConfigByName() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocols.rest.port", "1234");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocols.rest.port", "1234");
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -264,18 +263,13 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(1234, protocolConfig.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testOverrideConfigById() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocols.rest1.name", "rest");
-        props.put("dubbo.protocols.rest1.port", "1234");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
+        SysProps.setProperty("dubbo.protocols.rest1.port", "1234");
 
         try {
             ProtocolConfig protocolConfig = new ProtocolConfig();
@@ -290,20 +284,15 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocolConfig.getName());
             Assertions.assertEquals(1234, protocolConfig.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testCreateConfigFromPropsWithId() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocols.rest1.name", "rest");
-        props.put("dubbo.protocols.rest1.port", "1234");
-        props.put("dubbo.protocol.name", "dubbo"); // ignore
-        props.put("dubbo.protocol.port", "2346");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocols.rest1.name", "rest");
+        SysProps.setProperty("dubbo.protocols.rest1.port", "1234");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo"); // ignore
+        SysProps.setProperty("dubbo.protocol.port", "2346");
 
         try {
 
@@ -320,19 +309,14 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(1234, protocol.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testCreateConfigFromPropsWithName() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocols.rest.port", "1234");
-        props.put("dubbo.protocol.name", "dubbo"); // ignore
-        props.put("dubbo.protocol.port", "2346");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocols.rest.port", "1234");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo"); // ignore
+        SysProps.setProperty("dubbo.protocol.port", "2346");
 
         try {
 
@@ -349,18 +333,13 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(1234, protocol.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 
     @Test
     public void testCreateDefaultConfigFromProps() {
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.protocol.name", "rest");
-        props.put("dubbo.protocol.port", "2346");
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.protocol.name", "rest");
+        SysProps.setProperty("dubbo.protocol.port", "2346");
 
         try {
 
@@ -377,9 +356,6 @@ public class ProtocolConfigTest {
             Assertions.assertEquals("rest", protocol.getName());
             Assertions.assertEquals(2346, protocol.getPort());
         } finally {
-            for (String key : props.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 

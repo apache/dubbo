@@ -19,13 +19,13 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
@@ -38,6 +38,12 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 public class RegistryConfigTest {
+
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
+
     @Test
     public void testProtocol() throws Exception {
         RegistryConfig registry = new RegistryConfig();
@@ -192,7 +198,7 @@ public class RegistryConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
         RegistryConfig config = new RegistryConfig();
         Map<String, String> metaData = config.getMetaData();
         Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
@@ -201,13 +207,11 @@ public class RegistryConfigTest {
     @Test
     public void testOverrideConfigBySystemProps() {
 
-        Map<String, String> sysprops = new LinkedHashMap<>();
-        sysprops.put("dubbo.registry.address", "zookeeper://${zookeeper.address}:${zookeeper.port}");
-        sysprops.put("dubbo.registry.useAsConfigCenter", "false");
-        sysprops.put("dubbo.registry.useAsMetadataCenter", "false");
-        sysprops.put("zookeeper.address", "localhost");
-        sysprops.put("zookeeper.port", "2188");
-        System.getProperties().putAll(sysprops);
+        SysProps.setProperty("dubbo.registry.address", "zookeeper://${zookeeper.address}:${zookeeper.port}");
+        SysProps.setProperty("dubbo.registry.useAsConfigCenter", "false");
+        SysProps.setProperty("dubbo.registry.useAsMetadataCenter", "false");
+        SysProps.setProperty("zookeeper.address", "localhost");
+        SysProps.setProperty("zookeeper.port", "2188");
 
         try {
 
@@ -220,9 +224,6 @@ public class RegistryConfigTest {
             RegistryConfig registryConfig = registries.iterator().next();
             Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
         } finally {
-            for (String key : sysprops.keySet()) {
-                System.clearProperty(key);
-            }
         }
     }
 }

@@ -266,9 +266,22 @@ public class ServiceConfigTest {
     }
 
     @Test
-    public void testDefaultMetaData() {
+    public void testMetaData() {
+        // test new instance
         ServiceConfig config = new ServiceConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
+
+        // test merged and override provider attributes
+        ProviderConfig providerConfig = new ProviderConfig();
+        providerConfig.setAsync(true);
+        providerConfig.setActives(10);
+        config.setProvider(providerConfig);
+        config.setAsync(false);// override
+
+        metaData = config.getMetaData();
+        Assertions.assertEquals(2, metaData.size());
+        Assertions.assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
+        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
     }
 }

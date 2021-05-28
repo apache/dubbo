@@ -28,6 +28,7 @@ import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,17 +56,20 @@ public class JavaConfigBeanTest {
         DubboBootstrap.reset();
     }
 
+    @AfterEach
+    public void afterEach() {
+        SysProps.clear();
+    }
+
     @Test
     public void testBean() {
 
-        Map<String,String> props = new HashMap<>();
-        props.put("dubbo.application.owner", "Tom");
-        props.put("dubbo.application.qos-enable", "false");
-        props.put("dubbo.protocol.name", "dubbo");
-        props.put("dubbo.protocol.port", "2346");
+        SysProps.setProperty("dubbo.application.owner", "Tom");
+        SysProps.setProperty("dubbo.application.qos-enable", "false");
+        SysProps.setProperty("dubbo.protocol.name", "dubbo");
+        SysProps.setProperty("dubbo.protocol.port", "2346");
         String registryAddress = "zookeeper://127.0.0.1:2181";
-        props.put("dubbo.registry.address", registryAddress);
-        System.getProperties().putAll(props);
+        SysProps.setProperty("dubbo.registry.address", registryAddress);
 
         // test destroy flag
 //        MockServiceDiscovery mockServiceDiscovery = (MockServiceDiscovery) ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("mock");
@@ -110,7 +114,6 @@ public class JavaConfigBeanTest {
 
         } finally {
             applicationContext.close();
-            props.keySet().forEach(System::clearProperty);
         }
 
         // test destroy flag
