@@ -319,7 +319,9 @@ public final class URLBuilder extends ServiceConfigURL {
             return this;
         }
 
-        this.parameters.putAll(parameters);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            addParameterIfAbsent(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 
