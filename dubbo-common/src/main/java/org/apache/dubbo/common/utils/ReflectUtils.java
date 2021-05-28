@@ -1064,7 +1064,7 @@ public final class ReflectUtils {
         try {
             Object value = emptyInstances.get(returnType);
             if (value == null) {
-                value = returnType.newInstance();
+                value = returnType.getDeclaredConstructor().newInstance();
                 emptyInstances.put(returnType, value);
             }
             Class<?> cls = value.getClass();
