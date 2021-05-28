@@ -30,6 +30,8 @@ public interface Constants {
 
     String LAYER_KEY = "layer";
 
+    String STUB_KEY = "stub";
+
     /**
      * General
      */
