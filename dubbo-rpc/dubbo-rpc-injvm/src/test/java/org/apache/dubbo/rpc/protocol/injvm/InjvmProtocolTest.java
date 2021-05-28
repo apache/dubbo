@@ -119,6 +119,8 @@ public class InjvmProtocolTest {
         url = URL.valueOf("fake://127.0.0.1/TestService").addParameter(GENERIC_KEY, true);
         assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
 
+        url = URL.valueOf("fake://127.0.0.1/TestService").addParameter("cluster", "broadcast");
+        assertFalse(InjvmProtocol.getInjvmProtocol().isInjvmRefer(url));
     }
 
 }
