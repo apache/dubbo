@@ -19,11 +19,15 @@ package org.apache.dubbo.common.bytecode;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
+import javassist.ClassPool;
+import javassist.CtMethod;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,6 +35,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 /**
  * Wrapper.
@@ -150,7 +155,23 @@ public abstract class Wrapper {
             pts.put(fn, ft);
         }
 
-        Method[] methods = c.getMethods();
+        final ClassPool classPool = new ClassPool(ClassPool.getDefault());
+        classPool.appendClassPath(new CustomizedLoaderClassPath(cl));
+
+        List<String> allMethod = new ArrayList<>();
+        try {
+            final CtMethod[] ctMethods = classPool.get(c.getName()).getMethods();
+            for (CtMethod method : ctMethods) {
+                allMethod.add(ReflectUtils.getDesc(method));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        Method[] methods = Arrays.stream(c.getMethods())
+                                 .filter(method -> allMethod.contains(ReflectUtils.getDesc(method)))
+                                 .collect(Collectors.toList())
+                                 .toArray(new Method[] {});
         // get all public method.
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
@@ -159,7 +180,7 @@ public abstract class Wrapper {
                 sameNameMethodCount.compute(m.getName(),
                         (key, oldValue) -> oldValue == null ? 1 : oldValue + 1);
             }
-            
+
             c3.append(" try{");
             for (Method m : methods) {
                 //ignore Object's method.
