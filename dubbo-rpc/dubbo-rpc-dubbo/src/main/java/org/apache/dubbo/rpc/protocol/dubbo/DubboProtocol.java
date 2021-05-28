@@ -408,35 +408,24 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
-
-        boolean useShareConnect = false;
-
         int connections = url.getParameter(CONNECTIONS_KEY, 0);
-        List<ReferenceCountExchangeClient> shareClients = null;
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            useShareConnect = true;
-
             /*
              * The xml configuration should have a higher priority than properties.
              */
             String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
             connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(SHARE_CONNECTIONS_KEY,
                     DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
-            shareClients = getSharedClient(url, connections);
-        }
-
-        ExchangeClient[] clients = new ExchangeClient[connections];
-        for (int i = 0; i < clients.length; i++) {
-            if (useShareConnect) {
-                clients[i] = shareClients.get(i);
-
-            } else {
+            return getSharedClient(url, connections).toArray(new ExchangeClient[0]);
+        } else {
+            ExchangeClient[] clients = new ExchangeClient[connections];
+            for (int i = 0; i < clients.length; i++) {
                 clients[i] = initClient(url);
             }
+            return clients;
         }
 
-        return clients;
     }
 
     /**
