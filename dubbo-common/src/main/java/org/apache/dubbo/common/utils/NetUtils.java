@@ -86,11 +86,11 @@ public class NetUtils {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
 
-    public static int getAvailablePort() {
+    public synchronized static int getAvailablePort() {
         return getAvailablePort(MIN_PORT);
     }
 
-    public static int getAvailablePort(int port) {
+    public synchronized static int getAvailablePort(int port) {
         if (port < MIN_PORT) {
             port = MIN_PORT;
         }
