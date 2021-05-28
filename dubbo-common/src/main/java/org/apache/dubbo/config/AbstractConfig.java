@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
@@ -101,7 +100,7 @@ public abstract class AbstractConfig implements Serializable {
         LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
 
         // The ignored attributes of metadata
-        //IGNORED_ATTRIBUTES.add("id");
+        IGNORED_ATTRIBUTES.add("id");
         IGNORED_ATTRIBUTES.add("prefix");
         IGNORED_ATTRIBUTES.add("prefixes");
         IGNORED_ATTRIBUTES.add("refreshed");
@@ -146,7 +145,7 @@ public abstract class AbstractConfig implements Serializable {
 
     @SuppressWarnings("unchecked")
     public static void appendParameters(Map<String, String> parameters, Object config, String prefix) {
-        appendParamters0(parameters, config, prefix, true);
+        appendParameters0(parameters, config, prefix, true);
     }
 
     /**
@@ -155,10 +154,10 @@ public abstract class AbstractConfig implements Serializable {
      * @param config
      */
     public static void appendAttributes(Map<String, String> parameters, Object config) {
-        appendParamters0(parameters, config, null, false);
+        appendParameters0(parameters, config, null, false);
     }
 
-    private static void appendParamters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
+    private static void appendParameters0(Map<String, String> parameters, Object config, String prefix, boolean asParameters) {
         if (config == null) {
             return;
         }
@@ -178,9 +177,6 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     String key = calculatePropertyFromGetter(name);
-                    if (IGNORED_ATTRIBUTES.contains(key)) {
-                        continue;
-                    }
                     Parameter parameter = method.getAnnotation(Parameter.class);
                     if (asParameters) {
                         if (parameter != null && parameter.excluded()) {
@@ -190,6 +186,9 @@ public abstract class AbstractConfig implements Serializable {
                             key = parameter.key();
                         }
                     } else { // as attributes
+                        if (IGNORED_ATTRIBUTES.contains(key)) {
+                            continue;
+                        }
                         // filter non attribute
                         if (parameter != null && !parameter.attribute()) {
                             continue;
@@ -384,7 +383,7 @@ public abstract class AbstractConfig implements Serializable {
         return result;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getId() {
         return id;
     }
@@ -529,13 +528,13 @@ public abstract class AbstractConfig implements Serializable {
     public void refresh() {
         refreshed.set(true);
         try {
+            // check and init before do refresh
             preProcessRefresh();
 
-            Configuration truncatedConfiguration = null;
             Environment environment = ApplicationModel.getEnvironment();
             List<Map<String, Object>> configurationMaps = environment.getConfigurationMaps();
 
-            // Check in order to see if there are any properties that begin with PREFIX
+            // Search props starts with PREFIX in order
             String preferredPrefix = null;
             for (String prefix : getPrefixes()) {
                 if (ConfigurationUtils.hasSubProperties(configurationMaps, prefix)) {
@@ -546,9 +545,10 @@ public abstract class AbstractConfig implements Serializable {
             if (preferredPrefix == null) {
                 preferredPrefix = getPrefixes().get(0);
             }
+            // Extract sub props (which key was starts with preferredPrefix)
             Collection<Map<String, Object>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
             Map<String, Object> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
-            truncatedConfiguration = new InmemoryConfiguration(subProperties);
+            InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
@@ -563,7 +563,7 @@ public abstract class AbstractConfig implements Serializable {
                         continue;
                     }
                     try {
-                        String value = StringUtils.trim(truncatedConfiguration.getString(propertyName));
+                        String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
                         // isTypeMatch() is called to avoid duplicate and incorrect update, for example, we have two 'setGeneric' methods in ReferenceConfig.
                         if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
                             value = environment.resolvePlaceholders(value);
@@ -576,7 +576,7 @@ public abstract class AbstractConfig implements Serializable {
                     }
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(getClass(), method);
-                    String value = StringUtils.trim(truncatedConfiguration.getString(propertyName));
+                    String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
                     if (StringUtils.hasText(value)) {
                         Map<String, String> map = invokeGetParameters(getClass(), this);
                         map = map == null ? new HashMap<>() : map;
@@ -586,23 +586,19 @@ public abstract class AbstractConfig implements Serializable {
                 }
             }
 
-            // refresh methodConfig
-            if (this instanceof AbstractInterfaceConfig) {
-                AbstractInterfaceConfig interfaceConfig = (AbstractInterfaceConfig) this;
-                List<MethodConfig> methodConfigs = interfaceConfig.getMethods();
-                if (methodConfigs != null && methodConfigs.size() > 0) {
-                    for (MethodConfig methodConfig : methodConfigs) {
-                        methodConfig.setParent(interfaceConfig);
-                        methodConfig.refresh();
-                    }
-                }
-            }
+            // process extra refresh of sub class
+            processExtraRefresh(preferredPrefix, subPropsConfiguration);
+
         } catch (Exception e) {
             logger.error("Failed to override field value of config bean: "+this, e);
             throw new IllegalStateException("Failed to override field value of config bean: "+this, e);
         }
 
         postProcessRefresh();
+    }
+
+    protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        // process extra refresh
     }
 
     protected void preProcessRefresh() {
@@ -713,7 +709,7 @@ public abstract class AbstractConfig implements Serializable {
 //                }
                 String propertyName = calculateAttributeFromGetter(method1.getName());
                 // filter ignored attribute
-                if (IGNORED_ATTRIBUTES.contains(propertyName) || "id".equals(propertyName)) {
+                if (IGNORED_ATTRIBUTES.contains(propertyName)) {
                     continue;
                 }
                 // filter non-property

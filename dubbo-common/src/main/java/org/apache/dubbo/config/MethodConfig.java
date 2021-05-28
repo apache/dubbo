@@ -121,7 +121,11 @@ public class MethodConfig extends AbstractMethodConfig {
     private String service;
     private String serviceId;
 
-    private AbstractInterfaceConfig parent;
+    /**
+     * The preferred prefix of parent
+     */
+    private String parentPrefix;
+
 
     public MethodConfig() {
     }
@@ -182,15 +186,12 @@ public class MethodConfig extends AbstractMethodConfig {
     @Parameter(excluded = true)
     public List<String> getPrefixes() {
         // parent prefix + method name
-        if (parent != null) {
-            List<String> prefixes = new ArrayList<>(parent.getPrefixes().size());
-            // excluding dubbo.reference.{method-name} and dubbo.service.{method-name}
-            for (String parentPrefix : parent.getPrefixes()) {
-                prefixes.add(parentPrefix + "." +this.getName());
-            }
+        if (parentPrefix != null) {
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(parentPrefix + "." +this.getName());
             return prefixes;
         } else {
-            throw new IllegalStateException("The parent of MethodConfig is null");
+            throw new IllegalStateException("The parent prefix of MethodConfig is null");
         }
     }
 
@@ -355,13 +356,12 @@ public class MethodConfig extends AbstractMethodConfig {
         this.serviceId = serviceId;
     }
 
+    public void setParentPrefix(String parentPrefix) {
+        this.parentPrefix = parentPrefix;
+    }
+
     @Parameter(excluded = true, attribute = false)
-    public AbstractInterfaceConfig getParent() {
-        return parent;
+    public String getParentPrefix() {
+        return parentPrefix;
     }
-
-    public void setParent(AbstractInterfaceConfig parent) {
-        this.parent = parent;
-    }
-
 }

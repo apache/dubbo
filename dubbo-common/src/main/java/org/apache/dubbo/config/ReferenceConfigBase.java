@@ -30,7 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -131,6 +133,20 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         // dubbo.reference.{interface-name}
         prefixes.add(DUBBO + ".reference." + interfaceName);
         return prefixes;
+    }
+
+    @Override
+    public Map<String, String> getMetaData() {
+        Map<String, String> metaData = new HashMap<>();
+        ConsumerConfig consumer = this.getConsumer();
+        // consumer should be inited at preProcessRefresh()
+        if (isRefreshed() && consumer == null) {
+            throw new IllegalStateException("Consumer is not initialized");
+        }
+        // use consumer attributes as default value
+        appendAttributes(metaData, consumer);
+        appendAttributes(metaData, this);
+        return metaData;
     }
 
     /**

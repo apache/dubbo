@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -193,6 +194,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         map.put(TIMESTAMP_KEY, String.valueOf(System.currentTimeMillis()));
         if (ConfigUtils.getPid() > 0) {
             map.put(PID_KEY, String.valueOf(ConfigUtils.getPid()));
+        }
+    }
+
+    @Override
+    protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        List<MethodConfig> methodConfigs = this.getMethods();
+        if (methodConfigs != null && methodConfigs.size() > 0) {
+            for (MethodConfig methodConfig : methodConfigs) {
+                methodConfig.setParentPrefix(preferredPrefix);
+                methodConfig.refresh();
+            }
         }
     }
 

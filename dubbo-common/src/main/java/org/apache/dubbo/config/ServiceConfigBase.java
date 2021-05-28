@@ -28,8 +28,10 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -204,6 +206,21 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
                     .getDefaultProvider()
                     .orElseThrow(() -> new IllegalArgumentException("Default provider is not initialized"));
         }
+    }
+
+    @Override
+    public Map<String, String> getMetaData() {
+        Map<String, String> metaData = new HashMap<>();
+        ProviderConfig provider = this.getProvider();
+        // provider should be inited at preProcessRefresh()
+        if (isRefreshed() && provider == null) {
+            throw new IllegalStateException("Provider is not initialized");
+        }
+        // use provider attributes as default value
+        appendAttributes(metaData, provider);
+        // Finally, put the service's attributes, overriding previous attributes
+        appendAttributes(metaData, this);
+        return metaData;
     }
 
     protected void checkProtocol() {

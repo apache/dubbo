@@ -19,8 +19,6 @@ package org.apache.dubbo.config.context;
 import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
-import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.config.ServiceConfigBase;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +31,7 @@ public class ConfigConfigurationAdapter implements Configuration {
     private Map<String, String> metaData;
 
     public ConfigConfigurationAdapter(AbstractConfig config, String prefix) {
-        // Map<String, String> configMetadata = config.getMetaData();
-        Map<String, String> configMetadata = getConfigProps(config);
+         Map<String, String> configMetadata = config.getMetaData();
         if (StringUtils.hasText(prefix)) {
             metaData = new HashMap<>(configMetadata.size());
             for (Map.Entry<String, String> entry : configMetadata.entrySet()) {
@@ -43,22 +40,6 @@ public class ConfigConfigurationAdapter implements Configuration {
         } else {
             metaData = configMetadata;
         }
-    }
-
-    protected Map<String, String> getConfigProps(AbstractConfig config) {
-        Map<String, String> map = new HashMap<>();
-        if (config instanceof ReferenceConfigBase) {
-            // use consumer props as default value
-            ReferenceConfigBase referenceConfig = (ReferenceConfigBase) config;
-            AbstractConfig.appendAttributes(map, referenceConfig.getConsumer());
-        } else if (config instanceof ServiceConfigBase) {
-            // use provider props as default value
-            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
-            AbstractConfig.appendAttributes(map, serviceConfig.getProvider());
-        }
-
-        AbstractConfig.appendAttributes(map, config);
-        return map;
     }
 
     @Override
