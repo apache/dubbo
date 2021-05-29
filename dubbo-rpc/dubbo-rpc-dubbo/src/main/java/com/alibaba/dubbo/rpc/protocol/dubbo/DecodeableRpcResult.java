@@ -143,7 +143,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
-                if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false"))) {
+                if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false")) && invocation != null) {
                     Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
                     if (serializationType_obj != null) {
                         if (((Byte) serializationType_obj).compareTo(serializationType) != 0) {

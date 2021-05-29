@@ -115,7 +115,10 @@ public class CodecSupport {
 
     public static void checkSerialization(String path, String version, Byte id) throws IOException {
         Set<Byte> supportedSerialization = PROVIDER_SUPPORTED_SERIALIZATION.get(path + ":" + version);
-        if (CollectionUtils.isNotEmpty(supportedSerialization)) {
+        if (Constants.DEFAULT_VERSION.equals(version) && CollectionUtils.isEmpty(supportedSerialization)) {
+            supportedSerialization = PROVIDER_SUPPORTED_SERIALIZATION.get(path);
+        }
+        if (CollectionUtils.isEmpty(supportedSerialization)) {
             if (logger.isWarnEnabled()) {
                 logger.warn("Serialization security check is enabled but cannot work as expected because " +
                         "there's no matched provider model for path " + path + ", version " + version);
