@@ -48,8 +48,6 @@ public class CodecSupport {
 
     private static Map<String, Set<Byte>> PROVIDER_SUPPORTED_SERIALIZATION = new ConcurrentHashMap<String, Set<Byte>>();
 
-    private static final ThreadLocal<byte[]> TL_BUFFER = new ThreadLocal<byte[]>();
-
     static {
         Set<String> supportedExtensions = ExtensionLoader.getExtensionLoader(Serialization.class).getSupportedExtensions();
         for (String name : supportedExtensions) {
@@ -66,7 +64,6 @@ public class CodecSupport {
             ID_SERIALIZATIONNAME_MAP.put(idByte, name);
             SERIALIZATIONNAME_ID_MAP.put(name, idByte);
         }
-        TL_BUFFER.set(new byte[1024]);
     }
 
     private CodecSupport() {
@@ -103,21 +100,13 @@ public class CodecSupport {
      */
     public static byte[] getPayload(InputStream is) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        byte[] buffer = getBuffer(is.available());
+        byte[] buffer = new byte[1024];
         int len;
         while ((len = is.read(buffer)) > -1) {
             baos.write(buffer, 0, len);
         }
         baos.flush();
         return baos.toByteArray();
-    }
-
-    private static byte[] getBuffer(int size) {
-        byte[] bytes = TL_BUFFER.get();
-        if (size <= bytes.length) {
-            return bytes;
-        }
-        return new byte[size];
     }
 
     public static Byte getIDByName(String name) {

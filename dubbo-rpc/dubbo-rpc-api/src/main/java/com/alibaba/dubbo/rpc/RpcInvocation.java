@@ -44,7 +44,7 @@ public class RpcInvocation implements Invocation, Serializable {
 
     private transient Invoker<?> invoker;
 
-    private Map<Object, Object> attributes;
+    private Map<Object, Object> attributes = new HashMap<Object, Object>(2);
 
     public RpcInvocation() {
     }
