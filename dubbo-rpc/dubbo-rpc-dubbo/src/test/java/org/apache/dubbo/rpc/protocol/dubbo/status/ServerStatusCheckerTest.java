@@ -17,17 +17,14 @@
 
 package org.apache.dubbo.rpc.protocol.dubbo.status;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
@@ -56,10 +53,7 @@ public class ServerStatusCheckerTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName());
         DemoService service = new DemoServiceImpl();
 
-        Exporter<DemoService> export = protocol.export(proxy.getInvoker(service, DemoService.class, url));
-
-        System.out.println("===========>" + JSON.toJSONString(export));
-        Assertions.assertTrue(export instanceof DubboExporter);
+        protocol.export(proxy.getInvoker(service, DemoService.class, url));
 
         StatusChecker server = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension("server");
         Assertions.assertEquals(ServerStatusChecker.class, server.getClass());
