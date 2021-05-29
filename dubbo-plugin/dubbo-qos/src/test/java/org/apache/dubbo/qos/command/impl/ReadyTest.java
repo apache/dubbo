@@ -35,15 +35,15 @@ import org.junit.jupiter.api.Test;
 
 public class ReadyTest {
 
-    private Ready ready;
+    private static Ready ready;
 
     @BeforeAll
-    public void setUp(){
+    public static void setUp(){
         ready = new Ready();
     }
 
     @AfterAll
-    public void clear(){
+    public static void clear(){
         DubboBootstrap.reset();
     }
 
