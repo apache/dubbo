@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.protocol.dubbo.status;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
@@ -57,6 +58,7 @@ public class ServerStatusCheckerTest {
 
         Exporter<DemoService> export = protocol.export(proxy.getInvoker(service, DemoService.class, url));
 
+        System.out.println("===========>" + JSON.toJSONString(export));
         Assertions.assertTrue(export instanceof DubboExporter);
 
         StatusChecker server = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension("server");
