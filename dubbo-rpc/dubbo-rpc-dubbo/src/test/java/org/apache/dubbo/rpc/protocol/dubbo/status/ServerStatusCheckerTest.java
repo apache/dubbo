@@ -22,9 +22,11 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboExporter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
@@ -49,11 +51,14 @@ public class ServerStatusCheckerTest {
 
     @Test
     public void testServerStatusChecker() throws Exception {
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName() + "?codec=exchange");
+        int port = NetUtils.getAvailablePort(7000);
+        URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName());
         DemoService service = new DemoServiceImpl();
 
-        protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        Exporter<DemoService> export = protocol.export(proxy.getInvoker(service, DemoService.class, url));
+
+        Assertions.assertTrue(export instanceof DubboExporter);
+
         StatusChecker server = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension("server");
         Assertions.assertEquals(ServerStatusChecker.class, server.getClass());
 
