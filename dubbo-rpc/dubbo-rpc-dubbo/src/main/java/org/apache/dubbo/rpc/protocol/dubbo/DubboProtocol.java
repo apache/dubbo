@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -213,6 +214,8 @@ public class DubboProtocol extends AbstractProtocol {
     }
 
     public static DubboProtocol getDubboProtocol() {
+        System.out.println("=========>" + INSTANCE);
+        System.out.println("=========>" + JSON.toJSONString(INSTANCE));
         if (INSTANCE == null) {
             // load
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
