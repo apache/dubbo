@@ -39,7 +39,6 @@ public class ServerStatusCheckerTest {
 
     @AfterAll
     public static void after() {
-        ProtocolUtils.closeAll();
         ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
     }
 
@@ -60,5 +59,7 @@ public class ServerStatusCheckerTest {
 
         Status status = server.check();
         Assertions.assertEquals(Status.Level.OK, status.getLevel());
+
+        ProtocolUtils.closeAll();
     }
 }
