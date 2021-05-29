@@ -16,6 +16,9 @@
  */
 package com.alibaba.dubbo.remoting.exchange;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Response
  */
@@ -92,6 +95,8 @@ public class Response {
 
     private Object mResult;
 
+    private Map<String, Object> attributes = new HashMap<String, Object>(2);
+
     public Response() {
     }
 
@@ -162,6 +167,14 @@ public class Response {
 
     public void setErrorMessage(String msg) {
         mErrorMsg = msg;
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     @Override

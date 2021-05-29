@@ -22,6 +22,7 @@ import com.alibaba.dubbo.common.Version;
 import com.alibaba.dubbo.common.logger.Logger;
 import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.common.utils.NetUtils;
+import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 import com.alibaba.dubbo.rpc.Result;
@@ -36,6 +37,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.alibaba.dubbo.common.Constants.DEFAULT_REMOTING_SERIALIZATION;
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_ID_KEY;
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_KEY;
 
 /**
  * AbstractInvoker.
@@ -150,6 +155,10 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
         }
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
 
+        Byte serializationId = CodecSupport.getIDByName(getUrl().getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION));
+        if (serializationId != null) {
+            invocation.put(SERIALIZATION_ID_KEY, serializationId);
+        }
 
         try {
             return doInvoke(invocation);

@@ -664,4 +664,13 @@ public class Constants {
     public static final String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
 
     public static final String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
+    public static final String DEFAULT_VERSION = "0.0.0";
+
+    public static final String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
+
+    public static final String SERIALIZATION_ID_KEY = "serialization_id";
+
+    public static final String INVOCATION_KEY = "invocation";
+
 }

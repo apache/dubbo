@@ -38,6 +38,7 @@ import com.alibaba.dubbo.remoting.telnet.codec.TelnetCodec;
 import com.alibaba.dubbo.remoting.transport.CodecSupport;
 import com.alibaba.dubbo.remoting.transport.ExceedPayloadLimitException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -155,9 +156,12 @@ public class ExchangeCodec extends TelnetCodec {
                 if (status == Response.OK) {
                     Object data;
                     if (res.isHeartbeat()) {
-                        data = decodeHeartbeatData(channel, in);
+                        byte[] eventPayload = CodecSupport.getPayload(is);
+                        data = decodeHeartbeatData(channel, CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                     } else if (res.isEvent()) {
-                        data = decodeEventData(channel, in);
+                        byte[] eventPayload = CodecSupport.getPayload(is);
+                        data = decodeEventData(channel,
+                                CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                     } else {
                         data = decodeResponseData(channel, in, getRequestData(id));
                     }
@@ -182,9 +186,13 @@ public class ExchangeCodec extends TelnetCodec {
                 ObjectInput in = CodecSupport.deserialize(channel.getUrl(), is, proto);
                 Object data;
                 if (req.isHeartbeat()) {
-                    data = decodeHeartbeatData(channel, in);
+                    byte[] eventPayload = CodecSupport.getPayload(is);
+                    data = decodeHeartbeatData(channel,
+                            CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                 } else if (req.isEvent()) {
-                    data = decodeEventData(channel, in);
+                    byte[] eventPayload = CodecSupport.getPayload(is);
+                    data = decodeEventData(channel,
+                            CodecSupport.deserialize(channel.getUrl(), new ByteArrayInputStream(eventPayload), proto), eventPayload);
                 } else {
                     data = decodeRequestData(channel, in);
                 }
@@ -340,15 +348,6 @@ public class ExchangeCodec extends TelnetCodec {
         return decodeRequestData(in);
     }
 
-    @Deprecated
-    protected Object decodeHeartbeatData(ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
-    }
-
     protected Object decodeRequestData(ObjectInput in) throws IOException {
         try {
             return in.readObject();
@@ -392,8 +391,13 @@ public class ExchangeCodec extends TelnetCodec {
         return decodeRequestData(channel, in);
     }
 
-    protected Object decodeEventData(Channel channel, ObjectInput in) throws IOException {
+    protected Object decodeEventData(Channel channel, ObjectInput in, byte[] eventPayload) throws IOException {
         try {
+            int dataLen = eventPayload.length;
+            int threshold = Integer.parseInt(System.getProperty("deserialization.event.size", "50"));
+            if (dataLen > threshold) {
+                throw new IllegalArgumentException("Event data too long, actual size " + dataLen + ", threshold " + threshold + " rejected for security consideration.");
+            }
             return in.readObject();
         } catch (ClassNotFoundException e) {
             throw new IOException(StringUtils.toString("Read object failed.", e));
@@ -401,12 +405,8 @@ public class ExchangeCodec extends TelnetCodec {
     }
 
     @Deprecated
-    protected Object decodeHeartbeatData(Channel channel, ObjectInput in) throws IOException {
-        try {
-            return in.readObject();
-        } catch (ClassNotFoundException e) {
-            throw new IOException(StringUtils.toString("Read object failed.", e));
-        }
+    protected Object decodeHeartbeatData(Channel channel, ObjectInput in, byte[] eventPayload) throws IOException {
+        return decodeEventData(channel, in, eventPayload);
     }
 
     protected Object decodeRequestData(Channel channel, ObjectInput in) throws IOException {

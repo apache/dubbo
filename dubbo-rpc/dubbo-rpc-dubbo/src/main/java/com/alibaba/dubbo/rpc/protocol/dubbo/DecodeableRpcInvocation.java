@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_ID_KEY;
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 import static com.alibaba.dubbo.rpc.protocol.dubbo.CallbackServiceCodec.decodeInvocationArgument;
 
 public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Decodeable {
@@ -89,16 +91,23 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
     public Object decode(Channel channel, InputStream input) throws IOException {
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
                 .deserialize(channel.getUrl(), input);
+        this.put(SERIALIZATION_ID_KEY, serializationType);
 
         String dubboVersion = in.readUTF();
         request.setVersion(dubboVersion);
         setAttachment(Constants.DUBBO_VERSION_KEY, dubboVersion);
 
-        setAttachment(Constants.PATH_KEY, in.readUTF());
-        setAttachment(Constants.VERSION_KEY, in.readUTF());
+        String path = in.readUTF();
+        setAttachment(Constants.PATH_KEY, path);
+        String version = in.readUTF();
+        setAttachment(Constants.VERSION_KEY, version);
 
         setMethodName(in.readUTF());
         try {
+            if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false"))) {
+                CodecSupport.checkSerialization(path, version, serializationType);
+            }
+
             Object[] args;
             Class<?>[] pts;
             String desc = in.readUTF();
