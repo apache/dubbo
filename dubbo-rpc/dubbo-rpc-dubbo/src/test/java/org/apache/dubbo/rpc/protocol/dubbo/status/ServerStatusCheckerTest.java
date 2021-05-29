@@ -22,9 +22,9 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoServiceImpl;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
@@ -34,7 +34,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class ServerStatusCheckerTest {
-    private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
     @AfterAll
@@ -53,7 +52,7 @@ public class ServerStatusCheckerTest {
         URL url = URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName());
         DemoService service = new DemoServiceImpl();
 
-        protocol.export(proxy.getInvoker(service, DemoService.class, url));
+        DubboProtocol.getDubboProtocol().export(proxy.getInvoker(service, DemoService.class, url));
 
         StatusChecker server = ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension("server");
         Assertions.assertEquals(ServerStatusChecker.class, server.getClass());
