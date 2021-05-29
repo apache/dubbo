@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,15 +42,20 @@ public class ReadyTest {
         ready = new Ready();
     }
 
+    @AfterEach
+    public void clear(){
+        DubboBootstrap.reset();
+    }
+
     @Test
-    public void appReadyTest(){
+    public void appReadyTest() {
         DubboBootstrap.getInstance().setReady(false);
         String msgUnready = ready.execute(null, new String[]{});
-        Assertions.assertEquals(msgUnready,"false");
+        Assertions.assertEquals(msgUnready, "false");
 
         DubboBootstrap.getInstance().setReady(true);
         String msgReady = ready.execute(null, new String[]{});
-        Assertions.assertEquals(msgReady,"true");
+        Assertions.assertEquals(msgReady, "true");
     }
 
     @Test

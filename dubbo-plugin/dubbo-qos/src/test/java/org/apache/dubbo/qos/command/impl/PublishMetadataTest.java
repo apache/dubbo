@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +26,13 @@ import org.junit.jupiter.api.Test;
 public class PublishMetadataTest {
 
     @BeforeEach
-    public void before() {
+    public void setUp() {
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("app"));
+    }
+
+    @AfterEach
+    public void clear(){
+        ApplicationModel.reset();
     }
 
     @Test
