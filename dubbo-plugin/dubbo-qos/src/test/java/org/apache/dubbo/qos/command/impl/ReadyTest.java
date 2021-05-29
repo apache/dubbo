@@ -28,21 +28,18 @@ import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 public class ReadyTest {
 
     private Ready ready;
 
-    @BeforeEach
+    @BeforeAll
     public void setUp(){
         ready = new Ready();
     }
 
-    @AfterEach
+    @AfterAll
     public void clear(){
         DubboBootstrap.reset();
     }
