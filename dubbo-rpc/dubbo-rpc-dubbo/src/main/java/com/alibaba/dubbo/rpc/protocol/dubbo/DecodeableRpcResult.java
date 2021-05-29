@@ -37,6 +37,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.Map;
 
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_ID_KEY;
+import static com.alibaba.dubbo.common.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
+
 public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
@@ -140,6 +143,15 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
     public void decode() throws Exception {
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
+                if (Boolean.parseBoolean(System.getProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false")) && invocation != null) {
+                    Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
+                    if (serializationType_obj != null) {
+                        if (((Byte) serializationType_obj).compareTo(serializationType) != 0) {
+                            throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
+                        }
+                    }
+                }
+
                 decode(channel, inputStream);
             } catch (Throwable e) {
                 if (log.isWarnEnabled()) {
@@ -153,4 +165,7 @@ public class DecodeableRpcResult extends RpcResult implements Codec, Decodeable 
         }
     }
 
+    public Invocation getInvocation() {
+        return invocation;
+    }
 }

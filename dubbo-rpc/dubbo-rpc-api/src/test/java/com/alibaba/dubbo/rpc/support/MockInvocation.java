@@ -63,4 +63,18 @@ public class MockInvocation implements Invocation {
         return getAttachments().get(key);
     }
 
+    @Override
+    public Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    public Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> getAttributes() {
+        return null;
+    }
 }

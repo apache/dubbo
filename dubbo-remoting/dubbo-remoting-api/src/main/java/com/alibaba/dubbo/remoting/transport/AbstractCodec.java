@@ -24,6 +24,8 @@ import com.alibaba.dubbo.common.serialize.Serialization;
 import com.alibaba.dubbo.common.utils.NetUtils;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.Codec2;
+import com.alibaba.dubbo.remoting.exchange.Request;
+import com.alibaba.dubbo.remoting.exchange.Response;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -48,6 +50,14 @@ public abstract class AbstractCodec implements Codec2 {
     }
 
     protected Serialization getSerialization(Channel channel) {
+        return CodecSupport.getSerialization(channel.getUrl());
+    }
+
+    protected Serialization getSerialization(Channel channel, Request req) {
+        return CodecSupport.getSerialization(channel.getUrl());
+    }
+
+    protected Serialization getSerialization(Channel channel, Response res) {
         return CodecSupport.getSerialization(channel.getUrl());
     }
 

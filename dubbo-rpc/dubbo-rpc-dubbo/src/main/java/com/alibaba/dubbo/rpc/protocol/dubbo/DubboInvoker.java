@@ -60,7 +60,7 @@ public class DubboInvoker<T> extends AbstractInvoker<T> {
         super(serviceType, url, new String[]{Constants.INTERFACE_KEY, Constants.GROUP_KEY, Constants.TOKEN_KEY, Constants.TIMEOUT_KEY});
         this.clients = clients;
         // get version.
-        this.version = url.getParameter(Constants.VERSION_KEY, "0.0.0");
+        this.version = url.getParameter(Constants.VERSION_KEY, Constants.DEFAULT_VERSION);
         this.invokers = invokers;
     }
 
