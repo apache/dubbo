@@ -74,7 +74,10 @@ public class BaseServiceMetadata {
      */
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        serviceNameBuilder.append(serviceInterfaceName);
+        if(StringUtils.isNotEmpty(serviceInterfaceName)){
+            serviceNameBuilder.append(serviceInterfaceName);
+        }
+
         if(StringUtils.isNotEmpty(version)){
             serviceNameBuilder.append(COLON_SEPARATOR).append(version);
         }
