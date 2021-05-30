@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Cmd(name = "ready",summary = "Judge if application or service has started? ")
+@Cmd(name = "ready", summary = "Judge if application or service has started? ")
 public class Ready implements BaseCommand {
 
     @Override
@@ -62,22 +62,26 @@ public class Ready implements BaseCommand {
         tTable.addRow("Provider Service Name", "STATUS");
         for (Map.Entry<String, Boolean> entry : serviceReadyMap.entrySet()) {
             String status = Boolean.TRUE.equals(entry.getValue()) ? "TRUE" : "FALSE";
-            tTable.addRow(entry.getKey(),status);
+            tTable.addRow(entry.getKey(), status);
         }
         return tTable.rendering();
     }
 
     /**
      * judge service provider is started
+     *
      * @param serviceName service name,eg: org.apache.dubbo.demo.DemoService
-     * @return Map[serviceKey,isStarted] eg:[org.apache.dubbo.demo.DemoService,true] or [group1/org.apache.dubbo.demo.DemoService,false]
+     * @return Map[serviceKey, isStarted] eg:[org.apache.dubbo.demo.DemoService,true] or [group1/org.apache.dubbo.demo.DemoService,false]
      */
-    private Map<String,Boolean> isServiceReady(String serviceName) {
-        Map<String,Boolean> res = new HashMap<>();
+    private Map<String, Boolean> isServiceReady(String serviceName) {
+        Map<String, Boolean> res = new HashMap<>();
+        System.out.println("debug::::89" + serviceName + "," + JSON.toJSONString(ApplicationModel.allProviderModels()));
         for (ProviderModel providerModel : ApplicationModel.allProviderModels()) {
             String serviceKey = providerModel.getServiceKey();
+            System.out.println("debug::::5" + serviceName + "," + JSON.toJSONString(providerModel));
+            System.out.println("debug::::6" + serviceName + "," + providerModel.getServiceConfig());
+            System.out.println("debug::::7" + serviceName + "," + providerModel.getServiceConfig().getInterface());
             String interfaceName = providerModel.getServiceConfig().getInterface();
-            System.out.println("debug::::5" + interfaceName + "," + serviceName + "," + JSON.toJSONString(providerModel));
             if (interfaceName.equals(serviceName)) {
                 List<URL> needRegistryURLs = ConfigValidationUtils.loadRegistries(providerModel.getServiceConfig(), true);
                 List<URL> registeredRegistryURLs = providerModel.getStatedUrl().stream()
@@ -85,9 +89,9 @@ public class Ready implements BaseCommand {
                         .map(ProviderModel.RegisterStatedURL::getRegistryUrl)
                         .collect(Collectors.toList());
                 if (needRegistryURLs.size() == registeredRegistryURLs.size()) {
-                    res.put(serviceKey,true);
+                    res.put(serviceKey, true);
                 } else {
-                    res.put(serviceKey,false);
+                    res.put(serviceKey, false);
                 }
             }
         }
