@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.support.DemoService;
 import org.apache.dubbo.qos.command.support.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ServiceRepository;
@@ -32,8 +33,18 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 public class ReadyTest {
+
+    private static Ready ready;
+    private static CommandContext commandContext;
+
+    @BeforeAll
+    public static void setUp(){
+        ready = new Ready();
+        commandContext = Mockito.mock(CommandContext.class);
+    }
 
     @AfterAll
     public static void clear(){
@@ -42,19 +53,17 @@ public class ReadyTest {
 
     @Test
     public void appReadyTest() {
-        Ready ready = new Ready();
         DubboBootstrap.getInstance().setReady(false);
-        String msgUnready = ready.execute(null, new String[]{});
+        String msgUnready = ready.execute(commandContext, new String[]{});
         Assertions.assertEquals(msgUnready, "false");
 
         DubboBootstrap.getInstance().setReady(true);
-        String msgReady = ready.execute(null, new String[]{});
+        String msgReady = ready.execute(commandContext, new String[]{});
         Assertions.assertEquals(msgReady, "true");
     }
 
     @Test
     public void serviceReadyTest(){
-        Ready ready = new Ready();
 
         String serviceName = DemoService.class.getName();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -78,7 +87,7 @@ public class ReadyTest {
                 URL.valueOf("test://127.0.0.1/test"),
                 URL.valueOf( "127.0.0.1:2181"),
                 true)));
-        String msgTrue = ready.execute(null, new String[]{serviceName});
+        String msgTrue = ready.execute(commandContext, new String[]{serviceName});
         Assertions.assertTrue(msgTrue.contains("TRUE"));
         /**
          * msgTrue is:
@@ -91,7 +100,7 @@ public class ReadyTest {
 
 
         ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.getStatedUrl().clear());
-        String msgFalse = ready.execute(null, new String[]{serviceName});
+        String msgFalse = ready.execute(commandContext, new String[]{serviceName});
         Assertions.assertTrue(msgFalse.contains("FALSE"));
         /**
          * msgFalse is:
