@@ -35,13 +35,6 @@ import org.junit.jupiter.api.Test;
 
 public class ReadyTest {
 
-    private static Ready ready;
-
-    @BeforeAll
-    public static void setUp(){
-        ready = new Ready();
-    }
-
     @AfterAll
     public static void clear(){
         DubboBootstrap.reset();
@@ -49,6 +42,7 @@ public class ReadyTest {
 
     @Test
     public void appReadyTest() {
+        Ready ready = new Ready();
         DubboBootstrap.getInstance().setReady(false);
         String msgUnready = ready.execute(null, new String[]{});
         Assertions.assertEquals(msgUnready, "false");
@@ -60,6 +54,7 @@ public class ReadyTest {
 
     @Test
     public void serviceReadyTest(){
+        Ready ready = new Ready();
 
         String serviceName = DemoService.class.getName();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
