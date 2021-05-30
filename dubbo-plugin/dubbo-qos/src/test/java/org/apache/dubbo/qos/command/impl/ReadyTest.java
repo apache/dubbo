@@ -41,13 +41,13 @@ public class ReadyTest {
     private static CommandContext commandContext;
 
     @BeforeAll
-    public static void setUp(){
+    public static void setUp() {
         ready = new Ready();
         commandContext = Mockito.mock(CommandContext.class);
     }
 
     @AfterAll
-    public static void clear(){
+    public static void clear() {
         DubboBootstrap.reset();
     }
 
@@ -63,7 +63,7 @@ public class ReadyTest {
     }
 
     @Test
-    public void serviceReadyTest(){
+    public void serviceReadyTest() {
 
         String serviceName = DemoService.class.getName();
         ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
@@ -75,7 +75,7 @@ public class ReadyTest {
         ServiceDescriptor serviceDescriptor = repository.registerService(DemoService.class);
 
         repository.registerProvider(
-                URL.buildKey(serviceName, "",""),
+                URL.buildKey(serviceName, "", ""),
                 new DemoServiceImpl(),
                 serviceDescriptor,
                 serviceConfig,
@@ -83,8 +83,16 @@ public class ReadyTest {
         );
 
         ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.getStatedUrl().clear());
-        String msgFalse = ready.execute(commandContext, new String[]{serviceName});
-        Assertions.assertTrue(msgFalse.contains("FALSE"));
+        try {
+            String msgFalse = ready.execute(commandContext, new String[]{serviceName});
+            Assertions.assertTrue(msgFalse.contains("FALSE"));
+        } catch (Exception e) {
+            System.out.println("debug::::1");
+            e.printStackTrace();
+            System.out.println("debug::::2" + ready + "," + commandContext + "," + serviceName);
+            System.out.println("debug::::3" + e);
+        }
+
         /**
          * msgFalse is:
          +------------------------------------------------+------+
@@ -96,7 +104,7 @@ public class ReadyTest {
 
         ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.addStatedUrl(new ProviderModel.RegisterStatedURL(
                 URL.valueOf("test://127.0.0.1/test"),
-                URL.valueOf( "127.0.0.1:2181"),
+                URL.valueOf("127.0.0.1:2181"),
                 true)));
         String msgTrue = ready.execute(commandContext, new String[]{serviceName});
         Assertions.assertTrue(msgTrue.contains("TRUE"));
