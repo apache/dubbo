@@ -210,6 +210,7 @@ public class DubboProtocol extends AbstractProtocol {
     };
 
     public DubboProtocol() {
+        System.out.println("DubboProtocol constructor......");
         INSTANCE = this;
     }
 
