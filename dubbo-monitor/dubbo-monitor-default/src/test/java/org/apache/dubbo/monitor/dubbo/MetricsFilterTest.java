@@ -266,7 +266,7 @@ public class MetricsFilterTest {
                 //ignore
             }
         }
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -320,7 +320,7 @@ public class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         Invocation invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});

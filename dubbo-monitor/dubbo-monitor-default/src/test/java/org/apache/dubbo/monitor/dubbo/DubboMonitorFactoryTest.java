@@ -45,7 +45,7 @@ public class DubboMonitorFactoryTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dubboMonitorFactory = new DubboMonitorFactory();
-        this.dubboMonitorFactory.setProtocol(new DubboProtocol());
+        this.dubboMonitorFactory.setProtocol(DubboProtocol.getDubboProtocol());
         this.dubboMonitorFactory.setProxyFactory(proxyFactory);
     }
 
