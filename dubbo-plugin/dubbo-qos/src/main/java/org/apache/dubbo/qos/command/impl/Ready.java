@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.qos.command.impl;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
@@ -76,6 +77,7 @@ public class Ready implements BaseCommand {
         for (ProviderModel providerModel : ApplicationModel.allProviderModels()) {
             String serviceKey = providerModel.getServiceKey();
             String interfaceName = providerModel.getServiceConfig().getInterface();
+            System.out.println("debug::::5" + interfaceName + "," + serviceName + "," + JSON.toJSONString(providerModel));
             if (interfaceName.equals(serviceName)) {
                 List<URL> needRegistryURLs = ConfigValidationUtils.loadRegistries(providerModel.getServiceConfig(), true);
                 List<URL> registeredRegistryURLs = providerModel.getStatedUrl().stream()
