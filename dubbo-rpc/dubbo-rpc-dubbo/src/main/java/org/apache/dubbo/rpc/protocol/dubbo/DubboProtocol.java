@@ -315,6 +315,8 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
+        System.out.println("----------->" + this);
+        System.out.println("----------->" + key + "========" + serverMap.size());
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
@@ -329,6 +331,7 @@ public class DubboProtocol extends AbstractProtocol {
                 server.reset(url);
             }
         }
+        System.out.println("----------->" + key + "========" + serverMap.size());
     }
 
     private ProtocolServer createServer(URL url) {
