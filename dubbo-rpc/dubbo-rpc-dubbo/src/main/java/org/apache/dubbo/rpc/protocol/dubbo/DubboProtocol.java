@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.dubbo;
 
-import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
 import org.apache.dubbo.common.config.ConfigurationUtils;
@@ -210,13 +209,10 @@ public class DubboProtocol extends AbstractProtocol {
     };
 
     public DubboProtocol() {
-        System.out.println("DubboProtocol constructor......");
         INSTANCE = this;
     }
 
     public static DubboProtocol getDubboProtocol() {
-        System.out.println("=========>" + INSTANCE);
-        System.out.println("=========>" + JSON.toJSONString(INSTANCE));
         if (INSTANCE == null) {
             // load
             ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
@@ -316,8 +312,6 @@ public class DubboProtocol extends AbstractProtocol {
         String key = url.getAddress();
         //client can export a service which's only for server to invoke
         boolean isServer = url.getParameter(IS_SERVER_KEY, true);
-        System.out.println("----------->" + this);
-        System.out.println("----------->" + key + "========" + serverMap.size());
         if (isServer) {
             ProtocolServer server = serverMap.get(key);
             if (server == null) {
@@ -332,7 +326,6 @@ public class DubboProtocol extends AbstractProtocol {
                 server.reset(url);
             }
         }
-        System.out.println("----------->" + key + "========" + serverMap.size());
     }
 
     private ProtocolServer createServer(URL url) {
