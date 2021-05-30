@@ -87,6 +87,7 @@ public class ReadyTest {
                 URL.valueOf("test://127.0.0.1/test"),
                 URL.valueOf( "127.0.0.1:2181"),
                 true)));
+        ready = new Ready();
         String msgTrue = ready.execute(commandContext, new String[]{serviceName});
         Assertions.assertTrue(msgTrue.contains("TRUE"));
         /**
