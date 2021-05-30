@@ -82,25 +82,6 @@ public class ReadyTest {
                 new ServiceMetadata()
         );
 
-
-        ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.addStatedUrl(new ProviderModel.RegisterStatedURL(
-                URL.valueOf("test://127.0.0.1/test"),
-                URL.valueOf( "127.0.0.1:2181"),
-                true)));
-        ready = new Ready();
-        System.out.println("debug:::" + ready + "," + commandContext + "," + serviceName);
-        String msgTrue = ready.execute(commandContext, new String[]{serviceName});
-        Assertions.assertTrue(msgTrue.contains("TRUE"));
-        /**
-         * msgTrue is:
-         +------------------------------------------------+------+
-         |              Provider Service Name             |STATUS|
-         +------------------------------------------------+------+
-         |org.apache.dubbo.qos.command.support.DemoService| TRUE |
-         +------------------------------------------------+------+
-         */
-
-
         ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.getStatedUrl().clear());
         String msgFalse = ready.execute(commandContext, new String[]{serviceName});
         Assertions.assertTrue(msgFalse.contains("FALSE"));
@@ -110,6 +91,21 @@ public class ReadyTest {
          |              Provider Service Name             |STATUS|
          +------------------------------------------------+------+
          |org.apache.dubbo.qos.command.support.DemoService| FALSE|
+         +------------------------------------------------+------+
+         */
+
+        ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.addStatedUrl(new ProviderModel.RegisterStatedURL(
+                URL.valueOf("test://127.0.0.1/test"),
+                URL.valueOf( "127.0.0.1:2181"),
+                true)));
+        String msgTrue = ready.execute(commandContext, new String[]{serviceName});
+        Assertions.assertTrue(msgTrue.contains("TRUE"));
+        /**
+         * msgTrue is:
+         +------------------------------------------------+------+
+         |              Provider Service Name             |STATUS|
+         +------------------------------------------------+------+
+         |org.apache.dubbo.qos.command.support.DemoService| TRUE |
          +------------------------------------------------+------+
          */
     }
