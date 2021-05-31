@@ -34,10 +34,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
- * @author owen.cai
- * @create_date 2021/5/17
- * @alter_author
- * @alter_date
+ * ssl contexts test
  */
 public class SslContextsTest {
     @Test
