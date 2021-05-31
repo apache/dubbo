@@ -67,6 +67,7 @@ public class ReadyTest {
         serviceConfig.setApplication(new ApplicationConfig("app"));
         serviceConfig.setRegistry(new RegistryConfig("127.0.0.1:2181"));
 
+        ApplicationModel.reset();
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(DemoService.class);
 
@@ -78,7 +79,7 @@ public class ReadyTest {
                 new ServiceMetadata()
         );
 
-
+        ApplicationModel.allProviderModels().forEach(providerModel -> System.out.println("debug::::3"+providerModel+","+providerModel.getServiceConfig()));
         ApplicationModel.allProviderModels().forEach(providerModel -> providerModel.addStatedUrl(new ProviderModel.RegisterStatedURL(
                 URL.valueOf("test://127.0.0.1/test"),
                 URL.valueOf( "127.0.0.1:2181"),
