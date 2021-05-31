@@ -27,9 +27,9 @@ import java.util.Comparator;
 /**
  * OrderComparator
  */
-public class ActivateComparator implements Comparator<Object> {
+public class ActivateComparator implements Comparator<Class> {
 
-    public static final Comparator<Object> COMPARATOR = new ActivateComparator();
+    public static final Comparator<Class> COMPARATOR = new ActivateComparator();
 
     @Override
     public int compare(Class o1, Class o2) {

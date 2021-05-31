@@ -32,12 +32,12 @@ public class ActivateComparatorTest {
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
         OldFilter5 f5 = new OldFilter5();
-        List<Filter0> filters = new ArrayList<>();
-        filters.add(f1);
-        filters.add(f2);
-        filters.add(f3);
-        filters.add(f4);
-        filters.add(f5);
+        List<Class> filters = new ArrayList<>();
+        filters.add(f1.getClass());
+        filters.add(f2.getClass());
+        filters.add(f3.getClass());
+        filters.add(f4.getClass());
+        filters.add(f5.getClass());
 
         Collections.sort(filters, ActivateComparator.COMPARATOR);
 
