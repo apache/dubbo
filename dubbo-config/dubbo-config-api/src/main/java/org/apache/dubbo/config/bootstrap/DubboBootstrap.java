@@ -923,10 +923,21 @@ public class DubboBootstrap extends GenericEventListener {
 
             referServices();
             if (asyncExportingFutures.size() > 0 || asyncReferringFutures.size() > 0) {
-                try {
-                    this.awaitFinish();
-                } catch (Exception e) {
-                    logger.warn(NAME + " exportAsync occurred an exception.");
+                new Thread(() -> {
+                    try {
+                        this.awaitFinish();
+                    } catch (Exception e) {
+                        logger.warn(NAME + " exportAsync occurred an exception.");
+                    }
+                    startup.set(true);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(NAME + " is ready.");
+                    }
+                }).start();
+            } else {
+                startup.set(true);
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is ready.");
                 }
             }
 
