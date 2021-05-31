@@ -163,6 +163,30 @@ public class ReferenceBean<T> implements FactoryBean,
         this.setId(name);
     }
 
+    /**
+     * Create bean instance.
+     * <p/>
+     * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to initialize it.
+     * The ReferenceBean is also a FactoryBean.
+     *
+     * <p/>
+     * In addition, if some ReferenceBeans are dependent on beans that are initialized very early,
+     * and dubbo config beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
+     *
+     * <p/>
+     * When it is initialized, only a lazy proxy object will be created,
+     * and dubbo reference-related resources will not be initialized.
+     * <br/>
+     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
+     *
+     * <p/>
+     * Dubbo config beans are initialized in DubboConfigInitializationPostProcessor.
+     * <br/>
+     * The actual references will be processing in DubboBootstrap.referServices().
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
+     * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
+     */
     @Override
     public Object getObject() {
         if (lazyProxy == null) {
@@ -285,15 +309,6 @@ public class ReferenceBean<T> implements FactoryBean,
 
     /**
      * Create lazy proxy for reference.
-     * <p />
-     * When Spring searches for beans by type, all FactoryBeans will be initialized automatically.
-     * <p />
-     * ReferenceBean is also a FactoryBean, when it is automatically initialized, only a lazy proxy object will be created,
-     * and dubbo reference-related resources will not be initialized.
-     * <p />
-     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
-     *
-     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
      */
     private void createLazyProxy() {
 
