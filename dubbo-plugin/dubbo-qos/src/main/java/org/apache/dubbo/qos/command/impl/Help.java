@@ -26,7 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 
 @Cmd(name = "help", summary = "help command", example = {
         "help",
@@ -36,7 +36,7 @@ public class Help implements BaseCommand {
 
     private static final String MAIN_HELP = "mainHelp";
 
-    private static Map<String, String> processedTable = new ConcurrentHashMap<>();
+    private static Map<String, String> processedTable = new WeakHashMap<>();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {

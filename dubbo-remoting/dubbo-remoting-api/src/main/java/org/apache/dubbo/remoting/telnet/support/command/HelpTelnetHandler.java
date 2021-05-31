@@ -27,7 +27,7 @@ import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.WeakHashMap;
 
 /**
  * HelpTelnetHandler
@@ -40,7 +40,7 @@ public class HelpTelnetHandler implements TelnetHandler {
 
     private static final String MAIN_HELP = "mainHelp";
 
-    private static Map<String, String> processedTable = new ConcurrentHashMap<>();
+    private static Map<String, String> processedTable = new WeakHashMap<>();
 
     @Override
     public String telnet(Channel channel, String message) {
