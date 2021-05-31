@@ -42,8 +42,8 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
 
-    public LdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override

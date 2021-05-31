@@ -54,9 +54,11 @@ public class PilotExchanger {
 
     private PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
-        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build());
-        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build());
-        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build());
+        int pollingPoolSize = url.getParameter("pollingPoolSize", 10);
+        int pollingTimeout = url.getParameter("pollingTimeout", 10);
+        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
+        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
+        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.getRouteConfigNames());

@@ -63,7 +63,7 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      * Store Delta-ADS Request Observer ( StreamObserver in Streaming Request )
      * K - requestId, V - StreamObserver
      */
-    private final Map<Long, ScheduledFuture<?>> deltaRequestObserverMap = new ConcurrentHashMap<>();
+    private final Map<Long, ScheduledFuture<?>> observeScheduledMap = new ConcurrentHashMap<>();
 
     /**
      * Store CompletableFuture for Request ( used to fetch async result in ResponseObserver )
@@ -71,19 +71,17 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
      */
     private final Map<Long, CompletableFuture<T>> streamResult = new ConcurrentHashMap<>();
 
-    /**
-     * Store consumers for Observers ( will consume message produced by Delta-ADS )
-     * K - requestId, V - Consumer
-     */
-    private final Map<Long, Consumer<T>> consumers = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService pollingExecutor;
 
-    private final static ScheduledExecutorService pollingExecutor = new ScheduledThreadPoolExecutor(10, new NamedThreadFactory("Dubbo-registry-xds"));
+    private final int pollingTimeout;
 
     protected final static AtomicLong requestId = new AtomicLong(0);
 
-    public AbstractProtocol(XdsChannel xdsChannel, Node node) {
+    public AbstractProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
         this.xdsChannel = xdsChannel;
         this.node = node;
+        this.pollingExecutor = new ScheduledThreadPoolExecutor(pollingPoolSize, new NamedThreadFactory("Dubbo-registry-xds"));
+        this.pollingTimeout = pollingTimeout;
     }
 
     /**
@@ -172,11 +170,11 @@ public abstract class AbstractProtocol<T, S extends DeltaResource<T>> implements
                     streamResult.remove(request);
                 }
             } catch (Throwable t) {
-                t.printStackTrace();
+                logger.error("Error when requesting observe data. Type: " + getTypeUrl(), t);
             }
-        }, 10, 10, TimeUnit.SECONDS);
+        }, pollingTimeout, pollingTimeout, TimeUnit.SECONDS);
 
-        deltaRequestObserverMap.put(request, scheduledFuture);
+        observeScheduledMap.put(request, scheduledFuture);
 
         return request;
     }

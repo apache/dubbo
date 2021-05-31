@@ -41,8 +41,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractProtocol.class);
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override

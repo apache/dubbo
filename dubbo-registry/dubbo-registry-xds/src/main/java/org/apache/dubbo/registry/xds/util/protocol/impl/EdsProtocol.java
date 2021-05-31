@@ -41,8 +41,8 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
 
-    public EdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override
