@@ -54,7 +54,7 @@ public class DubboMonitorFactoryTest {
     }
 
     @AfterEach
-    public static void tearDownAfterClass() {
+    public void tearDownAfterClass() {
         DubboProtocol.getDubboProtocol().destroy();
         List<ProtocolServer> servers = DubboProtocol.getDubboProtocol().getServers();
         for (ProtocolServer server : servers) {
