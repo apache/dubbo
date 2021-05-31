@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -296,10 +297,14 @@ public class ExtensionLoader<T> {
                         && !names.contains(name)
                         && !names.contains(REMOVE_VALUE_PREFIX + name)
                         && isActive(cachedActivateValues.get(name), url)) {
-                    activateExtensions.add(getExtension(name));
+
+                    activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
                 }
             });
-            activateExtensions.sort(ActivateComparator.COMPARATOR);
+
+            if (!activateExtensionsMap.isEmpty()) {
+                activateExtensions.addAll(activateExtensionsMap.values());
+            }
         }
         List<T> loadedExtensions = new ArrayList<>();
         for (int i = 0; i < names.size(); i++) {
@@ -324,6 +329,7 @@ public class ExtensionLoader<T> {
 
     public List<T> getActivateExtensions() {
         List<T> activateExtensions = new ArrayList<>();
+        TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         getExtensionClasses();
         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
             String name = entry.getKey();
@@ -331,9 +337,12 @@ public class ExtensionLoader<T> {
             if (!(activate instanceof Activate)) {
                 continue;
             }
-            activateExtensions.add(getExtension(name));
+            activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
         }
-        activateExtensions.sort(ActivateComparator.COMPARATOR);
+        if (!activateExtensionsMap.isEmpty()) {
+            activateExtensions.addAll(activateExtensionsMap.values());
+        }
+
         return activateExtensions;
     }
 

@@ -41,10 +41,36 @@ public class ActivateComparatorTest {
 
         Collections.sort(filters, ActivateComparator.COMPARATOR);
 
-        Assertions.assertEquals(f4, filters.get(0));
-        Assertions.assertEquals(f5, filters.get(1));
-        Assertions.assertEquals(f3, filters.get(2));
-        Assertions.assertEquals(f2, filters.get(3));
-        Assertions.assertEquals(f1, filters.get(4));
+        Assertions.assertEquals(f4.getClass(), filters.get(0));
+        Assertions.assertEquals(f5.getClass(), filters.get(1));
+        Assertions.assertEquals(f3.getClass(), filters.get(2));
+        Assertions.assertEquals(f2.getClass(), filters.get(3));
+        Assertions.assertEquals(f1.getClass(), filters.get(4));
+    }
+
+    @Test
+    public void testFilterOrder() {
+        Order0Filter1 order0Filter1 = new Order0Filter1();
+        Order0Filter2 order0Filter2 = new Order0Filter2();
+
+        List<Class> filters = null;
+
+        {
+            filters = new ArrayList<>();
+            filters.add(order0Filter1.getClass());
+            filters.add(order0Filter2.getClass());
+            Collections.sort(filters, ActivateComparator.COMPARATOR);
+            Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
+            Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
+        }
+
+        {
+            filters = new ArrayList<>();
+            filters.add(order0Filter2.getClass());
+            filters.add(order0Filter1.getClass());
+            Collections.sort(filters, ActivateComparator.COMPARATOR);
+            Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
+            Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
+        }
     }
 }
