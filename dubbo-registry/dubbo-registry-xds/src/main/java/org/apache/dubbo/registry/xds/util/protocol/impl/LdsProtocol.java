@@ -30,9 +30,7 @@ import io.envoyproxy.envoy.config.listener.v3.Filter;
 import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
-import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -74,26 +72,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
         return new ListenerResult();
     }
 
-    @Override
-    protected DeltaListener decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaListener previous) {
-        DeltaListener deltaListener = previous;
-        if (deltaListener == null) {
-            deltaListener = new DeltaListener();
-        }
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            deltaListener.removeResource(response.getRemovedResourcesList());
-            for (Resource resource : response.getResourcesList()) {
-                Listener unpackedResource = unpackListener(resource.getResource());
-                logger.error("Listener " + resource.getResource().toString());
-                if (unpackedResource == null) {
-                    continue;
-                }
-                deltaListener.addResource(resource.getName(), decodeResourceToListener(unpackedResource));
-            }
-        }
-        return deltaListener;
-    }
-
     private Set<String> decodeResourceToListener(Listener resource) {
         return resource.getFilterChainsList().stream()
                 .flatMap((e) -> e.getFiltersList().stream())
@@ -116,7 +94,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private static HttpConnectionManager unpackHttpConnectionManager(Any any) {
         try {
-            logger.info(any.getTypeUrl());
             if (!any.is(HttpConnectionManager.class)) {
                 return null;
             }

@@ -73,10 +73,14 @@ public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
     private List<ServiceInstance> changedToInstances(String serviceName, Collection<Endpoint> endpoints) {
         List<ServiceInstance> instances = new LinkedList<>();
         endpoints.forEach(endpoint -> {
-            DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue());
-            // fill metadata by SelfHostMetaServiceDiscovery, will be fetched by RPC request
-            fillServiceInstance(serviceInstance);
-            instances.add(serviceInstance);
+            try {
+                DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, endpoint.getAddress(), endpoint.getPortValue());
+                // fill metadata by SelfHostMetaServiceDiscovery, will be fetched by RPC request
+                fillServiceInstance(serviceInstance);
+                instances.add(serviceInstance);
+            } catch (Throwable t) {
+                logger.error("Error occurred when parsing endpoints. Endpoints List:" + endpoints,t);
+            }
         });
         instances.sort(Comparator.comparingInt(ServiceInstance::hashCode));
         return instances;
