@@ -16,21 +16,20 @@
  */
 package org.apache.dubbo.config.spring.issues;
 
-import org.apache.dubbo.config.spring.context.annotation.EnableDubboConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.annotation.*;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.lang.Nullable;
 import org.springframework.test.annotation.DirtiesContext;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The test-case for https://github.com/apache/dubbo/issues/7752
@@ -38,18 +37,19 @@ import org.springframework.test.annotation.DirtiesContext;
  * @since 2.7.8
  */
 @Configuration
-@EnableDubboConfig
-@PropertySource("classpath:/META-INF/issue-7752-test.properties")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class Issue7752Test {
 
+    /**
+     * code is same with org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker
+     */
     private static final class Issue7752TestBeanPostProcessorChecker implements BeanPostProcessor{
 
         private ConfigurableListableBeanFactory beanFactory;
 
         private int beanPostProcessorTargetCount;
 
-        public void setParam(ConfigurableListableBeanFactory beanFactory, int beanPostProcessorTargetCount){
+        public Issue7752TestBeanPostProcessorChecker(ConfigurableListableBeanFactory beanFactory, int beanPostProcessorTargetCount){
             this.beanFactory = beanFactory;
             this.beanPostProcessorTargetCount = beanPostProcessorTargetCount;
         }
@@ -62,9 +62,9 @@ public class Issue7752Test {
         @Override
         public Object postProcessAfterInitialization(Object bean, String beanName) {
             if (!(bean instanceof BeanPostProcessor) && !isInfrastructureBean(beanName) &&
-                    //need + 1 self
-                    this.beanFactory.getBeanPostProcessorCount() < this.beanPostProcessorTargetCount + 1) {
-                Assertions.assertFalse(true);
+                    this.beanFactory.getBeanPostProcessorCount() < this.beanPostProcessorTargetCount) {
+                //means may be some BeanPostProcessor not deal with bean
+                Assertions.assertTrue(false);
             }
             return bean;
         }
@@ -80,31 +80,20 @@ public class Issue7752Test {
 
     @Test
     public void test() throws Exception {
-        Class<?> aClass = Class.forName("org.springframework.context.support.PostProcessorRegistrationDelegate");
+        //for replace map
+        Map<Object, Issue7752TestBeanPostProcessorChecker> map = new ConcurrentHashMap();
 
-        Issue7752TestBeanPostProcessorChecker issue7752TestBeanPostProcessorChecker = new Issue7752TestBeanPostProcessorChecker();
-        Mockito.mockStatic(aClass, new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                if(invocation.getMethod().getName().equals("registerBeanPostProcessors") && (invocation.getArgument(1) instanceof AbstractApplicationContext)){
-                    ConfigurableListableBeanFactory beanFactory = invocation.getArgument(0);
-
-                    String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
-
-                    // Register BeanPostProcessorChecker that logs an info message when
-                    // a bean is created during BeanPostProcessor instantiation, i.e. when
-                    // a bean is not eligible for getting processed by all BeanPostProcessors.
-                    int beanProcessorTargetCount = beanFactory.getBeanPostProcessorCount() + 1 + postProcessorNames.length;
-
-                    issue7752TestBeanPostProcessorChecker.setParam(beanFactory, beanProcessorTargetCount);
-                    beanFactory.addBeanPostProcessor(issue7752TestBeanPostProcessorChecker);
-                    Object o = invocation.callRealMethod();
-                    //((AbstractBeanFactory)beanFactory).getBeanPostProcessors().remove(issue7752TestBeanPostProcessorChecker);
-                    return o;
-                }
-                return invocation.callRealMethod();
-            }
+        //mock Construction
+        Class<?> testCheck = Class.forName("org.springframework.context.support.PostProcessorRegistrationDelegate$BeanPostProcessorChecker");
+        Mockito.mockConstruction(testCheck, Mockito.withSettings().defaultAnswer(invocation -> {
+            //call same method
+            return Issue7752TestBeanPostProcessorChecker.class.getMethod(invocation.getMethod().getName(), invocation.getMethod().getParameterTypes())
+                    .invoke(map.get(invocation.getMock()), invocation.getArguments());
+        }), (MockedConstruction.MockInitializer) (mock, context) -> {
+            //create replace bean process
+            map.put(mock, Issue7752TestBeanPostProcessorChecker.class.getConstructor(ConfigurableListableBeanFactory.class, int.class).newInstance(context.arguments().toArray()));
         });
+
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(Issue7752Test.class);
         context.close();
     }
