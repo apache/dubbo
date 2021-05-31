@@ -126,6 +126,8 @@ public interface CommonConstants {
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
     String TIMEOUT_ATTACHMENT_KEY = "_TO";
 
+    String TIMEOUT_ATTACHMENT_KEY_LOWER = "_to";
+
     String TIME_COUNTDOWN_KEY = "timeout-countdown";
 
     String ENABLE_TIMEOUT_COUNTDOWN_KEY = "enable-timeout-countdown";
@@ -374,6 +376,16 @@ public interface CommonConstants {
      * @since 2.7.8
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
 
     String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
 

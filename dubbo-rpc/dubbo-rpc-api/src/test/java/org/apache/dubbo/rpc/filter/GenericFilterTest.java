@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
+import static org.apache.dubbo.common.constants.CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,6 +76,8 @@ public class GenericFilterTest {
 
     @Test
     public void testInvokeWithJavaException() throws Exception {
+        // temporary enable native java generic serialize
+        System.setProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, "true");
         Assertions.assertThrows(RpcException.class, () -> {
             Method genericInvoke = GenericService.class.getMethods()[0];
 
@@ -95,6 +98,7 @@ public class GenericFilterTest {
 
             genericFilter.invoke(invoker, invocation);
         });
+        System.clearProperty(ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE);
     }
 
     @Test

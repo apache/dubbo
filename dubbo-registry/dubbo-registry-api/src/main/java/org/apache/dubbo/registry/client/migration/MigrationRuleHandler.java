@@ -59,7 +59,7 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = MigrationStep.INTERFACE_FIRST;
         Float threshold = -1f;
         if (rule == MigrationRule.INIT) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             try {
                 String serviceKey = consumerURL.getDisplayServiceKey();

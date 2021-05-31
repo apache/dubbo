@@ -29,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
 
@@ -46,6 +47,7 @@ public class ReferenceConfigTest {
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
+        ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
@@ -57,15 +59,13 @@ public class ReferenceConfigTest {
         demoService = new ServiceConfig<DemoService>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
-        demoService.setApplication(application);
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
-        rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
-        rc.setInjvm(false);
+        rc.setScope(SCOPE_REMOTE);
 
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
@@ -86,13 +86,14 @@ public class ReferenceConfigTest {
     public void testReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
+        ApplicationModel.getConfigManager().setApplication(application);
+
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress("multicast://224.5.6.7:1234");
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
-        rc.setApplication(application);
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
 
@@ -110,7 +111,6 @@ public class ReferenceConfigTest {
         ServiceConfig<DemoService> sc = new ServiceConfig<DemoService>();
         sc.setInterface(DemoService.class);
         sc.setRef(new DemoServiceImpl());
-        sc.setApplication(application);
         sc.setRegistry(registry);
         sc.setProtocol(protocol);
 

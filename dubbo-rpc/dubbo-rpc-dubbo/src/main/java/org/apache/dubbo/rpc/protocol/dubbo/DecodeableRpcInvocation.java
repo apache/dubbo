@@ -39,7 +39,7 @@ import org.apache.dubbo.rpc.support.RpcUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.URL.buildKey;
@@ -154,7 +154,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
             if (map != null && map.size() > 0) {
                 Map<String, Object> attachment = getObjectAttachments();
                 if (attachment == null) {
-                    attachment = new HashMap<>();
+                    attachment = new LinkedHashMap<>();
                 }
                 attachment.putAll(map);
                 setObjectAttachments(attachment);

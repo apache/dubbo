@@ -91,7 +91,7 @@ public class AbstractClusterInvokerTest {
 
     @AfterEach
     public void teardown() throws Exception {
-        RpcContext.getContext().clearAttachments();
+        RpcContext.removeContext();
     }
 
     @SuppressWarnings({"unchecked"})
@@ -163,8 +163,8 @@ public class AbstractClusterInvokerTest {
         final String attachValue = "value";
 
         // setup attachment
-        RpcContext.getContext().setAttachment(attachKey, attachValue);
-        Map<String, Object> attachments = RpcContext.getContext().getObjectAttachments();
+        RpcContext.getClientAttachment().setAttachment(attachKey, attachValue);
+        Map<String, Object> attachments = RpcContext.getClientAttachment().getObjectAttachments();
         Assertions.assertTrue( attachments != null && attachments.size() == 1,"set attachment failed!");
 
         cluster = new AbstractClusterInvoker(dic) {

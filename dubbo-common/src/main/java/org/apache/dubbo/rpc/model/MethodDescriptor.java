@@ -23,6 +23,8 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$ECHO;
@@ -47,8 +49,11 @@ public class MethodDescriptor {
     private final boolean generic;
     private final RpcType rpcType;
 
+    private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
+
     public MethodDescriptor(Method method) {
         this.method = method;
+        this.methodName = method.getName();
         Class<?>[] parameterTypes = method.getParameterTypes();
         if (parameterTypes.length == 1 && isStreamType(parameterTypes[0])) {
             this.parameterClasses = new Class<?>[]{
@@ -74,7 +79,6 @@ public class MethodDescriptor {
         this.compatibleParamSignatures = Stream.of(parameterClasses)
                 .map(Class::getName)
                 .toArray(String[]::new);
-        this.methodName = method.getName();
         this.generic = (methodName.equals($INVOKE) || methodName.equals($INVOKE_ASYNC)) && parameterClasses.length == 3;
     }
 
@@ -156,6 +160,14 @@ public class MethodDescriptor {
 
     public boolean isGeneric() {
         return generic;
+    }
+
+    public void addAttribute(String key, Object value) {
+        this.attributeMap.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return this.attributeMap.get(key);
     }
 
     public enum RpcType {

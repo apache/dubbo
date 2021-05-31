@@ -143,7 +143,7 @@ class AbstractInterfaceBuilderTest {
 
     @Test
     void application() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
+        ApplicationConfig applicationConfig = new ApplicationConfig("AbtractInterfaceBuilderTest");
 
         InterfaceBuilder builder = new InterfaceBuilder();
         builder.application(applicationConfig);

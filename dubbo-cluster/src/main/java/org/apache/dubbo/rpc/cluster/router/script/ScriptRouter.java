@@ -32,6 +32,13 @@ import javax.script.CompiledScript;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import java.security.AccessControlContext;
+import java.security.AccessController;
+import java.security.CodeSource;
+import java.security.Permissions;
+import java.security.PrivilegedAction;
+import java.security.ProtectionDomain;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +69,17 @@ public class ScriptRouter extends AbstractRouter {
 
     private CompiledScript function;
 
+    private AccessControlContext accessControlContext;
+
+    {
+        //Just give permission of reflect to access member.
+        Permissions perms = new Permissions();
+        perms.add(new RuntimePermission("accessDeclaredMembers"));
+        // Cast to Certificate[] required because of ambiguity:
+        ProtectionDomain domain = new ProtectionDomain(new CodeSource(null, (Certificate[]) null), perms);
+        accessControlContext = new AccessControlContext(new ProtectionDomain[]{domain});
+    }
+
     public ScriptRouter(URL url) {
         this.url = url;
         this.priority = url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY);
@@ -73,10 +91,8 @@ public class ScriptRouter extends AbstractRouter {
             function = compilable.compile(rule);
         } catch (ScriptException e) {
             logger.error("route error, rule has been ignored. rule: " + rule +
-                    ", url: " + RpcContext.getContext().getUrl(), e);
+                    ", url: " + RpcContext.getServiceContext().getUrl(), e);
         }
-
-
     }
 
     /**
@@ -107,17 +123,19 @@ public class ScriptRouter extends AbstractRouter {
 
     @Override
     public <T> List<Invoker<T>> route(List<Invoker<T>> invokers, URL url, Invocation invocation) throws RpcException {
-        try {
-            Bindings bindings = createBindings(invokers, invocation);
-            if (function == null) {
-                return invokers;
-            }
-            return getRoutedInvokers(function.eval(bindings));
-        } catch (ScriptException e) {
-            logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
-                    invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+        if (engine == null || function == null) {
             return invokers;
         }
+        Bindings bindings = createBindings(invokers, invocation);
+        return getRoutedInvokers(AccessController.doPrivileged((PrivilegedAction<Object>) () -> {
+            try {
+                return function.eval(bindings);
+            } catch (ScriptException e) {
+                logger.error("route error, rule has been ignored. rule: " + rule + ", method:" +
+                        invocation.getMethodName() + ", url: " + RpcContext.getContext().getUrl(), e);
+                return invokers;
+            }
+        }, accessControlContext));
     }
 
     /**
@@ -142,7 +160,7 @@ public class ScriptRouter extends AbstractRouter {
         // create a new List of invokers
         bindings.put("invokers", new ArrayList<>(invokers));
         bindings.put("invocation", invocation);
-        bindings.put("context", RpcContext.getContext());
+        bindings.put("context", RpcContext.getClientAttachment());
         return bindings;
     }
 

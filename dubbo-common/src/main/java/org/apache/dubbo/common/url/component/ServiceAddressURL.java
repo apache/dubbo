@@ -111,6 +111,9 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public String getParameter(String key) {
+        if (GROUP_KEY.equals(key)) {
+            return getGroup();
+        }
         String value = null;
         if (consumerURL != null) {
             value = consumerURL.getParameter(key);

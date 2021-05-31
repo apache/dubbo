@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,7 +159,7 @@ public class UrlUtils {
             }
         }
         if (changed) {
-            u = new URL(protocol, username, password, host, port, path, parameters);
+            u = new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
         }
         return u;
     }
@@ -659,7 +660,7 @@ public class UrlUtils {
             host = url;
         }
 
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
     public static boolean isConsumer(URL url) {
