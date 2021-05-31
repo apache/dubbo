@@ -16,6 +16,14 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,14 +33,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
-import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
@@ -52,11 +52,13 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService serviceExporterExecutor;
 
+    private ScheduledExecutorService serviceRefererExecutor;
+
     public ScheduledExecutorService registryNotificationExecutor;
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ScheduledExecutorService serviceDiscveryAddressNotificationExecutor;
+    private ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor;
 
     private ScheduledExecutorService metadataRetryExecutor;
 
@@ -81,8 +83,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
-        serviceDiscveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
+        serviceExporterExecutor = Executors.newScheduledThreadPool(10, new NamedThreadFactory("Dubbo-exporter-scheduler", true));
+        serviceRefererExecutor = Executors.newScheduledThreadPool(10, new NamedThreadFactory("Dubbo-referer-scheduler", true));
+        serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
     }
@@ -183,12 +186,17 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
+    public ScheduledExecutorService getServiceRefererExecutor() {
+        return serviceRefererExecutor;
+    }
+
+    @Override
     public ScheduledExecutorService getRegistryNotificationExecutor() {
         return registryNotificationExecutor;
     }
 
     public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
-        return serviceDiscveryAddressNotificationExecutor;
+        return serviceDiscoveryAddressNotificationExecutor;
     }
 
     @Override

@@ -59,6 +59,8 @@ public interface ExecutorRepository {
 
     ScheduledExecutorService getServiceExporterExecutor();
 
+    ScheduledExecutorService getServiceRefererExecutor();
+
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 
     ScheduledExecutorService getMetadataRetryExecutor();

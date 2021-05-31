@@ -27,7 +27,6 @@ import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -84,7 +83,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
@@ -185,9 +183,9 @@ public class DubboBootstrap extends GenericEventListener {
 
     private List<ServiceConfigBase<?>> exportedServices = new ArrayList<>();
 
-    private List<Future<?>> asyncExportingFutures = new ArrayList<>();
+    private final List<CompletableFuture<?>> asyncExportingFutures = new ArrayList<>();
 
-    private List<CompletableFuture<Object>> asyncReferringFutures = new ArrayList<>();
+    private final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
 
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
@@ -519,11 +517,19 @@ public class DubboBootstrap extends GenericEventListener {
         return cache;
     }
 
+    /**
+     * @deprecated use {@link ApplicationConfig#setExportAsync(Boolean)} instead.
+     */
+    @Deprecated
     public DubboBootstrap exportAsync() {
         this.exportAsync = true;
         return this;
     }
 
+    /**
+     * @deprecated use {@link ApplicationConfig#setReferAsync(Boolean)} instead.
+     */
+    @Deprecated
     public DubboBootstrap referAsync() {
         this.referAsync = true;
         return this;
@@ -911,29 +917,20 @@ public class DubboBootstrap extends GenericEventListener {
             if (!isOnlyRegisterProvider() || hasExportedServices()) {
                 // 2. export MetadataService
                 exportMetadataService();
-                //3. Register the local ServiceInstance if required
+                // 3. Register the local ServiceInstance if required
                 registerServiceInstance();
             }
 
             referServices();
-            if (asyncExportingFutures.size() > 0) {
-                new Thread(() -> {
-                    try {
-                        this.awaitFinish();
-                    } catch (Exception e) {
-                        logger.warn(NAME + " exportAsync occurred an exception.");
-                    }
-                    startup.set(true);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(NAME + " is ready.");
-                    }
-                }).start();
-            } else {
-                startup.set(true);
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is ready.");
+            if (asyncExportingFutures.size() > 0 || asyncReferringFutures.size() > 0) {
+                try {
+                    this.awaitFinish();
+                } catch (Exception e) {
+                    logger.warn(NAME + " exportAsync occurred an exception.");
                 }
             }
+
+            startup.set(true);
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
             }
@@ -971,19 +968,20 @@ public class DubboBootstrap extends GenericEventListener {
         return this;
     }
 
-    public DubboBootstrap awaitFinish() throws Exception {
-        logger.info(NAME + " waiting services exporting / referring ...");
-        if (exportAsync && asyncExportingFutures.size() > 0) {
-            CompletableFuture future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
-            future.get();
-        }
-        if (referAsync && asyncReferringFutures.size() > 0) {
-            CompletableFuture future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
+    public void awaitFinish() throws Exception {
+        logger.info(NAME + " waiting services exporting / referring asynchronously...");
+
+        if (asyncExportingFutures.size() > 0) {
+            CompletableFuture<?> future = CompletableFuture.allOf(asyncExportingFutures.toArray(new CompletableFuture[0]));
             future.get();
         }
 
-        logger.info("Service export / refer finished.");
-        return this;
+        if (asyncReferringFutures.size() > 0) {
+            CompletableFuture<?> future = CompletableFuture.allOf(asyncReferringFutures.toArray(new CompletableFuture[0]));
+            future.get();
+        }
+
+        logger.info("Service asynchronous export / refer finished.");
     }
 
     public boolean isInitialized() {
@@ -1092,15 +1090,17 @@ public class DubboBootstrap extends GenericEventListener {
     private void exportServices() {
         configManager.getServices().forEach(sc -> {
             // TODO, compatible with ServiceConfig.export()
-            ServiceConfig serviceConfig = (ServiceConfig) sc;
+            ServiceConfig<?> serviceConfig = (ServiceConfig<?>) sc;
             serviceConfig.setBootstrap(this);
 
-            if (exportAsync) {
+            ApplicationConfig config = getApplication();
+            if (config.getExportAsync() != null && config.getExportAsync()) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
-                Future<?> future = executor.submit(() -> {
+                CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     sc.export();
                     exportedServices.add(sc);
-                });
+                }, executor);
+
                 asyncExportingFutures.add(future);
             } else {
                 sc.export();
@@ -1131,15 +1131,14 @@ public class DubboBootstrap extends GenericEventListener {
 
         configManager.getReferences().forEach(rc -> {
             // TODO, compatible with  ReferenceConfig.refer()
-            ReferenceConfig referenceConfig = (ReferenceConfig) rc;
+            ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
             referenceConfig.setBootstrap(this);
 
             if (rc.shouldInit()) {
-                if (referAsync) {
-                    CompletableFuture<Object> future = ScheduledCompletableFuture.submit(
-                            executorRepository.getServiceExporterExecutor(),
-                            () -> cache.get(rc)
-                    );
+                ApplicationConfig config = getApplication();
+                if (config.getReferAsync() != null && config.getReferAsync()) {
+                    ExecutorService executor = executorRepository.getServiceRefererExecutor();
+                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> cache.get(rc), executor);
                     asyncReferringFutures.add(future);
                 } else {
                     cache.get(rc);
