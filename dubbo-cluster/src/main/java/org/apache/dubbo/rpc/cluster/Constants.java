@@ -106,4 +106,9 @@ public interface Constants {
     String PEER_KEY = "peer";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
+    
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "urlmergeprocessor";
 }

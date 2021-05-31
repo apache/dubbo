@@ -63,6 +63,12 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Integer shareconnections;
 
+    /**
+     *  Url Merge Processor
+     *  Used to customize the URL merge of consumer and provider
+     */
+    private String urlmergeprocessor;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -131,5 +137,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setShareconnections(Integer shareconnections) {
         this.shareconnections = shareconnections;
+    }
+
+    public String getUrlmergeprocessor() {
+        return urlmergeprocessor;
+    }
+
+    public void setUrlmergeprocessor(String urlmergeprocessor) {
+        this.urlmergeprocessor = urlmergeprocessor;
     }
 }
