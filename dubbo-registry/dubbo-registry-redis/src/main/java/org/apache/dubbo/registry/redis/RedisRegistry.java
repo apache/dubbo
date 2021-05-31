@@ -105,6 +105,8 @@ public class RedisRegistry extends FailbackRegistry {
 
     private boolean replicate;
 
+    private final Map<URL, Long> expireCache = new ConcurrentHashMap<>();
+
     public RedisRegistry(URL url) {
         super(url);
         if (url.isAnyHost()) {
@@ -211,6 +213,11 @@ public class RedisRegistry extends FailbackRegistry {
                             if (jedis.hset(key, url.toFullString(), String.valueOf(System.currentTimeMillis() + expirePeriod)) == 1) {
                                 jedis.publish(key, REGISTER);
                             }
+                        }
+                    }
+                    for (Map.Entry<URL, Long> expireEntry : expireCache.entrySet()) {
+                        if (expireEntry.getValue() < System.currentTimeMillis()) {
+                            doNotify(jedis, toCategoryPath(expireEntry.getKey()));
                         }
                     }
                     if (admin) {
@@ -442,10 +449,12 @@ public class RedisRegistry extends FailbackRegistry {
             if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
+                    long expire = Long.parseLong(entry.getValue());
                     if (!u.getParameter(DYNAMIC_KEY, true)
-                            || Long.parseLong(entry.getValue()) >= now) {
+                            || expire >= now) {
                         if (UrlUtils.isMatch(url, u)) {
                             urls.add(u);
+                            expireCache.put(u, expire);
                         }
                     }
                 }
