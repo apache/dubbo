@@ -81,6 +81,7 @@ public interface Constants {
 
     String MULTICAST = "multicast";
 
+    String MULTIPLE = "multiple";
 
     String DUBBO_IP_TO_REGISTRY = "DUBBO_IP_TO_REGISTRY";
 
