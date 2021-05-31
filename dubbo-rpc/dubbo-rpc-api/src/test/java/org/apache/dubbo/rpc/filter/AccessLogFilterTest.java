@@ -17,7 +17,9 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -51,6 +53,7 @@ public class AccessLogFilterTest {
         accessLogFilter.invoke(invoker, invocation);
         assertEquals(1, LogUtil.findMessage("Exception in AccessLogFilter of service"));
         LogUtil.stop();
+        DubboAppender.clear();
     }
 
     // TODO how to assert thread action
@@ -62,7 +65,7 @@ public class AccessLogFilterTest {
         Invocation invocation = new MockInvocation();
 
         Field field = AccessLogFilter.class.getDeclaredField("LOG_ENTRIES");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         assertTrue(((Map) field.get(AccessLogFilter.class)).isEmpty());
 
         accessLogFilter.invoke(invoker, invocation);

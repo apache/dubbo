@@ -59,11 +59,13 @@
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-filter-validation</artifactId>
             <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-filter-cache</artifactId>
             <version>${project.parent.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- FIXME, we shouldn't rely on these modules, even in test scope -->
@@ -232,5 +234,10 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>

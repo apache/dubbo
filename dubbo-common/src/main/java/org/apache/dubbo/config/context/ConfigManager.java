@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -162,6 +163,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public Collection<MetadataReportConfig> getMetadataConfigs() {
         return getConfigs(getTagName(MetadataReportConfig.class));
+    }
+
+    public MetadataReportConfig getMetadataConfig(String id) {
+        return getConfig(getTagName(MetadataReportConfig.class), id);
+    }
+
+    public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
+        Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
+        if (CollectionUtils.isEmpty(defaults)) {
+            return getMetadataConfigs();
+        }
+        return defaults;
     }
 
     // MetadataReportConfig correlative methods
@@ -366,9 +379,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public void clear() {
-        write(() -> {
-            this.configsCache.clear();
-        });
+        write(this.configsCache::clear);
     }
 
     /**
@@ -422,6 +433,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
+
+                AtomicReference<C> defaultConfig = new AtomicReference<>();
+                configsMap.forEach((str, config) -> {
+                    if (Boolean.TRUE.equals(config.isDefault())) {
+                        defaultConfig.compareAndSet(null, config);
+                    }
+                });
+
+                if (defaultConfig.get() != null) {
+                    return defaultConfig.get();
+                }
+
                 logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
             }
 

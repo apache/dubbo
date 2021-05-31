@@ -103,7 +103,8 @@ public class NacosServiceName {
 
     public boolean isCompatible(NacosServiceName concreteServiceName) {
 
-        if (!concreteServiceName.isConcrete()) { // The argument must be the concrete NacosServiceName
+        // The argument must be the concrete NacosServiceName
+        if (!concreteServiceName.isConcrete()) {
             return false;
         }
 
@@ -160,7 +161,7 @@ public class NacosServiceName {
     }
 
     private boolean isRange(String value) {
-        return value != null && value.indexOf(VALUE_SEPARATOR) > -1 && value.split(VALUE_SEPARATOR).length > 1;
+        return value != null && value.contains(VALUE_SEPARATOR) && value.split(VALUE_SEPARATOR).length > 1;
     }
 
     public String getCategory() {
@@ -203,11 +204,10 @@ public class NacosServiceName {
     }
 
     private String toValue() {
-        return new StringBuilder(category)
-                .append(NAME_SEPARATOR).append(serviceInterface)
-                .append(NAME_SEPARATOR).append(version)
-                .append(NAME_SEPARATOR).append(group)
-                .toString();
+        return category +
+                NAME_SEPARATOR + serviceInterface +
+                NAME_SEPARATOR + version +
+                NAME_SEPARATOR + group;
     }
 
     @Override

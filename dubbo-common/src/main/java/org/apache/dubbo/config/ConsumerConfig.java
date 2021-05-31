@@ -28,11 +28,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
     private static final long serialVersionUID = 2827274711143680600L;
 
     /**
-     * Whether to use the default protocol
-     */
-    private Boolean isDefault;
-
-    /**
      * Networking framework client uses: netty, mina, etc.
      */
     private String client;
@@ -63,6 +58,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Integer shareconnections;
 
+
+    /**
+     *  Url Merge Processor
+     *  Used to customize the URL merge of consumer and provider
+     */
+    private String urlmergeprocessor;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -72,11 +74,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
     }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
+    
     public String getClient() {
         return client;
     }
@@ -91,14 +89,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setThreadpool(String threadpool) {
         this.threadpool = threadpool;
-    }
-
-    public Boolean getDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     public Integer getCorethreads() {
@@ -131,5 +121,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setShareconnections(Integer shareconnections) {
         this.shareconnections = shareconnections;
+    }
+
+    public String getUrlmergeprocessor() {
+        return urlmergeprocessor;
+    }
+
+    public void setUrlmergeprocessor(String urlmergeprocessor) {
+        this.urlmergeprocessor = urlmergeprocessor;
     }
 }

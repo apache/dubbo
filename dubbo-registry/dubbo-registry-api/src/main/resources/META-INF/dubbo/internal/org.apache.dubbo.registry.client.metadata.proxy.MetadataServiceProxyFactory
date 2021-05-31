@@ -1,3 +1,0 @@
-local=org.apache.dubbo.registry.client.metadata.proxy.DefaultMetadataServiceProxyFactory
-remote=org.apache.dubbo.registry.client.metadata.proxy.RemoteMetadataServiceProxyFactory
-composite = org.apache.dubbo.registry.client.metadata.proxy.CompositeMetadataServiceProxyFactory

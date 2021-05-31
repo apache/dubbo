@@ -74,6 +74,8 @@ public interface CommonConstants {
 
     Pattern EQUAL_SPLIT_PATTERN = Pattern.compile("\\s*[=]+\\s*");
 
+    Pattern COLON_SPLIT_PATTERN = Pattern.compile("\\s*[:]+\\s*");
+
     String DEFAULT_PROXY = "javassist";
 
     String DEFAULT_DIRECTORY = "dubbo";
@@ -108,6 +110,8 @@ public interface CommonConstants {
 
     String IO_THREADS_KEY = "iothreads";
 
+    String KEEP_ALIVE_KEY = "keep.alive";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
@@ -134,7 +138,7 @@ public interface CommonConstants {
 
     String GROUP_CHAR_SEPARATOR = ":";
 
-    String HIDE_KEY_PREFIX = ".";
+    String HIDDEN_KEY_PREFIX = ".";
 
     String DOT_REGEX = "\\.";
 
@@ -189,9 +193,17 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
+    String MAPPING_KEY = "mapping-type";
+
+    String CONFIG_MAPPING_TYPE = "config";
+
+    String METADATA_MAPPING_TYPE = "metadata";
+
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    String GENERIC_KEY = "generic";
 
     /**
      * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
@@ -229,12 +241,25 @@ public interface CommonConstants {
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
 
     /**
+     * broadcast cluster.
+     */
+    String BROADCAST_CLUSTER = "broadcast";
+
+    /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
      * the Dubbo application prefers
      *
      * @since 2.7.6
      */
     String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
+
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
 
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
@@ -289,6 +314,8 @@ public interface CommonConstants {
 
     String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
 
+    String GENERIC_SERIALIZATION_GSON = "gson";
+
     String GENERIC_SERIALIZATION_DEFAULT = "true";
 
     String GENERIC_SERIALIZATION_BEAN = "bean";
@@ -329,6 +356,11 @@ public interface CommonConstants {
 
     String SSL_ENABLED_KEY = "ssl-enabled";
 
+    String SERVICE_PATH_PREFIX = "service.path.prefix";
+
+    String PROTOCOL_SERVER_SERVLET = "servlet";
+
+    String PROTOCOL_SERVER = "server";
 
     /**
      * The parameter key for the class path of the ServiceNameMapping {@link Properties} file
@@ -343,5 +375,43 @@ public interface CommonConstants {
      * @since 2.7.8
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
+
+    String REDIS_CLIENT_KEY = "redis-client";
+
+    String MONO_REDIS = "mono";
+
+    String SENTINEL_REDIS = "sentinel";
+
+    String CLUSTER_REDIS = "cluster";
+
+    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    String DEFAULT_VERSION = "0.0.0";
+
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
+
+    /**
+     *  Interface configuration item
+     * @since 2.7.10
+     */
+    String ON_CONNECT_KEY = "onconnect";
+
+    String ON_DISCONNECT_KEY = "ondisconnect";
+
+    String TOKEN = "token";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
+    String DISPATHER = "dispather";
 
 }

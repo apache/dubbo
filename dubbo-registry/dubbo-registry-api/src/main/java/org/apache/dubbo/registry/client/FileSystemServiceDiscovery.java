@@ -54,7 +54,7 @@ import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamic
  * @see FileSystemDynamicConfiguration
  * @since 2.7.5
  */
-public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListener<ServiceInstancesChangedEvent> {
+public class FileSystemServiceDiscovery extends AbstractServiceDiscovery implements EventListener<ServiceInstancesChangedEvent> {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -129,7 +129,12 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public URL getUrl() {
+        return null;
+    }
+
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) {
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
         String content = toJSONString(serviceInstance);
@@ -161,8 +166,9 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery, EventListen
         });
     }
 
+
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) {
         register(serviceInstance);
     }
 

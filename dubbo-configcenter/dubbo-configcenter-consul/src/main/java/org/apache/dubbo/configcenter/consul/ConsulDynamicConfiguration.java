@@ -32,6 +32,7 @@ import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.cache.KVCache;
 import com.orbitz.consul.model.kv.Value;
+import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -44,6 +45,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+import static org.apache.dubbo.common.constants.CommonConstants.TOKEN;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.WATCH_TIMEOUT;
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
 
 /**
  * config center implementation for consul
@@ -51,21 +57,26 @@ import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
 public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(ConsulDynamicConfiguration.class);
 
-    private static final int DEFAULT_PORT = 8500;
-    private static final int DEFAULT_WATCH_TIMEOUT = 60 * 1000;
-    private static final String WATCH_TIMEOUT = "consul-watch-timeout";
+    private final Consul client;
 
-    private Consul client;
+    private final KeyValueClient kvClient;
 
-    private KeyValueClient kvClient;
+    private final int watchTimeout;
 
-    private ConcurrentMap<String, ConsulListener> watchers = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, ConsulListener> watchers = new ConcurrentHashMap<>();
 
     public ConsulDynamicConfiguration(URL url) {
         super(url);
+        watchTimeout = url.getParameter(WATCH_TIMEOUT, DEFAULT_WATCH_TIMEOUT);
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
-        client = Consul.builder().withHostAndPort(HostAndPort.fromParts(host, port)).build();
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
+        Consul.Builder builder = Consul.builder()
+                .withHostAndPort(HostAndPort.fromParts(host, port));
+        String token = url.getParameter(TOKEN, (String) null);
+        if (StringUtils.isNotEmpty(token)) {
+            builder.withAclToken(token);
+        }
+        client = builder.build();
         this.kvClient = client.keyValueClient();
     }
 
@@ -128,8 +139,8 @@ public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
     private class ConsulListener implements KVCache.Listener<String, Value> {
 
         private KVCache kvCache;
-        private Set<ConfigurationListener> listeners = new LinkedHashSet<>();
-        private String normalizedKey;
+        private final Set<ConfigurationListener> listeners = new LinkedHashSet<>();
+        private final String normalizedKey;
 
         public ConsulListener(String normalizedKey) {
             this.normalizedKey = normalizedKey;
@@ -137,7 +148,7 @@ public class ConsulDynamicConfiguration extends TreePathDynamicConfiguration {
         }
 
         private void initKVCache() {
-            this.kvCache = KVCache.newCache(kvClient, normalizedKey);
+            this.kvCache = KVCache.newCache(kvClient, normalizedKey, watchTimeout);
             kvCache.addListener(this);
             kvCache.start();
         }

@@ -13,7 +13,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ *//*
+
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
@@ -39,11 +40,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+*/
 /**
  * {@link ServiceNameMapping} Test
  *
  * @since 2.7.8
- */
+ *//*
+
 public class ServiceNameMappingTest {
 
     private static final URL BASE_URL = URL.valueOf("dubbo://127.0.0.1:20880");
@@ -119,3 +122,4 @@ public class ServiceNameMappingTest {
 
     }
 }
+*/

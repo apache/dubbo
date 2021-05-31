@@ -18,8 +18,6 @@
 package org.apache.dubbo.metadata.store.consul;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -27,7 +25,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.metadata.report.support.AbstractMetadataReport;
-import org.apache.dubbo.metadata.report.support.ConfigCenterBasedMetadataReport;
 import org.apache.dubbo.rpc.RpcException;
 
 import com.ecwid.consul.v1.ConsulClient;
@@ -39,15 +36,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.ConsulConstants.DEFAULT_PORT;
+import static org.apache.dubbo.common.constants.ConsulConstants.INVALID_PORT;
+
 /**
  * metadata report impl for consul
- *
- * @deprecated 2.7.8 This class will be removed in the future, {@link ConfigCenterBasedMetadataReport} as a substitute.
  */
-@Deprecated
 public class ConsulMetadataReport extends AbstractMetadataReport {
-    private static final Logger logger = LoggerFactory.getLogger(ConsulMetadataReport.class);
-    private static final int DEFAULT_PORT = 8500;
 
     private ConsulClient client;
 
@@ -55,7 +50,7 @@ public class ConsulMetadataReport extends AbstractMetadataReport {
         super(url);
 
         String host = url.getHost();
-        int port = url.getPort() != 0 ? url.getPort() : DEFAULT_PORT;
+        int port = INVALID_PORT != url.getPort() ? url.getPort() : DEFAULT_PORT;
         client = new ConsulClient(host, port);
     }
 

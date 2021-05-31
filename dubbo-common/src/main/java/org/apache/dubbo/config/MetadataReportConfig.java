@@ -25,6 +25,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
+import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
  * MetadataReportConfig
@@ -78,6 +79,17 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean cluster;
 
+    /**
+     * registry id
+     */
+    private String registry;
+
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
+
     public MetadataReportConfig() {
     }
 
@@ -85,20 +97,25 @@ public class MetadataReportConfig extends AbstractConfig {
         setAddress(address);
     }
 
-    public URL toUrl() {
+    public URL toUrl() throws IllegalArgumentException {
         String address = this.getAddress();
-        if (StringUtils.isEmpty(address)) {
-            return null;
+        if (isEmpty(address)) {
+            throw new IllegalArgumentException("The address of metadata report is invalid.");
         }
         Map<String, String> map = new HashMap<String, String>();
+        URL url = URL.valueOf(address);
+        // Issue : https://github.com/apache/dubbo/issues/6491
+        // Append the parameters from address
+        map.putAll(url.getParameters());
+        // Append or overrides the properties as parameters
         appendParameters(map, this);
-        if (!StringUtils.isEmpty(address)) {
-            URL url = URL.valueOf(address);
-            map.put("metadata", url.getProtocol());
-            return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
-                    url.getPort(), url.getPath(), map);
-        }
-        throw new IllegalArgumentException("The address of metadata report is invalid.");
+        // Normalize the parameters
+        map.putAll(convert(map, null));
+        // put the protocol of URL as the "metadata"
+        map.put("metadata", url.getProtocol());
+        return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
+                url.getPort(), url.getPath(), map);
+
     }
 
     @Parameter(excluded = true)
@@ -204,5 +221,21 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setCluster(Boolean cluster) {
         this.cluster = cluster;
+    }
+
+    public String getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(String registry) {
+        this.registry = registry;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 }

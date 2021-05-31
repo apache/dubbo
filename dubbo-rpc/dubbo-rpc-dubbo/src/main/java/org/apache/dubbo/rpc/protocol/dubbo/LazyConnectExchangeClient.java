@@ -35,8 +35,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.remoting.Constants.SEND_RECONNECT_KEY;
-import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 import static org.apache.dubbo.rpc.protocol.dubbo.Constants.DEFAULT_LAZY_CONNECT_INITIAL_STATE;
+import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL_STATE_KEY;
 
 /**
  * dubbo protocol support class.
@@ -48,7 +48,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      * when this warning rises from invocation, program probably have bug.
      */
     protected static final String REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
-    private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
     protected final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;
@@ -135,7 +135,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
     private void warning() {
         if (requestWithWarning) {
             if (warningcount.get() % warning_period == 0) {
-                logger.warn(new IllegalStateException("safe guard client , should not be called ,must have a bug."));
+                logger.warn(url.getAddress() + " " + url.getServiceKey() + " safe guard client , should not be called ,must have a bug.");
             }
             warningcount.incrementAndGet();
         }
