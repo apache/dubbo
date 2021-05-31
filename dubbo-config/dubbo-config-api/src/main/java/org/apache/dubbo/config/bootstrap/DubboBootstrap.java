@@ -927,7 +927,7 @@ public class DubboBootstrap extends GenericEventListener {
                     try {
                         this.awaitFinish();
                     } catch (Exception e) {
-                        logger.warn(NAME + " exportAsync occurred an exception.");
+                        logger.warn(NAME + " asynchronous export / refer occurred an exception.");
                     }
                     startup.set(true);
                     if (logger.isInfoEnabled()) {
@@ -941,7 +941,6 @@ public class DubboBootstrap extends GenericEventListener {
                 }
             }
 
-            startup.set(true);
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
             }
