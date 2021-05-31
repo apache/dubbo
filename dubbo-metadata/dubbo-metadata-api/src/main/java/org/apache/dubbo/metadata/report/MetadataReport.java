@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.report;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.mapping.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -74,4 +75,24 @@ public interface MetadataReport {
 
     List<String> getSubscribedURLs(SubscriberMetadataIdentifier subscriberMetadataIdentifier);
 
+    default ConfigItem getMappingItem(String key, String group) {
+        return new ConfigItem();
+    }
+
+    /**
+     * support cas or not.
+     *
+     * @return
+     */
+    default boolean isSupportCas() {
+        return false;
+    }
+
+    default boolean registerServiceAppMappingCas(String serviceInterface, String defaultMappingGroup, String newConfigContent, Object ticket) {
+        return false;
+    }
+
+    default Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+        return Collections.emptySet();
+    }
 }

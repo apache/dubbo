@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ import static org.apache.dubbo.common.utils.StringUtils.SLASH;
  *
  * @since 2.7.5
  */
-@SPI("config")
+@SPI("metadata")
 public interface ServiceNameMapping {
 
     String DEFAULT_MAPPING_GROUP = "mapping";
@@ -62,7 +63,9 @@ public interface ServiceNameMapping {
      * @param mappingListener
      * @return
      */
-    Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener);
+    default Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener){
+        return Collections.emptySet();
+    };
 
     default Set<String> get(URL url) {
         return getAndListen(url, null);

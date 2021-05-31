@@ -43,7 +43,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private static final int PUBLISH_CONFIG_RETRY_TIMES = 6;
+    private static final int CAS_RETRY_TIMES = 6;
 
     @Override
     public void map(URL url) {
@@ -124,7 +124,7 @@ public class DynamicConfigurationServiceNameMapping implements ServiceNameMappin
                     newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
                 }
                 success = dynamicConfiguration.publishConfigCas(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
-            } while (!success && currentRetryTimes++ <= PUBLISH_CONFIG_RETRY_TIMES);
+            } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
             if (logger.isDebugEnabled()) {
                 if (success) {
                     logger.debug(String.format("doCasMap succeed: Dubbo service[%s] mapped to interface name[%s].", newConfigContent, serviceInterface));
