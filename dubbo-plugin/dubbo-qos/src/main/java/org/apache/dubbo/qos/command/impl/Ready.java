@@ -75,7 +75,10 @@ public class Ready implements BaseCommand {
      */
     private Map<String, Boolean> isServiceReady(String serviceName) {
         Map<String, Boolean> res = new HashMap<>();
-        System.out.println("debug::::89" + serviceName + "," + JSON.toJSONString(ApplicationModel.allProviderModels()));
+        System.out.println("debug::::11" + serviceName);
+        System.out.println("debug::::22" + ApplicationModel.allProviderModels().size());
+        ApplicationModel.allProviderModels().forEach(providerModel -> System.out.println("debug::::33" + JSON.toJSONString(providerModel)));
+        System.out.println("debug::::44" + serviceName + "," + JSON.toJSONString(ApplicationModel.allProviderModels()));
         for (ProviderModel providerModel : ApplicationModel.allProviderModels()) {
             String serviceKey = providerModel.getServiceKey();
             System.out.println("debug::::5" + serviceName + "," + JSON.toJSONString(providerModel));

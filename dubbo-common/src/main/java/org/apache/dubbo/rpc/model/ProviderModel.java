@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -152,6 +153,8 @@ public class ProviderModel {
     }
 
     public String getServiceName() {
+        System.out.println("debug::::getServiceName1"+serviceMetadata);
+        System.out.println("debug::::getServiceName2"+ JSON.toJSONString(serviceMetadata));
         return this.serviceMetadata.getServiceKey();
     }
 
