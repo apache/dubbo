@@ -139,11 +139,13 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
         }
+
         for (Map.Entry<URL, Long> expireEntry : expireCache.entrySet()) {
             if (expireEntry.getValue() < System.currentTimeMillis()) {
                 doNotify(toCategoryPath(expireEntry.getKey()));
             }
         }
+
         if (admin) {
             clean();
         }
