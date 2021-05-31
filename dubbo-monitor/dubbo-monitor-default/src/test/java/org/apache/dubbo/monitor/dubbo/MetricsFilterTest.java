@@ -291,6 +291,8 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
+
+        invoker.destroy();
     }
 
     public void testInvokeMetricsMethodService() {
@@ -365,5 +367,7 @@ public class MetricsFilterTest {
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_rate"));
         Assertions.assertEquals(50.0 / 100.0,
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_rate"));
+
+        invoker.destroy();
     }
 }
