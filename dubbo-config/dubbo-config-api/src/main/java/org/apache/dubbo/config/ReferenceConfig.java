@@ -208,7 +208,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return ref;
     }
 
-    @Override
     public synchronized void destroy() {
         if (ref == null) {
             return;
@@ -237,10 +236,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
-            // compatible with api call.
-            if (null != this.getRegistries()) {
-                bootstrap.registries(this.getRegistries());
-            }
             bootstrap.initialize();
         }
 
