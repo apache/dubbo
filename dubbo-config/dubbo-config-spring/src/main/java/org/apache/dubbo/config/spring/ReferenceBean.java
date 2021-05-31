@@ -284,7 +284,16 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     /**
-     * create lazy proxy for reference
+     * Create lazy proxy for reference.
+     * <p />
+     * When Spring searches for beans by type, all FactoryBeans will be initialized automatically.
+     * <p />
+     * ReferenceBean is also a FactoryBean, when it is automatically initialized, only a lazy proxy object will be created,
+     * and dubbo reference-related resources will not be initialized.
+     * <p />
+     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
      */
     private void createLazyProxy() {
 
