@@ -216,7 +216,7 @@ public class DubboProtocol extends AbstractProtocol {
         if (null == INSTANCE) {
             synchronized (MONITOR) {
                 if (null == INSTANCE) {
-                    INSTANCE = (DubboProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
+                    INSTANCE = (DubboProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getOriginalInstance(DubboProtocol.NAME);
                 }
             }
         }
