@@ -18,6 +18,8 @@ package org.apache.dubbo.registry.xds.util;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.xds.XdsCertificateSigner;
 
 import io.envoyproxy.envoy.service.discovery.v3.AggregatedDiscoveryServiceGrpc;
@@ -38,6 +40,7 @@ import java.nio.charset.StandardCharsets;
 
 public class XdsChannel {
     private final ManagedChannel channel;
+    private static final Logger logger = LoggerFactory.getLogger(XdsChannel.class);
 
     protected XdsChannel(URL url) {
         ManagedChannel channel1 = null;
@@ -52,7 +55,7 @@ public class XdsChannel {
                     .sslContext(context)
                     .build();
         } catch (SSLException e) {
-            e.printStackTrace();
+            logger.error("Error occurred when creating gRPC channel to control panel.", e);
         }
         channel = channel1;
     }
