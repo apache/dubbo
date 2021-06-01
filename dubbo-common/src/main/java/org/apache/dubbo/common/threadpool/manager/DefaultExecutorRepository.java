@@ -50,9 +50,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
-    private ScheduledExecutorService serviceExporterExecutor;
-
-    private ScheduledExecutorService serviceRefererExecutor;
+    private final ScheduledExecutorService exportReferExecutor;
 
     public ScheduledExecutorService registryNotificationExecutor;
 
@@ -83,8 +81,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-        serviceExporterExecutor = Executors.newScheduledThreadPool(10, new NamedThreadFactory("Dubbo-exporter-scheduler", true));
-        serviceRefererExecutor = Executors.newScheduledThreadPool(10, new NamedThreadFactory("Dubbo-referer-scheduler", true));
+        exportReferExecutor = Executors.newScheduledThreadPool(10, new NamedThreadFactory("Dubbo-export-refer", true));
         serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
@@ -181,13 +178,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
-    public ScheduledExecutorService getServiceExporterExecutor() {
-        return serviceExporterExecutor;
-    }
-
-    @Override
-    public ScheduledExecutorService getServiceRefererExecutor() {
-        return serviceRefererExecutor;
+    public ScheduledExecutorService getExportReferExecutor() {
+        return exportReferExecutor;
     }
 
     @Override

@@ -1105,7 +1105,7 @@ public class DubboBootstrap extends GenericEventListener {
 
             ApplicationConfig config = getApplication();
             if (config.getExportAsync() != null && config.getExportAsync()) {
-                ExecutorService executor = executorRepository.getServiceExporterExecutor();
+                ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     sc.export();
                     exportedServices.add(sc);
@@ -1147,7 +1147,7 @@ public class DubboBootstrap extends GenericEventListener {
             if (rc.shouldInit()) {
                 ApplicationConfig config = getApplication();
                 if (config.getReferAsync() != null && config.getReferAsync()) {
-                    ExecutorService executor = executorRepository.getServiceRefererExecutor();
+                    ExecutorService executor = executorRepository.getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> cache.get(rc), executor);
                     asyncReferringFutures.add(future);
                 } else {
