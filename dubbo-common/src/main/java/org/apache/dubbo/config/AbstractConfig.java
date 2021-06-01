@@ -495,20 +495,11 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         // check name
-        BeanInfo beanInfo = getBeanInfo(this.getClass());
-        for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
-            if ("name".equals(propertyDescriptor.getName())) {
-                try {
-                    String name = (String) propertyDescriptor.getReadMethod().invoke(this);
-                    if (StringUtils.hasText(name)) {
-                        String prefix = CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + name;
-                        if (!prefixes.contains(prefix)) {
-                            prefixes.add(prefix);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new IllegalStateException("get config name failed: "+this, e);
-                }
+        String name = ReflectUtils.getProperty(this, "getName");
+        if (StringUtils.hasText(name)) {
+            String prefix = CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + name;
+            if (!prefixes.contains(prefix)) {
+                prefixes.add(prefix);
             }
         }
 
@@ -585,7 +576,7 @@ public abstract class AbstractConfig implements Serializable {
                 }
             }
 
-            // process extra refresh of sub class
+            // process extra refresh of sub class, e.g. refresh method configs
             processExtraRefresh(preferredPrefix, subPropsConfiguration);
 
         } catch (Exception e) {

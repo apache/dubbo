@@ -43,8 +43,6 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +70,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public static final String NAME = "config";
     public static final String BEAN_NAME = "dubboConfigManager";
+    private static final String CONFIG_NAME_READ_METHOD = "getName";
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
@@ -83,25 +82,13 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
-    private static Map<String, Method> configNameMethodCache = new ConcurrentHashMap<>();
-
     static {
         // init unique config types
-        uniqueConfigTypes.addAll(Arrays.asList(ApplicationConfig.class, ModuleConfig.class, MonitorConfig.class,
-                MetricsConfig.class, SslConfig.class));
-
-        // register named config type
-        addNameMethodCache(ProtocolConfig.class);
-        addNameMethodCache(ApplicationConfig.class);
-        addNameMethodCache(ModuleConfig.class);
-    }
-
-    private static void addNameMethodCache(Class<? extends AbstractConfig> cls) {
-        try {
-            configNameMethodCache.put(getTagName(cls), cls.getMethod("getName"));
-        } catch (Exception e) {
-            //e.printStackTrace();
-        }
+        uniqueConfigTypes.add(ApplicationConfig.class);
+        uniqueConfigTypes.add(ModuleConfig.class);
+        uniqueConfigTypes.add(MonitorConfig.class);
+        uniqueConfigTypes.add(MetricsConfig.class);
+        uniqueConfigTypes.add(SslConfig.class);
     }
 
     public ConfigManager() {
@@ -113,7 +100,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         } catch (Exception e) {
             logger.warn("Illegal 'dubbo.application.config.warn' config, only boolean value is accepted.", e);
         }
-
     }
 
     // ApplicationConfig correlative methods
@@ -336,7 +322,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public <T extends AbstractConfig> Optional<T> getConfig(Class<T> cls, String idOrName) {
         T config = getConfigById(getTagName(cls), idOrName);
         if (config == null ) {
-            config = getConfigByName(getTagName(cls), idOrName);
+            config = getConfigByName(cls, idOrName);
         }
         return ofNullable(config);
     }
@@ -525,21 +511,21 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get config by name if existed
-     * @param configType
+     * @param cls
      * @param name
      * @return
      */
-    private <C extends AbstractConfig> C getConfigByName(String configType, String name) {
+    private <C extends AbstractConfig> C getConfigByName(Class<? extends C> cls, String name) {
         return read(() -> {
+            String configType = getTagName(cls);
             Map<String, C> configsMap = (Map) configsCache.getOrDefault(configType, emptyMap());
             if (configsMap.isEmpty()) {
                 return null;
             }
             // try find config by name
-            Method method = configNameMethodCache.get(configType);
-            if (method != null) {
+            if (ReflectUtils.hasMethod(cls, CONFIG_NAME_READ_METHOD)) {
                 List<C> list = configsMap.values().stream()
-                        .filter(cfg -> name.equals(getConfigName(cfg, method)))
+                        .filter(cfg -> name.equals(getConfigName(cfg)))
                         .collect(Collectors.toList());
                 if (list.size() > 1) {
                     throw new IllegalStateException("Found more than one config by name: " + name +
@@ -552,9 +538,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         });
     }
 
-    private <C extends AbstractConfig> String getConfigName(C config, Method getNameMethod) {
+    private <C extends AbstractConfig> String getConfigName(C config) {
         try {
-            return (String) getNameMethod.invoke(config);
+            return (String) ReflectUtils.getProperty(config, CONFIG_NAME_READ_METHOD);
         } catch (Exception e) {
             return null;
         }

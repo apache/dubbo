@@ -409,7 +409,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 //    }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         // dubbo.service.{interface-name}

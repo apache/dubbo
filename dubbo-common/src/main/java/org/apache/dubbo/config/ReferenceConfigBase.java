@@ -127,7 +127,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         // dubbo.reference.{interface-name}
