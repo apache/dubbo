@@ -127,20 +127,21 @@ public abstract class AbstractConfigurator implements Configurator {
                 if (configApplication == null || ANY_VALUE.equals(configApplication)
                         || configApplication.equals(currentApplication)) {
 
-                    String tildeKey = null;
+                    Set<String> tildeKeys = new HashSet<>();
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-
-                        if (StringUtils.isNotEmpty(key) && key.startsWith(TILDE)) {
-                            tildeKey = key;
-                        }
+                        String tildeKey = StringUtils.isNotEmpty(key) && key.startsWith(TILDE) ? key : null;
 
                         if (tildeKey != null || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
                             if (value != null && !ANY_VALUE.equals(value)
                                     && !value.equals(url.getParameter(tildeKey != null ? key.substring(1) : key))) {
                                 return url;
                             }
+                        }
+
+                        if (tildeKey != null) {
+                            tildeKeys.add(tildeKey);
                         }
                     }
 
@@ -156,9 +157,7 @@ public abstract class AbstractConfigurator implements Configurator {
                     conditionKeys.add(CONFIG_VERSION_KEY);
                     conditionKeys.add(COMPATIBLE_CONFIG_KEY);
                     conditionKeys.add(INTERFACES);
-                    if (tildeKey != null) {
-                        conditionKeys.add(tildeKey);
-                    }
+                    conditionKeys.addAll(tildeKeys);
 
                     return doConfigure(url, configuratorUrl.removeParameters(conditionKeys));
                 }
