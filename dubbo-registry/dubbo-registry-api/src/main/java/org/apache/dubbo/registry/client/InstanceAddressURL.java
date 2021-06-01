@@ -27,9 +27,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 public class InstanceAddressURL extends URL {
@@ -102,6 +104,11 @@ public class InstanceAddressURL extends URL {
     }
 
     @Override
+    public String getIp() {
+        return instance.getHost();
+    }
+
+    @Override
     public String getPath() {
         MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServiceInfo(getProtocolServiceKey());
         if (serviceInfo == null) {
@@ -120,6 +127,8 @@ public class InstanceAddressURL extends URL {
             return getServiceInterface();
         } else if (REMOTE_APPLICATION_KEY.equals(key)) {
             return instance.getServiceName();
+        } else if (SIDE_KEY.equals(key)) {
+            return CONSUMER_SIDE;
         }
 
         String protocolServiceKey = getProtocolServiceKey();

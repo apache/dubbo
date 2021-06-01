@@ -23,6 +23,7 @@ import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -299,7 +300,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+            throw new IllegalArgumentException(
+                    "Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
@@ -324,7 +326,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
-            URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
+            URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
@@ -357,13 +359,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         for (URL u : us) {
                             URL monitorUrl = ConfigValidationUtils.loadMonitor(this, u);
                             if (monitorUrl != null) {
-                                map.put(MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
+                                u = u.putAttribute(MONITOR_KEY, monitorUrl);
                             }
                             urls.add(u.putAttribute(REFER_KEY, map));
                         }
                     }
                     if (urls.isEmpty()) {
-                        throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
+                        throw new IllegalStateException(
+                                "No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() +
+                                        " use dubbo version " + Version.getVersion() +
+                                        ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                     }
                 }
             }
@@ -374,11 +379,33 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
-                    invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+                    Invoker<?> referInvoker = REF_PROTOCOL.refer(interfaceClass, url);
+                    if (shouldCheck()) {
+                        if (referInvoker.isAvailable()) {
+                            invokers.add(referInvoker);
+                        } else {
+                            referInvoker.destroy();
+                        }
+                    } else {
+                        invokers.add(referInvoker);
+                    }
+
                     if (UrlUtils.isRegistry(url)) {
                         registryURL = url; // use last registry url
                     }
                 }
+
+                if (shouldCheck() && invokers.size() == 0) {
+                    throw new IllegalStateException("Failed to check the status of the service "
+                            + interfaceName
+                            + ". No provider available for the service "
+                            + (group == null ? "" : group + "/")
+                            + interfaceName +
+                            (version == null ? "" : ":" + version)
+                            + " from the multi registry cluster"
+                            + " use dubbo version " + Version.getVersion());
+                }
+
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
                     String cluster = registryURL.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
@@ -386,7 +413,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryURL, invokers));
                 } else { // not a registry url, must be direct invoke.
                     String cluster = CollectionUtils.isNotEmpty(invokers)
-                            ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
+                            ?
+                            (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
+                                    Cluster.DEFAULT)
                             : Cluster.DEFAULT;
                     invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }
@@ -397,7 +426,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             logger.info("Referred dubbo service " + interfaceClass.getName());
         }
 
-        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.get(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+        URL consumerURL = new ServiceConfigURL(CONSUMER_PROTOCOL, map.get(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
         MetadataUtils.publishServiceDefinition(consumerURL);
 
         // create service proxy
@@ -429,11 +458,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
         completeCompoundConfigs(consumer);
-        if (consumer != null) {
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(consumer.getRegistryIds());
-            }
-        }
         // get consumer's global configuration
         checkDefault();
 
@@ -458,12 +482,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
-        //init serivceMetadata
-        serviceMetadata.setVersion(getVersion());
-        serviceMetadata.setGroup(getGroup());
-        serviceMetadata.setDefaultGroup(getGroup());
+        initServiceMetadata(consumer);
         serviceMetadata.setServiceType(getActualInterface());
-        serviceMetadata.setServiceInterfaceName(interfaceName);
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 
@@ -491,7 +511,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * call, which is the default behavior
      */
     protected boolean shouldJvmRefer(Map<String, String> map) {
-        URL tmpUrl = new URL("temp", "localhost", 0, map);
+        URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
         boolean isJvmRefer;
         if (isInjvm() == null) {
             // if a url is specified, don't do local reference

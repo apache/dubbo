@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import com.alibaba.spring.beans.factory.annotation.EnableConfigurationBeanBinding;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.Documented;
@@ -34,7 +35,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * As  a convenient and multiple {@link EnableDubboConfigBinding}
+ * As a convenient and multiple {@link EnableConfigurationBeanBinding}
  * in default behavior , is equal to single bean bindings with below convention prefixes of properties:
  * <ul>
  * <li>{@link ApplicationConfig} binding to property : "dubbo.application"</li>
@@ -57,7 +58,7 @@ import java.lang.annotation.Target;
  * <li>{@link ConsumerConfig} binding to property :  "dubbo.consumers"</li>
  * </ul>
  *
- * @see EnableDubboConfigBinding
+ * @see EnableConfigurationBeanBinding
  * @see DubboConfigConfiguration
  * @see DubboConfigConfigurationRegistrar
  * @since 2.5.8

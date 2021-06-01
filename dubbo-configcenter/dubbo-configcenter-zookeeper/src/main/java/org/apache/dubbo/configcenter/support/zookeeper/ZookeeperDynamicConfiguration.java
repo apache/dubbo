@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.mapping.MappingChangedEvent;
 import org.apache.dubbo.mapping.MappingListener;
@@ -39,7 +40,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
@@ -59,6 +61,9 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     private CacheListener cacheListener;
     private URL url;
+    private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
+    private static final int DEFAULT_QUEUE = 10000;
+    private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     private Map<String, MappingChildListener> listenerMap = new ConcurrentHashMap<>();
 
@@ -72,7 +77,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
         initializedLatch = new CountDownLatch(1);
         this.cacheListener = new CacheListener(rootPath, initializedLatch);
-        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
+
+        final String threadName = this.getClass().getSimpleName();
+        this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
         zkClient.addDataListener(rootPath, cacheListener, executor);

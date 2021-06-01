@@ -16,11 +16,31 @@
  */
 package org.apache.dubbo.registry.client.migration.model;
 
+import java.util.Map;
+
 public class InterfaceMigrationRule {
     private String appName;
     private String serviceKey;
     private MigrationStep step;
     private Float threshold;
+
+    public static InterfaceMigrationRule parseFromMap(Map<String, Object> map) {
+        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule();
+        interfaceMigrationRule.setAppName((String) map.get("appName"));
+        interfaceMigrationRule.setServiceKey((String) map.get("serviceKey"));
+
+        Object step = map.get("step");
+        if (step != null) {
+            interfaceMigrationRule.setStep(MigrationStep.valueOf(step.toString()));
+        }
+
+        Object threshold = map.get("threshold");
+        if (threshold != null) {
+            interfaceMigrationRule.setThreshold(Float.valueOf(threshold.toString()));
+        }
+
+        return interfaceMigrationRule;
+    }
 
     public InterfaceMigrationRule(){}
 

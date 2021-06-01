@@ -19,6 +19,7 @@ package org.apache.dubbo.config.bootstrap;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
@@ -128,7 +129,7 @@ public class DubboBootstrapTest {
         AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
         interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
         interfaceConfig.setMonitor(new MonitorConfig());
-        URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new URL("dubbo", "addr1", 9090));
+        URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new ServiceConfigURL("dubbo", "addr1", 9090));
         Assertions.assertEquals("monitor-addr:12080", url.getAddress());
         Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
         Assertions.assertNotNull(url.getParameter("dubbo"));

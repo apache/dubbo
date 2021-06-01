@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.support;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcContext;
 
 import com.alibaba.fastjson.JSON;
@@ -27,6 +29,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 
 /**
  * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It
@@ -261,6 +266,16 @@ public final class AccessLogData {
      */
     private void set(String key, Object value) {
         data.put(key, value);
+    }
+    
+    public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
+        setServiceName(invoker.getInterface().getName());
+        setMethodName(inv.getMethodName());
+        setVersion(invoker.getUrl().getParameter(VERSION_KEY));
+        setGroup(invoker.getUrl().getParameter(GROUP_KEY));
+        setInvocationTime(new Date());
+        setTypes(inv.getParameterTypes());
+        setArguments(inv.getArguments());
     }
 
 }

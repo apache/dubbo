@@ -336,7 +336,9 @@ public final class URLBuilder extends ServiceConfigURL {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return this;
         }
-        this.parameters.putAll(parameters);
+        for(Map.Entry<String, String> entry : parameters.entrySet()) {
+            this.parameters.putIfAbsent(entry.getKey(), entry.getValue());
+        }
         return this;
     }
 

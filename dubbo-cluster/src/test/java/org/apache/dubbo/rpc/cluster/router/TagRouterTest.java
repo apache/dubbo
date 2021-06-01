@@ -97,6 +97,8 @@ public class TagRouterTest {
         TagRouterRule tagRouterRule = TagRuleParser.parse(tagRouterRuleConfig);
 
         // assert tags
+        assert tagRouterRule.getKey().equals("demo-provider");
+        assert tagRouterRule.getPriority() == 1;
         assert tagRouterRule.getTagNames().contains("tag1");
         assert tagRouterRule.getTagNames().contains("tag2");
         assert tagRouterRule.getTagNames().contains("tag3");

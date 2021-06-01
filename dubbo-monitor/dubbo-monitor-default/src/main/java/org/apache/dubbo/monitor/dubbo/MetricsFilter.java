@@ -70,7 +70,7 @@ import static org.apache.dubbo.monitor.Constants.SERVICE;
 public class MetricsFilter implements Filter {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
-    private static volatile AtomicBoolean exported = new AtomicBoolean(false);
+    protected static volatile AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
 
