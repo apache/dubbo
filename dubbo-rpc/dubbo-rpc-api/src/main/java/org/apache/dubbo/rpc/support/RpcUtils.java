@@ -62,7 +62,7 @@ public class RpcUtils {
                 String service = invocation.getInvoker().getUrl().getServiceInterface();
                 if (StringUtils.isNotEmpty(service)) {
                     Method method = getMethodByService(invocation, service);
-                    return method.getReturnType();
+                    return method == null ? null : method.getReturnType();
                 }
             }
         } catch (Throwable t) {

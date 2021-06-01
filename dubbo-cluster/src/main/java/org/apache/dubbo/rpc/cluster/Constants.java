@@ -106,4 +106,10 @@ public interface Constants {
     String PEER_KEY = "peer";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
+
+    /**
+     * prefix of arguments router key
+     */
+    String ARGUMENTS = "arguments";
+
 }

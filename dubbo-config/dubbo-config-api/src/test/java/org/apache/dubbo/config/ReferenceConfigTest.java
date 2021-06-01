@@ -16,44 +16,58 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 public class ReferenceConfigTest {
+    private TestingServer zkServer;
+    private String registryUrl;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         ApplicationModel.reset();
+        int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+        this.zkServer = new TestingServer(zkServerPort, true);
+        this.zkServer.start();
+        this.registryUrl = "zookeeper://localhost:" + zkServerPort;
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IOException {
+        zkServer.stop();
         ApplicationModel.reset();
     }
 
     @Test
+    @Disabled("Disabled due to Github Actions environment")
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("multicast://224.5.6.7:1234");
+        registry.setAddress(registryUrl);
 
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
         demoService = new ServiceConfig<DemoService>();
@@ -75,8 +89,12 @@ public class ReferenceConfigTest {
                     rc.getInvoker().getUrl().getProtocol()));
         } finally {
             System.clearProperty("java.net.preferIPv4Stack");
+            rc.destroy();
             demoService.unexport();
         }
+
+        // Manually trigger dubbo resource recycling.
+        DubboBootstrap.getInstance().destroy();
     }
 
     /**
@@ -89,7 +107,7 @@ public class ReferenceConfigTest {
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
-        registry.setAddress("multicast://224.5.6.7:1234");
+        registry.setAddress(registryUrl);
         ProtocolConfig protocol = new ProtocolConfig();
         protocol.setName("mockprotocol");
 
@@ -122,6 +140,8 @@ public class ReferenceConfigTest {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
+            rc.destroy();
+            sc.unexport();
             System.clearProperty("java.net.preferIPv4Stack");
         }
         Assertions.assertTrue(success);
@@ -141,15 +161,15 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(3, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getActives());
         Assertions.assertEquals(5, (int) ((MethodConfig) referenceConfig.getMethods().get(0)).getExecutes());
         Assertions.assertTrue(((MethodConfig) referenceConfig.getMethods().get(0)).isAsync());
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvoke(), "i");
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturn(), "r");
-        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrow(), "t");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOninvokeMethod(), "i");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnreturnMethod(), "r");
+        Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getOnthrowMethod(), "t");
         Assertions.assertEquals(((MethodConfig) referenceConfig.getMethods().get(0)).getCache(), "c");
     }
 
 
     @Reference(methods = {@Method(name = "sayHello", timeout = 1300, retries = 4, loadbalance = "random", async = true,
-            actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "i", onthrow = "t", onreturn = "r", cache = "c", validation = "v",
+            actives = 3, executes = 5, deprecated = true, sticky = true, oninvoke = "instance.i", onthrow = "instance.t", onreturn = "instance.r", cache = "c", validation = "v",
             arguments = {@Argument(index = 24, callback = true, type = "sss")})})
     private InnerTest innerTest;
 

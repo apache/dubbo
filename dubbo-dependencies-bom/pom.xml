@@ -90,7 +90,7 @@
     <properties>
         <!-- Common libs -->
         <spring_version>5.2.8.RELEASE</spring_version>
-        <javassist_version>3.20.0-GA</javassist_version>
+        <javassist_version>3.23.1-GA</javassist_version>
         <eclipse_collections_version>10.4.0</eclipse_collections_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.56.Final</netty4_version>
@@ -102,7 +102,7 @@
         <zookeeper_version>3.4.13</zookeeper_version>
         <curator_version>4.0.1</curator_version>
         <curator_test_version>2.12.0</curator_test_version>
-        <jedis_version>2.9.0</jedis_version>
+        <jedis_version>3.6.0</jedis_version>
         <consul_version>1.4.2</consul_version>
         <consul_process_version>2.0.0</consul_process_version>
         <consul_client_version>1.3.7</consul_client_version>
@@ -155,7 +155,7 @@
 
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
-        <test_container_version>1.11.2</test_container_version>
+        <test_container_version>1.15.3</test_container_version>
         <etcd_launcher_version>0.5.3</etcd_launcher_version>
         <hessian_lite_version>3.2.8</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>

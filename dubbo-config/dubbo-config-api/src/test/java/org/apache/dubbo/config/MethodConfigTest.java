@@ -87,12 +87,12 @@ public class MethodConfigTest {
         assertThat(EXECUTES, equalTo(methodConfig.getExecutes().intValue()));
         assertThat(DEPERECATED, equalTo(methodConfig.getDeprecated()));
         assertThat(STICKY, equalTo(methodConfig.getSticky()));
-//        assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
-//        assertThat(ONINVOKE_METHOD, equalTo(methodConfig.getOninvokeMethod()));
-//        assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
-//        assertThat(ONTHROW_METHOD, equalTo(methodConfig.getOnthrowMethod()));
-//        assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
-//        assertThat(ONRETURN_METHOD, equalTo(methodConfig.getOnreturnMethod()));
+        assertThat(ONINVOKE, equalTo(methodConfig.getOninvoke()));
+        assertThat(ONINVOKE_METHOD, equalTo(methodConfig.getOninvokeMethod()));
+        assertThat(ONTHROW, equalTo(methodConfig.getOnthrow()));
+        assertThat(ONTHROW_METHOD, equalTo(methodConfig.getOnthrowMethod()));
+        assertThat(ONRETURN, equalTo(methodConfig.getOnreturn()));
+        assertThat(ONRETURN_METHOD, equalTo(methodConfig.getOnreturnMethod()));
         assertThat(CACHE, equalTo(methodConfig.getCache()));
         assertThat(VALIDATION, equalTo(methodConfig.getValidation()));
         assertThat(ARGUMENTS_INDEX, equalTo(methodConfig.getArguments().get(0).getIndex().intValue()));

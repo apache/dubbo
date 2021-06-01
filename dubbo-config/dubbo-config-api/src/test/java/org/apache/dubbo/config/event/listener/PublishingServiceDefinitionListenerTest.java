@@ -51,6 +51,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @BeforeEach
     public void init() {
+        ApplicationModel.reset();
         String metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         ConfigManager configManager = ApplicationModel.getConfigManager();
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");

@@ -32,6 +32,8 @@ import org.apache.dubbo.common.extension.activate.impl.ValueActivateExtImpl;
 import org.apache.dubbo.common.extension.convert.String2BooleanConverter;
 import org.apache.dubbo.common.extension.convert.String2DoubleConverter;
 import org.apache.dubbo.common.extension.convert.String2IntegerConverter;
+import org.apache.dubbo.common.extension.duplicated.DuplicatedOverriddenExt;
+import org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt;
 import org.apache.dubbo.common.extension.ext1.SimpleExt;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl1;
 import org.apache.dubbo.common.extension.ext1.impl.SimpleExtImpl2;
@@ -256,6 +258,7 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(AddExt1_ManualAdd1.class));
         assertEquals("Manual1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd1.class));
+        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -325,6 +328,7 @@ public class ExtensionLoaderTest {
             assertThat(ext, instanceOf(AddExt1_ManualAdd2.class));
             assertEquals("impl1", getExtensionLoader(AddExt1.class).getExtensionName(AddExt1_ManualAdd2.class));
         }
+        ExtensionLoader.resetExtensionLoader(AddExt1.class);
     }
 
     @Test
@@ -338,6 +342,7 @@ public class ExtensionLoaderTest {
 
         adaptive = loader.getAdaptiveExtension();
         assertTrue(adaptive instanceof AddExt3_ManualAdaptive);
+        ExtensionLoader.resetExtensionLoader(AddExt3.class);
     }
 
     @Test
@@ -375,7 +380,7 @@ public class ExtensionLoaderTest {
             fail();
         } catch (IllegalStateException expected) {
             assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.ext7.InitErrorExt"));
-            assertThat(expected.getCause(), instanceOf(ExceptionInInitializerError.class));
+            assertThat(expected.getMessage(), containsString("java.lang.ExceptionInInitializerError"));
         }
     }
 
@@ -530,5 +535,89 @@ public class ExtensionLoaderTest {
         loadingStrategy = strategies.get(i++);
         assertEquals(ServicesLoadingStrategy.class, loadingStrategy.getClass());
         assertEquals(Prioritized.MIN_PRIORITY, loadingStrategy.getPriority());
+    }
+
+    @Test
+    public void testDuplicatedImplWithoutOverriddenStrategy() {
+        List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
+        ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
+                new DubboInternalLoadingStrategyTest(false));
+        ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
+        try {
+            extensionLoader.getExtension("duplicated");
+            fail();
+        } catch (IllegalStateException expected) {
+            assertThat(expected.getMessage(), containsString("Failed to load extension class (interface: interface org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt"));
+            assertThat(expected.getMessage(), containsString("cause: Duplicate extension org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt name duplicated"));
+        }finally {
+            //recover the loading strategies
+            ExtensionLoader.setLoadingStrategies(loadingStrategies.toArray(new LoadingStrategy[loadingStrategies.size()]));
+        }
+    }
+
+    @Test
+    public void testDuplicatedImplWithOverriddenStrategy() {
+        List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
+        ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
+                new DubboInternalLoadingStrategyTest(true));
+        ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedOverriddenExt.class);
+        DuplicatedOverriddenExt duplicatedOverriddenExt = extensionLoader.getExtension("duplicated");
+        assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
+        //recover the loading strategies
+        ExtensionLoader.setLoadingStrategies(loadingStrategies.toArray(new LoadingStrategy[loadingStrategies.size()]));
+    }
+
+    /**
+     * The external {@link LoadingStrategy}, which can set if it support overridden
+     */
+    private static class DubboExternalLoadingStrategyTest implements LoadingStrategy {
+
+        public DubboExternalLoadingStrategyTest(boolean overridden) {
+            this.overridden = overridden;
+        }
+
+        private boolean overridden;
+
+        @Override
+        public String directory() {
+            return "META-INF/dubbo/external/";
+        }
+
+        @Override
+        public boolean overridden() {
+            return this.overridden;
+        }
+
+        @Override
+        public int getPriority() {
+            return MAX_PRIORITY + 1;
+        }
+    }
+
+    /**
+     * The internal {@link LoadingStrategy}, which can set if it support overridden
+     */
+    private static class DubboInternalLoadingStrategyTest implements LoadingStrategy {
+
+        public DubboInternalLoadingStrategyTest(boolean overridden) {
+            this.overridden = overridden;
+        }
+
+        private boolean overridden;
+
+        @Override
+        public String directory() {
+            return "META-INF/dubbo/internal/";
+        }
+
+        @Override
+        public boolean overridden() {
+            return this.overridden;
+        }
+
+        @Override
+        public int getPriority() {
+            return MAX_PRIORITY;
+        }
     }
 }

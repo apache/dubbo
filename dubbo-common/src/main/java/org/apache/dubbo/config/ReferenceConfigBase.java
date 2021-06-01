@@ -43,11 +43,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     private static final long serialVersionUID = -5864351140409987595L;
 
     /**
-     * The interface name of the reference service
-     */
-    protected String interfaceName;
-
-    /**
      * The interface class of the reference service
      */
     protected Class<?> interfaceClass;
@@ -72,7 +67,6 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      */
     protected String protocol;
 
-    protected ServiceMetadata serviceMetadata;
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -268,12 +262,14 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
-        super.computeValidRegistryIds();
-        if (StringUtils.isEmpty(getRegistryIds())) {
-            if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
-                setRegistryIds(getConsumer().getRegistryIds());
+        if (consumer != null) {
+            if (notHasSelfRegistryProperty()) {
+                setRegistries(consumer.getRegistries());
+                setRegistryIds(consumer.getRegistryIds());
             }
         }
+
+        super.computeValidRegistryIds();
     }
 
     @Parameter(excluded = true)

@@ -58,8 +58,7 @@ public class TripleProtocol extends AbstractProtocol implements Protocol {
         String key = serviceKey(url);
         final AbstractExporter<T> exporter = new AbstractExporter<T>(invoker) {
             @Override
-            public void unexport() {
-                super.unexport();
+            public void afterUnExport() {
                 pathResolver.remove(url.getServiceKey());
                 pathResolver.remove(url.getServiceInterface());
                 exporterMap.remove(key);
