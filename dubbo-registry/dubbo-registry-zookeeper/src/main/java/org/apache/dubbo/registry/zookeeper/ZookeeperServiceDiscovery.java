@@ -82,6 +82,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return registryURL;
     }
 
+    @Override
     public void destroy() throws Exception {
         serviceDiscovery.close();
     }
@@ -100,6 +101,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         });
     }
 
+    @Override
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> {
             serviceDiscovery.unregisterService(build(serviceInstance));
