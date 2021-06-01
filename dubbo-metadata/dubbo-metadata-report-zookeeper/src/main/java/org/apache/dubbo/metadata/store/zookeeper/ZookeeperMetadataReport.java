@@ -83,7 +83,7 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
         zkClient = zookeeperTransporter.connect(url);
     }
 
-    private String toRootDir() {
+    protected String toRootDir() {
         if (root.equals(PATH_SEPARATOR)) {
             return root;
         }
