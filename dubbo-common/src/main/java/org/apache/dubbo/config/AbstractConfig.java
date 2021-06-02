@@ -70,6 +70,7 @@ public abstract class AbstractConfig implements Serializable {
 
     /**
      * The legacy properties container
+     * TODO remove LEGACY_PROPERTIES?
      */
     private static final Map<String, String> LEGACY_PROPERTIES = new HashMap<String, String>();
 
@@ -100,12 +101,11 @@ public abstract class AbstractConfig implements Serializable {
         LEGACY_PROPERTIES.put("dubbo.service.url", "dubbo.service.address");
 
         // The ignored attributes of metadata
-        IGNORED_ATTRIBUTES.add("prefix");
-        IGNORED_ATTRIBUTES.add("prefixes");
         IGNORED_ATTRIBUTES.add("refreshed");
         IGNORED_ATTRIBUTES.add("valid");
         IGNORED_ATTRIBUTES.add("inited");
-        IGNORED_ATTRIBUTES.add("parent");
+        IGNORED_ATTRIBUTES.add("prefixes");
+        IGNORED_ATTRIBUTES.add("parentPrefix");
     }
 
     /**
