@@ -30,12 +30,24 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 public @interface Parameter {
 
+    /**
+     * Specify the parameter key when append parameters to url
+     */
     String key() default "";
 
+    /**
+     * If required=true, the value must not be empty when append to url
+     */
     boolean required() default false;
 
+    /**
+     * If excluded=true, ignore it when append parameters to url
+     */
     boolean excluded() default false;
 
+    /**
+     * if escaped=true, escape it when append parameters to url
+     */
     boolean escaped() default false;
 
     /**
@@ -43,26 +55,9 @@ public @interface Parameter {
      */
     boolean attribute() default true;
 
-    boolean append() default false;
-
     /**
-     * if {@link #key()} is specified, it will be used as the key for the annotated property when generating url.
-     * by default, this key will also be used to retrieve the config value:
-     * <pre>
-     * {@code
-     *  class ExampleConfig {
-     *      // Dubbo will try to get "dubbo.example.alias_for_item=xxx" from .properties, if you want to use the original property
-     *      // "dubbo.example.item=xxx", you need to set useKeyAsProperty=false.
-     *      @Parameter(key = "alias_for_item")
-     *      public getItem();
-     *  }
-     * }
-     *
-     * </pre>
-     *
-     * @deprecated useKeyAsProperty is no longer used, config overriding ignores parameter key
+     * If append=true, append new value to exist value instead of overriding it.
      */
-    @Deprecated
-    boolean useKeyAsProperty() default true;
+    boolean append() default false;
 
 }

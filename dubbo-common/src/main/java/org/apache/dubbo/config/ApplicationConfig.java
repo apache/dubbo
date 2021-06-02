@@ -212,7 +212,7 @@ public class ApplicationConfig extends AbstractConfig {
         }
     }
 
-    @Parameter(key = APPLICATION_KEY, required = true, useKeyAsProperty = false)
+    @Parameter(key = APPLICATION_KEY, required = true)
     public String getName() {
         return name;
     }

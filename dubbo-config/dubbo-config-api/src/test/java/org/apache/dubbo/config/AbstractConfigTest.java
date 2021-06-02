@@ -620,7 +620,7 @@ public class AbstractConfigTest {
             this.exclude = exclude;
         }
 
-        @Parameter(key = "key1", useKeyAsProperty = false)
+        @Parameter(key = "key1")
         public String getKey() {
             return key;
         }
@@ -629,7 +629,7 @@ public class AbstractConfigTest {
             this.key = key;
         }
 
-        @Parameter(key = "mykey", useKeyAsProperty = true)
+        @Parameter(key = "mykey")
         public String getKey2() {
             return key2;
         }

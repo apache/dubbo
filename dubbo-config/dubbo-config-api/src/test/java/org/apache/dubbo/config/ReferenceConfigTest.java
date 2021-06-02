@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
@@ -152,6 +153,24 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(2, metaData.size());
         Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
         Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+
+    }
+
+    @Test
+    public void testGetPrefixes() {
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(DemoService.class);
+
+        List<String> prefixes = referenceConfig.getPrefixes();
+        Assertions.assertTrue(prefixes.contains("dubbo.reference." + referenceConfig.getInterface()));
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++) {
+            referenceConfig.getPrefixes();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
 
     }
 
