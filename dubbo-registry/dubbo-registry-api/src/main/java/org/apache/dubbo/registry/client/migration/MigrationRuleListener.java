@@ -24,6 +24,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
@@ -34,6 +35,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
@@ -54,7 +57,10 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
 
         String localRawRule = ApplicationModel.getEnvironment().getLocalMigrationRule();
-        String defaultRawRule = StringUtils.isEmpty(localRawRule) ? INIT : localRawRule;
+        if (!StringUtils.isEmpty(localRawRule)) {
+            Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
+                    .schedule(() -> this.process(new ConfigChangedEvent(null, null, localRawRule)), 60, TimeUnit.SECONDS);
+        }
 
         if (this.configuration != null) {
             logger.info("Listening for migration rules on dataId " + RULE_KEY + ", group " + DUBBO_SERVICEDISCOVERY_MIGRATION);
@@ -62,14 +68,14 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
             String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
             if (StringUtils.isEmpty(rawRule)) {
-                rawRule = defaultRawRule;
+                rawRule = INIT;
             }
             this.rawRule = rawRule;
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("Using default configuration rule because config center is not configured!");
             }
-            rawRule = defaultRawRule;
+            rawRule = INIT;
         }
 //        process(new ConfigChangedEvent(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, rawRule));
     }
