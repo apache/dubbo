@@ -16,16 +16,6 @@
  */
 package org.apache.dubbo.rpc.cluster;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
 import org.apache.dubbo.common.extension.ExtensionLoader;
@@ -43,6 +33,18 @@ import org.apache.dubbo.rpc.cluster.router.state.BitList;
 import org.apache.dubbo.rpc.cluster.router.state.RouterCache;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouter;
 import org.apache.dubbo.rpc.cluster.router.state.StateRouterFactory;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 
 /**
  * Router chain
@@ -85,7 +87,7 @@ public class RouterChain<T> {
     private RouterChain(URL url) {
         loopPool = executorRepository.nextExecutorExecutor();
         List<RouterFactory> extensionFactories = ExtensionLoader.getExtensionLoader(RouterFactory.class)
-            .getActivateExtension(url, "router");
+            .getActivateExtension(url, ROUTER_KEY);
 
         List<Router> routers = extensionFactories.stream()
             .map(factory -> factory.getRouter(url))
