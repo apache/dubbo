@@ -41,14 +41,14 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
 
 
 public class DefaultUrlMergeProcessor implements UrlMergeProcessor {
 
     @Override
     public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {
-
-        Map<String, String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<String, String>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
         if (remoteMap != null && remoteMap.size() > 0) {
@@ -80,11 +80,14 @@ public class DefaultUrlMergeProcessor implements UrlMergeProcessor {
         if (localParametersMap != null && localParametersMap.size() > 0) {
             Map<String, String> copyOfLocalMap = new HashMap<>(localParametersMap);
 
-            if(map.containsKey(GROUP_KEY)){
+            if (map.containsKey(GROUP_KEY)) {
                 copyOfLocalMap.remove(GROUP_KEY);
             }
-            if(map.containsKey(VERSION_KEY)){
+            if (map.containsKey(VERSION_KEY)) {
                 copyOfLocalMap.remove(VERSION_KEY);
+            }
+            if (map.containsKey(GENERIC_KEY)) {
+                copyOfLocalMap.remove(GENERIC_KEY);
             }
 
             copyOfLocalMap.remove(RELEASE_KEY);
@@ -105,7 +108,6 @@ public class DefaultUrlMergeProcessor implements UrlMergeProcessor {
                         && localFilter != null && localFilter.length() > 0) {
                     map.put(REFERENCE_FILTER_KEY, remoteFilter + "," + localFilter);
                 }
-
                 String remoteListener = remoteMap.get(INVOKER_LISTENER_KEY);
                 String localListener = copyOfLocalMap.get(INVOKER_LISTENER_KEY);
                 if (remoteListener != null && remoteListener.length() > 0
