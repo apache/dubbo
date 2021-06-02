@@ -95,6 +95,9 @@ public class RedisRegistry extends FailbackRegistry {
 
     private final Map<URL, Long> expireCache = new ConcurrentHashMap<>();
 
+    // just for unit test
+    private volatile boolean doExpire = true;
+
     public RedisRegistry(URL url) {
         super(url);
         String type = url.getParameter(REDIS_CLIENT_KEY, MONO_REDIS);
@@ -140,9 +143,11 @@ public class RedisRegistry extends FailbackRegistry {
             }
         }
 
-        for (Map.Entry<URL, Long> expireEntry : expireCache.entrySet()) {
-            if (expireEntry.getValue() < System.currentTimeMillis()) {
-                doNotify(toCategoryPath(expireEntry.getKey()));
+        if (doExpire) {
+            for (Map.Entry<URL, Long> expireEntry : expireCache.entrySet()) {
+                if (expireEntry.getValue() < System.currentTimeMillis()) {
+                    doNotify(toCategoryPath(expireEntry.getKey()));
+                }
             }
         }
 
