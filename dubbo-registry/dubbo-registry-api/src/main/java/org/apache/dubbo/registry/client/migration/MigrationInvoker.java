@@ -49,7 +49,6 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
 public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Logger logger = LoggerFactory.getLogger(MigrationInvoker.class);
-    private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
 
     private URL url;
     private URL consumerUrl;
@@ -157,15 +156,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
+        // wait and compare threshold
+        waitAddressNotify(newRule, latch);
+
         if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = invoker;
             this.destroyServiceDiscoveryInvoker();
             return true;
         }
-
-        // wait and compare threshold
-        waitAddressNotify(newRule, latch);
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
@@ -177,6 +176,9 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
 
         // compare failed, will not change state
+        if (step == MigrationStep.FORCE_APPLICATION) {
+            destroyServiceDiscoveryInvoker();
+        }
         return false;
     }
 
@@ -191,15 +193,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             return true;
         }
 
+        // wait and compare threshold
+        waitAddressNotify(newRule, latch);
+
         if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = serviceDiscoveryInvoker;
             this.destroyInterfaceInvoker();
             return true;
         }
-
-        // wait and compare threshold
-        waitAddressNotify(newRule, latch);
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
@@ -211,12 +213,15 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
 
         // compare failed, will not change state
+        if (step == MigrationStep.FORCE_INTERFACE) {
+            destroyInterfaceInvoker();
+        }
         return false;
     }
 
     @Override
     public void migrateToApplicationFirstInvoker(MigrationRule newRule) {
-        CountDownLatch latch = new CountDownLatch(2);
+        CountDownLatch latch = new CountDownLatch(0);
         refreshInterfaceInvoker(latch);
         refreshServiceDiscoveryInvoker(latch);
 
@@ -428,7 +433,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         });
     }
 
-    private void calcPreferredInvoker(MigrationRule migrationRule) {
+    private synchronized void calcPreferredInvoker(MigrationRule migrationRule) {
         if (serviceDiscoveryInvoker == null || invoker == null) {
             return;
         }
