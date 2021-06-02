@@ -451,7 +451,7 @@ public class ApplicationConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }

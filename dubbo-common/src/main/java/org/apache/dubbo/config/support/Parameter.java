@@ -38,6 +38,9 @@ public @interface Parameter {
 
     boolean escaped() default false;
 
+    /**
+     * If attribute=false, ignore it when processing refresh()/getMetadata()/equals()/toString()
+     */
     boolean attribute() default true;
 
     boolean append() default false;
@@ -57,7 +60,7 @@ public @interface Parameter {
      *
      * </pre>
      *
-     * @deprecated config overriding ignores parameter key
+     * @deprecated useKeyAsProperty is no longer used, config overriding ignores parameter key
      */
     @Deprecated
     boolean useKeyAsProperty() default true;
