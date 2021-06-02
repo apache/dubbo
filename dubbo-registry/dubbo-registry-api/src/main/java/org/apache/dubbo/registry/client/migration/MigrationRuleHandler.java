@@ -20,12 +20,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
-
-import java.util.Set;
 
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
@@ -36,92 +33,71 @@ public class MigrationRuleHandler<T> {
     private Float currentThreshold = 0f;
     private URL consumerURL;
 
-    private final WritableMetadataService writableMetadataService;
-
     public MigrationRuleHandler(MigrationClusterInvoker<T> invoker, URL url) {
         this.migrationInvoker = invoker;
         this.consumerURL = url;
-        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
-    public synchronized void doMigrate(MigrationRule rule, boolean isCallback) {
+    public synchronized void doMigrate(MigrationRule rule) {
         if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
-            if (!isCallback) {
-                initInvoker(MigrationStep.FORCE_APPLICATION, 1.0f);
-            } else {
-                migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
-            }
+            initInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
             return;
         }
 
-        MigrationStep step = MigrationStep.INTERFACE_FIRST;
+        MigrationStep step = MigrationStep.FORCE_INTERFACE;
         Float threshold = -1f;
         if (rule == MigrationRule.INIT) {
             step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             try {
                 String serviceKey = consumerURL.getDisplayServiceKey();
-                Set<String> apps = writableMetadataService.getCachedMapping(consumerURL);
-                // FIXME, consumerURL.getHost() might not exactly the ip expected.
-                if (CollectionUtils.isNotEmpty(apps)) { //empty only happens when meta server does not work properly
-                    if (CollectionUtils.isEmpty(rule.getTargetIps())) {
-                        setMigrationRule(rule);
-                        step = getMigrationStep(rule, step, serviceKey, apps);
-                        threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
-                    } else {
-                        if (rule.getTargetIps().contains(consumerURL.getHost())) {
-                            setMigrationRule(rule);
-                            step = getMigrationStep(rule, step, serviceKey, apps);
-                            threshold = getMigrationThreshold(rule, threshold, serviceKey, apps);
-                        } else {
-                            setMigrationRule(null); // clear previous rule
-                            logger.info("New migration rule ignored and previous migration rule cleared, new target ips " + rule.getTargetIps() + " and local ip " + consumerURL.getHost() + " do not match");
-                        }
-                    }
-                }
+                step = getMigrationStep(rule, step, serviceKey);
+                threshold = getMigrationThreshold(rule, threshold, serviceKey);
             } catch (Exception e) {
                 logger.error("Failed to get step and threshold info from rule: " + rule, e);
             }
         }
 
-        if (!isCallback) {
-            initInvoker(step, threshold);
-        } else {
-            refreshInvoker(step, threshold);
-        }
+        initInvoker(step, threshold, rule);
+        setMigrationRule(rule);
     }
 
-    private void initInvoker(MigrationStep step, Float threshold) {
+    private void initInvoker(MigrationStep step, Float threshold, MigrationRule newRule) {
         if (step == null || threshold == null) {
             throw new IllegalStateException("Step or threshold of migration rule cannot be null");
         }
+        MigrationStep originStep = currentStep;
+
         if ((currentStep == null || currentStep != step) || !currentThreshold.equals(threshold)) {
-            setCurrentStepAndThreshold(step, threshold);
+            boolean success = true;
             switch (step) {
                 case APPLICATION_FIRST:
-                    migrationInvoker.migrateToServiceDiscoveryInvoker(false);
+                    migrationInvoker.migrateToApplicationFirstInvoker(newRule);
                     break;
                 case FORCE_APPLICATION:
-                    migrationInvoker.migrateToServiceDiscoveryInvoker(true);
+                    success = migrationInvoker.migrateToForceApplicationInvoker(newRule);
                     break;
-                case INTERFACE_FIRST:
+                case FORCE_INTERFACE:
                 default:
-                    migrationInvoker.fallbackToInterfaceInvoker();
+                    success = migrationInvoker.migrateToForceInterfaceInvoker(newRule);
+            }
+            if (success) {
+                setCurrentStepAndThreshold(step, threshold);
+                logger.info("Succeed Migrated to " + step + " mode. Service Name: " + consumerURL.getDisplayServiceKey());
+                report(step, originStep, "true");
+            } else {
+                logger.warn("Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
+                        + threshold + ". Please try re-publish configuration if you still after check.");
+                report(step, originStep, "false");
             }
         }
     }
 
-    private void refreshInvoker(MigrationStep step, Float threshold) {
-        if (step == null || threshold == null) {
-            throw new IllegalStateException("Step or threshold of migration rule cannot be null");
-        }
-
-        if (step == MigrationStep.APPLICATION_FIRST) {
-            setCurrentStepAndThreshold(step, threshold);
-            migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(false);
-        } else if (step == MigrationStep.FORCE_APPLICATION) {
-            setCurrentStepAndThreshold(step, threshold);
-            migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
+    private void report(MigrationStep step, MigrationStep originStep, String success) {
+        if (FrameworkStatusReporter.hasReporter()) {
+            FrameworkStatusReporter.reportMigrationStepStatus(
+                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
+                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
         }
     }
 
@@ -129,14 +105,14 @@ public class MigrationRuleHandler<T> {
         this.migrationInvoker.setMigrationRule(rule);
     }
 
-    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step, String serviceKey, Set<String> apps) {
-        MigrationStep configuredStep = rule.getStep(serviceKey, apps);
+    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step, String serviceKey) {
+        MigrationStep configuredStep = rule.getStep(serviceKey);
         step = configuredStep == null ? step : configuredStep;
         return step;
     }
 
-    private Float getMigrationThreshold(MigrationRule rule, Float threshold, String serviceKey, Set<String> apps) {
-        Float configuredThreshold = rule.getThreshold(serviceKey, apps);
+    private Float getMigrationThreshold(MigrationRule rule, Float threshold, String serviceKey) {
+        Float configuredThreshold = rule.getThreshold(serviceKey);
         threshold = configuredThreshold == null ? threshold : configuredThreshold;
         return threshold;
     }

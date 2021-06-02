@@ -44,31 +44,31 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
     private Map<String, Map<String, Integer>> serviceMigrationData = new ConcurrentHashMap<>();
 
     @Override
-    public <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule) {
-        Map<String, Integer> migrationData = serviceMigrationData.computeIfAbsent(invoker.getUrl().getDisplayServiceKey(), _k -> new ConcurrentHashMap<>());
+    public <T> boolean shouldMigrate(ClusterInvoker<T> newInvoker, ClusterInvoker<T> oldInvoker, MigrationRule rule) {
+        Map<String, Integer> migrationData = serviceMigrationData.computeIfAbsent(oldInvoker.getUrl().getDisplayServiceKey(), _k -> new ConcurrentHashMap<>());
 
-        if (!serviceDiscoveryInvoker.hasProxyInvokers()) {
-            migrationData.put(OLD_ADDRESS_SIZE, getAddressSize(invoker));
+        if (!newInvoker.hasProxyInvokers()) {
+            migrationData.put(OLD_ADDRESS_SIZE, getAddressSize(oldInvoker));
             migrationData.put(NEW_ADDRESS_SIZE, -1);
             logger.info("No instance address available, stop compare.");
             return false;
         }
-        if (!invoker.hasProxyInvokers()) {
+        if (!oldInvoker.hasProxyInvokers()) {
             migrationData.put(OLD_ADDRESS_SIZE, -1);
-            migrationData.put(NEW_ADDRESS_SIZE, getAddressSize(serviceDiscoveryInvoker));
+            migrationData.put(NEW_ADDRESS_SIZE, getAddressSize(newInvoker));
             logger.info("No interface address available, stop compare.");
             return true;
         }
 
-        int newAddressSize = getAddressSize(serviceDiscoveryInvoker);
-        int oldAddressSize = getAddressSize(invoker);
+        int newAddressSize = getAddressSize(newInvoker);
+        int oldAddressSize = getAddressSize(oldInvoker);
 
         migrationData.put(OLD_ADDRESS_SIZE, oldAddressSize);
         migrationData.put(NEW_ADDRESS_SIZE, newAddressSize);
 
         String rawThreshold = null;
-        String serviceKey = invoker.getUrl().getDisplayServiceKey();
-        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey, localMetadataService.getCachedMapping(invoker.getUrl()));
+        String serviceKey = oldInvoker.getUrl().getDisplayServiceKey();
+        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey);
         if (configedThreshold != null && configedThreshold >= 0) {
             rawThreshold = String.valueOf(configedThreshold);
         }
@@ -81,7 +81,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
             threshold = DEFAULT_THREAD;
         }
 
-        logger.info("serviceKey:" + invoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
+        logger.info("serviceKey:" + oldInvoker.getUrl().getServiceKey() + " Instance address size " + newAddressSize + ", interface address size " + oldAddressSize + ", threshold " + threshold);
 
         if (newAddressSize != 0 && oldAddressSize == 0) {
             return true;

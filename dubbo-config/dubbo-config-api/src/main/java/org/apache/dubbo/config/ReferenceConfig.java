@@ -552,7 +552,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     // just for test
-    Invoker<?> getInvoker() {
+    @Deprecated
+    public Invoker<?> getInvoker() {
         return invoker;
     }
 }
