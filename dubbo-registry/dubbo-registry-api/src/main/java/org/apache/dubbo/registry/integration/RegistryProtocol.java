@@ -132,7 +132,7 @@ public class RegistryProtocol implements Protocol {
             APPLICATION_KEY, VERSION_KEY, GROUP_KEY, DUBBO_VERSION_KEY, RELEASE_KEY
     };
 
-    private final static Logger logger = LoggerFactory.getLogger(InterfaceCompatibleRegistryProtocol.class);
+    private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
     private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     private final ProviderConfigurationListener providerConfigurationListener = new ProviderConfigurationListener();

@@ -395,8 +395,12 @@ public class ServiceInstancesChangedListener {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceInstancesChangedListener)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceInstancesChangedListener)) {
+            return false;
+        }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
         return Objects.equals(getServiceNames(), that.getServiceNames());
     }

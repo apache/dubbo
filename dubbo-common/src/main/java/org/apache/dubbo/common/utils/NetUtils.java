@@ -235,7 +235,9 @@ public class NetUtils {
             return configIp;
         }
 
-        return getIpByHost(getLocalAddress().getHostName());
+        InetAddress localAddress = getLocalAddress();
+        String hostName = localAddress == null ? LOCALHOST_VALUE : localAddress.getHostName();
+        return getIpByHost(hostName);
     }
 
     /**
@@ -471,10 +473,8 @@ public class NetUtils {
 
     public static void setInterface(MulticastSocket multicastSocket, boolean preferIpv6) throws IOException {
         boolean interfaceSet = false;
-        Enumeration interfaces = NetworkInterface.getNetworkInterfaces();
-        while (interfaces.hasMoreElements()) {
-            NetworkInterface i = (NetworkInterface) interfaces.nextElement();
-            Enumeration addresses = i.getInetAddresses();
+        for (NetworkInterface networkInterface : getValidNetworkInterfaces()) {
+            Enumeration addresses = networkInterface.getInetAddresses();
             while (addresses.hasMoreElements()) {
                 InetAddress address = (InetAddress) addresses.nextElement();
                 if (preferIpv6 && address instanceof Inet6Address) {

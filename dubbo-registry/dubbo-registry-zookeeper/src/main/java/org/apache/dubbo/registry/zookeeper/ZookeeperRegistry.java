@@ -188,10 +188,9 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        super.doUnsubscribe(url, listener);
-        ConcurrentMap<NotifyListener, org.apache.dubbo.remoting.zookeeper.ChildListener> listeners = zkListeners.get(url);
+        ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
-            org.apache.dubbo.remoting.zookeeper.ChildListener zkListener = listeners.get(listener);
+            ChildListener zkListener = listeners.remove(listener);
             if (zkListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -201,6 +200,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         zkClient.removeChildListener(path, zkListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                zkListeners.remove(url);
             }
         }
     }
@@ -279,6 +282,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
+                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
                 }
             }

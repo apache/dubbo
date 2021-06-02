@@ -159,8 +159,12 @@ public class RestMethodMetadata implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof RestMethodMetadata)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RestMethodMetadata)) {
+            return false;
+        }
         RestMethodMetadata that = (RestMethodMetadata) o;
         return Objects.equals(getMethod(), that.getMethod()) &&
                 Objects.equals(getRequest(), that.getRequest()) &&

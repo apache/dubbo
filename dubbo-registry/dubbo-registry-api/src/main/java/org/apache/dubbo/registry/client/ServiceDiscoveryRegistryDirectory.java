@@ -24,7 +24,6 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -44,7 +43,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 
-public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
     // instance address to invoker mapping.
