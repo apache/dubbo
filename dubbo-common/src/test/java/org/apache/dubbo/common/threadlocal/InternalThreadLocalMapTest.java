@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common.threadlocal;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,11 @@ public class InternalThreadLocalMapTest {
 
     @BeforeEach
     public void clear() {
+        InternalThreadLocalMap.remove();
+    }
+
+    @AfterEach
+    public void remove(){
         InternalThreadLocalMap.remove();
     }
 
