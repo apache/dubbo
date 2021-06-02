@@ -152,9 +152,13 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         refreshInterfaceInvoker(latch);
 
         if (serviceDiscoveryInvoker == null) {
+            // serviceDiscoveryInvoker is absent, ignore threshold check
+            this.currentAvailableInvoker = invoker;
             return true;
         }
+
         if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
+            // force migrate, ignore threshold check
             this.currentAvailableInvoker = invoker;
             this.destroyServiceDiscoveryInvoker();
             return true;
@@ -172,6 +176,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
         }
 
+        // compare failed, will not change state
         return false;
     }
 
@@ -181,15 +186,19 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         refreshServiceDiscoveryInvoker(latch);
 
         if (invoker == null) {
+            // invoker is absent, ignore threshold check
+            this.currentAvailableInvoker = serviceDiscoveryInvoker;
             return true;
         }
 
         if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
+            // force migrate, ignore threshold check
             this.currentAvailableInvoker = serviceDiscoveryInvoker;
             this.destroyInterfaceInvoker();
             return true;
         }
 
+        // wait and compare threshold
         waitAddressNotify(newRule, latch);
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
@@ -201,6 +210,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
             }
         }
 
+        // compare failed, will not change state
         return false;
     }
 
@@ -210,6 +220,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         refreshInterfaceInvoker(latch);
         refreshServiceDiscoveryInvoker(latch);
 
+        // directly calculate preferred invoker, will not wait until address notify
+        // calculation will re-occurred when address notify later
         calcPreferredInvoker(newRule);
     }
 
@@ -237,6 +249,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     public Result invoke(Invocation invocation) throws RpcException {
         if (currentAvailableInvoker != null) {
             if (step == APPLICATION_FIRST) {
+                // call ratio calculation based on random value
                 if (ThreadLocalRandom.current().nextDouble(100) > promotion) {
                     return invoker.invoke(invocation);
                 }
@@ -421,6 +434,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(detectors)) {
+            // pick preferred invoker
+            // the real invoker choice in invocation will be affected by promotion
             if (detectors.stream().allMatch(comparator -> comparator.shouldMigrate(serviceDiscoveryInvoker, invoker, migrationRule))) {
                 this.currentAvailableInvoker = serviceDiscoveryInvoker;
             } else {

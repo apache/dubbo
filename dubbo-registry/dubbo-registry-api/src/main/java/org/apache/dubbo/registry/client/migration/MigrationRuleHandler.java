@@ -40,10 +40,11 @@ public class MigrationRuleHandler<T> {
 
     public synchronized void doMigrate(MigrationRule rule) {
         if (migrationInvoker instanceof ServiceDiscoveryMigrationInvoker) {
-            initInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
+            refreshInvoker(MigrationStep.FORCE_APPLICATION, 1.0f, rule);
             return;
         }
 
+        // initial step : FORCE_INTERFACE
         MigrationStep step = MigrationStep.FORCE_INTERFACE;
         Float threshold = -1f;
         if (rule == MigrationRule.INIT) {
@@ -58,11 +59,13 @@ public class MigrationRuleHandler<T> {
             }
         }
 
-        initInvoker(step, threshold, rule);
-        setMigrationRule(rule);
+        if (refreshInvoker(step, threshold, rule)) {
+            // refresh success, update rule
+            setMigrationRule(rule);
+        }
     }
 
-    private void initInvoker(MigrationStep step, Float threshold, MigrationRule newRule) {
+    private boolean refreshInvoker(MigrationStep step, Float threshold, MigrationRule newRule) {
         if (step == null || threshold == null) {
             throw new IllegalStateException("Step or threshold of migration rule cannot be null");
         }
@@ -81,16 +84,22 @@ public class MigrationRuleHandler<T> {
                 default:
                     success = migrationInvoker.migrateToForceInterfaceInvoker(newRule);
             }
+
             if (success) {
                 setCurrentStepAndThreshold(step, threshold);
                 logger.info("Succeed Migrated to " + step + " mode. Service Name: " + consumerURL.getDisplayServiceKey());
                 report(step, originStep, "true");
             } else {
+                // migrate failed, do not save new step and rule
                 logger.warn("Migrate to " + step + " mode failed. Probably not satisfy the threshold you set "
                         + threshold + ". Please try re-publish configuration if you still after check.");
                 report(step, originStep, "false");
             }
+
+            return success;
         }
+        // ignore if step is same with previous, will continue override rule for MigrationInvoker
+        return true;
     }
 
     private void report(MigrationStep step, MigrationStep originStep, String success) {
