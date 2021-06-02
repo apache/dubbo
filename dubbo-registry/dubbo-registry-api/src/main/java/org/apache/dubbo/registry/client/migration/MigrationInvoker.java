@@ -139,9 +139,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(RegistryProtocol.toSubscribeUrl(oldSubscribeUrl));
-        registry.register(directory.getRegisteredConsumerUrl());
-
-        directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        if (directory.isShouldRegister()) {
+            registry.register(directory.getRegisteredConsumerUrl());
+            directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        }
         directory.buildRouterChain(newSubscribeUrl);
         directory.subscribe(RegistryProtocol.toSubscribeUrl(newSubscribeUrl));
     }
@@ -453,13 +454,17 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     }
 
     private void clearListener(ClusterInvoker<T> invoker) {
-        if (invoker == null) return;
+        if (invoker == null) {
+            return;
+        }
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         directory.setInvokersChangedListener(null);
     }
 
     private void setListener(ClusterInvoker<T> invoker, InvokersChangedListener listener) {
-        if (invoker == null) return;
+        if (invoker == null) {
+            return;
+        }
         DynamicDirectory<T> directory = (DynamicDirectory<T>) invoker.getDirectory();
         directory.setInvokersChangedListener(listener);
     }

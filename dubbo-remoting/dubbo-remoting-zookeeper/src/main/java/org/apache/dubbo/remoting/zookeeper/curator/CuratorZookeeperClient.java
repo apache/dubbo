@@ -43,6 +43,7 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.Stat;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -57,7 +58,7 @@ public class CuratorZookeeperClient
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
 
-    static final Charset CHARSET = Charset.forName("UTF-8");
+    static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
     private Map<String, TreeCache> treeCacheMap = new ConcurrentHashMap<>();
 
@@ -402,17 +403,16 @@ public class CuratorZookeeperClient
         private final long UNKNOWN_SESSION_ID = -1L;
 
         private long lastSessionId;
-        private URL url;
+        private int timeout;
+        private int sessionExpireMs;
 
         public CuratorConnectionStateListener(URL url) {
-            this.url = url;
+            this.timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
+            this.sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
         }
 
         @Override
         public void stateChanged(CuratorFramework client, ConnectionState state) {
-            int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
-            int sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
-
             long sessionId = UNKNOWN_SESSION_ID;
             try {
                 sessionId = client.getZookeeperClient().getZooKeeper().getSessionId();

@@ -42,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 /**
  * Check available status for dubboInvoker
  */
-public class DubboInvokerAvilableTest {
+public class DubboInvokerAvailableTest {
     private static DubboProtocol protocol;
     private static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
@@ -90,6 +90,7 @@ public class DubboInvokerAvilableTest {
     }
 
     @Disabled
+    @Test
     public void test_normal_channel_close_wait_gracefully() throws Exception {
         int testPort = NetUtils.getAvailablePort();
         URL url = URL.valueOf("dubbo://127.0.0.1:" + testPort + "/org.apache.dubbo.rpc.protocol.dubbo.IDemoService?scope=true&lazy=false");

@@ -49,7 +49,7 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
 
     private final RegistryNotifier notifier;
 
-    private boolean keepWatching = true;
+    private volatile boolean keepWatching = true;
 
     private final String serviceName;
 

@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata.rest;
 
 import org.apache.dubbo.common.utils.MethodComparator;
 import org.apache.dubbo.common.utils.ServiceAnnotationResolver;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.metadata.definition.MethodDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
@@ -70,7 +71,8 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
     }
 
     protected final boolean isServiceAnnotationPresent(Class<?> serviceType) {
-        return isAnyAnnotationPresent(serviceType, Service.class, com.alibaba.dubbo.config.annotation.Service.class);
+        return isAnyAnnotationPresent(serviceType, DubboService.class, Service.class,
+                com.alibaba.dubbo.config.annotation.Service.class);
     }
 
     /**
@@ -296,7 +298,7 @@ public abstract class AbstractServiceRestMetadataResolver implements ServiceRest
         for (int i = 0; i < paramCount; i++) {
             Parameter parameter = parameters[i];
             // Add indexed parameter name
-            metadata.addIndexToName(i,parameter.getName());
+            metadata.addIndexToName(i, parameter.getName());
             processAnnotatedMethodParameter(parameter, i, serviceMethod, serviceType, serviceInterfaceClass, metadata);
         }
     }

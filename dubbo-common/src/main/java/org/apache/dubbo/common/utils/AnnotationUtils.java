@@ -22,6 +22,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -40,6 +41,7 @@ import static org.apache.dubbo.common.function.Streams.filterFirst;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInheritedTypes;
 import static org.apache.dubbo.common.utils.ClassUtils.resolveClass;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
+import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
 import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
 
 /**
@@ -448,5 +450,33 @@ public interface AnnotationUtils {
     static boolean isAnyAnnotationPresent(Class<?> type,
                                           Class<? extends Annotation>... annotationTypes) {
         return isAnnotationPresent(type, false, annotationTypes);
+    }
+
+
+    /**
+     * Get the default value of attribute on the specified annotation
+     *
+     * @param annotation    {@link Annotation} object
+     * @param attributeName the name of attribute
+     * @param <T>           the type of value
+     * @return <code>null</code> if not found
+     * @since 2.7.9
+     */
+    static <T> T getDefaultValue(Annotation annotation, String attributeName) {
+        return getDefaultValue(annotation.annotationType(), attributeName);
+    }
+
+    /**
+     * Get the default value of attribute on the specified annotation
+     *
+     * @param annotationType the type of {@link Annotation}
+     * @param attributeName  the name of attribute
+     * @param <T>            the type of value
+     * @return <code>null</code> if not found
+     * @since 2.7.9
+     */
+    static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
+        Method method = findMethod(annotationType, attributeName);
+        return (T) (method == null ? null : method.getDefaultValue());
     }
 }

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
 
@@ -123,7 +124,12 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     }
 
     private static String keyWithoutGroup(String serviceKey) {
-        return interfaceFromServiceKey(serviceKey) + ":" + versionFromServiceKey(serviceKey);
+        String interfaceName = interfaceFromServiceKey(serviceKey);
+        String version = versionFromServiceKey(serviceKey);
+        if (StringUtils.isEmpty(version)) {
+            return interfaceName;
+        }
+        return interfaceName + ":" + version;
     }
 
     public void reRegisterProvider(String newServiceKey, String serviceKey) {

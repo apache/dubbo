@@ -37,6 +37,7 @@ import java.util.StringJoiner;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 
 /**
  * A class which store parameters for {@link URL}
@@ -178,7 +179,7 @@ public class URLParam implements Serializable {
      * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
      *
      * @param method method name
-     * @param key key
+     * @param key    key
      * @return value
      */
     public String getMethodParameter(String method, String key) {
@@ -191,7 +192,7 @@ public class URLParam implements Serializable {
      * Specially, in some situation like `method1.1.callback=true`, key is `1.callback`.
      *
      * @param method method name
-     * @param key key
+     * @param key    key
      * @return value
      */
     public String getMethodParameterStrict(String method, String key) {
@@ -853,10 +854,27 @@ public class URLParam implements Serializable {
             return false;
         }
         URLParam urlParam = (URLParam) o;
-        return Objects.equals(KEY, urlParam.KEY)
+
+        if (Objects.equals(KEY, urlParam.KEY)
                 && Objects.equals(DEFAULT_KEY, urlParam.DEFAULT_KEY)
-                && Arrays.equals(VALUE, urlParam.VALUE)
-                && Objects.equals(EXTRA_PARAMS, urlParam.EXTRA_PARAMS);
+                && Arrays.equals(VALUE, urlParam.VALUE)) {
+            if (CollectionUtils.isNotEmptyMap(EXTRA_PARAMS)) {
+                if (CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS) || EXTRA_PARAMS.size() != urlParam.EXTRA_PARAMS.size()) {
+                    return false;
+                }
+                for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+                    if (TIMESTAMP_KEY.equals(entry.getKey())) {
+                        continue;
+                    }
+                    if (!entry.getValue().equals(urlParam.EXTRA_PARAMS.get(entry.getKey()))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            return CollectionUtils.isEmptyMap(urlParam.EXTRA_PARAMS);
+        }
+        return false;
     }
 
     private int hashCodeCache = -1;
@@ -864,7 +882,11 @@ public class URLParam implements Serializable {
     @Override
     public int hashCode() {
         if (hashCodeCache == -1) {
-            hashCodeCache = EXTRA_PARAMS.hashCode();
+            for (Map.Entry<String, String> entry : EXTRA_PARAMS.entrySet()) {
+                if (!TIMESTAMP_KEY.equals(entry.getKey())) {
+                    hashCodeCache = hashCodeCache * 31 + Objects.hashCode(entry);
+                }
+            }
             for (Integer value : VALUE) {
                 hashCodeCache = hashCodeCache * 31 + value;
             }

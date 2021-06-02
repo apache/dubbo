@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.definition.builder;
 
 import org.apache.dubbo.metadata.definition.TypeDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
-import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -26,7 +25,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.apache.dubbo.common.utils.StringUtils.replace;
 import static org.apache.dubbo.common.utils.TypeUtils.getRawClass;
 import static org.apache.dubbo.common.utils.TypeUtils.isClass;
 import static org.apache.dubbo.common.utils.TypeUtils.isParameterizedType;
@@ -60,14 +58,7 @@ public class MapTypeBuilder implements TypeBuilder {
                             + Arrays.toString(actualTypeArgs), type, actualTypeArgs));
         }
 
-        // Change since 2.7.6
-        /**
-         * Replacing <code>", "</code> to <code>","</code> will not change the semantic of
-         * {@link ParameterizedType#toString()}
-         * @see sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl
-         */
-        String mapType = ClassUtils.getCanonicalNameForParameterizedType(parameterizedType);
-        mapType = replace(mapType, ", ", ",");
+        String mapType = type.toString();
 
         TypeDefinition td = typeCache.get(mapType);
         if (td != null) {
