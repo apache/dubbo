@@ -17,25 +17,32 @@
 package org.apache.dubbo.common.utils;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LFUCache<K, V> {
 
     private Map<K, CacheNode<K, V>> map;
-    private CacheDeque<K, V>[] freqTable;
+    private Map<Long, CacheDeque<K, V>> freqTable;
 
     private final int capacity;
     private int evictionCount;
     private int curSize = 0;
+    private long removeFreqEntryTimeout;
 
-    private final ReentrantLock lock = new ReentrantLock();
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private static final int DEFAULT_INITIAL_CAPACITY = 1000;
 
     private static final float DEFAULT_EVICTION_FACTOR = 0.75f;
 
+    private static final long DEFAULT_REMOVE_FREQ_TABLE_TIME_OUT = 1800000L;
+
     public LFUCache() {
-        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_EVICTION_FACTOR);
+        this(DEFAULT_INITIAL_CAPACITY, DEFAULT_EVICTION_FACTOR, DEFAULT_REMOVE_FREQ_TABLE_TIME_OUT);
     }
 
     /**
@@ -60,14 +67,36 @@ public class LFUCache<K, V> {
         this.capacity = maxCapacity;
         this.evictionCount = (int) (capacity * evictionFactor);
         this.map = new HashMap<>();
-        this.freqTable = new CacheDeque[capacity + 1];
-        for (int i = 0; i <= capacity; i++) {
-            freqTable[i] = new CacheDeque<>();
+        this.freqTable = new TreeMap<>(Long::compareTo);
+        freqTable.put(1L, new CacheDeque<>());
+    }
+
+    /**
+     * Constructs and initializes cache with specified capacity and eviction
+     * factor. Unacceptable parameter values followed with
+     * {@link IllegalArgumentException}.
+     *
+     * @param maxCapacity    cache max capacity
+     * @param evictionFactor cache proceedEviction factor
+     * @param removeFreqEntryTimeout cache queue remove timeout
+     */
+    @SuppressWarnings("unchecked")
+    public LFUCache(final int maxCapacity, final float evictionFactor, final long removeFreqEntryTimeout) {
+        if (maxCapacity <= 0) {
+            throw new IllegalArgumentException("Illegal initial capacity: " +
+                    maxCapacity);
         }
-        for (int i = 0; i < capacity; i++) {
-            freqTable[i].nextDeque = freqTable[i + 1];
+        boolean factorInRange = evictionFactor <= 1 && evictionFactor > 0;
+        if (!factorInRange || Float.isNaN(evictionFactor)) {
+            throw new IllegalArgumentException("Illegal eviction factor value:"
+                    + evictionFactor);
         }
-        freqTable[capacity].nextDeque = freqTable[capacity];
+        this.capacity = maxCapacity;
+        this.evictionCount = (int) (capacity * evictionFactor);
+        this.removeFreqEntryTimeout = removeFreqEntryTimeout;
+        this.map = new HashMap<>();
+        this.freqTable = new TreeMap<>(Long::compareTo);
+        freqTable.put(1L, new CacheDeque<>());
     }
 
     public int getCapacity() {
@@ -76,16 +105,16 @@ public class LFUCache<K, V> {
 
     public V put(final K key, final V value) {
         CacheNode<K, V> node;
-        lock.lock();
+        lock.writeLock().lock();
         try {
             node = map.get(key);
             if (node != null) {
                 CacheNode.withdrawNode(node);
                 node.value = value;
-                freqTable[0].addLastNode(node);
+                moveToNextFreqQueue(node.incrFreq(), node);
                 map.put(key, node);
             } else {
-                node = freqTable[0].addLast(key, value);
+                node = freqTable.get(1L).addLast(key, value);
                 map.put(key, node);
                 curSize++;
                 if (curSize > capacity) {
@@ -93,14 +122,14 @@ public class LFUCache<K, V> {
                 }
             }
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
         return node.value;
     }
 
     public V remove(final K key) {
         CacheNode<K, V> node = null;
-        lock.lock();
+        lock.writeLock().lock();
         try {
             if (map.containsKey(key)) {
                 node = map.remove(key);
@@ -110,24 +139,43 @@ public class LFUCache<K, V> {
                 curSize--;
             }
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
         return (node != null) ? node.value : null;
     }
 
     public V get(final K key) {
         CacheNode<K, V> node = null;
-        lock.lock();
+        lock.writeLock().lock();
         try {
             if (map.containsKey(key)) {
                 node = map.get(key);
                 CacheNode.withdrawNode(node);
-                node.owner.nextDeque.addLastNode(node);
+                moveToNextFreqQueue(node.incrFreq(), node);
             }
         } finally {
-            lock.unlock();
+            lock.writeLock().unlock();
         }
         return (node != null) ? node.value : null;
+    }
+
+    /**
+     * Returns freq of the element
+     *
+     * @return freq
+     */
+    public Long getFreq(final K key) {
+        CacheNode<K, V> node = null;
+        lock.readLock().lock();
+        try {
+            if (map.containsKey(key)) {
+                node = map.get(key);
+                return node.getFreq();
+            }
+        } finally {
+            lock.readLock().unlock();
+        }
+        return null;
     }
 
     /**
@@ -139,20 +187,33 @@ public class LFUCache<K, V> {
     private int proceedEviction() {
         int targetSize = capacity - evictionCount;
         int evictedElements = 0;
-
+        Iterator<CacheDeque<K, V>> iter = freqTable.values().iterator();
         FREQ_TABLE_ITER_LOOP:
-        for (int i = 0; i <= capacity; i++) {
+        while (iter.hasNext()) {
+            CacheDeque<K, V> q = iter.next();
             CacheNode<K, V> node;
-            while (!freqTable[i].isEmpty()) {
-                node = freqTable[i].pollFirst();
+            while (!q.isEmpty()) {
+                node = q.pollFirst();
+                // If you haven't inserted for a long time, you can delete the queue
+                if(removeFreqEntryTimeout > 0 && node.getFreq() > 1 && q.isEmpty() && (System.currentTimeMillis() - q.getLastReqTime()) >= removeFreqEntryTimeout){
+                    freqTable.remove(node.getFreq());
+                }
                 remove(node.key);
+                evictedElements++;
                 if (targetSize >= curSize) {
                     break FREQ_TABLE_ITER_LOOP;
                 }
-                evictedElements++;
             }
         }
         return evictedElements;
+    }
+
+    /**
+     * Move the node to the next cache queue
+     */
+    public void moveToNextFreqQueue(long newFreq, CacheNode<K, V> node){
+        freqTable.putIfAbsent(newFreq, new CacheDeque<>());
+        freqTable.get(newFreq).addLastNode(node);
     }
 
     /**
@@ -170,6 +231,7 @@ public class LFUCache<K, V> {
         CacheNode<K, V> next;
         K key;
         V value;
+        volatile AtomicLong freq = new AtomicLong(1);
         CacheDeque<K, V> owner;
 
         CacheNode() {
@@ -178,6 +240,14 @@ public class LFUCache<K, V> {
         CacheNode(final K key, final V value) {
             this.key = key;
             this.value = value;
+        }
+
+        long incrFreq(){
+            return freq.incrementAndGet();
+        }
+
+        long getFreq(){
+            return freq.get();
         }
 
         /**
@@ -216,7 +286,8 @@ public class LFUCache<K, V> {
 
         CacheNode<K, V> last;
         CacheNode<K, V> first;
-        CacheDeque<K, V> nextDeque;
+
+        long lastReqTime;
 
         /**
          * Constructs list and initializes last and first pointers.
@@ -243,6 +314,7 @@ public class LFUCache<K, V> {
             node.prev = last;
             node.next.prev = node;
             last.next = node;
+            this.setLastReqTime(System.currentTimeMillis());
             return node;
         }
 
@@ -252,6 +324,7 @@ public class LFUCache<K, V> {
             node.prev = last;
             node.next.prev = node;
             last.next = node;
+            this.setLastReqTime(System.currentTimeMillis());
             return node;
         }
 
@@ -281,6 +354,13 @@ public class LFUCache<K, V> {
             return last.next == first;
         }
 
-    }
+        public CacheDeque<K, V> setLastReqTime(long lastReqTime) {
+            this.lastReqTime = lastReqTime;
+            return this;
+        }
 
+        public long getLastReqTime() {
+            return lastReqTime;
+        }
+    }
 }
