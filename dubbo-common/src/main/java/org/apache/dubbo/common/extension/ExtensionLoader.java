@@ -436,6 +436,17 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * get the original type.
+     * @param name
+     * @return
+     */
+    public T getOriginalInstance(String name) {
+        getExtension(name);
+        Class<?> clazz = getExtensionClasses().get(name);
+        return (T) EXTENSION_INSTANCES.get(clazz);
+    }
+
+    /**
      * Get the extension by specified name if found, or {@link #getDefaultExtension() returns the default one}
      *
      * @param name the name of extension
