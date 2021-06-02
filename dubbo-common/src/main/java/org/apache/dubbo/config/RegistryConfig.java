@@ -27,7 +27,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 
 /**
  * RegistryConfig
@@ -506,7 +506,7 @@ public class RegistryConfig extends AbstractConfig {
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_PREFIX);
             super.refresh();
         }
     }
