@@ -21,7 +21,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -38,8 +37,6 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
 
     public static final String OLD_ADDRESS_SIZE = "OLD_ADDRESS_SIZE";
     public static final String NEW_ADDRESS_SIZE = "NEW_ADDRESS_SIZE";
-
-    private static final WritableMetadataService localMetadataService = WritableMetadataService.getDefaultExtension();
 
     private Map<String, Map<String, Integer>> serviceMigrationData = new ConcurrentHashMap<>();
 
