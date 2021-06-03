@@ -16,10 +16,14 @@
  */
 package org.apache.dubbo.common.utils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -114,12 +118,12 @@ public class LFUCache<K, V> {
                 moveToNextFreqQueue(node.incrFreq(), node);
                 map.put(key, node);
             } else {
+                if (curSize + 1 > capacity) {
+                    proceedEviction();
+                }
                 node = freqTable.get(1L).addLast(key, value);
                 map.put(key, node);
                 curSize++;
-                if (curSize > capacity) {
-                    proceedEviction();
-                }
             }
         } finally {
             lock.writeLock().unlock();
@@ -160,6 +164,15 @@ public class LFUCache<K, V> {
     }
 
     /**
+     * Returns size of the freq table
+     *
+     * @return size
+     */
+    public int getFreqTableSize(){
+        return freqTable.size();
+    }
+
+    /**
      * Returns freq of the element
      *
      * @return freq
@@ -179,30 +192,75 @@ public class LFUCache<K, V> {
     }
 
     /**
+     * Returns node list of this frequency
+     *
+     * @return node list
+     */
+    private List<CacheNode<K,V>> getFreqList(final Long freq){
+        if(freq == null){
+            return null;
+        }
+        lock.writeLock().lock();
+        try {
+            if (freqTable.containsKey(freq)) {
+                if(freqTable.get(freq).nodeMap.size() > 0){
+                    return new ArrayList<>(freqTable.get(freq).nodeMap.values());
+                }
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+        return null;
+    }
+
+    /**
+     * Returns node list's size of this frequency
+     *
+     * @return node list's size
+     */
+    public int getFreqListSize(final Long freq){
+        if(freq == null){
+            return 0;
+        }
+        lock.writeLock().lock();
+        try {
+            if (freqTable.containsKey(freq)) {
+                return freqTable.get(freq).size.get();
+            }
+        } finally {
+            lock.writeLock().unlock();
+        }
+        return 0;
+    }
+
+    /**
      * Evicts less frequently used elements corresponding to eviction factor,
      * specified at instantiation step.
      *
      * @return number of evicted elements
      */
     private int proceedEviction() {
-        int targetSize = capacity - evictionCount;
+        int targetSize = capacity - evictionCount - 1;
         int evictedElements = 0;
-        Iterator<CacheDeque<K, V>> iter = freqTable.values().iterator();
-        FREQ_TABLE_ITER_LOOP:
-        while (iter.hasNext()) {
-            CacheDeque<K, V> q = iter.next();
+        Set<Long> freqKeys = freqTable.keySet();
+        boolean evictionEnd = false;
+        for (Long freq : freqKeys) {
+            CacheDeque<K, V> q = freqTable.get(freq);
             CacheNode<K, V> node;
-            while (!q.isEmpty()) {
-                node = q.pollFirst();
-                // If you haven't inserted for a long time, you can delete the queue
-                if(removeFreqEntryTimeout > 0 && node.getFreq() > 1 && q.isEmpty() && (System.currentTimeMillis() - q.getLastReqTime()) >= removeFreqEntryTimeout){
-                    freqTable.remove(node.getFreq());
+            if(!evictionEnd) {
+                while (!q.isEmpty()) {
+                    node = q.pollFirst();
+                    remove(node.key);
+                    evictedElements++;
+                    if (targetSize >= curSize) {
+                        evictionEnd = true;
+                        break;
+                    }
                 }
-                remove(node.key);
-                evictedElements++;
-                if (targetSize >= curSize) {
-                    break FREQ_TABLE_ITER_LOOP;
-                }
+            }
+            // If the queue is empty for a long time, delete the queue
+            if (removeFreqEntryTimeout > 0 && freq > 1 && q.isEmpty() && (System.currentTimeMillis() - q.getLastReqTime()) >= removeFreqEntryTimeout) {
+                freqTable.remove(freq);
             }
         }
         return evictedElements;
@@ -211,7 +269,7 @@ public class LFUCache<K, V> {
     /**
      * Move the node to the next cache queue
      */
-    public void moveToNextFreqQueue(long newFreq, CacheNode<K, V> node){
+    private void moveToNextFreqQueue(long newFreq, CacheNode<K, V> node){
         freqTable.putIfAbsent(newFreq, new CacheDeque<>());
         freqTable.get(newFreq).addLastNode(node);
     }
@@ -266,6 +324,8 @@ public class LFUCache<K, V> {
                 node.prev.next = node.next;
                 if (node.next != null) {
                     node.next.prev = node.prev;
+                    node.owner.nodeMap.remove(node.key);
+                    node.owner.size.decrementAndGet();
                 }
             }
             return node;
@@ -286,9 +346,9 @@ public class LFUCache<K, V> {
 
         CacheNode<K, V> last;
         CacheNode<K, V> first;
-
+        Map<K, CacheNode<K, V>> nodeMap;
         long lastReqTime;
-
+        volatile AtomicInteger size = new AtomicInteger(0);
         /**
          * Constructs list and initializes last and first pointers.
          */
@@ -297,6 +357,7 @@ public class LFUCache<K, V> {
             first = new CacheNode<>();
             last.next = first;
             first.prev = last;
+            nodeMap = new HashMap<>();
         }
 
         /**
@@ -315,6 +376,7 @@ public class LFUCache<K, V> {
             node.next.prev = node;
             last.next = node;
             this.setLastReqTime(System.currentTimeMillis());
+            this.size.incrementAndGet();
             return node;
         }
 
@@ -325,6 +387,8 @@ public class LFUCache<K, V> {
             node.next.prev = node;
             last.next = node;
             this.setLastReqTime(System.currentTimeMillis());
+            this.nodeMap.put(node.key, node);
+            this.size.incrementAndGet();
             return node;
         }
 
@@ -341,6 +405,8 @@ public class LFUCache<K, V> {
                 first.prev.next = first;
                 node.prev = null;
                 node.next = null;
+                this.nodeMap.remove(node.key);
+                this.size.decrementAndGet();
             }
             return node;
         }
