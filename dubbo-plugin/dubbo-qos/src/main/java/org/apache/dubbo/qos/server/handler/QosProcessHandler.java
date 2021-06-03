@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.qos.server.handler;
 
+import org.apache.dubbo.common.utils.ExecutorUtil;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,7 +32,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.ScheduledFuture;
-import org.apache.dubbo.common.utils.ExecutorUtil;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -90,6 +91,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
+            p.addLast(new TelnetIdleEventHandler());
             p.addLast(new TelnetProcessHandler());
             p.remove(this);
         }

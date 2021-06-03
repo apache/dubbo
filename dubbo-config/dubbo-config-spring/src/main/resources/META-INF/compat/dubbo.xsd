@@ -1079,6 +1079,11 @@
                 <xsd:documentation><![CDATA[ The IO thread pool size. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="alive" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The thread pool keepAliveTime. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="queues" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The thread pool queue size. ]]></xsd:documentation>
@@ -1253,6 +1258,11 @@
                 <xsd:attribute name="iothreads" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The IO thread pool size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="alive" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The thread pool keepAliveTime. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:attribute name="queues" type="xsd:string">

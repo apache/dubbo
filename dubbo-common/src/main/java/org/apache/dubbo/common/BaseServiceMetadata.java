@@ -18,11 +18,13 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.StringUtils;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_VERSION;
+
 /**
  * 2019-10-10
  */
 public class BaseServiceMetadata {
-    public static final char COLON_SEPERATOR = ':';
+    public static final char COLON_SEPARATOR = ':';
 
     protected String serviceKey;
     protected String serviceInterfaceName;
@@ -48,7 +50,7 @@ public class BaseServiceMetadata {
     public static String versionFromServiceKey(String serviceKey) {
         int index = serviceKey.indexOf(":");
         if (index == -1) {
-            return null;
+            return DEFAULT_VERSION;
         }
         return serviceKey.substring(index + 1);
     }
@@ -77,7 +79,7 @@ public class BaseServiceMetadata {
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
         serviceNameBuilder.append(serviceInterfaceName);
-        serviceNameBuilder.append(COLON_SEPERATOR).append(version);
+        serviceNameBuilder.append(COLON_SEPARATOR).append(version);
         return serviceNameBuilder.toString();
     }
 
@@ -88,7 +90,7 @@ public class BaseServiceMetadata {
      * @return
      */
     public static BaseServiceMetadata revertDisplayServiceKey(String displayKey) {
-        String[] eles = StringUtils.split(displayKey, COLON_SEPERATOR);
+        String[] eles = StringUtils.split(displayKey, COLON_SEPARATOR);
         if (eles == null || eles.length < 1 || eles.length > 2) {
             return new BaseServiceMetadata();
         }

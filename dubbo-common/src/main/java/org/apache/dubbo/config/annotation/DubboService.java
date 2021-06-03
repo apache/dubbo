@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.annotation;
 
 
+import org.apache.dubbo.common.constants.ClusterRules;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -123,8 +125,9 @@ public @interface DubboService {
 
     /**
      * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * you can use {@link org.apache.dubbo.common.constants.ClusterRules#FAIL_FAST} ……
      */
-    String cluster() default "";
+    String cluster() default ClusterRules.EMPTY;
 
     /**
      * How the proxy is generated, legal values include: jdk, javassist
@@ -173,9 +176,9 @@ public @interface DubboService {
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_LOADBALANCE
+     * you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default "";
+    String loadbalance() default ClusterRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false

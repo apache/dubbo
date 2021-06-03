@@ -43,12 +43,19 @@ import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.stream.IntStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_GSON;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -76,8 +83,13 @@ public class GenericFilter implements Filter, Filter.Listener {
                     args = new Object[params.length];
                 }
 
+                if(types == null) {
+                    types = new String[params.length];
+                }
+
                 if (args.length != types.length) {
-                    throw new RpcException("args.length != types.length");
+                    throw new RpcException("GenericFilter#invoke args.length != types.length, please check your "
+                            + "params");
                 }
                 String generic = inv.getAttachment(GENERIC_KEY);
 
@@ -88,7 +100,13 @@ public class GenericFilter implements Filter, Filter.Listener {
                 if (StringUtils.isEmpty(generic)
                         || ProtocolUtils.isDefaultGenericSerialization(generic)
                         || ProtocolUtils.isGenericReturnRawResult(generic)) {
-                    args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                    try {
+                        args = PojoUtils.realize(args, params, method.getGenericParameterTypes());
+                    } catch (IllegalArgumentException e) {
+                        throw new RpcException(e);
+                    }
+                } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
+                    args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
@@ -157,7 +175,9 @@ public class GenericFilter implements Filter, Filter.Listener {
                     }
                 }
 
-                RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args, inv.getObjectAttachments(), inv.getAttributes());
+                RpcInvocation rpcInvocation =
+                        new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args,
+                                inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
 
@@ -167,6 +187,19 @@ public class GenericFilter implements Filter, Filter.Listener {
             }
         }
         return invoker.invoke(inv);
+    }
+
+    private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
+        Gson gson = new Gson();
+        return IntStream.range(0, args.length).mapToObj(i -> {
+            String str = args[i].toString();
+            Type type = TypeToken.get(types[i]).getType();
+            try {
+                return gson.fromJson(str, type);
+            } catch (JsonSyntaxException ex) {
+                throw new RpcException(String.format("Generic serialization [%s] Json syntax exception thrown when parsing (message:%s type:%s) error:%s", GENERIC_SERIALIZATION_GSON, str, type.toString(), ex.getMessage()));
+            }
+        }).toArray();
     }
 
     @Override
@@ -195,7 +228,8 @@ public class GenericFilter implements Filter, Filter.Listener {
             if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                 try {
                     UnsafeByteArrayOutputStream os = new UnsafeByteArrayOutputStream(512);
-                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA).serialize(null, os).writeObject(appResponse.getValue());
+                    ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(GENERIC_SERIALIZATION_NATIVE_JAVA)
+                            .serialize(null, os).writeObject(appResponse.getValue());
                     appResponse.setValue(os.toByteArray());
                 } catch (IOException e) {
                     throw new RpcException(

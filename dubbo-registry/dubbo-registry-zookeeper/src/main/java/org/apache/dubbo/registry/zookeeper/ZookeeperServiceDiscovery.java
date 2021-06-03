@@ -155,6 +155,16 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                         serviceInstances.add(serviceInstance);
                     }
                 }
+
+                if (healthyOnly) {
+                    Iterator<ServiceInstance> instanceIterator = serviceInstances.iterator();
+                    while (instanceIterator.hasNext()) {
+                        ServiceInstance instance = instanceIterator.next();
+                        if (!instance.isHealthy()) {
+                            instanceIterator.remove();
+                        }
+                    }
+                }
             } catch (KeeperException.NoNodeException e) {
                 logger.warn(p + " path not exist.", e);
             }

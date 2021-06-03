@@ -173,6 +173,7 @@ public class PojoUtils {
         }
         for (Method method : pojo.getClass().getMethods()) {
             if (ReflectUtils.isBeanPropertyReadMethod(method)) {
+                ReflectUtils.makeAccessible(method);
                 try {
                     map.put(ReflectUtils.getPropertyNameFromBeanReadMethod(method), generalize(method.invoke(pojo), history));
                 } catch (Exception e) {
@@ -588,11 +589,7 @@ public class PojoUtils {
                 constructor.setAccessible(true);
                 Object[] parameters = Arrays.stream(constructor.getParameterTypes()).map(PojoUtils::getDefaultValue).toArray();
                 return constructor.newInstance(parameters);
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e.getMessage(), e);
-            } catch (InvocationTargetException e) {
+            } catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
                 throw new RuntimeException(e.getMessage(), e);
             }
         }
@@ -608,8 +605,14 @@ public class PojoUtils {
         if ("char".equals(parameterType.getName())) {
             return Character.MIN_VALUE;
         }
-        if ("bool".equals(parameterType.getName())) {
+        if ("boolean".equals(parameterType.getName())) {
             return false;
+        }
+        if ("byte".equals(parameterType.getName())) {
+            return (byte) 0;
+        }
+        if ("short".equals(parameterType.getName())) {
+            return (short) 0;
         }
         return parameterType.isPrimitive() ? 0 : null;
     }

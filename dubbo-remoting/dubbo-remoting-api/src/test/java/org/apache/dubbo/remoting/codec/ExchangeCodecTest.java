@@ -43,7 +43,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.READONLY_EVENT;
-import static org.junit.jupiter.api.Assertions.fail;
 
 /**
  *
@@ -92,6 +91,22 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         byte[] data = bos.toByteArray();
         byte[] len = Bytes.int2bytes(data.length);
         System.arraycopy(len, 0, header, 12, 4);
+        byte[] request = join(header, data);
+        return request;
+    }
+
+    private byte[] getReadonlyEventRequestBytes(Object obj, byte[] header) throws IOException {
+        // encode request data.
+        UnsafeByteArrayOutputStream bos = new UnsafeByteArrayOutputStream(1024);
+        ObjectOutput out = serialization.serialize(url, bos);
+        out.writeObject(obj);
+
+        out.flushBuffer();
+        bos.flush();
+        bos.close();
+        byte[] data = bos.toByteArray();
+//        byte[] len = Bytes.int2bytes(data.length);
+        System.arraycopy(data, 0, header, 12, data.length);
         byte[] request = join(header, data);
         return request;
     }
@@ -170,12 +185,19 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     public void test_Decode_Check_Payload() throws IOException {
         byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
         byte[] request = assemblyDataProtocol(header);
+
         try {
-            testDecode_assertEquals(request, TelnetCodec.DecodeResult.NEED_MORE_INPUT);
-            fail();
+            Channel channel = getServerSideChannel(url);
+            ChannelBuffer buffer = ChannelBuffers.wrappedBuffer(request);
+            Object obj = codec.decode(channel, buffer);
+
+            Assertions.assertTrue(obj instanceof Response);
+            Assertions.assertTrue(((Response) obj).getErrorMessage().startsWith(
+                    "Data length too large: " + Bytes.bytes2int(new byte[]{1, 1, 1, 1})));
         } catch (IOException expected) {
             Assertions.assertTrue(expected.getMessage().startsWith("Data length too large: " + Bytes.bytes2int(new byte[]{1, 1, 1, 1})));
         }
+
     }
 
     @Test
@@ -232,12 +254,14 @@ public class ExchangeCodecTest extends TelnetCodecTest {
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
 
+        System.setProperty("deserialization.event.size", "100");
         Request obj = (Request) decode(request);
         Assertions.assertEquals(person, obj.getData());
         Assertions.assertTrue(obj.isTwoWay());
         Assertions.assertTrue(obj.isEvent());
         Assertions.assertEquals(Version.getProtocolVersion(), obj.getVersion());
         System.out.println(obj);
+        System.clearProperty("deserialization.event.size");
     }
 
     @Test
@@ -271,7 +295,7 @@ public class ExchangeCodecTest extends TelnetCodecTest {
     @Test
     public void test_Decode_Return_Request_Object() throws IOException {
         //|10011111|20-stats=ok|id=0|length=0
-        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) 0xe2, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] header = new byte[]{MAGIC_HIGH, MAGIC_LOW, (byte) 0xc2, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         Person person = new Person();
         byte[] request = getRequestBytes(person, header);
 

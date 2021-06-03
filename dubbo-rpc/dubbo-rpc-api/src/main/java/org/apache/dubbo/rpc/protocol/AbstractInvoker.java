@@ -28,6 +28,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.TimeoutException;
+import org.apache.dubbo.remoting.transport.CodecSupport;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.InvokeMode;
@@ -48,6 +49,10 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static org.apache.dubbo.remoting.Constants.DEFAULT_REMOTING_SERIALIZATION;
+import static org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_ID_KEY;
 
 /**
  * This Invoker works on Consumer side.
@@ -167,6 +172,12 @@ public abstract class AbstractInvoker<T> implements Invoker<T> {
 
         invocation.setInvokeMode(RpcUtils.getInvokeMode(url, invocation));
         RpcUtils.attachInvocationIdIfAsync(getUrl(), invocation);
+
+        Byte serializationId = CodecSupport.getIDByName(getUrl().getParameter(SERIALIZATION_KEY, DEFAULT_REMOTING_SERIALIZATION));
+        if (serializationId != null) {
+            invocation.put(SERIALIZATION_ID_KEY, serializationId);
+        }
+
 
         AsyncRpcResult asyncResult;
         try {

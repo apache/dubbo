@@ -32,7 +32,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -84,7 +83,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 /**
  * RegistryDirectory
  */
-public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
@@ -165,7 +164,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return "";
     }
 
-    private void refreshOverrideAndInvoker(List<URL> urls) {
+    // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
+    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         refreshInvoker(urls);
@@ -555,14 +555,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
-                if (entry.getValue().isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+                && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable);
     }
 
     /**

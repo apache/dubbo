@@ -78,6 +78,12 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String registry;
 
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
+
     public MetadataReportConfig() {
     }
 
@@ -211,5 +217,13 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setRegistry(String registry) {
         this.registry = registry;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 }

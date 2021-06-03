@@ -139,6 +139,7 @@ public class RpcContextTest {
 
         map.keySet().forEach(context::remove);
         Assertions.assertNull(context.get("_11"));
+        RpcContext.removeContext();
     }
 
     @Test
