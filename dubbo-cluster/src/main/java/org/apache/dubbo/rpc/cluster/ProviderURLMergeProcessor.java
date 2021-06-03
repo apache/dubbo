@@ -22,7 +22,7 @@ import org.apache.dubbo.common.extension.SPI;
 import java.util.Map;
 
 @SPI("default")
-public interface UrlMergeProcessor {
+public interface ProviderURLMergeProcessor {
 
     /**
      * Merging the URL parameters of provider and consumer
