@@ -1316,7 +1316,7 @@ public class DubboBootstrap {
             executorService.shutdown();
         }
 
-        if (!exportReferExecutor.isShutdown()) {
+        if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
             exportReferExecutor.shutdown();
         }
     }
