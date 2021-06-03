@@ -35,12 +35,18 @@ import java.util.stream.Collectors;
  * key: demo-consumer
  * step: APPLICATION_FIRST
  * threshold: 1.0
+ * proportion: 60
+ * delay: 60
+ * force: false
  * interfaces:
- * - serviceKey: DemoService:1.0.0
- * threshold: 1.0
- * step: APPLICATION_FIRST
- * - serviceKey: GreetingService:1.0.0
- * step: FORCE_APPLICATION
+ *   - serviceKey: DemoService:1.0.0
+ *     threshold: 0.5
+ *     proportion: 30
+ *     delay: 30
+ *     force: true
+ *     step: APPLICATION_FIRST
+ *   - serviceKey: GreetingService:1.0.0
+ *     step: FORCE_APPLICATION
  */
 public class MigrationRule {
     public static final MigrationRule INIT = new MigrationRule();
