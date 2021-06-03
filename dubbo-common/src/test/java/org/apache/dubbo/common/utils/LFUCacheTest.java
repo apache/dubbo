@@ -91,7 +91,6 @@ public class LFUCacheTest {
         cache.put("two", 2);
         assertThat(cache.getFreqTableSize(), equalTo(1));
         cache.put("two", 2);
-        long begin = System.currentTimeMillis();
         assertThat(cache.getFreqTableSize(), equalTo(2));
         cache.remove("two");
         cache.put("three",3);
