@@ -110,10 +110,10 @@ public interface Constants {
     String SHUTDOWN_TIMEOUT_KEY = "shutdown.timeout";
 
 
-    String PROTOCOLS_SUFFIX = "dubbo.protocols.";
+    String PROTOCOLS_PREFIX = "dubbo.protocols.";
 
 
-    String REGISTRIES_SUFFIX = "dubbo.registries.";
+    String REGISTRIES_PREFIX = "dubbo.registries.";
 
     String ZOOKEEPER_PROTOCOL = "zookeeper";
 
