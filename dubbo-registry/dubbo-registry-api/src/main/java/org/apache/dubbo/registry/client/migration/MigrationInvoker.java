@@ -112,6 +112,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.serviceDiscoveryInvoker = serviceDiscoveryInvoker;
     }
 
+    public ClusterInvoker<T> getCurrentAvailableInvoker() {
+        return currentAvailableInvoker;
+    }
+
     @Override
     public Class<T> getInterface() {
         return type;
