@@ -1249,8 +1249,6 @@ public class DubboBootstrap {
     public void destroy() {
         if (destroyLock.tryLock()) {
             try {
-                DubboShutdownHook.destroyAll();
-
                 if (started.compareAndSet(true, false)
                         && destroyed.compareAndSet(false, true)) {
 
@@ -1269,6 +1267,8 @@ public class DubboBootstrap {
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
+
+                DubboShutdownHook.destroyAll();
             } finally {
                 destroyLock.unlock();
             }
