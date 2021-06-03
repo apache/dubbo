@@ -266,7 +266,7 @@ public class MetricsFilterTest {
                 //ignore
             }
         }
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -291,6 +291,8 @@ public class MetricsFilterTest {
         Assertions.assertEquals(100.0, metricMap.get("bucket_count"));
         Assertions.assertEquals(100.0 / 5, metricMap.get("qps"));
         Assertions.assertEquals(50.0 / 100.0, metricMap.get("success_rate"));
+
+        invoker.destroy();
     }
 
     public void testInvokeMetricsMethodService() {
@@ -320,7 +322,7 @@ public class MetricsFilterTest {
             }
         }
 
-        Protocol protocol = new DubboProtocol();
+        Protocol protocol = DubboProtocol.getDubboProtocol();
         URL metricUrl = URL.valueOf("dubbo://" + url.getHost() + ":" + url.getPort() + "/" + MetricsService.class.getName() + "?" + METRICS_PORT + "=" + port);
         Invoker<MetricsService> invoker = protocol.refer(MetricsService.class, metricUrl);
         Invocation invocation = new RpcInvocation("getMetricsByGroup", DemoService.class.getName(), "", new Class<?>[]{String.class}, new Object[]{DUBBO_GROUP});
@@ -365,5 +367,7 @@ public class MetricsFilterTest {
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void sayName()").get("success_rate"));
         Assertions.assertEquals(50.0 / 100.0,
                 methodMetricMap.get("org.apache.dubbo.monitor.dubbo.service.DemoService.void echo(Integer)").get("success_rate"));
+
+        invoker.destroy();
     }
 }

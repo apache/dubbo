@@ -80,7 +80,7 @@ import static org.apache.dubbo.metadata.report.support.Constants.SYNC_REPORT_KEY
  */
 public abstract class AbstractMetadataReport implements MetadataReport {
 
-    protected final static String DEFAULT_ROOT = "dubbo";
+    protected static final String DEFAULT_ROOT = "dubbo";
 
     private static final int ONE_DAY_IN_MILLISECONDS = 60 * 24 * 60 * 1000;
     private static final int FOUR_HOURS_IN_MILLISECONDS = 60 * 4 * 60 * 1000;

@@ -48,7 +48,7 @@ final class LazyConnectExchangeClient implements ExchangeClient {
      * when this warning rises from invocation, program probably have bug.
      */
     protected static final String REQUEST_WITH_WARNING_KEY = "lazyclient_request_with_warning";
-    private final static Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(LazyConnectExchangeClient.class);
     protected final boolean requestWithWarning;
     private final URL url;
     private final ExchangeHandler requestHandler;

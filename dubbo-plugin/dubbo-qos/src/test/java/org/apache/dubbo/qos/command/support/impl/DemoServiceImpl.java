@@ -14,16 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.qos.command.support.impl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.qos.command.support.DemoService;
 
-import java.util.Map;
-
-@SPI
-public interface ProviderURLMergeProcessor {
-    URL mergeProviderUrl(URL providerUrl, Map<String, String> localParametersMap);
-
-    boolean accept(URL providerUrl, Map<String, String> localParametersMap);
+public class DemoServiceImpl implements DemoService {
+    @Override
+    public void sayHello(String name) {
+        System.out.println("hello :" + name);
+    }
 }

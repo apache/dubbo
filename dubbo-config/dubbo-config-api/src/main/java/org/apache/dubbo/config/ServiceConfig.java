@@ -96,6 +96,7 @@ import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_BIND;
 import static org.apache.dubbo.config.Constants.DUBBO_PORT_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.MULTICAST;
+import static org.apache.dubbo.config.Constants.MULTIPLE;
 import static org.apache.dubbo.config.Constants.SCOPE_NONE;
 import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
 import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
@@ -215,6 +216,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public synchronized void export() {
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
+            // compatible with api call.
+            if (null != this.getRegistry()) {
+                bootstrap.registries(this.getRegistries());
+            }
             bootstrap.initialize();
         }
 
@@ -628,6 +633,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                         for (URL registryURL : registryURLs) {
                             if (MULTICAST.equalsIgnoreCase(registryURL.getParameter(REGISTRY_KEY))) {
                                 // skip multicast registry since we cannot connect to it via Socket
+                                continue;
+                            }
+                            if (MULTIPLE.equalsIgnoreCase(registryURL.getParameter("registry"))) {
+                                // skip, multiple-registry address is a fake ip
                                 continue;
                             }
                             try (Socket socket = new Socket()) {
