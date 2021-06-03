@@ -459,7 +459,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         try {
-            if (CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+            if (!forbidden && CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
                     && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable)) {
                 return true;
             }
