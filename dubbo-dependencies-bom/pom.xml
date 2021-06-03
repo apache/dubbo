@@ -169,6 +169,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>3.0.0-SNAPSHOT</revision>
+        <guava_version>20.0</guava_version>
     </properties>
 
     <dependencyManagement>
@@ -732,7 +733,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>20.0</version>
+                <version>${guava_version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
