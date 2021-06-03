@@ -1315,6 +1315,10 @@ public class DubboBootstrap {
             // Shutdown executorService
             executorService.shutdown();
         }
+
+        if (!exportReferExecutor.isShutdown()) {
+            exportReferExecutor.shutdown();
+        }
     }
 
     private void executeMutually(Runnable runnable) {
