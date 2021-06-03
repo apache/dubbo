@@ -57,12 +57,7 @@ public interface ExecutorRepository {
 
     ExecutorService nextExecutorExecutor();
 
-    /**
-     * Current we use this executor when export / refer services during bootstrap.
-     *
-     * @return
-     */
-    ScheduledExecutorService getExportReferExecutor();
+    ScheduledExecutorService getServiceExporterExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 

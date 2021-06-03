@@ -29,6 +29,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
@@ -89,6 +90,7 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -148,6 +150,10 @@ public class DubboBootstrap {
     private final ExecutorService executorService = newSingleThreadExecutor();
 
     private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+
+    private volatile ExecutorService exportReferExecutor;
+
+    private static final int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
 
     private final ConfigManager configManager;
 
@@ -963,7 +969,7 @@ public class DubboBootstrap {
         return this;
     }
 
-    public void awaitFinish() throws Exception {
+    public DubboBootstrap awaitFinish() throws Exception {
         logger.info(NAME + " waiting services exporting / referring asynchronously...");
 
         if (asyncExportingFutures.size() > 0) {
@@ -977,6 +983,7 @@ public class DubboBootstrap {
         }
 
         logger.info("Service asynchronous export / refer finished.");
+        return this;
     }
 
     public boolean isInitialized() {
@@ -1080,7 +1087,7 @@ public class DubboBootstrap {
 
             ApplicationConfig config = getApplication();
             if (config.getExportAsync() != null && config.getExportAsync()) {
-                ExecutorService executor = executorRepository.getExportReferExecutor();
+                ExecutorService executor = getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
                         sc.export();
@@ -1126,7 +1133,7 @@ public class DubboBootstrap {
             if (rc.shouldInit()) {
                 ApplicationConfig config = getApplication();
                 if (config.getReferAsync() != null && config.getReferAsync()) {
-                    ExecutorService executor = executorRepository.getExportReferExecutor();
+                    ExecutorService executor = getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {
                             cache.get(rc);
@@ -1154,6 +1161,16 @@ public class DubboBootstrap {
         });
         asyncReferringFutures.clear();
         cache.destroyAll();
+    }
+
+    public ExecutorService getExportReferExecutor() {
+        if (exportReferExecutor == null) {
+            ApplicationConfig config = getApplication();
+            int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
+            exportReferExecutor = newFixedThreadPool(coreSize, new NamedThreadFactory("Dubbo-export-refer", true));
+        }
+
+        return exportReferExecutor;
     }
 
     private void registerServiceInstance() {
