@@ -177,7 +177,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         // compare failed, will not change state
         if (step == MigrationStep.FORCE_APPLICATION) {
-            destroyServiceDiscoveryInvoker();
+            destroyInterfaceInvoker();
         }
         return false;
     }
@@ -214,7 +214,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
         // compare failed, will not change state
         if (step == MigrationStep.FORCE_INTERFACE) {
-            destroyInterfaceInvoker();
+            destroyServiceDiscoveryInvoker();
         }
         return false;
     }
