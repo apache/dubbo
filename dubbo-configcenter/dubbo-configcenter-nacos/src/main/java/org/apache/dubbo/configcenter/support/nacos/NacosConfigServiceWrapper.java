@@ -59,7 +59,7 @@ public class NacosConfigServiceWrapper {
     /**
      * see {@link com.alibaba.nacos.client.config.utils.ParamUtils#isValid(java.lang.String)}
      */
-    public String handleInnerSymbol(String param) {
+    private String handleInnerSymbol(String param) {
         if (param == null) {
             return null;
         }

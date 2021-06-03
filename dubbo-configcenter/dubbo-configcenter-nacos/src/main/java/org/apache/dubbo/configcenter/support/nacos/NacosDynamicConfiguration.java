@@ -253,7 +253,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             Map<String, String> paramsValues = new HashMap<>();
             paramsValues.put("search", "accurate");
             paramsValues.put("dataId", "");
-            paramsValues.put("group", configService.handleInnerSymbol(group));
+            paramsValues.put("group", group.replace(SLASH_CHAR, HYPHEN_CHAR));
             paramsValues.put("pageNo", "1");
             paramsValues.put("pageSize", String.valueOf(Integer.MAX_VALUE));
 
