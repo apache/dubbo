@@ -1079,8 +1079,7 @@ public class DubboBootstrap {
             serviceConfig.setBootstrap(this);
 
             ApplicationConfig config = getApplication();
-            // use async as default mode
-            if (config.getExportAsync() == null || config.getExportAsync()) {
+            if (config.getExportAsync() != null && config.getExportAsync()) {
                 ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
@@ -1126,8 +1125,7 @@ public class DubboBootstrap {
 
             if (rc.shouldInit()) {
                 ApplicationConfig config = getApplication();
-                // use async as default mode
-                if (config.getReferAsync() == null || config.getReferAsync()) {
+                if (config.getReferAsync() != null && config.getReferAsync()) {
                     ExecutorService executor = executorRepository.getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {
