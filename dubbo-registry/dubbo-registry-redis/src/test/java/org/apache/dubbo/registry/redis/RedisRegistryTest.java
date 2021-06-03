@@ -124,7 +124,6 @@ public class RedisRegistryTest {
         assertThat(redisRegistry.getRegistered().contains(PROVIDER_URL_B), is(true));
 
         Set<URL> notifiedUrls = new HashSet<>();
-
         Object lock = new Object();
 
         NotifyListener listener = new NotifyListener() {
