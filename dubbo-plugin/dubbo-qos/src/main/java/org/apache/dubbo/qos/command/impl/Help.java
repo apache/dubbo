@@ -25,18 +25,25 @@ import org.apache.dubbo.qos.textui.TTable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 @Cmd(name = "help", summary = "help command", example = {
         "help",
         "help online"
 })
 public class Help implements BaseCommand {
+
+    private static final String MAIN_HELP = "mainHelp";
+
+    private static Map<String, String> processedTable = new WeakHashMap<>();
+
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         if (args != null && args.length > 0) {
-            return commandHelp(args[0]);
+            return processedTable.computeIfAbsent(args[0], commandName ->  commandHelp(commandName));
         } else {
-            return mainHelp();
+            return processedTable.computeIfAbsent(MAIN_HELP, commandName ->  mainHelp());
         }
 
     }
