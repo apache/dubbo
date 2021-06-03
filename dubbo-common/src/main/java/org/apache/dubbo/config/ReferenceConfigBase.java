@@ -251,7 +251,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return serviceMetadata;
     }
 
-    public void resolveFile() {
+    protected void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {

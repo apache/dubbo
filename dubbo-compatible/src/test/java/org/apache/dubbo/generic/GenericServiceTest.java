@@ -101,7 +101,7 @@ public class GenericServiceTest {
         ReferenceConfig<com.alibaba.dubbo.rpc.service.GenericService> oldReferenceConfig = new ReferenceConfig<>();
         oldReferenceConfig.setGeneric(true);
         oldReferenceConfig.setInterface(DemoService.class.getName());
-        oldReferenceConfig.checkAndUpdateSubConfigs();
+        oldReferenceConfig.refresh();
         Invoker invoker = protocol.refer(oldReferenceConfig.getInterfaceClass(), url);
         com.alibaba.dubbo.rpc.service.GenericService client = (com.alibaba.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
 
