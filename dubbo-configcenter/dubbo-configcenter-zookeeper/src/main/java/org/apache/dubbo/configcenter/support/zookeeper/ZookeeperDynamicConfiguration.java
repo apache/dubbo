@@ -38,20 +38,15 @@ import java.util.concurrent.TimeUnit;
 public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration {
 
     private Executor executor;
-    // The final root path would be: /configRootPath/"config"
-    private String rootPath;
     private final ZookeeperClient zkClient;
 
     private CacheListener cacheListener;
-    private URL url;
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
-        this.url = url;
-        rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);
 

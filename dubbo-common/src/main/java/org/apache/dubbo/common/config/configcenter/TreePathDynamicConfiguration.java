@@ -61,7 +61,7 @@ public abstract class TreePathDynamicConfiguration extends AbstractDynamicConfig
      */
     public static final String DEFAULT_CONFIG_BASE_PATH = "/config";
 
-    private final String rootPath;
+    protected final String rootPath;
 
     public TreePathDynamicConfiguration(URL url) {
         super(url);
