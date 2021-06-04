@@ -41,7 +41,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIME_COUNTDOWN_K
  * @see RpcContext
  */
 @Activate(group = CONSUMER, order = -10000)
-public class ConsumerContextFilter implements Filter {
+public class ConsumerContextFilter implements Filter, Filter.Listener  {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -66,7 +66,21 @@ public class ConsumerContextFilter implements Filter {
                                 + invocation.getMethodName() + ", terminate directly."), invocation);
             }
         }
-        return invoker.invoke(invocation);
+        try {
+            RpcContext.removeServerContext();
+            return invoker.invoke(invocation);
+        } finally {
+            RpcContext.removeContext(true);
+        }
     }
 
+    @Override
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+        RpcContext.getServerContext().setAttachments(appResponse.getAttachments());
+    }
+
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+    }
 }
