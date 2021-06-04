@@ -231,13 +231,13 @@ public class DubboBootstrap {
                 instance.destroy();
                 instance = null;
             }
-            ApplicationModel.reset();
             MetadataReportInstance.reset();
             AbstractMetadataReportFactory.reset();
             AbstractRegistryFactory.reset();
             ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
             ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
             ExtensionLoader.destroyAll();
+            ApplicationModel.reset();
         } else {
             instance = null;
             ApplicationModel.reset();
@@ -998,7 +998,7 @@ public class DubboBootstrap {
         if (configManager.getConfigs(cls).isEmpty()) {
             // load single config
             Environment env = ApplicationModel.getEnvironment();
-            List<Map<String, Object>> configurationMaps = env.getConfigurationMaps();
+            List<Map<String, String>> configurationMaps = env.getConfigurationMaps();
             if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
                 T config = null;
                 try {
