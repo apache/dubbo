@@ -66,7 +66,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private String localMigrationRule;
 
     public Environment() {
-        initConfigs();
     }
 
     protected void initConfigs() {
@@ -80,6 +79,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void initialize() throws IllegalStateException {
+        initConfigs();
         ConfigManager configManager = ApplicationModel.getConfigManager();
         Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
         defaultConfigs.ifPresent(configs -> {
@@ -263,7 +263,6 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         globalConfiguration = null;
         dynamicConfiguration = null;
         dynamicGlobalConfiguration = null;
-        initConfigs();
     }
 
     public String resolvePlaceholders(String str) {
