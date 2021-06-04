@@ -57,6 +57,10 @@ public class CacheListener implements DataListener {
         }
     }
 
+    public void removeAllListeners() {
+        keyListeners.clear();
+    }
+
     public Set<ConfigurationListener> getConfigurationListeners(String key) {
         return keyListeners.get(key);
     }
@@ -80,9 +84,10 @@ public class CacheListener implements DataListener {
         if (!StringUtils.isEmpty(path)) {
             int beginIndex = path.indexOf(rootPath + PATH_SEPARATOR);
             if (beginIndex > -1) {
-                int endIndex = path.indexOf(PATH_SEPARATOR, beginIndex);
-                if (endIndex > beginIndex) {
-                    return path.substring(beginIndex, endIndex);
+                String remain = path.substring((rootPath + PATH_SEPARATOR).length());
+                int endIndex = remain.lastIndexOf(PATH_SEPARATOR);
+                if (endIndex > -1) {
+                    return remain.substring(0, endIndex);
                 }
             }
         }

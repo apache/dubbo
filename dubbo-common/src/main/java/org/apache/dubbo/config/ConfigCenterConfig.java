@@ -91,6 +91,10 @@ public class ConfigCenterConfig extends AbstractConfig {
     public ConfigCenterConfig() {
     }
 
+    public ConfigCenterConfig(String address) {
+        setAddress(address);
+    }
+
     public URL toUrl() {
         Map<String, String> map = new HashMap<>();
         appendParameters(map, this);

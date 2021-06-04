@@ -59,7 +59,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  */
 public class ZookeeperRegistry extends FailbackRegistry {
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 
@@ -191,7 +191,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
-            ChildListener zkListener = listeners.get(listener);
+            ChildListener zkListener = listeners.remove(listener);
             if (zkListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -201,6 +201,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         zkClient.removeChildListener(path, zkListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                zkListeners.remove(url);
             }
         }
     }

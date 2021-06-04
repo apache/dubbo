@@ -62,7 +62,7 @@ public class UrlUtils {
     /**
      * in the url string,mark the param begin
      */
-    private final static String URL_PARAM_STARTING_SYMBOL = "?";
+    private static final String URL_PARAM_STARTING_SYMBOL = "?";
 
     public static URL parseURL(String address, Map<String, String> defaults) {
         if (address == null || address.length() == 0) {

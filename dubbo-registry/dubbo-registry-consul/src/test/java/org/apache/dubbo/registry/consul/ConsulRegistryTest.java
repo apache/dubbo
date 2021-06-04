@@ -57,8 +57,10 @@ public class ConsulRegistryTest {
                 this.consul = ConsulStarterBuilder.consulStarter()
                         .build()
                         .start();
+                exception = null;
             } catch (Exception e) {
                 exception = e;
+                e.printStackTrace();
             }
             if (exception == null) {
                 break;

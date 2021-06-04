@@ -14,16 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.common.extension.duplicated.impl;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.extension.duplicated.DuplicatedWithoutOverriddenExt;
 
-import java.util.Map;
+public class DuplicatedWithoutOverriddenExt2 implements DuplicatedWithoutOverriddenExt {
 
-@SPI
-public interface ProviderURLMergeProcessor {
-    URL mergeProviderUrl(URL providerUrl, Map<String, String> localParametersMap);
-
-    boolean accept(URL providerUrl, Map<String, String> localParametersMap);
+    @Override
+    public String echo() {
+        return "DuplicatedWithoutOverriddenExt2";
+    }
 }

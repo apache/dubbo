@@ -71,7 +71,9 @@ public class ConditionRouter extends AbstractRouter {
     public ConditionRouter(String rule, boolean force, boolean enabled) {
         this.force = force;
         this.enabled = enabled;
-        this.init(rule);
+        if (enabled) {
+            this.init(rule);
+        }
     }
 
     public ConditionRouter(URL url) {
@@ -79,7 +81,9 @@ public class ConditionRouter extends AbstractRouter {
         this.priority = url.getParameter(PRIORITY_KEY, 0);
         this.force = url.getParameter(FORCE_KEY, false);
         this.enabled = url.getParameter(ENABLED_KEY, true);
-        init(url.getParameterAndDecoded(RULE_KEY));
+        if (enabled) {
+            init(url.getParameterAndDecoded(RULE_KEY));
+        }
     }
 
     public void init(String rule) {
