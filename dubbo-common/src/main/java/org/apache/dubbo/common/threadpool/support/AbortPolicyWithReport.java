@@ -19,6 +19,9 @@ package org.apache.dubbo.common.threadpool.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedEvent;
+import org.apache.dubbo.common.threadpool.event.ThreadPoolExhaustedListener;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.JVMUtil;
 import org.apache.dubbo.common.utils.StringUtils;
 
@@ -26,6 +29,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -63,6 +67,8 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
     private static final String USER_HOME = System.getProperty("user.home");
 
+    private final Set<ThreadPoolExhaustedListener> listeners = new ConcurrentHashSet<>();
+
     public AbortPolicyWithReport(String threadName, URL url) {
         this.threadName = threadName;
         this.url = url;
@@ -80,7 +86,24 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
                 url.getProtocol(), url.getIp(), url.getPort());
         logger.warn(msg);
         dumpJStack();
+        dispatchThreadPoolExhaustedEvent(msg);
         throw new RejectedExecutionException(msg);
+    }
+
+    public void addThreadPoolExhaustedEventListener(ThreadPoolExhaustedListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeThreadPoolExhaustedEventListener(ThreadPoolExhaustedListener listener) {
+        listeners.remove(listener);
+    }
+
+    /**
+     * dispatch ThreadPoolExhaustedEvent
+     * @param msg
+     */
+    public void dispatchThreadPoolExhaustedEvent(String msg) {
+        listeners.forEach(listener -> listener.onEvent(new ThreadPoolExhaustedEvent(this, msg)));
     }
 
     private void dumpJStack() {
