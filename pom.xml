@@ -541,9 +541,7 @@
                         <exclude>**/*.load</exclude>
                         <exclude>**/*.flex</exclude>
                         <exclude>**/*.fc</exclude>
-                        <exclude>**/*.javascript</exclude>
                         <exclude>**/*.properties</exclude>
-                        <exclude>**/*.thrift</exclude>
                         <exclude>**/*.sh</exclude>
                         <exclude>**/*.bat</exclude>
                         <exclude>**/*.md</exclude>
