@@ -17,13 +17,13 @@
 package org.apache.dubbo.common.infra;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.EnvironmentConfigurationTest;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.infra.support.EnvironmentAdapter;
-import org.apache.dubbo.common.utils.ReflectUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_ENV_KEYS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_LABELS;
 
 
-public class InfraAdapterTest {
+public class InfraAdapterTest extends EnvironmentConfigurationTest {
 
     @Test
     public void test() throws Exception {
@@ -43,10 +43,9 @@ public class InfraAdapterTest {
             Assertions.assertTrue(infraAdapter instanceof EnvironmentAdapter);
 
             // add system env
-            Map<String, String> env = System.getenv();
-            Field field = env.getClass().getDeclaredField("m");
-            ReflectUtils.makeAccessible(field);
-            ((Map<String, String>) field.get(env)).put(DUBBO_LABELS, "k1=v1;k2=v2");
+            HashMap<String, String> map = new HashMap<>();
+            map.put(DUBBO_LABELS, "k1=v1;k2=v2");
+            setEnv(map);
 
             // add system properties
             System.setProperty(DUBBO_ENV_KEYS, "k3,k4");
@@ -60,11 +59,7 @@ public class InfraAdapterTest {
                 System.out.println(entry.getKey() + "," + entry.getValue());
             }
         } finally {
-            // restore
-            Map<String, String> env = System.getenv();
-            Field field = env.getClass().getDeclaredField("m");
-            ReflectUtils.makeAccessible(field);
-            ((Map<String, String>) field.get(env)).remove(DUBBO_LABELS);
+
             System.getProperties().remove(DUBBO_ENV_KEYS);
         }
     }
