@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 public class PilotExchanger {
@@ -45,7 +46,7 @@ public class PilotExchanger {
 
     private RouteResult routeResult;
 
-    private final long observeRouteRequest;
+    private final AtomicLong observeRouteRequest = new AtomicLong(-1);
 
     private final Map<String, Long> domainObserveRequest = new ConcurrentHashMap<>();
 
@@ -53,15 +54,39 @@ public class PilotExchanger {
 
     private PilotExchanger(URL url) {
         xdsChannel = new XdsChannel(url);
-        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build());
-        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build());
-        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build());
+        int pollingPoolSize = url.getParameter("pollingPoolSize", 10);
+        int pollingTimeout = url.getParameter("pollingTimeout", 10);
+        LdsProtocol ldsProtocol = new LdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
+        this.rdsProtocol = new RdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
+        this.edsProtocol = new EdsProtocol(xdsChannel, NodeBuilder.build(), pollingPoolSize, pollingTimeout);
 
         this.listenerResult = ldsProtocol.getListeners();
         this.routeResult = rdsProtocol.getResource(listenerResult.getRouteConfigNames());
 
         // Observer RDS update
-        this.observeRouteRequest = rdsProtocol.observeResource(listenerResult.getRouteConfigNames(), (newResult) -> {
+        if (CollectionUtils.isNotEmpty(listenerResult.getRouteConfigNames())) {
+            this.observeRouteRequest.set(createRouteObserve());
+        }
+
+        // Observe LDS updated
+        ldsProtocol.observeListeners((newListener) -> {
+            // update local cache
+            if (!newListener.equals(listenerResult)) {
+                this.listenerResult = newListener;
+                // update RDS observation
+                synchronized (observeRouteRequest) {
+                    if (observeRouteRequest.get() == -1) {
+                        this.observeRouteRequest.set(createRouteObserve());
+                    } else {
+                        rdsProtocol.updateObserve(observeRouteRequest.get(), newListener.getRouteConfigNames());
+                    }
+                }
+            }
+        });
+    }
+
+    private long createRouteObserve() {
+        return rdsProtocol.observeResource(listenerResult.getRouteConfigNames(), (newResult) -> {
             // check if observed domain update ( will update endpoint observation )
             domainObserveConsumer.forEach((domain, consumer) -> {
                 Set<String> newRoute = newResult.searchDomain(domain);
@@ -80,14 +105,6 @@ public class PilotExchanger {
             });
             // update local cache
             routeResult = newResult;
-        });
-
-        // Observe LDS updated
-        ldsProtocol.observeListeners((newListener) -> {
-            // update local cache
-            this.listenerResult = newListener;
-            // update RDS observation
-            rdsProtocol.updateObserve(observeRouteRequest, newListener.getRouteConfigNames());
         });
     }
 

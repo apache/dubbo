@@ -17,22 +17,36 @@
 package org.apache.dubbo.registry.xds;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.SPI;
 
-public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
-    private static final Logger logger = LoggerFactory.getLogger(XdsServiceDiscoveryFactory.class);
+@SPI
+public interface XdsCertificateSigner {
 
-    @Override
-    protected ServiceDiscovery createDiscovery(URL registryURL) {
-        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery();
-        try {
-            xdsServiceDiscovery.doInitialize(registryURL);
-        } catch (Exception e) {
-            logger.error("Error occurred when initialize xDS service discovery impl.", e);
+    @Adaptive(value = "Signer")
+    CertPair request(URL url);
+
+    class CertPair {
+        private final String privateKey;
+        private final String publicKey;
+        private final long expireTime;
+
+        public CertPair(String privateKey, String publicKey, long expireTime) {
+            this.privateKey = privateKey;
+            this.publicKey = publicKey;
+            this.expireTime = expireTime;
         }
-        return xdsServiceDiscovery;
+
+        public String getPrivateKey() {
+            return privateKey;
+        }
+
+        public String getPublicKey() {
+            return publicKey;
+        }
+
+        public boolean isExpire() {
+            return System.currentTimeMillis() < expireTime;
+        }
     }
 }
