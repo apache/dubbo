@@ -1257,7 +1257,7 @@ public class DubboBootstrap {
                     destroyRegistries();
 
                     destroyServiceDiscoveries();
-
+                    destroyExecutorRepository();
                     clear();
                     shutdown();
                     release();
@@ -1268,6 +1268,10 @@ public class DubboBootstrap {
                 destroyLock.unlock();
             }
         }
+    }
+
+    private void destroyExecutorRepository() {
+        ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
     private void destroyRegistries() {
