@@ -708,10 +708,16 @@ public class DubboBootstrap {
         if (CollectionUtils.isNotEmpty(configCenters)) {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
+                // Pass config from ConfigCenterBean to environment
+                environment.updateExternalConfigMap(configCenter.getExternalConfiguration());
+                environment.updateAppExternalConfigMap(configCenter.getAppExternalConfiguration());
+
+                // Fetch config from remote config center
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
+
         configManager.refreshAll();
     }
 

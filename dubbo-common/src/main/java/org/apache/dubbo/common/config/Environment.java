@@ -31,10 +31,10 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Environment extends LifecycleAdapter implements FrameworkExt {
     private static final Logger logger = LoggerFactory.getLogger(Environment.class);
@@ -65,31 +65,23 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private DynamicConfiguration dynamicConfiguration;
     private String localMigrationRule;
 
-    public Environment() {
-    }
+    private AtomicBoolean initialized = new AtomicBoolean(false);
 
-    protected void initConfigs() {
-        this.propertiesConfiguration = new PropertiesConfiguration();
-        this.systemConfiguration = new SystemConfiguration();
-        this.environmentConfiguration = new EnvironmentConfiguration();
-        this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");
-        this.appExternalConfiguration = new InmemoryConfiguration("AppExternalConfig");
-        this.appConfiguration = new InmemoryConfiguration("AppConfig");
+    public Environment() {
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        initConfigs();
-        ConfigManager configManager = ApplicationModel.getConfigManager();
-        Optional<Collection<ConfigCenterConfig>> defaultConfigs = configManager.getDefaultConfigCenter();
-        defaultConfigs.ifPresent(configs -> {
-            for (ConfigCenterConfig config : configs) {
-                this.updateExternalConfigMap(config.getExternalConfiguration());
-                this.updateAppExternalConfigMap(config.getAppExternalConfiguration());
-            }
-        });
+        if (initialized.compareAndSet(false, true)) {
+            this.propertiesConfiguration = new PropertiesConfiguration();
+            this.systemConfiguration = new SystemConfiguration();
+            this.environmentConfiguration = new EnvironmentConfiguration();
+            this.externalConfiguration = new InmemoryConfiguration("ExternalConfig");
+            this.appExternalConfiguration = new InmemoryConfiguration("AppExternalConfig");
+            this.appConfiguration = new InmemoryConfiguration("AppConfig");
 
-        loadMigrationRule();
+            loadMigrationRule();
+        }
     }
 
     private void loadMigrationRule() {
@@ -255,6 +247,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void destroy() throws IllegalStateException {
+        initialized.set(false);
         systemConfiguration = null;
         propertiesConfiguration = null;
         environmentConfiguration = null;
@@ -271,7 +264,8 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * For test only.
      */
     public void reset() {
-        initConfigs();
+        destroy();
+        initialize();
     }
 
     public String resolvePlaceholders(String str) {
