@@ -127,7 +127,7 @@ public class ApplicationModel {
     public static void reset() {
         getServiceRepository().destroy();
         getConfigManager().destroy();
-        getEnvironment().destroy();
+        getEnvironment().reset();
     }
 
 }

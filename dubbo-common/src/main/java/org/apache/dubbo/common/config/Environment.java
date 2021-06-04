@@ -257,12 +257,23 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void destroy() throws IllegalStateException {
+        systemConfiguration = null;
+        propertiesConfiguration = null;
+        environmentConfiguration = null;
         externalConfiguration = null;
         appExternalConfiguration = null;
         appConfiguration = null;
         globalConfiguration = null;
         dynamicConfiguration = null;
         dynamicGlobalConfiguration = null;
+    }
+
+    /**
+     * Reset environment.
+     * For test only.
+     */
+    public void reset() {
+        initConfigs();
     }
 
     public String resolvePlaceholders(String str) {
