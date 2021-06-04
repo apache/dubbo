@@ -36,6 +36,7 @@ public class InfraAdapterTest {
     @Test
     public void test() throws Exception {
         try {
+            // spi test
             List<InfraAdapter> infraAdapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getActivateExtension(URL.valueOf("test://0.0.0.0/"), "");
             Assertions.assertEquals(infraAdapters.size(), 1);
             InfraAdapter infraAdapter = infraAdapters.get(0);
@@ -52,12 +53,14 @@ public class InfraAdapterTest {
             System.setProperty("k3", "v3");
             System.setProperty("k4", "v4");
 
+            // get key & value
             Map<String, String> extraAttributes = infraAdapter.getExtraAttributes(null);
             Assertions.assertEquals(extraAttributes.size(), 4);
             for (Map.Entry<String, String> entry : extraAttributes.entrySet()) {
                 System.out.println(entry.getKey() + "," + entry.getValue());
             }
         } finally {
+            // restore
             Map<String, String> env = System.getenv();
             Field field = env.getClass().getDeclaredField("m");
             ReflectUtils.makeAccessible(field);
