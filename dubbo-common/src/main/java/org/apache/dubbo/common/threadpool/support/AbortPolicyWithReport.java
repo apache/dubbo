@@ -103,7 +103,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
      * @param msg
      */
     public void dispatchThreadPoolExhaustedEvent(String msg) {
-        listeners.forEach(listener -> listener.onEvent(new ThreadPoolExhaustedEvent(this, msg)));
+        listeners.forEach(listener -> listener.onEvent(new ThreadPoolExhaustedEvent(msg)));
     }
 
     private void dumpJStack() {
