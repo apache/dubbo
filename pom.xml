@@ -541,6 +541,7 @@
                             <excludes>
                                 <exclude>**/*.versionsBackup</exclude>
                                 <exclude>**/.idea/</exclude>
+                                <exclude>**/.mvn/</exclude>
                                 <exclude>**/*.iml</exclude>
                                 <exclude>**/*.txt</exclude>
                                 <exclude>**/*.load</exclude>
