@@ -26,12 +26,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.apache.dubbo.config.spring.api.LazyInitHelloService;
 
 import java.util.Map;
 
@@ -80,8 +82,10 @@ public class ServiceClassPostProcessorTest {
         Assertions.assertEquals(2, helloServicesMap.size());
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
-
-        Assertions.assertEquals(2, serviceBeansMap.size());
+        /**
+         * There are one {@link HelloService} and two {@link LazyInitHelloService} has 1
+         * */
+        Assertions.assertEquals(3, serviceBeansMap.size());
 
         Map<String, ServiceClassPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceClassPostProcessor.class);
@@ -98,7 +102,10 @@ public class ServiceClassPostProcessorTest {
 
         Map<String, ServiceBean> serviceBeansMap = beanFactory.getBeansOfType(ServiceBean.class);
 
-        Assertions.assertEquals(2, serviceBeansMap.size());
+        /**
+         * There are one {@link HelloService} and two {@link LazyInitHelloService} has 1
+         * */
+        Assertions.assertEquals(3, serviceBeansMap.size());
 
         ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
 
@@ -106,4 +113,15 @@ public class ServiceClassPostProcessorTest {
 
     }
 
+    /**
+     * Lazy-init for Dubbo Service
+     */
+    @Test
+    public void testLazyInitDubboService(){
+        /**
+         * The class {@link org.apache.dubbo.config.spring.context.annotation.provider.DefaultLazyInitHelloService} has Lazy annotation
+         * */
+        BeanDefinition beanDefinition=beanFactory.getBeanDefinition("defaultLazyInitHelloService");
+        Assertions.assertEquals(beanDefinition.isLazyInit(),true);
+    }
 }

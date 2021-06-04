@@ -26,6 +26,9 @@ import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLLazyInitImpl1;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLLazyInitImpl2;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLNotLazyInitImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -233,5 +236,51 @@ public class DubboNamespaceHandlerTest {
             return;
         }
         Assertions.fail();
+    }
+
+    @Test
+    public void testLazyInitServiceBean() {
+        ClassPathXmlApplicationContext ctx = null;
+        try {
+            ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-lazy-init.xml");
+            ctx.start();
+            /**
+             * {@link DemoServiceXMLLazyInitImpl1} sets lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl1.isInitialized(),false);
+            /**
+             * {@link DemoServiceXMLLazyInitImpl2} sets default-lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl2.isInitialized(),false);
+
+            /**
+             * After getBean and then {@link DemoServiceXMLLazyInitImpl1#isInitialized()} changed to {@code true}
+             * */
+            ctx.getBean("demoServiceXMLLazyInitImpl1",DemoServiceXMLLazyInitImpl1.class);
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl1.isInitialized(),true);
+        }finally {
+            if (ctx != null) {
+                ctx.stop();
+                ctx.close();
+            }
+        }
+    }
+
+    @Test
+    public void testNotLazyInitServiceBean() {
+        ClassPathXmlApplicationContext ctx = null;
+        try {
+            ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-not-lazy-init.xml");
+            ctx.start();
+            /**
+             * {@link DemoServiceXMLNotLazyInitImpl} don't set lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLNotLazyInitImpl.isInitialized(),true);
+        }finally {
+            if (ctx != null) {
+                ctx.stop();
+                ctx.close();
+            }
+        }
     }
 }
