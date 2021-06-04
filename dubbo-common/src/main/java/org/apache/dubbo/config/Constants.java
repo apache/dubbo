@@ -117,4 +117,8 @@ public interface Constants {
     String REGISTER_KEY = "register";
 
     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
+
+    String[] DOT_COMPATIBLE_KEYS = new String[]{"qos-enable", "qos-port", "qos-accept-foreign-ip"};
+
+    String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 }

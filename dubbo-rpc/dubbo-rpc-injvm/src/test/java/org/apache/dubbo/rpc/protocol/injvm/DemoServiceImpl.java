@@ -56,7 +56,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
@@ -69,4 +69,15 @@ public class DemoServiceImpl implements DemoService {
     public int stringLength(String str) {
         return str.length();
     }
+
+    @Override
+    public String getAsyncResult() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("getAsyncResult() Interrupted");
+        }
+        return "DONE";
+    }
+
 }

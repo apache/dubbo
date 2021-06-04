@@ -42,6 +42,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPAR
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 
 public class MetadataInfo implements Serializable {
+    public static final MetadataInfo EMPTY = new MetadataInfo();
+
     private String app;
     private String revision;
     private Map<String, ServiceInfo> services;
@@ -49,6 +51,8 @@ public class MetadataInfo implements Serializable {
     // used at runtime
     private transient Map<String, String> extendParams;
     private transient AtomicBoolean reported = new AtomicBoolean(false);
+
+    public MetadataInfo() {}
 
     public MetadataInfo(String app) {
         this(app, null, null);
@@ -444,12 +448,16 @@ public class MetadataInfo implements Serializable {
             }
 
             ServiceInfo serviceInfo = (ServiceInfo) obj;
-            return this.getMatchKey().equals(serviceInfo.getMatchKey()) && this.getParams().equals(serviceInfo.getParams());
+//            return this.getMatchKey().equals(serviceInfo.getMatchKey()) && this.getParams().equals(serviceInfo.getParams());
+            // Please check ServiceInstancesChangedListener.localServiceToRevisions before change this behaviour.
+            return this.getMatchKey().equals(serviceInfo.getMatchKey());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getMatchKey(), getParams());
+//            return Objects.hash(getMatchKey(), getParams());
+            return Objects.hash(getMatchKey());
+
         }
 
         @Override

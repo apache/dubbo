@@ -38,6 +38,7 @@ public /**final**/ class RpcException extends RuntimeException {
     public static final int LIMIT_EXCEEDED_EXCEPTION = 7;
     public static final int TIMEOUT_TERMINATE = 8;
     public static final int REGISTRY_EXCEPTION = 9;
+    public static final int ROUTER_CACHE_NOT_BUILD = 10;
     private static final long serialVersionUID = 7815426752583648734L;
     /**
      * RpcException cannot be extended, use error code for exception type to keep compatibility

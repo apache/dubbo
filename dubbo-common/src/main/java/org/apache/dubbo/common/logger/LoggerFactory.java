@@ -92,6 +92,9 @@ public class LoggerFactory {
      */
     public static void setLoggerAdapter(LoggerAdapter loggerAdapter) {
         if (loggerAdapter != null) {
+            if (loggerAdapter == LOGGER_ADAPTER) {
+                return;
+            }
             Logger logger = loggerAdapter.getLogger(LoggerFactory.class.getName());
             logger.info("using logger: " + loggerAdapter.getClass().getName());
             LoggerFactory.LOGGER_ADAPTER = loggerAdapter;

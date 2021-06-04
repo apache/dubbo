@@ -33,6 +33,7 @@ import org.apache.dubbo.service.ComplexObject;
 import org.apache.dubbo.service.DemoService;
 import org.apache.dubbo.service.DemoServiceImpl;
 
+import com.alibaba.dubbo.config.ReferenceConfig;
 import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -83,6 +84,29 @@ public class GenericServiceTest {
         GenericService client2 = (GenericService) proxyFactory.getProxy(invoker2, true);
         Object result2 = client2.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
         Assertions.assertEquals("hello haha", result2);
+
+        invoker.destroy();
+        exporter.unexport();
+    }
+
+    @Test
+    public void testGenericCompatible() {
+        DemoService server = new DemoServiceImpl();
+        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        URL url = URL.valueOf("dubbo://127.0.0.1:5342/" + DemoService.class.getName() + "?version=1.0.0&generic=true$timeout=3000");
+        Exporter<DemoService> exporter = protocol.export(proxyFactory.getInvoker(server, DemoService.class, url));
+
+        // simulate normal invoke
+        ReferenceConfig<com.alibaba.dubbo.rpc.service.GenericService> oldReferenceConfig = new ReferenceConfig<>();
+        oldReferenceConfig.setGeneric(true);
+        oldReferenceConfig.setInterface(DemoService.class.getName());
+        oldReferenceConfig.checkAndUpdateSubConfigs();
+        Invoker invoker = protocol.refer(oldReferenceConfig.getInterfaceClass(), url);
+        com.alibaba.dubbo.rpc.service.GenericService client = (com.alibaba.dubbo.rpc.service.GenericService) proxyFactory.getProxy(invoker, true);
+
+        Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{"haha"});
+        Assertions.assertEquals("hello haha", result);
 
         invoker.destroy();
         exporter.unexport();

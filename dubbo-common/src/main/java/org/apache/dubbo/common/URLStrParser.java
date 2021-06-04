@@ -21,8 +21,9 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLItemCache;
 
+import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
@@ -73,7 +74,7 @@ public final class URLStrParser {
         }
 
         TempBuf tempBuf = DECODE_TEMP_BUF.get();
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new UnifiedMap<>();
         int nameStart = from;
         int valueStart = -1;
         int i;
@@ -108,6 +109,12 @@ public final class URLStrParser {
      */
     private static URL parseURLBody(String fullURLStr, String decodedBody, Map<String, String> parameters, boolean modifiable) {
         int starIdx = 0, endIdx = decodedBody.length();
+        // ignore the url content following '#'
+        int poundIndex = decodedBody.indexOf('#');
+        if (poundIndex != -1) {
+            endIdx = poundIndex;
+        }
+
         String protocol = null;
         int protoEndIdx = decodedBody.indexOf("://");
         if (protoEndIdx >= 0) {
@@ -131,7 +138,7 @@ public final class URLStrParser {
         String path = null;
         int pathStartIdx = indexOf(decodedBody, '/', starIdx, endIdx);
         if (pathStartIdx >= 0) {
-            path = decodedBody.substring(pathStartIdx + 1);
+            path = decodedBody.substring(pathStartIdx + 1, endIdx);
             endIdx = pathStartIdx;
         }
 
@@ -169,7 +176,7 @@ public final class URLStrParser {
         }
 
         // check cache
-        protocol = URLItemCache.checkProtocol(protocol);
+        protocol = URLItemCache.intern(protocol);
         path = URLItemCache.checkPath(path);
 
         return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
@@ -214,7 +221,7 @@ public final class URLStrParser {
      */
     public static URL parseEncodedStr(String encodedURLStr, boolean modifiable) {
         Map<String, String> parameters = null;
-        int pathEndIdx = encodedURLStr.indexOf("%3F");// '?'
+        int pathEndIdx = encodedURLStr.toUpperCase().indexOf("%3F");// '?'
         if (pathEndIdx >= 0) {
             parameters = parseEncodedParams(encodedURLStr, pathEndIdx + 3);
         } else {
@@ -233,7 +240,7 @@ public final class URLStrParser {
         }
 
         TempBuf tempBuf = DECODE_TEMP_BUF.get();
-        Map<String, String> params = new HashMap<>();
+        Map<String, String> params = new UnifiedMap<>();
         int nameStart = from;
         int valueStart = -1;
         int i;

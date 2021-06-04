@@ -18,7 +18,6 @@ package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -28,10 +27,9 @@ import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 import java.util.Set;
 
-@Activate
 public class MigrationRuleHandler<T> {
+    public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
-    private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
 
     private MigrationClusterInvoker<T> migrationInvoker;
     private MigrationStep currentStep;
@@ -59,7 +57,7 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = MigrationStep.INTERFACE_FIRST;
         Float threshold = -1f;
         if (rule == MigrationRule.INIT) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
         } else {
             try {
                 String serviceKey = consumerURL.getDisplayServiceKey();
@@ -119,8 +117,10 @@ public class MigrationRuleHandler<T> {
         }
 
         if (step == MigrationStep.APPLICATION_FIRST) {
+            setCurrentStepAndThreshold(step, threshold);
             migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(false);
         } else if (step == MigrationStep.FORCE_APPLICATION) {
+            setCurrentStepAndThreshold(step, threshold);
             migrationInvoker.refreshServiceDiscoveryInvokerOnMappingCallback(true);
         }
     }

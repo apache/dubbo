@@ -168,6 +168,9 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                 for (String path : toCategoriesPath(url)) {
                     ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.computeIfAbsent(url, k -> new ConcurrentHashMap<>());
                     ChildListener zkListener = listeners.computeIfAbsent(listener, k -> new RegistryChildListenerImpl(url, path, k, latch));
+                    if (zkListener instanceof RegistryChildListenerImpl) {
+                        ((RegistryChildListenerImpl) zkListener).setLatch(latch);
+                    }
                     zkClient.create(path, false);
                     List<String> children = zkClient.addChildListener(path, zkListener);
                     if (children != null) {
@@ -185,9 +188,9 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
 
     @Override
     public void doUnsubscribe(URL url, NotifyListener listener) {
-        ConcurrentMap<NotifyListener, org.apache.dubbo.remoting.zookeeper.ChildListener> listeners = zkListeners.get(url);
+        ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
-            org.apache.dubbo.remoting.zookeeper.ChildListener zkListener = listeners.get(listener);
+            ChildListener zkListener = listeners.remove(listener);
             if (zkListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -197,6 +200,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                         zkClient.removeChildListener(path, zkListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                zkListeners.remove(url);
             }
         }
     }
@@ -275,6 +282,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
+                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
                 }
             }
@@ -289,7 +297,7 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
     private class RegistryChildListenerImpl implements ChildListener {
         private RegistryNotifier notifier;
         private long lastExecuteTime;
-        private CountDownLatch latch;
+        private volatile CountDownLatch latch;
 
         public RegistryChildListenerImpl(URL consumerUrl, String path, NotifyListener listener, CountDownLatch latch) {
             this.latch = latch;
@@ -318,6 +326,10 @@ public class ZookeeperRegistry extends CacheableFailbackRegistry {
                     ZookeeperRegistry.this.notify(consumerUrl, listener, ZookeeperRegistry.this.toUrlsWithEmpty(consumerUrl, path, (List<String>) rawAddresses));
                 }
             };
+        }
+
+        public void setLatch(CountDownLatch latch) {
+            this.latch = latch;
         }
 
         @Override

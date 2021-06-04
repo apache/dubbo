@@ -63,8 +63,9 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
                 }
                 checkpoint(GrpcDecodeState.PAYLOAD);
             case PAYLOAD:
-                ByteBuf buf = in.readRetainedSlice(len);
-                out.add(buf);
+                byte[] dst = new byte[len];
+                in.readBytes(dst);
+                out.add(dst);
                 checkpoint(GrpcDecodeState.HEADER);
                 break;
             default:
@@ -73,6 +74,7 @@ public class GrpcDataDecoder extends ReplayingDecoder<GrpcDataDecoder.GrpcDecode
     }
 
     enum GrpcDecodeState {
-        HEADER, PAYLOAD
+        HEADER,
+        PAYLOAD
     }
 }

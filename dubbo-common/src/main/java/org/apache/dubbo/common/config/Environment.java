@@ -17,11 +17,13 @@
 package org.apache.dubbo.common.config;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.context.ConfigConfigurationAdapter;
@@ -54,6 +56,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private boolean configCenterFirst = true;
 
     private DynamicConfiguration dynamicConfiguration;
+    private String localMigrationRule;
 
     public Environment() {
         this.propertiesConfiguration = new PropertiesConfiguration();
@@ -76,6 +79,19 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
         this.externalConfiguration.setProperties(externalConfigurationMap);
         this.appExternalConfiguration.setProperties(appExternalConfigurationMap);
+
+        loadMigrationRule();
+    }
+
+    private void loadMigrationRule() {
+        String path = System.getProperty(CommonConstants.DUBBO_MIGRATION_KEY);
+        if (path == null || path.length() == 0) {
+            path = System.getenv(CommonConstants.DUBBO_MIGRATION_KEY);
+            if (path == null || path.length() == 0) {
+                path = CommonConstants.DEFAULT_DUBBO_MIGRATION_FILE;
+            }
+        }
+        this.localMigrationRule = ConfigUtils.loadMigrationRule(path);
     }
 
     @DisableInject
@@ -167,7 +183,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
                 if (logger.isWarnEnabled()) {
                     logger.warn("dynamicConfiguration is null , return globalConfiguration.");
                 }
-                return globalConfiguration;
+                return getConfiguration();
             }
             dynamicGlobalConfiguration = new CompositeConfiguration();
             dynamicGlobalConfiguration.addConfiguration(dynamicConfiguration);
@@ -198,6 +214,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void destroy() throws IllegalStateException {
         clearExternalConfigs();
         clearAppExternalConfigs();
+        globalConfiguration = null;
+        dynamicConfiguration = null;
+        dynamicGlobalConfiguration = null;
     }
 
     public PropertiesConfiguration getPropertiesConfiguration() {
@@ -218,6 +237,10 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     public InmemoryConfiguration getAppExternalConfiguration() {
         return appExternalConfiguration;
+    }
+
+    public String getLocalMigrationRule() {
+        return localMigrationRule;
     }
 
     // For test

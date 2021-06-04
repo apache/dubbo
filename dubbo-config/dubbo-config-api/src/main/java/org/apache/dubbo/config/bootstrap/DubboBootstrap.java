@@ -23,7 +23,6 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.lang.ShutdownHookCallback;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -58,14 +57,12 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.event.EventListener;
-import org.apache.dubbo.event.GenericEventListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
@@ -93,7 +90,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -122,7 +119,7 @@ import static org.apache.dubbo.remoting.Constants.CLIENT_KEY;
  *
  * @since 2.7.5
  */
-public class DubboBootstrap extends GenericEventListener {
+public class DubboBootstrap {
 
     public static final String DEFAULT_REGISTRY_ID = "REGISTRY#DEFAULT";
 
@@ -151,8 +148,6 @@ public class DubboBootstrap extends GenericEventListener {
     private final Lock destroyLock = new ReentrantLock();
 
     private final ExecutorService executorService = newSingleThreadExecutor();
-
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
 
@@ -202,17 +197,29 @@ public class DubboBootstrap extends GenericEventListener {
         return instance;
     }
 
+    /**
+     * Try reset dubbo status for new instance.
+     * For testing purposes only
+     */
+    public static void reset() {
+        if (instance != null) {
+            instance.destroy();
+            instance = null;
+        }
+        ApplicationModel.reset();
+        MetadataReportInstance.destroy();
+        AbstractMetadataReportFactory.clear();
+        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
+        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
+        ExtensionLoader.destroyAll();
+    }
+
     private DubboBootstrap() {
         configManager = ApplicationModel.getConfigManager();
         environment = ApplicationModel.getEnvironment();
 
         DubboShutdownHook.getDubboShutdownHook().register();
-        ShutdownHookCallbacks.INSTANCE.addCallback(new ShutdownHookCallback() {
-            @Override
-            public void callback() throws Throwable {
-                DubboBootstrap.this.destroy();
-            }
-        });
+        ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
     }
 
     public void unRegisterShutdownHook() {
@@ -348,7 +355,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap protocol(ProtocolConfig protocolConfig) {
-        return protocols(asList(protocolConfig));
+        return protocols(singletonList(protocolConfig));
     }
 
     public DubboBootstrap protocols(List<ProtocolConfig> protocolConfigs) {
@@ -420,7 +427,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap provider(ProviderConfig providerConfig) {
-        return providers(asList(providerConfig));
+        return providers(singletonList(providerConfig));
     }
 
     public DubboBootstrap providers(List<ProviderConfig> providerConfigs) {
@@ -444,7 +451,7 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public DubboBootstrap consumer(ConsumerConfig consumerConfig) {
-        return consumers(asList(consumerConfig));
+        return consumers(singletonList(consumerConfig));
     }
 
     public DubboBootstrap consumers(List<ConsumerConfig> consumerConfigs) {
@@ -458,7 +465,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     // {@link ConfigCenterConfig} correlative methods
     public DubboBootstrap configCenter(ConfigCenterConfig configCenterConfig) {
-        return configCenters(asList(configCenterConfig));
+        return configCenters(singletonList(configCenterConfig));
     }
 
     public DubboBootstrap configCenters(List<ConfigCenterConfig> configCenterConfigs) {
@@ -520,6 +527,7 @@ public class DubboBootstrap extends GenericEventListener {
         }
 
         ApplicationModel.initFrameworkExts();
+        
 
         startConfigCenter();
 
@@ -531,8 +539,6 @@ public class DubboBootstrap extends GenericEventListener {
         startMetadataCenter();
 
         initMetadataService();
-
-        initEventListener();
 
         if (logger.isInfoEnabled()) {
             logger.info(NAME + " has been initialized!");
@@ -696,7 +702,9 @@ public class DubboBootstrap extends GenericEventListener {
         cc.getParameters().put(CLIENT_KEY, registryConfig.getClient());
         cc.setProtocol(protocol);
         cc.setPort(port);
-        cc.setGroup(registryConfig.getGroup());
+        if (StringUtils.isNotEmpty(registryConfig.getGroup())) {
+            cc.setGroup(registryConfig.getGroup());
+        }
         cc.setAddress(getRegistryCompatibleAddress(registryConfig));
         cc.setNamespace(registryConfig.getGroup());
         cc.setUsername(registryConfig.getUsername());
@@ -868,14 +876,6 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * Initialize {@link EventListener}
-     */
-    private void initEventListener() {
-        // Add current instance into listeners
-        addEventListener(this);
-    }
-
-    /**
      * Start the bootstrap
      */
     public DubboBootstrap start() {
@@ -908,12 +908,16 @@ public class DubboBootstrap extends GenericEventListener {
                     if (logger.isInfoEnabled()) {
                         logger.info(NAME + " is ready.");
                     }
+                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
                 }).start();
             } else {
                 startup.set(true);
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is ready.");
                 }
+                ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
             }
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
@@ -983,6 +987,7 @@ public class DubboBootstrap extends GenericEventListener {
         return shutdown.get();
     }
 
+
     public DubboBootstrap stop() throws IllegalStateException {
         destroy();
         return this;
@@ -1047,17 +1052,6 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * Add an instance of {@link EventListener}
-     *
-     * @param listener {@link EventListener}
-     * @return {@link DubboBootstrap}
-     */
-    public DubboBootstrap addEventListener(EventListener<?> listener) {
-        eventDispatcher.addEventListener(listener);
-        return this;
-    }
-
-    /**
      * export {@link MetadataService}
      */
     private void exportMetadataService() {
@@ -1079,8 +1073,12 @@ public class DubboBootstrap extends GenericEventListener {
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
-                    sc.export();
-                    exportedServices.add(sc);
+                	try {
+                        sc.export();
+                        exportedServices.add(sc);
+                	}catch (Throwable t) {
+                		logger.error("export async catch error : " + t.getMessage(), t);
+					}
                 });
                 asyncExportingFutures.add(future);
             } else {
@@ -1150,19 +1148,27 @@ public class DubboBootstrap extends GenericEventListener {
 
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
 
-        doRegisterServiceInstance(serviceInstance);
+        try {
+            doRegisterServiceInstance(serviceInstance);
+        } catch (Exception e) {
+            logger.error("Register instance error", e);
+        }
 
         // scheduled task for updating Metadata and ServiceInstance
         executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
             InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
             localMetadataService.blockUntilUpdated();
-            ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            try {
+                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+            } catch (Exception e) {
+                logger.error("Refresh instance and metadata error", e);
+            }
         }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         // register instance only when at least one service is exported.
-        if (serviceInstance.getPort() != null && serviceInstance.getPort() != -1) {
+        if (serviceInstance.getPort() > 0) {
             publishMetadataToRemote(serviceInstance);
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->
@@ -1217,17 +1223,23 @@ public class DubboBootstrap extends GenericEventListener {
                     unreferServices();
 
                     destroyRegistries();
-                    DubboShutdownHook.destroyProtocols();
-                    destroyServiceDiscoveries();
 
+                    destroyServiceDiscoveries();
+                    destroyExecutorRepository();
                     clear();
                     shutdown();
                     release();
+                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
             } finally {
                 destroyLock.unlock();
             }
         }
+    }
+
+    private void destroyExecutorRepository() {
+        ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
     private void destroyRegistries() {

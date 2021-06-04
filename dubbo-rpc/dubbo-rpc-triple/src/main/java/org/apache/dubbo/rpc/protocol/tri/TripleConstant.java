@@ -17,6 +17,9 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 public interface TripleConstant {
+    String AUTHORITY_KEY = ":authority";
+    String PATH_KEY = ":path";
+    String HTTP_STATUS_KEY = "http-status";
     String STATUS_KEY = "grpc-status";
     String MESSAGE_KEY = "grpc-message";
     String TIMEOUT = "grpc-timeout";
@@ -29,5 +32,6 @@ public interface TripleConstant {
     String UNIT_INFO_KEY = "tri-unit-info";
     String SERVICE_VERSION = "tri-service-version";
     String SERVICE_GROUP = "tri-service-group";
+    String TRI_VERSION = "1.0.0";
 
 }

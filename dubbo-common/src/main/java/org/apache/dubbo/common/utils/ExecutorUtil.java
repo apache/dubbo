@@ -60,9 +60,7 @@ public class ExecutorUtil {
         try {
             // Disable new tasks from being submitted
             es.shutdown();
-        } catch (SecurityException ex2) {
-            return;
-        } catch (NullPointerException ex2) {
+        } catch (SecurityException | NullPointerException ex2) {
             return;
         }
         try {
@@ -86,9 +84,7 @@ public class ExecutorUtil {
         final ExecutorService es = (ExecutorService) executor;
         try {
             es.shutdownNow();
-        } catch (SecurityException ex2) {
-            return;
-        } catch (NullPointerException ex2) {
+        } catch (SecurityException | NullPointerException ex2) {
             return;
         }
         try {

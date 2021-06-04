@@ -107,6 +107,15 @@ public class AbstractConfigTest {
     }*/
 
     @Test
+    public void testValidateProtocolConfig() {
+        ProtocolConfig protocolConfig = new ProtocolConfig();
+        protocolConfig.setCodec("exchange");
+        protocolConfig.setName("test");
+        protocolConfig.setHost("host");
+        ConfigValidationUtils.validateProtocolConfig(protocolConfig);
+    }
+
+    @Test
     public void testAppendParameters1() throws Exception {
         Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("num", "ONE");
@@ -116,8 +125,6 @@ public class AbstractConfigTest {
         Assertions.assertEquals("ONE,1", parameters.get("prefix.num"));
         Assertions.assertEquals("hello%2Fworld", parameters.get("prefix.naming"));
         Assertions.assertEquals("30", parameters.get("prefix.age"));
-        Assertions.assertTrue(parameters.containsKey("prefix.key-2"));
-        Assertions.assertTrue(parameters.containsKey("prefix.key.2"));
         Assertions.assertFalse(parameters.containsKey("prefix.secret"));
     }
 
@@ -172,12 +179,14 @@ public class AbstractConfigTest {
 
     @Test
     public void checkMultiExtension1() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,world"));
     }
 
     @Test
     public void checkMultiExtension2() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> ConfigValidationUtils.checkMultiExtension(Greeting.class, "hello", "default,-world"));
     }
 
     @Test
@@ -807,7 +816,7 @@ public class AbstractConfigTest {
         public Map getParameters() {
             Map<String, String> map = new HashMap<String, String>();
             map.put("key.1", "one");
-            map.put("key-2", "two");
+            map.put("key.2", "two");
             return map;
         }
     }

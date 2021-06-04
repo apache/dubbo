@@ -297,12 +297,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public void putCachedMapping(String serviceKey, Set<String> apps) {
-        serviceToAppsMapping.put(serviceKey, apps);
-    }
-
-    @Override
-    public Map<String, Set<String>> getCachedMapping() {
-        return serviceToAppsMapping;
+        serviceToAppsMapping.put(serviceKey, new TreeSet<>(apps));
     }
 
     @Override
@@ -319,6 +314,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public Set<String> removeCachedMapping(String serviceKey) {
         return serviceToAppsMapping.remove(serviceKey);
+    }
+
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
     }
 
     @Override

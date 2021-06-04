@@ -58,7 +58,7 @@ public abstract class CuratorFrameworkUtils {
 
     public static CuratorFramework buildCuratorFramework(URL connectionURL) throws Exception {
         CuratorFramework curatorFramework = CuratorFrameworkFactory.builder()
-                .connectString(connectionURL.getIp() + ":" + connectionURL.getPort())
+                .connectString(connectionURL.getBackupAddress())
                 .retryPolicy(buildRetryPolicy(connectionURL))
                 .build();
         curatorFramework.start();
@@ -85,7 +85,7 @@ public abstract class CuratorFrameworkUtils {
         String host = instance.getAddress();
         int port = instance.getPort();
         ZookeeperInstance zookeeperInstance = instance.getPayload();
-        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getId(), name, host, port);
+        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(name, host, port);
         serviceInstance.setMetadata(zookeeperInstance.getMetadata());
         return serviceInstance;
     }

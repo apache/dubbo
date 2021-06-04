@@ -17,6 +17,7 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -84,6 +85,12 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private String registry;
 
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
+
     public MetadataReportConfig() {
     }
 
@@ -107,7 +114,7 @@ public class MetadataReportConfig extends AbstractConfig {
         map.putAll(convert(map, null));
         // put the protocol of URL as the "metadata"
         map.put("metadata", url.getProtocol());
-        return new URL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
+        return new ServiceConfigURL("metadata", url.getUsername(), url.getPassword(), url.getHost(),
                 url.getPort(), url.getPath(), map);
 
     }
@@ -223,5 +230,13 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setRegistry(String registry) {
         this.registry = registry;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 }

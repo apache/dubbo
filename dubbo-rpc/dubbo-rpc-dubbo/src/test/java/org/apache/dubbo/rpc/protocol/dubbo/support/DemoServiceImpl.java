@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.support;
 
 import org.apache.dubbo.rpc.RpcContext;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     public Object invoke(String service, String method) throws Exception {
-        System.out.println("RpcContext.getContext().getRemoteHost()=" + RpcContext.getContext().getRemoteHost());
+        System.out.println("RpcContext.getServerAttachment().getRemoteHost()=" + RpcContext.getServiceContext().getRemoteHost());
         return service + ":" + method;
     }
 
@@ -124,6 +125,13 @@ public class DemoServiceImpl implements DemoService {
 
     @Override
     public String getRemoteApplicationName() {
-        return RpcContext.getContext().getRemoteApplicationName();
+        return RpcContext.getServiceContext().getRemoteApplicationName();
+    }
+
+    @Override
+    public byte[] download(int size) {
+        byte[] bytes = new byte[size];
+        Arrays.fill(bytes, (byte) 0);
+        return bytes;
     }
 }

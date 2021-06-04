@@ -55,6 +55,8 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService nextScheduledExecutor();
 
+    ExecutorService nextExecutorExecutor();
+
     ScheduledExecutorService getServiceExporterExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
@@ -68,7 +70,6 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService getRegistryNotificationExecutor();
 
-
     /**
      * Get the default shared threadpool.
      *
@@ -76,4 +77,10 @@ public interface ExecutorRepository {
      */
     ExecutorService getSharedExecutor();
 
+    ExecutorService getPoolRouterExecutor();
+
+    /**
+     * Destroy all executors that are not in shutdown state
+     */
+    void destroyAll();
 }

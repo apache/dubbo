@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.remoting.api.Http2WireProtocol;
 
@@ -32,7 +31,6 @@ import io.netty.handler.ssl.SslContext;
 @Activate
 public class TripleHttp2Protocol extends Http2WireProtocol {
 
-
     @Override
     public void close() {
         super.close();
@@ -44,16 +42,19 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
                 .gracefulShutdownTimeoutMillis(10000)
                 .initialSettings(new Http2Settings()
                         .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
                         .initialWindowSize(1048576))
                 .frameLogger(SERVER_LOGGER)
                 .build();
         final Http2MultiplexHandler handler = new Http2MultiplexHandler(new TripleServerInitializer());
-        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler, new SimpleChannelInboundHandler<Object>() {
-            @Override
-            protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
-                // empty
-            }
-        });
+        pipeline.addLast(codec, new TripleServerConnectionHandler(), handler,
+                new SimpleChannelInboundHandler<Object>() {
+                    @Override
+                    protected void channelRead0(ChannelHandlerContext ctx, Object msg) {
+                        // empty
+                    }
+                });
     }
 
     @Override
@@ -61,6 +62,8 @@ public class TripleHttp2Protocol extends Http2WireProtocol {
         final Http2FrameCodec codec = Http2FrameCodecBuilder.forClient()
                 .initialSettings(new Http2Settings()
                         .maxHeaderListSize(8192)
+                        .maxFrameSize(2 << 16)
+                        .maxConcurrentStreams(Integer.MAX_VALUE)
                         .initialWindowSize(1048576))
                 .gracefulShutdownTimeoutMillis(10000)
                 .frameLogger(CLIENT_LOGGER)

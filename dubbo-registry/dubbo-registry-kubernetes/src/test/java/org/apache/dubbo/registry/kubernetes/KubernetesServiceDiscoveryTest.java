@@ -30,7 +30,7 @@ import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceBuilder;
 import io.fabric8.kubernetes.client.Config;
-import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.NamespacedKubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.KubernetesServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -47,9 +47,9 @@ import java.util.Map;
 
 @ExtendWith({MockitoExtension.class})
 public class KubernetesServiceDiscoveryTest {
-    public KubernetesServer mockServer = new KubernetesServer(true, true);
+    public KubernetesServer mockServer = new KubernetesServer(false, true);
 
-    private KubernetesClient mockClient;
+    private NamespacedKubernetesClient mockClient;
 
     private ServiceInstancesChangedListener mockListener = Mockito.mock(ServiceInstancesChangedListener.class);
 
@@ -64,7 +64,7 @@ public class KubernetesServiceDiscoveryTest {
 
         serverUrl = URL.valueOf(mockClient.getConfiguration().getMasterUrl())
                 .setProtocol("kubernetes")
-                .addParameter(KubernetesClientConst.TRUST_CERTS, "true")
+                .addParameter(KubernetesClientConst.USE_HTTPS, "false")
                 .addParameter(KubernetesClientConst.HTTP2_DISABLE, "true");
 
         System.setProperty(Config.KUBERNETES_AUTH_TRYKUBECONFIG_SYSTEM_PROPERTY, "false");
@@ -116,16 +116,20 @@ public class KubernetesServiceDiscoveryTest {
         Mockito.doNothing().when(mockListener).onEvent(Mockito.any());
 
         serviceDiscovery.addServiceInstancesChangedListener(mockListener);
-        mockClient.endpoints().withName("TestService").edit().editFirstSubset()
-                .addNewAddress().withIp("ip2")
-                .withNewTargetRef().withUid("uid2").withName("TestServer").endTargetRef().endAddress()
-                .addNewPort("Test", "Test", 12345, "TCP").endSubset()
-                .done();
+        mockClient.endpoints().withName("TestService")
+                .edit(endpoints ->
+                        new EndpointsBuilder(endpoints)
+                                .editFirstSubset()
+                                .addNewAddress()
+                                .withIp("ip2")
+                                .withNewTargetRef().withUid("uid2").withName("TestServer").endTargetRef()
+                                .endAddress().endSubset()
+                                .build());
 
         Thread.sleep(5000);
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
-        Mockito.verify(mockListener).onEvent(eventArgumentCaptor.capture());
+        Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
         Assertions.assertEquals(2, eventArgumentCaptor.getValue().getServiceInstances().size());
 
         serviceDiscovery.unregister(serviceInstance);
@@ -158,7 +162,7 @@ public class KubernetesServiceDiscoveryTest {
         Thread.sleep(5000);
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
-        Mockito.verify(mockListener).onEvent(eventArgumentCaptor.capture());
+        Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
         Assertions.assertEquals(1, eventArgumentCaptor.getValue().getServiceInstances().size());
 
         serviceDiscovery.unregister(serviceInstance);

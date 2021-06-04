@@ -24,6 +24,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.serialize.Serialization;
 import org.apache.dubbo.common.status.StatusChecker;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -49,7 +50,7 @@ import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.monitor.MonitorFactory;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
-import org.apache.dubbo.remoting.Codec;
+import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.Dispatcher;
 import org.apache.dubbo.remoting.Transporter;
 import org.apache.dubbo.remoting.exchange.Exchanger;
@@ -62,7 +63,10 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.LoadBalance;
 import org.apache.dubbo.rpc.support.MockInvoker;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,20 +91,23 @@ import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SE
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_ALL;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INSTANCE;
+import static org.apache.dubbo.common.constants.RegistryConstants.DEFAULT_REGISTER_MODE_INTERFACE;
+import static org.apache.dubbo.common.constants.RegistryConstants.DUBBO_REGISTER_MODE_DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTER_MODE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PROTOCOL;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INSTANCE_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createRegistrationReport;
 import static org.apache.dubbo.config.Constants.ARCHITECTURE;
 import static org.apache.dubbo.config.Constants.CONTEXTPATH_KEY;
 import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
+import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
@@ -170,6 +177,9 @@ public class ConfigValidationUtils {
      */
     private static final Pattern PATTERN_KEY = Pattern.compile("[*,\\-._0-9a-zA-Z]+");
 
+    public static final String IPV6_START_MARK = "[";
+
+    public static final String IPV6_END_MARK = "]";
 
     public static List<URL> loadRegistries(AbstractInterfaceConfig interfaceConfig, boolean provider) {
         // check && override if necessary
@@ -214,11 +224,16 @@ public class ConfigValidationUtils {
         List<URL> result = new ArrayList<>(registryList.size());
         registryList.forEach(registryURL -> {
             if (provider) {
-                boolean publishInterface = registryURL.getParameter(REGISTRY_PUBLISH_INTERFACE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY, true));
                 // for registries enabled service discovery, automatically register interface compatible addresses.
+                String registerMode;
                 if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INSTANCE));
+                    if (!isValidRegisterMode(registerMode)) {
+                        registerMode = DEFAULT_REGISTER_MODE_INSTANCE;
+                    }
                     result.add(registryURL);
-                    if (publishInterface && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
+                    if (DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)
+                            && registryNotExists(registryURL, registryList, REGISTRY_PROTOCOL)) {
                         URL interfaceCompatibleRegistryURL = URLBuilder.from(registryURL)
                                 .setProtocol(REGISTRY_PROTOCOL)
                                 .removeParameter(REGISTRY_TYPE_KEY)
@@ -226,24 +241,39 @@ public class ConfigValidationUtils {
                         result.add(interfaceCompatibleRegistryURL);
                     }
                 } else {
-                    boolean publishInstance = registryURL.getParameter(REGISTRY_PUBLISH_INSTANCE_KEY, ConfigurationUtils.getDynamicGlobalConfiguration().getBoolean(DUBBO_PUBLISH_INSTANCE_DEFAULT_KEY, true));
-                    if (registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)
-                            && publishInstance) {
+                    registerMode = registryURL.getParameter(REGISTER_MODE_KEY, ConfigurationUtils.getCachedDynamicProperty(DUBBO_REGISTER_MODE_DEFAULT_KEY, DEFAULT_REGISTER_MODE_INTERFACE));
+                    if (!isValidRegisterMode(registerMode)) {
+                        registerMode = DEFAULT_REGISTER_MODE_INTERFACE;
+                    }
+                    if ((DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode))
+                            && registryNotExists(registryURL, registryList, SERVICE_REGISTRY_PROTOCOL)) {
                         URL serviceDiscoveryRegistryURL = URLBuilder.from(registryURL)
                                 .setProtocol(SERVICE_REGISTRY_PROTOCOL)
                                 .removeParameter(REGISTRY_TYPE_KEY)
                                 .build();
                         result.add(serviceDiscoveryRegistryURL);
                     }
-                    if (publishInterface) {
+
+                    if (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(registerMode) || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(registerMode)) {
                         result.add(registryURL);
                     }
                 }
+
+                FrameworkStatusReporter.reportRegistrationStatus(createRegistrationReport(registerMode));
             } else {
                 result.add(registryURL);
             }
         });
+
         return result;
+    }
+
+    private static boolean isValidRegisterMode(String mode) {
+        return StringUtils.isNotEmpty(mode)
+                && (DEFAULT_REGISTER_MODE_INTERFACE.equalsIgnoreCase(mode)
+                || DEFAULT_REGISTER_MODE_INSTANCE.equalsIgnoreCase(mode)
+                || DEFAULT_REGISTER_MODE_ALL.equalsIgnoreCase(mode)
+        );
     }
 
     private static boolean registryNotExists(URL registryURL, List<URL> registryList, String registryType) {
@@ -292,7 +322,7 @@ public class ConfigValidationUtils {
             return URLBuilder.from(registryURL)
                     .setProtocol(DUBBO_PROTOCOL)
                     .addParameter(PROTOCOL_KEY, monitor.getProtocol())
-                    .putAttribute(REFER_KEY, StringUtils.toQueryString(map))
+                    .putAttribute(REFER_KEY, map)
                     .build();
         }
         return null;
@@ -481,12 +511,12 @@ public class ConfigValidationUtils {
         if (config != null) {
             String name = config.getName();
             checkName("name", name);
-            checkName(HOST_KEY, config.getHost());
+            checkHost(HOST_KEY, config.getHost());
             checkPathName("contextpath", config.getContextpath());
 
 
             if (DUBBO_PROTOCOL.equals(name)) {
-                checkMultiExtension(Codec.class, CODEC_KEY, config.getCodec());
+                checkMultiExtension(Codec2.class, CODEC_KEY, config.getCodec());
                 checkMultiExtension(Serialization.class, SERIALIZATION_KEY, config.getSerialization());
                 checkMultiExtension(Transporter.class, SERVER_KEY, config.getServer());
                 checkMultiExtension(Transporter.class, CLIENT_KEY, config.getClient());
@@ -600,6 +630,22 @@ public class ConfigValidationUtils {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME);
     }
 
+    public static void checkHost(String property, String value) {
+        if (StringUtils.isEmpty(value)) {
+            return;
+        }
+        if (value.startsWith(IPV6_START_MARK) && value.endsWith(IPV6_END_MARK)) {
+            // if the value start with "[" and end with "]", check whether it is IPV6
+            try {
+                InetAddress.getByName(value);
+                return;
+            } catch (UnknownHostException e) {
+                // not a IPv6 string, do nothing, go on to checkName
+            }
+        }
+        checkName(property, value);
+    }
+
     public static void checkNameHasSymbol(String property, String value) {
         checkProperty(property, value, MAX_LENGTH, PATTERN_NAME_HAS_SYMBOL);
     }
@@ -624,8 +670,14 @@ public class ConfigValidationUtils {
         if (CollectionUtils.isEmptyMap(parameters)) {
             return;
         }
+        List<String> ignoreCheckKeys = new ArrayList<>();
+        ignoreCheckKeys.add(BACKUP_KEY);
+        String ignoreCheckKeysStr = parameters.get(IGNORE_CHECK_KEYS);
+        if (!StringUtils.isBlank(ignoreCheckKeysStr)) {
+            ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(",")));
+        }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            if (!entry.getKey().equals(BACKUP_KEY)) {
+            if (!ignoreCheckKeys.contains(entry.getKey())) {
                 checkNameHasSymbol(entry.getKey(), entry.getValue());
             }
         }

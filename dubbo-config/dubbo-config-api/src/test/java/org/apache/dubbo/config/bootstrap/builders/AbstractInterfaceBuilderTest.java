@@ -143,7 +143,7 @@ class AbstractInterfaceBuilderTest {
 
     @Test
     void application() {
-        ApplicationConfig applicationConfig = new ApplicationConfig();
+        ApplicationConfig applicationConfig = new ApplicationConfig("AbtractInterfaceBuilderTest");
 
         InterfaceBuilder builder = new InterfaceBuilder();
         builder.application(applicationConfig);
@@ -247,6 +247,7 @@ class AbstractInterfaceBuilderTest {
     void build() {
         MonitorConfig monitorConfig = new MonitorConfig("123");
         ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("appName");
         ModuleConfig moduleConfig = new ModuleConfig();
         RegistryConfig registryConfig = new RegistryConfig();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();

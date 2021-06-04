@@ -96,6 +96,8 @@ public interface Constants {
      */
     String REFER_KEY = "refer";
 
+    String ATTRIBUTE_KEY = "attribute";
+
     /**
      * The key name for export URL in register center
      */
@@ -104,4 +106,10 @@ public interface Constants {
     String PEER_KEY = "peer";
 
     String CONSUMER_URL_KEY = "CONSUMER_URL";
+
+    /**
+     * prefix of arguments router key
+     */
+    String ARGUMENTS = "arguments";
+
 }

@@ -29,7 +29,6 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  * extension name by which the {@link ServiceDiscovery} instance is loaded.
  *
  * @see AbstractServiceDiscoveryFactory
- * @see EventPublishingServiceDiscovery
  * @since 2.7.5
  */
 public class DefaultServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
