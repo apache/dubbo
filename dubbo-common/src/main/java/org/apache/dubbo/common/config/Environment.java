@@ -104,43 +104,43 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     }
 
     @DisableInject
-    public void setExternalConfigMap(Map/*<String, Object>*/ externalConfiguration) {
+    public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
             this.externalConfiguration.setProperties(externalConfiguration);
         }
     }
 
     @DisableInject
-    public void setAppExternalConfigMap(Map/*<String, Object>*/ appExternalConfiguration) {
+    public void setAppExternalConfigMap(Map<String, String> appExternalConfiguration) {
         if (appExternalConfiguration != null) {
             this.appExternalConfiguration.setProperties(appExternalConfiguration);
         }
     }
 
     @DisableInject
-    public void setAppConfigMap(Map<String, Object> appConfiguration) {
+    public void setAppConfigMap(Map<String, String> appConfiguration) {
         if (appConfiguration != null) {
             this.appConfiguration.setProperties(appConfiguration);
         }
     }
 
-    public Map/*<String, Object>*/ getExternalConfigMap() {
+    public Map<String, String> getExternalConfigMap() {
         return externalConfiguration.getProperties();
     }
 
-    public Map/*<String, Object>*/ getAppExternalConfigMap() {
+    public Map<String, String> getAppExternalConfigMap() {
         return appExternalConfiguration.getProperties();
     }
 
-    public Map<String, Object> getAppConfigMap() {
+    public Map<String, String> getAppConfigMap() {
         return appConfiguration.getProperties();
     }
 
-    public void updateExternalConfigMap(Map/*<String, Object>*/ externalMap) {
+    public void updateExternalConfigMap(Map<String, String> externalMap) {
         this.externalConfiguration.addProperties(externalMap);
     }
 
-    public void updateAppExternalConfigMap(Map/*<String, Object>*/ externalMap) {
+    public void updateAppExternalConfigMap(Map<String, String> externalMap) {
         this.appExternalConfiguration.addProperties(externalMap);
     }
 
@@ -148,7 +148,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * Merge target map properties into app configuration
      * @param map
      */
-    public void updateAppConfigMap(Map<String, Object> map) {
+    public void updateAppConfigMap(Map<String, String> map) {
         this.appConfiguration.addProperties(map);
     }
 
@@ -200,15 +200,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get configuration map list for target instance
-     * @param <V>
      * @param config
      * @param prefix
      * @return
      */
-    public <V extends Object> List<Map<String, V>> getConfigurationMaps(AbstractConfig config, String prefix) {
+    public List<Map<String, String>> getConfigurationMaps(AbstractConfig config, String prefix) {
         // The sequence would be: SystemConfiguration -> AppExternalConfiguration -> ExternalConfiguration  -> AppConfiguration -> AbstractConfig -> PropertiesConfiguration
 
-        List<Map<String, V>> maps = new ArrayList<>();
+        List<Map<String, String>> maps = new ArrayList<>();
         maps.add(systemConfiguration.getProperties());
         maps.add(environmentConfiguration.getProperties());
         maps.add(appExternalConfiguration.getProperties());
@@ -224,10 +223,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
 
     /**
      * Get global configuration as map list
-     * @param <V>
      * @return
      */
-    public <V extends Object> List<Map<String, V>> getConfigurationMaps() {
+    public List<Map<String, String>> getConfigurationMaps() {
         return getConfigurationMaps(null, null);
     }
 

@@ -129,9 +129,9 @@ public abstract class EnvironmentUtils {
      * @param environment {@link ConfigurableEnvironment}
      * @return Read-only SortedMap
      */
-    public static SortedMap<String, Object> filterDubboProperties(ConfigurableEnvironment environment) {
+    public static SortedMap<String, String> filterDubboProperties(ConfigurableEnvironment environment) {
 
-        SortedMap<String, Object> dubboProperties = new TreeMap<>();
+        SortedMap<String, String> dubboProperties = new TreeMap<>();
 
         Map<String, Object> properties = extractProperties(environment);
 

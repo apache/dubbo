@@ -33,7 +33,7 @@ public class EnvironmentTest {
     public void testResolvePlaceholders1() {
         Environment environment = ApplicationModel.getEnvironment();
 
-        Map externalMap = new LinkedHashMap();
+        Map<String, String> externalMap = new LinkedHashMap<>();
         externalMap.put("zookeeper.address", "127.0.0.1");
         externalMap.put("zookeeper.port", "2181");
         environment.updateAppExternalConfigMap(externalMap);

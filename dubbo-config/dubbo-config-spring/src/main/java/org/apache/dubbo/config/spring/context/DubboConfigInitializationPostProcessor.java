@@ -135,7 +135,7 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
 
         // Extract dubbo props from Spring env and put them to app config
         ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
-        SortedMap<String, Object> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
+        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
         ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
     }
 }

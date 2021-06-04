@@ -78,7 +78,7 @@ public class EnvironmentUtilsTest {
         environment.setProperty("dubbo.registry.address", "zookeeper://10.10.10.1:2181");
         environment.setProperty("dubbo.consumer.check", "false");
 
-        SortedMap<String, Object> dubboProperties = filterDubboProperties(environment);
+        SortedMap<String, String> dubboProperties = filterDubboProperties(environment);
 
         Assertions.assertEquals(2, dubboProperties.size());
         Assertions.assertEquals("zookeeper://10.10.10.1:2181", dubboProperties.get("dubbo.registry.address"));

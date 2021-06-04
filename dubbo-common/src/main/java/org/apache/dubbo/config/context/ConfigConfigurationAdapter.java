@@ -47,7 +47,7 @@ public class ConfigConfigurationAdapter implements Configuration {
         return metaData.get(key);
     }
 
-    public Map/*<String, String>*/ getProperties() {
+    public Map<String, String> getProperties() {
         return metaData;
     }
 }

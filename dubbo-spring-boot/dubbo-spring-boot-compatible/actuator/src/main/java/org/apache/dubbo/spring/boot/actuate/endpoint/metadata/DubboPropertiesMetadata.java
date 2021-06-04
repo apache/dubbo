@@ -31,6 +31,6 @@ import static org.apache.dubbo.config.spring.util.EnvironmentUtils.filterDubboPr
 public class DubboPropertiesMetadata extends AbstractDubboMetadata {
 
     public SortedMap<String, Object> properties() {
-        return filterDubboProperties(environment);
+        return (SortedMap) filterDubboProperties(environment);
     }
 }

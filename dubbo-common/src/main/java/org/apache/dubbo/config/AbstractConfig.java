@@ -483,7 +483,7 @@ public abstract class AbstractConfig implements Serializable {
             preProcessRefresh();
 
             Environment environment = ApplicationModel.getEnvironment();
-            List<Map<String, Object>> configurationMaps = environment.getConfigurationMaps();
+            List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
             // Search props starts with PREFIX in order
             String preferredPrefix = null;
@@ -497,8 +497,8 @@ public abstract class AbstractConfig implements Serializable {
                 preferredPrefix = getPrefixes().get(0);
             }
             // Extract sub props (which key was starts with preferredPrefix)
-            Collection<Map<String, Object>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
-            Map<String, Object> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
+            Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
+            Map<String, String> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
             InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
 
             // loop methods, get override value and set the new value back to method

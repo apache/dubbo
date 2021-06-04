@@ -32,7 +32,7 @@ public class SystemConfiguration implements Configuration {
         return System.getProperty(key);
     }
 
-    public Map/*<String, String>*/ getProperties() {
-        return System.getProperties();
+    public Map<String, String> getProperties() {
+        return (Map) System.getProperties();
     }
 }
