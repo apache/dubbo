@@ -1379,6 +1379,7 @@ public class DubboBootstrap {
                     destroyRegistries();
                     destroyProtocols();
                     destroyServiceDiscoveries();
+                    destroyExecutorRepository();
 
                     // check config
                     checkConfigState();
@@ -1413,6 +1414,10 @@ public class DubboBootstrap {
             logger.error("Dubbo config was cleaned prematurely");
             throw new IllegalStateException("Dubbo config was cleaned prematurely");
         }
+    }
+
+    private void destroyExecutorRepository() {
+        ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().destroyAll();
     }
 
     private void destroyRegistries() {

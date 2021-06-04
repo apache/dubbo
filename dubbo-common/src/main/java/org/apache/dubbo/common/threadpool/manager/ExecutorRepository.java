@@ -79,4 +79,8 @@ public interface ExecutorRepository {
 
     ExecutorService getPoolRouterExecutor();
 
+    /**
+     * Destroy all executors that are not in shutdown state
+     */
+    void destroyAll();
 }

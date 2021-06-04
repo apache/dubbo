@@ -16,6 +16,15 @@
  */
 package org.apache.dubbo.common.threadpool.manager;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
+import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.ExecutorUtil;
+import org.apache.dubbo.common.utils.NamedThreadFactory;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,16 +35,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
-import org.apache.dubbo.common.threadpool.ThreadPool;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
-
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 
 /**
@@ -94,12 +96,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
      * @return
      */
     public synchronized ExecutorService createExecutorIfAbsent(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getSide())) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.computeIfAbsent(componentKey, k -> new ConcurrentHashMap<>());
-        Integer portKey = url.getPort();
+        Map<Integer, ExecutorService> executors = data.computeIfAbsent(EXECUTOR_SERVICE_COMPONENT_KEY, k -> new ConcurrentHashMap<>());
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
+        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.computeIfAbsent(portKey, k -> createExecutor(url));
         // If executor has been shut down, create a new one
         if (executor.isShutdown() || executor.isTerminated()) {
@@ -111,11 +110,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     public ExecutorService getExecutor(URL url) {
-        String componentKey = EXECUTOR_SERVICE_COMPONENT_KEY;
-        if (CONSUMER_SIDE.equalsIgnoreCase(url.getSide())) {
-            componentKey = CONSUMER_SIDE;
-        }
-        Map<Integer, ExecutorService> executors = data.get(componentKey);
+        Map<Integer, ExecutorService> executors = data.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         /**
          * It's guaranteed that this method is called after {@link #createExecutorIfAbsent(URL)}, so data should already
@@ -127,16 +122,20 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             return null;
         }
 
-        Integer portKey = url.getPort();
+        // Consumer's executor is sharing globally, key=Integer.MAX_VALUE. Provider's executor is sharing by protocol.
+        Integer portKey = CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY)) ? Integer.MAX_VALUE : url.getPort();
         ExecutorService executor = executors.get(portKey);
-        if (executor != null) {
-            if (executor.isShutdown() || executor.isTerminated()) {
-                executors.remove(portKey);
-                executor = createExecutor(url);
-                executors.put(portKey, executor);
-            }
+        if (executor != null && (executor.isShutdown() || executor.isTerminated())) {
+            executors.remove(portKey);
+            // Does not re-create a shutdown executor, use SHARED_EXECUTOR for downgrade.
+            executor = null;
+            logger.info("Executor for " + url + " is shutdown.");
         }
-        return executor;
+        if (executor == null) {
+            return SHARED_EXECUTOR;
+        } else {
+            return executor;
+        }
     }
 
     @Override
@@ -208,5 +207,18 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public ExecutorService getPoolRouterExecutor() {
         return poolRouterExecutor;
+    }
+
+    @Override
+    public void destroyAll() {
+        data.values().forEach(executors -> {
+            if (executors != null) {
+                executors.values().forEach(executor -> {
+                    if (executor != null && !executor.isShutdown()) {
+                        ExecutorUtil.shutdownNow(executor, 100);
+                    }
+                });
+            }
+        });
     }
 }
