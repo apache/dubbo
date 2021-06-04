@@ -220,7 +220,7 @@ public class ConfigUtils {
      * </ul>
      * @throws IllegalStateException not allow multi-file, but multi-file exist on class path.
      */
-    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) {
+    public static Properties loadProperties(String fileName, boolean allowMultiFile, boolean optional) throws IllegalStateException {
         Properties properties = new Properties();
         // add scene judgement in windows environment Fix 2557
         if (checkFileNameExist(fileName)) {
@@ -259,7 +259,7 @@ public class ConfigUtils {
             if (list.size() > 1) {
                 String errMsg = String.format("only 1 %s file is expected, but %d dubbo.properties files found on class path: %s",
                         fileName, list.size(), list.toString());
-                logger.warn(errMsg);
+                throw new IllegalStateException(errMsg);
             }
 
             // fall back to use method getResourceAsStream

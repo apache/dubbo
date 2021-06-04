@@ -229,14 +229,13 @@ public class ConfigUtilsTest {
     }
 
 
-    @Disabled("Not know why disabled, the original link explaining this was reachable.")
     @Test
     public void testLoadPropertiesMultiFileNotRootPathException() throws Exception {
         try {
-            ConfigUtils.loadProperties("META-INF/services/org.apache.dubbo.common.status.StatusChecker", false);
+            ConfigUtils.loadProperties("META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker", false);
             Assertions.fail();
         } catch (IllegalStateException expected) {
-            assertThat(expected.getMessage(), containsString("only 1 META-INF/services/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
+            assertThat(expected.getMessage(), containsString("only 1 META-INF/dubbo/internal/org.apache.dubbo.common.status.StatusChecker file is expected, but 2 dubbo.properties files found on class path:"));
         }
     }
 
