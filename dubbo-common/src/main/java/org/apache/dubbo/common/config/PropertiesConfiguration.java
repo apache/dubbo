@@ -63,7 +63,7 @@ public class PropertiesConfiguration implements Configuration {
         return ConfigUtils.getProperty(key);
     }
 
-    public Map getProperties() {
-        return ConfigUtils.getProperties();
+    public Map<String, String> getProperties() {
+        return (Map) ConfigUtils.getProperties();
     }
 }
