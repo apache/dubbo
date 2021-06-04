@@ -58,7 +58,6 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
