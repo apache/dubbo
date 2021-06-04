@@ -26,9 +26,14 @@ public interface ProviderURLMergeProcessor {
 
     /**
      * Merging the URL parameters of provider and consumer
-     * @param remoteUrl providerUrl
+     *
+     * @param remoteUrl          providerUrl
      * @param localParametersMap consumer url parameters
      * @return
      */
     URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap);
+
+    default boolean accept(URL providerUrl, Map<String, String> localParametersMap) {
+        return true;
+    }
 }

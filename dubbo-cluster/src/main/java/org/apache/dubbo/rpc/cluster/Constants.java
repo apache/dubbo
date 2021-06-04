@@ -115,5 +115,5 @@ public interface Constants {
     /**
      * Url merge processor key
      */
-    String URL_MERGE_PROCESSOR_KEY = "urlmergeprocessor";
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }
