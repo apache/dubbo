@@ -24,7 +24,6 @@ import org.apache.dubbo.qos.probe.ReadinessProbe;
 public class BootstrapReadinessProbe implements ReadinessProbe {
     @Override
     public boolean check() {
-
         return !DubboBootstrap.getInstance().isShutdown() && DubboBootstrap.getInstance().isStartup();
     }
 }
