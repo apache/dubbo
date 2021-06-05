@@ -49,13 +49,17 @@ public abstract class ServiceAddressURL extends URL {
         this.consumerURL = consumerURL;
     }
 
-    public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL){
+    public ServiceAddressURL(URLAddress urlAddress, URLParam urlParam, URL consumerURL) {
         super(urlAddress, urlParam);
         this.consumerURL = consumerURL;
     }
 
     @Override
     public String getPath() {
+        String path = super.getPath();
+        if (StringUtils.isNotEmpty(path)) {
+            return path;
+        }
         return consumerURL.getPath();
     }
 
@@ -108,7 +112,6 @@ public abstract class ServiceAddressURL extends URL {
 //        allParameters.remove(CATEGORY_KEY);
 //        return Collections.unmodifiableMap(allParameters);
 //    }
-
     @Override
     public String getParameter(String key) {
         if (GROUP_KEY.equals(key)) {
@@ -195,7 +198,7 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public int hashCode() {
-        return super.hashCode() ;
+        return super.hashCode();
     }
 
     /**

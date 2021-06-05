@@ -31,9 +31,7 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.core.v3.SocketAddress;
 import io.envoyproxy.envoy.config.endpoint.v3.ClusterLoadAssignment;
 import io.envoyproxy.envoy.config.endpoint.v3.LbEndpoint;
-import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
 import java.util.Objects;
 import java.util.Set;
@@ -43,8 +41,8 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
 
     private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
 
-    public EdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public EdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override
@@ -63,25 +61,6 @@ public class EdsProtocol extends AbstractProtocol<EndpointResult, DeltaEndpoint>
             return new EndpointResult(set);
         }
         return new EndpointResult();
-    }
-
-    @Override
-    protected  DeltaEndpoint decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaEndpoint previous) {
-        DeltaEndpoint deltaEndpoint = previous;
-        if (deltaEndpoint == null) {
-            deltaEndpoint = new DeltaEndpoint();
-        }
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            deltaEndpoint.removeResource(response.getRemovedResourcesList());
-            for (Resource resource : response.getResourcesList()) {
-                ClusterLoadAssignment unpackedResource = unpackClusterLoadAssignment(resource.getResource());
-                if (unpackedResource == null) {
-                    continue;
-                }
-                deltaEndpoint.addResource(resource.getName(), decodeResourceToEndpoint(unpackedResource));
-            }
-        }
-        return previous;
     }
 
     private static Set<Endpoint> decodeResourceToEndpoint(ClusterLoadAssignment resource) {
