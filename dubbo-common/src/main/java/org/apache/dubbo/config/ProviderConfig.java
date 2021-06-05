@@ -455,7 +455,7 @@ public class ProviderConfig extends AbstractServiceConfig {
         sb.append(", telnet='").append(telnet).append('\'');
         sb.append(", prompt='").append(prompt).append('\'');
         sb.append(", status='").append(status).append('\'');
-        sb.append(", wait=").append(wait);
+        sb.append(", wait=").append(wait).append('\'');
         sb.append(", isDefault=").append(isDefault);
         sb.append('}');
         return sb.toString();

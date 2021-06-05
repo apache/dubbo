@@ -59,8 +59,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_PREFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
@@ -165,6 +165,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(MetadataReportConfig.class));
     }
 
+    public MetadataReportConfig getMetadataConfig(String id) {
+        return getConfig(getTagName(MetadataReportConfig.class), id);
+    }
+
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
         Collection<MetadataReportConfig> defaults = getDefaultConfigs(getConfigsMap(getTagName(MetadataReportConfig.class)));
         if (CollectionUtils.isEmpty(defaults)) {
@@ -258,9 +262,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public Set<String> getProtocolIds() {
         Set<String> protocolIds = new HashSet<>();
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
-                .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+                .getExternalConfigurationMap(), PROTOCOLS_PREFIX));
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
-                .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+                .getAppExternalConfigurationMap(), PROTOCOLS_PREFIX));
 
         return unmodifiableSet(protocolIds);
     }
@@ -293,9 +297,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public Set<String> getRegistryIds() {
         Set<String> registryIds = new HashSet<>();
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getExternalConfigurationMap(),
-                REGISTRIES_SUFFIX));
+                REGISTRIES_PREFIX));
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getAppExternalConfigurationMap(),
-                REGISTRIES_SUFFIX));
+                REGISTRIES_PREFIX));
 
         return unmodifiableSet(registryIds);
     }

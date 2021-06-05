@@ -17,13 +17,17 @@
 package org.apache.dubbo.qos.command;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.StringUtils;
+
+import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
 
 public class DefaultCommandExecutor implements CommandExecutor {
     @Override
     public String execute(CommandContext commandContext) throws NoSuchCommandException {
         BaseCommand command = null;
         try {
-            command = ExtensionLoader.getExtensionLoader(BaseCommand.class).getExtension(commandContext.getCommandName());
+            String extName = StringUtils.camelToSplitName(commandContext.getCommandName(), PROPERTIES_CHAR_SEPARATOR);
+            command = ExtensionLoader.getExtensionLoader(BaseCommand.class).getExtension(extName);
         } catch (Throwable throwable) {
                 //can't find command
         }

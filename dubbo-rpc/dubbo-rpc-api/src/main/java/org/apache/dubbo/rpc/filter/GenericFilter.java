@@ -16,6 +16,10 @@
  */
 package org.apache.dubbo.rpc.filter;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
 import org.apache.dubbo.common.beanutil.JavaBeanAccessor;
 import org.apache.dubbo.common.beanutil.JavaBeanDescriptor;
 import org.apache.dubbo.common.beanutil.JavaBeanSerializeUtil;
@@ -45,10 +49,13 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.stream.IntStream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE;
 import static org.apache.dubbo.common.constants.CommonConstants.$INVOKE_ASYNC;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_BEAN;
+import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_GSON;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_NATIVE_JAVA;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_SERIALIZATION_PROTOBUF;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
@@ -98,6 +105,8 @@ public class GenericFilter implements Filter, Filter.Listener {
                     } catch (IllegalArgumentException e) {
                         throw new RpcException(e);
                     }
+                } else if (ProtocolUtils.isGsonGenericSerialization(generic)) {
+                    args = getGsonGenericArgs(args, method.getGenericParameterTypes());
                 } else if (ProtocolUtils.isJavaGenericSerialization(generic)) {
                     Configuration configuration = ApplicationModel.getEnvironment().getConfiguration();
                     if (!configuration.getBoolean(CommonConstants.ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE, false)) {
@@ -178,6 +187,19 @@ public class GenericFilter implements Filter, Filter.Listener {
             }
         }
         return invoker.invoke(inv);
+    }
+
+    private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
+        Gson gson = new Gson();
+        return IntStream.range(0, args.length).mapToObj(i -> {
+            String str = args[i].toString();
+            Type type = TypeToken.get(types[i]).getType();
+            try {
+                return gson.fromJson(str, type);
+            } catch (JsonSyntaxException ex) {
+                throw new RpcException(String.format("Generic serialization [%s] Json syntax exception thrown when parsing (message:%s type:%s) error:%s", GENERIC_SERIALIZATION_GSON, str, type.toString(), ex.getMessage()));
+            }
+        }).toArray();
     }
 
     @Override

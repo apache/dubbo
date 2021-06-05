@@ -39,7 +39,6 @@ import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -127,7 +126,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
         if (supportedListeners != null && !supportedListeners.isEmpty()) {
             for (AddressListener addressListener : supportedListeners) {
-                providerURLs = addressListener.notify(providerURLs, getConsumerUrl(),this);
+                providerURLs = addressListener.notify(providerURLs, getConsumerUrl(), this);
             }
         }
         refreshOverrideAndInvoker(providerURLs);
@@ -174,7 +173,6 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             routerChain.setInvokers(this.invokers);
             destroyAllInvokers(); // Close all invokers
         } else {
-            this.forbidden = false; // Allow to access
             Map<URL, Invoker<T>> oldUrlInvokerMap = this.urlInvokerMap; // local reference
             if (invokerUrls == Collections.<URL>emptyList()) {
                 invokerUrls = new ArrayList<>();
@@ -188,6 +186,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             if (invokerUrls.isEmpty()) {
                 return;
             }
+            this.forbidden = false; // Allow to access
             Map<URL, Invoker<T>> newUrlInvokerMap = toInvokers(invokerUrls);// Translate url list to Invoker map
 
             /**
@@ -211,11 +210,9 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             this.invokers = multiGroup ? toMergeInvokerList(newInvokers) : newInvokers;
             this.urlInvokerMap = newUrlInvokerMap;
 
-            try {
-                destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap); // Close the unused Invoker
-            } catch (Exception e) {
-                logger.warn("destroyUnusedInvokers error. ", e);
-            }
+            // Close the unused Invoker
+            destroyUnusedInvokers(oldUrlInvokerMap, newUrlInvokerMap);
+
         }
 
         // notify invokers refreshed
@@ -224,23 +221,18 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
         List<Invoker<T>> mergedInvokers = new ArrayList<>();
-        Map<String, List<Invoker<T>>> groupMap = new HashMap<>();
-        for (Invoker<T> invoker : invokers) {
-            String group = invoker.getUrl().getParameter(GROUP_KEY, "");
-            groupMap.computeIfAbsent(group, k -> new ArrayList<>());
-            groupMap.get(group).add(invoker);
-        }
+        // group by invoker#url#group
+        Map<String, List<Invoker<T>>> groupMap =
+                invokers.stream().collect(Collectors.groupingBy(x -> x.getUrl().getParameter(GROUP_KEY, "")));
 
-        if (groupMap.size() == 1) {
-            mergedInvokers.addAll(groupMap.values().iterator().next());
-        } else if (groupMap.size() > 1) {
+        if (groupMap.size() > 1) {
             for (List<Invoker<T>> groupList : groupMap.values()) {
                 StaticDirectory<T> staticDirectory = new StaticDirectory<>(groupList);
                 staticDirectory.buildRouterChain();
                 mergedInvokers.add(CLUSTER.join(staticDirectory));
             }
         } else {
-            mergedInvokers = invokers;
+            mergedInvokers.addAll(invokers);
         }
         return mergedInvokers;
     }
@@ -441,22 +433,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
             return;
         }
         // check deleted invoker
-        List<URL> deleted = null;
         if (oldUrlInvokerMap != null) {
-            for (Map.Entry<URL, Invoker<T>> entry : oldUrlInvokerMap.entrySet()) {
-                if (!newUrlInvokerMap.containsKey(entry.getKey())) {
-                    if (deleted == null) {
-                        deleted = new ArrayList<>();
-                    }
-                    deleted.add(entry.getKey());
-                }
-            }
-        }
-
-        if (deleted != null) {
-            for (URL url : deleted) {
-                if (url != null) {
-                    Invoker<T> invoker = oldUrlInvokerMap.get(url);
+            for (URL key : oldUrlInvokerMap.keySet()) {
+                if (null != key && !newUrlInvokerMap.containsKey(key)) {
+                    Invoker<T> invoker = oldUrlInvokerMap.get(key);
                     if (invoker != null) {
                         try {
                             invoker.destroy();
@@ -479,7 +459,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
         try {
-            if (CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+            if (!forbidden && CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
                     && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable)) {
                 return true;
             }

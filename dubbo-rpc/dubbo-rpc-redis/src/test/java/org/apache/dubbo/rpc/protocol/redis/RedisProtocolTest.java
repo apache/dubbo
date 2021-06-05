@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcException;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -41,8 +42,8 @@ import redis.embedded.RedisServer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Random;
 
-import static org.apache.commons.lang3.SystemUtils.IS_OS_WINDOWS;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -63,26 +64,30 @@ public class RedisProtocolTest {
 
     @BeforeEach
     public void setUp(final TestInfo testInfo) throws IOException {
-        final int redisPort = NetUtils.getAvailablePort();
-
         final boolean usesAuthentication = usesAuthentication(testInfo);
-
-        redisServer = newRedisServer()
-            .port(redisPort)
-            .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
-            .settingIf(IS_OS_WINDOWS, "maxheap 128mb")
-            .build();
+        int redisPort = 0;
         IOException exception = null;
+
         for (int i = 0; i < 10; i++) {
             try {
+                redisPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
+                redisServer = newRedisServer()
+                        .port(redisPort)
+                        // set maxheap to fix Windows error 0x70 while starting redis
+                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        .settingIf(usesAuthentication, "requirepass " + REDIS_PASSWORD)
+                        .build();
                 this.redisServer.start();
+                exception = null;
             } catch (IOException e) {
+                e.printStackTrace();
                 exception = e;
             }
             if (exception == null) {
                 break;
             }
         }
+
         Assertions.assertNull(exception);
         registryUrl = newRedisUrl(usesAuthentication, redisPort);
     }
