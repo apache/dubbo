@@ -55,25 +55,6 @@ public class WrapperComparator implements Comparator<Object> {
         return n1 > n2 ? 1 : -1;
     }
 
-    private Class<?> findSpi(Class clazz) {
-        if (clazz.getInterfaces().length == 0) {
-            return null;
-        }
-
-        for (Class<?> intf : clazz.getInterfaces()) {
-            if (intf.isAnnotationPresent(SPI.class)) {
-                return intf;
-            } else {
-                Class result = findSpi(intf);
-                if (result != null) {
-                    return result;
-                }
-            }
-        }
-
-        return null;
-    }
-
     private OrderInfo parseOrder(Class<?> clazz) {
         OrderInfo info = new OrderInfo();
         if (clazz.isAnnotationPresent(Activate.class)) {
