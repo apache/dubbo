@@ -25,9 +25,11 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXTRA_KEYS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PREFERRED_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 
 /**
  * RegistryConfig
@@ -37,6 +39,7 @@ import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 public class RegistryConfig extends AbstractConfig {
 
     public static final String NO_AVAILABLE = "N/A";
+    public static final String PREFER_REGISTRY_KEY = REGISTRY_KEY + "." + PREFERRED_KEY;
     private static final long serialVersionUID = 5508512956753757169L;
 
     /**
@@ -486,6 +489,7 @@ public class RegistryConfig extends AbstractConfig {
         this.accepts = accepts;
     }
 
+    @Parameter(key = PREFER_REGISTRY_KEY)
     public Boolean getPreferred() {
         return preferred;
     }
@@ -506,7 +510,7 @@ public class RegistryConfig extends AbstractConfig {
     public void refresh() {
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(REGISTRIES_SUFFIX);
+            this.setPrefix(REGISTRIES_PREFIX);
             super.refresh();
         }
     }

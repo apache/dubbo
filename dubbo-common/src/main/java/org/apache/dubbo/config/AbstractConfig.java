@@ -34,6 +34,7 @@ import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
 import javax.annotation.PostConstruct;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
@@ -367,6 +368,7 @@ public abstract class AbstractConfig implements Serializable {
         Method[] methods = annotationClass.getMethods();
         for (Method method : methods) {
             if (method.getDeclaringClass() != Object.class
+                    && method.getDeclaringClass()!= Annotation.class
                     && method.getReturnType() != void.class
                     && method.getParameterTypes().length == 0
                     && Modifier.isPublic(method.getModifiers())

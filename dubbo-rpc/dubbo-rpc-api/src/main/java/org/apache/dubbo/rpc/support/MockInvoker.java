@@ -48,9 +48,9 @@ import static org.apache.dubbo.rpc.Constants.RETURN_PREFIX;
 import static org.apache.dubbo.rpc.Constants.THROW_PREFIX;
 
 final public class MockInvoker<T> implements Invoker<T> {
-    private final static ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private final static Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
-    private final static Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
+    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private static final Map<String, Invoker<?>> MOCK_MAP = new ConcurrentHashMap<String, Invoker<?>>();
+    private static final Map<String, Throwable> THROWABLE_MAP = new ConcurrentHashMap<String, Throwable>();
 
     private final URL url;
     private final Class<T> type;
@@ -99,13 +99,8 @@ final public class MockInvoker<T> implements Invoker<T> {
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(this);
         }
-        String mock = null;
-        if (getUrl().hasMethodParameter(invocation.getMethodName())) {
-            mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
-        }
-        if (StringUtils.isBlank(mock)) {
-            mock = getUrl().getParameter(MOCK_KEY);
-        }
+
+        String mock = getUrl().getMethodParameter(invocation.getMethodName(),MOCK_KEY);
 
         if (StringUtils.isBlank(mock)) {
             throw new RpcException(new IllegalAccessException("mock can not be null. url :" + url));

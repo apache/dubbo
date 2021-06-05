@@ -145,9 +145,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         Registry registry = directory.getRegistry();
         registry.unregister(directory.getRegisteredConsumerUrl());
         directory.unSubscribe(RegistryProtocol.toSubscribeUrl(oldSubscribeUrl));
-        registry.register(directory.getRegisteredConsumerUrl());
-
-        directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        if (directory.isShouldRegister()) {
+            registry.register(directory.getRegisteredConsumerUrl());
+            directory.setRegisteredConsumerUrl(newSubscribeUrl);
+        }
         directory.buildRouterChain(newSubscribeUrl);
         directory.subscribe(RegistryProtocol.toSubscribeUrl(newSubscribeUrl));
     }
@@ -243,7 +244,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private synchronized void compareAddresses(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker) {
         this.invokersChanged.set(true);
         if (logger.isDebugEnabled()) {
-            logger.info(invoker.getDirectory().getAllInvokers() == null ? "null" : invoker.getDirectory().getAllInvokers().size() + "");
+            logger.debug(invoker.getDirectory().getAllInvokers() == null ? "null" : invoker.getDirectory().getAllInvokers().size() + "");
         }
 
         Set<MigrationAddressComparator> detectors = ExtensionLoader.getExtensionLoader(MigrationAddressComparator.class).getSupportedExtensionInstances();

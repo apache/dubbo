@@ -76,6 +76,14 @@ public class DubboProtocolTest {
     }
 
     @Test
+    public void testGetDubboProtocol(){
+        DemoService service = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        Assertions.assertTrue(DubboProtocol.getDubboProtocol().getServers().size() > 0);
+    }
+
+    @Test
     public void testDubboProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
