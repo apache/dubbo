@@ -46,8 +46,6 @@ public class WrapperComparator implements Comparator<Object> {
         Class clazz1 = (Class) o1;
         Class clazz2 = (Class) o2;
 
-        Class<?> inf = findSpi(clazz1);
-
         OrderInfo a1 = parseOrder(clazz1);
         OrderInfo a2 = parseOrder(clazz2);
 
