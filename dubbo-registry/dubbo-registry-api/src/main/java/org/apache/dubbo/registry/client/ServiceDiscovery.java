@@ -43,6 +43,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_DELAY_N
  */
 @SPI("zookeeper")
 public interface ServiceDiscovery extends Prioritized {
+
     // ==================================== Lifecycle ==================================== //
 
     /**

@@ -174,13 +174,11 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        super.addServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
-        super.removeServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> {
             ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
             watcher.stopWatching();
@@ -210,7 +208,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
 
         CountDownLatch latch = new CountDownLatch(1);
-        watcherCaches.computeIfAbsent(path, key -> {
+        ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.computeIfAbsent(path, key -> {
             ZookeeperServiceDiscoveryChangeWatcher tmpWatcher = new ZookeeperServiceDiscoveryChangeWatcher(this, serviceName, path, latch);
             try {
                 curatorFramework.getChildren().usingWatcher(tmpWatcher).forPath(path);
@@ -224,6 +222,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
             }
             return tmpWatcher;
         });
+        watcher.addListener(listener);
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, this.getInstances(serviceName)));
         latch.countDown();
     }
