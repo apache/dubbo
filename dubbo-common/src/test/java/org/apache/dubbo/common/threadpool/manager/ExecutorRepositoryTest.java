@@ -22,8 +22,13 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 
 public class ExecutorRepositoryTest {
     private ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
@@ -47,6 +52,59 @@ public class ExecutorRepositoryTest {
         Assertions.assertEquals(executorService, executorRepository.getExecutor(url));
         executorService.shutdown();
         Assertions.assertNotEquals(executorService, executorRepository.getExecutor(url));
+    }
+
+    @Test
+    public void testGetForProviderSide() throws Exception {
+        URL provider1 = URL.valueOf("dubbo://127.0.0.1:6789?side=provider");
+        URL provider2 = URL.valueOf("dubbo://127.0.0.1:6790?side=provider");
+
+        Field data = executorRepository.getClass().getDeclaredField("data");
+        data.setAccessible(true);
+
+        ExecutorService executor1 = executorRepository.createExecutorIfAbsent(provider1);
+        ExecutorService executor2 = executorRepository.createExecutorIfAbsent(provider2);
+
+        Object o = data.get(executorRepository);
+
+        Assertions.assertTrue(o instanceof Map);
+        ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> executorMap =
+                (ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>>) o;
+
+        ConcurrentMap<Integer, ExecutorService> portExecutorMap = executorMap.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+
+        Assertions.assertNotNull(portExecutorMap.get(provider1.getPort()));
+        Assertions.assertNotNull(portExecutorMap.get(provider2.getPort()));
+
+        executor1.shutdown();
+        executor2.shutdown();
+    }
+
+    @Test
+    public void testGetForConsumerSide() throws Exception {
+        URL consumer1 = URL.valueOf("dubbo://127.0.0.1:6789?side=consumer");
+        URL consumer2 = URL.valueOf("dubbo://127.0.0.1:6790?side=consumer");
+
+        Field data = executorRepository.getClass().getDeclaredField("data");
+        data.setAccessible(true);
+
+        ExecutorService executor1 = executorRepository.createExecutorIfAbsent(consumer1);
+        ExecutorService executor2 = executorRepository.createExecutorIfAbsent(consumer2);
+
+        Object o = data.get(executorRepository);
+
+        Assertions.assertTrue(o instanceof Map);
+        ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>> executorMap =
+                (ConcurrentMap<String, ConcurrentMap<Integer, ExecutorService>>) o;
+
+        ConcurrentMap<Integer, ExecutorService> portExecutorMap = executorMap.get(EXECUTOR_SERVICE_COMPONENT_KEY);
+
+        Assertions.assertNull(portExecutorMap.get(consumer1.getPort()));
+        Assertions.assertNull(portExecutorMap.get(consumer2.getPort()));
+        Assertions.assertNotNull(portExecutorMap.get(Integer.MAX_VALUE));
+
+        executor1.shutdown();
+        executor2.shutdown();
     }
 
     @Test
