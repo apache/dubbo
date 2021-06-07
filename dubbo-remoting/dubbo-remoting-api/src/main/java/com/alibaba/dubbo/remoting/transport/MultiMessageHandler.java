@@ -16,8 +16,11 @@
  */
 package com.alibaba.dubbo.remoting.transport;
 
+import com.alibaba.dubbo.common.logger.Logger;
+import com.alibaba.dubbo.common.logger.LoggerFactory;
 import com.alibaba.dubbo.remoting.Channel;
 import com.alibaba.dubbo.remoting.ChannelHandler;
+import com.alibaba.dubbo.remoting.ExecutionException;
 import com.alibaba.dubbo.remoting.RemotingException;
 import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
 
@@ -26,6 +29,8 @@ import com.alibaba.dubbo.remoting.exchange.support.MultiMessage;
  * @see MultiMessage
  */
 public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
+
+    protected static final Logger logger = LoggerFactory.getLogger(MultiMessageHandler.class);
 
     public MultiMessageHandler(ChannelHandler handler) {
         super(handler);
@@ -37,7 +42,12 @@ public class MultiMessageHandler extends AbstractChannelHandlerDelegate {
         if (message instanceof MultiMessage) {
             MultiMessage list = (MultiMessage) message;
             for (Object obj : list) {
-                handler.received(channel, obj);
+                try {
+                    handler.received(channel, obj);
+                } catch (ExecutionException e) {
+                    logger.error("MultiMessageHandler received fail.", e);
+                    handler.caught(channel, e);
+                }
             }
         } else {
             handler.received(channel, message);
