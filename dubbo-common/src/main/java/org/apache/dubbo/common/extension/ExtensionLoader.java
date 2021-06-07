@@ -272,7 +272,6 @@ public class ExtensionLoader<T> {
         List<T> activateExtensions = new ArrayList<>();
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
         TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
-        List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         Set<String> loadedNames = new HashSet<>();
         Set<String> names = CollectionUtils.ofSet(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
