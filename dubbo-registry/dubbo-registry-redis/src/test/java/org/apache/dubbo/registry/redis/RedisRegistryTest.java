@@ -64,7 +64,9 @@ public class RedisRegistryTest {
                         .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
                         .build();
                 this.redisServer.start();
+                exception = null;
             } catch (IOException e) {
+                e.printStackTrace();
                 exception = e;
             }
             if (exception == null) {

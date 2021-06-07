@@ -274,6 +274,7 @@ public class ExtensionLoader<T> {
         TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         Set<String> loadedNames = new HashSet<>();
+        Set<String> names = CollectionUtils.ofSet(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             getExtensionClasses();
             for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
@@ -305,8 +306,7 @@ public class ExtensionLoader<T> {
             }
         }
         List<T> loadedExtensions = new ArrayList<>();
-        for (int i = 0; i < names.size(); i++) {
-            String name = names.get(i);
+        for (String name : names) {
             if (!name.startsWith(REMOVE_VALUE_PREFIX)
                     && !names.contains(REMOVE_VALUE_PREFIX + name)) {
                 if (!loadedNames.contains(name)) {
@@ -419,17 +419,6 @@ public class ExtensionLoader<T> {
         return cachedAdaptiveInstance.get();
     }
 
-//    public T getPrioritizedExtensionInstance() {
-//        Set<String> supported = getSupportedExtensions();
-//
-//        Set<T> instances = new HashSet<>();
-//        Set<T> prioritized = new HashSet<>();
-//        for (String s : supported) {
-//
-//        }
-//
-//    }
-
     /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
@@ -458,6 +447,17 @@ public class ExtensionLoader<T> {
             }
         }
         return (T) instance;
+    }
+
+    /**
+     * get the original type.
+     * @param name
+     * @return
+     */
+    public T getOriginalInstance(String name) {
+        getExtension(name);
+        Class<?> clazz = getExtensionClasses().get(name);
+        return (T) EXTENSION_INSTANCES.get(clazz);
     }
 
     /**

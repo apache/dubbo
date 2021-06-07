@@ -680,6 +680,10 @@ public class DubboBootstrap {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
         String id = "config-center-" + protocol + "-" + port;
+        if (configManager.getConfigCenter(id) != null) {
+            return null;
+        }
+
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setId(id);
         if (cc.getParameters() == null) {
@@ -781,6 +785,10 @@ public class DubboBootstrap {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
         String id = "metadata-center-" + protocol + "-" + port;
+        if (configManager.getMetadataConfig(id) != null) {
+            return null;
+        }
+
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setId(id);
         if (metadataReportConfig.getParameters() == null) {
@@ -1178,7 +1186,7 @@ public class DubboBootstrap {
         {
             calInstanceRevision(serviceDiscovery, serviceInstance);
             if (logger.isDebugEnabled()) {
-                logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+                logger.debug("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
             }
             // register metadata
             serviceDiscovery.register(serviceInstance);
@@ -1200,9 +1208,6 @@ public class DubboBootstrap {
 
         for (String urlValue : urlValues) {
             URL url = URL.valueOf(urlValue);
-            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                continue;
-            }
             if ("rest".equals(url.getProtocol())) { // REST first
                 selectedURL = url;
                 break;
@@ -1244,8 +1249,6 @@ public class DubboBootstrap {
     public void destroy() {
         if (destroyLock.tryLock()) {
             try {
-                DubboShutdownHook.destroyAll();
-
                 if (started.compareAndSet(true, false)
                         && destroyed.compareAndSet(false, true)) {
 
@@ -1264,6 +1267,8 @@ public class DubboBootstrap {
                     ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
                     exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
                 }
+
+                DubboShutdownHook.destroyAll();
             } finally {
                 destroyLock.unlock();
             }

@@ -50,6 +50,7 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -90,7 +91,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
+    private static final List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
             DubboService.class,
             // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
@@ -291,7 +292,13 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         AbstractBeanDefinition serviceBeanDefinition =
                 buildServiceBeanDefinition(service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
-
+        /**
+         * Supports {@link Lazy} annotation
+         * */
+        Lazy lazyAnnotation = beanClass.getAnnotation(Lazy.class);
+        if (lazyAnnotation != null) {
+            serviceBeanDefinition.setLazyInit(lazyAnnotation.value());
+        }
         // ServiceBean Bean name
         String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
 

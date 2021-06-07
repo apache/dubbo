@@ -28,6 +28,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doClose() throws Exception {
         zkClient.close();
+        if (executor instanceof ExecutorService) {
+            ExecutorService executorService = (ExecutorService) executor;
+            if (!executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+        }
+        cacheListener.removeAllListeners();
     }
 
     @Override

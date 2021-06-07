@@ -33,6 +33,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.BitSet;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.List;
@@ -48,6 +49,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_IP_TO_BIND
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PREFERRED_NETWORK_INTERFACE;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.apache.dubbo.common.utils.CollectionUtils.first;
 
 /**
@@ -69,7 +71,7 @@ public class NetUtils {
     private static final int RND_PORT_RANGE = 10000;
 
     // valid port range is (0, 65535]
-    private static final int MIN_PORT = 0;
+    private static final int MIN_PORT = 1;
     private static final int MAX_PORT = 65535;
 
     private static final Pattern ADDRESS_PATTERN = Pattern.compile("^\\d{1,3}(\\.\\d{1,3}){3}\\:\\d{1,5}$");
@@ -82,25 +84,31 @@ public class NetUtils {
     private static final String SPLIT_IPV4_CHARACTER = "\\.";
     private static final String SPLIT_IPV6_CHARACTER = ":";
 
+    /**
+     * store the used port.
+     * the set used only on the synchronized method.
+     */
+    private static BitSet USED_PORT = new BitSet(65536);
+
     public static int getRandomPort() {
         return RND_PORT_START + ThreadLocalRandom.current().nextInt(RND_PORT_RANGE);
     }
 
-    public static int getAvailablePort() {
-        try (ServerSocket ss = new ServerSocket()) {
-            ss.bind(null);
-            return ss.getLocalPort();
-        } catch (IOException e) {
-            return getRandomPort();
-        }
+    public synchronized static int getAvailablePort() {
+        int randomPort = getRandomPort();
+        return getAvailablePort(randomPort);
     }
 
-    public static int getAvailablePort(int port) {
-        if (port <= 0) {
-            return getAvailablePort();
+    public synchronized static int getAvailablePort(int port) {
+        if (port < MIN_PORT) {
+            port = MIN_PORT;
         }
         for (int i = port; i < MAX_PORT; i++) {
+            if (USED_PORT.get(i)) {
+                continue;
+            }
             try (ServerSocket ignored = new ServerSocket(i)) {
+                USED_PORT.set(i);
                 return i;
             } catch (IOException e) {
                 // continue
@@ -110,7 +118,7 @@ public class NetUtils {
     }
 
     public static boolean isInvalidPort(int port) {
-        return port <= MIN_PORT || port > MAX_PORT;
+        return port < MIN_PORT || port > MAX_PORT;
     }
 
     public static boolean isValidAddress(String address) {
@@ -305,22 +313,35 @@ public class NetUtils {
     }
 
     /**
-     * @param networkInterface {@link NetworkInterface}
-     * @return if the specified {@link NetworkInterface} should be ignored, return <code>true</code>
+     * Returns {@code true} if the specified {@link NetworkInterface} should be ignored with the given conditions.
+     * @param networkInterface the {@link NetworkInterface} to check
+     * @return {@code true} if the specified {@link NetworkInterface} should be ignored, otherwise {@code false}
      * @throws SocketException SocketException if an I/O error occurs.
-     * @since 2.7.6
      */
     private static boolean ignoreNetworkInterface(NetworkInterface networkInterface) throws SocketException {
-        return networkInterface == null
+        if (networkInterface == null
                 || networkInterface.isLoopback()
                 || networkInterface.isVirtual()
-                || !networkInterface.isUp();
+                || !networkInterface.isUp()){
+            return true;
+        }
+        String ignoredInterfaces = System.getProperty(DUBBO_NETWORK_IGNORED_INTERFACE);
+        String networkInterfaceDisplayName;
+        if(StringUtils.isNotEmpty(ignoredInterfaces)
+                &&StringUtils.isNotEmpty(networkInterfaceDisplayName=networkInterface.getDisplayName())){
+            for(String ignoredInterface: ignoredInterfaces.split(",")){
+                if(networkInterfaceDisplayName.matches(ignoredInterface.trim())){
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
      * Get the valid {@link NetworkInterface network interfaces}
      *
-     * @return non-null
+     * @return the valid {@link NetworkInterface}s
      * @throws SocketException SocketException if an I/O error occurs.
      * @since 2.7.6
      */
@@ -558,7 +579,7 @@ public class NetUtils {
         if (!ipPatternContainExpression(pattern)) {
             InetAddress patternAddress = InetAddress.getByName(pattern);
             return patternAddress.getHostAddress().equals(host);
-            }
+        }
 
         String[] ipAddress = host.split(splitCharacter);
         for (int i = 0; i < mask.length; i++) {
@@ -575,7 +596,8 @@ public class NetUtils {
                 if (ip < min || ip > max) {
                     return false;
                 }
-            } else if ("0".equals(ipAddress[i]) && ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
+            } else if ("0".equals(ipAddress[i]) &&
+                    ("0".equals(mask[i]) || "00".equals(mask[i]) || "000".equals(mask[i]) || "0000".equals(mask[i]))) {
                 continue;
             } else if (!mask[i].equals(ipAddress[i])) {
                 return false;
@@ -609,7 +631,8 @@ public class NetUtils {
     private static void checkHostPattern(String pattern, String[] mask, boolean isIpv4) {
         if (!isIpv4) {
             if (mask.length != 8 && ipPatternContainExpression(pattern)) {
-                throw new IllegalArgumentException("If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
+                throw new IllegalArgumentException(
+                        "If you config ip expression that contains '*' or '-', please fill qualified ip pattern like 234e:0:4567:0:0:0:3d:*. ");
             }
             if (mask.length != 8 && !pattern.contains("::")) {
                 throw new IllegalArgumentException("The host is ipv6, but the pattern is not ipv6 pattern : " + pattern);

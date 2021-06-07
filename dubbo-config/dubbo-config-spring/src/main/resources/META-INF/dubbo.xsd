@@ -982,6 +982,11 @@
                             <![CDATA[ The default share connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="url-merge-processor" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The Url merge processor. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>

@@ -58,7 +58,6 @@ import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
-import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 /**
  * The nacos implementation of {@link DynamicConfiguration}
@@ -179,12 +178,11 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
-        String resolvedGroup = resolveGroup(group);
         String listenerKey = buildListenerKey(key, group);
-        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, resolvedGroup));
+        NacosConfigListener nacosConfigListener = watchListenerMap.computeIfAbsent(listenerKey, k -> createTargetListener(key, group));
         nacosConfigListener.addListener(listener);
         try {
-            configService.addListener(key, resolvedGroup, nacosConfigListener);
+            configService.addListener(key, group, nacosConfigListener);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -201,13 +199,12 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     @Override
     public String getConfig(String key, String group, long timeout) throws IllegalStateException {
-        String resolvedGroup = resolveGroup(group);
         try {
             long nacosTimeout = timeout < 0 ? getDefaultTimeout() : timeout;
-            if (StringUtils.isEmpty(resolvedGroup)) {
-                resolvedGroup = DEFAULT_GROUP;
+            if (StringUtils.isEmpty(group)) {
+                group = DEFAULT_GROUP;
             }
-            return configService.getConfig(key, resolvedGroup, nacosTimeout);
+            return configService.getConfig(key, group, nacosTimeout);
         } catch (NacosException e) {
             logger.error(e.getMessage());
         }
@@ -227,9 +224,8 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     @Override
     public boolean publishConfig(String key, String group, String content) {
         boolean published = false;
-        String resolvedGroup = resolveGroup(group);
         try {
-            published = configService.publishConfig(key, resolvedGroup, content);
+            published = configService.publishConfig(key, group, content);
         } catch (NacosException e) {
             logger.error(e.getErrMsg(), e);
         }
@@ -256,7 +252,7 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
             Map<String, String> paramsValues = new HashMap<>();
             paramsValues.put("search", "accurate");
             paramsValues.put("dataId", "");
-            paramsValues.put("group", resolveGroup(group));
+            paramsValues.put("group", group.replace(SLASH_CHAR, HYPHEN_CHAR));
             paramsValues.put("pageNo", "1");
             paramsValues.put("pageSize", String.valueOf(Integer.MAX_VALUE));
 
@@ -351,10 +347,6 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
     }
 
     protected String buildListenerKey(String key, String group) {
-        return key + HYPHEN_CHAR + resolveGroup(group);
-    }
-
-    protected String resolveGroup(String group) {
-        return isBlank(group) ? group : group.replace(SLASH_CHAR, HYPHEN_CHAR);
+        return key + HYPHEN_CHAR + group;
     }
 }

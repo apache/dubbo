@@ -30,6 +30,8 @@ import org.apache.dubbo.common.URL;
  */
 public class LruCacheFactory extends AbstractCacheFactory {
 
+    public static final String NAME = "lru";
+
     /**
      * Takes url as an method argument and return new instance of cache store implemented by LruCache.
      * @param url url of the method

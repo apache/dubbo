@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_PREFIX;
 
 /**
  * ProtocolConfig
@@ -530,7 +530,7 @@ public class ProtocolConfig extends AbstractConfig {
         }
         super.refresh();
         if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(PROTOCOLS_SUFFIX);
+            this.setPrefix(PROTOCOLS_PREFIX);
             super.refresh();
         }
     }

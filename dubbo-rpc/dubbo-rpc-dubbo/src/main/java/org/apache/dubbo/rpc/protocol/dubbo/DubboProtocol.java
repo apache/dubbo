@@ -95,7 +95,8 @@ public class DubboProtocol extends AbstractProtocol {
 
     public static final int DEFAULT_PORT = 20880;
     private static final String IS_CALLBACK_SERVICE_INVOKE = "_isCallBackServiceInvoke";
-    private static DubboProtocol INSTANCE;
+    private static volatile DubboProtocol INSTANCE;
+    private static Object MONITOR = new Object();
 
     /**
      * <host:port,Exchanger>
@@ -209,15 +210,16 @@ public class DubboProtocol extends AbstractProtocol {
     };
 
     public DubboProtocol() {
-        INSTANCE = this;
     }
 
     public static DubboProtocol getDubboProtocol() {
-        if (INSTANCE == null) {
-            // load
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
+        if (null == INSTANCE) {
+            synchronized (MONITOR) {
+                if (null == INSTANCE) {
+                    INSTANCE = (DubboProtocol) ExtensionLoader.getExtensionLoader(Protocol.class).getOriginalInstance(DubboProtocol.NAME);
+                }
+            }
         }
-
         return INSTANCE;
     }
 
@@ -262,8 +264,10 @@ public class DubboProtocol extends AbstractProtocol {
         DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
 
         if (exporter == null) {
-            throw new RemotingException(channel, "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " +
-                    ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() + ", message:" + getInvocationWithoutData(inv));
+            throw new RemotingException(channel,
+                    "Not found exported service: " + serviceKey + " in " + exporterMap.keySet() + ", may be version or group mismatch " +
+                            ", channel: consumer: " + channel.getRemoteAddress() + " --> provider: " + channel.getLocalAddress() +
+                            ", message:" + getInvocationWithoutData(inv));
         }
 
         return exporter.getInvoker();
@@ -371,7 +375,8 @@ public class DubboProtocol extends AbstractProtocol {
         try {
             Class clazz = Thread.currentThread().getContextClassLoader().loadClass(className);
             if (!SerializationOptimizer.class.isAssignableFrom(clazz)) {
-                throw new RpcException("The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
+                throw new RpcException(
+                        "The serialization optimizer " + className + " isn't an instance of " + SerializationOptimizer.class.getName());
             }
 
             SerializationOptimizer optimizer = (SerializationOptimizer) clazz.newInstance();
@@ -408,35 +413,24 @@ public class DubboProtocol extends AbstractProtocol {
 
     private ExchangeClient[] getClients(URL url) {
         // whether to share connection
-
-        boolean useShareConnect = false;
-
         int connections = url.getParameter(CONNECTIONS_KEY, 0);
-        List<ReferenceCountExchangeClient> shareClients = null;
         // if not configured, connection is shared, otherwise, one connection for one service
         if (connections == 0) {
-            useShareConnect = true;
-
             /*
              * The xml configuration should have a higher priority than properties.
              */
             String shareConnectionsStr = url.getParameter(SHARE_CONNECTIONS_KEY, (String) null);
             connections = Integer.parseInt(StringUtils.isBlank(shareConnectionsStr) ? ConfigUtils.getProperty(SHARE_CONNECTIONS_KEY,
                     DEFAULT_SHARE_CONNECTIONS) : shareConnectionsStr);
-            shareClients = getSharedClient(url, connections);
-        }
-
-        ExchangeClient[] clients = new ExchangeClient[connections];
-        for (int i = 0; i < clients.length; i++) {
-            if (useShareConnect) {
-                clients[i] = shareClients.get(i);
-
-            } else {
+            return getSharedClient(url, connections).toArray(new ExchangeClient[0]);
+        } else {
+            ExchangeClient[] clients = new ExchangeClient[connections];
+            for (int i = 0; i < clients.length; i++) {
                 clients[i] = initClient(url);
             }
+            return clients;
         }
 
-        return clients;
     }
 
     /**
@@ -530,7 +524,8 @@ public class DubboProtocol extends AbstractProtocol {
 
         for (ReferenceCountExchangeClient referenceCountExchangeClient : referenceCountExchangeClients) {
             // As long as one client is not available, you need to replace the unavailable client with the available one.
-            if (referenceCountExchangeClient == null || referenceCountExchangeClient.getCount() <= 0 || referenceCountExchangeClient.isClosed()) {
+            if (referenceCountExchangeClient == null || referenceCountExchangeClient.getCount() <= 0 ||
+                    referenceCountExchangeClient.isClosed()) {
                 return false;
             }
         }
@@ -601,7 +596,8 @@ public class DubboProtocol extends AbstractProtocol {
         // BIO is not allowed since it has severe performance issue.
         if (str != null && str.length() > 0 && !ExtensionLoader.getExtensionLoader(Transporter.class).hasExtension(str)) {
             throw new RpcException("Unsupported client type: " + str + "," +
-                    " supported client type is " + StringUtils.join(ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
+                    " supported client type is " +
+                    StringUtils.join(ExtensionLoader.getExtensionLoader(Transporter.class).getSupportedExtensions(), " "));
         }
 
         ExchangeClient client;

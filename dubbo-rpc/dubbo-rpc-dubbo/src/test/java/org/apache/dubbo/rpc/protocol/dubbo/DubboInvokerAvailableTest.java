@@ -53,7 +53,7 @@ public class DubboInvokerAvailableTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        protocol = new DubboProtocol();
+        protocol = DubboProtocol.getDubboProtocol();
     }
 
     @AfterAll
