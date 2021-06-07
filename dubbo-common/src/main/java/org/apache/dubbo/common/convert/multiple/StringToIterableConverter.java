@@ -35,7 +35,8 @@ import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
 public abstract class StringToIterableConverter<T extends Iterable> implements StringToMultiValueConverter {
 
     public boolean accept(Class<String> type, Class<?> multiValueType) {
-        boolean assignableFrom = isAssignableFrom(getSupportedType(), multiValueType);
+        Class<T> supportedType = getSupportedType();
+        boolean assignableFrom = isAssignableFrom(supportedType, multiValueType);
         return assignableFrom;
     }
 
