@@ -57,6 +57,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 
 import static com.alibaba.dubbo.config.spring.util.ObjectUtils.of;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -370,7 +372,7 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();
 
         String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
-                "interface", "interfaceName");
+                "interface", "interfaceName", "parameters");
 
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(service, environment, ignoreAttributeNames));
 
@@ -378,6 +380,8 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
+        // Set parameters
+        builder.addPropertyValue("parameters",convertParameters(service.parameters()));
 
         /**
          * Add {@link com.alibaba.dubbo.config.ProviderConfig} Bean reference
@@ -469,6 +473,26 @@ public class ServiceAnnotationBeanPostProcessor implements BeanDefinitionRegistr
         builder.addPropertyReference(propertyName, resolvedBeanName);
     }
 
+    /**
+     * Converts the string array parameters to map.
+     * @param parameters the parameters to convert.
+     * @return the converted parameters as a map.
+     */
+    private Map<String, String> convertParameters(String[] parameters) {
+        if (parameters == null || parameters.length == 0) {
+            return null;
+        }
+
+        if (parameters.length % 2 != 0) {
+            throw new IllegalArgumentException("parameter attribute must be paired with key followed by value");
+        }
+
+        Map<String, String> map = new HashMap<String,String>();
+        for (int i = 0; i < parameters.length; i += 2) {
+            map.put(parameters[i], parameters[i + 1]);
+        }
+        return map;
+    }
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
