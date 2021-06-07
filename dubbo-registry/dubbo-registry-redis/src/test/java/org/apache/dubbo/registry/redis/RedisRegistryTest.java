@@ -154,7 +154,7 @@ public class RedisRegistryTest {
 
         assertThat(firstOk, is(true));
 
-        // 模拟providerB意外宕机，如被kill -9
+        // kill -9 to providerB
         Field registeredField = AbstractRegistry.class.getDeclaredField("registered");
         registeredField.setAccessible(true);
         ((Set<URL>) registeredField.get(redisRegistry)).remove(PROVIDER_URL_B);
