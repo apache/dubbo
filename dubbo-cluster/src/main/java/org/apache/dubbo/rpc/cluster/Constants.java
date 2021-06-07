@@ -104,8 +104,4 @@ public interface Constants {
      */
     String ARGUMENTS = "arguments";
 
-    /**
-     * Url merge processor key
-     */
-    String URL_MERGE_PROCESSOR_KEY = "urlmergeprocessor";
 }
