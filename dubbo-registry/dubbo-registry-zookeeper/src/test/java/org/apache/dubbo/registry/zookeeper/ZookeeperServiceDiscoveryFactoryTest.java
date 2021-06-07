@@ -14,25 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.xds;
+package org.apache.dubbo.registry.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public class XdsServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
-    private static final Logger logger = LoggerFactory.getLogger(XdsServiceDiscoveryFactory.class);
+public class ZookeeperServiceDiscoveryFactoryTest {
 
-    @Override
-    protected ServiceDiscovery createDiscovery(URL registryURL) {
-        XdsServiceDiscovery xdsServiceDiscovery = new XdsServiceDiscovery();
-        try {
-            xdsServiceDiscovery.doInitialize(registryURL);
-        } catch (Exception e) {
-            logger.error("Error occurred when initialize xDS service discovery impl.", e);
-        }
-        return xdsServiceDiscovery;
+    @Test
+    public void testCreateZookeeperServiceDiscovery() {
+        final URL url = URL.valueOf("test://test:80");
+        final ZookeeperServiceDiscoveryFactory factory = new ZookeeperServiceDiscoveryFactory();
+        ServiceDiscovery discovery = factory.createDiscovery(url);
+
+        Assertions.assertTrue(discovery instanceof ZookeeperServiceDiscovery);
     }
 }

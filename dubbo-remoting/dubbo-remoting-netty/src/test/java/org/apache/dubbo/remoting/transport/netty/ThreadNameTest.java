@@ -43,7 +43,7 @@ public class ThreadNameTest {
     private ThreadNameVerifyHandler clientHandler;
 
     private static String serverRegex = "DubboServerHandler\\-localhost:(\\d+)\\-thread\\-(\\d+)";
-    private static String clientRegex = "DubboClientHandler\\-localhost:(\\d+)\\-thread\\-(\\d+)";
+    private static String clientRegex = "DubboClientHandler\\-thread\\-(\\d+)";
 
     private final CountDownLatch serverLatch = new CountDownLatch(1);
     private final CountDownLatch clientLatch = new CountDownLatch(1);
