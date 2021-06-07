@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.rpc.cluster.support.merger;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.cluster.UrlMergeProcessor;
+import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
 
 
-public class DefaultUrlMergeProcessor implements UrlMergeProcessor {
+public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcessor {
 
     @Override
     public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {

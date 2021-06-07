@@ -17,6 +17,9 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
+
+import static org.apache.dubbo.config.Constants.URL_MERGE_PROCESSOR_KEY;
 
 /**
  * The service consumer default configuration
@@ -63,7 +66,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      *  Url Merge Processor
      *  Used to customize the URL merge of consumer and provider
      */
-    private String urlmergeprocessor;
+    private String urlMergeProcessor;
 
     @Override
     public void setTimeout(Integer timeout) {
@@ -123,11 +126,12 @@ public class ConsumerConfig extends AbstractReferenceConfig {
         this.shareconnections = shareconnections;
     }
 
-    public String getUrlmergeprocessor() {
-        return urlmergeprocessor;
+    @Parameter(key = URL_MERGE_PROCESSOR_KEY)
+    public String getUrlMergeProcessor() {
+        return urlMergeProcessor;
     }
 
-    public void setUrlmergeprocessor(String urlmergeprocessor) {
-        this.urlmergeprocessor = urlmergeprocessor;
+    public void setUrlMergeProcessor(String urlMergeProcessor) {
+        this.urlMergeProcessor = urlMergeProcessor;
     }
 }

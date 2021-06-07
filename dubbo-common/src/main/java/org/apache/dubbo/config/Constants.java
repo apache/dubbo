@@ -120,4 +120,9 @@ public interface Constants {
     String REGISTER_KEY = "register";
 
     String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }

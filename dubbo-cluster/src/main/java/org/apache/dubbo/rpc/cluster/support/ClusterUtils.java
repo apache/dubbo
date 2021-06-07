@@ -19,11 +19,12 @@ package org.apache.dubbo.rpc.cluster.support;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.rpc.cluster.UrlMergeProcessor;
+import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
 
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.URL_MERGE_PROCESSOR_KEY;
+import static org.apache.dubbo.config.Constants.URL_MERGE_PROCESSOR_KEY;
+
 
 /**
  * ClusterUtils
@@ -36,15 +37,15 @@ public class ClusterUtils {
     public static URL mergeUrl(URL remoteUrl, Map<String, String> localMap) {
 
         String ump = localMap.get(URL_MERGE_PROCESSOR_KEY);
-        UrlMergeProcessor urlMergeProcessor;
+        ProviderURLMergeProcessor providerURLMergeProcessor;
 
         if (StringUtils.isNotEmpty(ump)) {
-            urlMergeProcessor = ExtensionLoader.getExtensionLoader(UrlMergeProcessor.class).getExtension(ump);
+            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension(ump);
         } else {
-            urlMergeProcessor = ExtensionLoader.getExtensionLoader(UrlMergeProcessor.class).getExtension("default");
+            providerURLMergeProcessor = ExtensionLoader.getExtensionLoader(ProviderURLMergeProcessor.class).getExtension("default");
         }
 
-        return urlMergeProcessor.mergeUrl(remoteUrl, localMap);
+        return providerURLMergeProcessor.mergeUrl(remoteUrl, localMap);
     }
 
 }
