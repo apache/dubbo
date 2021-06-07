@@ -113,7 +113,7 @@ public class RedisRegistryTest {
     @Test
     public void testSubscribeWhenProviderCrash() throws Exception {
 
-        // 关闭doExpire，则本单元测试不通过
+        // unit test will fail if doExpire=false
         // Field doExpireField = RedisRegistry.class.getDeclaredField("doExpire");
         // doExpireField.setAccessible(true);
         // doExpireField.set(redisRegistry, false);
