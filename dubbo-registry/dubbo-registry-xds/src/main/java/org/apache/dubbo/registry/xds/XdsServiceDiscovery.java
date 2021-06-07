@@ -63,10 +63,9 @@ public class XdsServiceDiscovery extends SelfHostMetaServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        super.addServiceInstancesChangedListener(listener);
         listener.getServiceNames().forEach(serviceName -> {
             exchanger.observeEndpoints(serviceName, (endpoints -> {
-                notifyListener(serviceName, changedToInstances(serviceName, endpoints));
+                notifyListener(serviceName, listener, changedToInstances(serviceName, endpoints));
             }));
         });
     }

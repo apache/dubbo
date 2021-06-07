@@ -16,18 +16,11 @@
  */
 package org.apache.dubbo.registry.client;
 
-import org.apache.dubbo.common.utils.ConcurrentHashSet;
-import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-
-import java.util.Set;
 
 public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
 
     protected ServiceInstance serviceInstance;
-
-    private final Set<ServiceInstancesChangedListener> listeners = new ConcurrentHashSet<>();
 
     @Override
     public ServiceInstance getLocalInstance() {
@@ -45,20 +38,5 @@ public abstract class AbstractServiceDiscovery implements ServiceDiscovery {
     @Override
     public void update(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
-    }
-
-    @Override
-    public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws NullPointerException, IllegalArgumentException {
-        listeners.add(listener);
-    }
-
-    @Override
-    public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
-        listeners.remove(listener);
-    }
-
-    @Override
-    public void dispatchServiceInstancesChangedEvent(ServiceInstancesChangedEvent event) {
-        listeners.forEach(listener -> listener.onEvent(event));
     }
 }
