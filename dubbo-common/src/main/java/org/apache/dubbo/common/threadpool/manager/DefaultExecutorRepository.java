@@ -58,7 +58,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ScheduledExecutorService serviceDiscveryAddressNotificationExecutor;
+    private ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor;
 
     private ScheduledExecutorService metadataRetryExecutor;
 
@@ -84,7 +84,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
         serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
-        serviceDiscveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
+        serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
     }
@@ -187,7 +187,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
-        return serviceDiscveryAddressNotificationExecutor;
+        return serviceDiscoveryAddressNotificationExecutor;
     }
 
     @Override
@@ -211,6 +211,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     @Override
     public void destroyAll() {
+        poolRouterExecutor.shutdown();
+        serviceExporterExecutor.shutdown();
+        serviceDiscoveryAddressNotificationExecutor.shutdown();
+        registryNotificationExecutor.shutdown();
+        metadataRetryExecutor.shutdown();
+
         data.values().forEach(executors -> {
             if (executors != null) {
                 executors.values().forEach(executor -> {
