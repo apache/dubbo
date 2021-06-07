@@ -24,12 +24,12 @@ import java.util.Comparator;
 /**
  * OrderComparator
  */
-public class WrapperComparator implements Comparator<Object> {
+public class WrapperComparator implements Comparator<Class> {
 
-    public static final Comparator<Object> COMPARATOR = new WrapperComparator();
+    public static final Comparator<Class> COMPARATOR = new WrapperComparator();
 
     @Override
-    public int compare(Object o1, Object o2) {
+    public int compare(Class o1, Class o2) {
         if (o1 == null && o2 == null) {
             return 0;
         }
@@ -43,8 +43,8 @@ public class WrapperComparator implements Comparator<Object> {
             return 0;
         }
 
-        Class clazz1 = (Class) o1;
-        Class clazz2 = (Class) o2;
+        Class clazz1 = o1;
+        Class clazz2 = o2;
 
         OrderInfo a1 = parseOrder(clazz1);
         OrderInfo a2 = parseOrder(clazz2);

@@ -92,7 +92,7 @@ public interface TypeUtils {
                         }
                     }
                     Class<?> superClass = rawClass.getSuperclass();
-                    if (superClass != null) {
+                    if (superClass != null && NON_OBJECT_TYPE_FILTER.test(superClass)) {
                         actualTypeArguments.addAll(findActualTypeArguments(superClass, interfaceClass));
                     }
                 });

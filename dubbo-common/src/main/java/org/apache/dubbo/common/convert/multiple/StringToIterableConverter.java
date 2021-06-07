@@ -20,6 +20,7 @@ import org.apache.dubbo.common.convert.StringConverter;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.apache.dubbo.common.convert.Converter.getConverter;
 import static org.apache.dubbo.common.utils.ClassUtils.getAllInterfaces;
@@ -34,7 +35,8 @@ import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
 public abstract class StringToIterableConverter<T extends Iterable> implements StringToMultiValueConverter {
 
     public boolean accept(Class<String> type, Class<?> multiValueType) {
-        return isAssignableFrom(getSupportedType(), multiValueType);
+        boolean assignableFrom = isAssignableFrom(getSupportedType(), multiValueType);
+        return assignableFrom;
     }
 
     @Override
@@ -73,8 +75,9 @@ public abstract class StringToIterableConverter<T extends Iterable> implements S
 
     @Override
     public final int getPriority() {
-        int level = getAllInterfaces(getSupportedType(), type ->
-                isAssignableFrom(Iterable.class, type)).size();
+        Set<Class<?>> allInterfaces = getAllInterfaces(getSupportedType(), type ->
+                isAssignableFrom(Iterable.class, type));
+        int level = allInterfaces.size();
         return MIN_PRIORITY - level;
     }
 }
