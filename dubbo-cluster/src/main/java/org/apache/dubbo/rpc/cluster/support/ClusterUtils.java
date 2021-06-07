@@ -23,7 +23,8 @@ import org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor;
 
 import java.util.Map;
 
-import static org.apache.dubbo.rpc.cluster.Constants.URL_MERGE_PROCESSOR_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
+
 
 /**
  * ClusterUtils

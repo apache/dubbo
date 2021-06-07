@@ -48,7 +48,7 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
 
     @Override
     public URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap) {
-        Map<String, String> map = new HashMap<String, String>();
+        Map<String, String> map = new HashMap<>();
         Map<String, String> remoteMap = remoteUrl.getParameters();
 
         if (remoteMap != null && remoteMap.size() > 0) {
