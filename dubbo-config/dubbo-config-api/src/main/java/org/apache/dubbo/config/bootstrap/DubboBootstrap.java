@@ -1163,7 +1163,7 @@ public class DubboBootstrap {
         cache.destroyAll();
     }
 
-    public ExecutorService getExportReferExecutor() {
+    private ExecutorService getExportReferExecutor() {
         if (exportReferExecutor == null) {
             ApplicationConfig config = getApplication();
             int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
