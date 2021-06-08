@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
@@ -35,14 +36,12 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanNameGenerator;
-import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
@@ -55,8 +54,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -87,7 +84,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * @see BeanDefinitionRegistryPostProcessor
  * @since 2.7.7
  */
-public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
+public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
     private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
@@ -110,15 +107,15 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
     private ClassLoader classLoader;
 
-    public ServiceClassPostProcessor(String... packagesToScan) {
+    public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
     }
 
-    public ServiceClassPostProcessor(Collection<String> packagesToScan) {
+    public ServiceAnnotationPostProcessor(Collection<String> packagesToScan) {
         this(new LinkedHashSet<>(packagesToScan));
     }
 
-    public ServiceClassPostProcessor(Set<String> packagesToScan) {
+    public ServiceAnnotationPostProcessor(Set<String> packagesToScan) {
         this.packagesToScan = packagesToScan;
     }
 
@@ -403,7 +400,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
 
         //set config id, for ConfigManager cache key
-        builder.addPropertyValue("id", beanName);
+        //builder.addPropertyValue("id", beanName);
         // References "ref" property to annotated-@Service Bean
         addPropertyReference(builder, "ref", annotatedServiceBeanName);
         // Set interface
@@ -416,63 +413,57 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
             builder.addPropertyValue("methods", methodConfigs);
         }
 
-        /**
-         * Add {@link org.apache.dubbo.config.ProviderConfig} Bean reference
-         */
-        String providerConfigBeanName = serviceAnnotationAttributes.getString("provider");
-        if (StringUtils.hasText(providerConfigBeanName)) {
-            addPropertyReference(builder, "provider", providerConfigBeanName);
+        // convert provider to providerIds
+        String providerConfigId = serviceAnnotationAttributes.getString("provider");
+        if (StringUtils.hasText(providerConfigId)) {
+            addPropertyValue(builder, "providerIds", providerConfigId);
         }
 
-        /**
-         * Add {@link org.apache.dubbo.config.MonitorConfig} Bean reference
-         */
-        String monitorConfigBeanName = serviceAnnotationAttributes.getString("monitor");
-        if (StringUtils.hasText(monitorConfigBeanName)) {
-            addPropertyReference(builder, "monitor", monitorConfigBeanName);
+        // Convert registry[] to registryIds
+        String[] registryConfigIds = serviceAnnotationAttributes.getStringArray("registry");
+        if (registryConfigIds != null && registryConfigIds.length > 0) {
+            resolveStringArray(registryConfigIds);
+            builder.addPropertyValue("registryIds", StringUtils.join(registryConfigIds, ','));
         }
 
-        /**
-         * Add {@link org.apache.dubbo.config.ApplicationConfig} Bean reference
-         */
-        String applicationConfigBeanName = serviceAnnotationAttributes.getString("application");
-        if (StringUtils.hasText(applicationConfigBeanName)) {
-            addPropertyReference(builder, "application", applicationConfigBeanName);
+        // Convert protocol[] to protocolIds
+        String[] protocolConfigIds = serviceAnnotationAttributes.getStringArray("protocol");
+        if (protocolConfigIds != null && protocolConfigIds.length > 0) {
+            resolveStringArray(protocolConfigIds);
+            builder.addPropertyValue("protocolIds", StringUtils.join(protocolConfigIds, ','));
         }
 
-        /**
-         * Add {@link org.apache.dubbo.config.ModuleConfig} Bean reference
-         */
-        String moduleConfigBeanName = serviceAnnotationAttributes.getString("module");
-        if (StringUtils.hasText(moduleConfigBeanName)) {
-            addPropertyReference(builder, "module", moduleConfigBeanName);
+        // TODO Could we ignore these attributes: applicatin/monitor/module ? Use global config
+        // monitor reference
+        String monitorConfigId = serviceAnnotationAttributes.getString("monitor");
+        if (StringUtils.hasText(monitorConfigId)) {
+            addPropertyReference(builder, "monitor", monitorConfigId);
         }
 
-
-        /**
-         * Add {@link org.apache.dubbo.config.RegistryConfig} Bean reference
-         */
-        String[] registryConfigBeanNames = serviceAnnotationAttributes.getStringArray("registry");
-
-        List<RuntimeBeanReference> registryRuntimeBeanReferences = toRuntimeBeanReferences(registryConfigBeanNames);
-
-        if (!registryRuntimeBeanReferences.isEmpty()) {
-            builder.addPropertyValue("registries", registryRuntimeBeanReferences);
+        // application reference
+        String applicationConfigId = serviceAnnotationAttributes.getString("application");
+        if (StringUtils.hasText(applicationConfigId)) {
+            addPropertyReference(builder, "application", applicationConfigId);
         }
 
-        /**
-         * Add {@link org.apache.dubbo.config.ProtocolConfig} Bean reference
-         */
-        String[] protocolConfigBeanNames = serviceAnnotationAttributes.getStringArray("protocol");
-
-        List<RuntimeBeanReference> protocolRuntimeBeanReferences = toRuntimeBeanReferences(protocolConfigBeanNames);
-
-        if (!protocolRuntimeBeanReferences.isEmpty()) {
-            builder.addPropertyValue("protocols", protocolRuntimeBeanReferences);
+        // module reference
+        String moduleConfigId = serviceAnnotationAttributes.getString("module");
+        if (StringUtils.hasText(moduleConfigId)) {
+            addPropertyReference(builder, "module", moduleConfigId);
         }
 
         return builder.getBeanDefinition();
 
+    }
+
+    private String[] resolveStringArray(String[] strs) {
+        if (strs == null) {
+            return null;
+        }
+        for (int i = 0; i < strs.length; i++) {
+            strs[i] = environment.resolvePlaceholders(strs[i]);
+        }
+        return strs;
     }
 
     private List convertMethodConfigs(Object methodsAnnotation) {
@@ -482,28 +473,14 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         return MethodConfig.constructMethodConfig((Method[]) methodsAnnotation);
     }
 
-    private ManagedList<RuntimeBeanReference> toRuntimeBeanReferences(String... beanNames) {
-
-        ManagedList<RuntimeBeanReference> runtimeBeanReferences = new ManagedList<>();
-
-        if (!ObjectUtils.isEmpty(beanNames)) {
-
-            for (String beanName : beanNames) {
-
-                String resolvedBeanName = environment.resolvePlaceholders(beanName);
-
-                runtimeBeanReferences.add(new RuntimeBeanReference(resolvedBeanName));
-            }
-
-        }
-
-        return runtimeBeanReferences;
-
-    }
-
     private void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String beanName) {
         String resolvedBeanName = environment.resolvePlaceholders(beanName);
         builder.addPropertyReference(propertyName, resolvedBeanName);
+    }
+
+    private void addPropertyValue(BeanDefinitionBuilder builder, String propertyName, String value) {
+        String resolvedBeanName = environment.resolvePlaceholders(value);
+        builder.addPropertyValue(propertyName, resolvedBeanName);
     }
 
     private Map<String, String> convertParameters(String[] parameters) {

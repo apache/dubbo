@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
@@ -32,7 +33,7 @@ import java.util.Set;
 /**
  * SpringExtensionFactory
  */
-public class SpringExtensionFactory implements ExtensionFactory {
+public class SpringExtensionFactory implements ExtensionFactory, Lifecycle {
     private static final Logger logger = LoggerFactory.getLogger(SpringExtensionFactory.class);
 
     private static final Set<ApplicationContext> CONTEXTS = new ConcurrentHashSet<ApplicationContext>();
@@ -78,5 +79,20 @@ public class SpringExtensionFactory implements ExtensionFactory {
         //logger.warn("No spring extension (bean) named:" + name + ", try to find an extension (bean) of type " + type.getName());
 
         return null;
+    }
+
+    @Override
+    public void initialize() throws IllegalStateException {
+        clearContexts();
+    }
+
+    @Override
+    public void start() throws IllegalStateException {
+        // no op
+    }
+
+    @Override
+    public void destroy() {
+        clearContexts();
     }
 }

@@ -126,6 +126,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
+        <jacoco.skip>true</jacoco.skip>
         <revision>3.0.0-SNAPSHOT</revision>
     </properties>
 
@@ -165,6 +166,7 @@
     </dependencyManagement>
 
     <dependencies>
+        <!--JUnit Jupiter Engine to depend on the JUnit5 engine and JUnit 5 API -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -236,8 +238,29 @@
                 <doclint>none</doclint>
             </properties>
         </profile>
+        <!-- jacoco: mvn validate -Pjacoco  -->
+        <profile>
+            <id>jacoco</id>
+            <properties>
+                <jacoco.skip>false</jacoco.skip>
+            </properties>
+        </profile>
+        <!-- check apache license: mvn validate -Prat  -->
+        <profile>
+            <id>rat</id>
+            <properties>
+                <rat.skip>false</rat.skip>
+            </properties>
+        </profile>
+        <!-- check code style: mvn validate -Pcheckstyle  -->
         <profile>
             <id>checkstyle</id>
+            <properties>
+                <checkstyle.skip>false</checkstyle.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>checkstyle_def</id>
             <activation>
                 <jdk>[1.8,)</jdk>
             </activation>
@@ -269,6 +292,7 @@
                                     <encoding>UTF-8</encoding>
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
+                                    <skip>${checkstyle.skip}</skip>
                                     <excludes>
                                         **/JSONWriter.java,
                                         **/org/apache/dubbo/common/threadlocal/InternalThreadLocal.java,
@@ -318,6 +342,7 @@
             <id>release</id>
             <properties>
                 <log4j2_version>2.11.1</log4j2_version>
+                <jacoco.skip>false</jacoco.skip>
             </properties>
             <build>
                 <plugins>
@@ -527,8 +552,8 @@
                 <version>${apache-rat-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>verify.rat</id>
-                        <phase>verify</phase>
+                        <id>rat-validate</id>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>

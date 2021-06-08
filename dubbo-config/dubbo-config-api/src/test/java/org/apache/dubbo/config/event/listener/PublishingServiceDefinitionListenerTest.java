@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.EchoServiceImpl;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -51,7 +52,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @BeforeEach
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         String metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         ConfigManager configManager = ApplicationModel.getConfigManager();
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
@@ -62,7 +63,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @AfterEach
     public void reset() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     /**

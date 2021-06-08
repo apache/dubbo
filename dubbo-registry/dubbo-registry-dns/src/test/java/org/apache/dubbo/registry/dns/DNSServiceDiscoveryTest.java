@@ -24,6 +24,7 @@ import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.metadata.InstanceMetadataChangedListener;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
@@ -59,14 +60,14 @@ public class DNSServiceDiscoveryTest {
 
     @BeforeEach
     public void setup() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
         ApplicationModel.getConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach
     public void destroy() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -110,7 +111,7 @@ public class DNSServiceDiscoveryTest {
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
-        ApplicationModel.getEnvironment().getAppExternalConfigurationMap()
+        ApplicationModel.getEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
@@ -162,8 +163,8 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        ApplicationModel.getEnvironment().getAppExternalConfigurationMap()
-                .remove(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(100));
+        ApplicationModel.getEnvironment().getAppExternalConfigMap()
+                .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 
     private ServiceConfig<MetadataService> exportMockMetadataService(MetadataService metadataService, int port) {

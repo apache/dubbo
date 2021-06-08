@@ -18,13 +18,13 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.api.Greeting;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.mock.GreetingLocal1;
 import org.apache.dubbo.config.mock.GreetingLocal2;
 import org.apache.dubbo.config.mock.GreetingLocal3;
 import org.apache.dubbo.config.mock.GreetingMock1;
 import org.apache.dubbo.config.mock.GreetingMock2;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -42,85 +42,20 @@ public class AbstractInterfaceConfigTest {
 
     @BeforeAll
     public static void setUp(@TempDir Path folder) {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         dubboProperties = folder.resolve(CommonConstants.DUBBO_PROPERTIES_KEY).toFile();
         System.setProperty(CommonConstants.DUBBO_PROPERTIES_KEY, dubboProperties.getAbsolutePath());
     }
 
     @AfterAll
     public static void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         System.clearProperty(CommonConstants.DUBBO_PROPERTIES_KEY);
     }
 
     @AfterEach
     public void tearMethodAfterEachUT() {
-//        ApplicationModel.getConfigManager().clear();
-    }
-
-    @Test
-    public void testCheckRegistry1() {
-        System.setProperty("dubbo.registry.address", "addr1");
-        try {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.setApplication(new ApplicationConfig("testCheckRegistry1"));
-            interfaceConfig.checkRegistry();
-            Assertions.assertEquals(1, interfaceConfig.getRegistries().size());
-            Assertions.assertEquals("addr1", interfaceConfig.getRegistries().get(0).getAddress());
-        } finally {
-            System.clearProperty("dubbo.registry.address");
-        }
-    }
-
-    @Test
-    public void testCheckRegistry2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkRegistry();
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethods1() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(null, null);
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethods2() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(AbstractInterfaceConfigTest.class, null);
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod3() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            MethodConfig methodConfig = new MethodConfig();
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod4() {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
-            MethodConfig methodConfig = new MethodConfig();
-            methodConfig.setName("nihao");
-            InterfaceConfig interfaceConfig = new InterfaceConfig();
-            interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
-        });
-    }
-
-    @Test
-    public void checkInterfaceAndMethod5() {
-        MethodConfig methodConfig = new MethodConfig();
-        methodConfig.setName("hello");
-        InterfaceConfig interfaceConfig = new InterfaceConfig();
-        interfaceConfig.checkInterfaceAndMethods(Greeting.class, Collections.singletonList(methodConfig));
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -312,6 +247,7 @@ public class AbstractInterfaceConfigTest {
         interfaceConfig.setMonitor("monitor-addr");
         Assertions.assertEquals("monitor-addr", interfaceConfig.getMonitor().getAddress());
         MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setAddress("monitor-addr");
         interfaceConfig.setMonitor(monitorConfig);
         Assertions.assertSame(monitorConfig, interfaceConfig.getMonitor());
     }

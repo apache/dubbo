@@ -84,7 +84,7 @@ public class MetadataReportInstance {
         }
     }
 
-    public static void destroy() {
+    public static void reset() {
         metadataReports.clear();
         init.set(false);
     }

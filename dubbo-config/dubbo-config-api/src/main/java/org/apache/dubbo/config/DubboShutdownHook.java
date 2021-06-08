@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -25,8 +24,6 @@ import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
 import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
 import org.apache.dubbo.event.Event;
 import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -66,12 +63,14 @@ public class DubboShutdownHook extends Thread {
 
     @Override
     public void run() {
-        if (logger.isInfoEnabled()) {
-            logger.info("Run shutdown hook now.");
-        }
+        if (destroyed.compareAndSet(false, true)) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Run shutdown hook now.");
+            }
 
-        callback();
-        doDestroy();
+            callback();
+            doDestroy();
+        }
     }
 
     /**
@@ -123,27 +122,4 @@ public class DubboShutdownHook extends Thread {
         return registered.get();
     }
 
-    public static void destroyAll() {
-        if (destroyed.compareAndSet(false, true)) {
-            AbstractRegistryFactory.destroyAll();
-            destroyProtocols();
-        }
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    public static void destroyProtocols() {
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
 }
