@@ -1097,5 +1097,19 @@ public class URLTest {
         assertEquals(intNum,4);
         assertEquals(shortNum,5);
         assertEquals(b,6);
+
+        // test defaultValue
+        double doubleNumNotExist = url.getParameter("doubleNumNotExist", 11.0d);
+        float floatNumNotExist = url.getParameter("floatNumNotExist", 12.0f);
+        long longNumNotExist = url.getParameter("longNumNotExist", 13);
+        int intNumNotExist = url.getParameter("intNumNotExist", 14);
+        short shortNumNotExist = url.getParameter("shortNumNotExist", (short) 15);
+        byte bNotExist = url.getParameter("byteNotExist", (byte) 16);
+        assertEquals(doubleNumNotExist,11.0d);
+        assertEquals(floatNumNotExist,12.0f);
+        assertEquals(longNumNotExist,13);
+        assertEquals(intNumNotExist,14);
+        assertEquals(shortNumNotExist,15);
+        assertEquals(bNotExist,16);
     }
 }
