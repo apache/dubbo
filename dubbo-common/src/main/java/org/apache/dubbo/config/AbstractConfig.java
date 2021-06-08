@@ -468,6 +468,10 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     public void refresh() {
+        if (!refreshed.compareAndSet(false, true)) {
+            return;
+        }
+
         Environment env = ApplicationModel.getEnvironment();
         try {
             CompositeConfiguration compositeConfiguration = env.getPrefixedConfiguration(this);
