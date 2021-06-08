@@ -156,7 +156,7 @@ public class DubboBootstrap {
 
     private final ExecutorService executorService = newSingleThreadExecutor();
 
-    private ExecutorRepository executorRepository;
+    private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();;
 
     private final ConfigManager configManager;
 
@@ -558,9 +558,6 @@ public class DubboBootstrap {
         startMetadataCenter();
 
         initMetadataService();
-
-        // initialize other default extensions.
-        initExtensions();
 
         if (logger.isInfoEnabled()) {
             logger.info(NAME + " has been initialized!");
@@ -1037,17 +1034,6 @@ public class DubboBootstrap {
 //        startMetadataCenter();
         this.metadataService = getDefaultExtension();
         this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
-    }
-
-    /**
-     * Initialize other default extensions.
-     */
-    private void initExtensions() {
-        initExecutorRepository();
-    }
-
-    private void initExecutorRepository() {
-        this.executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     }
 
     /**
