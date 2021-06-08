@@ -1091,12 +1091,12 @@ public class URLTest {
         int intNum = url.getParameter("intNum", 10);
         short shortNum = url.getParameter("shortNum", (short) 10);
         byte b = url.getParameter("byte", (byte) 10);
-        assertEquals(doubleNum,1.1d);
-        assertEquals(floatNum,2.2f);
-        assertEquals(longNum,3);
-        assertEquals(intNum,4);
-        assertEquals(shortNum,5);
-        assertEquals(b,6);
+        assertEquals(doubleNum, 1.1d);
+        assertEquals(floatNum, 2.2f);
+        assertEquals(longNum, 3);
+        assertEquals(intNum, 4);
+        assertEquals(shortNum, 5);
+        assertEquals(b, 6);
 
         // test defaultValue
         double doubleNumNotExist = url.getParameter("doubleNumNotExist", 11.0d);
@@ -1105,11 +1105,11 @@ public class URLTest {
         int intNumNotExist = url.getParameter("intNumNotExist", 14);
         short shortNumNotExist = url.getParameter("shortNumNotExist", (short) 15);
         byte bNotExist = url.getParameter("byteNotExist", (byte) 16);
-        assertEquals(doubleNumNotExist,11.0d);
-        assertEquals(floatNumNotExist,12.0f);
-        assertEquals(longNumNotExist,13);
-        assertEquals(intNumNotExist,14);
-        assertEquals(shortNumNotExist,15);
-        assertEquals(bNotExist,16);
+        assertEquals(doubleNumNotExist, 11.0d);
+        assertEquals(floatNumNotExist, 12.0f);
+        assertEquals(longNumNotExist, 13);
+        assertEquals(intNumNotExist, 14);
+        assertEquals(shortNumNotExist, 15);
+        assertEquals(bNotExist, 16);
     }
 }
