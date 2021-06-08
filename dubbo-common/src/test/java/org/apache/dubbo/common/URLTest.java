@@ -1014,4 +1014,39 @@ public class URLTest {
         Assertions.assertEquals("abcd#efg", url.getParameter("pound"));
         Assertions.assertEquals("registry", url.getParameter("protocol"));
     }
+
+    @Test
+    public void testMethodParameters() {
+        // contain "methods" parameter key
+        URL url = URL.valueOf("dubbo://1.1.1.1:20880/test?methods=sayHello,sayBye&sayHello.async=true&sayBye.async=false");
+        String val1 = url.getMethodParameter("sayHello", "async");
+        assertEquals(val1, "true");
+        String val2 = url.getMethodParameter("sayBye", "async");
+        assertEquals(val2, "false");
+
+        Map<String, Map<String, String>> methodParameters = url.getMethodParameters();
+        assertEquals(methodParameters.size(), 2);
+
+        // does not contain "methods" parameter key
+        URL url2 = URL.valueOf("dubbo://1.1.1.1:20880/test?sayHello.async=true&sayBye.async=false");
+        String val3 = url2.getMethodParameter("sayHello", "async");
+        assertEquals(val3, "true");
+        String val4 = url2.getMethodParameter("sayBye", "async");
+        assertEquals(val4, "false");
+
+
+//valueOf(String url, String... reserveParams) {
+//valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
+//getBackupAddress
+//getParameterAndDecoded
+//getParameter(String key, List<String> defaultValue)
+//getUrlParameter(String key)
+//getParameter(String key, double defaultValue)
+//getPositiveParameter(String key, float defaultValue)
+//getParameter(String key, char defaultValue)
+//getMethodParameterAndDecoded(String method, String key)
+//getMethodParameterStrict(String method, String key)
+
+    }
+
 }
