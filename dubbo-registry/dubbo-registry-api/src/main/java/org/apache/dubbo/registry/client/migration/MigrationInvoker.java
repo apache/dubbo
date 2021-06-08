@@ -489,4 +489,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     public boolean checkInvokerAvailable(ClusterInvoker<T> invoker) {
         return invoker != null && !invoker.isDestroyed() && invoker.isAvailable();
     }
+
+    public ClusterInvoker<T> getCurrentAvailableInvoker() {
+        return currentAvailableInvoker;
+    }
 }
