@@ -18,12 +18,14 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -1033,19 +1035,50 @@ public class URLTest {
         assertEquals(val3, "true");
         String val4 = url2.getMethodParameter("sayBye", "async");
         assertEquals(val4, "false");
+    }
 
+    @Test
+    public void testValueOfWithReserveParams() {
+        String base = "dubbo://1.1.1.1:20880/test?group=groupA&version=1.0.0";
+        URL url = URL.valueOf(base, "group");
+        assertEquals(url.getParameter("group"), "groupA");
+        assertNull(url.getParameter("version"));
 
-//valueOf(String url, String... reserveParams) {
-//valueOf(URL url, String[] reserveParams, String[] reserveParamPrefixs) {
-//getBackupAddress
-//getParameterAndDecoded
-//getParameter(String key, List<String> defaultValue)
-//getUrlParameter(String key)
-//getParameter(String key, double defaultValue)
-//getPositiveParameter(String key, float defaultValue)
-//getParameter(String key, char defaultValue)
-//getMethodParameterAndDecoded(String method, String key)
-//getMethodParameterStrict(String method, String key)
+        URL url2 = URL.valueOf(URL.valueOf(base), new String[]{"group"}, new String[]{"ver"});
+        assertEquals(url2.getParameter("group"), "groupA");
+        assertEquals(url2.getParameter("version"), "1.0.0");
+    }
+
+    @Test
+    public void testGetBackupAddress() {
+        URL url = URL.valueOf("dubbo://127.0.0.0/test?backup=127.0.0.1,127.0.0.2");
+        String backupAddress = url.getBackupAddress();
+        assertEquals(backupAddress, "127.0.0.0,127.0.0.1,127.0.0.2");
+        String backupAddress2 = url.getBackupAddress(20880);
+        assertEquals(backupAddress2, "127.0.0.0:20880,127.0.0.1:20880,127.0.0.2:20880");
+    }
+
+    @Test
+    public void testGetBackupUrls() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test?backup=127.0.0.1:20881");
+        List<URL> backupUrls = url.getBackupUrls();
+        assertEquals(backupUrls.size(), 2);
+        assertEquals(backupUrls.get(0).toFullString(), "dubbo://127.0.0.0:20880/test?backup=127.0.0.1:20881");
+        assertEquals(backupUrls.get(1).toFullString(), "dubbo://127.0.0.1:20881/test?backup=127.0.0.1:20881");
+    }
+
+    @Test
+    public void testParameterAddEncodedAndGetDecoded() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test");
+
+        Map<String, String> map = new HashMap<>();
+        map.put("version", "1.0.0");
+        map.put("group", "GroupA");
+        String queryString = StringUtils.toQueryString(map);
+
+        URL url1 = url.addParameterAndEncoded("refer", queryString);
+        String refer = url1.getParameterAndDecoded("refer");
+        assertEquals(refer, queryString);
 
     }
 
