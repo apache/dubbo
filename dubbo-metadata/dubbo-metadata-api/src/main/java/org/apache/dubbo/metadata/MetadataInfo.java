@@ -52,7 +52,8 @@ public class MetadataInfo implements Serializable {
     private transient Map<String, String> extendParams;
     private transient AtomicBoolean reported = new AtomicBoolean(false);
 
-    public MetadataInfo() {}
+    public MetadataInfo() {
+    }
 
     public MetadataInfo(String app) {
         this(app, null, null);
@@ -217,6 +218,9 @@ public class MetadataInfo implements Serializable {
             this.url = url;
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
+            if (filters.size() == 0) {
+                params.putAll(url.getParameters());
+            }
             for (MetadataParamsFilter filter : filters) {
                 String[] paramsIncluded = filter.serviceParamsIncluded();
                 if (ArrayUtils.isNotEmpty(paramsIncluded)) {
