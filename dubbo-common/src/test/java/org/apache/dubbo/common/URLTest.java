@@ -1082,4 +1082,20 @@ public class URLTest {
 
     }
 
+    @Test
+    public void testGetPrimitiveParameter() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test?doubleNum=1.1&floatNum=2.2&longNum=3&intNum=4&shortNum=5&byte=6");
+        double doubleNum = url.getParameter("doubleNum", 10.0d);
+        float floatNum = url.getParameter("floatNum", 10.0f);
+        long longNum = url.getParameter("longNum", 10);
+        int intNum = url.getParameter("intNum", 10);
+        short shortNum = url.getParameter("shortNum", (short) 10);
+        byte b = url.getParameter("byte", (byte) 10);
+        assertEquals(doubleNum,1.1d);
+        assertEquals(floatNum,2.2f);
+        assertEquals(longNum,3);
+        assertEquals(intNum,4);
+        assertEquals(shortNum,5);
+        assertEquals(b,6);
+    }
 }
