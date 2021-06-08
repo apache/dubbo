@@ -22,6 +22,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
@@ -38,6 +39,7 @@ import java.util.Properties;
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
@@ -103,7 +105,7 @@ public class NacosNamingServiceUtils {
      * @return {@link NamingService}
      * @since 2.7.5
      */
-    public static NamingService createNamingService(URL connectionURL) {
+    public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
         Properties nacosProperties = buildNacosProperties(connectionURL);
         NamingService namingService;
         try {
@@ -114,7 +116,7 @@ public class NacosNamingServiceUtils {
             }
             throw new IllegalStateException(e);
         }
-        return namingService;
+        return new NacosNamingServiceWrapper(namingService);
     }
 
     private static Properties buildNacosProperties(URL url) {
@@ -141,6 +143,8 @@ public class NacosNamingServiceUtils {
     }
 
     private static void setProperties(URL url, Properties properties) {
+        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+
         // @since 2.7.8 : Refactoring
         // Get the parameters from constants
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));

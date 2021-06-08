@@ -44,16 +44,29 @@ public abstract class AbstractCodec implements Codec2 {
     private static final String SERVER_SIDE = "server";
 
     protected static void checkPayload(Channel channel, long size) throws IOException {
-        int payload = Constants.DEFAULT_PAYLOAD;
-        if (channel != null && channel.getUrl() != null) {
-            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
-        }
-        if (payload > 0 && size > payload) {
+        int payload = getPayload(channel);
+        boolean overPayload = isOverPayload(payload, size);
+        if (overPayload) {
             ExceedPayloadLimitException e = new ExceedPayloadLimitException(
                     "Data length too large: " + size + ", max payload: " + payload + ", channel: " + channel);
             logger.error(e);
             throw e;
         }
+    }
+
+    protected static int getPayload(Channel channel) {
+        int payload = Constants.DEFAULT_PAYLOAD;
+        if (channel != null && channel.getUrl() != null) {
+            payload = channel.getUrl().getParameter(Constants.PAYLOAD_KEY, Constants.DEFAULT_PAYLOAD);
+        }
+        return payload;
+    }
+
+    protected static boolean isOverPayload(int payload, long size) {
+        if (payload > 0 && size > payload) {
+            return true;
+        }
+        return false;
     }
 
     protected Serialization getSerialization(Channel channel, Request req) {

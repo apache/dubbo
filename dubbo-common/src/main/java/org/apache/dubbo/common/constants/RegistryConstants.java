@@ -23,8 +23,6 @@ public interface RegistryConstants {
 
     String REGISTRY_CLUSTER_KEY = "REGISTRY_CLUSTER";
 
-    String REGISTRY_CLUSTER = "REGISTRY_CLUSTER";
-
     String REGISTRY_CLUSTER_TYPE_KEY = "registry-cluster-type";
 
     String REGISTRY_PROTOCOL = "registry";
@@ -116,7 +114,7 @@ public interface RegistryConstants {
 
     String INIT = "INIT";
 
-    boolean MIGRATION_MULTI_REGSITRY = false;
+    String MIGRATION_MULTI_REGISTRY = "MIGRATION_MULTI_REGISTRY";
 
     String LOADBALANCE_AMONG_REGISTRIES = "random";
 }

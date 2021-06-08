@@ -19,8 +19,6 @@ package org.apache.dubbo.registry.nacos;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -51,6 +49,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.Collections;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -66,6 +65,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.registry.nacos.NacosServiceName.NAME_SEPARATOR;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.valueOf;
 
 /**
@@ -120,11 +120,9 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private volatile ScheduledExecutorService scheduledExecutorService;
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private final NacosNamingServiceWrapper namingService;
 
-    private final NamingService namingService;
-
-    public NacosRegistry(URL url, NamingService namingService) {
+    public NacosRegistry(URL url, NacosNamingServiceWrapper namingService) {
         super(url);
         this.namingService = namingService;
     }
@@ -151,6 +149,7 @@ public class NacosRegistry extends FailbackRegistry {
     @Override
     public void doRegister(URL url) {
         final String serviceName = getServiceName(url);
+
         final Instance instance = createInstance(url);
         /**
          *  namingService.registerInstance with {@link org.apache.dubbo.registry.support.AbstractRegistry#registryUrl}
@@ -289,19 +288,29 @@ public class NacosRegistry extends FailbackRegistry {
     private Set<String> filterServiceNames(NacosServiceName serviceName) {
         Set<String> serviceNames = new LinkedHashSet<>();
 
-        execute(namingService -> {
-
-            serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
-                    getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)).getData()
-                    .stream()
-                    .map(NacosServiceName::new)
-                    .filter(serviceName::isCompatible)
-                    .map(NacosServiceName::toString)
-                    .collect(Collectors.toList()));
-
-        });
+        execute(namingService -> serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
+                getUrl().getParameter(GROUP_KEY, Constants.DEFAULT_GROUP)).getData()
+                .stream()
+                .filter(this::isConformRules)
+                .map(NacosServiceName::new)
+                .filter(serviceName::isCompatible)
+                .map(NacosServiceName::toString)
+                .collect(Collectors.toList())));
 
         return serviceNames;
+    }
+
+    /**
+     * Verify whether it is a dubbo service
+     *
+     * @param serviceName
+     * @return
+     * @since 2.7.12
+     */
+    private boolean isConformRules(String serviceName) {
+
+        return serviceName.split(NAME_SEPARATOR, -1).length == 4;
+
     }
 
     /**
@@ -493,10 +502,9 @@ public class NacosRegistry extends FailbackRegistry {
 
 
                 if (isServiceNamesWithCompatibleMode(url)) {
-                    /**
-                     * Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
-                     * in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
-                     */
+
+                    // Get all instances with corresponding serviceNames to avoid instance overwrite and but with empty instance mentioned
+                    // in https://github.com/apache/dubbo/issues/5885 and https://github.com/apache/dubbo/issues/5899
                     NacosInstanceManageUtil.initOrRefreshServiceInstanceList(serviceName, instances);
                     instances = NacosInstanceManageUtil.getAllCorrespondingServiceInstanceList(serviceName);
                 }
@@ -534,7 +542,7 @@ public class NacosRegistry extends FailbackRegistry {
      */
     private List<String> getCategories(URL url) {
         return ANY_VALUE.equals(url.getServiceInterface()) ?
-                ALL_SUPPORTED_CATEGORIES : Arrays.asList(DEFAULT_CATEGORY);
+                ALL_SUPPORTED_CATEGORIES : Collections.singletonList(DEFAULT_CATEGORY);
     }
 
     private URL buildURL(Instance instance) {
@@ -621,7 +629,7 @@ public class NacosRegistry extends FailbackRegistry {
          * @param namingService {@link NamingService}
          * @throws NacosException
          */
-        void callback(NamingService namingService) throws NacosException;
+        void callback(NacosNamingServiceWrapper namingService) throws NacosException;
 
     }
 }

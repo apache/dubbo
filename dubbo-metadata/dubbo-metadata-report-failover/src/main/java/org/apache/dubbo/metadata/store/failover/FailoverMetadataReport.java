@@ -21,6 +21,7 @@ import org.apache.dubbo.common.constants.RemotingConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
@@ -78,7 +79,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         if (protocol == null || !ExtensionLoader.getExtensionLoader(MetadataReportFactory.class).hasExtension(protocol)) {
             throw new IllegalArgumentException(
                     "No '" + protocol
-                            + "' medata report extension found, please check if metadata report module dependencies are included.");
+                            + "' metadata report extension found, please check if metadata report module dependencies are included.");
         }
 
         List<URL> urls = new ArrayList<>();
@@ -140,7 +141,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
 
     protected List<MetadataReportHolder> buildProxyReports() {
         List<MetadataReportHolder> reports = new ArrayList<>();
-        if (this.failoverUrls != null && !this.failoverUrls.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(this.failoverUrls)) {
             ExtensionLoader<MetadataReportFactory> factoryLoader = ExtensionLoader.getExtensionLoader(MetadataReportFactory.class);
             for (URL url : this.failoverUrls) {
                 try {
@@ -470,7 +471,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         if (localReportHolder != null && shouldQuery(localReportHolder.url)) {
             try {
                 List<String> exportedURLs = localReportHolder.report.getExportedURLs(metadataIdentifier);
-                if (exportedURLs != null && !exportedURLs.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(exportedURLs)) {
                     return exportedURLs;
                 }
             } catch (Exception e) {
@@ -493,7 +494,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
             if (shouldQuery(holder.url)) {
                 try {
                     List<String> exportedURLs = holder.report.getExportedURLs(metadataIdentifier);
-                    if (exportedURLs != null && !exportedURLs.isEmpty()) {
+                    if (CollectionUtils.isNotEmpty(exportedURLs)) {
                         return exportedURLs;
                     }
                 } catch (Exception e) {
@@ -522,7 +523,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
         if (localReportHolder != null && shouldQuery(localReportHolder.url)) {
             try {
                 List<String> subscribedURLs = localReportHolder.report.getSubscribedURLs(subscriberMetadataIdentifier);
-                if (subscribedURLs != null && !subscribedURLs.isEmpty()) {
+                if (CollectionUtils.isNotEmpty(subscribedURLs)) {
                     return subscribedURLs;
                 }
             } catch (Exception e) {
@@ -545,7 +546,7 @@ public class FailoverMetadataReport extends StrategyMetadataReport {
             if (shouldQuery(holder.url)) {
                 try {
                     List<String> subscribedURLs = holder.report.getSubscribedURLs(subscriberMetadataIdentifier);
-                    if (subscribedURLs != null && !subscribedURLs.isEmpty()) {
+                    if (CollectionUtils.isNotEmpty(subscribedURLs)) {
                         return subscribedURLs;
                     }
                 } catch (Exception e) {

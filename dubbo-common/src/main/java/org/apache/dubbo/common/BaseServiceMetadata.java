@@ -33,11 +33,11 @@ public class BaseServiceMetadata {
 
     public static String buildServiceKey(String path, String group, String version) {
         StringBuilder buf = new StringBuilder();
-        if (group != null && group.length() > 0) {
+        if (StringUtils.isNotEmpty(group)) {
             buf.append(group).append("/");
         }
         buf.append(path);
-        if (version != null && version.length() > 0) {
+        if (StringUtils.isNotEmpty(version)) {
             buf.append(":").append(version);
         }
         return buf.toString();
@@ -74,8 +74,13 @@ public class BaseServiceMetadata {
      */
     public String getDisplayServiceKey() {
         StringBuilder serviceNameBuilder = new StringBuilder();
-        serviceNameBuilder.append(serviceInterfaceName);
-        serviceNameBuilder.append(COLON_SEPARATOR).append(version);
+        if(StringUtils.isNotEmpty(serviceInterfaceName)){
+            serviceNameBuilder.append(serviceInterfaceName);
+        }
+
+        if(StringUtils.isNotEmpty(version)){
+            serviceNameBuilder.append(COLON_SEPARATOR).append(version);
+        }
         return serviceNameBuilder.toString();
     }
 

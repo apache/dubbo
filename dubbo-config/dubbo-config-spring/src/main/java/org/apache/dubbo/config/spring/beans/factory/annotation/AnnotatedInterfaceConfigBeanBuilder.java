@@ -56,6 +56,8 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
 
     protected Class<?> interfaceClass;
 
+    protected String beanName;
+
     protected AnnotatedInterfaceConfigBeanBuilder(AnnotationAttributes attributes, ApplicationContext applicationContext) {
         Assert.notNull(attributes, "The Annotation attributes must not be null!");
         Assert.notNull(applicationContext, "The ApplicationContext must not be null!");
@@ -209,6 +211,11 @@ public abstract class AnnotatedInterfaceConfigBeanBuilder<C extends AbstractInte
 
     public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T interfaceClass(Class<?> interfaceClass) {
         this.interfaceClass = interfaceClass;
+        return (T) this;
+    }
+
+    public <T extends AnnotatedInterfaceConfigBeanBuilder<C>> T beanName(String beanName) {
+        this.beanName = beanName;
         return (T) this;
     }
 }
