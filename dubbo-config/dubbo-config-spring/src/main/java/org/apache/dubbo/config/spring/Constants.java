@@ -21,5 +21,14 @@ package org.apache.dubbo.config.spring;
  */
 public interface Constants {
 
+    /**
+     * attributes of reference annotation
+     */
     String REFERENCE_PROPS = "referenceProps";
+
+    /**
+     * Registration sources of the reference, may be xml file or annotation location
+     */
+    String REFERENCE_SOURCES = "referenceSources";
+
 }

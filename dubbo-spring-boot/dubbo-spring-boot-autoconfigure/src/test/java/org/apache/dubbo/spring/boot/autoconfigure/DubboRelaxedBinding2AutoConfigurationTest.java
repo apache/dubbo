@@ -17,7 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceClassPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class DubboRelaxedBinding2AutoConfigurationTest {
     private ConfigurationBeanBinder dubboConfigBinder;
 
     @Autowired
-    private ObjectProvider<ServiceClassPostProcessor> serviceClassPostProcessor;
+    private ObjectProvider<ServiceAnnotationPostProcessor> serviceAnnotationPostProcessor;
 
     @Autowired
     private ObjectProvider<ReferenceAnnotationBeanPostProcessor> referenceAnnotationBeanPostProcessor;
@@ -77,8 +77,8 @@ public class DubboRelaxedBinding2AutoConfigurationTest {
 
         assertTrue(ClassUtils.isAssignableValue(BinderDubboConfigBinder.class, dubboConfigBinder));
 
-        assertNotNull(serviceClassPostProcessor);
-        assertNotNull(serviceClassPostProcessor.getIfAvailable());
+        assertNotNull(serviceAnnotationPostProcessor);
+        assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
         assertNotNull(referenceAnnotationBeanPostProcessor);
         assertNotNull(referenceAnnotationBeanPostProcessor.getIfAvailable());
 

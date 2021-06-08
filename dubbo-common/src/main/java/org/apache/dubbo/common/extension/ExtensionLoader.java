@@ -205,6 +205,13 @@ public class ExtensionLoader<T> {
                 }
             }
         });
+
+        // TODO Improve extension loader, clear static refer extension instance.
+        // Some extension instances may be referenced by static fields, if clear EXTENSION_INSTANCES may cause inconsistent.
+        // e.g. org.apache.dubbo.registry.client.metadata.MetadataUtils.localMetadataService
+        // EXTENSION_INSTANCES.clear();
+
+        EXTENSION_LOADERS.clear();
     }
 
     private static ClassLoader findClassLoader() {

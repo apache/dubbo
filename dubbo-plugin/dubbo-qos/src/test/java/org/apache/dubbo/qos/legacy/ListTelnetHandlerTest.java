@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.Channel;
@@ -52,16 +53,13 @@ public class ListTelnetHandlerTest {
     @BeforeAll
     public static void setUp() {
         ProtocolUtils.closeAll();
-    }
-
-    @BeforeEach
-    public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        DubboBootstrap.reset();
     }
 
     @Test

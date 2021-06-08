@@ -417,4 +417,9 @@ public interface CommonConstants {
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }

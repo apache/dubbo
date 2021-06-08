@@ -40,7 +40,7 @@ public class ModuleConfigTest {
         ModuleConfig module = new ModuleConfig();
         module.setName("module-name");
         assertThat(module.getName(), equalTo("module-name"));
-        assertThat(module.getId(), equalTo("module-name"));
+        assertThat(module.getId(), equalTo(null));
         Map<String, String> parameters = new HashMap<String, String>();
         ModuleConfig.appendParameters(parameters, module);
         assertThat(parameters, hasEntry("module", "module-name"));

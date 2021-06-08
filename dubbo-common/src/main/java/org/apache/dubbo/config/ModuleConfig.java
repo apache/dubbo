@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -76,9 +75,7 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
+        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = "module.version")

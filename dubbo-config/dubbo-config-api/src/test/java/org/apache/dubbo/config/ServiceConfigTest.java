@@ -28,6 +28,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -78,6 +80,8 @@ public class ServiceConfigTest {
 
     @BeforeEach
     public void setUp() throws Exception {
+        ApplicationModel.getConfigManager().clear();
+
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
         Mockito.when(protocolDelegate.export(Mockito.any(Invoker.class))).thenReturn(exporter);
@@ -126,12 +130,11 @@ public class ServiceConfigTest {
         delayService.setMethods(Collections.singletonList(method));
         delayService.setDelay(100);
 
-//        ApplicationModel.getConfigManager().clear();
     }
 
     @AfterEach
     public void tearDown() {
-//        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.getConfigManager().clear();
     }
 
     @Test
@@ -280,5 +283,25 @@ public class ServiceConfigTest {
         service.export();
         Assertions.assertNotNull(service.toUrl().getApplication());
         Assertions.assertEquals("app", service.toUrl().getApplication());
+    }
+
+    @Test
+    public void testMetaData() {
+        // test new instance
+        ServiceConfig config = new ServiceConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
+
+        // test merged and override provider attributes
+        ProviderConfig providerConfig = new ProviderConfig();
+        providerConfig.setAsync(true);
+        providerConfig.setActives(10);
+        config.setProvider(providerConfig);
+        config.setAsync(false);// override
+
+        metaData = config.getMetaData();
+        Assertions.assertEquals(2, metaData.size());
+        Assertions.assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
+        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
     }
 }

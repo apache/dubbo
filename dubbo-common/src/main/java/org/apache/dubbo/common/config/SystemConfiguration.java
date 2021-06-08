@@ -17,6 +17,8 @@
 package org.apache.dubbo.common.config;
 
 
+import java.util.Map;
+
 /**
  * FIXME: is this really necessary? PropertiesConfiguration should have already covered this:
  *
@@ -30,4 +32,7 @@ public class SystemConfiguration implements Configuration {
         return System.getProperty(key);
     }
 
+    public Map<String, String> getProperties() {
+        return (Map) System.getProperties();
+    }
 }

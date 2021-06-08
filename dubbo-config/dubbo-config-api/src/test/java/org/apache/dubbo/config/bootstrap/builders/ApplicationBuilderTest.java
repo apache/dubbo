@@ -247,7 +247,7 @@ class ApplicationBuilderTest {
         RegistryConfig registry = new RegistryConfig();
 
         ApplicationBuilder builder = new ApplicationBuilder();
-        builder.id("id").prefix("prefix").name("name").version("version").owner("owner").organization("organization").architecture("architecture")
+        builder.id("id").name("name").version("version").owner("owner").organization("organization").architecture("architecture")
                 .environment("develop").compiler("compiler").logger("log4j").monitor(monitor).isDefault(false)
                 .dumpDirectory("dumpDirectory").qosEnable(true).qosPort(8080).qosAcceptForeignIp(false)
                 .shutwait("shutwait").registryIds("registryIds").addRegistry(registry)
@@ -258,7 +258,6 @@ class ApplicationBuilderTest {
         ApplicationConfig config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals("name", config.getName());
         Assertions.assertEquals("version", config.getVersion());
         Assertions.assertEquals("owner", config.getOwner());

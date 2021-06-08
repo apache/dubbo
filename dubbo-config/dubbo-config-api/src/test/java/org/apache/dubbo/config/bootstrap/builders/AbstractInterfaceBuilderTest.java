@@ -24,12 +24,19 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 
 class AbstractInterfaceBuilderTest {
+
+    @BeforeEach
+    void beforeEach() {
+        DubboBootstrap.reset();
+    }
 
     @Test
     void local() {
@@ -254,7 +261,7 @@ class AbstractInterfaceBuilderTest {
         ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
 
         InterfaceBuilder builder = new InterfaceBuilder();
-        builder.id("id").prefix("prefix").local(true).stub(false).monitor("123").proxy("mockproxyfactory").cluster("mockcluster")
+        builder.id("id").local(true).stub(false).monitor("123").proxy("mockproxyfactory").cluster("mockcluster")
                 .filter("mockfilter").listener("mockinvokerlistener").owner("owner").connections(1)
                 .layer("layer").application(applicationConfig).module(moduleConfig)
                 .addRegistry(registryConfig).registryIds("registryIds")
@@ -267,7 +274,6 @@ class AbstractInterfaceBuilderTest {
         InterfaceConfig config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals("true", config.getLocal());
         Assertions.assertEquals("false", config.getStub());
         Assertions.assertEquals(monitorConfig, config.getMonitor());

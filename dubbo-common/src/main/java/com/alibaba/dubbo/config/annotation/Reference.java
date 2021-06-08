@@ -113,6 +113,11 @@ public @interface Reference {
 
     String[] parameters() default {};
 
+    /**
+     * Application associated name
+     * @deprecated Do not set it and use the global Application Config
+     */
+    @Deprecated
     String application() default "";
 
     String module() default "";

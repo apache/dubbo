@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationTestConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.consumer.test.TestConsumerConfiguration;
 import org.apache.dubbo.config.spring.context.annotation.provider.DemoServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -29,6 +30,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -135,7 +137,7 @@ public class EnableDubboTest {
         Assertions.assertEquals("Hello,Mercy", value);
 
         // Test my-registry2 bean presentation
-        RegistryConfig registryConfig = context.getBean("my-registry2", RegistryConfig.class);
+        RegistryConfig registryConfig = context.getBean("my-registry", RegistryConfig.class);
 
         // Test multiple binding
         Assertions.assertEquals("N/A", registryConfig.getAddress());
@@ -145,6 +147,7 @@ public class EnableDubboTest {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
     @ComponentScan(basePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
     @PropertySource("classpath:/META-INF/dubbo-provider.properties")
+    @Import(ServiceAnnotationTestConfiguration.class)
     @EnableTransactionManagement
     public static class TestProviderConfiguration {
 
