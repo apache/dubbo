@@ -16,6 +16,7 @@
  */
 package com.alibaba.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.dubbo.config.annotation.Service;
 import com.alibaba.dubbo.config.spring.ServiceBean;
 import com.alibaba.dubbo.config.spring.api.HelloService;
 
@@ -77,6 +78,22 @@ public class ServiceAnnotationBeanPostProcessorTest {
         Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor"));
         Assert.assertTrue(beanPostProcessorsMap.containsKey("serviceAnnotationBeanPostProcessor2"));
 
+    }
+
+    /**
+     * Test if the {@link Service#parameters()} works well
+     * see issue: https://github.com/apache/dubbo/issues/3072
+     */
+    @Test
+    public void testDubboServiceParameter() {
+        /**
+         * get the {@link ServiceBean} of {@link com.alibaba.dubbo.config.spring.context.annotation.provider.DefaultHelloService}
+         * */
+        ServiceBean serviceBean = beanFactory.getBean("ServiceBean:com.alibaba.dubbo.config.spring.api.HelloService", ServiceBean.class);
+        Assert.assertNotNull(serviceBean);
+        Assert.assertNotNull(serviceBean.getParameters());
+        Assert.assertTrue(serviceBean.getParameters().size() == 1);
+        Assert.assertEquals(serviceBean.toUrl().getParameter("sayHello.timeout"), "3000");
     }
 
 }
