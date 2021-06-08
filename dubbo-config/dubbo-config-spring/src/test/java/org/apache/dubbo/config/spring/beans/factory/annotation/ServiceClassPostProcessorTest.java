@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
@@ -117,11 +118,27 @@ public class ServiceClassPostProcessorTest {
      * Lazy-init for Dubbo Service
      */
     @Test
-    public void testLazyInitDubboService(){
+    public void testLazyInitDubboService() {
         /**
          * The class {@link org.apache.dubbo.config.spring.context.annotation.provider.DefaultLazyInitHelloService} has Lazy annotation
          * */
-        BeanDefinition beanDefinition=beanFactory.getBeanDefinition("defaultLazyInitHelloService");
-        Assertions.assertEquals(beanDefinition.isLazyInit(),true);
+        BeanDefinition beanDefinition = beanFactory.getBeanDefinition("defaultLazyInitHelloService");
+        Assertions.assertEquals(beanDefinition.isLazyInit(), true);
+    }
+
+    /**
+     * Test if the {@link DubboService#parameters()} works well
+     * see issue: https://github.com/apache/dubbo/issues/3072
+     */
+    @Test
+    public void testDubboServiceParameter() {
+        /**
+         * get the {@link ServiceBean} of {@link org.apache.dubbo.config.spring.context.annotation.provider.DefaultHelloService}
+         * */
+        ServiceBean serviceBean = beanFactory.getBean("ServiceBean:org.apache.dubbo.config.spring.api.HelloService", ServiceBean.class);
+        Assertions.assertNotNull(serviceBean);
+        Assertions.assertNotNull(serviceBean.getParameters());
+        Assertions.assertTrue(serviceBean.getParameters().size() == 1);
+        Assertions.assertEquals(serviceBean.toUrl().getParameter("sayHello.timeout"), "3000");
     }
 }
