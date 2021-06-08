@@ -20,6 +20,9 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.alibaba.nacos.api.exception.NacosException;
 
+import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
+import static org.apache.dubbo.common.utils.StringUtils.SLASH_CHAR;
+
 public class NacosConfigServiceWrapper {
 
     private static final String INNERCLASS_SYMBOL = "$";
@@ -56,10 +59,11 @@ public class NacosConfigServiceWrapper {
     /**
      * see {@link com.alibaba.nacos.client.config.utils.ParamUtils#isValid(java.lang.String)}
      */
-    private String handleInnerSymbol(String dataId) {
-        if (dataId == null) {
+    private String handleInnerSymbol(String param) {
+        if (param == null) {
             return null;
         }
-        return dataId.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL);
+        return param.replace(INNERCLASS_SYMBOL, INNERCLASS_COMPATIBLE_SYMBOL)
+                .replace(SLASH_CHAR, HYPHEN_CHAR);
     }
 }

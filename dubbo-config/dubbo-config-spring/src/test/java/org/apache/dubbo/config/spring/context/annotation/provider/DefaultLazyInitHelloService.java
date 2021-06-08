@@ -17,19 +17,15 @@
 package org.apache.dubbo.config.spring.context.annotation.provider;
 
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.spring.api.HelloService;
-
-import org.springframework.stereotype.Service;
+import org.apache.dubbo.config.spring.api.LazyInitHelloService;
+import org.springframework.context.annotation.Lazy;
 
 /**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
+ * lazy-initialized {@link org.apache.dubbo.config.annotation.DubboService}
  */
-@Service
-@DubboService(parameters = {"sayHello.timeout", "3000"})
-public class DefaultHelloService implements HelloService {
+@Lazy
+@DubboService
+public class DefaultLazyInitHelloService implements LazyInitHelloService {
 
     @Override
     public String sayHello(String name) {

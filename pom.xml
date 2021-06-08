@@ -541,17 +541,16 @@
                             <excludes>
                                 <exclude>**/*.versionsBackup</exclude>
                                 <exclude>**/.idea/</exclude>
+                                <exclude>**/.mvn/</exclude>
                                 <exclude>**/*.iml</exclude>
                                 <exclude>**/*.txt</exclude>
                                 <exclude>**/*.load</exclude>
                                 <exclude>**/*.flex</exclude>
                                 <exclude>**/*.fc</exclude>
-                                <exclude>**/*.javascript</exclude>
-                                <exclude>**/*.properties</exclude>
-                                <exclude>**/*.thrift</exclude>
                                 <exclude>**/*.sh</exclude>
                                 <exclude>**/*.bat</exclude>
                                 <exclude>**/*.md</exclude>
+                                <exclude>**/*.properties</exclude>
                                 <exclude>.git/</exclude>
                                 <exclude>.gitignore</exclude>
                                 <!-- ASF jenkins box puts the Maven repo in our root directory. -->

@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.provider;
+package org.apache.dubbo.rpc.cluster;
 
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 
-import org.springframework.stereotype.Service;
+import java.util.Map;
 
-/**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
- */
-@Service
-@DubboService(parameters = {"sayHello.timeout", "3000"})
-public class DefaultHelloService implements HelloService {
+@SPI("default")
+public interface ProviderURLMergeProcessor {
 
-    @Override
-    public String sayHello(String name) {
-        return "Greeting, " + name;
+    /**
+     * Merging the URL parameters of provider and consumer
+     *
+     * @param remoteUrl          providerUrl
+     * @param localParametersMap consumer url parameters
+     * @return
+     */
+    URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap);
+
+    default boolean accept(URL providerUrl, Map<String, String> localParametersMap) {
+        return true;
     }
-
 }

@@ -14,22 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster;
+package org.apache.dubbo.config.spring.annotation.consumer.lazyinit;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.config.annotation.DubboService;
+import org.springframework.context.annotation.Lazy;
 
-import java.util.Map;
+/**
+ * Service doesn't set Lazy
+ */
+@DubboService
+public class DefaultNotLazyInitService implements NotLazyInitService{
 
-@SPI("default")
-public interface UrlMergeProcessor {
-
-    /**
-     * Merging the URL parameters of provider and consumer
-     * @param remoteUrl providerUrl
-     * @param localParametersMap consumer url parameters
-     * @return
-     */
-    URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap);
-
+    @Override
+    public String hello(String name) {
+        return "hello " + name;
+    }
 }

@@ -18,12 +18,14 @@ package org.apache.dubbo.common;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -1013,5 +1015,101 @@ public class URLTest {
                 "dubbo://ad@min:hello@1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan&pound=abcd#efg&protocol=registry");
         Assertions.assertEquals("abcd#efg", url.getParameter("pound"));
         Assertions.assertEquals("registry", url.getParameter("protocol"));
+    }
+
+    @Test
+    public void testMethodParameters() {
+        // contain "methods" parameter key
+        URL url = URL.valueOf("dubbo://1.1.1.1:20880/test?methods=sayHello,sayBye&sayHello.async=true&sayBye.async=false");
+        String val1 = url.getMethodParameter("sayHello", "async");
+        assertEquals(val1, "true");
+        String val2 = url.getMethodParameter("sayBye", "async");
+        assertEquals(val2, "false");
+
+        Map<String, Map<String, String>> methodParameters = url.getMethodParameters();
+        assertEquals(methodParameters.size(), 2);
+
+        // does not contain "methods" parameter key
+        URL url2 = URL.valueOf("dubbo://1.1.1.1:20880/test?sayHello.async=true&sayBye.async=false");
+        String val3 = url2.getMethodParameter("sayHello", "async");
+        assertEquals(val3, "true");
+        String val4 = url2.getMethodParameter("sayBye", "async");
+        assertEquals(val4, "false");
+    }
+
+    @Test
+    public void testValueOfWithReserveParams() {
+        String base = "dubbo://1.1.1.1:20880/test?group=groupA&version=1.0.0";
+        URL url = URL.valueOf(base, "group");
+        assertEquals(url.getParameter("group"), "groupA");
+        assertNull(url.getParameter("version"));
+
+        URL url2 = URL.valueOf(URL.valueOf(base), new String[]{"group"}, new String[]{"ver"});
+        assertEquals(url2.getParameter("group"), "groupA");
+        assertEquals(url2.getParameter("version"), "1.0.0");
+    }
+
+    @Test
+    public void testGetBackupAddress() {
+        URL url = URL.valueOf("dubbo://127.0.0.0/test?backup=127.0.0.1,127.0.0.2");
+        String backupAddress = url.getBackupAddress();
+        assertEquals(backupAddress, "127.0.0.0,127.0.0.1,127.0.0.2");
+        String backupAddress2 = url.getBackupAddress(20880);
+        assertEquals(backupAddress2, "127.0.0.0:20880,127.0.0.1:20880,127.0.0.2:20880");
+    }
+
+    @Test
+    public void testGetBackupUrls() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test?backup=127.0.0.1:20881");
+        List<URL> backupUrls = url.getBackupUrls();
+        assertEquals(backupUrls.size(), 2);
+        assertEquals(backupUrls.get(0).toFullString(), "dubbo://127.0.0.0:20880/test?backup=127.0.0.1:20881");
+        assertEquals(backupUrls.get(1).toFullString(), "dubbo://127.0.0.1:20881/test?backup=127.0.0.1:20881");
+    }
+
+    @Test
+    public void testParameterAddEncodedAndGetDecoded() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test");
+
+        Map<String, String> map = new HashMap<>();
+        map.put("version", "1.0.0");
+        map.put("group", "GroupA");
+        String queryString = StringUtils.toQueryString(map);
+
+        URL url1 = url.addParameterAndEncoded("refer", queryString);
+        String refer = url1.getParameterAndDecoded("refer");
+        assertEquals(refer, queryString);
+
+    }
+
+    @Test
+    public void testGetPrimitiveParameter() {
+        URL url = URL.valueOf("dubbo://127.0.0.0:20880/test?doubleNum=1.1&floatNum=2.2&longNum=3&intNum=4&shortNum=5&byte=6");
+        double doubleNum = url.getParameter("doubleNum", 10.0d);
+        float floatNum = url.getParameter("floatNum", 10.0f);
+        long longNum = url.getParameter("longNum", 10);
+        int intNum = url.getParameter("intNum", 10);
+        short shortNum = url.getParameter("shortNum", (short) 10);
+        byte b = url.getParameter("byte", (byte) 10);
+        assertEquals(doubleNum, 1.1d);
+        assertEquals(floatNum, 2.2f);
+        assertEquals(longNum, 3);
+        assertEquals(intNum, 4);
+        assertEquals(shortNum, 5);
+        assertEquals(b, 6);
+
+        // test defaultValue
+        double doubleNumNotExist = url.getParameter("doubleNumNotExist", 11.0d);
+        float floatNumNotExist = url.getParameter("floatNumNotExist", 12.0f);
+        long longNumNotExist = url.getParameter("longNumNotExist", 13);
+        int intNumNotExist = url.getParameter("intNumNotExist", 14);
+        short shortNumNotExist = url.getParameter("shortNumNotExist", (short) 15);
+        byte bNotExist = url.getParameter("byteNotExist", (byte) 16);
+        assertEquals(doubleNumNotExist, 11.0d);
+        assertEquals(floatNumNotExist, 12.0f);
+        assertEquals(longNumNotExist, 13);
+        assertEquals(intNumNotExist, 14);
+        assertEquals(shortNumNotExist, 15);
+        assertEquals(bNotExist, 16);
     }
 }

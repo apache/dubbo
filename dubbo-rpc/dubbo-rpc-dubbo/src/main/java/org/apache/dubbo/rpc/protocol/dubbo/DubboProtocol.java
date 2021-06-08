@@ -59,9 +59,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.LAZY_CONNECT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -121,12 +123,12 @@ public class DubboProtocol extends AbstractProtocol {
             Invoker<?> invoker = getInvoker(channel, inv);
             // need to consider backward-compatibility if it's a callback
             if (Boolean.TRUE.toString().equals(inv.getObjectAttachments().get(IS_CALLBACK_SERVICE_INVOKE))) {
-                String methodsStr = invoker.getUrl().getParameters().get("methods");
+                String methodsStr = invoker.getUrl().getParameters().get(METHODS_KEY);
                 boolean hasMethod = false;
-                if (methodsStr == null || !methodsStr.contains(",")) {
+                if (methodsStr == null || !methodsStr.contains(COMMA_SEPARATOR)) {
                     hasMethod = inv.getMethodName().equals(methodsStr);
                 } else {
-                    String[] methods = methodsStr.split(",");
+                    String[] methods = methodsStr.split(COMMA_SEPARATOR);
                     for (String method : methods) {
                         if (inv.getMethodName().equals(method)) {
                             hasMethod = true;

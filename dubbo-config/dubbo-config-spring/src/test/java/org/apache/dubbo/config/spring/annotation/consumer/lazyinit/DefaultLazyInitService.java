@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation.provider;
+package org.apache.dubbo.config.spring.annotation.consumer.lazyinit;
 
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.config.spring.api.HelloService;
-
-import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Lazy;
 
 /**
- * Default {@link HelloService} annotation with Spring's {@link Service}
- * and Dubbo's {@link org.apache.dubbo.config.annotation.Service}
- *
- * @since TODO
+ * Service sets Lazy
  */
-@Service
-@DubboService(parameters = {"sayHello.timeout", "3000"})
-public class DefaultHelloService implements HelloService {
+@Lazy
+@DubboService
+public class DefaultLazyInitService implements LazyInitService{
 
     @Override
-    public String sayHello(String name) {
-        return "Greeting, " + name;
+    public String hello(String name) {
+        return "hello " + name;
     }
-
 }
