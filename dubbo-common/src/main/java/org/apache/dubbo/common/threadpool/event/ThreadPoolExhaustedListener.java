@@ -14,19 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.event;
+package org.apache.dubbo.common.threadpool.event;
 
-import java.io.Serializable;
+public interface ThreadPoolExhaustedListener {
 
-/**
- * {@link EchoEvent} {@link EventListener}
- *
- * @since 2.7.5
- */
-public class EchoEventListener extends AbstractEventListener<EchoEvent> implements Serializable {
-
-    @Override
-    public void handleEvent(EchoEvent event) {
-        println("EchoEventListener : " + event);
-    }
+    /**
+     * Notify when the thread pool is exhausted.
+     * {@link org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport}
+     */
+    void onEvent(ThreadPoolExhaustedEvent event);
 }

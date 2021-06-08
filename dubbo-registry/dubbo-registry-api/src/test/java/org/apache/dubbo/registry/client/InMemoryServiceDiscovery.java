@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.DefaultPage;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.EventDispatcher;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,8 +37,6 @@ import static java.util.Collections.emptyList;
  * @since 2.7.5
  */
 public class InMemoryServiceDiscovery implements ServiceDiscovery {
-
-    private final EventDispatcher dispatcher = EventDispatcher.getDefaultExtension();
 
     private Map<String, List<ServiceInstance>> repository = new HashMap<>();
 

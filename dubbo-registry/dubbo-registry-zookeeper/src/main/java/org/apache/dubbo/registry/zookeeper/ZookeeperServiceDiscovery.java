@@ -110,9 +110,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.unregisterService(build(serviceInstance));
-        });
+        doInServiceRegistry(serviceDiscovery -> serviceDiscovery.unregisterService(build(serviceInstance)));
     }
 
     @Override
@@ -188,9 +186,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
-        ThrowableConsumer.execute(serviceDiscovery, s -> {
-            consumer.accept(s);
-        });
+        ThrowableConsumer.execute(serviceDiscovery, s -> consumer.accept(s));
     }
 
     private <R> R doInServiceDiscovery(ThrowableFunction<org.apache.curator.x.discovery.ServiceDiscovery, R> function) {
