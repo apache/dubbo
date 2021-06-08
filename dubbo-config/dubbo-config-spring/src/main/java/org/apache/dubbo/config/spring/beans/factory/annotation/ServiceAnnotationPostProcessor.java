@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
@@ -32,6 +34,7 @@ import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -39,6 +42,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
+import org.springframework.beans.factory.support.BeanDefinitionOverrideException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -49,9 +53,10 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
-import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.CollectionUtils;
 
@@ -59,6 +64,7 @@ import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -73,12 +79,12 @@ import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveSe
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
- * {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes. it's also the
- * infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbbo:annotation /&gt;
+ * A {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes and annotated bean in java config classes.
+ * It's also the infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbbo:annotation /&gt;
+ *
  *
  * @see AnnotationBeanDefinitionParser
  * @see BeanDefinitionRegistryPostProcessor
@@ -106,6 +112,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     private ResourceLoader resourceLoader;
 
     private ClassLoader classLoader;
+    private BeanDefinitionRegistry registry;
 
     public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
@@ -121,6 +128,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+        this.registry = registry;
 
         // @since 2.7.5
         registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME, DubboBootstrapApplicationListener.class);
@@ -277,10 +285,8 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
         Annotation service = findServiceAnnotation(beanClass);
 
-        /**
-         * The {@link AnnotationAttributes} of @Service annotation
-         */
-        AnnotationAttributes serviceAnnotationAttributes = getAnnotationAttributes(service, false, false);
+        // The attributes of @Service annotation
+        Map<String, Object> serviceAnnotationAttributes = AnnotationUtils.getAttributes(service, true);
 
         Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
 
@@ -290,7 +296,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
 
         AbstractBeanDefinition serviceBeanDefinition =
-                buildServiceBeanDefinition(beanName, service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
+                buildServiceBeanDefinition(serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
@@ -337,10 +343,10 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
      * @since 2.7.3
      */
-    private String generateServiceBeanName(AnnotationAttributes serviceAnnotationAttributes, Class<?> interfaceClass) {
+    private String generateServiceBeanName(Map<String, Object> serviceAnnotationAttributes, Class<?> interfaceClass) {
         ServiceBeanNameBuilder builder = create(interfaceClass, environment)
-                .group(serviceAnnotationAttributes.getString("group"))
-                .version(serviceAnnotationAttributes.getString("version"));
+                .group((String) serviceAnnotationAttributes.get("group"))
+                .version((String) serviceAnnotationAttributes.get("version"));
         return builder.build();
     }
 
@@ -375,18 +381,15 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * Build the {@link AbstractBeanDefinition Bean Definition}
      *
      *
-     * @param beanName
-     * @param serviceAnnotation
      * @param serviceAnnotationAttributes
      * @param interfaceClass
-     * @param annotatedServiceBeanName
+     * @param refServiceBeanName
      * @return
      * @since 2.7.3
      */
-    private AbstractBeanDefinition buildServiceBeanDefinition(String beanName, Annotation serviceAnnotation,
-                                                              AnnotationAttributes serviceAnnotationAttributes,
+    private AbstractBeanDefinition buildServiceBeanDefinition(Map<String, Object> serviceAnnotationAttributes,
                                                               Class<?> interfaceClass,
-                                                              String annotatedServiceBeanName) {
+                                                              String refServiceBeanName) {
 
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
 
@@ -397,16 +400,16 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         String[] ignoreAttributeNames = of("provider", "monitor", "application", "module", "registry", "protocol",
                 "interface", "interfaceName", "parameters");
 
-        propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotation, environment, ignoreAttributeNames));
+        propertyValues.addPropertyValues(new AnnotationPropertyValuesAdapter(serviceAnnotationAttributes, environment, ignoreAttributeNames));
 
         //set config id, for ConfigManager cache key
         //builder.addPropertyValue("id", beanName);
         // References "ref" property to annotated-@Service Bean
-        addPropertyReference(builder, "ref", annotatedServiceBeanName);
+        addPropertyReference(builder, "ref", refServiceBeanName);
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
         // Convert parameters into map
-        builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
+        builder.addPropertyValue("parameters", convertParameters((String[]) serviceAnnotationAttributes.get("parameters")));
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
         if (!methodConfigs.isEmpty()) {
@@ -414,20 +417,20 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         }
 
         // convert provider to providerIds
-        String providerConfigId = serviceAnnotationAttributes.getString("provider");
+        String providerConfigId = (String) serviceAnnotationAttributes.get("provider");
         if (StringUtils.hasText(providerConfigId)) {
             addPropertyValue(builder, "providerIds", providerConfigId);
         }
 
         // Convert registry[] to registryIds
-        String[] registryConfigIds = serviceAnnotationAttributes.getStringArray("registry");
+        String[] registryConfigIds = (String[]) serviceAnnotationAttributes.get("registry");
         if (registryConfigIds != null && registryConfigIds.length > 0) {
             resolveStringArray(registryConfigIds);
             builder.addPropertyValue("registryIds", StringUtils.join(registryConfigIds, ','));
         }
 
         // Convert protocol[] to protocolIds
-        String[] protocolConfigIds = serviceAnnotationAttributes.getStringArray("protocol");
+        String[] protocolConfigIds = (String[]) serviceAnnotationAttributes.get("protocol");
         if (protocolConfigIds != null && protocolConfigIds.length > 0) {
             resolveStringArray(protocolConfigIds);
             builder.addPropertyValue("protocolIds", StringUtils.join(protocolConfigIds, ','));
@@ -435,19 +438,19 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
         // TODO Could we ignore these attributes: applicatin/monitor/module ? Use global config
         // monitor reference
-        String monitorConfigId = serviceAnnotationAttributes.getString("monitor");
+        String monitorConfigId = (String) serviceAnnotationAttributes.get("monitor");
         if (StringUtils.hasText(monitorConfigId)) {
             addPropertyReference(builder, "monitor", monitorConfigId);
         }
 
         // application reference
-        String applicationConfigId = serviceAnnotationAttributes.getString("application");
+        String applicationConfigId = (String) serviceAnnotationAttributes.get("application");
         if (StringUtils.hasText(applicationConfigId)) {
             addPropertyReference(builder, "application", applicationConfigId);
         }
 
         // module reference
-        String moduleConfigId = serviceAnnotationAttributes.getString("module");
+        String moduleConfigId = (String) serviceAnnotationAttributes.get("module");
         if (StringUtils.hasText(moduleConfigId)) {
             addPropertyReference(builder, "module", moduleConfigId);
         }
@@ -501,7 +504,82 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        String[] beanNames = beanFactory.getBeanDefinitionNames();
+        for (String beanName : beanNames) {
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+            Map<String, Object> annotationAttributes = getServiceAnnotationAttributes(beanDefinition);
+            if (annotationAttributes != null) {
+                // process @DubboService at java-config @bean method
+                processServiceAnnotatedBeanDefinition(beanName, (AnnotatedBeanDefinition) beanDefinition, annotationAttributes);
+            }
+        }
+    }
 
+    /**
+     * Get dubbo service annotation class at java-config @bean method
+     * @return return service annotation attributes map if found, or return null if not found.
+     */
+    private Map<String, Object> getServiceAnnotationAttributes(BeanDefinition beanDefinition) {
+        if (beanDefinition instanceof AnnotatedBeanDefinition) {
+            AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
+            MethodMetadata factoryMethodMetadata = annotatedBeanDefinition.getFactoryMethodMetadata();
+            if (factoryMethodMetadata != null) {
+                MergedAnnotations mergedAnnotations = factoryMethodMetadata.getAnnotations();
+                // try all dubbo service annotation types
+                for (Class<? extends Annotation> annotationType : serviceAnnotationTypes) {
+                    if (mergedAnnotations.isPresent(annotationType)) {
+                        return mergedAnnotations.get(annotationType).filterDefaultValues().asMap();
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * process @DubboService at java-config @bean method
+     * <pre class="code">
+     * &#064;Configuration
+     * public class ProviderConfig {
+     *
+     *      &#064;Bean
+     *      &#064;DubboService(group="demo", version="1.2.3")
+     *      public DemoService demoService() {
+     *          return new DemoServiceImpl();
+     *      }
+     *
+     * }
+     * </pre>
+     * @param refServiceBeanName
+     * @param refServiceBeanDefinition
+     * @param attributes
+     */
+    private void processServiceAnnotatedBeanDefinition(String refServiceBeanName, AnnotatedBeanDefinition refServiceBeanDefinition, Map<String, Object> attributes) {
+
+        Map<String, Object> serviceAnnotationAttributes = new LinkedHashMap<>(attributes);
+
+        // get bean class from return type
+        String returnTypeName = refServiceBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
+        Class<?> beanClass = resolveClassName(returnTypeName, classLoader);
+
+        Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
+
+        // ServiceBean Bean name
+        String serviceBeanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
+
+        AbstractBeanDefinition serviceBeanDefinition = buildServiceBeanDefinition(serviceAnnotationAttributes, interfaceClass, refServiceBeanName);
+
+        // set id
+        serviceBeanDefinition.getPropertyValues().add(Constants.ID, serviceBeanName);
+
+        // registerServiceBean();
+        if (registry.containsBeanDefinition(serviceBeanName)) {
+            BeanDefinition existingDefinition = registry.getBeanDefinition(serviceBeanName);
+            logger.error("Found duplicated service bean definition: " + serviceBeanName +
+                    ", existing: " + existingDefinition + ", new: " + serviceBeanDefinition);
+            throw new BeanDefinitionOverrideException(serviceBeanName, serviceBeanDefinition, existingDefinition);
+        }
+        registry.registerBeanDefinition(serviceBeanName, serviceBeanDefinition);
     }
 
     @Override
@@ -518,4 +596,5 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
+
 }
