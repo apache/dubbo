@@ -363,7 +363,6 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     @Override
-    @Deprecated
     public String getAttachment(String key) {
         if (attachments == null) {
             return null;

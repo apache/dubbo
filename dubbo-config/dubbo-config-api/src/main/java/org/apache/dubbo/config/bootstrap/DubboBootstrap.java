@@ -79,6 +79,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.CompletableFuture;
@@ -1033,8 +1034,17 @@ public class DubboBootstrap {
             }
             try {
                 environment.setConfigCenterFirst(configCenter.isHighestPriority());
-                environment.updateExternalConfigurationMap(parseProperties(configContent));
-                environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+                Map<String, String> globalRemoteProperties = parseProperties(configContent);
+                if (CollectionUtils.isEmptyMap(globalRemoteProperties)) {
+                    logger.info("No global configuration in config center");
+                }
+                environment.updateExternalConfigurationMap(globalRemoteProperties);
+
+                Map<String, String> appRemoteProperties = parseProperties(appConfigContent);
+                if (CollectionUtils.isEmptyMap(appRemoteProperties)) {
+                    logger.info("No application level configuration in config center");
+                }
+                environment.updateAppExternalConfigurationMap(appRemoteProperties);
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
             }
