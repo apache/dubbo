@@ -26,6 +26,7 @@ import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
+    public static final String MIGRATION_KEY = "migration";
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
     private MigrationClusterInvoker<T> migrationInvoker;
@@ -48,7 +49,9 @@ public class MigrationRuleHandler<T> {
         MigrationStep step = MigrationStep.APPLICATION_FIRST;
         Float threshold = -1f;
         if (rule == MigrationRule.INIT) {
-            step = Enum.valueOf(MigrationStep.class, ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name()));
+            step = Enum.valueOf(MigrationStep.class,
+                    consumerURL.getParameter(MIGRATION_KEY,
+                            ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
         } else {
             try {
                 String serviceKey = consumerURL.getDisplayServiceKey();

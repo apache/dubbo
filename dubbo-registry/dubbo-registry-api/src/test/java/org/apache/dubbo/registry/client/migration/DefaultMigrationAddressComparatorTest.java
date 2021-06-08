@@ -88,7 +88,9 @@ public class DefaultMigrationAddressComparatorTest {
         Assertions.assertTrue(comparator.shouldMigrate(newInvoker, oldInvoker, rule));
 
         newInvokerList.clear();
-        Assertions.assertFalse(comparator.shouldMigrate(newInvoker, oldInvoker, null));
+        // hasProxyInvokers will check if invokers list is empty
+        // if hasProxyInvokers return true, comparator will directly because default threshold is 0.0
+        Assertions.assertTrue(comparator.shouldMigrate(newInvoker, oldInvoker, null));
         Assertions.assertFalse(comparator.shouldMigrate(newInvoker, oldInvoker, rule));
 
         Assertions.assertEquals(0, comparator.getAddressSize("test").get(NEW_ADDRESS_SIZE));

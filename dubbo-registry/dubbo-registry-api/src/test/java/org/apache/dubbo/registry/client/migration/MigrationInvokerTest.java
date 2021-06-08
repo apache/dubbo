@@ -190,6 +190,7 @@ public class MigrationInvokerTest {
         Mockito.verify(serviceDiscoveryInvoker, Mockito.times(27)).invoke(null);
 
         serviceDiscoveryInvokers.remove(1);
+        Mockito.when(serviceDiscoveryInvoker.hasProxyInvokers()).thenReturn(false);
         argument.getAllValues().get(argument.getAllValues().size() - 1).onChange();
 
         for (int i = 0; i < 20; i++) {
@@ -198,6 +199,7 @@ public class MigrationInvokerTest {
         Mockito.verify(invoker, Mockito.times(27)).invoke(null);
 
         serviceDiscoveryInvokers.add(Mockito.mock(Invoker.class));
+        Mockito.when(serviceDiscoveryInvoker.hasProxyInvokers()).thenReturn(true);
         argument.getAllValues().get(argument.getAllValues().size() - 1).onChange();
 
         Mockito.when(migrationRule.getProportion(Mockito.any())).thenReturn(50);

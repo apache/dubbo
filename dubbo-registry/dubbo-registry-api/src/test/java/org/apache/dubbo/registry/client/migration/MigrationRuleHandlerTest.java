@@ -29,13 +29,14 @@ public class MigrationRuleHandlerTest {
         MigrationClusterInvoker invoker = Mockito.mock(MigrationClusterInvoker.class);
         URL url = Mockito.mock(URL.class);
         Mockito.when(url.getDisplayServiceKey()).thenReturn("test");
+        Mockito.when(url.getParameter((String) Mockito.any(), (String) Mockito.any())).thenAnswer(i->i.getArgument(1));
         MigrationRuleHandler handler = new MigrationRuleHandler(invoker, url);
 
         Mockito.when(invoker.migrateToForceApplicationInvoker(Mockito.any())).thenReturn(true);
         Mockito.when(invoker.migrateToForceInterfaceInvoker(Mockito.any())).thenReturn(true);
 
         handler.doMigrate(MigrationRule.INIT);
-        Mockito.verify(invoker, Mockito.times(1)).migrateToForceInterfaceInvoker(MigrationRule.INIT);
+        Mockito.verify(invoker, Mockito.times(1)).migrateToApplicationFirstInvoker(MigrationRule.INIT);
 
         MigrationRule rule = Mockito.mock(MigrationRule.class);
         Mockito.when(rule.getStep("test")).thenReturn(MigrationStep.FORCE_APPLICATION);
