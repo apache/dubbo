@@ -57,7 +57,7 @@ public interface ExecutorRepository {
 
     ExecutorService nextExecutorExecutor();
 
-    ScheduledExecutorService getServiceExporterExecutor();
+    ScheduledExecutorService getExportReferExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 

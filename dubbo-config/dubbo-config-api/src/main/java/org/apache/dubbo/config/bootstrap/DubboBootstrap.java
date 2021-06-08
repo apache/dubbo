@@ -30,7 +30,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
@@ -98,7 +97,6 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -158,11 +156,7 @@ public class DubboBootstrap {
 
     private final ExecutorService executorService = newSingleThreadExecutor();
 
-    private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-
-    private volatile ExecutorService exportReferExecutor;
-
-    private static final int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
+    private ExecutorRepository executorRepository;
 
     private final ConfigManager configManager;
 
@@ -564,6 +558,9 @@ public class DubboBootstrap {
         startMetadataCenter();
 
         initMetadataService();
+
+        // initialize other default extensions.
+        initExtensions();
 
         if (logger.isInfoEnabled()) {
             logger.info(NAME + " has been initialized!");
@@ -1043,6 +1040,17 @@ public class DubboBootstrap {
     }
 
     /**
+     * Initialize other default extensions.
+     */
+    private void initExtensions() {
+        initExecutorRepository();
+    }
+
+    private void initExecutorRepository() {
+        this.executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+    }
+
+    /**
      * Start the bootstrap
      */
     public DubboBootstrap start() {
@@ -1246,7 +1254,7 @@ public class DubboBootstrap {
 
             ApplicationConfig config = getApplication();
             if (config.getExportAsync() != null && config.getExportAsync()) {
-                ExecutorService executor = getExportReferExecutor();
+                ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
                         sc.export();
@@ -1295,7 +1303,7 @@ public class DubboBootstrap {
             if (rc.shouldInit()) {
                 ApplicationConfig config = getApplication();
                 if (config.getReferAsync() != null && config.getReferAsync()) {
-                    ExecutorService executor = getExportReferExecutor();
+                    ExecutorService executor = executorRepository.getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {
                             cache.get(rc);
@@ -1323,16 +1331,6 @@ public class DubboBootstrap {
         });
         asyncReferringFutures.clear();
         cache.destroyAll();
-    }
-
-    private ExecutorService getExportReferExecutor() {
-        if (exportReferExecutor == null) {
-            ApplicationConfig config = getApplication();
-            int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
-            exportReferExecutor = newFixedThreadPool(coreSize, new NamedThreadFactory("Dubbo-export-refer", true));
-        }
-
-        return exportReferExecutor;
     }
 
     private void registerServiceInstance() {
@@ -1539,10 +1537,6 @@ public class DubboBootstrap {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
             executorService.shutdown();
-        }
-
-        if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
-            exportReferExecutor.shutdown();
         }
     }
 
