@@ -19,15 +19,14 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.annotation.Bean;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
@@ -38,25 +37,25 @@ import java.util.Map;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 /**
- * {@link ServiceClassPostProcessor} Test
+ * {@link ServiceAnnotationPostProcessor} Test
  *
  * @since 2.7.7
  */
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
-                ServiceAnnotationTestConfiguration2.class,
-                ServiceClassPostProcessorTest.class
+                ServiceAnnotationTestConfiguration.class,
+                ServiceAnnotationPostProcessorTest.class
         })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {
         "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
-        "packagesToScan = ${provider.package}",
 })
-public class ServiceClassPostProcessorTest {
+@EnableDubbo(scanBasePackages = "${provider.package}")
+public class ServiceAnnotationPostProcessorTest {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 
@@ -67,12 +66,6 @@ public class ServiceClassPostProcessorTest {
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
-
-    @Bean
-    public ServiceClassPostProcessor serviceClassPostProcessor2
-            (@Value("${packagesToScan}") String... packagesToScan) {
-        return new ServiceClassPostProcessor(packagesToScan);
-    }
 
     @Test
     public void test() {
@@ -85,13 +78,10 @@ public class ServiceClassPostProcessorTest {
 
         Assertions.assertEquals(3, serviceBeansMap.size());
 
-        Map<String, ServiceClassPostProcessor> beanPostProcessorsMap =
-                beanFactory.getBeansOfType(ServiceClassPostProcessor.class);
+        Map<String, ServiceAnnotationPostProcessor> beanPostProcessorsMap =
+                beanFactory.getBeansOfType(ServiceAnnotationPostProcessor.class);
 
-        Assertions.assertEquals(2, beanPostProcessorsMap.size());
-
-        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor"));
-        Assertions.assertTrue(beanPostProcessorsMap.containsKey("serviceClassPostProcessor2"));
+        Assertions.assertEquals(1, beanPostProcessorsMap.size());
 
     }
 

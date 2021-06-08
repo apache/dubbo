@@ -34,15 +34,9 @@ public abstract class AbstractBuilder<C extends AbstractConfig, B extends Abstra
      * The config id
      */
     protected String id;
-    protected String prefix;
 
     public B id(String id) {
         this.id = id;
-        return getThis();
-    }
-
-    protected B prefix(String prefix) {
-        this.prefix = prefix;
         return getThis();
     }
 
@@ -67,9 +61,6 @@ public abstract class AbstractBuilder<C extends AbstractConfig, B extends Abstra
     protected void build(C instance) {
         if (!StringUtils.isEmpty(id)) {
             instance.setId(id);
-        }
-        if (!StringUtils.isEmpty(prefix)) {
-            instance.setPrefix(prefix);
         }
     }
 

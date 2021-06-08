@@ -30,7 +30,6 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLI
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
 
 /**
  * RegistryConfig
@@ -208,6 +207,7 @@ public class RegistryConfig extends AbstractConfig {
 
     public void setProtocol(String protocol) {
         this.protocol = protocol;
+        // protocol as id is inappropriate, registries's protocol may be duplicated
 //        this.updateIdIfAbsent(protocol);
     }
 
@@ -228,11 +228,6 @@ public class RegistryConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
-//                setUsername(url.getUsername());
-//                setPassword(url.getPassword());
-//                updateIdIfAbsent(url.getProtocol());
-//                updateProtocolIfAbsent(url.getProtocol());
-//                updatePortIfAbsent(url.getPort());
                 Map<String, String> params = url.getParameters();
                 if (CollectionUtils.isNotEmptyMap(params)) {
                     params.remove(BACKUP_KEY);
@@ -529,16 +524,7 @@ public class RegistryConfig extends AbstractConfig {
     }
 
     @Override
-    public void refresh() {
-        super.refresh();
-        if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(REGISTRIES_SUFFIX);
-            super.refresh();
-        }
-    }
-
-    @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         // empty protocol will default to 'dubbo'
         return !StringUtils.isEmpty(address);

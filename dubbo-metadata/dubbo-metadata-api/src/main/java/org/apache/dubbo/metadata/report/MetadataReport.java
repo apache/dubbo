@@ -66,6 +66,8 @@ public interface MetadataReport {
 
     List<String> getExportedURLs(ServiceMetadataIdentifier metadataIdentifier);
 
+    void destroy();
+
     void saveServiceMetadata(ServiceMetadataIdentifier metadataIdentifier, URL url);
 
     void removeServiceMetadata(ServiceMetadataIdentifier metadataIdentifier);

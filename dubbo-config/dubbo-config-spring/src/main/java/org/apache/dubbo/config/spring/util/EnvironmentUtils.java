@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.spring.boot.util;
+package org.apache.dubbo.config.spring.util;
 
 import org.springframework.core.env.CompositePropertySource;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -27,6 +27,8 @@ import org.springframework.util.ObjectUtils;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * The utilities class for {@link Environment}
@@ -35,6 +37,16 @@ import java.util.Map;
  * @since 2.7.0
  */
 public abstract class EnvironmentUtils {
+
+    /**
+     * The separator of property name
+     */
+    public static final String PROPERTY_NAME_SEPARATOR = ".";
+
+    /**
+     * The prefix of property name of Dubbo
+     */
+    public static final String DUBBO_PREFIX = "dubbo";
 
     /**
      * Extras The properties from {@link ConfigurableEnvironment}
@@ -111,4 +123,27 @@ public abstract class EnvironmentUtils {
         }
     }
 
+    /**
+     * Filters Dubbo Properties from {@link ConfigurableEnvironment}
+     *
+     * @param environment {@link ConfigurableEnvironment}
+     * @return Read-only SortedMap
+     */
+    public static SortedMap<String, String> filterDubboProperties(ConfigurableEnvironment environment) {
+
+        SortedMap<String, String> dubboProperties = new TreeMap<>();
+
+        Map<String, Object> properties = extractProperties(environment);
+
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            String propertyName = entry.getKey();
+
+            if (propertyName.startsWith(DUBBO_PREFIX + PROPERTY_NAME_SEPARATOR)
+                    && entry.getValue() != null) {
+                dubboProperties.put(propertyName, environment.resolvePlaceholders(entry.getValue().toString()));
+            }
+        }
+
+        return Collections.unmodifiableSortedMap(dubboProperties);
+    }
 }
