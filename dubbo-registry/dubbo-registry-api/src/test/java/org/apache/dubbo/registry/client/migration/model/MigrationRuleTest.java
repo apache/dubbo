@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class MigrationRuleTest {
 
@@ -29,20 +28,41 @@ public class MigrationRuleTest {
         String rule = "key: demo-consumer\n" +
                 "step: APPLICATION_FIRST\n" +
                 "threshold: 1.0\n" +
+                "proportion: 60\n" +
+                "delay: 60\n" +
+                "force: false\n" +
                 "interfaces:\n" +
                 "  - serviceKey: DemoService:1.0.0\n" +
-                "    threshold: 1.0\n" +
+                "    threshold: 0.5\n" +
+                "    proportion: 30\n" +
+                "    delay: 30\n" +
+                "    force: true\n" +
                 "    step: APPLICATION_FIRST\n" +
                 "  - serviceKey: GreetingService:1.0.0\n" +
                 "    step: FORCE_APPLICATION";
 
         MigrationRule migrationRule = MigrationRule.parse(rule);
-        assertEquals(migrationRule.getKey(), "demo-consumer");
-        assertEquals(migrationRule.getStep(), MigrationStep.APPLICATION_FIRST);
-        assertEquals(migrationRule.getThreshold(), 1.0f);
+        assertEquals("demo-consumer", migrationRule.getKey());
+        assertEquals(MigrationStep.APPLICATION_FIRST ,migrationRule.getStep());
+        assertEquals(1.0f, migrationRule.getThreshold());
+        assertEquals(60, migrationRule.getProportion());
+        assertEquals(60, migrationRule.getDelay());
+        assertEquals(false, migrationRule.getForce());
+
         assertEquals(migrationRule.getInterfaces().size(), 2);
         assertNotNull(migrationRule.getInterfaceRule("DemoService:1.0.0"));
         assertNotNull(migrationRule.getInterfaceRule("GreetingService:1.0.0"));
-        assertNull(migrationRule.getApplications());
+
+        assertEquals(0.5f, migrationRule.getThreshold("DemoService:1.0.0"));
+        assertEquals(30, migrationRule.getProportion("DemoService:1.0.0"));
+        assertEquals(30, migrationRule.getDelay("DemoService:1.0.0"));
+        assertEquals(true, migrationRule.getForce("DemoService:1.0.0"));
+        assertEquals(MigrationStep.APPLICATION_FIRST ,migrationRule.getStep("DemoService:1.0.0"));
+
+        assertEquals(1.0f, migrationRule.getThreshold("GreetingService:1.0.0"));
+        assertEquals(60, migrationRule.getProportion("GreetingService:1.0.0"));
+        assertEquals(60, migrationRule.getDelay("GreetingService:1.0.0"));
+        assertEquals(false, migrationRule.getForce("GreetingService:1.0.0"));
+        assertEquals(MigrationStep.FORCE_APPLICATION ,migrationRule.getStep("GreetingService:1.0.0"));
     }
 }

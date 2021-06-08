@@ -419,4 +419,9 @@ public interface CommonConstants {
     String DEFAULT_VERSION = "0.0.0";
 
     int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }

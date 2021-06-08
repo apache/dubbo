@@ -14,16 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.support;
+package org.apache.dubbo.rpc.cluster;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 
 import java.util.Map;
 
-@SPI
+@SPI("default")
 public interface ProviderURLMergeProcessor {
-    URL mergeProviderUrl(URL providerUrl, Map<String, String> localParametersMap);
 
-    boolean accept(URL providerUrl, Map<String, String> localParametersMap);
+    /**
+     * Merging the URL parameters of provider and consumer
+     *
+     * @param remoteUrl          providerUrl
+     * @param localParametersMap consumer url parameters
+     * @return
+     */
+    URL mergeUrl(URL remoteUrl, Map<String, String> localParametersMap);
+
+    default boolean accept(URL providerUrl, Map<String, String> localParametersMap) {
+        return true;
+    }
 }
