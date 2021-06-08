@@ -48,8 +48,6 @@ public class MetadataUtils {
 
     public static RemoteMetadataServiceImpl remoteMetadataService;
 
-    public static WritableMetadataService localMetadataService;
-
     public static RemoteMetadataServiceImpl getRemoteMetadataService() {
         if (remoteMetadataService == null) {
             synchronized (REMOTE_LOCK) {

@@ -20,18 +20,20 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
-import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,13 +48,13 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * @see ServiceDiscovery
  * @since 2.7.5
  */
-public class NacosServiceDiscovery implements ServiceDiscovery {
+public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private String group;
 
-    private NamingService namingService;
+    private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
 
@@ -69,18 +71,22 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) {
         execute(namingService, service -> {
             Instance instance = toInstance(serviceInstance);
+            appendPreservedParam(instance);
             service.registerInstance(instance.getServiceName(), group, instance);
         });
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        // TODO: Nacos should support
-        unregister(serviceInstance);
-        register(serviceInstance);
+    public void doUpdate(ServiceInstance serviceInstance) {
+        if (this.serviceInstance == null) {
+            register(serviceInstance);
+        } else {
+            unregister(serviceInstance);
+            register(serviceInstance);
+        }
     }
 
     @Override
@@ -112,10 +118,16 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
         execute(namingService, service -> {
-            service.subscribe(listener.getServiceNames(), e -> { // Register Nacos EventListener
-                if (e instanceof NamingEvent) {
-                    NamingEvent event = (NamingEvent) e;
-                    handleEvent(event, listener);
+            listener.getServiceNames().forEach(serviceName -> {
+                try {
+                    service.subscribe(serviceName, e -> { // Register Nacos EventListener
+                        if (e instanceof NamingEvent) {
+                            NamingEvent event = (NamingEvent) e;
+                            handleEvent(event, listener);
+                        }
+                    });
+                } catch (NacosException e) {
+                    e.printStackTrace();
                 }
             });
         });
@@ -133,5 +145,10 @@ public class NacosServiceDiscovery implements ServiceDiscovery {
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
         dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+    }
+
+    private void appendPreservedParam(Instance instance) {
+        Map<String, String> preservedParam = NacosNamingServiceUtils.getNacosPreservedParam(getUrl());
+        instance.getMetadata().putAll(preservedParam);
     }
 }

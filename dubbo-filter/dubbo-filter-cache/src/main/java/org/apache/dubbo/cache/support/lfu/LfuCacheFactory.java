@@ -30,6 +30,8 @@ import org.apache.dubbo.common.URL;
  */
 public class LfuCacheFactory extends AbstractCacheFactory {
 
+    public static final String NAME = "lfu";
+
     /**
      * Takes url as an method argument and return new instance of cache store implemented by LfuCache.
      * @param url url of the method

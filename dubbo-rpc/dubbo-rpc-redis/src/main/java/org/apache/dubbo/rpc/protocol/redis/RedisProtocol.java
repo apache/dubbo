@@ -43,7 +43,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_TIMEOUT;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;

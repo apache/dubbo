@@ -95,16 +95,19 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     protected ServiceInstancesChangedListener serviceListener;
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
-        super(url);
+        super(url, true);
+
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
 
-        shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
-        shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
+
+        this.shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
+        this.shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
+
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
@@ -120,7 +123,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     private URL turnRegistryUrlToConsumerUrl(URL url) {
         return URLBuilder.from(url)
-                .setHost(queryMap.get(REGISTER_IP_KEY))
+                .setHost(queryMap.get(REGISTER_IP_KEY) == null ? url.getHost() : queryMap.get(REGISTER_IP_KEY))
                 .setPort(0)
                 .setProtocol(queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY))
                 .setPath(queryMap.get(INTERFACE_KEY))
@@ -234,8 +237,8 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         }
         // unsubscribe.
         try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
-                registry.unsubscribe(getConsumerUrl(), this);
+            if (getSubscribeConsumerurl() != null && registry != null && registry.isAvailable()) {
+                registry.unsubscribe(getSubscribeConsumerurl(), this);
             }
         } catch (Throwable t) {
             logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
@@ -265,8 +268,10 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
     public void setInvokersChangedListener(InvokersChangedListener listener) {
         this.invokersChangedListener = listener;
         if (addressChanged) {
-            invokersChangedListener.onChange();
-            this.addressChanged = false;
+            if (invokersChangedListener != null) {
+                invokersChangedListener.onChange();
+                this.addressChanged = false;
+            }
         }
     }
 

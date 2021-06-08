@@ -87,8 +87,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         final Runnable runnable = doExport(proxyFactory.getProxy(invoker, true), invoker.getInterface(), invoker.getUrl());
         exporter = new AbstractExporter<T>(invoker) {
             @Override
-            public void unexport() {
-                super.unexport();
+            public void afterUnExport() {
                 exporterMap.remove(uri);
                 if (runnable != null) {
                     try {
@@ -129,6 +128,13 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 } catch (Throwable e) {
                     throw getRpcException(type, url, invocation, e);
                 }
+            }
+
+            @Override
+            public void destroy() {
+                super.destroy();
+                target.destroy();
+                invokers.remove(this);
             }
         };
         invokers.add(invoker);
