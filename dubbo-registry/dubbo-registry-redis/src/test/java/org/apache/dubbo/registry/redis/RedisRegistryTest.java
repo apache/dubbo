@@ -111,6 +111,40 @@ public class RedisRegistryTest {
     }
 
     @Test
+    public void testSubscribeExpireCache() throws Exception {
+        redisRegistry.register(PROVIDER_URL_A);
+        redisRegistry.register(PROVIDER_URL_B);
+
+        NotifyListener listener = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+            }
+        };
+
+        redisRegistry.subscribe(SERVICE_URL, listener);
+
+        Field expireCache = RedisRegistry.class.getDeclaredField("expireCache");
+        expireCache.setAccessible(true);
+        Map<URL, Long> cacheExpire = (Map<URL, Long>)expireCache.get(redisRegistry);
+
+        assertThat(cacheExpire.get(PROVIDER_URL_A) > 0, is(true));
+        assertThat(cacheExpire.get(PROVIDER_URL_B) > 0, is(true));
+
+        redisRegistry.unregister(PROVIDER_URL_A);
+
+        boolean success = false;
+
+        for (int i = 0; i < 30; i++) {
+            cacheExpire = (Map<URL, Long>)expireCache.get(redisRegistry);
+            if (cacheExpire.get(PROVIDER_URL_A) == null) {
+                success = true;
+            }
+            Thread.sleep(500);
+        }
+        assertThat(success, is(true));
+    }
+
+    @Test
     public void testSubscribeWhenProviderCrash() throws Exception {
 
         // unit test will fail if doExpire=false

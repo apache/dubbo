@@ -304,6 +304,7 @@ public class RedisRegistry extends FailbackRegistry {
                 continue;
             }
             List<URL> urls = new ArrayList<>();
+            Set<URL> toDeleteExpireKeys = new HashSet<>(expireCache.keySet());
             Map<String, String> values = redisClient.hgetAll(key);
             if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
@@ -314,8 +315,14 @@ public class RedisRegistry extends FailbackRegistry {
                         if (UrlUtils.isMatch(url, u)) {
                             urls.add(u);
                             expireCache.put(u, expire);
+                            toDeleteExpireKeys.remove(u);
                         }
                     }
+                }
+            }
+            if (!toDeleteExpireKeys.isEmpty()) {
+                for (URL u : toDeleteExpireKeys) {
+                    expireCache.remove(u);
                 }
             }
             if (urls.isEmpty()) {
@@ -327,6 +334,7 @@ public class RedisRegistry extends FailbackRegistry {
                         .build());
             }
             result.addAll(urls);
+
             if (logger.isInfoEnabled()) {
                 logger.info("redis notify: " + key + " = " + urls);
             }
