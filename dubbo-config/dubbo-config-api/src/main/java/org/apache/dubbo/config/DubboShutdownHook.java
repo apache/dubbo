@@ -19,11 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
