@@ -232,16 +232,15 @@ public class DubboBootstrap {
                 instance = null;
             }
             MetadataReportInstance.reset();
-            AbstractMetadataReportFactory.reset();
             AbstractRegistryFactory.reset();
-            ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
-            ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
             ExtensionLoader.destroyAll();
-            ApplicationModel.reset();
+            //ExtensionLoader.resetExtensionLoader(GovernanceRuleRepository.class);
         } else {
             instance = null;
-            ApplicationModel.reset();
         }
+
+        ApplicationModel.reset();
+        ShutdownHookCallbacks.INSTANCE.clear();
     }
 
     private DubboBootstrap() {
@@ -1386,6 +1385,7 @@ public class DubboBootstrap {
                     destroyProtocols();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
+                    destroyMetadataReports();
 
                     // check config
                     checkConfigState();
@@ -1396,6 +1396,9 @@ public class DubboBootstrap {
 
                     onStop();
                 }
+
+                destroyDynamicConfigurations();
+                ShutdownHookCallbacks.INSTANCE.clear();
             } finally {
                 initialized.set(false);
                 startup.set(false);
@@ -1454,6 +1457,17 @@ public class DubboBootstrap {
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
         }
+    }
+
+    private void destroyMetadataReports() {
+        AbstractMetadataReportFactory.destroy();
+        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
+    }
+
+    private void destroyDynamicConfigurations() {
+        // DynamicConfiguration may be cached somewhere, and maybe used during destroy
+        // destroy them may cause some troubles, so just clear instances cache
+        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     private void clear() {
