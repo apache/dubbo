@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
@@ -965,7 +966,7 @@ public class DubboBootstrap {
 
     private <T extends AbstractConfig> void loadConfigs(Class<T> cls) {
         // load multiple configs with id
-        Set<String> configIds = configManager.getConfigIds(cls);
+        Set<String> configIds = this.getConfigIds(cls);
         configIds.forEach(id -> {
             if (!configManager.getConfig(cls, id).isPresent()) {
                 T config = null;
@@ -1019,6 +1020,28 @@ public class DubboBootstrap {
 
     }
 
+    /**
+     * Search props and extract config ids of specify type.
+     * <pre>
+     * # properties
+     * dubbo.registries.registry1.address=xxx
+     * dubbo.registries.registry2.port=xxx
+     *
+     * # extract
+     * Set configIds = getConfigIds(RegistryConfig.class)
+     *
+     * # result
+     * configIds: ["registry1", "registry2"]
+     * </pre>
+     *
+     * @param clazz config type
+     * @return ids of specify config type
+     */
+    private Set<String> getConfigIds(Class<? extends AbstractConfig> clazz) {
+        String prefix = CommonConstants.DUBBO + "." + AbstractConfig.getPluralTagName(clazz) + ".";
+        Environment environment = ApplicationModel.getEnvironment();
+        return ConfigurationUtils.getSubIds(environment.getConfigurationMaps(), prefix);
+    }
 
     /**
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension

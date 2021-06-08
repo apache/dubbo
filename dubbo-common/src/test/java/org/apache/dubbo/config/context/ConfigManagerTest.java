@@ -75,12 +75,10 @@ public class ConfigManagerTest {
         // protocols
         assertTrue(configManager.getProtocols().isEmpty());
         assertTrue(configManager.getDefaultProtocols().isEmpty());
-        assertTrue(configManager.getProtocolIds().isEmpty());
 
         // registries
         assertTrue(configManager.getRegistries().isEmpty());
         assertTrue(configManager.getDefaultRegistries().isEmpty());
-        assertTrue(configManager.getRegistryIds().isEmpty());
 
         // services and references
         assertTrue(configManager.getServices().isEmpty());

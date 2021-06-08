@@ -16,9 +16,6 @@
  */
 package org.apache.dubbo.config.context;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
-import org.apache.dubbo.common.config.Environment;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
@@ -42,7 +39,6 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -60,7 +56,6 @@ import java.util.stream.Collectors;
 
 import static java.lang.Boolean.TRUE;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.unmodifiableSet;
 import static java.util.Optional.ofNullable;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
@@ -297,11 +292,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return getConfigs(getTagName(ProtocolConfig.class));
     }
 
-    public Set<String> getProtocolIds() {
-        Set<String> protocolIds = getConfigIds(ProtocolConfig.class);
-        return unmodifiableSet(protocolIds);
-    }
-
 
     // RegistryConfig correlative methods
 
@@ -339,34 +329,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public Collection<RegistryConfig> getRegistries() {
         return getConfigs(getTagName(RegistryConfig.class));
-    }
-
-    public Set<String> getRegistryIds() {
-        Set<String> registryIds = getConfigIds(RegistryConfig.class);
-        return unmodifiableSet(registryIds);
-    }
-
-    /**
-     * Search props and extract config ids of specify type.
-     * <pre>
-     * # properties
-     * dubbo.registries.registry1.address=xxx
-     * dubbo.registries.registry2.port=xxx
-     *
-     * # extract
-     * Set configIds = getConfigIds(RegistryConfig.class)
-     *
-     * # result
-     * configIds: ["registry1", "registry2"]
-     * </pre>
-     *
-     * @param clazz config type
-     * @return ids of specify config type
-     */
-    public Set<String> getConfigIds(Class<? extends AbstractConfig> clazz) {
-        String prefix = CommonConstants.DUBBO + "." + AbstractConfig.getPluralTagName(clazz) + ".";
-        Environment environment = ApplicationModel.getEnvironment();
-        return ConfigurationUtils.getSubIds(environment.getConfigurationMaps(), prefix);
     }
 
     // ServiceConfig correlative methods
