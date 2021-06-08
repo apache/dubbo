@@ -40,6 +40,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.MONITOR_KEY;
+import static org.apache.dubbo.common.constants.FilterConstants.VALIDATION_KEY;
+import static org.apache.dubbo.common.constants.QosConstants.ACCEPT_FOREIGN_IP;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_ENABLE;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_HOST;
+import static org.apache.dubbo.common.constants.QosConstants.QOS_PORT;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
+import static org.apache.dubbo.rpc.Constants.INTERFACES;
 
 public class MetadataInfo implements Serializable {
     public static final MetadataInfo EMPTY = new MetadataInfo();
@@ -219,7 +228,11 @@ public class MetadataInfo implements Serializable {
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             if (filters.size() == 0) {
-                params.putAll(url.getParameters());
+                params.putAll(
+                        url.removeParameters(
+                                MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
+                                QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES)
+                                .getParameters());
             }
             for (MetadataParamsFilter filter : filters) {
                 String[] paramsIncluded = filter.serviceParamsIncluded();
