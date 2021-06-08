@@ -136,13 +136,18 @@ public class ReferenceKeyTest {
 
     @Test
     public void testConfig4() {
+        AnnotationConfigApplicationContext context = null;
         try {
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
+            context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
             context.start();
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
             Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
+        } finally {
+            if (context != null) {
+                context.close();
+            }
         }
     }
 

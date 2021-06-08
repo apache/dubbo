@@ -53,16 +53,13 @@ public class ListTelnetHandlerTest {
     @BeforeAll
     public static void setUp() {
         ProtocolUtils.closeAll();
-    }
-
-    @BeforeEach
-    public void init() {
         DubboBootstrap.reset();
     }
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        DubboBootstrap.reset();
     }
 
     @Test

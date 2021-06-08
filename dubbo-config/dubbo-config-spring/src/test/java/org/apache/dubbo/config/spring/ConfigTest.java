@@ -90,6 +90,7 @@ public class ConfigTest {
 
     @BeforeEach
     public void setUp() {
+        SysProps.clear();
         DubboBootstrap.reset();
     }
 
