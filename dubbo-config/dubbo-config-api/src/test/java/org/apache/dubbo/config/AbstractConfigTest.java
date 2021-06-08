@@ -416,6 +416,7 @@ public class AbstractConfigTest {
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
             ApplicationModel.getEnvironment().initialize();
 
+            ApplicationModel.getEnvironment().setConfigCenterFirst(true);
             overrideConfig.refresh();
 
             Assertions.assertEquals("external://127.0.0.1:2181", overrideConfig.getAddress());
@@ -453,6 +454,7 @@ public class AbstractConfigTest {
 
             ConfigCenterConfig configCenter = new ConfigCenterConfig();
             overrideConfig.setConfigCenter(configCenter);
+            ApplicationModel.getEnvironment().setConfigCenterFirst(true);
             // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
             overrideConfig.refresh();
 
