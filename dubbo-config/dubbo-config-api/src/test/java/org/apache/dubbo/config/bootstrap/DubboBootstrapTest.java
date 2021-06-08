@@ -24,10 +24,10 @@ import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 
@@ -126,15 +126,16 @@ public class DubboBootstrapTest {
 
         //ApplicationModel.getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
         List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
-        Assertions.assertEquals(1, urls.size());
-        URL url = urls.get(0);
-        Assertions.assertEquals("registry", url.getProtocol());
-        Assertions.assertEquals("addr1:9090", url.getAddress());
-        Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
-        Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
-        Assertions.assertTrue(url.getParameters().containsKey("pid"));
-        Assertions.assertTrue(url.getParameters().containsKey("registry"));
-        Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        Assertions.assertEquals(2, urls.size());
+        for (URL url : urls) {
+            Assertions.assertTrue(url.getProtocol().contains("registry"));
+            Assertions.assertEquals("addr1:9090", url.getAddress());
+            Assertions.assertEquals(RegistryService.class.getName(), url.getPath());
+            Assertions.assertTrue(url.getParameters().containsKey("timestamp"));
+            Assertions.assertTrue(url.getParameters().containsKey("pid"));
+            Assertions.assertTrue(url.getParameters().containsKey("registry"));
+            Assertions.assertTrue(url.getParameters().containsKey("dubbo"));
+        }
     }
 
 

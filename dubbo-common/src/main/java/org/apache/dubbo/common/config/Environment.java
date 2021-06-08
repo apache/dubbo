@@ -92,6 +92,11 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         this.localMigrationRule = ConfigUtils.loadMigrationRule(path);
     }
 
+    @Deprecated
+    public void setLocalMigrationRule(String localMigrationRule) {
+        this.localMigrationRule = localMigrationRule;
+    }
+
     @DisableInject
     public void setExternalConfigMap(Map<String, String> externalConfiguration) {
         if (externalConfiguration != null) {
