@@ -572,7 +572,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         // set id
         serviceBeanDefinition.getPropertyValues().add(Constants.ID, serviceBeanName);
 
-        // registerServiceBean();
+        // check service bean
         if (registry.containsBeanDefinition(serviceBeanName)) {
             BeanDefinition existingDefinition = registry.getBeanDefinition(serviceBeanName);
             logger.error("Found duplicated service bean definition: " + serviceBeanName +
