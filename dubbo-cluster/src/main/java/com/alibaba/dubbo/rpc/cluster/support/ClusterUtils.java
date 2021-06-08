@@ -71,6 +71,14 @@ public class ClusterUtils {
             if (dubbo != null && dubbo.length() > 0) {
                 map.put(Constants.DUBBO_VERSION_KEY, dubbo);
             }
+            String defaultVersion = remoteMap.get(Constants.DEFAULT_KEY_PREFIX + Constants.VERSION_KEY);
+            if (defaultVersion != null && defaultVersion.length() > 0) {
+                map.put(Constants.DEFAULT_KEY_PREFIX + Constants.VERSION_KEY, defaultVersion);
+            }
+            String defaultGroup = remoteMap.get(Constants.DEFAULT_KEY_PREFIX + Constants.GROUP_KEY);
+            if (defaultGroup != null && defaultGroup.length() > 0) {
+                map.put(Constants.DEFAULT_KEY_PREFIX + Constants.GROUP_KEY, defaultGroup);
+            }
             String version = remoteMap.get(Constants.VERSION_KEY);
             if (version != null && version.length() > 0) {
                 map.put(Constants.VERSION_KEY, version);
