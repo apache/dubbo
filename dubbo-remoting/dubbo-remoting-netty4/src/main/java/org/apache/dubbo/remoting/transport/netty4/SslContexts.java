@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.config.SslConfig;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.handler.ssl.ClientAuth;
@@ -39,8 +38,7 @@ public class SslContexts {
     private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
-        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+        SslConfig sslConfig = getSslConfig();
 
         SslContextBuilder sslClientContextBuilder = null;
         try {
@@ -68,8 +66,7 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.getConfigManager();
-        SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+        SslConfig sslConfig = getSslConfig();
 
         SslContextBuilder builder = SslContextBuilder.forClient();
         try {
@@ -95,6 +92,10 @@ public class SslContexts {
         } catch (SSLException e) {
             throw new IllegalStateException("Build SslSession failed.", e);
         }
+    }
+
+    private static SslConfig getSslConfig() {
+        return ApplicationModel.getConfigManager().getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
     }
 
     /**

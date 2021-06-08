@@ -29,6 +29,10 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
@@ -81,6 +85,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public boolean shouldCheck() {
+        checkDefault();
         Boolean shouldCheck = isCheck();
         if (shouldCheck == null && getConsumer() != null) {
             shouldCheck = getConsumer().isCheck();
@@ -93,6 +98,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public boolean shouldInit() {
+        checkDefault();
         Boolean shouldInit = isInit();
         if (shouldInit == null && getConsumer() != null) {
             shouldInit = getConsumer().isInit();
@@ -104,12 +110,37 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    public void checkDefault() throws IllegalStateException {
+    @Override
+    protected void preProcessRefresh() {
+        super.preProcessRefresh();
         if (consumer == null) {
             consumer = ApplicationModel.getConfigManager()
                     .getDefaultConsumer()
-                    .orElse(new ConsumerConfig());
+                    .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }
+    }
+
+    @Override
+    @Parameter(excluded = true, attribute = false)
+    public List<String> getPrefixes() {
+        List<String> prefixes = new ArrayList<>();
+        // dubbo.reference.{interface-name}
+        prefixes.add(DUBBO + ".reference." + interfaceName);
+        return prefixes;
+    }
+
+    @Override
+    public Map<String, String> getMetaData() {
+        Map<String, String> metaData = new HashMap<>();
+        ConsumerConfig consumer = this.getConsumer();
+        // consumer should be inited at preProcessRefresh()
+        if (isRefreshed() && consumer == null) {
+            throw new IllegalStateException("Consumer is not initialized");
+        }
+        // use consumer attributes as default value
+        appendAttributes(metaData, consumer);
+        appendAttributes(metaData, this);
+        return metaData;
     }
 
     /**
@@ -220,13 +251,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return serviceMetadata;
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return DUBBO + ".reference." + interfaceName;
-    }
-
-    public void resolveFile() {
+    protected void resolveFile() {
         String resolve = System.getProperty(interfaceName);
         String resolveFile = null;
         if (StringUtils.isEmpty(resolve)) {
@@ -268,13 +293,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 setRegistryIds(consumer.getRegistryIds());
             }
         }
-
         super.computeValidRegistryIds();
     }
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
-        return URL.buildKey(interfaceName, getGroup(), getVersion());
+        return interfaceName != null ? URL.buildKey(interfaceName, getGroup(), getVersion()) : null;
     }
 
     @Override

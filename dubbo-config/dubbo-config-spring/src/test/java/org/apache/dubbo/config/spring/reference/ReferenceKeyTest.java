@@ -20,12 +20,14 @@ import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Method;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +43,11 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 public class ReferenceKeyTest {
+
+    @BeforeEach
+    protected void setUp() {
+        DubboBootstrap.reset();
+    }
 
     @Test
     public void testReferenceKey() throws Exception {
@@ -129,13 +136,18 @@ public class ReferenceKeyTest {
 
     @Test
     public void testConfig4() {
+        AnnotationConfigApplicationContext context = null;
         try {
-            AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
+            context = new AnnotationConfigApplicationContext(ConsumerConfiguration4.class);
             context.start();
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean id demoService"), getStackTrace(e));
+            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
+        } finally {
+            if (context != null) {
+                context.close();
+            }
         }
     }
 
@@ -147,7 +159,7 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean id demoService"), getStackTrace(e));
+            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
         }
     }
 

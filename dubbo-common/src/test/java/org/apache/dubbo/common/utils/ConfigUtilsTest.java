@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.CompositeConfiguration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 
@@ -112,9 +114,31 @@ public class ConfigUtilsTest {
     @Test
     public void testReplaceProperty() throws Exception {
         String s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.singletonMap("a.b.c", "ABC"));
-        assertEquals(s, "1ABC2ABC3");
+        assertEquals( "1ABC2ABC3", s);
         s = ConfigUtils.replaceProperty("1${a.b.c}2${a.b.c}3", Collections.<String, String>emptyMap());
-        assertEquals(s, "123");
+        assertEquals("1${a.b.c}2${a.b.c}3", s);
+    }
+
+    @Test
+    public void testReplaceProperty2() {
+
+        InmemoryConfiguration configuration1 = new InmemoryConfiguration();
+        configuration1.getProperties().put("zookeeper.address", "127.0.0.1");
+
+        InmemoryConfiguration configuration2 = new InmemoryConfiguration();
+        configuration2.getProperties().put("zookeeper.port", "2181");
+
+        CompositeConfiguration compositeConfiguration = new CompositeConfiguration();
+        compositeConfiguration.addConfiguration(configuration1);
+        compositeConfiguration.addConfiguration(configuration2);
+
+        String s = ConfigUtils.replaceProperty("zookeeper://${zookeeper.address}:${zookeeper.port}", compositeConfiguration);
+        assertEquals("zookeeper://127.0.0.1:2181", s);
+
+        // should not replace inner class name
+        String interfaceName = "dubbo.service.io.grpc.examples.helloworld.DubboGreeterGrpc$IGreeter";
+        s = ConfigUtils.replaceProperty(interfaceName, compositeConfiguration);
+        Assertions.assertEquals(interfaceName, s);
     }
 
     @Test

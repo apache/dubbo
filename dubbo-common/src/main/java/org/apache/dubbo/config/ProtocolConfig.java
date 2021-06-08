@@ -21,9 +21,8 @@ import org.apache.dubbo.config.support.Parameter;
 
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
 
 /**
  * ProtocolConfig
@@ -212,6 +211,29 @@ public class ProtocolConfig extends AbstractConfig {
         setPort(port);
     }
 
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (name == null) {
+            name = DUBBO_PROTOCOL;
+        }
+    }
+
+//    @Override
+//    public List<String> getPrefixes() {
+//        List<String> prefixes = new ArrayList<>();
+//        if (StringUtils.hasText(this.getId())) {
+//            // dubbo.protocols.{protocol-id}
+//            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getId());
+//        } else if (StringUtils.hasText(this.getName()) && !StringUtils.isEquals(this.getId(), this.getName())) {
+//            // dubbo.protocols.{protocol-name}
+//            prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getName());
+//        }
+//        // dubbo.protocol
+//        prefixes.add(getTypePrefix());
+//        return prefixes;
+//    }
+
     @Parameter(excluded = true)
     public String getName() {
         return name;
@@ -219,7 +241,7 @@ public class ProtocolConfig extends AbstractConfig {
 
     public final void setName(String name) {
         this.name = name;
-        this.updateIdIfAbsent(name);
+        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(excluded = true)
@@ -524,19 +546,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     @Override
-    public void refresh() {
-        if (StringUtils.isEmpty(this.getName())) {
-            this.setName(DUBBO_VERSION_KEY);
-        }
-        super.refresh();
-        if (StringUtils.isNotEmpty(this.getId())) {
-            this.setPrefix(PROTOCOLS_SUFFIX);
-            super.refresh();
-        }
-    }
-
-    @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return StringUtils.isNotEmpty(name);
     }

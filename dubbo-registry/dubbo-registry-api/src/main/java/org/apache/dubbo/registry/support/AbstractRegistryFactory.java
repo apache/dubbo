@@ -110,6 +110,14 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
     }
 
+    /**
+     * Reset state of AbstractRegistryFactory
+     */
+    public static void reset() {
+        destroyed.set(false);
+        REGISTRIES.clear();
+    }
+
     private Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
             LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +

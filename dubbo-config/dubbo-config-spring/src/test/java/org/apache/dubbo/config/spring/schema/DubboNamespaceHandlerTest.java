@@ -22,6 +22,9 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfigBase;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
@@ -40,12 +43,15 @@ import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.Collection;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class DubboNamespaceHandlerTest {
 
@@ -53,12 +59,12 @@ public class DubboNamespaceHandlerTest {
 
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Configuration
@@ -88,6 +94,14 @@ public class DubboNamespaceHandlerTest {
     }
 
     private void testProviderXml(ApplicationContext context) {
+
+        String appName = "demo-provider";
+        Map<String, ApplicationConfig> applicationConfigMap = context.getBeansOfType(ApplicationConfig.class);
+        ApplicationConfig providerAppConfig = context.getBean(appName, ApplicationConfig.class);
+        assertNotNull(providerAppConfig);
+        assertEquals(appName, providerAppConfig.getName());
+        assertEquals(appName, providerAppConfig.getId());
+
         ProtocolConfig protocolConfig = context.getBean(ProtocolConfig.class);
         assertThat(protocolConfig, not(nullValue()));
         assertThat(protocolConfig.getName(), is("dubbo"));
@@ -113,10 +127,14 @@ public class DubboNamespaceHandlerTest {
         Map<String, ProtocolConfig> protocolConfigMap = ctx.getBeansOfType(ProtocolConfig.class);
         assertThat(protocolConfigMap.size(), is(2));
 
-        ProtocolConfig rmiProtocolConfig = protocolConfigMap.get("rmi");
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Collection<ProtocolConfig> protocolConfigs = configManager.getProtocols();
+        assertThat(protocolConfigs.size(), is(2));
+
+        ProtocolConfig rmiProtocolConfig = configManager.getProtocol("rmi").get();
         assertThat(rmiProtocolConfig.getPort(), is(10991));
 
-        ProtocolConfig dubboProtocolConfig = protocolConfigMap.get("dubbo");
+        ProtocolConfig dubboProtocolConfig = configManager.getProtocol("dubbo").get();
         assertThat(dubboProtocolConfig.getPort(), is(20881));
     }
 
@@ -158,9 +176,19 @@ public class DubboNamespaceHandlerTest {
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/provider-nested-service.xml");
         ctx.start();
 
-        Map<String, ProviderConfig> providerConfigMap = ctx.getBeansOfType(ProviderConfig.class);
+        ConfigManager configManager = ApplicationModel.getConfigManager();
+        Collection<ProviderConfig> providerConfigs = configManager.getProviders();
+        Assertions.assertEquals(2, providerConfigs.size());
 
-        assertThat(providerConfigMap.get("org.apache.dubbo.config.ProviderConfig").getTimeout(), is(2000));
+        ProviderConfig defaultProvider = configManager.getDefaultProvider().get();
+        assertThat(defaultProvider.getTimeout(), is(2000));
+
+        ProviderConfig provider2 = configManager.getProvider("provider2").get();
+
+        ServiceConfigBase<Object> serviceConfig2 = configManager.getService("serviceConfig2");
+        Assertions.assertEquals(1000, provider2.getTimeout());
+        Assertions.assertEquals(provider2.getTimeout(), serviceConfig2.getTimeout());
+
     }
 
     @Test

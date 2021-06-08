@@ -162,6 +162,14 @@ public class ExtensionLoaderTest {
     }
 
     @Test
+    public void test_getActivateExtension_WithWrapper() throws Exception {
+        URL url = URL.valueOf("test://localhost/test");
+        List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
+                .getActivateExtension(url, new String[]{}, "order");
+        assertEquals(2, list.size());
+    }
+
+    @Test
     public void test_getExtension_ExceptionNoExtension() throws Exception {
         try {
             getExtensionLoader(SimpleExt.class).getExtension("XXX");

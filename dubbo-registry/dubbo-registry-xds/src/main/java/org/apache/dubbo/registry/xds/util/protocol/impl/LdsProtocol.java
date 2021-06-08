@@ -30,10 +30,9 @@ import io.envoyproxy.envoy.config.listener.v3.Filter;
 import io.envoyproxy.envoy.config.listener.v3.Listener;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager;
 import io.envoyproxy.envoy.extensions.filters.network.http_connection_manager.v3.Rds;
-import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -43,8 +42,8 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private static final Logger logger = LoggerFactory.getLogger(LdsProtocol.class);
 
-    public LdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public LdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override
@@ -57,7 +56,7 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
     }
 
     public void observeListeners(Consumer<ListenerResult> consumer) {
-        observeResource(null,consumer);
+        observeResource(Collections.emptySet(), consumer);
     }
 
     @Override
@@ -71,25 +70,6 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
             return new ListenerResult(set);
         }
         return new ListenerResult();
-    }
-
-    @Override
-    protected DeltaListener decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaListener previous) {
-        DeltaListener deltaListener = previous;
-        if (deltaListener == null) {
-            deltaListener = new DeltaListener();
-        }
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            deltaListener.removeResource(response.getRemovedResourcesList());
-            for (Resource resource : response.getResourcesList()) {
-                Listener unpackedResource = unpackListener(resource.getResource());
-                if (unpackedResource == null) {
-                    continue;
-                }
-                deltaListener.addResource(resource.getName(), decodeResourceToListener(unpackedResource));
-            }
-        }
-        return deltaListener;
     }
 
     private Set<String> decodeResourceToListener(Listener resource) {
@@ -114,6 +94,9 @@ public class LdsProtocol extends AbstractProtocol<ListenerResult, DeltaListener>
 
     private static HttpConnectionManager unpackHttpConnectionManager(Any any) {
         try {
+            if (!any.is(HttpConnectionManager.class)) {
+                return null;
+            }
             return any.unpack(HttpConnectionManager.class);
         } catch (InvalidProtocolBufferException e) {
             logger.error("Error occur when decode xDS response.", e);

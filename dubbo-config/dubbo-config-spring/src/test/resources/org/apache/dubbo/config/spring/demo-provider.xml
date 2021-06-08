@@ -21,7 +21,7 @@
     http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <!-- current application configuration -->
-    <dubbo:application name="${dubbo.application.name:foo-app}"/>
+    <dubbo:application name="demo-provider"/>
 
     <!-- registry center configuration -->
     <dubbo:registry address="${dubbo.registry.address:foo-address}"/>
