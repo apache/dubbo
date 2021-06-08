@@ -320,6 +320,7 @@ public class RedisRegistry extends FailbackRegistry {
                     }
                 }
             }
+
             if (!toDeleteExpireKeys.isEmpty()) {
                 for (URL u : toDeleteExpireKeys) {
                     expireCache.remove(u);
