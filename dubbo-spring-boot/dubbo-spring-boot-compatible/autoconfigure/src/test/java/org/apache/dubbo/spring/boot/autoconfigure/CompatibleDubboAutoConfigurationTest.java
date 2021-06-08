@@ -17,7 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,15 +44,15 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class CompatibleDubboAutoConfigurationTest {
 
     @Autowired
-    private ObjectProvider<ServiceAnnotationBeanPostProcessor> serviceAnnotationBeanPostProcessor;
+    private ObjectProvider<ServiceAnnotationPostProcessor> serviceAnnotationPostProcessor;
 
     @Autowired
     private ObjectProvider<ReferenceAnnotationBeanPostProcessor> referenceAnnotationBeanPostProcessor;
 
     @Test
     public void testBeans() {
-        Assert.assertNotNull(serviceAnnotationBeanPostProcessor);
-        Assert.assertNotNull(serviceAnnotationBeanPostProcessor.getIfAvailable());
+        Assert.assertNotNull(serviceAnnotationPostProcessor);
+        Assert.assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
         Assert.assertNotNull(referenceAnnotationBeanPostProcessor);
         Assert.assertNotNull(referenceAnnotationBeanPostProcessor.getIfAvailable());
     }

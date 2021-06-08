@@ -37,7 +37,7 @@ import java.util.Map;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD;
 
 /**
- * {@link ServiceAnnotationBeanPostProcessor} Test
+ * {@link ServiceAnnotationPostProcessor} Test
  *
  * @since 2.7.7
  */
@@ -45,14 +45,14 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(
         classes = {
                 ServiceAnnotationTestConfiguration.class,
-                ServiceAnnotationBeanPostProcessorTest.class
+                ServiceAnnotationPostProcessorTest.class
         })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {
         "provider.package = org.apache.dubbo.config.spring.context.annotation.provider",
 })
 @EnableDubbo(scanBasePackages = "${provider.package}")
-public class ServiceAnnotationBeanPostProcessorTest {
+public class ServiceAnnotationPostProcessorTest {
 
     @BeforeAll
     public static void setUp() {
@@ -78,8 +78,8 @@ public class ServiceAnnotationBeanPostProcessorTest {
 
         Assertions.assertEquals(3, serviceBeansMap.size());
 
-        Map<String, ServiceAnnotationBeanPostProcessor> beanPostProcessorsMap =
-                beanFactory.getBeansOfType(ServiceAnnotationBeanPostProcessor.class);
+        Map<String, ServiceAnnotationPostProcessor> beanPostProcessorsMap =
+                beanFactory.getBeansOfType(ServiceAnnotationPostProcessor.class);
 
         Assertions.assertEquals(1, beanPostProcessorsMap.size());
 
