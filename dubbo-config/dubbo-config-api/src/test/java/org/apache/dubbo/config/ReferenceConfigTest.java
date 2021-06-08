@@ -23,8 +23,8 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -43,7 +45,7 @@ public class ReferenceConfigTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
         this.zkServer = new TestingServer(zkServerPort, true);
         this.zkServer.start();
@@ -52,8 +54,8 @@ public class ReferenceConfigTest {
 
     @AfterEach
     public void tearDown() throws IOException {
+        DubboBootstrap.reset();
         zkServer.stop();
-        ApplicationModel.reset();
     }
 
     @Test
@@ -61,6 +63,7 @@ public class ReferenceConfigTest {
     public void testInjvm() throws Exception {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
+        application.setEnableFileCache(false);
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
@@ -101,9 +104,10 @@ public class ReferenceConfigTest {
      * unit test for dubbo-1765
      */
     @Test
-    public void testReferenceRetry() {
+    public void test1ReferenceRetry() {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
+        application.setEnableFileCache(false);
         ApplicationModel.getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
@@ -146,6 +150,44 @@ public class ReferenceConfigTest {
         }
         Assertions.assertTrue(success);
         Assertions.assertNotNull(demoService);
+
+    }
+
+    @Test
+    public void testMetaData() {
+        ReferenceConfig config = new ReferenceConfig();
+        Map<String, String> metaData = config.getMetaData();
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+
+        // test merged and override consumer attributes
+        ConsumerConfig consumerConfig = new ConsumerConfig();
+        consumerConfig.setAsync(true);
+        consumerConfig.setActives(10);
+        config.setConsumer(consumerConfig);
+        config.setAsync(false);// override
+
+        metaData = config.getMetaData();
+        Assertions.assertEquals(2, metaData.size());
+        Assertions.assertEquals("" + consumerConfig.getActives(), metaData.get("actives"));
+        Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+
+    }
+
+    @Test
+    public void testGetPrefixes() {
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(DemoService.class);
+
+        List<String> prefixes = referenceConfig.getPrefixes();
+        Assertions.assertTrue(prefixes.contains("dubbo.reference." + referenceConfig.getInterface()));
+
+        long start = System.currentTimeMillis();
+        for (int i = 0; i < 1000; i++) {
+            referenceConfig.getPrefixes();
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
 
     }
 

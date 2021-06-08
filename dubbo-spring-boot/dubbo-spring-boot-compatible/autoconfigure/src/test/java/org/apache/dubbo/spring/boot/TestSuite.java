@@ -23,12 +23,9 @@ import org.apache.dubbo.spring.boot.autoconfigure.DubboAutoConfigurationOnSingle
 import org.apache.dubbo.spring.boot.autoconfigure.RelaxedDubboConfigBinderTest;
 import org.apache.dubbo.spring.boot.context.event.AwaitingNonWebApplicationListenerTest;
 import org.apache.dubbo.spring.boot.context.event.DubboConfigBeanDefinitionConflictApplicationListenerTest;
-import org.apache.dubbo.spring.boot.context.event.OverrideDubboConfigApplicationListenerDisableTest;
-import org.apache.dubbo.spring.boot.context.event.OverrideDubboConfigApplicationListenerTest;
 import org.apache.dubbo.spring.boot.context.event.WelcomeLogoApplicationListenerTest;
 import org.apache.dubbo.spring.boot.env.DubboDefaultPropertiesEnvironmentPostProcessorTest;
 import org.apache.dubbo.spring.boot.util.DubboUtilsTest;
-import org.apache.dubbo.spring.boot.util.EnvironmentUtilsTest;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -42,12 +39,9 @@ import org.junit.runners.Suite;
         RelaxedDubboConfigBinderTest.class,
         AwaitingNonWebApplicationListenerTest.class,
         DubboConfigBeanDefinitionConflictApplicationListenerTest.class,
-        OverrideDubboConfigApplicationListenerDisableTest.class,
-        OverrideDubboConfigApplicationListenerTest.class,
         WelcomeLogoApplicationListenerTest.class,
         DubboDefaultPropertiesEnvironmentPostProcessorTest.class,
         DubboUtilsTest.class,
-        EnvironmentUtilsTest.class
 })
 public class TestSuite {
 }

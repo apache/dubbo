@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.legacy;
 
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
 import org.apache.dubbo.remoting.Channel;
@@ -58,7 +59,7 @@ public class SelectTelnetHandlerTest {
             }
         }
 
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach

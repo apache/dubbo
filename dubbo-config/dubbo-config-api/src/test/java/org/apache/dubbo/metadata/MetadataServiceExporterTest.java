@@ -19,6 +19,7 @@ package org.apache.dubbo.metadata;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -41,7 +42,7 @@ public class MetadataServiceExporterTest {
 
     @BeforeAll
     public static void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
         ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
         ApplicationModel.getConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
         ApplicationModel.getConfigManager().addProtocol(new ProtocolConfig("injvm"));
@@ -49,8 +50,7 @@ public class MetadataServiceExporterTest {
 
     @AfterAll
     public static void destroy() {
-        ApplicationModel.getConfigManager().setApplication(null);
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test

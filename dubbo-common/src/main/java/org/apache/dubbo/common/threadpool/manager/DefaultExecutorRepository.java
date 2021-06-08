@@ -211,6 +211,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     @Override
     public void destroyAll() {
+        poolRouterExecutor.shutdown();
+        serviceExporterExecutor.shutdown();
+        serviceDiscoveryAddressNotificationExecutor.shutdown();
+        registryNotificationExecutor.shutdown();
+        metadataRetryExecutor.shutdown();
+
         data.values().forEach(executors -> {
             if (executors != null) {
                 executors.values().forEach(executor -> {
@@ -220,5 +226,14 @@ public class DefaultExecutorRepository implements ExecutorRepository {
                 });
             }
         });
+
+        // TODO shutdown all executor services
+//        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
+//            executorService.shutdown();
+//        }
+//
+//        for (ExecutorService executorService : executorServiceRing.listItems()) {
+//            executorService.shutdown();
+//        }
     }
 }

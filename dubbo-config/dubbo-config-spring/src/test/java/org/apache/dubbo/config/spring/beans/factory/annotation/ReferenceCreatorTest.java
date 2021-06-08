@@ -30,7 +30,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.reference.ReferenceCreator;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,8 +104,8 @@ public class ReferenceCreatorTest {
     @Autowired
     private NotifyService notifyService;
 
-    @BeforeEach
-    public void init() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 

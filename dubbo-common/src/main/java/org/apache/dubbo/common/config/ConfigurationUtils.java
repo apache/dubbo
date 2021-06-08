@@ -23,9 +23,13 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_SERVER_SHUTDOWN_TIMEOUT;
@@ -135,6 +139,99 @@ public class ConfigurationUtils {
             );
         }
         return map;
+    }
+
+    public static boolean isEmptyValue(Object value) {
+        return value == null ||
+                value instanceof String && StringUtils.isBlank((String) value);
+    }
+
+    /**
+     * Search props and extract sub properties.
+     * <pre>
+     * # properties
+     * dubbo.protocol.name=dubbo
+     * dubbo.protocol.port=1234
+     *
+     * # extract protocol props
+     * Map props = getSubProperties("dubbo.protocol.");
+     *
+     * # result
+     * props: {"name": "dubbo", "port" : "1234"}
+     *
+     * </pre>
+     * @param configMaps
+     * @param prefix
+     * @param <V>
+     * @return
+     */
+    public static <V extends Object> Map<String, V> getSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
+        if (!prefix.endsWith(".")) {
+            prefix += ".";
+        }
+        String finalPrefix = prefix;
+        Map<String, V> map = new LinkedHashMap<>();
+        for (Map<String, V> configMap : configMaps) {
+            configMap.forEach((key, val) -> {
+                if (StringUtils.startsWithIgnoreCase(key, finalPrefix) && !ConfigurationUtils.isEmptyValue(val)) {
+                    String k = key.substring(finalPrefix.length());
+                    // convert camelCase/snake_case to kebab-case
+                    k = StringUtils.convertToSplitName(k, "-");
+                    map.putIfAbsent(k, val);
+                }
+            });
+        }
+        return map;
+    }
+
+    public static <V extends Object> boolean hasSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
+        if (!prefix.endsWith(".")) {
+            prefix += ".";
+        }
+        for (Map<String, V> configMap : configMaps) {
+            for (Map.Entry<String, V> entry : configMap.entrySet()) {
+                String key = entry.getKey();
+                if (StringUtils.startsWithIgnoreCase(key, prefix) && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Search props and extract config ids
+     * <pre>
+     * # properties
+     * dubbo.registries.registry1.address=xxx
+     * dubbo.registries.registry2.port=xxx
+     *
+     * # extract ids
+     * Set configIds = getSubIds("dubbo.registries.")
+     *
+     * # result
+     * configIds: ["registry1", "registry2"]
+     * </pre>
+     *
+     * @param configMaps
+     * @param prefix
+     * @return
+     */
+    public static <V extends Object> Set<String> getSubIds(Collection<Map<String, V>> configMaps, String prefix) {
+        Set<String> ids = new LinkedHashSet<>();
+        for (Map<String, V> configMap : configMaps) {
+            configMap.forEach((key, val) -> {
+                if (StringUtils.startsWithIgnoreCase(key, prefix) && !ConfigurationUtils.isEmptyValue(val)) {
+                    String k = key.substring(prefix.length());
+                    int endIndex = k.indexOf(".");
+                    if (endIndex > 0) {
+                        String id = k.substring(0, endIndex);
+                        ids.add(id);
+                    }
+                }
+            });
+        }
+        return ids;
     }
 
 }

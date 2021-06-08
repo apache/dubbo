@@ -28,6 +28,8 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.util.EnvironmentUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -35,8 +37,12 @@ import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.ConfigurableEnvironment;
 
+import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
@@ -48,7 +54,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * NOTE: Dubbo config beans MUST be initialized after registering all BeanPostProcessors,
  * that is after the AbstractApplicationContext#registerBeanPostProcessors() method.
  */
-public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware, Ordered {
+public class DubboConfigInitializationPostProcessor implements BeanPostProcessor, BeanFactoryAware, ApplicationContextAware, Ordered {
 
     public static String BEAN_NAME = "dubboConfigInitializationPostProcessor";
 
@@ -61,6 +67,7 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
+    private ApplicationContext applicationContext;
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
@@ -117,8 +124,18 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
         beansOfTypeIncludingAncestors(beanFactory, MetricsConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, SslConfig.class);
 
-        //SHOULD NOT init service beans here, avoid conflicts with seata
+        //SHOULD NOT init service beans here, all BeanPostProcessors have not been loaded yet,
+        //seata is not loaded, so the ServiceBean cannot be processed by seata
         //beansOfTypeIncludingAncestors(beanFactory, ServiceBean.class);
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+
+        // Extract dubbo props from Spring env and put them to app config
+        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
+        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
+        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
+    }
 }

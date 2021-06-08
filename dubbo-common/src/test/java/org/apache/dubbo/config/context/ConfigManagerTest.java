@@ -36,6 +36,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -74,12 +75,10 @@ public class ConfigManagerTest {
         // protocols
         assertTrue(configManager.getProtocols().isEmpty());
         assertTrue(configManager.getDefaultProtocols().isEmpty());
-        assertTrue(configManager.getProtocolIds().isEmpty());
 
         // registries
         assertTrue(configManager.getRegistries().isEmpty());
         assertTrue(configManager.getDefaultRegistries().isEmpty());
-        assertTrue(configManager.getRegistryIds().isEmpty());
 
         // services and references
         assertTrue(configManager.getServices().isEmpty());
@@ -139,7 +138,9 @@ public class ConfigManagerTest {
         assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultProvider().isPresent());
 
+        config = new ProviderConfig();
         config.setId(DEFAULT_KEY);
+        config.setQueues(10);
         configManager.addProvider(config);
         assertTrue(configManager.getDefaultProvider().isPresent());
         configs = configManager.getProviders();
@@ -156,7 +157,9 @@ public class ConfigManagerTest {
         assertEquals(config, configs.iterator().next());
         assertTrue(configManager.getDefaultConsumer().isPresent());
 
+        config = new ConsumerConfig();
         config.setId(DEFAULT_KEY);
+        config.setThreads(10);
         configManager.addConsumer(config);
         assertTrue(configManager.getDefaultConsumer().isPresent());
         configs = configManager.getConsumers();
@@ -218,10 +221,10 @@ public class ConfigManagerTest {
         assertFalse(ConfigManager.isDefaultConfig(providerConfig));
 
         ProviderConfig providerConfig1 = new ProviderConfig();
-        assertTrue(ConfigManager.isDefaultConfig(providerConfig1));
+        assertNull(ConfigManager.isDefaultConfig(providerConfig1));
 
         ProviderConfig providerConfig3 = new ProviderConfig();
-        providerConfig.setDefault(true);
+        providerConfig3.setDefault(true);
         assertTrue(ConfigManager.isDefaultConfig(providerConfig3));
 
         ProtocolConfig protocolConfig = new ProtocolConfig();
