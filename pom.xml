@@ -125,6 +125,7 @@
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
+        <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
         <revision>3.0.0-SNAPSHOT</revision>
@@ -309,6 +310,20 @@
                                         **/istio/v1/auth/Ca.java,
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
                                     </excludes>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>checkstyle-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle_unix.xml</configLocation>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                    <skip>${checkstyle_unix.skip}</skip>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
