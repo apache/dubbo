@@ -101,7 +101,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
-        setConsumerUrl(url);
+        setSubscribeUrl(url);
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
@@ -109,7 +109,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void unSubscribe(URL url) {
-        setConsumerUrl(null);
+        setSubscribeUrl(null);
         CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
         referenceConfigurationListener.stop();
         registry.unsubscribe(url, this);
