@@ -205,7 +205,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             } else {
                 if (logger.isWarnEnabled()) {
                     logger.warn("No class annotated by Dubbo @Service was found under package ["
-                            + packageToScan + "], ignored classes count: " + scanExcludeFilter.getExcludedCount());
+                            + packageToScan + "], ignore re-scanned classes: " + scanExcludeFilter.getExcludedCount());
                 }
             }
 
@@ -630,9 +630,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             boolean excluded = servicePackagesHolder.isPackageScanned(packageName);
             if (excluded) {
                 excludedCount ++;
-                if (logger.isInfoEnabled()) {
-                    logger.info("Ignore class who has already bean scanned: " + className);
-                }
             }
             return excluded;
         }
