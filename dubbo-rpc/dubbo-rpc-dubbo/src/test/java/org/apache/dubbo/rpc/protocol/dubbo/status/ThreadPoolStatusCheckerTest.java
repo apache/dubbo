@@ -19,9 +19,10 @@ package org.apache.dubbo.rpc.protocol.dubbo.status;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.Status;
+import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.common.store.DataStore;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -30,17 +31,17 @@ import java.util.concurrent.ThreadPoolExecutor;
 
 public class ThreadPoolStatusCheckerTest {
 
-    private ThreadPoolStatusChecker threadPoolStatusChecker;
-    private Status status;
+    private static ThreadPoolStatusChecker threadPoolStatusChecker;
 
-    @BeforeEach
-    public void setUp() {
-        threadPoolStatusChecker = new ThreadPoolStatusChecker();
-        status = threadPoolStatusChecker.check();
+    @BeforeAll
+    public static void setUp() {
+        threadPoolStatusChecker =
+                (ThreadPoolStatusChecker) ExtensionLoader.getExtensionLoader(StatusChecker.class).getExtension("threadpool");
     }
 
     @Test
     public void statusUnknownTest() {
+        Status status = threadPoolStatusChecker.check();
         Assertions.assertEquals(status.getLevel(), Status.Level.UNKNOWN);
     }
 
@@ -54,7 +55,10 @@ public class ThreadPoolStatusCheckerTest {
         Status status = threadPoolStatusChecker.check();
 
         Assertions.assertEquals(status.getLevel(), Status.Level.OK);
-        Assertions.assertEquals(status.getMessage(), "Pool status:OK, max:" + maximumPoolSize + ", core:0, largest:0, active:" + activeCount + ", task:0, service port: " + portKey);
+        Assertions.assertEquals(status.getMessage(),
+                "Pool status:OK, max:" + maximumPoolSize + ", core:0, largest:0, active:" + activeCount + ", task:0, service port: " +
+                        portKey);
+        destroy(portKey);
     }
 
 
@@ -68,7 +72,9 @@ public class ThreadPoolStatusCheckerTest {
         Status status = threadPoolStatusChecker.check();
 
         Assertions.assertEquals(status.getLevel(), Status.Level.WARN);
-        Assertions.assertEquals(status.getMessage(), "Pool status:WARN, max:" + maximumPoolSize + ", core:0, largest:0, active:" + activeCount + ", task:0, service port: 8888");
+        Assertions.assertEquals(status.getMessage(),
+                "Pool status:WARN, max:" + maximumPoolSize + ", core:0, largest:0, active:" + activeCount + ", task:0, service port: 8888");
+        destroy(portKey);
     }
 
     private void mockThreadPoolExecutor(int activeCount, int maximumPoolSize, String portKey) {
@@ -81,4 +87,8 @@ public class ThreadPoolStatusCheckerTest {
         dataStore.put(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, portKey, executor);
     }
 
+    private void destroy(String portKey) {
+        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        dataStore.remove(CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY, portKey);
+    }
 }
