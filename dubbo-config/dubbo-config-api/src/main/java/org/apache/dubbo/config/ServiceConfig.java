@@ -34,8 +34,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.mapping.ServiceNameMapping;
-import org.apache.dubbo.mapping.ServiceNameMappingHandler;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
@@ -218,9 +217,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public void exported() {
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
-            Map<String, String> parameters = getApplication().getParameters();
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-            ServiceNameMappingHandler.map(serviceNameMapping, url);
+            serviceNameMapping.map(url);
         });
     }
 

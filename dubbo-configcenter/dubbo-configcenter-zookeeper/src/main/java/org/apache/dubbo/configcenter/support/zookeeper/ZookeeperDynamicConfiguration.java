@@ -23,30 +23,17 @@ import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
 import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.mapping.MappingChangedEvent;
-import org.apache.dubbo.mapping.MappingListener;
-import org.apache.dubbo.remoting.zookeeper.ChildListener;
-import org.apache.dubbo.remoting.zookeeper.DataListener;
-import org.apache.dubbo.remoting.zookeeper.EventType;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import org.apache.zookeeper.data.Stat;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
-import static org.apache.dubbo.mapping.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.mapping.ServiceNameMapping.getAppNames;
 
 /**
  *
@@ -63,11 +50,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
-
-    private Map<String, MappingChildListener> listenerMap = new ConcurrentHashMap<>();
-
-    private Map<String, MappingDataListener> casListenerMap = new ConcurrentHashMap<>();
-
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -126,36 +108,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        Set<String> appNameSet = new HashSet<>();
-        String path = toRootDir() + serviceKey;
-
-        if (null == listenerMap.get(path)) {
-            zkClient.create(path, false);
-            appNameSet.addAll(addServiceMappingListener(path, serviceKey, listener));
-        } else {
-            appNameSet.addAll(zkClient.getChildren(path));
-        }
-
-        return appNameSet;
-    }
-
-    public Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
-        if (null == casListenerMap.get(path)) {
-            addCasServiceMappingListener(path, serviceKey, listener);
-        }
-        return getAppNames(zkClient.getContent(path));
-    }
-
-    String toRootDir() {
-        if (rootPath.equals(PATH_SEPARATOR)) {
-            return rootPath;
-        }
-        return rootPath + PATH_SEPARATOR;
-    }
-
-    @Override
     protected String doGetConfig(String pathKey) throws Exception {
         return zkClient.getContent(pathKey);
     }
@@ -189,82 +141,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
         if (CollectionUtils.isNotEmpty(configurationListeners)) {
             zkClient.removeDataListener(pathKey, cacheListener);
-        }
-    }
-
-    @Override
-    public boolean isSupportCas() {
-        return true;
-    }
-
-    private List<String> addServiceMappingListener(String path, String serviceKey, MappingListener listener) {
-        MappingChildListener mappingChildListener = listenerMap.computeIfAbsent(path, _k -> new MappingChildListener(serviceKey, path));
-        mappingChildListener.addListener(listener);
-        return zkClient.addChildListener(path, mappingChildListener);
-    }
-
-    private void addCasServiceMappingListener(String path, String serviceKey, MappingListener listener) {
-        MappingDataListener mappingDataListener = casListenerMap.computeIfAbsent(path, _k -> new MappingDataListener(serviceKey, path));
-        mappingDataListener.addListener(listener);
-        zkClient.addDataListener(path, mappingDataListener);
-    }
-
-
-    private static class MappingChildListener implements ChildListener {
-        private String serviceKey;
-        private String path;
-        private Set<MappingListener> listeners;
-
-        public MappingChildListener(String serviceKey, String path) {
-            this.serviceKey = serviceKey;
-            this.path = path;
-            this.listeners = new HashSet<>();
-        }
-
-        public void addListener(MappingListener listener) {
-            this.listeners.add(listener);
-        }
-
-        @Override
-        public void childChanged(String path, List<String> children) {
-            Set<String> apps = null != children ? new HashSet<>(children) : null;
-
-            MappingChangedEvent event = MappingChangedEvent.buildOldModelEvent(serviceKey, apps);
-
-            listeners.forEach(mappingListener -> mappingListener.onEvent(event));
-        }
-    }
-
-    private static class MappingDataListener implements DataListener {
-
-        private String serviceKey;
-        private String path;
-        private Set<MappingListener> listeners;
-
-        public MappingDataListener(String serviceKey, String path) {
-            this.serviceKey = serviceKey;
-            this.path = path;
-            this.listeners = new HashSet<>();
-        }
-
-        public void addListener(MappingListener listener) {
-            this.listeners.add(listener);
-        }
-
-        @Override
-        public void dataChanged(String path, Object value, EventType eventType) {
-            if (!this.path.equals(path)) {
-                return;
-            }
-            if (EventType.NodeCreated != eventType && EventType.NodeDataChanged != eventType) {
-                return;
-            }
-
-            Set<String> apps = getAppNames((String) value);
-            MappingChangedEvent event = MappingChangedEvent.buildCasModelEvent(serviceKey, apps);
-
-            listeners.forEach(mappingListener -> mappingListener.onEvent(event));
-
         }
     }
 }

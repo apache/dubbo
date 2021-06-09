@@ -23,9 +23,9 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.mapping.MappingChangedEvent;
-import org.apache.dubbo.mapping.MappingListener;
-import org.apache.dubbo.mapping.ServiceNameMapping;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -67,7 +67,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.SUBSCRIBED_SER
 import static org.apache.dubbo.common.function.ThrowableAction.execute;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
-import static org.apache.dubbo.mapping.ServiceNameMapping.toStringKeys;
+import static org.apache.dubbo.metadata.ServiceNameMapping.toStringKeys;
 import static org.apache.dubbo.registry.client.ServiceDiscoveryFactory.getExtension;
 
 /**
@@ -232,8 +232,6 @@ public class ServiceDiscoveryRegistry implements Registry {
         } catch (Exception e) {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
         }
-
-        Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
 
         if (CollectionUtils.isEmpty(subscribedServices)) {
             if (check) {
@@ -469,7 +467,6 @@ public class ServiceDiscoveryRegistry implements Registry {
         Set<String> result = new LinkedHashSet<>();
         ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         result.addAll(serviceNameMapping.getAndListen(subscribedURL, listener));
-        result.addAll(serviceNameMapping.getAndListenWithNewStore(subscribedURL, listener));
         return result;
     }
 

@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.mapping;
+package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import static java.util.Collections.EMPTY_SET;
+import static java.util.Collections.emptySet;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.utils.StringUtils.SLASH;
@@ -45,35 +44,12 @@ public interface ServiceNameMapping {
      */
     void map(URL url);
 
-
     /**
      * Get the service names from the specified Dubbo service interface, group, version and protocol
      *
      * @return
      */
     Set<String> getAndListen(URL url, MappingListener mappingListener);
-
-    /**
-     * service name mapping new store structure.
-     * interface(key)
-     * -- mapping(group)
-     * --appName1,appName2,appName3(content)
-     *
-     * @param url
-     * @param mappingListener
-     * @return
-     */
-    default Set<String> getAndListenWithNewStore(URL url, MappingListener mappingListener){
-        return Collections.emptySet();
-    };
-
-    default Set<String> get(URL url) {
-        return getAndListen(url, null);
-    }
-
-    static String toStringKeys(Set<String> serviceNames) {
-        return serviceNames.toString();
-    }
 
     /**
      * Get the default extension of {@link ServiceNameMapping}
@@ -93,12 +69,14 @@ public interface ServiceNameMapping {
         return DEFAULT_MAPPING_GROUP + SLASH + serviceInterface;
     }
 
+    static String toStringKeys(Set<String> serviceNames) {
+        return serviceNames.toString();
+    }
+
     static Set<String> getAppNames(String content) {
         if (StringUtils.isBlank(content)) {
-            return EMPTY_SET;
+            return emptySet();
         }
         return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
     }
-
-
 }

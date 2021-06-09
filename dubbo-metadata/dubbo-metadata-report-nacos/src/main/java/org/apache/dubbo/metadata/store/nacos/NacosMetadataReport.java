@@ -24,9 +24,9 @@ import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.utils.MD5Utils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.mapping.MappingChangedEvent;
-import org.apache.dubbo.mapping.MappingListener;
-import org.apache.dubbo.mapping.ServiceNameMapping;
+import org.apache.dubbo.metadata.MappingChangedEvent;
+import org.apache.dubbo.metadata.MappingListener;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
@@ -59,8 +59,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 import static org.apache.dubbo.common.utils.StringUtils.HYPHEN_CHAR;
-import static org.apache.dubbo.mapping.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
-import static org.apache.dubbo.mapping.ServiceNameMapping.getAppNames;
+import static org.apache.dubbo.metadata.ServiceNameMapping.DEFAULT_MAPPING_GROUP;
+import static org.apache.dubbo.metadata.ServiceNameMapping.getAppNames;
 
 /**
  * metadata report impl for nacos
@@ -209,7 +209,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public boolean registerServiceAppMappingCas(String key, String group, String content, Object ticket) {
+    public boolean registerServiceAppMapping(String key, String group, String content, Object ticket) {
         try {
             if (!(ticket instanceof String)) {
                 throw new IllegalArgumentException("nacos publishConfigCas requires string type ticket");
@@ -222,7 +222,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public ConfigItem getMappingItem(String key, String group) {
+    public ConfigItem getConfigItem(String key, String group) {
         String content = getConfig(key, group);
         String casMd5 = "";
         if (StringUtils.isNotEmpty(content)) {
@@ -232,7 +232,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
-    public Set<String> getCasServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
+    public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         String group = DEFAULT_MAPPING_GROUP;
 
         if (null == casListenerMap.get(buildListenerKey(serviceKey, group))) {
@@ -311,11 +311,6 @@ public class NacosMetadataReport extends AbstractMetadataReport {
             logger.error("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
             throw new RpcException("Failed to get " + identifier + " from nacos , cause: " + t.getMessage(), t);
         }
-    }
-
-    @Override
-    public boolean isSupportCas() {
-        return true;
     }
 
     public class NacosConfigListener extends AbstractSharedListener {
@@ -402,7 +397,7 @@ public class NacosMetadataReport extends AbstractMetadataReport {
 
             Set<String> apps = getAppNames(event.getContent());
 
-            MappingChangedEvent mappingChangedEvent = MappingChangedEvent.buildCasModelEvent(serviceKey, apps);
+            MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(serviceKey, apps);
 
             listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
         }
