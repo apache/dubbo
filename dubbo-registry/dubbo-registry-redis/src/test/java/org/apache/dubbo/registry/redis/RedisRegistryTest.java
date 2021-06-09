@@ -138,6 +138,7 @@ public class RedisRegistryTest {
             cacheExpire = (Map<URL, Long>)expireCache.get(redisRegistry);
             if (cacheExpire.get(PROVIDER_URL_A) == null) {
                 success = true;
+                break;
             }
             Thread.sleep(500);
         }
