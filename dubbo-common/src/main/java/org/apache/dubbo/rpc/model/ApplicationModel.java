@@ -47,15 +47,11 @@ public class ApplicationModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "application";
 
-    private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
-
-    public static void init() {
-        if (INIT_FLAG.compareAndSet(false, true)) {
-            ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
-            Set<String> listenerNames = extensionLoader.getSupportedExtensions();
-            for (String listenerName : listenerNames) {
-                extensionLoader.getExtension(listenerName).init();
-            }
+    static {
+        ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
+        Set<String> listenerNames = extensionLoader.getSupportedExtensions();
+        for (String listenerName : listenerNames) {
+            extensionLoader.getExtension(listenerName).init();
         }
     }
 
