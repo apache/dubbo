@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -39,11 +41,15 @@ public class SpringExtensionFactoryTest {
 
     @BeforeEach
     public void init() {
-        SpringExtensionFactory.clearContexts();
+        // init SpringExtensionFactory
+        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
+
         context1 = new AnnotationConfigApplicationContext();
+        context1.setDisplayName("Context1");
         context1.register(getClass());
         context1.refresh();
         context2 = new AnnotationConfigApplicationContext();
+        context2.setDisplayName("Context2");
         context2.register(BeanForContext2.class);
         context2.refresh();
         SpringExtensionFactory.addApplicationContext(context1);

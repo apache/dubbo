@@ -31,13 +31,9 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.event.ServiceConfigExportedEvent;
-import org.apache.dubbo.config.event.ServiceConfigUnexportedEvent;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.mapping.ServiceNameMapping;
 import org.apache.dubbo.mapping.ServiceNameMappingHandler;
 import org.apache.dubbo.metadata.MetadataService;
@@ -106,7 +102,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 
 public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
-    public static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServiceConfig.class);
 
     /**
      * A random port cache, the different protocols who has no port specified have different random port
@@ -150,12 +146,12 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isExported() {
         return exported;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
         return unexported;
     }
@@ -178,9 +174,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
-
-        // dispatch a ServiceConfigUnExportedEvent since 2.7.4
-        dispatch(new ServiceConfigUnexportedEvent(this));
     }
 
     public synchronized void export() {
@@ -188,13 +181,23 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             return;
         }
 
+        // Using DubboBootstrap API will associate bootstrap when registering service.
+        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
+        // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
             bootstrap.service(this);
         }
 
-        checkAndUpdateSubConfigs();
+        // check bootstrap state
+        if (!bootstrap.isInitialized()) {
+            throw new IllegalStateException("DubboBootstrap is not initialized");
+        }
+
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
 
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
@@ -219,15 +222,15 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             ServiceNameMappingHandler.map(serviceNameMapping, url);
         });
-        // dispatch a ServiceConfigExportedEvent since 2.7.4
-        dispatch(new ServiceConfigExportedEvent(this));
     }
 
     private void checkAndUpdateSubConfigs() {
+
         // Use default configs defined explicitly with global scope
         completeCompoundConfigs();
-        checkDefault();
+
         checkProtocol();
+
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
@@ -237,7 +240,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (!isOnlyInJvm()) {
             checkRegistry();
         }
-        this.refresh();
 
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:service interface=\"\" /> interface not allow null!");
@@ -255,7 +257,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterfaceAndMethods(interfaceClass, getMethods());
+            //checkInterfaceAndMethods(interfaceClass, getMethods());
             checkRef();
             generic = Boolean.FALSE.toString();
         }
@@ -293,6 +295,11 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         postProcessConfig();
     }
 
+    @Override
+    protected void postProcessRefresh() {
+        super.postProcessRefresh();
+        checkAndUpdateSubConfigs();
+    }
 
     protected synchronized void doExport() {
         if (unexported) {
@@ -716,16 +723,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
                 .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
-    }
-
-    /**
-     * Dispatch an {@link Event event}
-     *
-     * @param event an {@link Event event}
-     * @since 2.7.5
-     */
-    private void dispatch(Event event) {
-        EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
     public DubboBootstrap getBootstrap() {

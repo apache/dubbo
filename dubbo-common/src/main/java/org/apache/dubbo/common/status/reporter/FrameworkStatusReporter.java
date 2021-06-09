@@ -34,6 +34,7 @@ public interface FrameworkStatusReporter {
     Logger logger = LoggerFactory.getLogger(FrameworkStatusReporter.class);
     String REGISTRATION_STATUS = "registration";
     String ADDRESS_CONSUMPTION_STATUS = "consumption";
+    String MIGRATION_STEP_STATUS = "migrationStepStatus";
 
     void report(String type, Object obj);
 
@@ -43,6 +44,14 @@ public interface FrameworkStatusReporter {
 
     static void reportConsumptionStatus(Object obj) {
         doReport(ADDRESS_CONSUMPTION_STATUS, obj);
+    }
+
+    static void reportMigrationStepStatus(Object obj) {
+        doReport(MIGRATION_STEP_STATUS, obj);
+    }
+
+    static boolean hasReporter() {
+        return ExtensionLoader.getExtensionLoader(FrameworkStatusReporter.class).getSupportedExtensions().size() > 0;
     }
 
     static void doReport(String type, Object obj) {
@@ -74,6 +83,19 @@ public interface FrameworkStatusReporter {
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
         migrationStatus.put("status", status);
+        return gson.toJson(migrationStatus);
+    }
+
+    static String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
+        HashMap<String, String> migrationStatus = new HashMap<>();
+        migrationStatus.put("type", "migrationStepStatus");
+        migrationStatus.put("application", ApplicationModel.getName());
+        migrationStatus.put("service", interfaceName);
+        migrationStatus.put("version", version);
+        migrationStatus.put("group", group);
+        migrationStatus.put("originStep", originStep);
+        migrationStatus.put("newStep", newStep);
+        migrationStatus.put("success", success);
         return gson.toJson(migrationStatus);
     }
 }

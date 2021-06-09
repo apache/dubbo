@@ -39,7 +39,9 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * @see {@link Lifecycle Dubbo Lifecycle}
  * @see SmartApplicationListener
  * @since 2.7.5
+ * @deprecated Binding the life cycle of Dubbo components with spring is not a good way. Now control components life cycle in DubboBootstrap.
  */
+@Deprecated
 public class DubboLifecycleComponentApplicationListener extends OnceApplicationContextEventListener {
 
     /**

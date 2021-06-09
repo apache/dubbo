@@ -20,7 +20,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +39,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 

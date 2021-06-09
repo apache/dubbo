@@ -25,7 +25,9 @@ import java.util.Map;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.CATEGORY_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 
 public abstract class ServiceAddressURL extends URL {
@@ -114,8 +116,17 @@ public abstract class ServiceAddressURL extends URL {
 //    }
     @Override
     public String getParameter(String key) {
+        // call corresponding methods directly, then we can remove the following if branches.
         if (GROUP_KEY.equals(key)) {
             return getGroup();
+        } else if (VERSION_KEY.equals(key)) {
+            return getVersion();
+        } else if (APPLICATION_KEY.equals(key)) {
+            return getRemoteApplication();
+        } else if (SIDE_KEY.equals(key)) {
+            return getSide();
+        } else if (CATEGORY_KEY.equals(key)) {
+            return getCategory();
         }
         String value = null;
         if (consumerURL != null) {

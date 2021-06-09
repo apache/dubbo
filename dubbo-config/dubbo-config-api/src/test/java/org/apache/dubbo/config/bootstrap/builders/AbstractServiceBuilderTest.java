@@ -197,13 +197,12 @@ class AbstractServiceBuilderTest {
         builder.version("version").group("group").deprecated(true).delay(1000).export(false).weight(1)
                 .document("document").dynamic(true).token("token").accesslog("accesslog")
                 .addProtocol(protocol).protocolIds("protocolIds").tag("tag").executes(100).register(false)
-                .warmup(200).serialization("serialization").id("id").prefix("prefix");
+                .warmup(200).serialization("serialization").id("id");
 
         ServiceConfig config = builder.build();
         ServiceConfig config2 = builder.build();
 
         Assertions.assertEquals("id", config.getId());
-        Assertions.assertEquals("prefix", config.getPrefix());
         Assertions.assertEquals("version", config.getVersion());
         Assertions.assertEquals("group", config.getGroup());
         Assertions.assertEquals("document", config.getDocument());

@@ -18,9 +18,6 @@ package org.apache.dubbo.spring.boot.util;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.springframework.mock.env.MockEnvironment;
-
-import java.util.SortedMap;
 
 import static org.apache.dubbo.spring.boot.util.DubboUtils.BASE_PACKAGES_PROPERTY_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE;
@@ -40,7 +37,6 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_SPRING_BOOT_ISS
 import static org.apache.dubbo.spring.boot.util.DubboUtils.MULTIPLE_CONFIG_PROPERTY_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.OVERRIDE_CONFIG_FULL_PROPERTY_NAME;
 import static org.apache.dubbo.spring.boot.util.DubboUtils.SPRING_APPLICATION_NAME_PROPERTY;
-import static org.apache.dubbo.spring.boot.util.DubboUtils.filterDubboProperties;
 
 /**
  * {@link DubboUtils} Test
@@ -83,22 +79,6 @@ public class DubboUtilsTest {
 
         Assert.assertTrue(DEFAULT_OVERRIDE_CONFIG_PROPERTY_VALUE);
 
-
-    }
-
-
-    @Test
-    public void testFilterDubboProperties() {
-
-        MockEnvironment environment = new MockEnvironment();
-        environment.setProperty("message", "Hello,World");
-        environment.setProperty(DUBBO_CONFIG_PREFIX + MULTIPLE_CONFIG_PROPERTY_NAME, "true");
-        environment.setProperty(OVERRIDE_CONFIG_FULL_PROPERTY_NAME, "true");
-
-        SortedMap<String, Object> dubboProperties = filterDubboProperties(environment);
-
-        Assert.assertEquals("true", dubboProperties.get(DUBBO_CONFIG_PREFIX + MULTIPLE_CONFIG_PROPERTY_NAME));
-        Assert.assertEquals("true", dubboProperties.get(OVERRIDE_CONFIG_FULL_PROPERTY_NAME));
 
     }
 

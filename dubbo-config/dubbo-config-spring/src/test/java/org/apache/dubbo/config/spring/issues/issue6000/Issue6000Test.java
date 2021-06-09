@@ -20,9 +20,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.issues.issue6000.adubbo.HelloDubbo;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
@@ -39,15 +38,11 @@ import org.springframework.context.annotation.PropertySource;
 @PropertySource("classpath:/META-INF/issues/issue6000/config.properties")
 public class Issue6000Test {
 
-    @BeforeEach
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
     }
 
-    @AfterEach
-    public void tearDown() {
-        DubboBootstrap.reset();
-    }
     @Test
     public void test() throws Exception {
         ZooKeeperServer.start();

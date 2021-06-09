@@ -22,6 +22,7 @@ import org.apache.dubbo.common.config.Environment;
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
 import org.apache.dubbo.common.config.configcenter.wrapper.CompositeDynamicConfiguration;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
@@ -30,7 +31,9 @@ import org.apache.dubbo.common.threadpool.concurrent.ScheduledCompletableFuture;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -42,6 +45,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -70,13 +74,17 @@ import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -95,6 +103,7 @@ import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
@@ -183,6 +192,8 @@ public class DubboBootstrap {
 
     private List<CompletableFuture<Object>> asyncReferringFutures = new ArrayList<>();
 
+    private static boolean ignoreConfigState;
+
     /**
      * See {@link ApplicationModel} and {@link ExtensionLoader} for why DubboBootstrap is designed to be singleton.
      */
@@ -199,19 +210,38 @@ public class DubboBootstrap {
 
     /**
      * Try reset dubbo status for new instance.
-     * For testing purposes only
+     *
+     * @deprecated For testing purposes only
      */
+    @Deprecated
     public static void reset() {
-        if (instance != null) {
-            instance.destroy();
+        reset(true);
+    }
+
+    /**
+     * Try reset dubbo status for new instance.
+     *
+     * @deprecated For testing purposes only
+     */
+    @Deprecated
+    public static void reset(boolean destroy) {
+        ConfigUtils.setProperties(null);
+        DubboBootstrap.ignoreConfigState = true;
+        if (destroy) {
+            if (instance != null) {
+                instance.destroy();
+                instance = null;
+            }
+            MetadataReportInstance.reset();
+            AbstractRegistryFactory.reset();
+            ExtensionLoader.destroyAll();
+            //ExtensionLoader.resetExtensionLoader(GovernanceRuleRepository.class);
+        } else {
             instance = null;
         }
+
         ApplicationModel.reset();
-        MetadataReportInstance.destroy();
-        AbstractMetadataReportFactory.clear();
-        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
-        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
-        ExtensionLoader.destroyAll();
+        ShutdownHookCallbacks.INSTANCE.clear();
     }
 
     private DubboBootstrap() {
@@ -220,6 +250,10 @@ public class DubboBootstrap {
 
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
+    }
+
+    public ConfigManager getConfigManager() {
+        return configManager;
     }
 
     public void unRegisterShutdownHook() {
@@ -378,6 +412,7 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap service(ServiceConfig<?> serviceConfig) {
+        serviceConfig.setBootstrap(this);
         configManager.addService(serviceConfig);
         return this;
     }
@@ -402,6 +437,7 @@ public class DubboBootstrap {
     }
 
     public DubboBootstrap reference(ReferenceConfig<?> referenceConfig) {
+        referenceConfig.setBootstrap(this);
         configManager.addReference(referenceConfig);
         return this;
     }
@@ -527,11 +563,10 @@ public class DubboBootstrap {
         }
 
         ApplicationModel.initFrameworkExts();
-        
 
         startConfigCenter();
 
-        loadRemoteConfigs();
+        loadConfigsFromProps();
 
         checkGlobalConfigs();
 
@@ -546,73 +581,119 @@ public class DubboBootstrap {
     }
 
     private void checkGlobalConfigs() {
-        // check Application
-        ConfigValidationUtils.validateApplicationConfig(getApplication());
+        // check config types (ignore metadata-center)
+        List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
+                ApplicationConfig.class,
+                ProtocolConfig.class,
+                RegistryConfig.class,
+                MetadataReportConfig.class,
+                ProviderConfig.class,
+                ConsumerConfig.class,
+                MonitorConfig.class,
+                ModuleConfig.class,
+                MetricsConfig.class,
+                SslConfig.class);
 
-        // check Metadata
-        Collection<MetadataReportConfig> metadatas = configManager.getMetadataConfigs();
-        if (CollectionUtils.isEmpty(metadatas)) {
-            MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
-            metadataReportConfig.refresh();
-            if (metadataReportConfig.isValid()) {
-                configManager.addMetadataReport(metadataReportConfig);
-                metadatas = configManager.getMetadataConfigs();
+        for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
+            checkDefaultAndValidateConfigs(configType);
+        }
+
+        // check port conflicts
+        Map<Integer, ProtocolConfig> protocolPortMap = new LinkedHashMap<>();
+        for (ProtocolConfig protocol : configManager.getProtocols()) {
+            Integer port = protocol.getPort();
+            if (port == null || port == -1) {
+                continue;
             }
-        }
-        if (CollectionUtils.isNotEmpty(metadatas)) {
-            for (MetadataReportConfig metadataReportConfig : metadatas) {
-                metadataReportConfig.refresh();
-                ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
+            ProtocolConfig prevProtocol = protocolPortMap.get(port);
+            if (prevProtocol != null) {
+                throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
+                        ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
+            protocolPortMap.put(port, protocol);
         }
 
-        // check Provider
-        Collection<ProviderConfig> providers = configManager.getProviders();
-        if (CollectionUtils.isEmpty(providers)) {
-            configManager.getDefaultProvider().orElseGet(() -> {
-                ProviderConfig providerConfig = new ProviderConfig();
-                configManager.addProvider(providerConfig);
-                providerConfig.refresh();
-                return providerConfig;
-            });
+        // check reference and service
+        for (ReferenceConfigBase<?> reference : configManager.getReferences()) {
+            reference.refresh();
         }
-        for (ProviderConfig providerConfig : configManager.getProviders()) {
-            ConfigValidationUtils.validateProviderConfig(providerConfig);
+        for (ServiceConfigBase service : configManager.getServices()) {
+            service.refresh();
         }
-        // check Consumer
-        Collection<ConsumerConfig> consumers = configManager.getConsumers();
-        if (CollectionUtils.isEmpty(consumers)) {
-            configManager.getDefaultConsumer().orElseGet(() -> {
-                ConsumerConfig consumerConfig = new ConsumerConfig();
-                configManager.addConsumer(consumerConfig);
-                consumerConfig.refresh();
-                return consumerConfig;
-            });
-        }
-        for (ConsumerConfig consumerConfig : configManager.getConsumers()) {
-            ConfigValidationUtils.validateConsumerConfig(consumerConfig);
+    }
+
+    private <T extends AbstractConfig> void checkDefaultAndValidateConfigs(Class<T> configType) {
+        boolean needValid = (configType == MetadataReportConfig.class);
+        try {
+            if (shouldAddDefaultConfig(configType)) {
+                T config = configType.newInstance();
+                config.refresh();
+                if (!needValid || config.isValid()) {
+                    configManager.addConfig(config);
+                } else {
+                    logger.info("Ignore invalid config: " + config);
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Add default config failed: " + configType.getSimpleName(), e);
         }
 
-        // check Monitor
-        ConfigValidationUtils.validateMonitorConfig(getMonitor());
-        // check Metrics
-        ConfigValidationUtils.validateMetricsConfig(getMetrics());
-        // check Module
-        ConfigValidationUtils.validateModuleConfig(getModule());
-        // check Ssl
-        ConfigValidationUtils.validateSslConfig(getSsl());
+        //validate configs
+        Collection<T> configs = configManager.getConfigs(configType);
+        for (T config : configs) {
+            validateConfig(config);
+        }
+
+        // check required default
+        if (configType != MetadataReportConfig.class && configs.isEmpty()) {
+            throw new IllegalStateException("Default config not found for " + configType.getSimpleName());
+        }
+    }
+
+    private <T extends AbstractConfig> void validateConfig(T config) {
+        if (config instanceof ProtocolConfig) {
+            ConfigValidationUtils.validateProtocolConfig((ProtocolConfig) config);
+        } else if (config instanceof RegistryConfig) {
+            ConfigValidationUtils.validateRegistryConfig((RegistryConfig) config);
+        } else if (config instanceof MetadataReportConfig) {
+            ConfigValidationUtils.validateMetadataConfig((MetadataReportConfig) config);
+        } else if (config instanceof ProviderConfig) {
+            ConfigValidationUtils.validateProviderConfig((ProviderConfig) config);
+        } else if (config instanceof ConsumerConfig) {
+            ConfigValidationUtils.validateConsumerConfig((ConsumerConfig) config);
+        } else if (config instanceof ApplicationConfig) {
+            ConfigValidationUtils.validateApplicationConfig((ApplicationConfig) config);
+        } else if (config instanceof MonitorConfig) {
+            ConfigValidationUtils.validateMonitorConfig((MonitorConfig) config);
+        } else if (config instanceof ModuleConfig) {
+            ConfigValidationUtils.validateModuleConfig((ModuleConfig) config);
+        } else if (config instanceof MetricsConfig) {
+            ConfigValidationUtils.validateMetricsConfig((MetricsConfig) config);
+        } else if (config instanceof SslConfig) {
+            ConfigValidationUtils.validateSslConfig((SslConfig) config);
+        }
+    }
+
+    private <T extends AbstractConfig> boolean shouldAddDefaultConfig(Class<T> clazz) {
+        return configManager.getDefaultConfigs(clazz).isEmpty();
     }
 
     private void startConfigCenter() {
 
+        // load application config
+        loadConfigs(ApplicationConfig.class);
+
+        // load config centers
+        loadConfigs(ConfigCenterConfig.class);
+
         useRegistryAsConfigCenterIfNecessary();
 
-        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
-
         // check Config Center
+        Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
         if (CollectionUtils.isEmpty(configCenters)) {
             ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
             configCenterConfig.refresh();
+            ConfigValidationUtils.validateConfigCenterConfig(configCenterConfig);
             if (configCenterConfig.isValid()) {
                 configManager.addConfigCenter(configCenterConfig);
                 configCenters = configManager.getConfigCenters();
@@ -627,10 +708,16 @@ public class DubboBootstrap {
         if (CollectionUtils.isNotEmpty(configCenters)) {
             CompositeDynamicConfiguration compositeDynamicConfiguration = new CompositeDynamicConfiguration();
             for (ConfigCenterConfig configCenter : configCenters) {
+                // Pass config from ConfigCenterBean to environment
+                environment.updateExternalConfigMap(configCenter.getExternalConfiguration());
+                environment.updateAppExternalConfigMap(configCenter.getAppExternalConfiguration());
+
+                // Fetch config from remote config center
                 compositeDynamicConfiguration.addConfiguration(prepareEnvironment(configCenter));
             }
             environment.setDynamicConfiguration(compositeDynamicConfiguration);
         }
+
         configManager.refreshAll();
     }
 
@@ -674,12 +761,19 @@ public class DubboBootstrap {
             return;
         }
 
-        configManager
-                .getDefaultRegistries()
-                .stream()
-                .filter(this::isUsedRegistryAsConfigCenter)
-                .map(this::registryAsConfigCenter)
-                .forEach(configManager::addConfigCenter);
+        // load registry
+        loadConfigs(RegistryConfig.class);
+
+        List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
+        if (defaultRegistries.size() > 0) {
+            defaultRegistries
+                    .stream()
+                    .filter(this::isUsedRegistryAsConfigCenter)
+                    .map(this::registryAsConfigCenter)
+                    .forEach(configManager::addConfigCenter);
+
+            logger.info("use registry as config-center: " + configManager.getConfigCenters());
+        }
     }
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
@@ -724,13 +818,16 @@ public class DubboBootstrap {
             return;
         }
 
-        configManager
-                .getDefaultRegistries()
-                .stream()
-                .filter(this::isUsedRegistryAsMetadataCenter)
-                .map(this::registryAsMetadataCenter)
-                .forEach(configManager::addMetadataReport);
+        List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
+        if (defaultRegistries.size() > 0) {
+            defaultRegistries
+                    .stream()
+                    .filter(this::isUsedRegistryAsMetadataCenter)
+                    .map(this::registryAsMetadataCenter)
+                    .forEach(configManager::addMetadataReport);
 
+            logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
+        }
     }
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
@@ -831,40 +928,120 @@ public class DubboBootstrap {
         return metadataAddressBuilder.toString();
     }
 
-    private void loadRemoteConfigs() {
-        // registry ids to registry configs
-        List<RegistryConfig> tmpRegistries = new ArrayList<>();
-        Set<String> registryIds = configManager.getRegistryIds();
-        registryIds.forEach(id -> {
-            if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                tmpRegistries.add(configManager.getRegistry(id).orElseGet(() -> {
-                    RegistryConfig registryConfig = new RegistryConfig();
-                    registryConfig.setId(id);
-                    registryConfig.refresh();
-                    return registryConfig;
-                }));
-            }
-        });
+    private void loadConfigsFromProps() {
 
-        configManager.addRegistries(tmpRegistries);
+        // application config has load before starting config center
+        // load dubbo.applications.xxx
+        loadConfigs(ApplicationConfig.class);
 
-        // protocol ids to protocol configs
-        List<ProtocolConfig> tmpProtocols = new ArrayList<>();
-        Set<String> protocolIds = configManager.getProtocolIds();
-        protocolIds.forEach(id -> {
-            if (tmpProtocols.stream().noneMatch(prot -> prot.getId().equals(id))) {
-                tmpProtocols.add(configManager.getProtocol(id).orElseGet(() -> {
-                    ProtocolConfig protocolConfig = new ProtocolConfig();
-                    protocolConfig.setId(id);
-                    protocolConfig.refresh();
-                    return protocolConfig;
-                }));
-            }
-        });
+        // load dubbo.modules.xxx
+        loadConfigs(ModuleConfig.class);
 
-        configManager.addProtocols(tmpProtocols);
+        // load dubbo.monitors.xxx
+        loadConfigs(MonitorConfig.class);
+
+        // load dubbo.metricses.xxx
+        loadConfigs(MetricsConfig.class);
+
+        // load multiple config types:
+        // load dubbo.protocols.xxx
+        loadConfigs(ProtocolConfig.class);
+
+        // load dubbo.registries.xxx
+        loadConfigs(RegistryConfig.class);
+
+        // load dubbo.providers.xxx
+        loadConfigs(ProviderConfig.class);
+
+        // load dubbo.consumers.xxx
+        loadConfigs(ConsumerConfig.class);
+
+        // load dubbo.metadata-report.xxx
+        loadConfigs(MetadataReportConfig.class);
+
+        // config centers has bean loaded before starting config center
+        //loadConfigs(ConfigCenterConfig.class);
+
     }
 
+    private <T extends AbstractConfig> void loadConfigs(Class<T> cls) {
+        // load multiple configs with id
+        Set<String> configIds = this.getConfigIds(cls);
+        configIds.forEach(id -> {
+            if (!configManager.getConfig(cls, id).isPresent()) {
+                T config = null;
+                try {
+                    config = cls.newInstance();
+                    config.setId(id);
+                } catch (Exception e) {
+                    throw new IllegalStateException("create config instance failed, id: " + id + ", type:" + cls.getSimpleName());
+                }
+
+                String key = null;
+                boolean addDefaultNameConfig = false;
+                try {
+                    // add default name config (same as id), e.g. dubbo.protocols.rest.port=1234
+                    key = DUBBO + "." + AbstractConfig.getPluralTagName(cls) + "." + id + ".name";
+                    if (ConfigUtils.getProperties().getProperty(key) == null) {
+                        ConfigUtils.getProperties().setProperty(key, id);
+                        addDefaultNameConfig = true;
+                    }
+
+                    config.refresh();
+                    configManager.addConfig(config);
+                } catch (Exception e) {
+                    logger.error("load config failed, id: " + id + ", type:" + cls.getSimpleName(), e);
+                    throw new IllegalStateException("load config failed, id: " + id + ", type:" + cls.getSimpleName());
+                } finally {
+                    if (addDefaultNameConfig && key != null) {
+                        ConfigUtils.getProperties().remove(key);
+                    }
+                }
+            }
+        });
+
+        // If none config of the type, try load single config
+        if (configManager.getConfigs(cls).isEmpty()) {
+            // load single config
+            Environment env = ApplicationModel.getEnvironment();
+            List<Map<String, String>> configurationMaps = env.getConfigurationMaps();
+            if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
+                T config = null;
+                try {
+                    config = cls.newInstance();
+                    config.refresh();
+                } catch (Exception e) {
+                    throw new IllegalStateException("create default config instance failed, type:" + cls.getSimpleName());
+                }
+
+                configManager.addConfig(config);
+            }
+        }
+
+    }
+
+    /**
+     * Search props and extract config ids of specify type.
+     * <pre>
+     * # properties
+     * dubbo.registries.registry1.address=xxx
+     * dubbo.registries.registry2.port=xxx
+     *
+     * # extract
+     * Set configIds = getConfigIds(RegistryConfig.class)
+     *
+     * # result
+     * configIds: ["registry1", "registry2"]
+     * </pre>
+     *
+     * @param clazz config type
+     * @return ids of specify config type
+     */
+    private Set<String> getConfigIds(Class<? extends AbstractConfig> clazz) {
+        String prefix = CommonConstants.DUBBO + "." + AbstractConfig.getPluralTagName(clazz) + ".";
+        Environment environment = ApplicationModel.getEnvironment();
+        return ConfigurationUtils.getSubIds(environment.getConfigurationMaps(), prefix);
+    }
 
     /**
      * Initialize {@link MetadataService} from {@link WritableMetadataService}'s extension
@@ -881,6 +1058,10 @@ public class DubboBootstrap {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             startup.set(false);
+            initialized.set(false);
+            shutdown.set(false);
+            awaited.set(false);
+
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
@@ -908,16 +1089,14 @@ public class DubboBootstrap {
                     if (logger.isInfoEnabled()) {
                         logger.info(NAME + " is ready.");
                     }
-                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
-                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
+                    onStart();
                 }).start();
             } else {
                 startup.set(true);
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is ready.");
                 }
-                ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
-                exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
+                onStart();
             }
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
@@ -1040,9 +1219,8 @@ public class DubboBootstrap {
                         );
             }
             try {
-                environment.setConfigCenterFirst(configCenter.isHighestPriority());
-                environment.updateExternalConfigurationMap(parseProperties(configContent));
-                environment.updateAppExternalConfigurationMap(parseProperties(appConfigContent));
+                environment.updateExternalConfigMap(parseProperties(configContent));
+                environment.updateAppExternalConfigMap(parseProperties(appConfigContent));
             } catch (IOException e) {
                 throw new IllegalStateException("Failed to parse configurations from Config Center.", e);
             }
@@ -1065,10 +1243,13 @@ public class DubboBootstrap {
     }
 
     private void exportServices() {
-        configManager.getServices().forEach(sc -> {
+        for (ServiceConfigBase sc : configManager.getServices()) {
             // TODO, compatible with ServiceConfig.export()
             ServiceConfig serviceConfig = (ServiceConfig) sc;
             serviceConfig.setBootstrap(this);
+            if (!serviceConfig.isRefreshed()) {
+                serviceConfig.refresh();
+            }
 
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
@@ -1085,7 +1266,7 @@ public class DubboBootstrap {
                 sc.export();
                 exportedServices.add(sc);
             }
-        });
+        }
     }
 
     private void unexportServices() {
@@ -1112,6 +1293,9 @@ public class DubboBootstrap {
             // TODO, compatible with  ReferenceConfig.refer()
             ReferenceConfig referenceConfig = (ReferenceConfig) rc;
             referenceConfig.setBootstrap(this);
+            if (!referenceConfig.isRefreshed()) {
+                referenceConfig.refresh();
+            }
 
             if (rc.shouldInit()) {
                 if (referAsync) {
@@ -1212,29 +1396,55 @@ public class DubboBootstrap {
         if (destroyLock.tryLock()
                 && shutdown.compareAndSet(false, true)) {
             try {
-                DubboShutdownHook.destroyAll();
-
-                if (started.compareAndSet(true, false)
-                        && destroyed.compareAndSet(false, true)) {
-
-                    unregisterServiceInstance();
-                    unexportMetadataService();
-                    unexportServices();
-                    unreferServices();
+                if (destroyed.compareAndSet(false, true)) {
+                    if (started.compareAndSet(true, false)) {
+                        unregisterServiceInstance();
+                        unexportMetadataService();
+                        unexportServices();
+                        unreferServices();
+                    }
 
                     destroyRegistries();
-
+                    destroyProtocols();
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
+                    destroyMetadataReports();
+
+                    // check config
+                    checkConfigState();
+
                     clear();
                     shutdown();
                     release();
-                    ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
-                    exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
+
+                    onStop();
                 }
+
+                destroyDynamicConfigurations();
+                ShutdownHookCallbacks.INSTANCE.clear();
             } finally {
+                initialized.set(false);
+                startup.set(false);
                 destroyLock.unlock();
             }
+        }
+    }
+
+    private void onStart() {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
+    }
+
+    private void onStop() {
+        ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
+        exts.getSupportedExtensionInstances().forEach(ext -> ext.onStop(this));
+    }
+
+    private void checkConfigState() {
+        // config manager should not be cleared at this moment
+        if (!ignoreConfigState && !configManager.getApplication().isPresent()) {
+            logger.error("Dubbo config was cleaned prematurely");
+            throw new IllegalStateException("Dubbo config was cleaned prematurely");
         }
     }
 
@@ -1246,6 +1456,23 @@ public class DubboBootstrap {
         AbstractRegistryFactory.destroyAll();
     }
 
+    /**
+     * Destroy all the protocols.
+     */
+    private void destroyProtocols() {
+        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
+        for (String protocolName : loader.getLoadedExtensions()) {
+            try {
+                Protocol protocol = loader.getLoadedExtension(protocolName);
+                if (protocol != null) {
+                    protocol.destroy();
+                }
+            } catch (Throwable t) {
+                logger.warn(t.getMessage(), t);
+            }
+        }
+    }
+
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
             execute(serviceDiscovery::destroy);
@@ -1253,6 +1480,17 @@ public class DubboBootstrap {
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
         }
+    }
+
+    private void destroyMetadataReports() {
+        AbstractMetadataReportFactory.destroy();
+        ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
+    }
+
+    private void destroyDynamicConfigurations() {
+        // DynamicConfiguration may be cached somewhere, and maybe used during destroy
+        // destroy them may cause some troubles, so just clear instances cache
+        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     private void clear() {
@@ -1278,6 +1516,11 @@ public class DubboBootstrap {
                     logger.info(NAME + " is about to shutdown...");
                 }
                 condition.signalAll();
+                // sleep
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
             }
         });
     }
@@ -1299,68 +1542,7 @@ public class DubboBootstrap {
     }
 
     public ApplicationConfig getApplication() {
-        ApplicationConfig application = configManager
-                .getApplication()
-                .orElseGet(() -> {
-                    ApplicationConfig applicationConfig = new ApplicationConfig();
-                    configManager.setApplication(applicationConfig);
-                    return applicationConfig;
-                });
-
-        if (!application.isRefreshed()) {
-            application.refresh();
-        }
-        return application;
+        return configManager.getApplicationOrElseThrow();
     }
 
-    private MonitorConfig getMonitor() {
-        MonitorConfig monitor = configManager
-                .getMonitor()
-                .orElseGet(() -> {
-                    MonitorConfig monitorConfig = new MonitorConfig();
-                    configManager.setMonitor(monitorConfig);
-                    return monitorConfig;
-                });
-
-        monitor.refresh();
-        return monitor;
-    }
-
-    private MetricsConfig getMetrics() {
-        MetricsConfig metrics = configManager
-                .getMetrics()
-                .orElseGet(() -> {
-                    MetricsConfig metricsConfig = new MetricsConfig();
-                    configManager.setMetrics(metricsConfig);
-                    return metricsConfig;
-                });
-        metrics.refresh();
-        return metrics;
-    }
-
-    private ModuleConfig getModule() {
-        ModuleConfig module = configManager
-                .getModule()
-                .orElseGet(() -> {
-                    ModuleConfig moduleConfig = new ModuleConfig();
-                    configManager.setModule(moduleConfig);
-                    return moduleConfig;
-                });
-
-        module.refresh();
-        return module;
-    }
-
-    private SslConfig getSsl() {
-        SslConfig ssl = configManager
-                .getSsl()
-                .orElseGet(() -> {
-                    SslConfig sslConfig = new SslConfig();
-                    configManager.setSsl(sslConfig);
-                    return sslConfig;
-                });
-
-        ssl.refresh();
-        return ssl;
-    }
 }

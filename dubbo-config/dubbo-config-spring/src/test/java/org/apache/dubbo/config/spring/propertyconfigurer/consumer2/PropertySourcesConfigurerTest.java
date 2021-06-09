@@ -21,6 +21,7 @@ import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,6 @@ public class PropertySourcesConfigurerTest {
     public static void setUp() {
         DubboBootstrap.reset();
         ZooKeeperServer.start();
-//        ExtensionLoader.resetExtensionLoader(DynamicConfigurationFactory.class);
     }
 
     @Test
@@ -53,15 +53,19 @@ public class PropertySourcesConfigurerTest {
             } catch (InterruptedException e) {
             }
 
+            // reset config
+            DubboBootstrap.reset(false);
+
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
-            context.start();
-
-            HelloService service = (HelloService) context.getBean("demoService");
-            String result = service.sayHello("world");
-            System.out.println("result: " + result);
-            Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
-
-            context.close();
+            try {
+                context.start();
+                HelloService service = (HelloService) context.getBean("demoService");
+                String result = service.sayHello("world");
+                System.out.println("result: " + result);
+                Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", result);
+            } finally {
+                context.close();
+            }
 
         } finally {
             providerContext.close();
