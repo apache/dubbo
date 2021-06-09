@@ -26,7 +26,6 @@ import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * {@link ExtensionLoader}, {@code DubboBootstrap} and this class are at present designed to be
