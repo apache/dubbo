@@ -180,7 +180,8 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
-            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
+            String path = buildServicePath(serviceName);
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(path);
             watcher.stopWatching();
         });
     }
@@ -200,7 +201,6 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         } catch (KeeperException.NodeExistsException e) {
             // ignored
             if (logger.isDebugEnabled()) {
-
                 logger.debug(e);
             }
         } catch (Exception e) {
