@@ -258,6 +258,7 @@
             <id>checkstyle</id>
             <properties>
                 <checkstyle.skip>false</checkstyle.skip>
+                <checkstyle_unix.skip>false</checkstyle_unix.skip>
             </properties>
         </profile>
         <profile>
@@ -324,6 +325,15 @@
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
                                     <skip>${checkstyle_unix.skip}</skip>
+                                    <sourceDirectories>
+                                        ${project.build.sourceDirectory}
+                                    </sourceDirectories>
+                                    <sourceDirectories>
+                                        ${project.build.testSourceDirectory}
+                                    </sourceDirectories>
+                                    <resourceExcludes>
+                                        **/target/**/*
+                                    </resourceExcludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -625,6 +635,7 @@
                         </exclude>
                         <exclude>.github/**</exclude>
                         <exclude>compiler/**</exclude>
+                        <exclude>**/generated/**</exclude>
                         <!-- exclude mockito extensions spi files -->
                         <exclude>**/mockito-extensions/*</exclude>
                     </excludes>
