@@ -316,7 +316,7 @@
                                 </goals>
                             </execution>
                             <execution>
-                                <id>checkstyle-validation</id>
+                                <id>checkstyle-unix-validation</id>
                                 <phase>validate</phase>
                                 <configuration>
                                     <configLocation>codestyle/checkstyle_unix.xml</configLocation>
