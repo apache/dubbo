@@ -325,14 +325,11 @@
                                     <consoleOutput>true</consoleOutput>
                                     <failOnViolation>true</failOnViolation>
                                     <skip>${checkstyle_unix.skip}</skip>
-                                    <sourceDirectories>
-                                        ${project.build.sourceDirectory}
-                                    </sourceDirectories>
-                                    <sourceDirectories>
-                                        ${project.build.testSourceDirectory}
-                                    </sourceDirectories>
                                     <resourceExcludes>
                                         **/target/**/*
+                                    </resourceExcludes>
+                                    <resourceExcludes>
+                                        **/generated/**/*
                                     </resourceExcludes>
                                 </configuration>
                                 <goals>
