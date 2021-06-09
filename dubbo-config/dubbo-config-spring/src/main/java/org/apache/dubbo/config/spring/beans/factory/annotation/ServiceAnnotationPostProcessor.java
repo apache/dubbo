@@ -27,13 +27,13 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -42,11 +42,12 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.SingletonBeanRegistry;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
-import org.springframework.beans.factory.support.BeanDefinitionOverrideException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.xml.BeanDefinitionParser;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
@@ -57,10 +58,15 @@ import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.MethodMetadata;
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,7 +77,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
@@ -91,7 +96,9 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * @since 2.7.7
  */
 public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
-        ResourceLoaderAware, BeanClassLoaderAware {
+        ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware {
+
+    public static final String BEAN_NAME = "dubboServiceAnnotationPostProcessor";
 
     private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
@@ -112,7 +119,11 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     private ResourceLoader resourceLoader;
 
     private ClassLoader classLoader;
+
     private BeanDefinitionRegistry registry;
+
+    private ServicePackagesHolder servicePackagesHolder;
+
 
     public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
@@ -130,13 +141,10 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         this.registry = registry;
 
-        // @since 2.7.5
-        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME, DubboBootstrapApplicationListener.class);
-
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
         if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
-            registerServiceBeans(resolvedPackagesToScan, registry);
+            scanServiceBeans(resolvedPackagesToScan, registry);
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
@@ -146,26 +154,34 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     }
 
     /**
-     * Registers Beans whose classes was annotated {@link Service}
+     * Scan and registers service beans whose classes was annotated {@link Service}
      *
      * @param packagesToScan The base packages to scan
      * @param registry       {@link BeanDefinitionRegistry}
      */
-    private void registerServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+    private void scanServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
         DubboClassPathBeanDefinitionScanner scanner =
                 new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
 
         BeanNameGenerator beanNameGenerator = resolveBeanNameGenerator(registry);
-
         scanner.setBeanNameGenerator(beanNameGenerator);
-
-        // refactor @since 2.7.7
-        serviceAnnotationTypes.forEach(annotationType -> {
+        for (Class<? extends Annotation> annotationType : serviceAnnotationTypes) {
             scanner.addIncludeFilter(new AnnotationTypeFilter(annotationType));
-        });
+        }
+
+        ScanExcludeFilter scanExcludeFilter = new ScanExcludeFilter();
+        scanner.addExcludeFilter(scanExcludeFilter);
 
         for (String packageToScan : packagesToScan) {
+
+            // avoid duplicated scans
+            if (servicePackagesHolder.isPackageScanned(packageToScan)) {
+                if (logger.isInfoEnabled()) {
+                    logger.info("Ignore package who has already bean scanned: " + packageToScan);
+                }
+                continue;
+            }
 
             // Registers @Service Bean first
             scanner.scan(packageToScan);
@@ -175,28 +191,26 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                     findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
 
             if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
+                if (logger.isInfoEnabled()) {
+                    List<String> serviceClasses = new ArrayList<>(beanDefinitionHolders.size());
+                    for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
+                        serviceClasses.add(beanDefinitionHolder.getBeanDefinition().getBeanClassName());
+                    }
+                    logger.info("Found " + beanDefinitionHolders.size() + " classes annotated by Dubbo @Service under package [" + packageToScan + "]: " + serviceClasses);
+                }
 
                 for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
-                    registerServiceBean(beanDefinitionHolder, registry, scanner);
+                    processScannedBeanDefinition(beanDefinitionHolder, registry, scanner);
                 }
-
-                if (logger.isInfoEnabled()) {
-                    logger.info(beanDefinitionHolders.size() + " annotated Dubbo's @Service Components { " +
-                            beanDefinitionHolders +
-                            " } were scanned under package[" + packageToScan + "]");
-                }
-
             } else {
-
                 if (logger.isWarnEnabled()) {
-                    logger.warn("No Spring Bean annotating Dubbo's @Service was found under package["
-                            + packageToScan + "]");
+                    logger.warn("No class annotated by Dubbo @Service was found under package ["
+                            + packageToScan + "], ignored classes count: " + scanExcludeFilter.getExcludedCount());
                 }
-
             }
 
+            servicePackagesHolder.addScannedPackage(packageToScan);
         }
-
     }
 
     /**
@@ -278,8 +292,8 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * @see ServiceBean
      * @see BeanDefinition
      */
-    private void registerServiceBean(BeanDefinitionHolder beanDefinitionHolder, BeanDefinitionRegistry registry,
-                                     DubboClassPathBeanDefinitionScanner scanner) {
+    private void processScannedBeanDefinition(BeanDefinitionHolder beanDefinitionHolder, BeanDefinitionRegistry registry,
+                                              DubboClassPathBeanDefinitionScanner scanner) {
 
         Class<?> beanClass = resolveClass(beanDefinitionHolder);
 
@@ -298,24 +312,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         AbstractBeanDefinition serviceBeanDefinition =
                 buildServiceBeanDefinition(serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
 
-        if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
-            registry.registerBeanDefinition(beanName, serviceBeanDefinition);
-
-            if (logger.isInfoEnabled()) {
-                logger.info("The BeanDefinition[" + serviceBeanDefinition +
-                        "] of ServiceBean has been registered with name : " + beanName);
-            }
-
-        } else {
-
-            //TODO throw exception
-            if (logger.isWarnEnabled()) {
-                logger.warn("The Duplicated BeanDefinition[" + serviceBeanDefinition +
-                        "] of ServiceBean[ bean name : " + beanName +
-                        "] was be found , Did @DubboComponentScan scan to same package in many times?");
-            }
-
-        }
+        registerServiceBeanDefinition(beanName, serviceBeanDefinition, interfaceClass);
 
     }
 
@@ -510,7 +507,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             Map<String, Object> annotationAttributes = getServiceAnnotationAttributes(beanDefinition);
             if (annotationAttributes != null) {
                 // process @DubboService at java-config @bean method
-                processServiceAnnotatedBeanDefinition(beanName, (AnnotatedBeanDefinition) beanDefinition, annotationAttributes);
+                processAnnotatedBeanDefinition(beanName, (AnnotatedBeanDefinition) beanDefinition, annotationAttributes);
             }
         }
     }
@@ -554,7 +551,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * @param refServiceBeanDefinition
      * @param attributes
      */
-    private void processServiceAnnotatedBeanDefinition(String refServiceBeanName, AnnotatedBeanDefinition refServiceBeanDefinition, Map<String, Object> attributes) {
+    private void processAnnotatedBeanDefinition(String refServiceBeanName, AnnotatedBeanDefinition refServiceBeanDefinition, Map<String, Object> attributes) {
 
         Map<String, Object> serviceAnnotationAttributes = new LinkedHashMap<>(attributes);
 
@@ -572,14 +569,28 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         // set id
         serviceBeanDefinition.getPropertyValues().add(Constants.ID, serviceBeanName);
 
+        registerServiceBeanDefinition(serviceBeanName, serviceBeanDefinition, interfaceClass);
+    }
+
+    private void registerServiceBeanDefinition(String serviceBeanName, AbstractBeanDefinition serviceBeanDefinition, Class<?> interfaceClass) {
         // check service bean
         if (registry.containsBeanDefinition(serviceBeanName)) {
             BeanDefinition existingDefinition = registry.getBeanDefinition(serviceBeanName);
-            logger.error("Found duplicated service bean definition: " + serviceBeanName +
-                    ", existing: " + existingDefinition + ", new: " + serviceBeanDefinition);
-            throw new BeanDefinitionOverrideException(serviceBeanName, serviceBeanDefinition, existingDefinition);
+            if (existingDefinition.equals(serviceBeanDefinition)) {
+                // exist equipment bean definition
+                return;
+            }
+
+            String msg = "Found duplicated BeanDefinition of service interface [" + interfaceClass.getName() + "] with bean name [" + serviceBeanName +
+                    "], existing definition [ " + existingDefinition + "], new definition [" + serviceBeanDefinition + "]";
+            logger.error(msg);
+            throw new BeanDefinitionStoreException(serviceBeanDefinition.getResourceDescription(), serviceBeanName, msg);
         }
+
         registry.registerBeanDefinition(serviceBeanName, serviceBeanDefinition);
+        if (logger.isInfoEnabled()) {
+            logger.info("Register ServiceBean[" + serviceBeanName + "]: " + serviceBeanDefinition);
+        }
     }
 
     @Override
@@ -597,4 +608,37 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         this.classLoader = classLoader;
     }
 
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.servicePackagesHolder = applicationContext.getBean(ServicePackagesHolder.class);
+    }
+
+    private class ScanExcludeFilter implements TypeFilter {
+
+        private int excludedCount;
+
+        @Override
+        public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
+            String className = metadataReader.getClassMetadata().getClassName();
+
+            int endIndex = className.lastIndexOf(".");
+            if (endIndex < 0) {
+                return false;
+            }
+
+            String packageName = className.substring(0, endIndex+1);
+            boolean excluded = servicePackagesHolder.isPackageScanned(packageName);
+            if (excluded) {
+                excludedCount ++;
+                if (logger.isInfoEnabled()) {
+                    logger.info("Ignore class who has already bean scanned: " + className);
+                }
+            }
+            return excluded;
+        }
+
+        public int getExcludedCount() {
+            return excludedCount;
+        }
+    }
 }
