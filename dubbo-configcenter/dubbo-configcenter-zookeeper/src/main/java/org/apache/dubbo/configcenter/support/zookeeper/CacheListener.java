@@ -57,6 +57,10 @@ public class CacheListener implements DataListener {
         }
     }
 
+    public void removeAllListeners() {
+        keyListeners.clear();
+    }
+
     public Set<ConfigurationListener> getConfigurationListeners(String key) {
         return keyListeners.get(key);
     }

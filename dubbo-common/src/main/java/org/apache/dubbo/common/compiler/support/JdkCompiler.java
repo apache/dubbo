@@ -53,6 +53,8 @@ import java.util.Set;
  */
 public class JdkCompiler extends AbstractCompiler {
 
+    public static final String NAME = "jdk";
+
     private final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     private final DiagnosticCollector<JavaFileObject> diagnosticCollector = new DiagnosticCollector<JavaFileObject>();

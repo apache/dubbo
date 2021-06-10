@@ -253,6 +253,14 @@ public interface CommonConstants {
      */
     String DUBBO_PREFERRED_NETWORK_INTERFACE = "dubbo.network.interface.preferred";
 
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
     @Deprecated
     String SHUTDOWN_WAIT_SECONDS_KEY = "dubbo.service.shutdown.wait.seconds";
     String SHUTDOWN_WAIT_KEY = "dubbo.service.shutdown.wait";
@@ -401,4 +409,9 @@ public interface CommonConstants {
     String ON_DISCONNECT_KEY = "ondisconnect";
 
     String TOKEN = "token";
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
+    String DISPATHER = "dispather";
+
 }

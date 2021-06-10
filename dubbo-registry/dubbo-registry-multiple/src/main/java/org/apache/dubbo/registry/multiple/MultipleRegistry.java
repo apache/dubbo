@@ -43,7 +43,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  */
 public class MultipleRegistry extends AbstractRegistry {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";

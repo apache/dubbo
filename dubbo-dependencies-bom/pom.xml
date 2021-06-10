@@ -93,6 +93,7 @@
         <javassist_version>3.23.1-GA</javassist_version>
         <netty_version>3.2.5.Final</netty_version>
         <netty4_version>4.1.51.Final</netty4_version>
+        <netty4_ssl_version>2.0.39.Final</netty4_ssl_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.4.4</grizzly_version>
         <httpclient_version>4.5.3</httpclient_version>
@@ -130,7 +131,7 @@
         <resteasy_version>3.0.19.Final</resteasy_version>
         <tomcat_embed_version>8.5.31</tomcat_embed_version>
         <jetcd_version>0.5.3</jetcd_version>
-        <nacos_version>1.4.1</nacos_version>
+        <nacos_version>1.4.2</nacos_version>
         <grpc.version>1.31.1</grpc.version>
         <!-- Log libs -->
         <slf4j_version>1.7.25</slf4j_version>
@@ -194,6 +195,12 @@
                 <groupId>io.netty</groupId>
                 <artifactId>netty-all</artifactId>
                 <version>${netty4_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-tcnative-boringssl-static</artifactId>
+                <version>${netty4_ssl_version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.apache.mina</groupId>

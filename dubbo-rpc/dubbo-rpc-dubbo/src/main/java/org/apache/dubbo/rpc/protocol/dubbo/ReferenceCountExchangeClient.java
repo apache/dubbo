@@ -40,7 +40,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.LAZY_CONNECT_INITIAL
 @SuppressWarnings("deprecation")
 final class ReferenceCountExchangeClient implements ExchangeClient {
 
-    private final static Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReferenceCountExchangeClient.class);
     private final URL url;
     private final AtomicInteger referenceCount = new AtomicInteger(0);
     private final AtomicInteger disconnectCount = new AtomicInteger(0);

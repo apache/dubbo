@@ -24,7 +24,6 @@ import org.apache.dubbo.metadata.MetadataParamsFilter;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
-import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
@@ -40,13 +39,11 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        Map<String, String> params = new HashMap<>();
 
         ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
         Set<MetadataParamsFilter> paramsFilters = loader.getSupportedExtensionInstances();
 
-        InMemoryWritableMetadataService localMetadataService
-                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        WritableMetadataService localMetadataService = WritableMetadataService.getDefaultExtension();
         // pick the first interface metadata available.
         // FIXME, check the same key in different urls has the same value
         MetadataInfo metadataInfo = localMetadataService.getMetadataInfos().values().iterator().next();
