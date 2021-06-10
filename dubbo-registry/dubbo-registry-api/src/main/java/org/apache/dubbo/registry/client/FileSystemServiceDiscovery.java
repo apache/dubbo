@@ -52,7 +52,7 @@ import static org.apache.dubbo.common.config.configcenter.file.FileSystemDynamic
  * @see FileSystemDynamicConfiguration
  * @since 2.7.5
  */
-public class FileSystemServiceDiscovery implements ServiceDiscovery {
+public class FileSystemServiceDiscovery extends AbstractServiceDiscovery {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -60,10 +60,8 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery {
 
     private FileSystemDynamicConfiguration dynamicConfiguration;
 
-    private ServiceInstance serviceInstance;
-
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         dynamicConfiguration = createDynamicConfiguration(registryURL);
         registerDubboShutdownHook();
         registerListener();
@@ -86,7 +84,7 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void doDestroy() throws Exception {
         dynamicConfiguration.close();
         releaseAndRemoveRegistrationFiles();
     }
@@ -128,13 +126,9 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery {
         return null;
     }
 
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return serviceInstance;
-    }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
         this.serviceInstance = serviceInstance;
         String serviceInstanceId = getServiceInstanceId(serviceInstance);
         String serviceName = getServiceName(serviceInstance);
@@ -168,12 +162,12 @@ public class FileSystemServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         register(serviceInstance);
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         String key = getServiceInstanceId(serviceInstance);
         String group = getServiceName(serviceInstance);
         releaseFileLock(key, group);
