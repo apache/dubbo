@@ -51,8 +51,12 @@ public interface GenericService {
         // Use a custom Executor?
         return CompletableFuture.supplyAsync(() -> {
             Object object = $invoke(method, parameterTypes, args);
-            if (object instanceof CompletableFuture) {
-                return ((CompletableFuture) object).get();
+            try {
+                if (object instanceof CompletableFuture) {
+                    return ((CompletableFuture) object).get();
+                }
+            } catch (Exception e) {
+                throw new GenericException(e);
             }
             return object;
         });
