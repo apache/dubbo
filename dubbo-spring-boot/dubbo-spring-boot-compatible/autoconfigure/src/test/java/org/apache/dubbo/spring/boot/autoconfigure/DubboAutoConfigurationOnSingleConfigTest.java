@@ -24,7 +24,6 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.After;
 import org.junit.Assert;

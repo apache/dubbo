@@ -68,7 +68,7 @@ public class NettyServer extends AbstractServer implements RemotingServer {
     /**
      * the boss channel that receive connections and dispatch these to worker channel.
      */
-	private io.netty.channel.Channel channel;
+    private io.netty.channel.Channel channel;
 
     private EventLoopGroup bossGroup;
     private EventLoopGroup workerGroup;

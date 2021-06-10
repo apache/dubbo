@@ -809,6 +809,6 @@ public class HashedWheelTimer implements Timer {
     private static final boolean IS_OS_WINDOWS = System.getProperty("os.name", "").toLowerCase(Locale.US).contains("win");
     
     private boolean isWindows() {
-    	return IS_OS_WINDOWS;
+        return IS_OS_WINDOWS;
     }
 }
