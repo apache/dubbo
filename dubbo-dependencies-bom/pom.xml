@@ -89,6 +89,7 @@
 
     <properties>
         <!-- Common libs -->
+        <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
         <spring_version>5.2.8.RELEASE</spring_version>
         <javassist_version>3.23.1-GA</javassist_version>
         <eclipse_collections_version>10.4.0</eclipse_collections_version>

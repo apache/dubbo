@@ -31,4 +31,15 @@ public interface Constants {
      */
     String REFERENCE_SOURCES = "referenceSources";
 
+    /**
+     * The name of an attribute that can be
+     * {@link org.springframework.core.AttributeAccessor#setAttribute set} on a
+     * {@link org.springframework.beans.factory.config.BeanDefinition} so that
+     * factory beans can signal their object type when it can't be deduced from
+     * the factory bean class.
+     * <p/>
+     * From FactoryBean.OBJECT_TYPE_ATTRIBUTE of Spring 5.2.
+     */
+    String OBJECT_TYPE_ATTRIBUTE = "factoryBeanObjectType";
+
 }

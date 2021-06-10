@@ -71,7 +71,7 @@ public class JavaConfigBeanTest {
         SysProps.setProperty("dubbo.protocol.port", "2346");
         String registryAddress = "zookeeper://127.0.0.1:2181";
         SysProps.setProperty("dubbo.registry.address", registryAddress);
-        SysProps.setProperty("dubbo.provider.group", "demo");
+        SysProps.setProperty("dubbo.provider.group", "test");
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(
                 TestConfiguration.class, ConsumerConfiguration.class, ProviderConfiguration.class);
@@ -174,7 +174,7 @@ public class JavaConfigBeanTest {
     static class ProviderConfiguration {
 
         @Bean
-        @DubboService
+        @DubboService(group = "demo")
         public DemoService demoServiceImpl() {
             return new DemoServiceImpl();
         }

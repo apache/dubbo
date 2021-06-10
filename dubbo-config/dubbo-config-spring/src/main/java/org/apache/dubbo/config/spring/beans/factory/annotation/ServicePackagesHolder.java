@@ -26,7 +26,9 @@ public class ServicePackagesHolder {
 
     public static final String BEAN_NAME = "dubboServicePackagesHolder";
 
-    private Set<String> scannedPackages = new HashSet<>();
+    private final Set<String> scannedPackages = new HashSet<>();
+
+    private final Set<String> scannedClasses = new HashSet<>();
 
 
     public void addScannedPackage(String apackage) {
@@ -49,6 +51,18 @@ public class ServicePackagesHolder {
             }
         }
         return false;
+    }
+
+    public void addScannedClass(String className) {
+        synchronized (scannedClasses) {
+            scannedClasses.add(className);
+        }
+    }
+
+    public boolean isClassScanned(String className) {
+        synchronized (scannedClasses) {
+            return scannedClasses.contains(className);
+        }
     }
 
     /**

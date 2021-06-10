@@ -62,7 +62,7 @@ public abstract class AbstractRequestAnnotationParameterProcessor extends Abstra
 
     private boolean isDefaultValue(Annotation annotation, String attributeName, Object attributeValue) {
         String defaultValue = AnnotationUtils.getDefaultValue(annotation, attributeName);
-        return Objects.equals(attributeValue, defaultValue);
+        return Objects.deepEquals(attributeValue, defaultValue);
     }
 
     protected boolean isEmpty(String str) {

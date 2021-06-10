@@ -54,7 +54,6 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.MethodMetadata;
@@ -79,6 +78,7 @@ import java.util.Set;
 
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
@@ -201,6 +201,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
                 for (BeanDefinitionHolder beanDefinitionHolder : beanDefinitionHolders) {
                     processScannedBeanDefinition(beanDefinitionHolder, registry, scanner);
+                    servicePackagesHolder.addScannedClass(beanDefinitionHolder.getBeanDefinition().getBeanClassName());
                 }
             } else {
                 if (logger.isWarnEnabled()) {
@@ -521,11 +522,14 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
             MethodMetadata factoryMethodMetadata = annotatedBeanDefinition.getFactoryMethodMetadata();
             if (factoryMethodMetadata != null) {
-                MergedAnnotations mergedAnnotations = factoryMethodMetadata.getAnnotations();
                 // try all dubbo service annotation types
                 for (Class<? extends Annotation> annotationType : serviceAnnotationTypes) {
-                    if (mergedAnnotations.isPresent(annotationType)) {
-                        return mergedAnnotations.get(annotationType).filterDefaultValues().asMap();
+                    if (factoryMethodMetadata.isAnnotated(annotationType.getName())) {
+                        // Since Spring 5.2
+                        // return factoryMethodMetadata.getAnnotations().get(annotationType).filterDefaultValues().asMap();
+                        // Compatible with Spring 4.x
+                        Map<String, Object> annotationAttributes = factoryMethodMetadata.getAnnotationAttributes(annotationType.getName());
+                        return filterDefaultValues(annotationType, annotationAttributes);
                     }
                 }
             }
@@ -620,14 +624,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         @Override
         public boolean match(MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) throws IOException {
             String className = metadataReader.getClassMetadata().getClassName();
-
-            int endIndex = className.lastIndexOf(".");
-            if (endIndex < 0) {
-                return false;
-            }
-
-            String packageName = className.substring(0, endIndex+1);
-            boolean excluded = servicePackagesHolder.isPackageScanned(packageName);
+            boolean excluded = servicePackagesHolder.isClassScanned(className);
             if (excluded) {
                 excludedCount ++;
             }

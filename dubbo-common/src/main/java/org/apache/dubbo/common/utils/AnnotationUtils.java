@@ -25,9 +25,11 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -478,5 +480,57 @@ public interface AnnotationUtils {
     static <T> T getDefaultValue(Class<? extends Annotation> annotationType, String attributeName) {
         Method method = findMethod(annotationType, attributeName);
         return (T) (method == null ? null : method.getDefaultValue());
+    }
+
+    /**
+     * Filter default value of Annotation type
+     * @param annotationType annotation type from {@link Annotation#annotationType()}
+     * @param attributes
+     * @return
+     */
+    static Map<String, Object> filterDefaultValues(Class<? extends Annotation> annotationType, Map<String, Object> attributes) {
+        Map<String, Object> filteredAttributes = new LinkedHashMap<>(attributes.size());
+        attributes.forEach((key,val) -> {
+            if (!Objects.deepEquals(val, getDefaultValue(annotationType, key))) {
+                filteredAttributes.put(key, val);
+            }
+        });
+        return filteredAttributes;
+    }
+
+    /**
+     * Filter default value of Annotation type
+     * @param annotation
+     * @param attributes
+     * @return
+     */
+    static Map<String, Object> filterDefaultValues(Annotation annotation, Map<String, Object> attributes) {
+        return filterDefaultValues(annotation.annotationType(), attributes);
+    }
+
+    /**
+     * Get attributes of annotation
+     * @param annotation
+     * @return
+     */
+    static Map<String, Object> getAttributes(Annotation annotation, boolean filterDefaultValue) {
+        Class<?> annotationType = annotation.annotationType();
+        Method[] methods = annotationType.getMethods();
+        Map<String, Object> attributes = new LinkedHashMap<>(methods.length);
+        for (Method method : methods) {
+            try {
+                if (method.getDeclaringClass() == Annotation.class) {
+                    continue;
+                }
+                String name = method.getName();
+                Object value = method.invoke(annotation);
+                if (!filterDefaultValue || !Objects.deepEquals(value, method.getDefaultValue())) {
+                    attributes.put(name, value);
+                }
+            } catch (Exception e) {
+                throw new IllegalStateException("get attribute value of annotation failed: " + method, e);
+            }
+        }
+        return attributes;
     }
 }
