@@ -199,8 +199,6 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
-    String MAPPING_KEY = "mapping-type";
-
     String CONFIG_MAPPING_TYPE = "config";
 
     String METADATA_MAPPING_TYPE = "metadata";

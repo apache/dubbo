@@ -26,6 +26,8 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import org.apache.zookeeper.data.Stat;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -48,7 +50,6 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
     private static final int DEFAULT_QUEUE = 10000;
     private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
-
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -92,10 +93,18 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    public boolean publishConfigCas(String key, String group, String content, Object stat) {
-        String pathKey = buildPathKey(group, key);
-        zkClient.createOrUpdate(pathKey, content, false, stat);
-        return true;
+    public boolean publishConfigCas(String key, String group, String content, Object ticket) {
+        try {
+            if (ticket != null && !(ticket instanceof Stat)) {
+                throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
+            }
+            String pathKey = buildPathKey(group, key);
+            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
+            return true;
+        } catch (Exception e) {
+            logger.warn("zookeeper publishConfigCas failed.", e);
+            return false;
+        }
     }
 
     @Override
@@ -133,10 +142,5 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         if (CollectionUtils.isNotEmpty(configurationListeners)) {
             zkClient.removeDataListener(pathKey, cacheListener);
         }
-    }
-
-    @Override
-    public boolean hasSupportCas() {
-        return true;
     }
 }

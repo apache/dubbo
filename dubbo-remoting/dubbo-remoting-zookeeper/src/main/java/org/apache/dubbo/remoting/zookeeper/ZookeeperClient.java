@@ -61,7 +61,7 @@ public interface ZookeeperClient {
 
     void create(String path, String content, boolean ephemeral);
 
-    void createOrUpdate(String path, String content, boolean ephemeral, Object stat);
+    void createOrUpdate(String path, String content, boolean ephemeral, int ticket);
 
     String getContent(String path);
 

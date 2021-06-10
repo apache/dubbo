@@ -42,6 +42,7 @@ import java.util.concurrent.CountDownLatch;
 
 import static java.util.Arrays.asList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -150,11 +151,7 @@ public class ZookeeperDynamicConfigurationTest {
         configItem = configuration.getConfigItem(key, group);
         assertEquals("test", configItem.getContent());
         assertTrue(configuration.publishConfigCas(key, group, "newtest", configItem.getStat()));
-        try {
-            configuration.publishConfigCas(key, group, "newtest2", configItem.getStat());
-        } catch (Exception e) {
-            assertTrue(e.getMessage().contains("KeeperErrorCode = BadVersion"));
-        }
+        assertFalse(configuration.publishConfigCas(key, group, "newtest2", configItem.getStat()));
         assertEquals("newtest", configuration.getConfigItem(key, group).getContent());
     }
 

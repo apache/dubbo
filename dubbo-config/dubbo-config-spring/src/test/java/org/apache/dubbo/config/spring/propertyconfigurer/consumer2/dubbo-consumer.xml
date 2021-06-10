@@ -28,7 +28,6 @@
     </bean>
 
     <dubbo:application name="demo-consumer">
-        <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
     <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
