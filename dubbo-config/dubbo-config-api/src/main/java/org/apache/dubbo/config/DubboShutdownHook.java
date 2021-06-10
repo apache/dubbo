@@ -16,17 +16,9 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.Protocol;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,8 +46,6 @@ public class DubboShutdownHook extends Thread {
      */
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
 
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
-
     private DubboShutdownHook(String name) {
         super(name);
     }
@@ -66,12 +56,14 @@ public class DubboShutdownHook extends Thread {
 
     @Override
     public void run() {
-        if (logger.isInfoEnabled()) {
-            logger.info("Run shutdown hook now.");
-        }
+        if (destroyed.compareAndSet(false, true)) {
+            if (logger.isInfoEnabled()) {
+                logger.info("Run shutdown hook now.");
+            }
 
-        callback();
-        doDestroy();
+            callback();
+            doDestroy();
+        }
     }
 
     /**
@@ -92,7 +84,6 @@ public class DubboShutdownHook extends Thread {
         if (registered.compareAndSet(false, true)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
-            dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -103,7 +94,6 @@ public class DubboShutdownHook extends Thread {
         if (registered.compareAndSet(true, false)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
-            dispatch(new DubboShutdownHookUnregisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -111,39 +101,13 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the resources, including registries and protocols.
      */
     public void doDestroy() {
-        // dispatch the DubboDestroyedEvent @since 2.7.5
-        dispatch(new DubboServiceDestroyedEvent(this));
-    }
-
-    private void dispatch(Event event) {
-        eventDispatcher.dispatch(event);
+        if (logger.isInfoEnabled()) {
+            logger.info("Dubbo Service has been destroyed.");
+        }
     }
 
     public boolean getRegistered() {
         return registered.get();
     }
 
-    public static void destroyAll() {
-        if (destroyed.compareAndSet(false, true)) {
-            AbstractRegistryFactory.destroyAll();
-            destroyProtocols();
-        }
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    public static void destroyProtocols() {
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
-            try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
-                }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
-            }
-        }
-    }
 }

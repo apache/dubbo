@@ -24,6 +24,8 @@ import java.util.Map;
 
 @SPI
 public interface MigrationAddressComparator {
-    <T> boolean shouldMigrate(ClusterInvoker<T> serviceDiscoveryInvoker, ClusterInvoker<T> invoker, MigrationRule rule);
+
+    <T> boolean shouldMigrate(ClusterInvoker<T> newInvoker, ClusterInvoker<T> oldInvoker, MigrationRule rule);
+
     Map<String, Integer> getAddressSize(String displayServiceKey);
 }

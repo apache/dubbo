@@ -40,7 +40,9 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -135,6 +137,9 @@ public class ReferenceBean<T> implements FactoryBean,
     //actual reference config
     private ReferenceConfig referenceConfig;
 
+    // Registration sources of this reference, may be xml file or annotation location
+    private List<Map<String,Object>> sources = new ArrayList<>();
+
     public ReferenceBean() {
         super();
     }
@@ -158,6 +163,30 @@ public class ReferenceBean<T> implements FactoryBean,
         this.setId(name);
     }
 
+    /**
+     * Create bean instance.
+     * <p/>
+     * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to initialize it.
+     * The ReferenceBean is also a FactoryBean.
+     *
+     * <p/>
+     * In addition, if some ReferenceBeans are dependent on beans that are initialized very early,
+     * and dubbo config beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
+     *
+     * <p/>
+     * When it is initialized, only a lazy proxy object will be created,
+     * and dubbo reference-related resources will not be initialized.
+     * <br/>
+     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
+     *
+     * <p/>
+     * Dubbo config beans are initialized in DubboConfigInitializationPostProcessor.
+     * <br/>
+     * The actual references will be processing in DubboBootstrap.referServices().
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
+     * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
+     */
     @Override
     public Object getObject() {
         if (lazyProxy == null) {
@@ -214,6 +243,9 @@ public class ReferenceBean<T> implements FactoryBean,
         Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
         this.interfaceName = actualInterface.getName();
 
+//        this.sources = (List<Map<String, Object>>) beanDefinition.getAttribute(Constants.REFERENCE_SOURCES);
+//        Assert.notNull(this.sources, "The registration sources of this reference is empty");
+
         ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.addReference(this);
     }
@@ -225,11 +257,6 @@ public class ReferenceBean<T> implements FactoryBean,
     @Override
     public void destroy() {
         // do nothing
-    }
-
-    @Deprecated
-    public Object get() {
-        return referenceConfig.get();
     }
 
     public String getId() {
@@ -281,7 +308,7 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     /**
-     * create lazy proxy for reference
+     * Create lazy proxy for reference.
      */
     private void createLazyProxy() {
 

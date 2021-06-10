@@ -159,12 +159,6 @@ public class ProviderConfig extends AbstractServiceConfig {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
     }
 
-    @Override
-    @Parameter(excluded = true)
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
     @Parameter(excluded = true)
     public String getHost() {
         return host;

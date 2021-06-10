@@ -191,16 +191,30 @@ public class ApplicationConfig extends AbstractConfig {
         setName(name);
     }
 
-    @Parameter(key = APPLICATION_KEY, required = true, useKeyAsProperty = false)
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (protocol == null) {
+            protocol = DUBBO;
+        }
+        if (hostname == null) {
+            try {
+                hostname = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+                LOGGER.warn("Failed to get the hostname of current instance.", e);
+                hostname = "UNKNOWN";
+            }
+        }
+    }
+
+    @Parameter(key = APPLICATION_KEY, required = true)
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
+        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = "application.version")
@@ -420,19 +434,11 @@ public class ApplicationConfig extends AbstractConfig {
 
     @Parameter(excluded = true)
     public String getHostname() {
-        if (hostname == null) {
-            try {
-                hostname = InetAddress.getLocalHost().getHostName();
-            } catch (UnknownHostException e) {
-                LOGGER.warn("Failed to get the hostname of current instance.", e);
-                hostname = "UNKNOWN";
-            }
-        }
         return hostname;
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return !StringUtils.isEmpty(name);
     }
@@ -491,7 +497,7 @@ public class ApplicationConfig extends AbstractConfig {
 
     @Parameter(excluded = true, key="application-protocol")
     public String getProtocol() {
-        return protocol == null ? DUBBO : protocol;
+        return protocol;
     }
 
     public void setProtocol(String protocol) {
@@ -554,11 +560,14 @@ public class ApplicationConfig extends AbstractConfig {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {
                     extraParameters.forEach((key, value) -> {
-                        String prefix = this.getPrefix() + ".";
-                        if (key.startsWith(prefix)) {
-                            key = key.substring(prefix.length());
+                        for (String prefix : this.getPrefixes()) {
+                            prefix += ".";
+                            if (key.startsWith(prefix)) {
+                                key = key.substring(prefix.length());
+                            }
+                            parameters.put(key, value);
+                            break;
                         }
-                        parameters.put(key, value);
                     });
                 }
             }

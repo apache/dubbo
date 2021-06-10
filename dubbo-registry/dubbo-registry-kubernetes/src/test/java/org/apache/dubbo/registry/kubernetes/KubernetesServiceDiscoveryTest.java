@@ -162,7 +162,7 @@ public class KubernetesServiceDiscoveryTest {
         Thread.sleep(5000);
         ArgumentCaptor<ServiceInstancesChangedEvent> eventArgumentCaptor =
                 ArgumentCaptor.forClass(ServiceInstancesChangedEvent.class);
-        Mockito.verify(mockListener, Mockito.times(2)).onEvent(eventArgumentCaptor.capture());
+        Mockito.verify(mockListener, Mockito.times(1)).onEvent(eventArgumentCaptor.capture());
         Assertions.assertEquals(1, eventArgumentCaptor.getValue().getServiceInstances().size());
 
         serviceDiscovery.unregister(serviceInstance);

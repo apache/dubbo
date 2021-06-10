@@ -31,12 +31,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
-import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -225,26 +221,46 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
-
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
-        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
-    public synchronized void init() {
+    protected synchronized void init() {
         if (initialized) {
             return;
         }
 
+        // Using DubboBootstrap API will associate bootstrap when registering reference.
+        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
+        // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
             bootstrap.reference(this);
         }
 
-        checkAndUpdateSubConfigs();
+        // check bootstrap state
+        if (!bootstrap.isInitialized()) {
+            throw new IllegalStateException("DubboBootstrap is not initialized");
+        }
 
-        checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+
+        //init serivceMetadata
+        initServiceMetadata(consumer);
+        serviceMetadata.setServiceType(getActualInterface());
+        // TODO, uncomment this line once service key is unified
+        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        repository.registerConsumer(
+                serviceMetadata.getServiceKey(),
+                serviceDescriptor,
+                this,
+                null,
+                serviceMetadata);
+
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, CONSUMER_SIDE);
@@ -318,9 +334,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initialized = true;
 
         checkInvokerAvailable();
-
-        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
-        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -453,20 +466,19 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
      * Check each config modules are created properly and override their properties if necessary.
      */
-    public void checkAndUpdateSubConfigs() {
+    protected void checkAndUpdateSubConfigs() {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
-        completeCompoundConfigs(consumer);
+
         // get consumer's global configuration
-        checkDefault();
+        completeCompoundConfigs();
 
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
         configInitializers.forEach(e -> e.initReferConfig(this));
 
-        this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -479,28 +491,31 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterfaceAndMethods(interfaceClass, getMethods());
+            //checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
-        initServiceMetadata(consumer);
-        serviceMetadata.setServiceType(getActualInterface());
-        // TODO, uncomment this line once service key is unified
-        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
-
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerConsumer(
-                serviceMetadata.getServiceKey(),
-                serviceDescriptor,
-                this,
-                null,
-                serviceMetadata);
+        checkStubAndLocal(interfaceClass);
+        ConfigValidationUtils.checkMock(interfaceClass, this);
 
         resolveFile();
         ConfigValidationUtils.validateReferenceConfig(this);
         postProcessConfig();
     }
 
+    @Override
+    protected void postProcessRefresh() {
+        super.postProcessRefresh();
+        checkAndUpdateSubConfigs();
+    }
+
+    protected void completeCompoundConfigs() {
+        super.completeCompoundConfigs(consumer);
+        if (consumer != null) {
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(consumer.getRegistryIds());
+            }
+        }
+    }
 
     /**
      * Figure out should refer the service in the same JVM from configurations. The default behavior is true
@@ -527,16 +542,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         return isJvmRefer;
     }
 
-    /**
-     * Dispatch an {@link Event event}
-     *
-     * @param event an {@link Event event}
-     * @since 2.7.5
-     */
-    protected void dispatch(Event event) {
-        EventDispatcher.getDefaultExtension().dispatch(event);
-    }
-
     public DubboBootstrap getBootstrap() {
         return bootstrap;
     }
@@ -552,7 +557,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     // just for test
-    Invoker<?> getInvoker() {
+    @Deprecated
+    public Invoker<?> getInvoker() {
         return invoker;
     }
 }

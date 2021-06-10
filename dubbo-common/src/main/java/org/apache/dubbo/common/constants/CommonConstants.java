@@ -199,8 +199,6 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
-    String MAPPING_KEY = "mapping-type";
-
     String CONFIG_MAPPING_TYPE = "config";
 
     String METADATA_MAPPING_TYPE = "metadata";
@@ -417,4 +415,9 @@ public interface CommonConstants {
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }

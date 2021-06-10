@@ -22,6 +22,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.core.io.support.ResourcePropertySource;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * {@link DubboConfigConfiguration} Test
@@ -82,18 +84,16 @@ public class DubboConfigConfigurationTest {
     @Test
     public void testMultiple() {
 
+        ZooKeeperServer.start();
+
         context.register(DubboConfigConfiguration.Multiple.class);
         context.refresh();
 
-        // application
-        ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
+        RegistryConfig registry1 = context.getBean("registry1", RegistryConfig.class);
+        Assertions.assertEquals(2181, registry1.getPort());
 
-        ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
-
-        ApplicationConfig applicationBean3 = context.getBean("applicationBean3", ApplicationConfig.class);
-        Assertions.assertEquals("dubbo-demo-application3", applicationBean3.getName());
+        RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
+        Assertions.assertEquals(2182, registry2.getPort());
 
     }
 

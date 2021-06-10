@@ -24,8 +24,6 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
-import static org.apache.dubbo.common.constants.CommonConstants.PROPERTIES_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 
 /**
@@ -36,11 +34,6 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 public class MetadataReportConfig extends AbstractConfig {
 
     private static final long serialVersionUID = 55233L;
-    /**
-     * the value is : metadata-report
-     */
-    private static final String PREFIX_TAG = StringUtils.camelToSplitName(
-            MetadataReportConfig.class.getSimpleName().substring(0, MetadataReportConfig.class.getSimpleName().length() - 6), PROPERTIES_CHAR_SEPARATOR);
 
     // Register center address
     private String address;
@@ -197,13 +190,7 @@ public class MetadataReportConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return StringUtils.isNotEmpty(prefix) ? prefix : (DUBBO + "." + PREFIX_TAG);
-    }
-
-    @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address);
     }

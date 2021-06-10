@@ -777,7 +777,7 @@
         <xsd:attribute name="highest-priority" type="xsd:boolean" use="optional">
             <xsd:annotation>
                 <xsd:documentation>
-                    <![CDATA[ Whether the configs from config center has the highest priority. ]]></xsd:documentation>
+                    <![CDATA[ Deprecated. Whether the configs from config center has the highest priority. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="include-spring-env" type="xsd:boolean" use="optional">
@@ -1002,6 +1002,11 @@
                             <![CDATA[ The default share connections. default share one connection. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="url-merge-processor" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The Url merge processor. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1066,7 +1071,7 @@
                 <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="name" type="xsd:string">
+        <xsd:attribute name="name" type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The protocol name. ]]></xsd:documentation>
             </xsd:annotation>

@@ -74,7 +74,7 @@ public class DubboDefaultPropertiesEnvironmentPostProcessor implements Environme
         setDubboApplicationNameProperty(environment, defaultProperties);
         setDubboConfigMultipleProperty(defaultProperties);
         setDubboApplicationQosEnableProperty(defaultProperties);
-        setAllowBeanDefinitionOverriding(defaultProperties);
+        //setAllowBeanDefinitionOverriding(defaultProperties);
         return defaultProperties;
     }
 

@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.Page;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
 
@@ -63,7 +62,6 @@ public class ZookeeperServiceDiscoveryTest {
 
     @BeforeEach
     public void init() throws Exception {
-        EventDispatcher.getDefaultExtension().removeAllEventListeners();
         zkServerPort = getAvailablePort();
         zkServer = new TestingServer(zkServerPort, true);
         zkServer.start();
