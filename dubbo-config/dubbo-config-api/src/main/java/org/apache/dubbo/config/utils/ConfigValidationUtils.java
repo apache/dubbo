@@ -205,6 +205,9 @@ public class ConfigValidationUtils {
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
+                    if (urls == null) {
+                        throw new IllegalStateException(String.format("url should not be null,address is %s", address));
+                    }
                     for (URL url : urls) {
 
                         url = URLBuilder.from(url)
