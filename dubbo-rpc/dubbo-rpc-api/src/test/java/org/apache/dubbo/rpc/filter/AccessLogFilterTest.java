@@ -17,19 +17,20 @@
 package org.apache.dubbo.rpc.filter;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.DubboAppender;
 import org.apache.dubbo.common.utils.LogUtil;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.support.AccessLogData;
 import org.apache.dubbo.rpc.support.MockInvocation;
 import org.apache.dubbo.rpc.support.MyInvoker;
-
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
 import java.util.Map;
-import java.util.Set;
+import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -51,6 +52,7 @@ public class AccessLogFilterTest {
         accessLogFilter.invoke(invoker, invocation);
         assertEquals(1, LogUtil.findMessage("Exception in AccessLogFilter of service"));
         LogUtil.stop();
+        DubboAppender.clear();
     }
 
     // TODO how to assert thread action
@@ -62,12 +64,12 @@ public class AccessLogFilterTest {
         Invocation invocation = new MockInvocation();
 
         Field field = AccessLogFilter.class.getDeclaredField("LOG_ENTRIES");
-        field.setAccessible(true);
+        ReflectUtils.makeAccessible(field);
         assertTrue(((Map) field.get(AccessLogFilter.class)).isEmpty());
 
         accessLogFilter.invoke(invoker, invocation);
 
-        Map<String, Set<AccessLogData>> logs = (Map<String, Set<AccessLogData>>) field.get(AccessLogFilter.class);
+        Map<String, Queue<AccessLogData>> logs = (Map<String, Queue<AccessLogData>>) field.get(AccessLogFilter.class);
         assertFalse(logs.isEmpty());
         assertFalse(logs.get("true").isEmpty());
         AccessLogData log = logs.get("true").iterator().next();

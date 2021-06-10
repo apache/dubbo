@@ -16,9 +16,12 @@
  */
 package org.apache.dubbo.config.event.listener;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.bootstrap.EchoService;
 import org.apache.dubbo.config.bootstrap.EchoServiceImpl;
 import org.apache.dubbo.config.context.ConfigManager;
@@ -28,10 +31,12 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Random;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -47,6 +52,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @BeforeEach
     public void init() {
+        DubboBootstrap.reset();
         String metadataType = DEFAULT_METADATA_STORAGE_TYPE;
         ConfigManager configManager = ApplicationModel.getConfigManager();
         ApplicationConfig applicationConfig = new ApplicationConfig("dubbo-demo-provider");
@@ -57,7 +63,7 @@ public class PublishingServiceDefinitionListenerTest {
 
     @AfterEach
     public void reset() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     /**
@@ -69,12 +75,14 @@ public class PublishingServiceDefinitionListenerTest {
         serviceConfig.setInterface(EchoService.class);
         serviceConfig.setRef(new EchoServiceImpl());
         serviceConfig.setRegistry(new RegistryConfig("N/A"));
+        serviceConfig.setProtocol(new ProtocolConfig("dubbo", NetUtils.getAvailablePort(20880 + new Random().nextInt(10000))));
         serviceConfig.export();
 
         String serviceDefinition = writableMetadataService.getServiceDefinition(EchoService.class.getName());
 
         ServiceDefinition serviceDefinitionBuild = ServiceDefinitionBuilder.build(serviceConfig.getInterfaceClass());
 
-        assertEquals(serviceDefinition, new Gson().toJson(serviceDefinitionBuild));
+        assertEquals(serviceDefinition, JSON.toJSONString(serviceDefinitionBuild));
+        serviceConfig.unexport();
     }
 }

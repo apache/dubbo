@@ -21,10 +21,14 @@ import org.apache.dubbo.config.ModuleConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ConfigTest;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLLazyInitImpl1;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLLazyInitImpl2;
+import org.apache.dubbo.config.spring.impl.DemoServiceXMLNotLazyInitImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.AfterEach;
@@ -38,6 +42,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Map;
 
@@ -46,10 +51,11 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboNamespaceHandlerTest {
     @BeforeEach
     public void setUp() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
@@ -70,6 +76,7 @@ public class DubboNamespaceHandlerTest {
         applicationContext.register(XmlConfiguration.class);
         applicationContext.refresh();
         testProviderXml(applicationContext);
+        applicationContext.close();
     }
 
     @Test
@@ -81,6 +88,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         testProviderXml(ctx);
+        ctx.close();
     }
 
     private void testProviderXml(ApplicationContext context) {
@@ -110,6 +118,7 @@ public class DubboNamespaceHandlerTest {
 
         ProtocolConfig dubboProtocolConfig = protocolConfigMap.get("dubbo");
         assertThat(dubboProtocolConfig.getPort(), is(20881));
+        ctx.close();
     }
 
     @Test
@@ -120,6 +129,7 @@ public class DubboNamespaceHandlerTest {
         ProtocolConfig protocolConfig = ctx.getBean(ProtocolConfig.class);
         protocolConfig.refresh();
         assertThat(protocolConfig.getName(), is("dubbo"));
+        ctx.close();
     }
 
     @Test
@@ -134,6 +144,7 @@ public class DubboNamespaceHandlerTest {
         ServiceBean serviceBean = ctx.getBean(ServiceBean.class);
         assertThat(serviceBean.getParameters().size(), is(1));
         assertThat(serviceBean.getParameters().get("service-paramA"), is("service-paramA"));
+        ctx.close();
     }
 
 
@@ -143,6 +154,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         assertThat(ctx.getBean(ServiceBean.class).getDelay(), is(300));
+        ctx.close();
     }
 
     @Test
@@ -153,6 +165,7 @@ public class DubboNamespaceHandlerTest {
         Map<String, ProviderConfig> providerConfigMap = ctx.getBeansOfType(ProviderConfig.class);
 
         assertThat(providerConfigMap.get("org.apache.dubbo.config.ProviderConfig").getTimeout(), is(2000));
+        ctx.close();
     }
 
     @Test
@@ -161,6 +174,7 @@ public class DubboNamespaceHandlerTest {
         ctx.start();
 
         assertThat(ctx.getBean(MonitorConfig.class), not(nullValue()));
+        ctx.close();
     }
 
 //    @Test
@@ -186,6 +200,7 @@ public class DubboNamespaceHandlerTest {
 
         ModuleConfig moduleConfig = ctx.getBean(ModuleConfig.class);
         assertThat(moduleConfig.getName(), is("test-module"));
+        ctx.close();
     }
 
     @Test
@@ -205,5 +220,67 @@ public class DubboNamespaceHandlerTest {
 
         String prefix = ((DemoServiceImpl) serviceBean.getRef()).getPrefix();
         assertThat(prefix, is("welcome:"));
+        ctx.close();
+    }
+
+
+    @Test
+    public void testDuplicateServiceBean() {
+        try {
+            ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-duplicate-service-bean.xml");
+            ctx.start();
+            ctx.stop();
+            ctx.close();
+        } catch (IllegalStateException e) {
+            Assertions.assertTrue(e.getMessage().contains("There are multiple ServiceBean instances with the same service name"));
+            return;
+        }
+        Assertions.fail();
+    }
+
+    @Test
+    public void testLazyInitServiceBean() {
+        ClassPathXmlApplicationContext ctx = null;
+        try {
+            ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-lazy-init.xml");
+            ctx.start();
+            /**
+             * {@link DemoServiceXMLLazyInitImpl1} sets lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl1.isInitialized(),false);
+            /**
+             * {@link DemoServiceXMLLazyInitImpl2} sets default-lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl2.isInitialized(),false);
+
+            /**
+             * After getBean and then {@link DemoServiceXMLLazyInitImpl1#isInitialized()} changed to {@code true}
+             * */
+            ctx.getBean("demoServiceXMLLazyInitImpl1",DemoServiceXMLLazyInitImpl1.class);
+            Assertions.assertEquals(DemoServiceXMLLazyInitImpl1.isInitialized(),true);
+        }finally {
+            if (ctx != null) {
+                ctx.stop();
+                ctx.close();
+            }
+        }
+    }
+
+    @Test
+    public void testNotLazyInitServiceBean() {
+        ClassPathXmlApplicationContext ctx = null;
+        try {
+            ctx = new ClassPathXmlApplicationContext("classpath:/org/apache/dubbo/config/spring/demo-provider-not-lazy-init.xml");
+            ctx.start();
+            /**
+             * {@link DemoServiceXMLNotLazyInitImpl} don't set lazy-init
+             * */
+            Assertions.assertEquals(DemoServiceXMLNotLazyInitImpl.isInitialized(),true);
+        }finally {
+            if (ctx != null) {
+                ctx.stop();
+                ctx.close();
+            }
+        }
     }
 }

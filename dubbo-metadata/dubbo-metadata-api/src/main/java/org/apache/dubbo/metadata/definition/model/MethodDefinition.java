@@ -17,10 +17,15 @@
 package org.apache.dubbo.metadata.definition.model;
 
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatType;
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatTypes;
 
 /**
  * 2015/1/27.
@@ -31,7 +36,8 @@ public class MethodDefinition implements Serializable {
     private String[] parameterTypes;
     private String returnType;
     private List<TypeDefinition> parameters;
-
+    private List<Annotation> annotations;
+    
     public String getName() {
         return name;
     }
@@ -60,11 +66,22 @@ public class MethodDefinition implements Serializable {
     }
 
     public void setParameterTypes(String[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
+        this.parameterTypes = formatTypes(parameterTypes);
     }
 
     public void setReturnType(String returnType) {
-        this.returnType = returnType;
+        this.returnType = formatType(returnType);
+    }
+
+    public List<Annotation> getAnnotations() {
+        if (annotations == null) {
+            annotations = Collections.emptyList();
+        }
+        return annotations;
+    }
+
+    public void setAnnotations(List<Annotation> annotations) {
+        this.annotations = annotations;
     }
 
     @Override

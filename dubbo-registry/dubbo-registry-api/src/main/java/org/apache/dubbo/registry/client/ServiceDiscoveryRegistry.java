@@ -111,6 +111,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     /* apps - listener */
     private final Map<String, ServiceInstancesChangedListener> serviceListeners = new HashMap<>();
+    private final Map<String, String> serviceToAppsMapping = new HashMap<>();
 
     private URL registryURL;
 
@@ -259,8 +260,10 @@ public class ServiceDiscoveryRegistry implements Registry {
         writableMetadataService.subscribeURL(url);
 
         Set<String> serviceNames = getServices(url, listener);
+
         if (CollectionUtils.isEmpty(serviceNames)) {
-            throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+            logger.warn("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
+            return;
         }
 
         subscribeURLs(url, listener, serviceNames);
@@ -280,6 +283,13 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     public void doUnsubscribe(URL url, NotifyListener listener) {
         writableMetadataService.unsubscribeURL(url);
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        String serviceNamesKey = serviceToAppsMapping.remove(protocolServiceKey);
+        if (serviceNamesKey == null) {
+            return;
+        }
+        ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
+        instancesChangedListener.removeListener(protocolServiceKey);
     }
 
     @Override
@@ -308,22 +318,30 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     protected void subscribeURLs(URL url, NotifyListener listener, Set<String> serviceNames) {
         String serviceNamesKey = serviceNames.toString();
+        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
+        serviceToAppsMapping.put(protocolServiceKey, serviceNamesKey);
+
         // register ServiceInstancesChangedListener
         ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey,
                 k -> new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
         serviceListener.setUrl(url);
         listener.addServiceListener(serviceListener);
 
-        String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
         serviceListener.addListener(protocolServiceKey, listener);
         registerServiceInstancesChangedListener(url, serviceListener);
 
+        // FIXME: This will cause redundant duplicate notifications
         serviceNames.forEach(serviceName -> {
             List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-            serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+            if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                serviceListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+            } else {
+                logger.info("getInstances by serviceName=" + serviceName + " is empty, waiting for serviceListener callback. url=" + url);
+            }
         });
 
         listener.notify(serviceListener.getUrls(protocolServiceKey));
+
     }
 
     /**
@@ -356,17 +374,16 @@ public class ServiceDiscoveryRegistry implements Registry {
 
         String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
         if (StringUtils.isNotEmpty(serviceNames)) {
-            subscribedServices.addAll(parseServices(serviceNames));
-        }
-
-        serviceNames = subscribedURL.getParameter(SUBSCRIBED_SERVICE_NAMES_KEY);
-        if (StringUtils.isNotEmpty(serviceNames)) {
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by provided-by set by user.");
             subscribedServices.addAll(parseServices(serviceNames));
         }
 
         if (isEmpty(subscribedServices)) {
-            subscribedServices.addAll(findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener)));
+            Set<String> mappedServices = findMappedServices(subscribedURL, new DefaultMappingListener(subscribedURL, subscribedServices, listener));
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by remote metadata center.");
+            subscribedServices.addAll(mappedServices);
             if (isEmpty(subscribedServices)) {
+                logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " by default.");
                 subscribedServices.addAll(getSubscribedServices());
             }
         }

@@ -314,7 +314,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -362,7 +362,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -401,7 +401,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -439,12 +439,12 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
                 default:
-                    throw new ParseException("Unexcepted state.");
+                    throw new ParseException("Unexpected state.");
             }
         }
         while ((token = jr.nextToken()) != null);
@@ -509,7 +509,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -585,7 +585,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or ',' or ']' or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -636,7 +636,7 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ IDENT or VALUE or ',' or '}' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
@@ -686,12 +686,12 @@ public class JSON {
                             break;
                         }
                         default:
-                            throw new ParseException("Unexcepted token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
+                            throw new ParseException("Unexpected token expect [ VALUE or '[' or '{' ] get '" + JSONToken.token2string(token.type) + "'");
                     }
                     break;
                 }
                 default:
-                    throw new ParseException("Unexcepted state.");
+                    throw new ParseException("Unexpected state.");
             }
         }
         while ((token = jr.nextToken()) != null);

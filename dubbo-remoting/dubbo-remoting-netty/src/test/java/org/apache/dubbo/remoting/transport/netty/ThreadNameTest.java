@@ -27,6 +27,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 public class ThreadNameTest {
 
     private NettyServer server;
@@ -39,16 +43,19 @@ public class ThreadNameTest {
     private ThreadNameVerifyHandler clientHandler;
 
     private static String serverRegex = "DubboServerHandler\\-localhost:(\\d+)\\-thread\\-(\\d+)";
-    private static String clientRegex = "DubboClientHandler\\-localhost:(\\d+)\\-thread\\-(\\d+)";
+    private static String clientRegex = "DubboClientHandler\\-thread\\-(\\d+)";
+
+    private final CountDownLatch serverLatch = new CountDownLatch(1);
+    private final CountDownLatch clientLatch = new CountDownLatch(1);
 
     @BeforeEach
     public void before() throws Exception {
-        int port = NetUtils.getAvailablePort();
+        int port = NetUtils.getAvailablePort(20880 + new Random().nextInt(10000));
         serverURL = URL.valueOf("telnet://localhost?side=provider").setPort(port);
         clientURL = URL.valueOf("telnet://localhost?side=consumer").setPort(port);
 
-        serverHandler = new ThreadNameVerifyHandler(serverRegex, false);
-        clientHandler = new ThreadNameVerifyHandler(clientRegex, true);
+        serverHandler = new ThreadNameVerifyHandler(serverRegex, false, serverLatch);
+        clientHandler = new ThreadNameVerifyHandler(clientRegex, true, clientLatch);
 
         server = new NettyServer(serverURL, serverHandler);
         client = new NettyClient(clientURL, clientHandler);
@@ -70,7 +77,9 @@ public class ThreadNameTest {
     @Test
     public void testThreadName() throws Exception {
         client.send("hello");
-        Thread.sleep(1000L * 5L);
+        //Thread.sleep(1000L * 5L);
+        serverLatch.await(30, TimeUnit.SECONDS);
+        clientLatch.await(30, TimeUnit.SECONDS);
         if (!serverHandler.isSuccess() || !clientHandler.isSuccess()) {
             Assertions.fail();
         }
@@ -81,10 +90,12 @@ public class ThreadNameTest {
         private String message;
         private boolean success;
         private boolean client;
+        private CountDownLatch latch;
 
-        ThreadNameVerifyHandler(String msg, boolean client) {
+        ThreadNameVerifyHandler(String msg, boolean client, CountDownLatch latch) {
             message = msg;
             this.client = client;
+            this.latch = latch;
         }
 
         public boolean isSuccess() {
@@ -94,6 +105,9 @@ public class ThreadNameTest {
         private void checkThreadName() {
             if (!success) {
                 success = Thread.currentThread().getName().matches(message);
+            }
+            if (success) {
+                latch.countDown();
             }
         }
 
