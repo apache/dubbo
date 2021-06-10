@@ -18,6 +18,8 @@ package org.apache.dubbo.common.config;
 
 import java.util.NoSuchElementException;
 
+import static org.apache.dubbo.common.config.ConfigurationUtils.isEmptyValue;
+
 /**
  * Configuration interface, to fetch the value for the specified key.
  */
@@ -133,7 +135,7 @@ public interface Configuration {
      * key, {@code false} otherwise
      */
     default boolean containsKey(String key) {
-        return getProperty(key) != null;
+        return !isEmptyValue(getProperty(key));
     }
 
 

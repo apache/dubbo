@@ -64,9 +64,12 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         }
     }
 
-    public static void clear() {
+    public static void destroy() {
         LOCK.lock();
         try {
+            for (MetadataReport metadataReport : SERVICE_STORE_MAP.values()) {
+                metadataReport.destroy();
+            }
             SERVICE_STORE_MAP.clear();
         } finally {
             LOCK.unlock();

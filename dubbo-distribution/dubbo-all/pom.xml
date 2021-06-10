@@ -285,6 +285,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-metadata-report-nacos</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-metadata-report-redis</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -427,6 +434,7 @@
                                     <include>org.apache.dubbo:dubbo-metadata-api</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-redis</include>
                                     <include>org.apache.dubbo:dubbo-metadata-report-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-metadata-report-nacos</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-auth</include>
                                     <include>org.apache.dubbo:dubbo-filter-cache</include>
@@ -609,12 +617,6 @@
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.report.MetadataReportFactory
                                     </resource>
                                 </transformer>
-                                <!-- @since 2.7.5 -->
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventDispatcher
-                                    </resource>
-                                </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.MetadataServiceExporter
@@ -651,11 +653,6 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.metadata.definition.builder.TypeBuilder
-                                    </resource>
-                                </transformer>
-                                <transformer
-                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
-                                    <resource>META-INF/dubbo/internal/org.apache.dubbo.event.EventListener
                                     </resource>
                                 </transformer>
                                 <transformer
@@ -762,6 +759,12 @@
                                         implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
                                     <resource>
                                         META-INF/dubbo/internal/org.apache.dubbo.registry.client.migration.PreMigratingConditionChecker
+                                    </resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>
+                                        META-INF/dubbo/internal/org.apache.dubbo.rpc.cluster.ProviderURLMergeProcessor
                                     </resource>
                                 </transformer>
                             </transformers>

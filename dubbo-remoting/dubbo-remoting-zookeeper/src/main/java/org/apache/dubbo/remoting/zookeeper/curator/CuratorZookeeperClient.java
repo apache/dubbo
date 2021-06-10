@@ -58,7 +58,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     protected static final Logger logger = LoggerFactory.getLogger(CuratorZookeeperClient.class);
     private static final String ZK_SESSION_EXPIRE_KEY = "zk.session.expire";
 
-    static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
     private final CuratorFramework client;
     private static Map<String, NodeCache> nodeCacheMap = new ConcurrentHashMap<>();
 
@@ -149,25 +149,20 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected void update(String path, String data, Object stat) {
+    protected void update(String path, String data, int version) {
         byte[] dataBytes = data.getBytes(CHARSET);
         try {
-            if (null == stat || !(stat instanceof Stat)) {
-                throw new IllegalArgumentException("unable to get the version information of zookeeper data");
-            }
-            client.setData().withVersion(((Stat) stat).getVersion()).forPath(path, dataBytes);
-        } catch (NoNodeException e) {
-            logger.warn("ZNode " + path + "does not exists.", e);
+            client.setData().withVersion(version).forPath(path, dataBytes);
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
     }
 
     @Override
-    protected void createOrUpdatePersistent(String path, String data, Object stat) {
+    protected void createOrUpdatePersistent(String path, String data, int version) {
         try {
             if (checkExists(path)) {
-                update(path, data, stat);
+                update(path, data, version);
             } else {
                 createPersistent(path, data);
             }
@@ -177,10 +172,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
     }
 
     @Override
-    protected void createOrUpdateEphemeral(String path, String data, Object stat) {
+    protected void createOrUpdateEphemeral(String path, String data, int version) {
         try {
             if (checkExists(path)) {
-                update(path, data, stat);
+                update(path, data, version);
             } else {
                 createEphemeral(path, data);
             }
@@ -216,7 +211,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
             if (client.checkExists().forPath(path) != null) {
                 return true;
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return false;
     }
@@ -241,14 +236,14 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     @Override
     public ConfigItem doGetConfigItem(String path) {
-        String content = null;
-        Stat stat = null;
+        String content;
+        Stat stat;
         try {
             stat = new Stat();
             byte[] dataBytes = client.getData().storingStatIn(stat).forPath(path);
             content = (dataBytes == null || dataBytes.length == 0) ? null : new String(dataBytes, CHARSET);
         } catch (NoNodeException e) {
-            // ignore NoNode Exception.
+            return new ConfigItem();
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }

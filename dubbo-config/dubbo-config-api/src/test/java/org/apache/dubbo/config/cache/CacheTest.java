@@ -28,6 +28,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
 
@@ -49,7 +50,7 @@ public class CacheTest {
 
     @BeforeEach
     public void setUp() {
-//        ApplicationModel.getConfigManager().clear();
+        DubboBootstrap.reset();
     }
 
     @AfterEach

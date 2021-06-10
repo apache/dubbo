@@ -48,7 +48,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
     /**
      * whether the service is deprecated
      */
-    protected Boolean deprecated = false;
+    protected Boolean deprecated; // false;
 
     /**
      * The time delay register service (milliseconds)
@@ -75,7 +75,7 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * after the service registered,and it needs to be disabled manually; if you want to disable the service, you also need
      * manual processing
      */
-    protected Boolean dynamic = true;
+    protected Boolean dynamic; // true;
 
     /**
      * Whether to use token
@@ -116,6 +116,17 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * The serialization type
      */
     private String serialization;
+
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+        if (deprecated == null) {
+            deprecated = false;
+        }
+        if (dynamic == null) {
+            dynamic = true;
+        }
+    }
 
     public String getVersion() {
         return version;

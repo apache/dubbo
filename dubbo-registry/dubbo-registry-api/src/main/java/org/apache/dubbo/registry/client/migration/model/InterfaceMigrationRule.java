@@ -19,14 +19,15 @@ package org.apache.dubbo.registry.client.migration.model;
 import java.util.Map;
 
 public class InterfaceMigrationRule {
-    private String appName;
     private String serviceKey;
     private MigrationStep step;
     private Float threshold;
+    private Integer proportion;
+    private Integer delay;
+    private Boolean force;
 
     public static InterfaceMigrationRule parseFromMap(Map<String, Object> map) {
         InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule();
-        interfaceMigrationRule.setAppName((String) map.get("appName"));
         interfaceMigrationRule.setServiceKey((String) map.get("serviceKey"));
 
         Object step = map.get("step");
@@ -39,24 +40,31 @@ public class InterfaceMigrationRule {
             interfaceMigrationRule.setThreshold(Float.valueOf(threshold.toString()));
         }
 
+        Object proportion = map.get("proportion");
+        if (proportion != null) {
+            interfaceMigrationRule.setProportion(Integer.valueOf(proportion.toString()));
+        }
+
+        Object delay = map.get("delay");
+        if (delay != null) {
+            interfaceMigrationRule.setDelay(Integer.valueOf(delay.toString()));
+        }
+
+        Object force = map.get("force");
+        if (force != null) {
+            interfaceMigrationRule.setForce(Boolean.valueOf(force.toString()));
+        }
+
         return interfaceMigrationRule;
     }
 
     public InterfaceMigrationRule(){}
 
-    public InterfaceMigrationRule(String appName, String serviceKey, MigrationStep step, Float threshold) {
-        this.appName = appName;
+    public InterfaceMigrationRule(String serviceKey, MigrationStep step, Float threshold, Integer proportion) {
         this.serviceKey = serviceKey;
         this.step = step;
         this.threshold = threshold;
-    }
-
-    public String getAppName() {
-        return appName;
-    }
-
-    public void setAppName(String appName) {
-        this.appName = appName;
+        this.proportion = proportion;
     }
 
     public String getServiceKey() {
@@ -81,5 +89,29 @@ public class InterfaceMigrationRule {
 
     public void setThreshold(Float threshold) {
         this.threshold = threshold;
+    }
+
+    public Integer getProportion() {
+        return proportion;
+    }
+
+    public void setProportion(Integer proportion) {
+        this.proportion = proportion;
+    }
+
+    public Integer getDelay() {
+        return delay;
+    }
+
+    public void setDelay(Integer delay) {
+        this.delay = delay;
+    }
+
+    public Boolean getForce() {
+        return force;
+    }
+
+    public void setForce(Boolean force) {
+        this.force = force;
     }
 }

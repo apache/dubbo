@@ -38,6 +38,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-core</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
             <optional>true</optional>
@@ -81,6 +87,13 @@
             <artifactId>dubbo-config-spring</artifactId>
             <version>${revision}</version>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-rpc-dubbo</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
         </dependency>
 
         <!-- Test Dependencies -->

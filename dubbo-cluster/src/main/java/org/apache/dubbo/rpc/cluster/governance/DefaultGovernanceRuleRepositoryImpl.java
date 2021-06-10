@@ -21,20 +21,21 @@ import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
 
 public class DefaultGovernanceRuleRepositoryImpl implements GovernanceRuleRepository {
 
-    private DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
-
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
+        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         dynamicConfiguration.addListener(key, group, listener);
     }
 
     @Override
     public void removeListener(String key, String group, ConfigurationListener listener) {
+        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         dynamicConfiguration.removeListener(key, group, listener);
     }
 
     @Override
     public String getRule(String key, String group, long timeout) throws IllegalStateException {
+        DynamicConfiguration dynamicConfiguration = DynamicConfiguration.getDynamicConfiguration();
         return dynamicConfiguration.getConfig(key, group, timeout);
     }
 }

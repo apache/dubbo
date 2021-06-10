@@ -29,9 +29,7 @@ import io.envoyproxy.envoy.config.core.v3.Node;
 import io.envoyproxy.envoy.config.route.v3.Route;
 import io.envoyproxy.envoy.config.route.v3.RouteAction;
 import io.envoyproxy.envoy.config.route.v3.RouteConfiguration;
-import io.envoyproxy.envoy.service.discovery.v3.DeltaDiscoveryResponse;
 import io.envoyproxy.envoy.service.discovery.v3.DiscoveryResponse;
-import io.envoyproxy.envoy.service.discovery.v3.Resource;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,8 +41,8 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractProtocol.class);
 
-    public RdsProtocol(XdsChannel xdsChannel, Node node) {
-        super(xdsChannel, node);
+    public RdsProtocol(XdsChannel xdsChannel, Node node, int pollingPoolSize, int pollingTimeout) {
+        super(xdsChannel, node, pollingPoolSize, pollingTimeout);
     }
 
     @Override
@@ -66,25 +64,6 @@ public class RdsProtocol extends AbstractProtocol<RouteResult, DeltaRoute> {
             return new RouteResult(map);
         }
         return new RouteResult();
-    }
-
-    @Override
-    protected DeltaRoute decodeDeltaDiscoveryResponse(DeltaDiscoveryResponse response, DeltaRoute previous) {
-        DeltaRoute deltaRoute = previous;
-        if (deltaRoute == null) {
-            deltaRoute = new DeltaRoute();
-        }
-        if (getTypeUrl().equals(response.getTypeUrl())) {
-            deltaRoute.removeResource(response.getRemovedResourcesList());
-            for (Resource resource : response.getResourcesList()) {
-                RouteConfiguration unpackedResource = unpackRouteConfiguration(resource.getResource());
-                if (unpackedResource == null) {
-                    continue;
-                }
-                deltaRoute.addResource(resource.getName(), decodeResourceToListener(unpackedResource));
-            }
-        }
-        return deltaRoute;
     }
 
     private static Map<String, Set<String>> decodeResourceToListener(RouteConfiguration resource) {

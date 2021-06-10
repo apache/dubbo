@@ -78,9 +78,9 @@ public class NettyClient extends AbstractClient {
      * It wil init and start netty.
      */
     public NettyClient(final URL url, final ChannelHandler handler) throws RemotingException {
-    	// you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
-    	// the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
-    	super(url, wrapChannelHandler(url, handler));
+        // you can customize name and type of client thread pool by THREAD_NAME_KEY and THREADPOOL_KEY in CommonConstants.
+        // the handler will be wrapped: MultiMessageHandler->HeartbeatHandler->handler
+        super(url, wrapChannelHandler(url, handler));
     }
 
     /**

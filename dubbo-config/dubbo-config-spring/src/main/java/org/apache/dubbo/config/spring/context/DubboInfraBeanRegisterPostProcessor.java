@@ -16,12 +16,17 @@
  */
 package org.apache.dubbo.config.spring.context;
 
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
+import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 
 /**
@@ -30,7 +35,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
  * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
-public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor {
+public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
     /**
      * The bean name of {@link ReferenceAnnotationBeanPostProcessor}
@@ -38,6 +43,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public static final String BEAN_NAME = "dubboInfraBeanRegisterPostProcessor";
 
     private BeanDefinitionRegistry registry;
+    private ApplicationContext applicationContext;
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
@@ -47,5 +53,14 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         DubboBeanUtils.registerBeansIfNotExists(registry);
+
+        // register ConfigManager
+        beanFactory.registerSingleton(ConfigManager.BEAN_NAME, ApplicationModel.getConfigManager());
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+        SpringExtensionFactory.addApplicationContext(applicationContext);
     }
 }
