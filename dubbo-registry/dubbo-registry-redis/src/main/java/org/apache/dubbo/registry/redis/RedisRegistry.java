@@ -93,6 +93,11 @@ public class RedisRegistry extends FailbackRegistry {
 
     private volatile boolean admin = false;
 
+    private final Map<URL, Long> expireCache = new ConcurrentHashMap<>();
+
+    // just for unit test
+    private volatile boolean doExpire = true;
+
     public RedisRegistry(URL url) {
         super(url);
         String type = url.getParameter(REDIS_CLIENT_KEY, MONO_REDIS);
@@ -137,6 +142,15 @@ public class RedisRegistry extends FailbackRegistry {
                 }
             }
         }
+
+        if (doExpire) {
+            for (Map.Entry<URL, Long> expireEntry : expireCache.entrySet()) {
+                if (expireEntry.getValue() < System.currentTimeMillis()) {
+                    doNotify(toCategoryPath(expireEntry.getKey()));
+                }
+            }
+        }
+
         if (admin) {
             clean();
         }
@@ -290,16 +304,26 @@ public class RedisRegistry extends FailbackRegistry {
                 continue;
             }
             List<URL> urls = new ArrayList<>();
+            Set<URL> toDeleteExpireKeys = new HashSet<>(expireCache.keySet());
             Map<String, String> values = redisClient.hgetAll(key);
             if (CollectionUtils.isNotEmptyMap(values)) {
                 for (Map.Entry<String, String> entry : values.entrySet()) {
                     URL u = URL.valueOf(entry.getKey());
+                    long expire = Long.parseLong(entry.getValue());
                     if (!u.getParameter(DYNAMIC_KEY, true)
-                            || Long.parseLong(entry.getValue()) >= now) {
+                            || expire >= now) {
                         if (UrlUtils.isMatch(url, u)) {
                             urls.add(u);
+                            expireCache.put(u, expire);
+                            toDeleteExpireKeys.remove(u);
                         }
                     }
+                }
+            }
+
+            if (!toDeleteExpireKeys.isEmpty()) {
+                for (URL u : toDeleteExpireKeys) {
+                    expireCache.remove(u);
                 }
             }
             if (urls.isEmpty()) {
@@ -311,6 +335,7 @@ public class RedisRegistry extends FailbackRegistry {
                         .build());
             }
             result.addAll(urls);
+
             if (logger.isInfoEnabled()) {
                 logger.info("redis notify: " + key + " = " + urls);
             }

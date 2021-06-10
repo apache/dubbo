@@ -22,6 +22,7 @@ import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.dubbo.registry.support.AbstractRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +31,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.embedded.RedisServer;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -44,7 +47,9 @@ import static redis.embedded.RedisServer.newRedisServer;
 public class RedisRegistryTest {
 
     private static final String SERVICE = "org.apache.dubbo.test.injvmServie";
-    private static final URL SERVICE_URL = URL.valueOf("redis://redis/" + SERVICE + "?notify=false&methods=test1,test2");
+    private static final URL SERVICE_URL = URL.valueOf("redis://redis/" + SERVICE + "?notify=false&methods=test1,test2&category=providers,configurators,routers");
+    private static final URL PROVIDER_URL_A = URL.valueOf("redis://127.0.0.1:20880/" + SERVICE + "?notify=false&methods=test1,test2");
+    private static final URL PROVIDER_URL_B = URL.valueOf("redis://127.0.0.1:20881/" + SERVICE + "?notify=false&methods=test1,test2");
 
     private RedisServer redisServer;
     private RedisRegistry redisRegistry;
@@ -74,7 +79,7 @@ public class RedisRegistryTest {
             }
         }
         Assertions.assertNull(exception);
-        registryUrl = URL.valueOf("redis://localhost:" + redisPort);
+        registryUrl = URL.valueOf("redis://localhost:" + redisPort + "?session=4000");
         redisRegistry = (RedisRegistry) new RedisRegistryFactory().createRegistry(registryUrl);
     }
 
@@ -105,6 +110,101 @@ public class RedisRegistryTest {
         });
     }
 
+    @Test
+    public void testSubscribeExpireCache() throws Exception {
+        redisRegistry.register(PROVIDER_URL_A);
+        redisRegistry.register(PROVIDER_URL_B);
+
+        NotifyListener listener = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+            }
+        };
+
+        redisRegistry.subscribe(SERVICE_URL, listener);
+
+        Field expireCache = RedisRegistry.class.getDeclaredField("expireCache");
+        expireCache.setAccessible(true);
+        Map<URL, Long> cacheExpire = (Map<URL, Long>)expireCache.get(redisRegistry);
+
+        assertThat(cacheExpire.get(PROVIDER_URL_A) > 0, is(true));
+        assertThat(cacheExpire.get(PROVIDER_URL_B) > 0, is(true));
+
+        redisRegistry.unregister(PROVIDER_URL_A);
+
+        boolean success = false;
+
+        for (int i = 0; i < 30; i++) {
+            cacheExpire = (Map<URL, Long>)expireCache.get(redisRegistry);
+            if (cacheExpire.get(PROVIDER_URL_A) == null) {
+                success = true;
+                break;
+            }
+            Thread.sleep(500);
+        }
+        assertThat(success, is(true));
+    }
+
+    @Test
+    public void testSubscribeWhenProviderCrash() throws Exception {
+
+        // unit test will fail if doExpire=false
+        // Field doExpireField = RedisRegistry.class.getDeclaredField("doExpire");
+        // doExpireField.setAccessible(true);
+        // doExpireField.set(redisRegistry, false);
+
+        redisRegistry.register(PROVIDER_URL_A);
+        redisRegistry.register(PROVIDER_URL_B);
+        assertThat(redisRegistry.getRegistered().contains(PROVIDER_URL_A), is(true));
+        assertThat(redisRegistry.getRegistered().contains(PROVIDER_URL_B), is(true));
+
+        Set<URL> notifiedUrls = new HashSet<>();
+        Object lock = new Object();
+
+        NotifyListener listener = new NotifyListener() {
+            @Override
+            public void notify(List<URL> urls) {
+                synchronized (lock) {
+                    notifiedUrls.clear();
+                    notifiedUrls.addAll(urls);
+                }
+            }
+        };
+
+        redisRegistry.subscribe(SERVICE_URL, listener);
+        assertThat(redisRegistry.getSubscribed().size(), is(1));
+
+        boolean firstOk = false;
+        boolean secondOk = false;
+
+        for (int i = 0; i < 30; i++) {
+            synchronized (lock) {
+                if (notifiedUrls.contains(PROVIDER_URL_A) && notifiedUrls.contains(PROVIDER_URL_B)) {
+                    firstOk = true;
+                    break;
+                }
+            }
+            Thread.sleep(500);
+        }
+
+        assertThat(firstOk, is(true));
+
+        // kill -9 to providerB
+        Field registeredField = AbstractRegistry.class.getDeclaredField("registered");
+        registeredField.setAccessible(true);
+        ((Set<URL>) registeredField.get(redisRegistry)).remove(PROVIDER_URL_B);
+
+        for (int i = 0; i < 30; i++) {
+            synchronized (lock) {
+                if (notifiedUrls.contains(PROVIDER_URL_A) && notifiedUrls.size() == 1) {
+                    secondOk = true;
+                    break;
+                }
+            }
+            Thread.sleep(500);
+        }
+        assertThat(secondOk, is(true));
+    }
 
     @Test
     public void testSubscribeAndUnsubscribe() {
