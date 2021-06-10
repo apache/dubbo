@@ -184,7 +184,7 @@ public class RedisRegistryTest {
                     break;
                 }
             }
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
 
         assertThat(firstOk, is(true));
@@ -201,7 +201,7 @@ public class RedisRegistryTest {
                     break;
                 }
             }
-            Thread.sleep(1000);
+            Thread.sleep(500);
         }
         assertThat(secondOk, is(true));
     }
