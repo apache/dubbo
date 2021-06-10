@@ -20,8 +20,8 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.status.StatusChecker;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
-
 import org.apache.dubbo.config.context.ConfigManager;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
