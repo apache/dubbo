@@ -19,11 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.config.event.DubboServiceDestroyedEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookRegisteredEvent;
-import org.apache.dubbo.config.event.DubboShutdownHookUnregisteredEvent;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -50,8 +45,6 @@ public class DubboShutdownHook extends Thread {
      * Has it already been destroyed or not?
      */
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
-
-    private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
 
     private DubboShutdownHook(String name) {
         super(name);
@@ -91,7 +84,6 @@ public class DubboShutdownHook extends Thread {
         if (registered.compareAndSet(false, true)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().addShutdownHook(dubboShutdownHook);
-            dispatch(new DubboShutdownHookRegisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -102,7 +94,6 @@ public class DubboShutdownHook extends Thread {
         if (registered.compareAndSet(true, false)) {
             DubboShutdownHook dubboShutdownHook = getDubboShutdownHook();
             Runtime.getRuntime().removeShutdownHook(dubboShutdownHook);
-            dispatch(new DubboShutdownHookUnregisteredEvent(dubboShutdownHook));
         }
     }
 
@@ -110,12 +101,9 @@ public class DubboShutdownHook extends Thread {
      * Destroy all the resources, including registries and protocols.
      */
     public void doDestroy() {
-        // dispatch the DubboDestroyedEvent @since 2.7.5
-        dispatch(new DubboServiceDestroyedEvent(this));
-    }
-
-    private void dispatch(Event event) {
-        eventDispatcher.dispatch(event);
+        if (logger.isInfoEnabled()) {
+            logger.info("Dubbo Service has been destroyed.");
+        }
     }
 
     public boolean getRegistered() {

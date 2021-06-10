@@ -31,12 +31,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
-import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -225,9 +221,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
-
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
-        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
     protected synchronized void init() {
@@ -341,9 +334,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initialized = true;
 
         checkInvokerAvailable();
-
-        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
-        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
@@ -550,16 +540,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             isJvmRefer = isInjvm();
         }
         return isJvmRefer;
-    }
-
-    /**
-     * Dispatch an {@link Event event}
-     *
-     * @param event an {@link Event event}
-     * @since 2.7.5
-     */
-    protected void dispatch(Event event) {
-        EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
     public DubboBootstrap getBootstrap() {

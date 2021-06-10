@@ -16,13 +16,13 @@
  */
 package org.apache.dubbo.rpc.cluster.router.state;
 
-import java.util.List;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Directory;
+
+import java.util.List;
 
 /**
  * State Router. (SPI, Prototype, ThreadSafe)

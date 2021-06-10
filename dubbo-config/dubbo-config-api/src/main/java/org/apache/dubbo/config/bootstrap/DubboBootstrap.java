@@ -1254,12 +1254,12 @@ public class DubboBootstrap {
             if (exportAsync) {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
-                	try {
+                    try {
                         sc.export();
                         exportedServices.add(sc);
-                	}catch (Throwable t) {
-                		logger.error("export async catch error : " + t.getMessage(), t);
-					}
+                    }catch (Throwable t) {
+                        logger.error("export async catch error : " + t.getMessage(), t);
+                    }
                 });
                 asyncExportingFutures.add(future);
             } else {

@@ -40,6 +40,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     private URL registryURL;
     private ServiceInstance serviceInstance;
     private String applicationName;
+    private volatile boolean isDestroy;
 
     @Override
     public void initialize(URL registryURL) throws Exception {
@@ -65,9 +66,15 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void destroy() throws Exception {
+        this.isDestroy = true;
         for (ServiceDiscovery serviceDiscovery : serviceDiscoveries.values()) {
             serviceDiscovery.destroy();
         }
+    }
+
+    @Override
+    public boolean isDestroy() {
+        return isDestroy;
     }
 
     @Override
