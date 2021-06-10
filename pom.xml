@@ -310,13 +310,9 @@
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/istio/v1/auth/Ca.java,
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
+                                        **/generated/**/*,
+                                        **/target/**/*,
                                     </excludes>
-                                    <resourceExcludes>
-                                        **/target/**/*
-                                    </resourceExcludes>
-                                    <resourceExcludes>
-                                        **/generated/**/*
-                                    </resourceExcludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
