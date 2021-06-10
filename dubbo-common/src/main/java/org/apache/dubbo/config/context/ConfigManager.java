@@ -676,16 +676,11 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     static <C extends AbstractConfig> Boolean isDefaultConfig(C config) {
-        // If no isDefault() method, it is considered that each can be used as default
-        if (!ReflectUtils.hasMethod(config.getClass(), "isDefault")) {
-            return true;
-        }
-        Boolean isDefault = ReflectUtils.getProperty(config, "isDefault");
-        return isDefault;
+        return config.isDefault();
     }
 
     static <C extends AbstractConfig> List<C> getDefaultConfigs(Map<String, C> configsMap) {
-        // find isDefault() == TRUE
+        // find isDefault() == true
         List<C> list = configsMap.values()
                 .stream()
                 .filter(c -> TRUE.equals(ConfigManager.isDefaultConfig(c)))
@@ -700,6 +695,8 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 .filter(c -> ConfigManager.isDefaultConfig(c) == null)
                 .collect(Collectors.toList());
         return list;
+
+        // exclude isDefault() == false
     }
 
 }

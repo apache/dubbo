@@ -31,9 +31,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.AnnotationUtils.excludedType;
+import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.common.utils.AnnotationUtils.findMetaAnnotation;
 import static org.apache.dubbo.common.utils.AnnotationUtils.findMetaAnnotations;
@@ -41,7 +43,9 @@ import static org.apache.dubbo.common.utils.AnnotationUtils.getAllDeclaredAnnota
 import static org.apache.dubbo.common.utils.AnnotationUtils.getAllMetaAnnotations;
 import static org.apache.dubbo.common.utils.AnnotationUtils.getAnnotation;
 import static org.apache.dubbo.common.utils.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.common.utils.AnnotationUtils.getAttributes;
 import static org.apache.dubbo.common.utils.AnnotationUtils.getDeclaredAnnotations;
+import static org.apache.dubbo.common.utils.AnnotationUtils.getDefaultValue;
 import static org.apache.dubbo.common.utils.AnnotationUtils.getMetaAnnotations;
 import static org.apache.dubbo.common.utils.AnnotationUtils.getValue;
 import static org.apache.dubbo.common.utils.AnnotationUtils.isAnnotationPresent;
@@ -98,6 +102,26 @@ public class AnnotationUtilsTest {
         assertEquals("", getAttribute(annotation, "path"));
         assertEquals(true, getAttribute(annotation, "export"));
         assertEquals(false, getAttribute(annotation, "deprecated"));
+    }
+
+    @Test
+    public void testGetAttributesMap() {
+        Annotation annotation = A.class.getAnnotation(Service.class);
+        Map<String, Object> attributes = getAttributes(annotation, false);
+        assertEquals("java.lang.CharSequence", attributes.get("interfaceName"));
+        assertEquals(CharSequence.class, attributes.get("interfaceClass"));
+        assertEquals("", attributes.get("group"));
+        assertEquals(getDefaultValue(annotation, "export"), attributes.get("export"));
+
+        Map<String, Object> filteredAttributes = filterDefaultValues(annotation, attributes);
+        assertEquals(2, filteredAttributes.size());
+        assertEquals("java.lang.CharSequence", filteredAttributes.get("interfaceName"));
+        assertEquals(CharSequence.class, filteredAttributes.get("interfaceClass"));
+        assertFalse(filteredAttributes.containsKey("group"));
+        assertFalse(filteredAttributes.containsKey("export"));
+
+        Map<String, Object> nonDefaultAttributes = getAttributes(annotation, true);
+        assertEquals(nonDefaultAttributes, filteredAttributes);
     }
 
     @Test

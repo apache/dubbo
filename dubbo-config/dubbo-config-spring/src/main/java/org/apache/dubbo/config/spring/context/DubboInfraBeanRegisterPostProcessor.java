@@ -54,7 +54,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         DubboBeanUtils.registerBeansIfNotExists(registry);
 
-        // register ConfigManager
+        // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, ApplicationModel.getConfigManager());
     }
 

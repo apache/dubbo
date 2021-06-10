@@ -28,6 +28,8 @@
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
+        <!-- Uncomment spring_version property to check Spring 4.x compatibility -->
+        <!-- <spring_version>4.3.30.RELEASE</spring_version> -->
     </properties>
     <dependencies>
         <dependency>
