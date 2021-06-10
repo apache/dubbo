@@ -64,6 +64,7 @@
                         <exclude>**/.classpath</exclude>
                         <exclude>**/.project</exclude>
                         <exclude>**/target/**</exclude>
+                        <exclude>**/generated/**</exclude>
                         <exclude>**/*.log</exclude>
                         <exclude>CONTRIBUTING.md</exclude>
                         <exclude>README.md</exclude>
