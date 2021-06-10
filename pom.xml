@@ -443,9 +443,6 @@
                                             License|BSD|3-Clause BSD License|The New BSD License
                                         </licenseMerge>
                                     </licenseMerges>
-                                    <excludes>
-                                        <exclude>dubbo-demo/dubbo-demo-triple/build/*</exclude>
-                                    </excludes>
                                 </configuration>
                             </execution>
                         </executions>
