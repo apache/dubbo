@@ -88,14 +88,14 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
     @Override
     public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
         String serviceKey = invoker.getUrl().getServiceKey();
-        InjvmExporter<T> tInjvmExporter = new InjvmExporter<>(invoker, serviceKey, this);
-        addExportMap(serviceKey, tInjvmExporter);
+        InjvmExporter<T> tInjvmExporter = new InjvmExporter<>(invoker, serviceKey, delegateExporterMap);
+        delegateExporterMap.addExportMap(serviceKey, tInjvmExporter);
         return tInjvmExporter;
     }
 
     @Override
     public <T> Invoker<T> protocolBindingRefer(Class<T> serviceType, URL url) throws RpcException {
-        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), this);
+        return new InjvmInvoker<T>(serviceType, url, url.getServiceKey(), delegateExporterMap);
     }
 
     public boolean isInjvmRefer(URL url) {
@@ -111,7 +111,7 @@ public class InjvmProtocol extends AbstractProtocol implements Protocol {
         } else if (url.getParameter(GENERIC_KEY, false)) {
             // generic invocation is not local reference
             return false;
-        } else if (getExporter(this, url) != null) {
+        } else if (getExporter(delegateExporterMap, url) != null) {
             // by default, go through local reference if there's the service exposed locally
             return true;
         } else {

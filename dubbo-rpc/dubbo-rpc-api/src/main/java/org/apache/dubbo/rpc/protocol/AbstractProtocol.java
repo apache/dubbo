@@ -43,11 +43,41 @@ import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 /**
  * abstract ProtocolSupport.
  */
-public abstract class AbstractProtocol implements DelegateExporterMap, Protocol {
+public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
+
+    protected final DelegateExporterMap delegateExporterMap = new DelegateExporterMap() {
+        @Override
+        public boolean isEmpty() {
+            return CollectionUtils.isEmptyMap(exporterMap);
+        }
+
+        @Override
+        public Exporter<?> getExport(String key) {
+            return exporterMap.get(key);
+        }
+
+        @Override
+        public void addExportMap(String key, Exporter<?> exporter) {
+            exporterMap.put(key, exporter);
+        }
+
+        @Override
+        public void removeExportMap(String key, Exporter<?> exporter) {
+            Exporter<?> findExporter = exporterMap.get(key);
+            if(findExporter == exporter){
+                exporterMap.remove(key);
+            }
+        }
+
+        @Override
+        public Collection<Exporter<?>> getExporters() {
+            return Collections.unmodifiableCollection(exporterMap.values());
+        }
+    };
 
     /**
      * <host:port, ProtocolServer>
@@ -66,6 +96,7 @@ public abstract class AbstractProtocol implements DelegateExporterMap, Protocol 
         return ProtocolUtils.serviceKey(port, serviceName, serviceVersion, serviceGroup);
     }
 
+    @Override
     public List<ProtocolServer> getServers() {
         return Collections.unmodifiableList(new ArrayList<>(serverMap.values()));
     }
@@ -109,36 +140,5 @@ public abstract class AbstractProtocol implements DelegateExporterMap, Protocol 
 
     public Map<String, Exporter<?>> getExporterMap() {
         return exporterMap;
-    }
-
-    @Override
-    public Collection<Exporter<?>> getExporters() {
-        return Collections.unmodifiableCollection(exporterMap.values());
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return CollectionUtils.isEmptyMap(exporterMap);
-    }
-
-    @Override
-    public Exporter<?> getExport(String key) {
-        return exporterMap.get(key);
-    }
-
-    @Override
-    public void addExportMap(String key, Exporter<?> exporter) {
-        exporterMap.put(key, exporter);
-    }
-
-    /**
-     * mgr exporterMap self, don't give to DubboExporter or InjvmExporter
-     */
-    @Override
-    public void removeExportMap(String key, Exporter<?> exporter) {
-        Exporter<?> findExporter = exporterMap.get(key);
-        if(findExporter == exporter){
-            exporterMap.remove(key);
-        }
     }
 }

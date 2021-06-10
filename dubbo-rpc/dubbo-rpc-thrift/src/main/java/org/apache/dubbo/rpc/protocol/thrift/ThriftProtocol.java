@@ -133,8 +133,8 @@ public class ThriftProtocol extends AbstractProtocol {
         }
         // export service.
         key = serviceKey(url);
-        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, this);
-        addExportMap(key, exporter);
+        DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, delegateExporterMap);
+        delegateExporterMap.addExportMap(key, exporter);
 
         return exporter;
     }
