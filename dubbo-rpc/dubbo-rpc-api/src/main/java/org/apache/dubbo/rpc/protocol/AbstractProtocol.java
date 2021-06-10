@@ -141,4 +141,8 @@ public abstract class AbstractProtocol implements Protocol {
     public Map<String, Exporter<?>> getExporterMap() {
         return exporterMap;
     }
+
+    public Collection<Exporter<?>> getExporters() {
+        return Collections.unmodifiableCollection(exporterMap.values());
+    }
 }
