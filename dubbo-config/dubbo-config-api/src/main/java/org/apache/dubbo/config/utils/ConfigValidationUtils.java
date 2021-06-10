@@ -205,17 +205,18 @@ public class ConfigValidationUtils {
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
-                    if (CollectionUtils.isNotEmpty(urls)) {
-                        for (URL url : urls) {
+                    if (urls == null) {
+                        throw new IllegalStateException(String.format("url should not be null,address is %s", address));
+                    }
+                    for (URL url : urls) {
 
-                            url = URLBuilder.from(url)
-                                    .addParameter(REGISTRY_KEY, url.getProtocol())
-                                    .setProtocol(extractRegistryType(url))
-                                    .build();
-                            if ((provider && url.getParameter(REGISTER_KEY, true))
-                                    || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
-                                registryList.add(url);
-                            }
+                        url = URLBuilder.from(url)
+                                .addParameter(REGISTRY_KEY, url.getProtocol())
+                                .setProtocol(extractRegistryType(url))
+                                .build();
+                        if ((provider && url.getParameter(REGISTER_KEY, true))
+                                || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {
+                            registryList.add(url);
                         }
                     }
                 }
