@@ -30,7 +30,6 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
@@ -98,7 +97,6 @@ import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.Executors.newFixedThreadPool;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
 import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
@@ -159,20 +157,13 @@ public class DubboBootstrap {
     private final ExecutorService executorService = newSingleThreadExecutor();
 
     private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-
-    private volatile ExecutorService exportReferExecutor;
-
-    private static final int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
+    ;
 
     private final ConfigManager configManager;
 
     private final Environment environment;
 
     private ReferenceConfigCache cache;
-
-    private volatile boolean exportAsync;
-
-    private volatile boolean referAsync;
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -549,24 +540,6 @@ public class DubboBootstrap {
     }
 
     /**
-     * @deprecated use {@link ApplicationConfig#setExportAsync(Boolean)} instead.
-     */
-    @Deprecated
-    public DubboBootstrap exportAsync() {
-        this.exportAsync = true;
-        return this;
-    }
-
-    /**
-     * @deprecated use {@link ApplicationConfig#setReferAsync(Boolean)} instead.
-     */
-    @Deprecated
-    public DubboBootstrap referAsync() {
-        this.referAsync = true;
-        return this;
-    }
-
-    /**
      * Initialize
      */
     public void initialize() {
@@ -595,16 +568,16 @@ public class DubboBootstrap {
     private void checkGlobalConfigs() {
         // check config types (ignore metadata-center)
         List<Class<? extends AbstractConfig>> multipleConfigTypes = Arrays.asList(
-                ApplicationConfig.class,
-                ProtocolConfig.class,
-                RegistryConfig.class,
-                MetadataReportConfig.class,
-                ProviderConfig.class,
-                ConsumerConfig.class,
-                MonitorConfig.class,
-                ModuleConfig.class,
-                MetricsConfig.class,
-                SslConfig.class);
+            ApplicationConfig.class,
+            ProtocolConfig.class,
+            RegistryConfig.class,
+            MetadataReportConfig.class,
+            ProviderConfig.class,
+            ConsumerConfig.class,
+            MonitorConfig.class,
+            ModuleConfig.class,
+            MetricsConfig.class,
+            SslConfig.class);
 
         for (Class<? extends AbstractConfig> configType : multipleConfigTypes) {
             checkDefaultAndValidateConfigs(configType);
@@ -620,7 +593,7 @@ public class DubboBootstrap {
             ProtocolConfig prevProtocol = protocolPortMap.get(port);
             if (prevProtocol != null) {
                 throw new IllegalStateException("Duplicated port used by protocol configs, port: " + port +
-                        ", configs: " + Arrays.asList(prevProtocol, protocol));
+                    ", configs: " + Arrays.asList(prevProtocol, protocol));
             }
             protocolPortMap.put(port, protocol);
         }
@@ -779,10 +752,10 @@ public class DubboBootstrap {
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (defaultRegistries.size() > 0) {
             defaultRegistries
-                    .stream()
-                    .filter(this::isUsedRegistryAsConfigCenter)
-                    .map(this::registryAsConfigCenter)
-                    .forEach(configManager::addConfigCenter);
+                .stream()
+                .filter(this::isUsedRegistryAsConfigCenter)
+                .map(this::registryAsConfigCenter)
+                .forEach(configManager::addConfigCenter);
 
             logger.info("use registry as config-center: " + configManager.getConfigCenters());
         }
@@ -790,7 +763,7 @@ public class DubboBootstrap {
 
     private boolean isUsedRegistryAsConfigCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsConfigCenter, "config",
-                DynamicConfigurationFactory.class);
+            DynamicConfigurationFactory.class);
     }
 
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
@@ -833,10 +806,10 @@ public class DubboBootstrap {
         List<RegistryConfig> defaultRegistries = configManager.getDefaultRegistries();
         if (defaultRegistries.size() > 0) {
             defaultRegistries
-                    .stream()
-                    .filter(this::isUsedRegistryAsMetadataCenter)
-                    .map(this::registryAsMetadataCenter)
-                    .forEach(configManager::addMetadataReport);
+                .stream()
+                .filter(this::isUsedRegistryAsMetadataCenter)
+                .map(this::registryAsMetadataCenter)
+                .forEach(configManager::addMetadataReport);
 
             logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
         }
@@ -844,7 +817,7 @@ public class DubboBootstrap {
 
     private boolean isUsedRegistryAsMetadataCenter(RegistryConfig registryConfig) {
         return isUsedRegistryAsCenter(registryConfig, registryConfig::getUseAsMetadataCenter, "metadata",
-                MetadataReportFactory.class);
+            MetadataReportFactory.class);
     }
 
     /**
@@ -870,13 +843,13 @@ public class DubboBootstrap {
             supported = supportsExtension(extensionClass, protocol);
             if (logger.isInfoEnabled()) {
                 logger.info(format("No value is configured in the registry, the %s extension[name : %s] %s as the %s center"
-                        , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
+                    , extensionClass.getSimpleName(), protocol, supported ? "supports" : "does not support", centerType));
             }
         }
 
         if (logger.isInfoEnabled()) {
             logger.info(format("The registry[%s] will be %s as the %s center", registryConfig,
-                    supported ? "used" : "not used", centerType));
+                supported ? "used" : "not used", centerType));
         }
         return supported;
     }
@@ -1229,9 +1202,9 @@ public class DubboBootstrap {
             String appConfigContent = null;
             if (isNotEmpty(appGroup)) {
                 appConfigContent = dynamicConfiguration.getProperties
-                        (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
-                                appGroup
-                        );
+                    (isNotEmpty(configCenter.getAppConfigFile()) ? configCenter.getAppConfigFile() : configCenter.getConfigFile(),
+                        appGroup
+                    );
             }
             try {
                 environment.updateExternalConfigMap(parseProperties(configContent));
@@ -1268,7 +1241,7 @@ public class DubboBootstrap {
 
             ApplicationConfig config = getApplication();
             if (config.getExportAsync() != null && config.getExportAsync()) {
-                ExecutorService executor = getExportReferExecutor();
+                ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
                         sc.export();
@@ -1317,7 +1290,7 @@ public class DubboBootstrap {
             if (rc.shouldInit()) {
                 ApplicationConfig config = getApplication();
                 if (config.getReferAsync() != null && config.getReferAsync()) {
-                    ExecutorService executor = getExportReferExecutor();
+                    ExecutorService executor = executorRepository.getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {
                             cache.get(rc);
@@ -1345,16 +1318,6 @@ public class DubboBootstrap {
         });
         asyncReferringFutures.clear();
         cache.destroyAll();
-    }
-
-    public ExecutorService getExportReferExecutor() {
-        if (exportReferExecutor == null) {
-            ApplicationConfig config = getApplication();
-            int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
-            exportReferExecutor = newFixedThreadPool(coreSize, new NamedThreadFactory("Dubbo-export-refer", true));
-        }
-
-        return exportReferExecutor;
     }
 
     private void registerServiceInstance() {
@@ -1426,7 +1389,7 @@ public class DubboBootstrap {
 
     public void destroy() {
         if (destroyLock.tryLock()
-                && shutdown.compareAndSet(false, true)) {
+            && shutdown.compareAndSet(false, true)) {
             try {
                 if (destroyed.compareAndSet(false, true)) {
                     if (started.compareAndSet(true, false)) {
@@ -1561,10 +1524,6 @@ public class DubboBootstrap {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
             executorService.shutdown();
-        }
-
-        if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
-            exportReferExecutor.shutdown();
         }
     }
 

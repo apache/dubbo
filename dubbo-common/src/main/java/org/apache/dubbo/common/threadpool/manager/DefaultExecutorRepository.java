@@ -24,6 +24,8 @@ import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -36,6 +38,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_POOL_CORE_SIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -52,7 +55,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
-    private ScheduledExecutorService serviceExporterExecutor;
+    private volatile ScheduledExecutorService exportReferExecutor;
 
     public ScheduledExecutorService registryNotificationExecutor;
 
@@ -67,6 +70,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     private ExecutorService poolRouterExecutor;
 
     private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
+
+    private static final Object LOCK = new Object();
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -83,7 +88,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
         serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
@@ -177,8 +181,22 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
-    public ScheduledExecutorService getServiceExporterExecutor() {
-        return serviceExporterExecutor;
+    public ScheduledExecutorService getExportReferExecutor() {
+        if (exportReferExecutor == null) {
+            synchronized (LOCK) {
+                if (exportReferExecutor == null) {
+                    ApplicationConfig config = ApplicationModel.getConfigManager().getApplication().orElseGet(() -> {
+                        logger.warn("Cannot get application config, use default size to create export-refer executor");
+                        return new ApplicationConfig();
+                    });
+
+                    int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
+                    exportReferExecutor = Executors.newScheduledThreadPool(coreSize, new NamedThreadFactory("Dubbo-export-refer", true));
+                }
+            }
+        }
+
+        return exportReferExecutor;
     }
 
     @Override
@@ -212,10 +230,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public void destroyAll() {
         poolRouterExecutor.shutdown();
-        serviceExporterExecutor.shutdown();
         serviceDiscoveryAddressNotificationExecutor.shutdown();
         registryNotificationExecutor.shutdown();
         metadataRetryExecutor.shutdown();
+
+        shutdownExportReferExecutor();
 
         data.values().forEach(executors -> {
             if (executors != null) {
@@ -235,5 +254,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        for (ExecutorService executorService : executorServiceRing.listItems()) {
 //            executorService.shutdown();
 //        }
+    }
+
+    private void shutdownExportReferExecutor() {
+        if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
+            exportReferExecutor.shutdown();
+        }
     }
 }
