@@ -125,6 +125,7 @@
         <apache-rat-plugin.version>0.13</apache-rat-plugin.version>
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
+        <checkstyle_unix.skip>true</checkstyle_unix.skip>
         <rat.skip>true</rat.skip>
         <jacoco.skip>true</jacoco.skip>
         <revision>3.0.0-SNAPSHOT</revision>
@@ -257,6 +258,7 @@
             <id>checkstyle</id>
             <properties>
                 <checkstyle.skip>false</checkstyle.skip>
+                <checkstyle_unix.skip>false</checkstyle_unix.skip>
             </properties>
         </profile>
         <profile>
@@ -308,7 +310,29 @@
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/istio/v1/auth/Ca.java,
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
+                                        **/generated/**/*,
+                                        **/target/**/*,
                                     </excludes>
+                                </configuration>
+                                <goals>
+                                    <goal>check</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>checkstyle-unix-validation</id>
+                                <phase>validate</phase>
+                                <configuration>
+                                    <configLocation>codestyle/checkstyle_unix.xml</configLocation>
+                                    <encoding>UTF-8</encoding>
+                                    <consoleOutput>true</consoleOutput>
+                                    <failOnViolation>true</failOnViolation>
+                                    <skip>${checkstyle_unix.skip}</skip>
+                                    <resourceExcludes>
+                                        **/target/**/*
+                                    </resourceExcludes>
+                                    <resourceExcludes>
+                                        **/generated/**/*
+                                    </resourceExcludes>
                                 </configuration>
                                 <goals>
                                     <goal>check</goal>
@@ -610,6 +634,7 @@
                         </exclude>
                         <exclude>.github/**</exclude>
                         <exclude>compiler/**</exclude>
+                        <exclude>**/generated/**</exclude>
                         <!-- exclude mockito extensions spi files -->
                         <exclude>**/mockito-extensions/*</exclude>
                     </excludes>

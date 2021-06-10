@@ -49,6 +49,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
+    private volatile boolean isDestroy;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private URL registryURL;
@@ -124,10 +126,16 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void destroy() throws Exception {
+        isDestroy = true;
         doDestroy();
         metadataMap.clear();
         serviceInstanceRevisionMap.clear();
         echoCheckExecutor.shutdown();
+    }
+
+    @Override
+    public boolean isDestroy() {
+        return isDestroy;
     }
 
     private void updateMetadata(ServiceInstance serviceInstance) {

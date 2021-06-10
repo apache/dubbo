@@ -31,7 +31,6 @@
     </bean>
 
     <dubbo:application name="demo-provider">
-        <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
     <dubbo:config-center address="${dubbo.config-center.address}"/>
