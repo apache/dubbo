@@ -38,13 +38,11 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     void setMigrationRule(MigrationRule rule);
 
-    boolean invokersChanged();
+    boolean migrateToForceInterfaceInvoker(MigrationRule newRule);
 
-    void fallbackToInterfaceInvoker();
+    boolean migrateToForceApplicationInvoker(MigrationRule newRule);
 
-    void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
-
-    void refreshServiceDiscoveryInvokerOnMappingCallback(boolean forceMigrate);
+    void migrateToApplicationFirstInvoker(MigrationRule newRule);
 
     void reRefer(URL newSubscribeUrl);
 }

@@ -40,6 +40,11 @@ public class CompositeDynamicConfiguration implements DynamicConfiguration {
         }
     }
 
+    public Set<DynamicConfiguration> getInnerConfigurations() {
+        return configurations;
+    }
+
+
     @Override
     public void addListener(String key, String group, ConfigurationListener listener) {
         iterateListenerOperation(configuration -> configuration.addListener(key, group, listener));
