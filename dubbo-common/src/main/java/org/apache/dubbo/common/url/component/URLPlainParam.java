@@ -29,6 +29,8 @@ import java.util.Map;
  */
 public class URLPlainParam extends URLParam implements Serializable {
 
+    private static final long serialVersionUID = 4722019979665434393L;
+
     protected URLPlainParam(BitSet key, BitSet defaultKey, Integer[] value, Map<String, String> extraParams, Map<String, Map<String, String>> methodParameters, String rawParam) {
         super(key, defaultKey, value, extraParams, methodParameters, rawParam);
         this.enableCompressed = false;
