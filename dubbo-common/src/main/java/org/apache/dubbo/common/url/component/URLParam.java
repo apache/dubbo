@@ -559,6 +559,9 @@ public class URLParam implements Serializable {
             if (skipIfPresent && hasParameter(entry.getKey())) {
                 continue;
             }
+            if (entry.getKey() == null || entry.getValue() == null) {
+                continue;
+            }
             Integer keyIndex = DynamicParamTable.getKeyIndex(entry.getKey());
             if (keyIndex == null) {
                 // entry key is not present in DynamicParamTable, add it to EXTRA_PARAMS
