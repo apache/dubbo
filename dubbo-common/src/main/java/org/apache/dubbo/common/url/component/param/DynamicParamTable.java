@@ -43,9 +43,6 @@ public final class DynamicParamTable {
     }
 
     public static Integer getKeyIndex(String key) {
-        if (KEY2INDEX.get(key) == null) {
-            System.out.println("Notfound Key " + key);
-        }
         return KEY2INDEX.get(key);
     }
 
