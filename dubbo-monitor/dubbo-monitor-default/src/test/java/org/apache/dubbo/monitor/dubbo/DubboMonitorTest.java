@@ -107,7 +107,7 @@ public class DubboMonitorTest {
                 .addParameter(MonitorService.CONCURRENT, 1)
                 .addParameter(MonitorService.MAX_CONCURRENT, 1)
                 .build();
-        monitor.collect(statistics);
+        monitor.collect(statistics.toSerializableURL());
         monitor.send();
         while (lastStatistics == null) {
             Thread.sleep(10);
@@ -158,7 +158,7 @@ public class DubboMonitorTest {
                     continue;
                 }
                 try {
-                    monitor.collect(statistics);
+                    monitor.collect(statistics.toSerializableURL());
                     int i = 0;
                     while (monitorService.getStatistics() == null && i < 200) {
                         i++;
@@ -211,10 +211,10 @@ public class DubboMonitorTest {
         given(invoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:7070?interval=20"));
         DubboMonitor dubboMonitor = new DubboMonitor(invoker, monitorService);
 
-        dubboMonitor.collect(statistics);
+        dubboMonitor.collect(statistics.toSerializableURL());
         dubboMonitor.collect(statistics.addParameter(MonitorService.SUCCESS, 3).addParameter(MonitorService.CONCURRENT, 2)
-                .addParameter(MonitorService.INPUT, 1).addParameter(MonitorService.OUTPUT, 2));
-        dubboMonitor.collect(statistics.addParameter(MonitorService.SUCCESS, 6).addParameter(MonitorService.ELAPSED, 2));
+                .addParameter(MonitorService.INPUT, 1).addParameter(MonitorService.OUTPUT, 2).toSerializableURL());
+        dubboMonitor.collect(statistics.addParameter(MonitorService.SUCCESS, 6).addParameter(MonitorService.ELAPSED, 2).toSerializableURL());
 
         dubboMonitor.send();
 

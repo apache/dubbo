@@ -42,12 +42,15 @@ public final class DynamicParamTable {
         init();
     }
 
-    public static Integer getKeyIndex(String key) {
+    public static Integer getKeyIndex(boolean enabled, String key) {
+        if (!enabled) {
+            return null;
+        }
         return KEY2INDEX.get(key);
     }
 
     public static Integer getValueIndex(String key, String value) {
-        Integer idx = getKeyIndex(key);
+        Integer idx = getKeyIndex(true, key);
         if (idx == null) {
             throw new IllegalArgumentException("Cannot found key in url param:" + key);
         }
@@ -60,7 +63,7 @@ public final class DynamicParamTable {
     }
 
     public static boolean isDefaultValue(String key, String value) {
-        return Objects.equals(value, VALUES.get(getKeyIndex(key)).defaultVal());
+        return Objects.equals(value, VALUES.get(getKeyIndex(true, key)).defaultVal());
     }
 
     public static String getValue(int vi, Integer offset) {
