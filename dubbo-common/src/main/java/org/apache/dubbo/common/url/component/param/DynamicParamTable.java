@@ -43,6 +43,9 @@ public final class DynamicParamTable {
     }
 
     public static Integer getKeyIndex(String key) {
+        if (KEY2INDEX.get(key) == null) {
+            System.out.println("Notfound Key " + key);
+        }
         return KEY2INDEX.get(key);
     }
 
@@ -78,18 +81,15 @@ public final class DynamicParamTable {
         keys.add("");
         values.add(new DynamicValues(null));
 
-        // Cache key and defaultValue
-        keys.add("version");
-        values.add(new DynamicValues(null));
-
-        keys.add("side");
-        values.add(new FixedParamValue("consumer", "provider"));
-
-        KEYS.addAll(keys);
-        VALUES.addAll(values);
-
         ExtensionLoader.getExtensionLoader(DynamicParamSource.class)
-                .getSupportedExtensionInstances().forEach(source -> source.init(KEYS, VALUES));
+                .getSupportedExtensionInstances().forEach(source -> source.init(keys, values));
+
+        for (int i = 0; i < keys.size(); i++) {
+            if (!KEYS.contains(keys.get(i))) {
+                KEYS.add(keys.get(i));
+                VALUES.add(values.get(i));
+            }
+        }
 
         for (int i = 0; i < KEYS.size(); i++) {
             if (!KEYS.get(i).isEmpty()) {
