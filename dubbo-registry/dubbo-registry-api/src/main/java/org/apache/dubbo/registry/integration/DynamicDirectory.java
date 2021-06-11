@@ -231,15 +231,15 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 registry.unregister(getRegisteredConsumerUrl());
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
+            logger.warn("unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
         // unsubscribe.
         try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
+            if (getSubscribeUrl() != null && registry != null && registry.isAvailable()) {
                 registry.unsubscribe(getSubscribeUrl(), this);
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry " + registry.getUrl(), t);
+            logger.warn("unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
