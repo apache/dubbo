@@ -139,7 +139,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
-        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey() + consumerUrl.getParameter(TIMESTAMP_KEY), _key -> {
+        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey() + consumerUrl.getParameter(TIMESTAMP_KEY) + registryURL.getParameter(TIMESTAMP_KEY), _key -> {
             return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });
 

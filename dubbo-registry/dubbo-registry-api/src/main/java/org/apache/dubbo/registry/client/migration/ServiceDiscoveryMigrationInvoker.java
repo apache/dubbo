@@ -28,6 +28,8 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 
+import java.util.concurrent.CountDownLatch;
+
 public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryMigrationInvoker.class);
 
@@ -42,8 +44,19 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
 
     @Override
     public boolean migrateToForceInterfaceInvoker(MigrationRule newRule) {
-        logger.error("Service discovery registry type does not support discovery of interface level addresses, " + getRegistryUrl());
-        return migrateToForceApplicationInvoker(newRule);
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
+        return true;
+    }
+
+    @Override
+    public void migrateToApplicationFirstInvoker(MigrationRule newRule) {
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
     }
 
     @Override
