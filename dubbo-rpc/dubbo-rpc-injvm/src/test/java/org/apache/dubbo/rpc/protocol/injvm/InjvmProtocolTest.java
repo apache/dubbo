@@ -93,8 +93,8 @@ public class InjvmProtocolTest {
             }
 
             @Override
-            public void removeExportMap(String key, Exporter<?> exporter) {
-
+            public boolean removeExportMap(String key, Exporter<?> exporter) {
+                return true;
             }
 
             @Override
