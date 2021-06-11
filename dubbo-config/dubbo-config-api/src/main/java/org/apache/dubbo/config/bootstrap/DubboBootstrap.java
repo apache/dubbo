@@ -608,12 +608,11 @@ public class DubboBootstrap {
     }
 
     private <T extends AbstractConfig> void checkDefaultAndValidateConfigs(Class<T> configType) {
-        boolean needValid = (configType == MetadataReportConfig.class);
         try {
             if (shouldAddDefaultConfig(configType)) {
                 T config = configType.newInstance();
                 config.refresh();
-                if (!needValid || config.isValid()) {
+                if (!isNeedValidation(config) || config.isValid()) {
                     configManager.addConfig(config);
                 } else {
                     logger.info("Ignore invalid config: " + config);
@@ -630,9 +629,23 @@ public class DubboBootstrap {
         }
 
         // check required default
-        if (configType != MetadataReportConfig.class && configs.isEmpty()) {
+        if (isRequired(configType) && configs.isEmpty()) {
             throw new IllegalStateException("Default config not found for " + configType.getSimpleName());
         }
+    }
+
+    /**
+     * The component configuration that does not affect the main process does not need to be verified.
+     *
+     * @param config
+     * @param <T>
+     * @return
+     */
+    private <T extends AbstractConfig> boolean isNeedValidation(T config) {
+        if (config instanceof MetadataReportConfig) {
+            return false;
+        }
+        return true;
     }
 
     private <T extends AbstractConfig> void validateConfig(T config) {
@@ -659,7 +672,29 @@ public class DubboBootstrap {
         }
     }
 
+    /**
+     * The configuration that does not affect the main process is not necessary.
+     *
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    private <T extends AbstractConfig> boolean isRequired(Class<T> clazz) {
+        if (clazz == RegistryConfig.class ||
+            clazz == MetadataReportConfig.class ||
+            clazz == MonitorConfig.class ||
+            clazz == MetricsConfig.class) {
+            return false;
+        }
+        return true;
+    }
+
     private <T extends AbstractConfig> boolean shouldAddDefaultConfig(Class<T> clazz) {
+        // Configurations that are not required will not be automatically added to the default configuration
+        if (!isRequired(clazz)) {
+            return false;
+        }
+
         return configManager.getDefaultConfigs(clazz).isEmpty();
     }
 
@@ -1296,6 +1331,7 @@ public class DubboBootstrap {
                             logger.error("refer async catch error : " + t.getMessage(), t);
                         }
                     }, executor);
+
                     asyncReferringFutures.add(future);
                 } else {
                     cache.get(rc);

@@ -145,16 +145,21 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
+
+    @Override
     @Parameter(excluded = true, attribute = false)
     public boolean isExported() {
         return exported;
     }
 
+
+    @Override
     @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
         return unexported;
     }
 
+    @Override
     public void unexport() {
         if (!exported) {
             return;
@@ -175,6 +180,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         unexported = true;
     }
 
+    @Override
     public synchronized void export() {
         if (!shouldExport() || exported) {
             return;
