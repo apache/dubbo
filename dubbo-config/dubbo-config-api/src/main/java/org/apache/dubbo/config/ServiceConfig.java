@@ -294,36 +294,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             checkRef();
             generic = FALSE_VALUE;
         }
-        if (local != null) {
-            if (TRUE_VALUE.equals(local)) {
-                local = interfaceName + LOCAL_SUFFIX;
-            }
-            Class<?> localClass;
-            try {
-                localClass = ClassUtils.forNameWithThreadContextClassLoader(local);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            if (!interfaceClass.isAssignableFrom(localClass)) {
-                throw new IllegalStateException(
-                        "The local implementation class " + localClass.getName() + " not implement interface " + interfaceName);
-            }
-        }
-        if (stub != null) {
-            if (TRUE_VALUE.equals(stub)) {
-                stub = interfaceName + STUB_SUFFIX;
-            }
-            Class<?> stubClass;
-            try {
-                stubClass = ClassUtils.forNameWithThreadContextClassLoader(stub);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
-            if (!interfaceClass.isAssignableFrom(stubClass)) {
-                throw new IllegalStateException(
-                        "The stub implementation class " + stubClass.getName() + " not implement interface " + interfaceName);
-            }
-        }
+
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
         ConfigValidationUtils.validateServiceConfig(this);
