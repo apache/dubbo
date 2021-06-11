@@ -16,43 +16,71 @@
  */
 package org.apache.dubbo.rpc.protocol;
 
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.Exporter;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * delegate exportermap oper
  */
-public interface DelegateExporterMap {
+public class DelegateExporterMap {
+    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
 
     /**
      * check is empty map
      * @return
      */
-    boolean isEmpty();
+    public boolean isEmpty() {
+        return CollectionUtils.isEmptyMap(exporterMap);
+    }
 
     /**
      * get export
      * @param key
      * @return
      */
-    Exporter<?> getExport(String key);
+    public Exporter<?> getExport(String key) {
+        return exporterMap.get(key);
+    }
 
     /**
      * add
      * @param key
      * @param exporter
      */
-    void addExportMap(String key, Exporter<?> exporter);
+    public void addExportMap(String key, Exporter<?> exporter) {
+        exporterMap.put(key, exporter);
+    }
 
     /**
      * delete
      * @param key
      */
-    void removeExportMap(String key, Exporter<?> exporter);
+    public boolean removeExportMap(String key, Exporter<?> exporter) {
+        Exporter<?> findExporter = exporterMap.get(key);
+        if(findExporter == exporter){
+            exporterMap.remove(key);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * get the exports
+     * @return
+     */
+    public Map<String, Exporter<?>> getExporterMap() {
+        return exporterMap;
+    }
 
     /**
      * get all exports
      * @return
      */
-    Collection<Exporter<?>> getExporters();
+    public Collection<Exporter<?>> getExporters() {
+        return Collections.unmodifiableCollection(exporterMap.values());
+    }
 }

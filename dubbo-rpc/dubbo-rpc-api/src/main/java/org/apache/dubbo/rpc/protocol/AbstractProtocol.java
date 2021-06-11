@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Exporter;
@@ -47,37 +46,7 @@ public abstract class AbstractProtocol implements Protocol {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected final Map<String, Exporter<?>> exporterMap = new ConcurrentHashMap<String, Exporter<?>>();
-
-    protected final DelegateExporterMap delegateExporterMap = new DelegateExporterMap() {
-        @Override
-        public boolean isEmpty() {
-            return CollectionUtils.isEmptyMap(exporterMap);
-        }
-
-        @Override
-        public Exporter<?> getExport(String key) {
-            return exporterMap.get(key);
-        }
-
-        @Override
-        public void addExportMap(String key, Exporter<?> exporter) {
-            exporterMap.put(key, exporter);
-        }
-
-        @Override
-        public void removeExportMap(String key, Exporter<?> exporter) {
-            Exporter<?> findExporter = exporterMap.get(key);
-            if(findExporter == exporter){
-                exporterMap.remove(key);
-            }
-        }
-
-        @Override
-        public Collection<Exporter<?>> getExporters() {
-            return Collections.unmodifiableCollection(exporterMap.values());
-        }
-    };
+    protected final DelegateExporterMap exporterMap = new DelegateExporterMap();
 
     /**
      * <host:port, ProtocolServer>
@@ -116,14 +85,13 @@ public abstract class AbstractProtocol implements Protocol {
                 }
             }
         }
-        for (String key : new ArrayList<String>(exporterMap.keySet())) {
-            Exporter<?> exporter = exporterMap.remove(key);
-            if (exporter != null) {
+        for (Map.Entry<String, Exporter<?>> item : exporterMap.getExporterMap().entrySet()) {
+            if (exporterMap.removeExportMap(item.getKey(), item.getValue())) {
                 try {
                     if (logger.isInfoEnabled()) {
-                        logger.info("Unexport service: " + exporter.getInvoker().getUrl());
+                        logger.info("Unexport service: " + item.getValue().getInvoker().getUrl());
                     }
-                    exporter.unexport();
+                    item.getValue().unexport();
                 } catch (Throwable t) {
                     logger.warn(t.getMessage(), t);
                 }
@@ -139,10 +107,10 @@ public abstract class AbstractProtocol implements Protocol {
     protected abstract <T> Invoker<T> protocolBindingRefer(Class<T> type, URL url) throws RpcException;
 
     public Map<String, Exporter<?>> getExporterMap() {
-        return exporterMap;
+        return exporterMap.getExporterMap();
     }
 
     public Collection<Exporter<?>> getExporters() {
-        return Collections.unmodifiableCollection(exporterMap.values());
+        return exporterMap.getExporters();
     }
 }
