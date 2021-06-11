@@ -145,14 +145,16 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         super(service);
     }
 
+
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isExported() {
         return exported;
     }
 
+
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isUnexported() {
         return unexported;
     }
