@@ -74,9 +74,10 @@ public class ServiceConfigTest {
     private Protocol protocolDelegate = Mockito.mock(Protocol.class);
     private Registry registryDelegate = Mockito.mock(Registry.class);
     private Exporter exporter = Mockito.mock(Exporter.class);
-    private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<DemoServiceImpl>();
-    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<DemoServiceImpl>();
-    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<DemoServiceImpl>();
+    private ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> service2 = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> serviceWithoutRegistryConfig = new ServiceConfig<>();
+    private ServiceConfig<DemoServiceImpl> delayService = new ServiceConfig<>();
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -129,6 +130,12 @@ public class ServiceConfigTest {
         delayService.setRef(new DemoServiceImpl());
         delayService.setMethods(Collections.singletonList(method));
         delayService.setDelay(100);
+
+        serviceWithoutRegistryConfig.setProvider(provider);
+        serviceWithoutRegistryConfig.setApplication(app);
+        serviceWithoutRegistryConfig.setInterface(DemoService.class);
+        serviceWithoutRegistryConfig.setRef(new DemoServiceImpl());
+        serviceWithoutRegistryConfig.setMethods(Collections.singletonList(method));
 
     }
 
@@ -303,5 +310,29 @@ public class ServiceConfigTest {
         Assertions.assertEquals(2, metaData.size());
         Assertions.assertEquals("" + providerConfig.getActives(), metaData.get("actives"));
         Assertions.assertEquals("" + config.isAsync(), metaData.get("async"));
+    }
+
+
+
+    @Test
+    public void testExportWithoutRegistryConfig() {
+        serviceWithoutRegistryConfig.export();
+
+        assertThat(serviceWithoutRegistryConfig.getExportedUrls(), hasSize(1));
+        URL url = serviceWithoutRegistryConfig.toUrl();
+        assertThat(url.getProtocol(), equalTo("mockprotocol2"));
+        assertThat(url.getPath(), equalTo(DemoService.class.getName()));
+        assertThat(url.getParameters(), hasEntry(ANYHOST_KEY, "true"));
+        assertThat(url.getParameters(), hasEntry(APPLICATION_KEY, "app"));
+        assertThat(url.getParameters(), hasKey(BIND_IP_KEY));
+        assertThat(url.getParameters(), hasKey(BIND_PORT_KEY));
+        assertThat(url.getParameters(), hasEntry(EXPORT_KEY, "true"));
+        assertThat(url.getParameters(), hasEntry("echo.0.callback", "false"));
+        assertThat(url.getParameters(), hasEntry(GENERIC_KEY, "false"));
+        assertThat(url.getParameters(), hasEntry(INTERFACE_KEY, DemoService.class.getName()));
+        assertThat(url.getParameters(), hasKey(METHODS_KEY));
+        assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
+        assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
+        Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
     }
 }
