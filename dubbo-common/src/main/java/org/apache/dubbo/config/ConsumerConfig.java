@@ -17,6 +17,9 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.config.support.Parameter;
+
+import static org.apache.dubbo.config.Constants.URL_MERGE_PROCESSOR_KEY;
 
 /**
  * The service consumer default configuration
@@ -26,11 +29,6 @@ import org.apache.dubbo.common.utils.StringUtils;
 public class ConsumerConfig extends AbstractReferenceConfig {
 
     private static final long serialVersionUID = 2827274711143680600L;
-
-    /**
-     * Whether to use the default protocol
-     */
-    private Boolean isDefault;
 
     /**
      * Networking framework client uses: netty, mina, etc.
@@ -63,6 +61,13 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      */
     private Integer shareconnections;
 
+
+    /**
+     *  Url Merge Processor
+     *  Used to customize the URL merge of consumer and provider
+     */
+    private String urlMergeProcessor;
+
     @Override
     public void setTimeout(Integer timeout) {
         super.setTimeout(timeout);
@@ -72,11 +77,7 @@ public class ConsumerConfig extends AbstractReferenceConfig {
             System.setProperty("sun.rmi.transport.tcp.responseTimeout", String.valueOf(timeout));
         }
     }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
+    
     public String getClient() {
         return client;
     }
@@ -91,14 +92,6 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setThreadpool(String threadpool) {
         this.threadpool = threadpool;
-    }
-
-    public Boolean getDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     public Integer getCorethreads() {
@@ -131,5 +124,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setShareconnections(Integer shareconnections) {
         this.shareconnections = shareconnections;
+    }
+
+    @Parameter(key = URL_MERGE_PROCESSOR_KEY)
+    public String getUrlMergeProcessor() {
+        return urlMergeProcessor;
+    }
+
+    public void setUrlMergeProcessor(String urlMergeProcessor) {
+        this.urlMergeProcessor = urlMergeProcessor;
     }
 }

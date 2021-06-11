@@ -16,20 +16,19 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +42,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.event.annotation.AfterTestMethod;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Collection;
@@ -72,14 +72,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class ReferenceAnnotationBeanPostProcessorTest {
 
-    @BeforeAll
-    public static void setUp() {
-        ApplicationModel.reset();
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        ApplicationModel.reset();
+    @AfterTestMethod
+    public void setUp() {
+        DubboBootstrap.reset();
     }
 
     private static final String AOP_SUFFIX = "(based on AOP)";
@@ -122,6 +117,31 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     // #5 ReferenceBean (Field Injection #3)
     @Reference
     private HelloService helloService2;
+
+    // Instance 1
+    @Reference(check = false, parameters = {"a", "2", "b", "1"}, filter = {"echo"})
+    private HelloService helloServiceWithArray0;
+
+    // Instance 2
+    @Reference(check = false, parameters = {"a", "1", "b", "2"}, filter = {"echo"})
+    private HelloService helloServiceWithArray1;
+
+    @Reference(parameters = {"b", "2", "a", "1"}, filter = {"echo"}, check = false)
+    private HelloService helloServiceWithArray2;
+
+    // Instance 3
+    @Reference(check = false, parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", timeout = 100)})
+    private HelloService helloServiceWithMethod1;
+
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, check = false, methods = {@Method(name = "sayHello", timeout = 100)})
+    private HelloService helloServiceWithMethod2;
+
+    // Instance 4
+    @Reference(parameters = {"a", "1"}, filter = {"echo"}, methods = {@Method(name = "sayHello", arguments = {@Argument(callback = true, type = "String"), @Argument(callback = false, type = "int")}, timeout = 100)}, check = false)
+    private HelloService helloServiceWithArgument1;
+
+    @Reference(check = false, filter = {"echo"}, parameters = {"a", "1"}, methods = {@Method(name = "sayHello", timeout = 100, arguments = {@Argument(callback = false, type = "int"), @Argument(callback = true, type = "String")})})
+    private HelloService helloServiceWithArgument2;
 
     @Test
     public void test() throws Exception {
@@ -177,7 +197,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(4, referenceBeans.size());
+        Assertions.assertEquals(8, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 
@@ -194,7 +214,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Map<InjectionMetadata.InjectedElement, ReferenceBean<?>> referenceBeanMap =
                 beanPostProcessor.getInjectedFieldReferenceBeanMap();
 
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(10, referenceBeanMap.size());
 
         for (Map.Entry<InjectionMetadata.InjectedElement, ReferenceBean<?>> entry : referenceBeanMap.entrySet()) {
 
@@ -311,7 +331,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Collection<ReferenceBean<?>> referenceBeans = beanPostProcessor.getReferenceBeans();
 
-        Assertions.assertEquals(4, referenceBeans.size());
+        Assertions.assertEquals(8, referenceBeans.size());
 
         ReferenceBean<?> referenceBean = referenceBeans.iterator().next();
 

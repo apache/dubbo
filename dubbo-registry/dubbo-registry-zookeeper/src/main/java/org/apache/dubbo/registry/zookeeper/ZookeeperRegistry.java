@@ -59,7 +59,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGO
  */
 public class ZookeeperRegistry extends FailbackRegistry {
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 
@@ -191,7 +191,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = zkListeners.get(url);
         if (listeners != null) {
-            ChildListener zkListener = listeners.get(listener);
+            ChildListener zkListener = listeners.remove(listener);
             if (zkListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -201,6 +201,10 @@ public class ZookeeperRegistry extends FailbackRegistry {
                         zkClient.removeChildListener(path, zkListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                zkListeners.remove(url);
             }
         }
     }
@@ -282,7 +286,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
 
     private List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
         List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
-        if (urls == null || urls.isEmpty()) {
+        if (CollectionUtils.isEmpty(urls)) {
             int i = path.lastIndexOf(PATH_SEPARATOR);
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = URLBuilder.from(consumer)
@@ -308,6 +312,7 @@ public class ZookeeperRegistry extends FailbackRegistry {
             for (Map.Entry<URL, Set<NotifyListener>> entry : recoverSubscribed.entrySet()) {
                 URL url = entry.getKey();
                 for (NotifyListener listener : entry.getValue()) {
+                    removeFailedSubscribed(url, listener);
                     addFailedSubscribed(url, listener);
                 }
             }

@@ -74,7 +74,10 @@ import java.util.regex.Pattern;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DISPATHER;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -105,10 +108,12 @@ import static org.apache.dubbo.config.Constants.DUBBO_IP_TO_REGISTRY;
 import static org.apache.dubbo.config.Constants.ENVIRONMENT;
 import static org.apache.dubbo.config.Constants.IGNORE_CHECK_KEYS;
 import static org.apache.dubbo.config.Constants.LAYER_KEY;
+import static org.apache.dubbo.config.Constants.LISTENER_KEY;
 import static org.apache.dubbo.config.Constants.NAME;
 import static org.apache.dubbo.config.Constants.ORGANIZATION;
 import static org.apache.dubbo.config.Constants.OWNER;
 import static org.apache.dubbo.config.Constants.STATUS_KEY;
+import static org.apache.dubbo.config.Constants.STUB_KEY;
 import static org.apache.dubbo.monitor.Constants.LOGSTAT_PROTOCOL;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_KEY;
@@ -200,6 +205,9 @@ public class ConfigValidationUtils {
                     }
                     List<URL> urls = UrlUtils.parseURLs(address, map);
 
+                    if (urls == null) {
+                        throw new IllegalStateException(String.format("url should not be null,address is %s", address));
+                    }
                     for (URL url : urls) {
 
                         url = URLBuilder.from(url)
@@ -262,7 +270,7 @@ public class ConfigValidationUtils {
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);
         String address = null;
-        String sysaddress = System.getProperty("dubbo.monitor.address");
+        String sysaddress = System.getProperty(DUBBO_MONITOR_ADDRESS);
         if (sysaddress != null && sysaddress.length() > 0) {
             address = sysaddress;
         } else if (monitor != null) {
@@ -331,8 +339,8 @@ public class ConfigValidationUtils {
 
     public static void validateAbstractInterfaceConfig(AbstractInterfaceConfig config) {
         checkName(LOCAL_KEY, config.getLocal());
-        checkName("stub", config.getStub());
-        checkMultiName("owner", config.getOwner());
+        checkName(STUB_KEY, config.getStub());
+        checkMultiName(OWNER, config.getOwner());
 
         checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
         checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
@@ -351,7 +359,7 @@ public class ConfigValidationUtils {
         checkName(TOKEN_KEY, config.getToken());
         checkPathName(PATH_KEY, config.getPath());
 
-        checkMultiExtension(ExporterListener.class, "listener", config.getListener());
+        checkMultiExtension(ExporterListener.class, LISTENER_KEY, config.getListener());
 
         validateAbstractInterfaceConfig(config);
 
@@ -376,7 +384,7 @@ public class ConfigValidationUtils {
     }
 
     public static void validateReferenceConfig(ReferenceConfig config) {
-        checkMultiExtension(InvokerListener.class, "listener", config.getListener());
+        checkMultiExtension(InvokerListener.class, LISTENER_KEY, config.getListener());
         checkKey(VERSION_KEY, config.getVersion());
         checkKey(GROUP_KEY, config.getGroup());
         checkName(CLIENT_KEY, config.getClient());
@@ -460,8 +468,7 @@ public class ConfigValidationUtils {
     public static void validateMonitorConfig(MonitorConfig config) {
         if (config != null) {
             if (!config.isValid()) {
-                logger.info("There's no valid monitor config found, if you want to open monitor statistics for Dubbo, " +
-                        "please make sure your monitor is configured properly.");
+                logger.info("No valid monitor config found, specify monitor info to enable collection of Dubbo statistics");
             }
 
             checkParameterName(config.getParameters());
@@ -471,9 +478,9 @@ public class ConfigValidationUtils {
     public static void validateProtocolConfig(ProtocolConfig config) {
         if (config != null) {
             String name = config.getName();
-            checkName("name", name);
+            checkName(NAME, name);
             checkHost(HOST_KEY, config.getHost());
-            checkPathName("contextpath", config.getContextpath());
+            checkPathName(CONTEXTPATH_KEY, config.getContextpath());
 
 
             if (DUBBO_PROTOCOL.equals(name)) {
@@ -484,11 +491,11 @@ public class ConfigValidationUtils {
             }
 
             checkMultiExtension(TelnetHandler.class, TELNET, config.getTelnet());
-            checkMultiExtension(StatusChecker.class, "status", config.getStatus());
+            checkMultiExtension(StatusChecker.class, STATUS_KEY, config.getStatus());
             checkExtension(Transporter.class, TRANSPORTER_KEY, config.getTransporter());
             checkExtension(Exchanger.class, EXCHANGER_KEY, config.getExchanger());
             checkExtension(Dispatcher.class, DISPATCHER_KEY, config.getDispatcher());
-            checkExtension(Dispatcher.class, "dispather", config.getDispather());
+            checkExtension(Dispatcher.class, DISPATHER, config.getDispather());
             checkExtension(ThreadPool.class, THREADPOOL_KEY, config.getThreadpool());
         }
     }
@@ -522,7 +529,7 @@ public class ConfigValidationUtils {
     public static void validateMethodConfig(MethodConfig config) {
         checkExtension(LoadBalance.class, LOADBALANCE_KEY, config.getLoadbalance());
         checkParameterName(config.getParameters());
-        checkMethodName("name", config.getName());
+        checkMethodName(NAME, config.getName());
 
         String mock = config.getMock();
         if (StringUtils.isNotEmpty(mock)) {
@@ -630,7 +637,7 @@ public class ConfigValidationUtils {
         ignoreCheckKeys.add(BACKUP_KEY);
         String ignoreCheckKeysStr = parameters.get(IGNORE_CHECK_KEYS);
         if (!StringUtils.isBlank(ignoreCheckKeysStr)) {
-            ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(",")));
+            ignoreCheckKeys.addAll(Arrays.asList(ignoreCheckKeysStr.split(COMMA_SEPARATOR)));
         }
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             if (!ignoreCheckKeys.contains(entry.getKey())) {

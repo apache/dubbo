@@ -76,6 +76,14 @@ public class DubboProtocolTest {
     }
 
     @Test
+    public void testGetDubboProtocol(){
+        DemoService service = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(service, DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName())));
+        Assertions.assertTrue(DubboProtocol.getDubboProtocol().getServers().size() > 0);
+    }
+
+    @Test
     public void testDubboProtocol() throws Exception {
         DemoService service = new DemoServiceImpl();
         int port = NetUtils.getAvailablePort();
@@ -230,5 +238,23 @@ public class DubboProtocolTest {
         protocol.export(proxy.getInvoker(service, DemoService.class, url));
         service = proxy.getProxy(protocol.refer(DemoService.class, url));
         assertEquals(service.getRemoteApplicationName(), "consumer");
+    }
+
+    @Test
+    public void testPayloadOverException() throws Exception {
+        DemoService service = new DemoServiceImpl();
+        int port = NetUtils.getAvailablePort();
+        protocol.export(proxy.getInvoker(service, DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("payload", 10 * 1024)));
+        service = proxy.getProxy(protocol.refer(DemoService.class,
+                URL.valueOf("dubbo://127.0.0.1:" + port + "/" + DemoService.class.getName()).addParameter("timeout",
+                        6000L).addParameter("payload", 160)));
+        try {
+            service.download(300);
+            Assertions.fail();
+        } catch (Exception expected) {
+            Assertions.assertTrue(expected.getMessage().contains("Data length too large"));
+        }
+
     }
 }

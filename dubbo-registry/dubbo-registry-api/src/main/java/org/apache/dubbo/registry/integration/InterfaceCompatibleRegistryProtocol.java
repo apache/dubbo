@@ -18,9 +18,12 @@ package org.apache.dubbo.registry.integration;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -33,6 +36,8 @@ import static org.apache.dubbo.registry.Constants.DEFAULT_REGISTRY;
  * RegistryProtocol
  */
 public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
+
+    private static final Logger logger = LoggerFactory.getLogger(InterfaceCompatibleRegistryProtocol.class);
 
     @Override
     protected URL getRegistryUrl(Invoker<?> originInvoker) {
@@ -60,12 +65,21 @@ public class InterfaceCompatibleRegistryProtocol extends RegistryProtocol {
 
     @Override
     public <T> ClusterInvoker<T> getServiceDiscoveryInvoker(Cluster cluster, Registry registry, Class<T> type, URL url) {
-        registry = registryFactory.getRegistry(super.getRegistryUrl(url));
+        try {
+            registry = registryFactory.getRegistry(super.getRegistryUrl(url));
+        } catch (IllegalStateException e) {
+            String protocol = url.getProtocol();
+            logger.warn(protocol + " do not support service discovery, automatically switch to interface-level service discovery.");
+            registry = AbstractRegistryFactory.getDefaultNopRegistryIfNotSupportServiceDiscovery();
+        }
+
         DynamicDirectory<T> directory = new ServiceDiscoveryRegistryDirectory<>(type, url);
         return doCreateInvoker(directory, cluster, registry, type);
     }
 
-    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry, Class<T> type, URL url, URL consumerUrl) {
+    @Override
+    protected <T> ClusterInvoker<T> getMigrationInvoker(RegistryProtocol registryProtocol, Cluster cluster, Registry registry,
+                                                        Class<T> type, URL url, URL consumerUrl) {
 //        ClusterInvoker<T> invoker = getInvoker(cluster, registry, type, url);
         return new MigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }

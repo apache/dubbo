@@ -18,6 +18,7 @@ package org.apache.dubbo.config.context;
 
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
+import org.apache.dubbo.common.extension.DisableInject;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -58,8 +60,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.utils.ReflectUtils.getProperty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.config.AbstractConfig.getTagName;
-import static org.apache.dubbo.config.Constants.PROTOCOLS_SUFFIX;
-import static org.apache.dubbo.config.Constants.REGISTRIES_SUFFIX;
+import static org.apache.dubbo.config.Constants.PROTOCOLS_PREFIX;
+import static org.apache.dubbo.config.Constants.REGISTRIES_PREFIX;
 
 public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
@@ -75,7 +77,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ApplicationConfig correlative methods
-
+    @DisableInject
     public void setApplication(ApplicationConfig application) {
         addConfig(application, true);
     }
@@ -90,6 +92,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     // MonitorConfig correlative methods
 
+    @DisableInject
     public void setMonitor(MonitorConfig monitor) {
         addConfig(monitor, true);
     }
@@ -99,7 +102,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     // ModuleConfig correlative methods
-
+    @DisableInject
     public void setModule(ModuleConfig module) {
         addConfig(module, true);
     }
@@ -108,6 +111,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(ModuleConfig.class)));
     }
 
+    @DisableInject
     public void setMetrics(MetricsConfig metrics) {
         addConfig(metrics, true);
     }
@@ -116,6 +120,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return ofNullable(getConfig(getTagName(MetricsConfig.class)));
     }
 
+    @DisableInject
     public void setSsl(SslConfig sslConfig) {
         addConfig(sslConfig, true);
     }
@@ -162,6 +167,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     public Collection<MetadataReportConfig> getMetadataConfigs() {
         return getConfigs(getTagName(MetadataReportConfig.class));
+    }
+
+    public MetadataReportConfig getMetadataConfig(String id) {
+        return getConfig(getTagName(MetadataReportConfig.class), id);
     }
 
     public Collection<MetadataReportConfig> getDefaultMetadataConfigs() {
@@ -257,9 +266,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public Set<String> getProtocolIds() {
         Set<String> protocolIds = new HashSet<>();
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
-                .getExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+                .getExternalConfigurationMap(), PROTOCOLS_PREFIX));
         protocolIds.addAll(getSubProperties(ApplicationModel.getEnvironment()
-                .getAppExternalConfigurationMap(), PROTOCOLS_SUFFIX));
+                .getAppExternalConfigurationMap(), PROTOCOLS_PREFIX));
 
         return unmodifiableSet(protocolIds);
     }
@@ -292,9 +301,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public Set<String> getRegistryIds() {
         Set<String> registryIds = new HashSet<>();
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getExternalConfigurationMap(),
-                REGISTRIES_SUFFIX));
+                REGISTRIES_PREFIX));
         registryIds.addAll(getSubProperties(ApplicationModel.getEnvironment().getAppExternalConfigurationMap(),
-                REGISTRIES_SUFFIX));
+                REGISTRIES_PREFIX));
 
         return unmodifiableSet(registryIds);
     }
@@ -428,6 +437,18 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 //                throw new IllegalStateException("No such " + configType.getName() + " is found");
                 return null;
             } else if (size > 1) {
+
+                AtomicReference<C> defaultConfig = new AtomicReference<>();
+                configsMap.forEach((str, config) -> {
+                    if (Boolean.TRUE.equals(config.isDefault())) {
+                        defaultConfig.compareAndSet(null, config);
+                    }
+                });
+
+                if (defaultConfig.get() != null) {
+                    return defaultConfig.get();
+                }
+
                 logger.warn("Expected single matching of " + configType + ", but found " + size + " instances, will randomly pick the first one.");
             }
 

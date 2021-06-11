@@ -690,6 +690,11 @@
                 <xsd:documentation><![CDATA[ registry config id. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="file" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The metadata report file store. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
     </xsd:complexType>
 
     <xsd:complexType name="configCenterType">
@@ -975,6 +980,11 @@
                     <xsd:annotation>
                         <xsd:documentation>
                             <![CDATA[ The default share connections. default share one connection. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="url-merge-processor" type="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ The Url merge processor. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
