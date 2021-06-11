@@ -48,7 +48,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
  * is not required if the real value is the default value.
  * <br/>
  * URLParam should operate as Copy-On-Write, each modify actions will return a new Object
+ * <br/>
  *
+ * NOTE: URLParam is not support serialization! {@link DynamicParamTable} is related with
+ * current running environment. If you want to make URL as a parameter, please call
+ * {@link URL#toSerializableURL()} to create {@link URLPlainParam} instead.
  * @since 3.0
  */
 public class URLParam {
