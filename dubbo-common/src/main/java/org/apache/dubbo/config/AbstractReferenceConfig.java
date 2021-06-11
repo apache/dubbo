@@ -92,9 +92,6 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
         if (sticky == null) {
             sticky = false;
         }
-        if (referAsync == null) {
-            referAsync = false;
-        }
     }
 
     public Boolean isCheck() {

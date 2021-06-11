@@ -312,7 +312,12 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     public Boolean shouldReferAsync() {
-        return getReferAsync() || consumer.getReferAsync();
+        Boolean shouldReferAsync = getReferAsync();
+        if (shouldReferAsync == null) {
+            shouldReferAsync = consumer != null && consumer.getReferAsync() != null && consumer.getReferAsync();
+        }
+
+        return shouldReferAsync;
     }
 
     public abstract T get();

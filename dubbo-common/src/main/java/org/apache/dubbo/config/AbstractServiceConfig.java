@@ -132,9 +132,6 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
         if (dynamic == null) {
             dynamic = true;
         }
-        if (exportAsync == null) {
-            exportAsync = false;
-        }
     }
 
     public String getVersion() {

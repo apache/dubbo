@@ -428,7 +428,12 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public Boolean shouldExportAsync() {
-        return getExportAsync() || provider.getExportAsync();
+        Boolean shouldExportAsync = getExportAsync();
+        if (shouldExportAsync == null) {
+            shouldExportAsync = provider != null && provider.getExportAsync() != null && provider.getExportAsync();
+        }
+
+        return shouldExportAsync;
     }
 
     public abstract void export();
