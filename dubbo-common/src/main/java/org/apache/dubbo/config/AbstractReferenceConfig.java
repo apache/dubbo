@@ -22,8 +22,8 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFER_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.REFER_ASYNC_KEY;
 
 /**
  * AbstractConsumerConfig

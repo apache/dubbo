@@ -117,10 +117,6 @@ public interface RegistryConstants {
      */
     String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
 
-    String EXPORT_ASYNC_KEY = "export-async";
-
-    String REFER_ASYNC_KEY = "refer-async";
-
     /**
      * The default request size of service instances
      */

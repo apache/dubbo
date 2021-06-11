@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
-import static org.apache.dubbo.common.constants.RegistryConstants.EXPORT_ASYNC_KEY;
 
 /**
  * AbstractServiceConfig
