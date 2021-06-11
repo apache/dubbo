@@ -427,6 +427,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         super.computeValidRegistryIds();
     }
 
+    public Boolean shouldExportAsync() {
+        return getExportAsync() || provider.getExportAsync();
+    }
+
     public abstract void export();
 
     public abstract void unexport();

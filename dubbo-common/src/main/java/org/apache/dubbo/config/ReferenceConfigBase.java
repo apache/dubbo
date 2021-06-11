@@ -311,6 +311,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return StringUtils.isEmpty(this.group) ? (consumer != null ? consumer.getGroup() : this.group) : this.group;
     }
 
+    public Boolean shouldReferAsync() {
+        return getReferAsync() || consumer.getReferAsync();
+    }
+
     public abstract T get();
 
     public abstract void destroy();

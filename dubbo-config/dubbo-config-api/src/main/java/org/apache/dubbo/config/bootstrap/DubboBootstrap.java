@@ -1239,8 +1239,7 @@ public class DubboBootstrap {
                 serviceConfig.refresh();
             }
 
-            ApplicationConfig config = getApplication();
-            if (config.getExportAsync() != null && config.getExportAsync()) {
+            if (sc.shouldExportAsync()) {
                 ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
@@ -1288,8 +1287,7 @@ public class DubboBootstrap {
             }
 
             if (rc.shouldInit()) {
-                ApplicationConfig config = getApplication();
-                if (config.getReferAsync() != null && config.getReferAsync()) {
+                if (rc.shouldReferAsync()) {
                     ExecutorService executor = executorRepository.getExportReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {

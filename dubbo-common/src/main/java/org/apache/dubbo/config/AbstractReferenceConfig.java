@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 import static org.apache.dubbo.common.constants.CommonConstants.INVOKER_LISTENER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.STUB_EVENT_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.REFER_ASYNC_KEY;
 
 /**
  * AbstractConsumerConfig
@@ -80,11 +81,19 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     protected String router;
 
+    /**
+     * Weather the reference is refer asynchronously
+     */
+    private Boolean referAsync;
+
     @Override
     protected void checkDefault() {
         super.checkDefault();
         if (sticky == null) {
             sticky = false;
+        }
+        if (referAsync == null) {
+            referAsync = false;
         }
     }
 
@@ -230,5 +239,14 @@ public abstract class AbstractReferenceConfig extends AbstractInterfaceConfig {
 
     public void setRouter(String router) {
         this.router = router;
+    }
+
+    @Parameter(key = REFER_ASYNC_KEY)
+    public Boolean getReferAsync() {
+        return referAsync;
+    }
+
+    public void setReferAsync(Boolean referAsync) {
+        this.referAsync = referAsync;
     }
 }

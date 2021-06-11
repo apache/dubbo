@@ -184,10 +184,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String startupProbe;
 
-    private Boolean exportAsync;
-
-    private Boolean referAsync;
-
     private Integer asyncPoolCoreSize;
 
     public ApplicationConfig() {
@@ -544,24 +540,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
-    }
-
-    @Parameter(key = "export-async")
-    public Boolean getExportAsync() {
-        return exportAsync;
-    }
-
-    public void setExportAsync(Boolean exportAsync) {
-        this.exportAsync = exportAsync;
-    }
-
-    @Parameter(key = "refer-async")
-    public Boolean getReferAsync() {
-        return referAsync;
-    }
-
-    public void setReferAsync(Boolean referAsync) {
-        this.referAsync = referAsync;
     }
 
     @Parameter(key = "async-pool-core-size")
