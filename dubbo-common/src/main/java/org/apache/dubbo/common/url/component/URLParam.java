@@ -575,26 +575,58 @@ public class URLParam implements Serializable {
                     methodMap.put(methodSplit[0], entry.getValue());
                 }
             } else {
-                if (newKey == null) {
-                    newKey = (BitSet) KEY.clone();
-                }
-                newKey.set(keyIndex);
-
-                if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
-                    // recover VALUE back to Map
-                    if (newValueMap == null) {
-                        newValueMap = recoverCompressedValue();
+                if (KEY.get(keyIndex)) {
+                    // contains key, replace value
+                    if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
+                        // recover VALUE back to Map, use map to replace key pair
+                        if (newValueMap == null) {
+                            newValueMap = recoverCompressedValue();
+                        }
+                        newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                    } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
+                        // new value is not the default key
+                        if (DEFAULT_KEY.get(keyIndex)) {
+                            // old value is the default value
+                            // value is default value, add to defaultKey directly
+                            if (defaultKey == null) {
+                                defaultKey = (BitSet) DEFAULT_KEY.clone();
+                            }
+                            defaultKey.set(keyIndex, false);
+                            newValueArray = addByMove(VALUE, keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                        } else {
+                            // old value is not the default key, replace offset in VALUE array
+                            newValueArray = replaceOffset(VALUE, keyIndexToCompressIndex(KEY, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                        }
+                    } else {
+                        // value is default value, add to defaultKey directly
+                        if (defaultKey == null) {
+                            defaultKey = (BitSet) DEFAULT_KEY.clone();
+                        }
+                        defaultKey.set(keyIndex);
                     }
-                    newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
-                } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
-                    // add parameter by moving array, only support for adding once
-                    newValueArray = addByMove(VALUE, keyIndexToCompressIndex(newKey, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
                 } else {
-                    // value is default value, add to defaultKey directly
-                    if (defaultKey == null) {
-                        defaultKey = (BitSet) DEFAULT_KEY.clone();
+                    // key is absent, add it
+                    if (newKey == null) {
+                        newKey = (BitSet) KEY.clone();
                     }
-                    defaultKey.set(keyIndex);
+                    newKey.set(keyIndex);
+
+                    if (parameters.size() > ADD_PARAMETER_ON_MOVE_THRESHOLD) {
+                        // recover VALUE back to Map
+                        if (newValueMap == null) {
+                            newValueMap = recoverCompressedValue();
+                        }
+                        newValueMap.put(keyIndex, DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                    } else if (!DynamicParamTable.isDefaultValue(entry.getKey(), entry.getValue())) {
+                        // add parameter by moving array, only support for adding once
+                        newValueArray = addByMove(VALUE, keyIndexToCompressIndex(newKey, DEFAULT_KEY, keyIndex), DynamicParamTable.getValueIndex(entry.getKey(), entry.getValue()));
+                    } else {
+                        // value is default value, add to defaultKey directly
+                        if (defaultKey == null) {
+                            defaultKey = (BitSet) DEFAULT_KEY.clone();
+                        }
+                        defaultKey.set(keyIndex);
+                    }
                 }
             }
         }
@@ -640,6 +672,19 @@ public class URLParam implements Serializable {
         System.arraycopy(array, 0, result, 0, index);
         result[index] = value;
         System.arraycopy(array, index, result, index + 1, array.length - index);
+
+        return result;
+    }
+
+    private Integer[] replaceOffset(Integer[] array, int index, Integer value) {
+        if (index < 0 || index > array.length) {
+            throw new IllegalArgumentException();
+        }
+        // copy-on-write
+        Integer[] result = new Integer[array.length];
+
+        System.arraycopy(array, 0, result, 0, array.length);
+        result[index] = value;
 
         return result;
     }
