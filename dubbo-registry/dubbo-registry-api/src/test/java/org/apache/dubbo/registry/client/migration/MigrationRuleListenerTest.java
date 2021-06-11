@@ -59,11 +59,12 @@ public class MigrationRuleListenerTest {
         MigrationRuleHandler handler = Mockito.mock(MigrationRuleHandler.class);
 
         MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
-        migrationRuleListener.getHandlers().put("Test1", handler);
+        MigrationInvoker migrationInvoker = Mockito.mock(MigrationInvoker.class);
+        migrationRuleListener.getHandlers().put(migrationInvoker, handler);
 
         Mockito.verify(handler, Mockito.timeout(5000)).doMigrate(Mockito.any());
 
-        migrationRuleListener.onRefer(null, null, consumerURL, null);
+        migrationRuleListener.onRefer(null, migrationInvoker, consumerURL, null);
         Mockito.verify(handler, Mockito.times(2)).doMigrate(Mockito.any());
 
         ApplicationModel.reset();
