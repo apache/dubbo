@@ -39,7 +39,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 @Activate
@@ -49,7 +48,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
     private final String RULE_KEY = ApplicationModel.getName() + ".migration";
 
-    private final Map<String, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
+    private final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
     private DynamicConfiguration configuration;
 
     private volatile String rawRule;
@@ -77,11 +76,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         String localRawRule = ApplicationModel.getEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
             Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
-                    .schedule(() -> {
-                        if (this.rawRule.equals(INIT)) {
-                            this.process(new ConfigChangedEvent(null, null, localRawRule));
-                        }
-                    }, getDelay(), TimeUnit.MILLISECONDS);
+                .schedule(() -> {
+                    if (this.rawRule.equals(INIT)) {
+                        this.process(new ConfigChangedEvent(null, null, localRawRule));
+                    }
+                }, getDelay(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -139,7 +138,8 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
-        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent(consumerUrl.getServiceKey() + consumerUrl.getParameter(TIMESTAMP_KEY), _key -> {
+        MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent((MigrationInvoker<?>) invoker, _key -> {
+            ((MigrationInvoker<?>) invoker).setMigrationRuleListener(this);
             return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });
 
@@ -155,7 +155,11 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         }
     }
 
-    public Map<String, MigrationRuleHandler> getHandlers() {
+    public Map<MigrationInvoker, MigrationRuleHandler> getHandlers() {
         return handlers;
+    }
+
+    protected void removeMigrationInvoker(MigrationInvoker<?> migrationInvoker) {
+        handlers.remove(migrationInvoker);
     }
 }
