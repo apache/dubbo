@@ -19,6 +19,7 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.DubboComponentScan;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -45,7 +46,8 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ContextConfiguration(
         classes = {
                 ServiceAnnotationTestConfiguration.class,
-                ServiceAnnotationPostProcessorTest.class
+                ServiceAnnotationPostProcessorTest.class,
+                ServiceAnnotationPostProcessorTest.DuplicatedScanConfig.class
         })
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 @TestPropertySource(properties = {
@@ -81,7 +83,7 @@ public class ServiceAnnotationPostProcessorTest {
         Map<String, ServiceAnnotationPostProcessor> beanPostProcessorsMap =
                 beanFactory.getBeansOfType(ServiceAnnotationPostProcessor.class);
 
-        Assertions.assertEquals(1, beanPostProcessorsMap.size());
+        Assertions.assertEquals(2, beanPostProcessorsMap.size());
 
     }
 
@@ -95,6 +97,11 @@ public class ServiceAnnotationPostProcessorTest {
         ServiceBean demoServiceBean = serviceBeansMap.get("ServiceBean:org.apache.dubbo.config.spring.api.DemoService:2.5.7");
 
         Assertions.assertNotNull(demoServiceBean.getMethods());
+
+    }
+
+    @DubboComponentScan({"org.apache.dubbo.config.spring.context.annotation", "${provider.package}"})
+    static class DuplicatedScanConfig {
 
     }
 

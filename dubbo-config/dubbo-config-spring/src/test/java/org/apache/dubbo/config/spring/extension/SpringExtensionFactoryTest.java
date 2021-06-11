@@ -18,6 +18,7 @@ package org.apache.dubbo.config.spring.extension;
 
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
@@ -41,6 +42,8 @@ public class SpringExtensionFactoryTest {
 
     @BeforeEach
     public void init() {
+        DubboBootstrap.reset();
+
         // init SpringExtensionFactory
         ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
 
@@ -56,6 +59,13 @@ public class SpringExtensionFactoryTest {
         SpringExtensionFactory.addApplicationContext(context2);
     }
 
+    @AfterEach
+    public void destroy() {
+        context1.close();
+        context2.close();
+        SpringExtensionFactory.clearContexts();
+    }
+
     @Test
     public void testGetExtensionBySPI() {
         Protocol protocol = springExtensionFactory.getExtension(Protocol.class, "protocol");
@@ -68,13 +78,6 @@ public class SpringExtensionFactoryTest {
         Assertions.assertNotNull(bean);
         HelloService hello = springExtensionFactory.getExtension(HelloService.class, "hello");
         Assertions.assertNotNull(hello);
-    }
-
-    @AfterEach
-    public void destroy() {
-        SpringExtensionFactory.clearContexts();
-        context1.close();
-        context2.close();
     }
 
     @Bean("bean1")

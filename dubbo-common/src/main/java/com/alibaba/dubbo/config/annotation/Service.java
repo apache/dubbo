@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
 @Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
 public @interface Service {
 

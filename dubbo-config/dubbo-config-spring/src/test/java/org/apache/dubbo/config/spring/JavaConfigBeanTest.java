@@ -22,10 +22,12 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
@@ -38,7 +40,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 public class JavaConfigBeanTest {
@@ -70,15 +71,12 @@ public class JavaConfigBeanTest {
         SysProps.setProperty("dubbo.protocol.port", "2346");
         String registryAddress = "zookeeper://127.0.0.1:2181";
         SysProps.setProperty("dubbo.registry.address", registryAddress);
+        SysProps.setProperty("dubbo.provider.group", "test");
 
-        // test destroy flag
-//        MockServiceDiscovery mockServiceDiscovery = (MockServiceDiscovery) ExtensionLoader.getExtensionLoader(ServiceDiscovery.class).getExtension("mock");
-//        Assertions.assertEquals(false, mockServiceDiscovery.isDestroySucceed());
-
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(
-                TestConfiguration.class, ReferenceConfiguration.class);
+        AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext(
+                TestConfiguration.class, ConsumerConfiguration.class, ProviderConfiguration.class);
         try {
-            applicationContext.start();
+            consumerContext.start();
 
             ConfigManager configManager = ApplicationModel.getConfigManager();
             ApplicationConfig application = configManager.getApplication().get();
@@ -101,7 +99,7 @@ public class JavaConfigBeanTest {
             Assertions.assertEquals(false, consumerConfig.isCheck());
             Assertions.assertEquals(2, consumerConfig.getRetries());
 
-            Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class);
+            Map<String, ReferenceBean> referenceBeanMap = consumerContext.getBeansOfType(ReferenceBean.class);
             Assertions.assertEquals(1, referenceBeanMap.size());
             ReferenceBean referenceBean = referenceBeanMap.get("&demoService");
             Assertions.assertNotNull(referenceBean);
@@ -112,12 +110,14 @@ public class JavaConfigBeanTest {
             // consumer cannot override reference's attribute
             Assertions.assertEquals(5, referenceConfig.getRetries());
 
-        } finally {
-            applicationContext.close();
-        }
+            DemoService referProxy = (DemoService) referenceConfig.get();
+            Assertions.assertTrue( referProxy instanceof DemoService);
+            String result = referProxy.sayName("dubbo");
+            Assertions.assertEquals("say:dubbo", result);
 
-        // test destroy flag
-        //Assertions.assertEquals(true, mockServiceDiscovery.isDestroySucceed());
+        } finally {
+            consumerContext.close();
+        }
 
     }
 
@@ -160,7 +160,7 @@ public class JavaConfigBeanTest {
     }
 
     @Configuration
-    static class ReferenceConfiguration {
+    static class ConsumerConfiguration {
 
         @Bean
         @DubboReference(scope = Constants.SCOPE_LOCAL, retries = 5)
@@ -168,5 +168,15 @@ public class JavaConfigBeanTest {
             return new ReferenceBean<>();
         }
 
+    }
+
+    @Configuration
+    static class ProviderConfiguration {
+
+        @Bean
+        @DubboService(group = "demo")
+        public DemoService demoServiceImpl() {
+            return new DemoServiceImpl();
+        }
     }
 }

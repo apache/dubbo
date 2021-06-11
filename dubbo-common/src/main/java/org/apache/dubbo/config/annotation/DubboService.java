@@ -27,13 +27,40 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Class-level annotation used for declaring Dubbo service
+ * Class-level annotation used for declaring Dubbo service.
+ * <p/>
+ * <b>1. Using with java config bean:</b>
+ * <p/>
+ * <b>This usage is recommended</b>.<br/>
+ * It is more flexible on bean methods than on implementation classes, and is more compatible with Spring.
+ * <pre>
+ * &#64;Configuration
+ * class ProviderConfiguration {
+ *
+ *     &#64;Bean
+ *     &#64;DubboService(group="demo")
+ *     public DemoService demoServiceImpl() {
+ *         return new DemoServiceImpl();
+ *     }
+ * }
+ * </pre>
+ *
+ * <b>2. Using on implementation class of service:  </b>
+ * <pre>
+ * &#64;DubboService(group="demo")
+ * public class DemoServiceImpl implements DemoService {
+ *     ...
+ * }
+ * </pre>
+ *
+ * This usage causes the implementation class to rely on the Dubbo module.
+ *
  *
  * @since 2.7.7
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
 public @interface DubboService {
 
