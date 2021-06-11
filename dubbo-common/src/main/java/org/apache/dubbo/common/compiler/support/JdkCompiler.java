@@ -37,6 +37,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -113,6 +115,13 @@ public class JdkCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String sourceCode) throws Throwable {
+        try {
+            Class<?> res = Class.forName(name);
+            return res;
+        } catch (Throwable ex) {
+            //ignore
+        }
+
         int i = name.lastIndexOf('.');
         String packageName = i < 0 ? "" : name.substring(0, i);
         String className = i < 0 ? name : name.substring(i + 1);
