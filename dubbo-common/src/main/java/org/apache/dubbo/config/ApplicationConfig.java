@@ -184,8 +184,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     private String startupProbe;
 
-    private Integer asyncPoolCoreSize;
-
     public ApplicationConfig() {
     }
 
@@ -540,15 +538,6 @@ public class ApplicationConfig extends AbstractConfig {
 
     public void setStartupProbe(String startupProbe) {
         this.startupProbe = startupProbe;
-    }
-
-    @Parameter(key = "async-pool-core-size")
-    public Integer getAsyncPoolCoreSize() {
-        return asyncPoolCoreSize;
-    }
-
-    public void setAsyncPoolCoreSize(Integer asyncPoolCoreSize) {
-        this.asyncPoolCoreSize = asyncPoolCoreSize;
     }
 
     @Override

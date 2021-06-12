@@ -22,11 +22,13 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ProviderConfig;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,12 +38,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_POOL_CORE_SIZE;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
@@ -122,7 +127,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
          */
         if (executors == null) {
             logger.warn("No available executors, this is not expected, framework should call createExecutorIfAbsent first " +
-                    "before coming to here.");
+                "before coming to here.");
             return null;
         }
 
@@ -146,7 +151,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     public void updateThreadpool(URL url, ExecutorService executor) {
         try {
             if (url.hasParameter(THREADS_KEY)
-                    && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
+                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
                 int threads = url.getParameter(THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
@@ -185,18 +190,37 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         if (exportReferExecutor == null) {
             synchronized (LOCK) {
                 if (exportReferExecutor == null) {
-                    ApplicationConfig config = ApplicationModel.getConfigManager().getApplication().orElseGet(() -> {
-                        logger.warn("Cannot get application config, use default size to create export-refer executor");
-                        return new ApplicationConfig();
-                    });
-
-                    int coreSize = config.getAsyncPoolCoreSize() == null ? DEFAULT_ASYNC_POOL_CORE_SIZE : config.getAsyncPoolCoreSize();
-                    exportReferExecutor = Executors.newScheduledThreadPool(coreSize, new NamedThreadFactory("Dubbo-export-refer", true));
+                    int coreSize = getExportReferThreadNum();
+                    exportReferExecutor = Executors.newScheduledThreadPool(coreSize,
+                        new NamedThreadFactory("Dubbo-export-refer", true));
                 }
             }
         }
 
         return exportReferExecutor;
+    }
+
+    private Integer getExportReferThreadNum() {
+        Stream<Integer> provider = getConfigManager().getProviders()
+            .stream()
+            .map(ProviderConfig::getAsyncThreadNum);
+
+        Stream<Integer> consumer = getConfigManager().getConsumers()
+            .stream()
+            .map(ConsumerConfig::getAsyncThreadNum);
+
+        List<Integer> threadNums = Stream.concat(provider, consumer)
+            .filter(k -> k != null && k > 0)
+            .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(threadNums)) {
+            logger.info("Cannot get config `async-thread-num` for export-refer thread, using default: " + DEFAULT_ASYNC_POOL_CORE_SIZE);
+            return DEFAULT_ASYNC_POOL_CORE_SIZE;
+        } else if (threadNums.size() > 1) {
+            logger.info("Detect multiple config `async-thread-num` for export-refer thread, using: " + threadNums.get(0));
+        }
+
+        return threadNums.get(0);
     }
 
     @Override

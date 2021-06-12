@@ -420,6 +420,8 @@ public interface CommonConstants {
 
     String REFER_ASYNC_KEY = "refer-async";
 
+    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+
     int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
 
     /**
