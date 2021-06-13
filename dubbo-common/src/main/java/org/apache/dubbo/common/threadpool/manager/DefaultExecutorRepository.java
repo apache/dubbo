@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_POOL_CORE_SIZE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -200,6 +200,16 @@ public class DefaultExecutorRepository implements ExecutorRepository {
         return exportReferExecutor;
     }
 
+    public void shutdownExportReferExecutor() {
+        synchronized (LOCK) {
+            if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
+                ExecutorUtil.shutdownNow(exportReferExecutor, 100);
+            }
+
+            exportReferExecutor = null;
+        }
+    }
+
     private Integer getExportReferThreadNum() {
         Stream<Integer> provider = getConfigManager().getProviders()
             .stream()
@@ -214,8 +224,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             .collect(Collectors.toList());
 
         if (CollectionUtils.isEmpty(threadNums)) {
-            logger.info("Cannot get config `async-thread-num` for export-refer thread, using default: " + DEFAULT_ASYNC_POOL_CORE_SIZE);
-            return DEFAULT_ASYNC_POOL_CORE_SIZE;
+            logger.info("Cannot get config `async-thread-num` for export-refer thread, using default: " + DEFAULT_ASYNC_THREAD_NUM);
+            return DEFAULT_ASYNC_THREAD_NUM;
         } else if (threadNums.size() > 1) {
             logger.info("Detect multiple config `async-thread-num` for export-refer thread, using: " + threadNums.get(0));
         }
@@ -278,11 +288,5 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        for (ExecutorService executorService : executorServiceRing.listItems()) {
 //            executorService.shutdown();
 //        }
-    }
-
-    private void shutdownExportReferExecutor() {
-        if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
-            exportReferExecutor.shutdown();
-        }
     }
 }

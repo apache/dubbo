@@ -1170,6 +1170,11 @@ public class DubboBootstrap {
         }
 
         logger.info("Service asynchronous export / refer finished.");
+
+        // release the resources.
+        logger.info("Shutting down the export-refer executor.");
+        executorRepository.shutdownExportReferExecutor();
+
         return this;
     }
 

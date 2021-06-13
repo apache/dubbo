@@ -59,6 +59,12 @@ public interface ExecutorRepository {
 
     ScheduledExecutorService getExportReferExecutor();
 
+    /**
+     * The executor only used in bootstrap currently, we should call this method to release the resource
+     * after the async export-refer is done.
+     */
+    void shutdownExportReferExecutor();
+
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 
     ScheduledExecutorService getMetadataRetryExecutor();

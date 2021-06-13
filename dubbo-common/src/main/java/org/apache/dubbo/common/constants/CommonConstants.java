@@ -422,7 +422,7 @@ public interface CommonConstants {
 
     String ASYNC_THREAD_NUM_KEY = "async-thread-num";
 
-    int DEFAULT_ASYNC_POOL_CORE_SIZE = 10;
+    int DEFAULT_ASYNC_THREAD_NUM = 10;
 
     /**
      * Url merge processor key
