@@ -108,7 +108,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         doInServiceRegistry(serviceDiscovery -> serviceDiscovery.unregisterService(build(serviceInstance)));
-    };
+    }
 
 
     @Override
@@ -171,7 +171,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
+        throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 
@@ -195,7 +195,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     }
 
     protected void registerServiceWatcher(String serviceName, ServiceInstancesChangedListener listener) {
-            String path = buildServicePath(serviceName);
+        String path = buildServicePath(serviceName);
         try {
             curatorFramework.create().creatingParentsIfNeeded().forPath(path);
         } catch (KeeperException.NodeExistsException e) {
