@@ -203,7 +203,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     public void shutdownExportReferExecutor() {
         synchronized (LOCK) {
             if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
-                ExecutorUtil.shutdownNow(exportReferExecutor, 100);
+                exportReferExecutor.shutdown();
             }
 
             exportReferExecutor = null;
