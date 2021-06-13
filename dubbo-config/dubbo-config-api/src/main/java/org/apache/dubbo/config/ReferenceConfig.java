@@ -200,9 +200,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
+
         if (ref == null) {
             init();
         }
+
         return ref;
     }
 

@@ -312,4 +312,8 @@ public @interface DubboService {
      */
     String scope() default "";
 
+    /**
+     * Weather the service is export asynchronously
+     */
+    boolean exportAsync() default false;
 }

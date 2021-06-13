@@ -347,4 +347,9 @@ public @interface DubboReference {
      * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
      */
     String scope() default "";
+
+    /**
+     * Weather the reference is refer asynchronously
+     */
+    boolean referAsync() default false;
 }
