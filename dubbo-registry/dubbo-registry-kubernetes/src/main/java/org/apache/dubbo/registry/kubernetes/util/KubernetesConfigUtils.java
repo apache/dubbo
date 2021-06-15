@@ -106,6 +106,6 @@ public class KubernetesConfigUtils {
     private static String decodeBase64(String str) {
         return StringUtils.isNotEmpty(str) ?
                 new String(Base64.getDecoder().decode(str)) :
-                "";
+                null;
     }
 }
