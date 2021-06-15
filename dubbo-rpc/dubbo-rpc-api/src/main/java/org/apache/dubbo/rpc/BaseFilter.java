@@ -18,7 +18,7 @@ package org.apache.dubbo.rpc;
 
 public interface BaseFilter {
     /**
-     * Make sure call invoker.invoke() in your implementation.
+     * Always call invoker.invoke() in the implementation to hand over the request to the next filter node.
      */
     Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException;
 
