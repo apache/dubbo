@@ -30,8 +30,8 @@ import org.apache.dubbo.rpc.Invoker;
  */
 public class AddrCache<T> {
 
-    protected List<Invoker<T>> invokers;
-    protected Map<String, RouterCache<T>> cache = Collections.emptyMap();
+    private List<Invoker<T>> invokers;
+    private Map<String, RouterCache<T>> cache = Collections.emptyMap();
 
     public List<Invoker<T>> getInvokers() {
         return invokers;
