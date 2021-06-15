@@ -73,13 +73,13 @@ public class ThriftProtocol extends AbstractProtocol {
                 String path = (String) inv.getObjectAttachments().get(PATH_KEY);
                 String serviceKey = serviceKey(channel.getLocalAddress().getPort(),
                         path, null, null);
-                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.get(serviceKey);
+                DubboExporter<?> exporter = (DubboExporter<?>) exporterMap.getExport(serviceKey);
                 if (exporter == null) {
                     throw new RemotingException(channel,
                             "Not found exported service: "
                                     + serviceKey
                                     + " in "
-                                    + exporterMap.keySet()
+                                    + exporterMap.getExporterMap().keySet()
                                     + ", may be version or group mismatch "
                                     + ", channel: consumer: "
                                     + channel.getRemoteAddress()
@@ -134,7 +134,7 @@ public class ThriftProtocol extends AbstractProtocol {
         // export service.
         key = serviceKey(url);
         DubboExporter<T> exporter = new DubboExporter<T>(invoker, key, exporterMap);
-        exporterMap.put(key, exporter);
+        exporterMap.addExportMap(key, exporter);
 
         return exporter;
     }
