@@ -792,7 +792,9 @@ public class DubboBootstrap {
                 .map(this::registryAsConfigCenter)
                 .forEach(configManager::addConfigCenter);
 
-            logger.info("use registry as config-center: " + configManager.getConfigCenters());
+            if (configManager.getConfigCenters().size() > 0) {
+                logger.info("use registry as config-center: " + configManager.getConfigCenters());
+            }
         }
     }
 
@@ -846,7 +848,9 @@ public class DubboBootstrap {
                 .map(this::registryAsMetadataCenter)
                 .forEach(configManager::addMetadataReport);
 
-            logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
+            if (configManager.getMetadataConfigs().size() > 0) {
+                logger.info("use registry as metadata-center: " + configManager.getMetadataConfigs());
+            }
         }
     }
 

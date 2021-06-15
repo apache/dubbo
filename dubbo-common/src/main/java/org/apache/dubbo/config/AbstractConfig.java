@@ -262,7 +262,7 @@ public abstract class AbstractConfig implements Serializable {
         }).collect(Collectors.toSet());
     }
 
-    private static String extractPropertyName(String setter) throws Exception {
+    protected static String extractPropertyName(String setter) {
         String propertyName = setter.substring("set".length());
         propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
         return propertyName;
@@ -451,13 +451,14 @@ public abstract class AbstractConfig implements Serializable {
     public List<String> getPrefixes() {
         List<String> prefixes = new ArrayList<>();
         if (StringUtils.hasText(this.getId())) {
-            // dubbo.{tag-name}s.id
+            // dubbo.{tag-name}s.{id}
             prefixes.add(CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + this.getId());
         }
 
         // check name
         String name = ReflectUtils.getProperty(this, "getName");
         if (StringUtils.hasText(name)) {
+            // dubbo.{tag-name}s.{name}
             String prefix = CommonConstants.DUBBO + "." + getPluralTagName(this.getClass()) + "." + name;
             if (!prefixes.contains(prefix)) {
                 prefixes.add(prefix);
@@ -500,6 +501,21 @@ public abstract class AbstractConfig implements Serializable {
             Collection<Map<String, String>> instanceConfigMaps = environment.getConfigurationMaps(this, preferredPrefix);
             Map<String, String> subProperties = ConfigurationUtils.getSubProperties(instanceConfigMaps, preferredPrefix);
             InmemoryConfiguration subPropsConfiguration = new InmemoryConfiguration(subProperties);
+
+            if (logger.isDebugEnabled()) {
+                String idOrName = "";
+                if (StringUtils.hasText(this.getId())) {
+                    idOrName = "[id=" + this.getId() + "]";
+                } else {
+                    String name = ReflectUtils.getProperty(this, "getName");
+                    if (StringUtils.hasText(name)) {
+                        idOrName = "[name=" + name + "]";
+                    }
+                }
+                logger.debug("Refreshing " + this.getClass().getSimpleName() + idOrName +
+                    " with prefix [" + preferredPrefix +
+                    "], extracted props: " + subProperties);
+            }
 
             // loop methods, get override value and set the new value back to method
             Method[] methods = getClass().getMethods();
