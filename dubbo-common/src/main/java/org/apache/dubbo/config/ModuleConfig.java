@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
 import java.util.ArrayList;
@@ -62,11 +61,6 @@ public class ModuleConfig extends AbstractConfig {
      */
     private MonitorConfig monitor;
 
-    /**
-     * If it's default
-     */
-    private Boolean isDefault;
-
     public ModuleConfig() {
     }
 
@@ -81,9 +75,7 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setName(String name) {
         this.name = name;
-        if (StringUtils.isEmpty(id)) {
-            id = name;
-        }
+        //this.updateIdIfAbsent(name);
     }
 
     @Parameter(key = "module.version")
@@ -140,14 +132,6 @@ public class ModuleConfig extends AbstractConfig {
 
     public void setMonitor(String monitor) {
         this.monitor = new MonitorConfig(monitor);
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
 }

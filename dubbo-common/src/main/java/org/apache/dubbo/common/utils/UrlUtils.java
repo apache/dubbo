@@ -19,6 +19,7 @@ package org.apache.dubbo.common.utils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLStrParser;
 import org.apache.dubbo.common.constants.RemotingConstants;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,7 +159,7 @@ public class UrlUtils {
             }
         }
         if (changed) {
-            u = new URL(protocol, username, password, host, port, path, parameters);
+            u = new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
         }
         return u;
     }
@@ -199,11 +200,7 @@ public class UrlUtils {
                     if (version != null && version.length() > 0) {
                         name = name + ":" + version;
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -260,11 +257,7 @@ public class UrlUtils {
                         params.put("version", name.substring(i + 1));
                         name = name.substring(0, i);
                     }
-                    Map<String, String> newUrls = newRegister.get(name);
-                    if (newUrls == null) {
-                        newUrls = new HashMap<String, String>();
-                        newRegister.put(name, newUrls);
-                    }
+                    Map<String, String> newUrls = newRegister.computeIfAbsent(name, k -> new HashMap<String, String>());
                     newUrls.put(serviceUrl, StringUtils.toQueryString(params));
                 }
             } else {
@@ -323,11 +316,7 @@ public class UrlUtils {
                             if (version != null && version.length() > 0) {
                                 name = name + ":" + version;
                             }
-                            Map<String, String> newUrls = newNotify.get(name);
-                            if (newUrls == null) {
-                                newUrls = new HashMap<String, String>();
-                                newNotify.put(name, newUrls);
-                            }
+                            Map<String, String> newUrls = newNotify.computeIfAbsent(name, k -> new HashMap<String, String>());
                             newUrls.put(url, StringUtils.toQueryString(params));
                         }
                     }
@@ -659,7 +648,7 @@ public class UrlUtils {
             host = url;
         }
 
-        return new URL(protocol, username, password, host, port, path, parameters);
+        return new ServiceConfigURL(protocol, username, password, host, port, path, parameters);
     }
 
     public static boolean isConsumer(URL url) {

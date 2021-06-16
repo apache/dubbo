@@ -71,7 +71,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
             throw new IllegalArgumentException("url == null");
         }
 
-        this.url = url.removeAttribute(REFER_KEY).removeParameter(MONITOR_KEY);
+        this.url = url.removeAttribute(REFER_KEY).removeAttribute(MONITOR_KEY);
 
         Object referParams = url.getAttribute(REFER_KEY);
         if (referParams != null) {
@@ -95,7 +95,7 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
-            this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeParameter(MONITOR_KEY);
+            this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeAttribute(MONITOR_KEY);
         }
 
         setRouterChain(routerChain);

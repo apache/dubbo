@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.cluster.loadbalance;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -49,12 +50,12 @@ public class AbstractLoadBalanceTest {
         invocation.setMethodName("say");
 
         Invoker invoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
-        URL url1 = new URL("", "", 0, "DemoService", new HashMap<>());
+        URL url1 = new ServiceConfigURL("", "", 0, "DemoService", new HashMap<>());
         url1 = url1.addParameter(TIMESTAMP_KEY, System.currentTimeMillis() - Integer.MAX_VALUE - 1);
         given(invoker1.getUrl()).willReturn(url1);
 
         Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
-        URL url2 = new URL("", "", 0, "DemoService", new HashMap<>());
+        URL url2 = new ServiceConfigURL("", "", 0, "DemoService", new HashMap<>());
         url2 = url2.addParameter(TIMESTAMP_KEY, System.currentTimeMillis() - 10 * 60 * 1000L - 1);
         given(invoker2.getUrl()).willReturn(url2);
 
@@ -67,12 +68,12 @@ public class AbstractLoadBalanceTest {
         invocation.setMethodName("say");
 
         Invoker invoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
-        URL url1 = new URL("", "", 0, "DemoService", new HashMap<>());
+        URL url1 = new ServiceConfigURL("", "", 0, "DemoService", new HashMap<>());
         url1 = url1.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 10);
         given(invoker1.getUrl()).willReturn(url1);
 
         Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
-        URL url2 = new URL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
+        URL url2 = new ServiceConfigURL("", "", 0, "org.apache.dubbo.registry.RegistryService", new HashMap<>());
         url2 = url2.addParameter(REGISTRY_KEY + "." + WEIGHT_KEY, 20);
         given(invoker2.getUrl()).willReturn(url2);
 

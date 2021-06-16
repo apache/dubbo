@@ -22,7 +22,6 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <dubbo:application name="demo-provider">
-        <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
     <dubbo:config-center address="zookeeper://127.0.0.1:2181"/>

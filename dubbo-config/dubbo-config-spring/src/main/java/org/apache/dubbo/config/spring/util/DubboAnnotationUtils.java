@@ -19,9 +19,10 @@ package org.apache.dubbo.config.spring.util;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 
-import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+
+import java.util.Map;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
@@ -59,14 +60,14 @@ public class DubboAnnotationUtils {
     }
 
     /**
-     * Resolve the interface name from {@link AnnotationAttributes}
+     * Resolve the interface name from annotation attributes
      *
-     * @param attributes            {@link AnnotationAttributes} instance, may be {@link Service @Service} or {@link Reference @Reference}
-     * @param defaultInterfaceClass the default {@link Class class} of interface
+     * @param attributes             annotation attributes instance, may be {@link Service @Service} or {@link Reference @Reference}
+     * @param defaultInterfaceClass the default class of interface
      * @return the interface name if found
      * @throws IllegalStateException if interface name was not found
      */
-    public static String resolveInterfaceName(AnnotationAttributes attributes, Class<?> defaultInterfaceClass) {
+    public static String resolveInterfaceName(Map<String, Object> attributes, Class<?> defaultInterfaceClass) {
         Boolean generic = getAttribute(attributes, "generic");
         if (generic != null && generic) {
             // it's a generic reference
@@ -79,22 +80,22 @@ public class DubboAnnotationUtils {
     }
 
     /**
-     * Resolve the {@link Class class} of Dubbo Service interface from the specified
-     * {@link AnnotationAttributes annotation attributes} and annotated {@link Class class}.
+     * Resolve the interface class of Dubbo Service annotation from the specified
+     * annotation attributes and annotated class.
      *
-     * @param attributes            {@link AnnotationAttributes annotation attributes}
-     * @param defaultInterfaceClass the annotated {@link Class class}.
-     * @return the {@link Class class} of Dubbo Service interface
+     * @param attributes            annotation attributes
+     * @param defaultInterfaceClass the annotated class.
+     * @return the class of Dubbo Service interface
      * @throws IllegalArgumentException if can't resolved
      */
-    public static Class<?> resolveServiceInterfaceClass(AnnotationAttributes attributes, Class<?> defaultInterfaceClass)
+    public static Class<?> resolveServiceInterfaceClass(Map<String, Object> attributes, Class<?> defaultInterfaceClass)
             throws IllegalArgumentException {
 
         ClassLoader classLoader = defaultInterfaceClass != null ? defaultInterfaceClass.getClassLoader() : Thread.currentThread().getContextClassLoader();
 
         Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
 
-        if (void.class.equals(interfaceClass)) { // default or set void.class for purpose.
+        if (interfaceClass == null || void.class.equals(interfaceClass)) { // default or set void.class for purpose.
 
             interfaceClass = null;
 

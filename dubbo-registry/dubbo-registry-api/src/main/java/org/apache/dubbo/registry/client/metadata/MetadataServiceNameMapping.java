@@ -17,59 +17,72 @@
 package org.apache.dubbo.registry.client.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.MappingListener;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.Arrays.asList;
+import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 public class MetadataServiceNameMapping implements ServiceNameMapping {
-    private static final List<String> IGNORED_SERVICE_INTERFACES = asList(MetadataService.class.getName());
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private static final List<String> IGNORED_SERVICE_INTERFACES = Collections.singletonList(MetadataService.class.getName());
+
+    private static final int CAS_RETRY_TIMES = 6;
 
     @Override
     public void map(URL url) {
-        String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
+        execute(() -> {
+            String serviceInterface = url.getServiceInterface();
+            if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+                return;
+            }
+            String registryCluster = getRegistryCluster(url);
+            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
 
-        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
-            return;
-        }
-        String registryCluster = getRegistryCluster(url);
-        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
-        metadataReport.registerServiceAppMapping(ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol), getName(), url);
+            int currentRetryTimes = 1;
+            boolean success;
+            String newConfigContent = getName();
+            do {
+                ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
+                String oldConfigContent = configItem.getContent();
+                if (StringUtils.isNotEmpty(oldConfigContent)) {
+                    boolean contains = StringUtils.isContains(oldConfigContent, getName());
+                    if (contains) {
+                        break;
+                    }
+                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+                }
+                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
+            } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
+        });
     }
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
-        String serviceInterface = url.getServiceInterface();
-        String group = url.getGroup();
-        String version = url.getVersion();
-        String protocol = url.getProtocol();
-
-        String mappingKey = ServiceNameMapping.buildGroup(serviceInterface, group, version, protocol);
         Set<String> serviceNames = new LinkedHashSet<>();
-        String registryCluster = getRegistryCluster(url);
-        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
-        Set<String> apps = metadataReport.getServiceAppMapping(
-                mappingKey,
-                mappingListener,
-                url);
-        if (CollectionUtils.isNotEmpty(apps)) {
+        execute(() -> {
+            String serviceInterface = url.getServiceInterface();
+            String registryCluster = getRegistryCluster(url);
+            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+            Set<String> apps = metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
             serviceNames.addAll(apps);
-        }
-
+        });
         return serviceNames;
     }
 
@@ -83,5 +96,15 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
             registryCluster = registryCluster.substring(0, i);
         }
         return registryCluster;
+    }
+
+    private void execute(Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (Throwable e) {
+            if (logger.isWarnEnabled()) {
+                logger.warn(e.getMessage(), e);
+            }
+        }
     }
 }

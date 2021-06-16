@@ -44,7 +44,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import static org.apache.dubbo.common.function.ThrowableFunction.execute;
-import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.isInstanceUpdated;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkParams.ROOT_PATH;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.build;
 import static org.apache.dubbo.registry.zookeeper.util.CuratorFrameworkUtils.buildCuratorFramework;
@@ -73,7 +72,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
     private final Map<String, ZookeeperServiceDiscoveryChangeWatcher> watcherCaches = new ConcurrentHashMap<>();
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
         this.curatorFramework = buildCuratorFramework(registryURL);
         this.rootPath = ROOT_PATH.getParameterValue(registryURL);
@@ -86,12 +85,12 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return registryURL;
     }
 
-    public void destroy() throws Exception {
+    public void doDestroy() throws Exception {
         serviceDiscovery.close();
     }
 
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        super.register(serviceInstance);
+    @Override
+    public void doRegister(ServiceInstance serviceInstance) {
         try {
             serviceDiscovery.registerService(build(serviceInstance));
         } catch (Exception e) {
@@ -99,21 +98,18 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         }
     }
 
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
-        if (this.serviceInstance == null) {
-            this.register(serviceInstance);
-        } else if (isInstanceUpdated(serviceInstance)) {
-            this.unregister(this.serviceInstance);
-            this.register(serviceInstance);
-            this.serviceInstance = serviceInstance;
-        }
+    @Override
+    public void doUpdate(ServiceInstance serviceInstance) {
+        ServiceInstance oldInstance = this.serviceInstance;
+        this.unregister(oldInstance);
+        this.register(serviceInstance);
     }
 
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        doInServiceRegistry(serviceDiscovery -> {
-            serviceDiscovery.unregisterService(build(serviceInstance));
-        });
+    @Override
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
+        doInServiceRegistry(serviceDiscovery -> serviceDiscovery.unregisterService(build(serviceInstance)));
     }
+
 
     @Override
     public Set<String> getServices() {
@@ -155,6 +151,16 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                         serviceInstances.add(serviceInstance);
                     }
                 }
+
+                if (healthyOnly) {
+                    Iterator<ServiceInstance> instanceIterator = serviceInstances.iterator();
+                    while (instanceIterator.hasNext()) {
+                        ServiceInstance instance = instanceIterator.next();
+                        if (!instance.isHealthy()) {
+                            instanceIterator.remove();
+                        }
+                    }
+                }
             } catch (KeeperException.NoNodeException e) {
                 logger.warn(p + " path not exist.", e);
             }
@@ -165,22 +171,23 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
-            throws NullPointerException, IllegalArgumentException {
+        throws NullPointerException, IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> registerServiceWatcher(serviceName, listener));
     }
 
     @Override
     public void removeServiceInstancesChangedListener(ServiceInstancesChangedListener listener) throws IllegalArgumentException {
         listener.getServiceNames().forEach(serviceName -> {
-            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(serviceName);
-            watcher.stopWatching();
+            ZookeeperServiceDiscoveryChangeWatcher watcher = watcherCaches.remove(buildServicePath(serviceName));
+            if (watcher != null) {
+                watcher.stopWatching();
+            }
         });
     }
 
+
     private void doInServiceRegistry(ThrowableConsumer<org.apache.curator.x.discovery.ServiceDiscovery> consumer) {
-        ThrowableConsumer.execute(serviceDiscovery, s -> {
-            consumer.accept(s);
-        });
+        ThrowableConsumer.execute(serviceDiscovery, s -> consumer.accept(s));
     }
 
     private <R> R doInServiceDiscovery(ThrowableFunction<org.apache.curator.x.discovery.ServiceDiscovery, R> function) {

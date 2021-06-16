@@ -21,6 +21,7 @@ import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.protobuf.model.ServiceInterface;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -70,7 +71,7 @@ public class ProtobufTypeBuilderTest {
                 equalTo("java.util.List<org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>"));
         assertThat(propertiesMap.containsKey("doubleMap"), is(true));
         assertThat(getTypeName(propertiesMap.get("doubleMap"), types),
-                equalTo("java.util.Map<java.lang.String,org.apache.dubbo.metadata.definition.protobuf.model.GooglePB.PhoneNumber>"));
+                equalTo("java.util.Map<java.lang.String,org.apache.dubbo.metadata.definition.protobuf.model.GooglePB$PhoneNumber>"));
         assertThat(getTypeName(propertiesMap.get("bytesList"), types),
                 equalTo("java.util.List<com.google.protobuf.ByteString>"));
         assertThat(getTypeName(propertiesMap.get("bytesMap"), types),

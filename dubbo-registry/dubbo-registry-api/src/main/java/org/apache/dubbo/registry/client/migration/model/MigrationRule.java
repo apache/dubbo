@@ -20,12 +20,13 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * # key = demo-consumer.migration
@@ -34,12 +35,18 @@ import java.util.Set;
  * key: demo-consumer
  * step: APPLICATION_FIRST
  * threshold: 1.0
+ * proportion: 60
+ * delay: 60
+ * force: false
  * interfaces:
- * - serviceKey: DemoService:1.0.0
- * threshold: 1.0
- * step: APPLICATION_FIRST
- * - serviceKey: GreetingService:1.0.0
- * step: FORCE_APPLICATION
+ *   - serviceKey: DemoService:1.0.0
+ *     threshold: 0.5
+ *     proportion: 30
+ *     delay: 30
+ *     force: true
+ *     step: APPLICATION_FIRST
+ *   - serviceKey: GreetingService:1.0.0
+ *     step: FORCE_APPLICATION
  */
 public class MigrationRule {
     public static final MigrationRule INIT = new MigrationRule();
@@ -47,13 +54,51 @@ public class MigrationRule {
     private String key;
     private MigrationStep step;
     private Float threshold;
-    // FIXME
-    private List<String> targetIps;
+    private Integer proportion;
+    private Integer delay;
+    private Boolean force;
     private List<InterfaceMigrationRule> interfaces;
-    private List<ApplicationMigrationRule> applications;
 
     private transient Map<String, InterfaceMigrationRule> interfaceRules;
-    private transient Map<String, ApplicationMigrationRule> applicationRules;
+
+    @SuppressWarnings("unchecked")
+    private static MigrationRule parseFromMap(Map<String, Object> map) {
+        MigrationRule migrationRule = new MigrationRule();
+        migrationRule.setKey((String) map.get("key"));
+
+        Object step = map.get("step");
+        if (step != null) {
+            migrationRule.setStep(MigrationStep.valueOf(step.toString()));
+        }
+
+        Object threshold = map.get("threshold");
+        if (threshold != null) {
+            migrationRule.setThreshold(Float.valueOf(threshold.toString()));
+        }
+
+        Object proportion = map.get("proportion");
+        if (proportion != null) {
+            migrationRule.setProportion(Integer.valueOf(proportion.toString()));
+        }
+
+        Object delay = map.get("delay");
+        if (delay != null) {
+            migrationRule.setDelay(Integer.valueOf(delay.toString()));
+        }
+
+        Object force = map.get("force");
+        if (force != null) {
+            migrationRule.setForce(Boolean.valueOf(force.toString()));
+        }
+
+        Object interfaces = map.get("interfaces");
+        if (interfaces != null && List.class.isAssignableFrom(interfaces.getClass())) {
+            migrationRule.setInterfaces(((List<Map<String, Object>>) interfaces).stream()
+                    .map(InterfaceMigrationRule::parseFromMap).collect(Collectors.toList()));
+        }
+
+        return migrationRule;
+    }
 
     public MigrationRule() {
     }
@@ -70,7 +115,7 @@ public class MigrationRule {
         this.key = key;
     }
 
-    public MigrationStep getStep(String serviceKey, Set<String> apps) {
+    public MigrationStep getStep(String serviceKey) {
         if (interfaceRules != null) {
             InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
             if (rule != null) {
@@ -78,16 +123,6 @@ public class MigrationRule {
             }
         }
 
-        if (apps != null) {
-            for (String app : apps) {
-                if (applicationRules != null) {
-                    ApplicationMigrationRule rule = applicationRules.get(app);
-                    if (rule != null) {
-                        return rule.getStep() == null ? step : rule.getStep();
-                    }
-                }
-            }
-        }
         return step;
     }
 
@@ -98,33 +133,15 @@ public class MigrationRule {
         return interfaceRules.get(serviceKey);
     }
 
-    public ApplicationMigrationRule getApplicationRule(String app) {
-        if (applicationRules == null) {
-            return null;
-        }
-        return applicationRules.get(app);
-    }
-
     public MigrationStep getStep() {
         return step;
     }
 
-    public Float getThreshold(String serviceKey, Set<String> apps) {
+    public Float getThreshold(String serviceKey) {
         if (interfaceRules != null) {
             InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
             if (rule != null) {
                 return rule.getThreshold() == null ? threshold : rule.getThreshold();
-            }
-        }
-
-        if (apps != null) {
-            for (String app : apps) {
-                if (applicationRules != null) {
-                    ApplicationMigrationRule rule = applicationRules.get(app);
-                    if (rule != null) {
-                        return rule.getThreshold() == null ? threshold : rule.getThreshold();
-                    }
-                }
             }
         }
         return threshold;
@@ -138,20 +155,66 @@ public class MigrationRule {
         this.threshold = threshold;
     }
 
+    public Integer getProportion() {
+        return proportion;
+    }
+
+    public Integer getProportion(String serviceKey) {
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getProportion() == null ? proportion : rule.getProportion();
+            }
+        }
+        return proportion;
+    }
+
+    public void setProportion(Integer proportion) {
+        this.proportion = proportion;
+    }
+
+    public Integer getDelay() {
+        return delay;
+    }
+
+    public Integer getDelay(String serviceKey) {
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getDelay() == null ? delay : rule.getDelay();
+            }
+        }
+        return delay;
+    }
+
+    public void setDelay(Integer delay) {
+        this.delay = delay;
+    }
+
     public void setStep(MigrationStep step) {
         this.step = step;
     }
 
+    public Boolean getForce() {
+        return force;
+    }
+
+    public Boolean getForce(String serviceKey) {
+        if (interfaceRules != null) {
+            InterfaceMigrationRule rule = interfaceRules.get(serviceKey);
+            if (rule != null) {
+                return rule.getForce() == null ? force : rule.getForce();
+            }
+        }
+        return force;
+    }
+
+    public void setForce(Boolean force) {
+        this.force = force;
+    }
+
     public List<InterfaceMigrationRule> getInterfaces() {
         return interfaces;
-    }
-
-    public List<String> getTargetIps() {
-        return targetIps;
-    }
-
-    public void setTargetIps(List<String> targetIps) {
-        this.targetIps = targetIps;
     }
 
     public void setInterfaces(List<InterfaceMigrationRule> interfaces) {
@@ -164,29 +227,6 @@ public class MigrationRule {
         }
     }
 
-    public List<ApplicationMigrationRule> getApplications() {
-        return applications;
-    }
-
-    public void setApplications(List<ApplicationMigrationRule> applications) {
-        this.applications = applications;
-        if (applications != null) {
-            this.applicationRules = new HashMap<>();
-            applications.forEach(rule -> {
-                applicationRules.put(rule.getName(), rule);
-            });
-        }
-    }
-
-    public boolean removeApplicationRule(String providerApp) {
-        if (CollectionUtils.isNotEmpty(this.applications)) {
-            boolean removed = this.applications.removeIf(applicationMigrationRule -> applicationMigrationRule.getName().equals(providerApp));
-            this.applicationRules.remove(providerApp);
-            return removed;
-        }
-        return false;
-    }
-
     public boolean removeInterfaceRule(String serviceKey) {
         if (CollectionUtils.isNotEmpty(this.interfaces)) {
             boolean removed = this.interfaces.removeIf(interfaceMigrationRule -> interfaceMigrationRule.getServiceKey().equals(serviceKey));
@@ -196,7 +236,7 @@ public class MigrationRule {
         return false;
     }
 
-    public boolean addInterfaceRule(String providerApp, String serviceKey, MigrationStep step, Float threshold) {
+    public boolean addInterfaceRule(String serviceKey, MigrationStep step, Float threshold, Integer proportion) {
         if (getInterfaceRule(serviceKey) != null) {
             return false;
         }
@@ -204,7 +244,7 @@ public class MigrationRule {
         if (this.interfaces == null) {
             this.interfaces = new ArrayList<>();
         }
-        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule(providerApp, serviceKey, step, threshold);
+        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule(serviceKey, step, threshold, proportion);
         this.interfaces.add(interfaceMigrationRule);
 
         if (interfaceRules == null) {
@@ -214,28 +254,10 @@ public class MigrationRule {
         return true;
     }
 
-    public boolean addApplicationRule(String providerApp, MigrationStep step, Float threshold) {
-        if (getApplicationRule(providerApp) != null) {
-            return false;
-        }
-
-        if (this.applications == null) {
-            this.applications = new ArrayList<>();
-        }
-        ApplicationMigrationRule applicationMigrationRule = new ApplicationMigrationRule(providerApp, step, threshold);
-        this.applications.add(applicationMigrationRule);
-
-        if (applicationRules == null) {
-            this.applicationRules = new HashMap<>();
-        }
-        this.applicationRules.put(providerApp, applicationMigrationRule);
-        return true;
-    }
-
     public static MigrationRule parse(String rawRule) {
-        Constructor constructor = new Constructor(MigrationRule.class);
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawRule);
+        Yaml yaml = new Yaml(new SafeConstructor());
+        Map<String, Object> map = yaml.load(rawRule);
+        return parseFromMap(map);
     }
 
     public static String toYaml(MigrationRule rule) {

@@ -20,8 +20,8 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -34,13 +34,14 @@ import io.fabric8.kubernetes.api.model.EndpointPort;
 import io.fabric8.kubernetes.api.model.EndpointSubset;
 import io.fabric8.kubernetes.api.model.Endpoints;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.KubernetesClientException;
 import io.fabric8.kubernetes.client.Watch;
 import io.fabric8.kubernetes.client.Watcher;
+import io.fabric8.kubernetes.client.WatcherException;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,14 +52,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-public class KubernetesServiceDiscovery implements ServiceDiscovery {
+public class KubernetesServiceDiscovery extends AbstractServiceDiscovery {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private KubernetesClient kubernetesClient;
 
     private String currentHostname;
-
-    private ServiceInstance localServiceInstance;
 
     private URL registryURL;
 
@@ -77,7 +76,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     private final static ConcurrentHashMap<String, AtomicLong> SERVICE_UPDATE_TIME = new ConcurrentHashMap<>(64);
 
     @Override
-    public void initialize(URL registryURL) throws Exception {
+    public void doInitialize(URL registryURL) throws Exception {
         Config config = KubernetesConfigUtils.createKubernetesConfig(registryURL);
         this.kubernetesClient = new DefaultKubernetesClient(config);
         this.currentHostname = System.getenv("HOSTNAME");
@@ -101,7 +100,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void destroy() throws Exception {
+    public void doDestroy() throws Exception {
         SERVICE_WATCHER.forEach((k, v) -> v.close());
         SERVICE_WATCHER.clear();
 
@@ -115,19 +114,18 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void register(ServiceInstance serviceInstance) throws RuntimeException {
-        localServiceInstance = serviceInstance;
-
+    public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
         if (enableRegister) {
             kubernetesClient
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit()
-                    .editOrNewMetadata()
-                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
-                    .endMetadata()
-                    .done();
+                    .edit(pod ->
+                            new PodBuilder(pod)
+                                    .editOrNewMetadata()
+                                    .addToAnnotations(KUBERNETES_PROPERTIES_KEY, JSONObject.toJSONString(serviceInstance.getMetadata()))
+                                    .endMetadata()
+                                    .build());
             if (logger.isInfoEnabled()) {
                 logger.info("Write Current Service Instance Metadata to Kubernetes pod. " +
                         "Current pod name: " + currentHostname);
@@ -136,24 +134,23 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
     }
 
     @Override
-    public void update(ServiceInstance serviceInstance) throws RuntimeException {
+    public void doUpdate(ServiceInstance serviceInstance) throws RuntimeException {
         register(serviceInstance);
     }
 
     @Override
-    public void unregister(ServiceInstance serviceInstance) throws RuntimeException {
-        localServiceInstance = null;
-
+    public void doUnregister(ServiceInstance serviceInstance) throws RuntimeException {
         if (enableRegister) {
             kubernetesClient
                     .pods()
                     .inNamespace(namespace)
                     .withName(currentHostname)
-                    .edit()
-                    .editOrNewMetadata()
-                    .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
-                    .endMetadata()
-                    .done();
+                    .edit(pod ->
+                            new PodBuilder(pod)
+                                    .editOrNewMetadata()
+                                    .removeFromAnnotations(KUBERNETES_PROPERTIES_KEY)
+                                    .endMetadata()
+                                    .build());
             if (logger.isInfoEnabled()) {
                 logger.info("Remove Current Service Instance from Kubernetes pod. Current pod name: " + currentHostname);
             }
@@ -170,11 +167,6 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                 .stream()
                 .map(service -> service.getMetadata().getName())
                 .collect(Collectors.toSet());
-    }
-
-    @Override
-    public ServiceInstance getLocalInstance() {
-        return localServiceInstance;
     }
 
     @Override
@@ -222,7 +214,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });
@@ -253,7 +245,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });
@@ -284,7 +276,7 @@ public class KubernetesServiceDiscovery implements ServiceDiscovery {
                     }
 
                     @Override
-                    public void onClose(KubernetesClientException cause) {
+                    public void onClose(WatcherException cause) {
                         // ignore
                     }
                 });

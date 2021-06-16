@@ -49,8 +49,9 @@ public class CustomizedLoaderClassPath implements ClassPath {
 
     public String toString() {
         Object cl = null;
-        if (clref != null)
+        if (clref != null) {
             cl = clref.get();
+        }
 
         return cl == null ? "<null>" : cl.toString();
     }

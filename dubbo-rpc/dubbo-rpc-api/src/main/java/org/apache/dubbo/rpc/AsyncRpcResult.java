@@ -53,8 +53,8 @@ public class AsyncRpcResult implements Result {
      * RpcContext may already have been changed when callback happens, it happens when the same thread is used to execute another RPC call.
      * So we should keep the reference of current RpcContext instance and restore it before callback being executed.
      */
-    private RpcContext storedContext;
-    private RpcContext storedServerContext;
+    private RpcContextAttachment storedContext;
+    private RpcContextAttachment storedServerContext;
     private Executor executor;
 
     private Invocation invocation;
@@ -64,7 +64,7 @@ public class AsyncRpcResult implements Result {
     public AsyncRpcResult(CompletableFuture<AppResponse> future, Invocation invocation) {
         this.responseFuture = future;
         this.invocation = invocation;
-        this.storedContext = RpcContext.getContext();
+        this.storedContext = RpcContext.getClientAttachment();
         this.storedServerContext = RpcContext.getServerContext();
     }
 
@@ -94,7 +94,7 @@ public class AsyncRpcResult implements Result {
             if (responseFuture.isDone()) {
                 responseFuture.get().setValue(value);
             } else {
-                AppResponse appResponse = new AppResponse();
+                AppResponse appResponse = new AppResponse(invocation);
                 appResponse.setValue(value);
                 responseFuture.complete(appResponse);
             }
@@ -116,7 +116,7 @@ public class AsyncRpcResult implements Result {
             if (responseFuture.isDone()) {
                 responseFuture.get().setException(t);
             } else {
-                AppResponse appResponse = new AppResponse();
+                AppResponse appResponse = new AppResponse(invocation);
                 appResponse.setException(t);
                 responseFuture.complete(appResponse);
             }
@@ -185,7 +185,7 @@ public class AsyncRpcResult implements Result {
     public Object recreate() throws Throwable {
         RpcInvocation rpcInvocation = (RpcInvocation) invocation;
         if (InvokeMode.FUTURE == rpcInvocation.getInvokeMode()) {
-            return RpcContext.getContext().getFuture();
+            return RpcContext.getClientAttachment().getFuture();
         }
 
         return getAppResponse().recreate();
@@ -283,11 +283,11 @@ public class AsyncRpcResult implements Result {
     /**
      * tmp context to use when the thread switch to Dubbo thread.
      */
-    private RpcContext tmpContext;
+    private RpcContextAttachment tmpContext;
 
-    private RpcContext tmpServerContext;
+    private RpcContextAttachment tmpServerContext;
     private BiConsumer<Result, Throwable> beforeContext = (appResponse, t) -> {
-        tmpContext = RpcContext.getContext();
+        tmpContext = RpcContext.getClientAttachment();
         tmpServerContext = RpcContext.getServerContext();
         RpcContext.restoreContext(storedContext);
         RpcContext.restoreServerContext(storedServerContext);
@@ -319,7 +319,7 @@ public class AsyncRpcResult implements Result {
 
     public static AsyncRpcResult newDefaultAsyncResult(Object value, Throwable t, Invocation invocation) {
         CompletableFuture<AppResponse> future = new CompletableFuture<>();
-        AppResponse result = new AppResponse();
+        AppResponse result = new AppResponse(invocation);
         if (t != null) {
             result.setException(t);
         } else {

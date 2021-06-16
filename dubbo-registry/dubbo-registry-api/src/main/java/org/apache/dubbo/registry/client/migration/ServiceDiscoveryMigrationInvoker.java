@@ -20,12 +20,15 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.integration.RegistryProtocol;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+
+import java.util.concurrent.CountDownLatch;
 
 public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryMigrationInvoker.class);
@@ -40,14 +43,20 @@ public class ServiceDiscoveryMigrationInvoker<T> extends MigrationInvoker<T> {
     }
 
     @Override
-    public void fallbackToInterfaceInvoker() {
-        logger.error("Service discovery registry type does not support discovery of interface level addresses, " + getRegistryUrl());
-        migrateToServiceDiscoveryInvoker(true);
+    public boolean migrateToForceInterfaceInvoker(MigrationRule newRule) {
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
+        return true;
     }
 
     @Override
-    public void migrateToServiceDiscoveryInvoker(boolean forceMigrate) {
-        refreshServiceDiscoveryInvoker();
+    public void migrateToApplicationFirstInvoker(MigrationRule newRule) {
+        CountDownLatch latch = new CountDownLatch(0);
+        refreshServiceDiscoveryInvoker(latch);
+
+        setCurrentAvailableInvoker(getServiceDiscoveryInvoker());
     }
 
     @Override

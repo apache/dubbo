@@ -23,6 +23,7 @@ import org.apache.dubbo.common.url.component.PathURLAddress;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
+import org.apache.dubbo.common.url.component.URLPlainParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.LRUCache;
@@ -48,7 +49,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPERATOR;
+import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -177,7 +178,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     protected URL(String protocol,
@@ -194,7 +195,7 @@ class URL implements Serializable {
         }
 
         this.urlAddress = new PathURLAddress(protocol, username, password, path, host, port);
-        this.urlParam = new URLParam(parameters);
+        this.urlParam = URLParam.parse(parameters);
     }
 
     public static URL cacheableValueOf(String url) {
@@ -469,10 +470,6 @@ class URL implements Serializable {
         return Collections.unmodifiableMap(selectedParameters);
     }
 
-    public Map<String, Map<String, String>> getMethodParameters() {
-        return urlParam.getMethodParameters();
-    }
-
     public String getParameterAndDecoded(String key) {
         return getParameterAndDecoded(key, null);
     }
@@ -732,24 +729,11 @@ class URL implements Serializable {
     }
 
     public String getMethodParameter(String method, String key) {
-        Map<String, String> keyMap = getMethodParameters().get(method);
-        String value = null;
-        if (keyMap != null) {
-            value = keyMap.get(key);
-        }
-        if (StringUtils.isEmpty(value)) {
-            value = urlParam.getParameter(key);
-        }
-        return value;
+        return urlParam.getMethodParameter(method, key);
     }
 
     public String getMethodParameterStrict(String method, String key) {
-        Map<String, String> keyMap = getMethodParameters().get(method);
-        String value = null;
-        if (keyMap != null) {
-            value = keyMap.get(key);
-        }
-        return value;
+        return urlParam.getMethodParameterStrict(method, key);
     }
 
     public String getMethodParameter(String method, String key, String defaultValue) {
@@ -936,20 +920,11 @@ class URL implements Serializable {
     }
 
     public String getAnyMethodParameter(String key) {
-        String suffix = "." + key;
-        for (String fullKey : getParameters().keySet()) {
-            if (fullKey.endsWith(suffix)) {
-                return getParameter(fullKey);
-            }
-        }
-        return null;
+        return urlParam.getAnyMethodParameter(key);
     }
 
     public boolean hasMethodParameter(String method) {
-        if (method == null) {
-            return false;
-        }
-        return getMethodParameters().containsKey(method);
+        return urlParam.hasMethodParameter(method);
     }
 
     public boolean isLocalHost() {
@@ -1307,7 +1282,7 @@ class URL implements Serializable {
             return getServiceInterface();
         }
         return getServiceInterface() +
-                COLON_SEPERATOR + getVersion();
+                COLON_SEPARATOR + getVersion();
     }
 
     /**
@@ -1857,4 +1832,7 @@ class URL implements Serializable {
         return getMethodNumbers();
     }
 
+    public URL toSerializableURL() {
+        return returnURL(URLPlainParam.toURLPlainParam(urlParam));
+    }
 }

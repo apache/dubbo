@@ -14,221 +14,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.remoting.api.Connection;
-import org.apache.dubbo.remoting.exchange.Request;
-import org.apache.dubbo.remoting.exchange.Response;
-import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
-import org.apache.dubbo.rpc.AppResponse;
-import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
-import org.apache.dubbo.triple.TripleWrapper;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpHeaderValues;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http2.DefaultHttp2DataFrame;
-import io.netty.handler.codec.http2.DefaultHttp2Headers;
-import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
-import io.netty.handler.codec.http2.Http2Headers;
-import io.netty.handler.codec.http2.Http2NoMoreStreamIdsException;
-import io.netty.handler.codec.http2.Http2StreamChannel;
-import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
-import io.netty.util.AsciiString;
+public class ClientStream extends AbstractClientStream implements Stream {
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Map;
-import java.util.concurrent.Executor;
-
-import static org.apache.dubbo.rpc.Constants.CONSUMER_MODEL;
-
-public class ClientStream extends AbstractStream implements Stream {
-    private static final GrpcStatus MISSING_RESP = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-            .withDescription("Missing Response");
-    private static final AsciiString SCHEME = AsciiString.of("http");
-    private final String authority;
-    private final Request request;
-    private final RpcInvocation invocation;
-    private final Executor callback;
-
-    public ClientStream(URL url, ChannelHandlerContext ctx, boolean needWrap, Request request, Executor callback) {
-        super(url, ctx, needWrap);
-        this.callback = callback;
-        if (needWrap) {
-            setSerializeType((String) ((RpcInvocation) (request.getData())).getObjectAttachment(Constants.SERIALIZATION_KEY));
-        }
-        this.authority = url.getAddress();
-        this.request = request;
-        this.invocation = (RpcInvocation) request.getData();
-    }
-
-    public static ConsumerModel getConsumerModel(Invocation invocation) {
-        Object o = invocation.get(CONSUMER_MODEL);
-        if (o instanceof ConsumerModel) {
-            return (ConsumerModel) o;
-        }
-        String serviceKey = invocation.getInvoker().getUrl().getServiceKey();
-        return ApplicationModel.getConsumerModel(serviceKey);
+    protected ClientStream(URL url) {
+        super(url);
     }
 
     @Override
-    public void onError(GrpcStatus status) {
-        Response response = new Response(request.getId(), request.getVersion());
-        if (status.description != null) {
-            response.setErrorMessage(status.description);
-        } else {
-            response.setErrorMessage(status.cause.getMessage());
-        }
-        final byte code = GrpcStatus.toDubboStatus(status.code);
-        response.setStatus(code);
-        DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
+    protected StreamObserver<Object> createStreamObserver() {
+        return new ClientStreamObserver() {
+            boolean metaSent;
+
+            @Override
+            public void onNext(Object data) {
+                if (!metaSent) {
+                    metaSent = true;
+                    final Metadata metadata = createRequestMeta((RpcInvocation) getRequest().getData());
+                    getTransportSubscriber().tryOnMetadata(metadata, false);
+                }
+                final byte[] bytes = encodeRequest(data);
+                getTransportSubscriber().tryOnData(bytes, false);
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                transportError(throwable);
+            }
+        };
     }
 
     @Override
-    public void write(Object obj, ChannelPromise promise) throws IOException {
-        final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(getCtx().channel());
-        final Http2StreamChannel streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
+    protected TransportObserver createTransportObserver() {
+        return new AbstractTransportObserver() {
 
-        Http2Headers headers = new DefaultHttp2Headers()
-                .authority(authority)
-                .scheme(SCHEME)
-                .method(HttpMethod.POST.asciiName())
-                .path("/" + invocation.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + invocation.getMethodName())
-                .set(HttpHeaderNames.CONTENT_TYPE, TripleConstant.CONTENT_PROTO)
-                .set(TripleConstant.TIMEOUT, invocation.get(CommonConstants.TIMEOUT_KEY) + "m")
-                .set(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
-
-        final String version = invocation.getInvoker().getUrl().getVersion();
-        if (version != null) {
-            headers.set(TripleConstant.SERVICE_VERSION, version);
-        }
-
-        final String app = (String) invocation.getObjectAttachment(CommonConstants.APPLICATION_KEY);
-        if (app != null) {
-            headers.set(TripleConstant.CONSUMER_APP_NAME_KEY, app);
-            invocation.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY);
-        }
-
-        final String group = invocation.getInvoker().getUrl().getGroup();
-        if (group != null) {
-            headers.set(TripleConstant.SERVICE_GROUP, group);
-            invocation.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
-        }
-        final Map<String, Object> attachments = invocation.getObjectAttachments();
-        if (attachments != null) {
-            convertAttachment(headers, attachments);
-        }
-        headers.remove("path");
-        headers.remove("interface");
-        DefaultHttp2HeadersFrame frame = new DefaultHttp2HeadersFrame(headers);
-        final TripleHttp2ClientResponseHandler responseHandler = new TripleHttp2ClientResponseHandler();
-
-
-        TripleUtil.setClientStream(streamChannel, this);
-        streamChannel.pipeline().addLast(responseHandler)
-                .addLast(new GrpcDataDecoder(Integer.MAX_VALUE))
-                .addLast(new TripleClientInboundHandler());
-        streamChannel.write(frame).addListener(future -> {
-            if (!future.isSuccess()) {
-                if (future.cause() instanceof Http2NoMoreStreamIdsException) {
-                    getCtx().close();
-                }
-                promise.setFailure(future.cause());
+            @Override
+            public void onData(byte[] data, boolean endStream, OperationHandler handler) {
+                execute(() -> {
+                    final Object resp = deserializeResponse(data);
+                    getStreamSubscriber().onNext(resp);
+                });
             }
-        });
-        final ByteBuf out;
 
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        try {
-            final ConsumerModel model = getConsumerModel(invocation);
-            if (model != null) {
-                ClassLoadUtil.switchContextLoader(model.getClassLoader());
+            @Override
+            public void onComplete(OperationHandler handler) {
+                execute(() -> {
+                    Metadata metadata;
+                    if (getTrailers() == null) {
+                        metadata = getHeaders();
+                    } else {
+                        metadata = getTrailers();
+                    }
+                    final GrpcStatus status = extractStatusFromMeta(metadata);
+
+                    if (GrpcStatus.Code.isOk(status.code.code)) {
+                        getStreamSubscriber().onCompleted();
+                    } else {
+                        getStreamSubscriber().onError(status.asException());
+                    }
+                });
             }
-            if (isNeedWrap()) {
-                final TripleWrapper.TripleRequestWrapper wrap = TripleUtil.wrapReq(getUrl(), invocation, getMultipleSerialization());
-                out = TripleUtil.pack(getCtx(), wrap);
-            } else {
-                out = TripleUtil.pack(getCtx(), invocation.getArguments()[0]);
-            }
-        } finally {
-            ClassLoadUtil.switchContextLoader(tccl);
-        }
-        final DefaultHttp2DataFrame data = new DefaultHttp2DataFrame(out, true);
-        streamChannel.write(data).addListener(f -> {
-            if (f.isSuccess()) {
-                promise.trySuccess();
-            } else {
-                promise.tryFailure(f.cause());
-            }
-        });
+        };
     }
-
-    public void halfClose() {
-        final int httpCode = HttpResponseStatus.parseLine(getHeaders().status()).code();
-        if (HttpResponseStatus.OK.code() != httpCode) {
-            final Integer code = getHeaders().getInt(TripleConstant.STATUS_KEY);
-            final GrpcStatus status = GrpcStatus.fromCode(code)
-                    .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
-            onError(status);
-            return;
-        }
-        final Http2Headers te = getTe() == null ? getHeaders() : getTe();
-        final Integer code = te.getInt(TripleConstant.STATUS_KEY);
-        if (!GrpcStatus.Code.isOk(code)) {
-            final GrpcStatus status = GrpcStatus.fromCode(code)
-                    .withDescription(TripleUtil.percentDecode(getHeaders().get(TripleConstant.MESSAGE_KEY)));
-            onError(status);
-            return;
-        }
-        final InputStream data = getData();
-        if (data == null) {
-            onError(MISSING_RESP);
-            return;
-        }
-        callback.execute(() -> {
-            final Invocation invocation = (Invocation) (request.getData());
-            ServiceRepository repo = ApplicationModel.getServiceRepository();
-            MethodDescriptor methodDescriptor = repo.lookupMethod(invocation.getServiceName(), invocation.getMethodName());
-            ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-            try {
-                final Object resp;
-                final ConsumerModel model = getConsumerModel(invocation);
-                if (model != null) {
-                    ClassLoadUtil.switchContextLoader(model.getClassLoader());
-                }
-                if (isNeedWrap()) {
-                    final TripleWrapper.TripleResponseWrapper message = TripleUtil.unpack(data, TripleWrapper.TripleResponseWrapper.class);
-                    resp = TripleUtil.unwrapResp(getUrl(), message, getMultipleSerialization());
-                } else {
-                    resp = TripleUtil.unpack(data, methodDescriptor.getReturnClass());
-                }
-                Response response = new Response(request.getId(), request.getVersion());
-                final AppResponse result = new AppResponse(resp);
-                result.setObjectAttachments(parseHeadersToMap(te));
-                response.setResult(result);
-                DefaultFuture2.received(Connection.getConnectionFromChannel(getCtx().channel()), response);
-            } catch (Exception e) {
-                final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withCause(e)
-                        .withDescription("Failed to deserialize response");
-                onError(status);
-            } finally {
-                ClassLoadUtil.switchContextLoader(tccl);
-            }
-        });
-    }
-
 }
