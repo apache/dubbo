@@ -65,11 +65,6 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     }
 
     @Override
-    public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
-        return super.checkCandidate(beanName, beanDefinition);
-    }
-
-    @Override
     public Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = beanDefinitionMap.get(basePackage);
         // if beanDefinitions size ge 0 => don't scan
