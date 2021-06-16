@@ -16,17 +16,13 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 
-import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -42,6 +38,9 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.regis
  */
 public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinitionScanner {
 
+    /**
+     * key is package, value is BeanDefinition
+     */
     private final ConcurrentMap<String, Set<BeanDefinition>> beanDefinitionMap = new ConcurrentHashMap<>();
 
     public DubboClassPathBeanDefinitionScanner(BeanDefinitionRegistry registry, boolean useDefaultFilters, Environment environment,
@@ -65,11 +64,6 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     }
 
     @Override
-    public Set<BeanDefinitionHolder> doScan(String... basePackages) {
-        return super.doScan(basePackages);
-    }
-
-    @Override
     public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
         return super.checkCandidate(beanName, beanDefinition);
     }
@@ -77,32 +71,12 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     @Override
     public Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = beanDefinitionMap.get(basePackage);
-        if (CollectionUtils.isEmpty(beanDefinitions)) {
+        // if beanDefinitions size ge 0 => don't scan
+        // if beanDefinitions size is null => scan
+        if (Objects.isNull(beanDefinitions)) {
             beanDefinitions = super.findCandidateComponents(basePackage);
             beanDefinitionMap.put(basePackage, beanDefinitions);
         }
         return beanDefinitions;
     }
-
-    /**
-     * Registers @Service Bean and Finds all BeanDefinitionHolders of @Service
-     *
-     * @param registry              BeanDefinitionRegistry
-     * @param beanNameGenerator     BeanNameGenerator
-     * @param basePackage           basePackage
-     * @return                      all BeanDefinitionHolders of @Service
-     */
-    public Set<BeanDefinitionHolder> doScan(BeanDefinitionRegistry registry, BeanNameGenerator beanNameGenerator, String basePackage) {
-        // Registers @Service Bean first
-        super.doScan(basePackage);
-        Set<BeanDefinition> beanDefinitions = findCandidateComponents(basePackage);
-        Set<BeanDefinitionHolder> beanDefinitionHolders = new LinkedHashSet<BeanDefinitionHolder>(beanDefinitions.size());
-        for (BeanDefinition beanDefinition : beanDefinitions) {
-            String beanName = beanNameGenerator.generateBeanName(beanDefinition, registry);
-            BeanDefinitionHolder beanDefinitionHolder = new BeanDefinitionHolder(beanDefinition, beanName);
-            beanDefinitionHolders.add(beanDefinitionHolder);
-        }
-        return beanDefinitionHolders;
-    }
-
 }

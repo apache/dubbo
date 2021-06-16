@@ -162,9 +162,13 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         });
 
         for (String packageToScan : packagesToScan) {
-            
+
+            // Registers @Service Bean first
+            scanner.scan(packageToScan);
+
             // Finds all BeanDefinitionHolders of @Service whether @ComponentScan scans or not.
-            Set<BeanDefinitionHolder> beanDefinitionHolders = scanner.doScan(registry, beanNameGenerator, packageToScan);
+            Set<BeanDefinitionHolder> beanDefinitionHolders =
+                    findServiceBeanDefinitionHolders(scanner, packageToScan, registry, beanNameGenerator);
 
             if (!CollectionUtils.isEmpty(beanDefinitionHolders)) {
 
