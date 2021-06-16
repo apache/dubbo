@@ -18,12 +18,14 @@ package org.apache.dubbo.config.spring.util;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.dubbo.config.spring.DubboConfigInitializationPostProcessor;
-import org.apache.dubbo.config.spring.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServicePackagesHolder;
+import org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.DubboConfigAliasPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.config.DubboConfigDefaultPropertyValueBeanPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
+import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -57,19 +59,22 @@ public interface DubboBeanUtils {
      */
     static void registerCommonBeans(BeanDefinitionRegistry registry) {
 
+        registerInfrastructureBean(registry, ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
+
         registerInfrastructureBean(registry, ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
 
         // Since 2.5.7 Register @Reference Annotation Bean Processor as an infrastructure Bean
         registerInfrastructureBean(registry, ReferenceAnnotationBeanPostProcessor.BEAN_NAME,
                 ReferenceAnnotationBeanPostProcessor.class);
 
+        // TODO Whether DubboConfigAliasPostProcessor can be removed ?
         // Since 2.7.4 [Feature] https://github.com/apache/dubbo/issues/5093
         registerInfrastructureBean(registry, DubboConfigAliasPostProcessor.BEAN_NAME,
                 DubboConfigAliasPostProcessor.class);
 
         // Since 2.7.5 Register DubboLifecycleComponentApplicationListener as an infrastructure Bean
-        registerInfrastructureBean(registry, DubboLifecycleComponentApplicationListener.BEAN_NAME,
-                DubboLifecycleComponentApplicationListener.class);
+//        registerInfrastructureBean(registry, DubboLifecycleComponentApplicationListener.BEAN_NAME,
+//                DubboLifecycleComponentApplicationListener.class);
 
         // Since 2.7.4 Register DubboBootstrapApplicationListener as an infrastructure Bean
         registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME,
@@ -79,7 +84,11 @@ public interface DubboBeanUtils {
         registerInfrastructureBean(registry, DubboConfigDefaultPropertyValueBeanPostProcessor.BEAN_NAME,
                 DubboConfigDefaultPropertyValueBeanPostProcessor.class);
 
+        // Dubbo config initialization processor
         registerInfrastructureBean(registry, DubboConfigInitializationPostProcessor.BEAN_NAME, DubboConfigInitializationPostProcessor.class);
+
+        // register infra bean if not exists later
+        registerInfrastructureBean(registry, DubboInfraBeanRegisterPostProcessor.BEAN_NAME, DubboInfraBeanRegisterPostProcessor.class);
     }
 
     /**
@@ -112,8 +121,11 @@ public interface DubboBeanUtils {
     }
 
     /**
-     * Call this method in postProcessBeanFactory()
-     *
+     * Register some beans later
+     * Call this method in BeanDefinitionRegistryPostProcessor,
+     * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
+     * @see DubboInfraBeanRegisterPostProcessor
+     * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
      * @param registry
      */
     static void registerBeansIfNotExists(BeanDefinitionRegistry registry) {

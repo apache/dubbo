@@ -55,7 +55,15 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService nextScheduledExecutor();
 
-    ScheduledExecutorService getServiceExporterExecutor();
+    ExecutorService nextExecutorExecutor();
+
+    ScheduledExecutorService getExportReferExecutor();
+
+    /**
+     * The executor only used in bootstrap currently, we should call this method to release the resource
+     * after the async export-refer is done.
+     */
+    void shutdownExportReferExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 
@@ -68,7 +76,6 @@ public interface ExecutorRepository {
      */
     ScheduledExecutorService getRegistryNotificationExecutor();
 
-
     /**
      * Get the default shared threadpool.
      *
@@ -76,4 +83,10 @@ public interface ExecutorRepository {
      */
     ExecutorService getSharedExecutor();
 
+    ExecutorService getPoolRouterExecutor();
+
+    /**
+     * Destroy all executors that are not in shutdown state
+     */
+    void destroyAll();
 }

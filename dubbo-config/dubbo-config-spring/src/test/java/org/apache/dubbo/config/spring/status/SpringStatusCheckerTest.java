@@ -20,9 +20,10 @@ import org.apache.dubbo.common.status.Status;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
@@ -99,6 +100,6 @@ public class SpringStatusCheckerTest {
         SpringExtensionFactory.addApplicationContext(context);
         SpringStatusChecker checker = new SpringStatusChecker();
         Status status = checker.check();
-        Assert.assertEquals(Status.Level.UNKNOWN, status.getLevel());
+        Assertions.assertEquals(Status.Level.UNKNOWN, status.getLevel());
     }
 }

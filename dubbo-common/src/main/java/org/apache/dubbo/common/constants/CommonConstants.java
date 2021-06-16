@@ -114,6 +114,8 @@ public interface CommonConstants {
 
     String IO_THREADS_KEY = "iothreads";
 
+    String KEEP_ALIVE_KEY = "keep.alive";
+
     int DEFAULT_QUEUES = 0;
 
     int DEFAULT_ALIVE = 60 * 1000;
@@ -125,6 +127,8 @@ public interface CommonConstants {
     // used by invocation attachments to transfer timeout from Consumer to Provider.
     // works as a replacement of TIMEOUT_KEY on wire, which seems to be totally useless in previous releases).
     String TIMEOUT_ATTACHMENT_KEY = "_TO";
+
+    String TIMEOUT_ATTACHMENT_KEY_LOWER = "_to";
 
     String TIME_COUNTDOWN_KEY = "timeout-countdown";
 
@@ -195,8 +199,6 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
-    String MAPPING_KEY = "mapping-type";
-
     String CONFIG_MAPPING_TYPE = "config";
 
     String METADATA_MAPPING_TYPE = "metadata";
@@ -204,6 +206,8 @@ public interface CommonConstants {
     String DEFAULT_METADATA_STORAGE_TYPE = "local";
 
     String REMOTE_METADATA_STORAGE_TYPE = "remote";
+
+    String GENERIC_KEY = "generic";
 
     /**
      * The composite metadata storage type includes {@link #DEFAULT_METADATA_STORAGE_TYPE "local"} and
@@ -226,9 +230,15 @@ public interface CommonConstants {
     String GENERIC_PARAMETER_DESC = "Ljava/lang/String;[Ljava/lang/String;[Ljava/lang/Object;";
 
     /**
+     * echo call
+     */
+    String $ECHO = "$echo";
+    /**
      * package version in the manifest
      */
     String RELEASE_KEY = "release";
+
+    String PROTOBUF_MESSAGE_CLASS_NAME = "com.google.protobuf.Message";
 
     int MAX_PROXY_COUNT = 65535;
 
@@ -239,6 +249,11 @@ public interface CommonConstants {
     String HOST_KEY = "host";
     String PORT_KEY = "port";
     String DUBBO_IP_TO_BIND = "DUBBO_IP_TO_BIND";
+
+    /**
+     * broadcast cluster.
+     */
+    String BROADCAST_CLUSTER = "broadcast";
 
     /**
      * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
@@ -302,6 +317,8 @@ public interface CommonConstants {
     String EXTRA_KEYS_KEY = "extra-keys";
 
     String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
+
+    String GENERIC_SERIALIZATION_GSON = "gson";
 
     String GENERIC_SERIALIZATION_DEFAULT = "true";
 
@@ -369,6 +386,16 @@ public interface CommonConstants {
      */
     String DEFAULT_SERVICE_NAME_MAPPING_PROPERTIES_PATH = "META-INF/dubbo/service-name-mapping.properties";
 
+    String CLASS_DESERIALIZE_BLOCK_ALL = "dubbo.security.serialize.blockAllClassExceptAllow";
+
+    String CLASS_DESERIALIZE_ALLOWED_LIST = "dubbo.security.serialize.allowedClassList";
+
+    String CLASS_DESERIALIZE_BLOCKED_LIST = "dubbo.security.serialize.blockedClassList";
+
+    String ENABLE_NATIVE_JAVA_GENERIC_SERIALIZE = "dubbo.security.serialize.generic.native-java-enable";
+
+    String SERIALIZE_BLOCKED_LIST_FILE_PATH = "security/serialize.blockedlist";
+
     String QOS_LIVE_PROBE_EXTENSION = "dubbo.application.liveness-probe";
 
     String QOS_READY_PROBE_EXTENSION = "dubbo.application.readiness-probe";
@@ -382,4 +409,23 @@ public interface CommonConstants {
 
     String CLUSTER_INTERCEPTOR_COMPATIBLE_KEY = "dubbo.application.cluster.interceptor.compatible";
 
+    String UTF8ENCODE = "UTF-8";
+
+    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    String CLASSPATH_URL_PREFIX = "classpath:";
+
+    String DEFAULT_VERSION = "0.0.0";
+
+    String EXPORT_ASYNC_KEY = "export-async";
+
+    String REFER_ASYNC_KEY = "refer-async";
+
+    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+
+    int DEFAULT_ASYNC_THREAD_NUM = 10;
+
+    /**
+     * Url merge processor key
+     */
+    String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 }

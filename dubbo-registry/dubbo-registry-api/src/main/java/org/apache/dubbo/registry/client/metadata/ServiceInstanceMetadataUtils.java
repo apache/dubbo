@@ -217,7 +217,7 @@ public class ServiceInstanceMetadataUtils {
      * @return if not found, return <code>null</code>
      */
     public static Endpoint getEndpoint(ServiceInstance serviceInstance, String protocol) {
-        List<Endpoint> endpoints = ((DefaultServiceInstance)serviceInstance).getEndpoints();
+        List<Endpoint> endpoints = ((DefaultServiceInstance) serviceInstance).getEndpoints();
         if (endpoints != null) {
             for (Endpoint endpoint : endpoints) {
                 if (endpoint.getProtocol().equals(protocol)) {
@@ -229,14 +229,14 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void calInstanceRevision(ServiceDiscovery serviceDiscovery, ServiceInstance instance) {
-        String registryCluster = serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
+        String registryCluster = serviceDiscovery.getUrl() == null ? DEFAULT_KEY : serviceDiscovery.getUrl().getParameter(REGISTRY_CLUSTER_KEY);
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
         WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
         MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
         if (metadataInfo == null) {
-            metadataInfo = ((InMemoryWritableMetadataService)writableMetadataService).getDefaultMetadataInfo();
+            metadataInfo = ((InMemoryWritableMetadataService) writableMetadataService).getDefaultMetadataInfo();
         }
         if (metadataInfo != null) {
             String existingInstanceRevision = instance.getMetadata().get(EXPORTED_SERVICES_REVISION_PROPERTY_NAME);
@@ -253,19 +253,26 @@ public class ServiceInstanceMetadataUtils {
         return "true".equals(instance.getExtendParams().get(INSTANCE_REVISION_UPDATED_KEY));
     }
 
+    public static void resetInstanceUpdateKey(ServiceInstance instance) {
+        instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
+    }
+
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
         remoteMetadataService.publishMetadata(ApplicationModel.getName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
-            ServiceInstance instance = serviceDiscovery.getLocalInstance() == null ? serviceInstance : serviceDiscovery.getLocalInstance();
+            ServiceInstance instance = serviceDiscovery.getLocalInstance();
             if (instance == null) {
-                LOGGER.error("Error refreshing service instance, instance not registered yet.");
+                LOGGER.warn("Refreshing of service instance started, but instance hasn't been registered yet.");
+                instance = serviceInstance;
             }
             calInstanceRevision(serviceDiscovery, instance);
             customizeInstance(instance);
-            // update service instance revision
-            serviceDiscovery.update(instance);
+            if (serviceInstance.getPort() > 0) {
+                // update service instance revision
+                serviceDiscovery.update(instance);
+            }
         });
     }
 

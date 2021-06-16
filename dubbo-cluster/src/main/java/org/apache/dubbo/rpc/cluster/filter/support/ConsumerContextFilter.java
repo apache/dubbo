@@ -17,12 +17,14 @@
 package org.apache.dubbo.rpc.cluster.filter.support;
 
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.PenetrateAttachmentSelector;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
@@ -31,6 +33,7 @@ import org.apache.dubbo.rpc.TimeoutCountDown;
 import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
@@ -48,15 +51,30 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        RpcContext context = RpcContext.getContext();
-        context.setInvocation(invocation)
-                .setLocalAddress(NetUtils.getLocalHost(), 0)
-                .setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
+        RpcContext.getServiceContext()
+                .setInvocation(invocation)
+                .setLocalAddress(NetUtils.getLocalHost(), 0);
+
+        RpcContext context = RpcContext.getClientAttachment();
+        context.setAttachment(REMOTE_APPLICATION_KEY, invoker.getUrl().getApplication());
         if (invocation instanceof RpcInvocation) {
             ((RpcInvocation) invocation).setInvoker(invoker);
         }
 
-        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+        ExtensionLoader<PenetrateAttachmentSelector> selectorExtensionLoader = ExtensionLoader.getExtensionLoader(PenetrateAttachmentSelector.class);
+        Set<String> supportedSelectors = selectorExtensionLoader.getSupportedExtensions();
+        if (CollectionUtils.isNotEmpty(supportedSelectors)) {
+            for (String supportedSelector : supportedSelectors) {
+                Map<String, Object> selected = selectorExtensionLoader.getExtension(supportedSelector).select();
+                if (CollectionUtils.isNotEmptyMap(selected)) {
+                    ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(selected);
+                }
+            }
+        } else {
+            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(RpcContext.getServerAttachment().getObjectAttachments());
+        }
+
+        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
         if (CollectionUtils.isNotEmptyMap(contextAttachments)) {
             /**
              * invocation.addAttachmentsIfAbsent(context){@link RpcInvocation#addAttachmentsIfAbsent(Map)}should not be used here,
@@ -67,22 +85,23 @@ public class ConsumerContextFilter implements ClusterFilter, ClusterFilter.Liste
             ((RpcInvocation) invocation).addObjectAttachments(contextAttachments);
         }
 
-        // pass default timeout set by end user (ReferenceConfig)
-        Object countDown = context.get(TIME_COUNTDOWN_KEY);
-        if (countDown != null) {
-            TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
-            if (timeoutCountDown.isExpired()) {
-                return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
-                        "No time left for making the following call: " + invocation.getServiceName() + "."
-                                + invocation.getMethodName() + ", terminate directly."), invocation);
-            }
-        }
-
         try {
+            // pass default timeout set by end user (ReferenceConfig)
+            Object countDown = context.getObjectAttachment(TIME_COUNTDOWN_KEY);
+            if (countDown != null) {
+                TimeoutCountDown timeoutCountDown = (TimeoutCountDown) countDown;
+                if (timeoutCountDown.isExpired()) {
+                    return AsyncRpcResult.newDefaultAsyncResult(new RpcException(RpcException.TIMEOUT_TERMINATE,
+                            "No time left for making the following call: " + invocation.getServiceName() + "."
+                                    + invocation.getMethodName() + ", terminate directly."), invocation);
+                }
+            }
+
             RpcContext.removeServerContext();
             return invoker.invoke(invocation);
         } finally {
-            RpcContext.removeContext();
+            RpcContext.removeServiceContext();
+            RpcContext.removeClientAttachment();
         }
     }
 

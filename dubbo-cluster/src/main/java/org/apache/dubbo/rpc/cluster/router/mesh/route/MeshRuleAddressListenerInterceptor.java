@@ -28,18 +28,18 @@ import java.util.concurrent.ConcurrentHashMap;
 @Activate(order = 670)
 public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
-    private static final Object mark = new Object();
-    private static ConcurrentHashMap<String, Object> appMap = new ConcurrentHashMap<String, Object>();
+    private static final Object MARK = new Object();
+    private static final ConcurrentHashMap<String, Object> APP_MAP = new ConcurrentHashMap<>();
 
     @Override
     public List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory) {
 
         if (addresses != null && !addresses.isEmpty()) {
-            for (URL serviceURL : addresses) {
+            for (URL url : addresses) {
 
-                String app = serviceURL.getRemoteApplication();
+                String app = url.getRemoteApplication();
                 if (app != null && !app.isEmpty()) {
-                    if (appMap.putIfAbsent(app, mark) == null) {
+                    if (APP_MAP.putIfAbsent(app, MARK) == null) {
                         MeshRuleManager.subscribeAppRule(app);
                     }
                 }

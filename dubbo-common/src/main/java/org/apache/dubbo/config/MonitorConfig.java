@@ -63,11 +63,6 @@ public class MonitorConfig extends AbstractConfig {
      */
     private Map<String, String> parameters;
 
-    /**
-     * If it's default
-     */
-    private Boolean isDefault;
-
     public MonitorConfig() {
     }
 
@@ -135,14 +130,6 @@ public class MonitorConfig extends AbstractConfig {
         this.parameters = parameters;
     }
 
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
-    }
-
     public String getInterval() {
         return interval;
     }
@@ -152,7 +139,7 @@ public class MonitorConfig extends AbstractConfig {
     }
 
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public boolean isValid() {
         return StringUtils.isNotEmpty(address) || RegistryConstants.REGISTRY_PROTOCOL.equals(protocol);
     }

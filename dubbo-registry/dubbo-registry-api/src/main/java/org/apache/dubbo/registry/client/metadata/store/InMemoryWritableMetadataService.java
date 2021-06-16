@@ -153,9 +153,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
         String[] clusters = getRegistryCluster(url).split(",");
         for (String cluster : clusters) {
-            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> {
-                return new MetadataInfo(ApplicationModel.getName());
-            });
+            MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.getName()));
             metadataInfo.addService(new ServiceInfo(url));
         }
         metadataSemaphore.release();
@@ -182,7 +180,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         return removeURL(exportedServiceURLs, url);
     }
 
-    private String getRegistryCluster(URL url){
+    private String getRegistryCluster(URL url) {
         String registryCluster = RegistryClusterIdentifier.getExtension(url).providerKey(url);
         if (StringUtils.isEmpty(registryCluster)) {
             registryCluster = DEFAULT_KEY;
@@ -297,12 +295,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
 
     @Override
     public void putCachedMapping(String serviceKey, Set<String> apps) {
-        serviceToAppsMapping.put(serviceKey, apps);
-    }
-
-    @Override
-    public Map<String, Set<String>> getCachedMapping() {
-        return serviceToAppsMapping;
+        serviceToAppsMapping.put(serviceKey, new TreeSet<>(apps));
     }
 
     @Override
@@ -319,6 +312,11 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     @Override
     public Set<String> removeCachedMapping(String serviceKey) {
         return serviceToAppsMapping.remove(serviceKey);
+    }
+
+    @Override
+    public Map<String, Set<String>> getCachedMapping() {
+        return serviceToAppsMapping;
     }
 
     @Override

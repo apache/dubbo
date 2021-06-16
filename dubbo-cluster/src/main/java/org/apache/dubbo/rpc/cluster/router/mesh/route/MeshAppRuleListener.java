@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleDispatcher;
+
 import org.yaml.snakeyaml.Yaml;
 
 import java.text.MessageFormat;
@@ -37,7 +38,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     private final VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
 
-    private String appName;
+    private final String appName;
 
     private VsDestinationGroup vsDestinationGroupHolder;
 
@@ -46,8 +47,10 @@ public class MeshAppRuleListener implements ConfigurationListener {
     }
 
     public void receiveConfigInfo(String configInfo) {
-        logger.info(MessageFormat.format("[MeshAppRule] Received rule for app [{0}]: {1}.",
-                appName, configInfo));
+        if(logger.isDebugEnabled()) {
+            logger.debug(MessageFormat.format("[MeshAppRule] Received rule for app [{0}]: {1}.",
+                    appName, configInfo));
+        }
         try {
 
             VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
@@ -55,15 +58,15 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
             Yaml yaml = new Yaml();
             Yaml yaml2 = new Yaml();
-            Iterable objectIterable = yaml.loadAll(configInfo);
+            Iterable<Object> objectIterable = yaml.loadAll(configInfo);
             for (Object result : objectIterable) {
 
                 Map resultMap = (Map) result;
-                if (resultMap.get("kind").equals("DestinationRule")) {
+                if ("DestinationRule".equals(resultMap.get("kind"))) {
                     DestinationRule destinationRule = yaml2.loadAs(yaml2.dump(result), DestinationRule.class);
                     vsDestinationGroup.getDestinationRuleList().add(destinationRule);
 
-                } else if (resultMap.get("kind").equals("VirtualService")) {
+                } else if ("VirtualService".equals(resultMap.get("kind"))) {
                     VirtualServiceRule virtualServiceRule = yaml2.loadAs(yaml2.dump(result), VirtualServiceRule.class);
                     vsDestinationGroup.getVirtualServiceRuleList().add(virtualServiceRule);
                 }
@@ -86,7 +89,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
         vsDestinationGroupRuleDispatcher.register(subscriber);
     }
 
-    //
+
     public void unregister(MeshRuleRouter sub) {
         vsDestinationGroupRuleDispatcher.unregister(sub);
     }

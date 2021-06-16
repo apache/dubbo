@@ -88,13 +88,13 @@ public interface WritableMetadataService extends MetadataService {
 
     void putCachedMapping(String serviceKey, Set<String> apps);
 
-    Map<String, Set<String>> getCachedMapping();
-
     Set<String> getCachedMapping(String mappingKey);
 
     Set<String> getCachedMapping(URL consumerURL);
 
     Set<String> removeCachedMapping(String serviceKey);
+
+    Map<String, Set<String>> getCachedMapping();
 
     MetadataInfo getDefaultMetadataInfo();
 

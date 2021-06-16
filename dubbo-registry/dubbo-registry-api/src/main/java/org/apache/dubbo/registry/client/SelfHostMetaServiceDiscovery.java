@@ -49,6 +49,8 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
+    private volatile boolean isDestroy;
+
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private URL registryURL;
@@ -124,10 +126,16 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
     @Override
     public void destroy() throws Exception {
+        isDestroy = true;
         doDestroy();
         metadataMap.clear();
         serviceInstanceRevisionMap.clear();
         echoCheckExecutor.shutdown();
+    }
+
+    @Override
+    public boolean isDestroy() {
+        return isDestroy;
     }
 
     private void updateMetadata(ServiceInstance serviceInstance) {
@@ -137,7 +145,6 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
 
         // check if metadata updated
         if (!metadataRevision.equalsIgnoreCase(lastMetadataRevision)) {
-            logger.info("Update Service Instance Metadata of DNS registry. Newer metadata: " + metadataString);
             if (logger.isDebugEnabled()) {
                 logger.debug("Update Service Instance Metadata of DNS registry. Newer metadata: " + metadataString);
             }
@@ -221,7 +228,9 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
             String metadata = metadataService.getAndListenInstanceMetadata(
                     consumerId, metadataString -> {
-                        logger.info("Receive callback: " + metadataString + serviceInstance);
+                        if(logger.isDebugEnabled()) {
+                            logger.debug("Receive callback: " + metadataString + serviceInstance);
+                        }
                         if (StringUtils.isEmpty(metadataString)) {
                             // provider is shutdown
                             metadataMap.remove(hostId);

@@ -32,7 +32,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -84,7 +83,7 @@ import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
 /**
  * RegistryDirectory
  */
-public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class RegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(RegistryDirectory.class);
 
     private static final ConsumerConfigurationListener CONSUMER_CONFIGURATION_LISTENER = new ConsumerConfigurationListener();
@@ -102,7 +101,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     @Override
     public void subscribe(URL url) {
-        setConsumerUrl(url);
+        setSubscribeUrl(url);
         CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
         referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
         registry.subscribe(url, this);
@@ -110,7 +109,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     @Override
     public void unSubscribe(URL url) {
-        setConsumerUrl(null);
+        setSubscribeUrl(null);
         CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
         referenceConfigurationListener.stop();
         registry.unsubscribe(url, this);
@@ -118,6 +117,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
 
     @Override
     public synchronized void notify(List<URL> urls) {
+        if (isDestroyed()) {
+            return;
+        }
+
         Map<String, List<URL>> categoryUrls = urls.stream()
                 .filter(Objects::nonNull)
                 .filter(this::isValidCategory)
@@ -161,7 +164,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         return "";
     }
 
-    private void refreshOverrideAndInvoker(List<URL> urls) {
+    // RefreshOverrideAndInvoker will be executed by registryCenter and configCenter, so it should be synchronized.
+    private synchronized void refreshOverrideAndInvoker(List<URL> urls) {
         // mock zookeeper://xxx?mock=return null
         overrideDirectoryUrl();
         refreshInvoker(urls);
@@ -232,10 +236,10 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             } catch (Exception e) {
                 logger.warn("destroyUnusedInvokers error. ", e);
             }
-        }
 
-        // notify invokers refreshed
-        this.invokersChanged();
+            // notify invokers refreshed
+            this.invokersChanged();
+        }
     }
 
     private List<Invoker<T>> toMergeInvokerList(List<Invoker<T>> invokers) {
@@ -369,7 +373,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
         if (providerUrl instanceof ServiceAddressURL) {
             providerUrl = overrideWithConfigurator(providerUrl);
         } else {
-            providerUrl = ClusterUtils.mergeProviderUrl(providerUrl, queryMap); // Merge the consumer side parameters
+            providerUrl = ClusterUtils.mergeUrl(providerUrl, queryMap); // Merge the consumer side parameters
             providerUrl = overrideWithConfigurator(providerUrl);
             providerUrl = providerUrl.addParameter(Constants.CHECK_KEY, String.valueOf(false)); // Do not check whether the connection is successful or not, always create Invoker!
         }
@@ -551,14 +555,8 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> implements NotifyL
             return false;
         }
         Map<URL, Invoker<T>> localUrlInvokerMap = urlInvokerMap;
-        if (localUrlInvokerMap != null && localUrlInvokerMap.size() > 0) {
-            for (Map.Entry<URL,Invoker<T>> entry : localUrlInvokerMap.entrySet()){
-                if (entry.getValue().isAvailable()) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return CollectionUtils.isNotEmptyMap(localUrlInvokerMap)
+                && localUrlInvokerMap.values().stream().anyMatch(Invoker::isAvailable);
     }
 
     /**

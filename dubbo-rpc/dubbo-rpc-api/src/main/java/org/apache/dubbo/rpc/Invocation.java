@@ -114,6 +114,11 @@ public interface Invocation {
     @Experimental("Experiment api for supporting Object transmission")
     Object getObjectAttachment(String key);
 
+    @Experimental("Experiment api for supporting Object transmission")
+    default Object getObjectAttachmentWithoutConvert(String key) {
+        return getObjectAttachment(key);
+    }
+
     /**
      * get attachment by key with default value.
      *

@@ -174,7 +174,7 @@ public abstract class Mixin {
             ccm.setSuperClass(Mixin.class.getName());
             ccm.addMethod("public Object newInstance(Object[] delegates){ return new " + micn + "($1); }");
             Class<?> mixin = ccm.toClass();
-            return (Mixin) mixin.newInstance();
+            return (Mixin) mixin.getDeclaredConstructor().newInstance();
         } catch (RuntimeException e) {
             throw e;
         } catch (Exception e) {

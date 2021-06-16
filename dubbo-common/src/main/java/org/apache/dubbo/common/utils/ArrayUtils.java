@@ -66,4 +66,16 @@ public final class ArrayUtils {
             return -1;
         }
     }
+
+    /**
+     * Convert from variable arguments to array
+     *
+     * @param values variable arguments
+     * @param <T>    The class
+     * @return array
+     * @since 2.7.9
+     */
+    public static <T> T[] of(T... values) {
+        return values;
+    }
 }

@@ -276,7 +276,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
     }
 
-    public void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
+    protected void storeConsumerMetadataTask(MetadataIdentifier consumerMetadataIdentifier, Map<String, String> serviceParameterMap) {
         try {
             if (logger.isInfoEnabled()) {
                 logger.info("store consumer metadata. Identifier : " + consumerMetadataIdentifier + "; definition: " + serviceParameterMap);
@@ -293,6 +293,16 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             failedReports.put(consumerMetadataIdentifier, serviceParameterMap);
             metadataReportRetry.startRetryTask();
             logger.error("Failed to put consumer metadata " + consumerMetadataIdentifier + ";  " + serviceParameterMap + ", cause: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        if (reportCacheExecutor != null) {
+            reportCacheExecutor.shutdown();
+        }
+        if (metadataReportRetry != null) {
+            metadataReportRetry.destroy();
         }
     }
 
@@ -438,8 +448,14 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
 
         void cancelRetryTask() {
-            retryScheduledFuture.cancel(false);
+            if (retryScheduledFuture != null) {
+                retryScheduledFuture.cancel(false);
+            }
             retryExecutor.shutdown();
+        }
+
+        void destroy() {
+            cancelRetryTask();
         }
     }
 

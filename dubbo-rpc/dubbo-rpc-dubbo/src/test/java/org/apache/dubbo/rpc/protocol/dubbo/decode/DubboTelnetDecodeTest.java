@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.dubbo.decode;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.remoting.Codec2;
 import org.apache.dubbo.remoting.buffer.ChannelBuffer;
@@ -42,6 +43,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -88,7 +90,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler(null,
@@ -135,7 +137,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -198,7 +200,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -261,7 +263,8 @@ public class DubboTelnetDecodeTest {
      *
      * @throws InterruptedException
      */
-    // @Test
+    @Disabled
+    @Test
     public void testTelnetTelnetDecoded() throws InterruptedException {
         ByteBuf firstByteBuf = Unpooled.wrappedBuffer("ls\r".getBytes());
         ByteBuf secondByteBuf = Unpooled.wrappedBuffer("\nls\r\n".getBytes());
@@ -269,7 +272,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {
@@ -340,7 +343,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler(null,
@@ -407,7 +410,7 @@ public class DubboTelnetDecodeTest {
         EmbeddedChannel ch = null;
         try {
             Codec2 codec = ExtensionLoader.getExtensionLoader(Codec2.class).getExtension("dubbo");
-            URL url = new URL("dubbo", "localhost", 22226);
+            URL url = new ServiceConfigURL("dubbo", "localhost", 22226);
             NettyCodecAdapter adapter = new NettyCodecAdapter(codec, url, new MockChannelHandler());
 
             MockHandler mockHandler = new MockHandler((msg) -> {

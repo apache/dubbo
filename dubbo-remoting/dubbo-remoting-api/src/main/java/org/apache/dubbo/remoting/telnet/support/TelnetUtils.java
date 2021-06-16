@@ -115,7 +115,7 @@ public class TelnetUtils {
         buf.append("\r\n");
         //content
         for (List<String> row : table) {
-            StringBuffer rowbuf = new StringBuffer();
+            StringBuilder rowbuf = new StringBuilder();
             rowbuf.append("|");
             for (int j = 0; j < widths.length; j++) {
                 String cell = row.get(j);
@@ -125,7 +125,7 @@ public class TelnetUtils {
 
                     if (rowbuf.length() >= totalWidth) {
                         buf.append(rowbuf.toString());
-                        rowbuf = new StringBuffer();
+                        rowbuf = new StringBuilder();
 //                        for(int m = 0;m < maxcountbefore && maxcountbefore < totalWidth ; m++){
 //                            rowbuf.append(" ");
 //                        }

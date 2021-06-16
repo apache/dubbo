@@ -47,6 +47,8 @@ import static org.apache.dubbo.rpc.cluster.Constants.OVERRIDE_PROVIDERS_KEY;
  */
 public abstract class AbstractConfigurator implements Configurator {
 
+    private static final String TILDE = "~";
+
     private final URL configuratorUrl;
 
     public AbstractConfigurator(URL url) {
@@ -76,7 +78,8 @@ public abstract class AbstractConfigurator implements Configurator {
             String configuratorSide = configuratorUrl.getSide();
             if (currentSide.equals(configuratorSide) && CONSUMER.equals(configuratorSide) && 0 == configuratorUrl.getPort()) {
                 url = configureIfMatch(NetUtils.getLocalHost(), url);
-            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) && url.getPort() == configuratorUrl.getPort()) {
+            } else if (currentSide.equals(configuratorSide) && PROVIDER.equals(configuratorSide) &&
+                    url.getPort() == configuratorUrl.getPort()) {
                 url = configureIfMatch(url.getHost(), url);
             }
         }
@@ -137,10 +140,13 @@ public abstract class AbstractConfigurator implements Configurator {
                     for (Map.Entry<String, String> entry : configuratorUrl.getParameters().entrySet()) {
                         String key = entry.getKey();
                         String value = entry.getValue();
-                        if (key.startsWith("~") || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
-                            conditionKeys.add(key);
+                        boolean startWithTilde = startWithTilde(key);
+                        if (startWithTilde || APPLICATION_KEY.equals(key) || SIDE_KEY.equals(key)) {
+                            if (startWithTilde) {
+                                conditionKeys.add(key);
+                            }
                             if (value != null && !ANY_VALUE.equals(value)
-                                    && !value.equals(url.getParameter(key.startsWith("~") ? key.substring(1) : key))) {
+                                    && !value.equals(url.getParameter(startWithTilde ? key.substring(1) : key))) {
                                 return url;
                             }
                         }
@@ -150,6 +156,13 @@ public abstract class AbstractConfigurator implements Configurator {
             }
         }
         return url;
+    }
+
+    private boolean startWithTilde(String key) {
+        if (StringUtils.isNotEmpty(key) && key.startsWith(TILDE)) {
+            return true;
+        }
+        return false;
     }
 
     protected abstract URL doConfigure(URL currentUrl, URL configUrl);

@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.config;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
 
@@ -117,32 +115,52 @@ public class MethodConfig extends AbstractMethodConfig {
     private List<ArgumentConfig> arguments;
 
     /**
+     * TODO remove service and serviceId
      * These properties come from MethodConfig's parent Config module, they will neither be collected directly from xml or API nor be delivered to url
      */
     private String service;
     private String serviceId;
 
-    @Parameter(excluded = true)
-    public String getName() {
-        return name;
-    }
+    /**
+     * The preferred prefix of parent
+     */
+    private String parentPrefix;
+
 
     public MethodConfig() {
     }
 
+    /**
+     * TODO remove this construct, the callback method processing logic needs to rely on Spring context
+     */
+    @Deprecated
     public MethodConfig(Method method) {
         appendAnnotation(Method.class, method);
 
         this.setReturn(method.isReturn());
 
-        if(!"".equals(method.oninvoke())){
-            this.setOninvoke(method.oninvoke());
+        String split = ".";
+
+        if (!"".equals(method.oninvoke()) && method.oninvoke().lastIndexOf(split) > 0) {
+            int index = method.oninvoke().lastIndexOf(split);
+            String ref = method.oninvoke().substring(0, index);
+            String methodName = method.oninvoke().substring(index + 1);
+            this.setOninvoke(ref);
+            this.setOninvokeMethod(methodName);
         }
-        if(!"".equals(method.onreturn())){
-            this.setOnreturn(method.onreturn());
+        if (!"".equals(method.onreturn()) && method.onreturn().lastIndexOf(split) > 0) {
+            int index = method.onreturn().lastIndexOf(split);
+            String ref = method.onreturn().substring(0, index);
+            String methodName = method.onreturn().substring(index + 1);
+            this.setOnreturn(ref);
+            this.setOnreturnMethod(methodName);
         }
-        if(!"".equals(method.onthrow())){
-            this.setOnthrow(method.onthrow());
+        if (!"".equals(method.onthrow()) && method.onthrow().lastIndexOf(split) > 0) {
+            int index = method.onthrow().lastIndexOf(split);
+            String ref = method.onthrow().substring(0, index);
+            String methodName = method.onthrow().substring(index + 1);
+            this.setOnthrow(ref);
+            this.setOnthrowMethod(methodName);
         }
 
         if (method.arguments() != null && method.arguments().length != 0) {
@@ -155,6 +173,12 @@ public class MethodConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * TODO remove constructMethodConfig
+     * @param methods
+     * @return
+     */
+    @Deprecated
     public static List<MethodConfig> constructMethodConfig(Method[] methods) {
         if (methods != null && methods.length != 0) {
             List<MethodConfig> methodConfigs = new ArrayList<MethodConfig>(methods.length);
@@ -165,6 +189,34 @@ public class MethodConfig extends AbstractMethodConfig {
             return methodConfigs;
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * Get method prefixes
+     * @return
+     */
+    @Override
+    @Parameter(excluded = true)
+    public List<String> getPrefixes() {
+        // parent prefix + method name
+        if (parentPrefix != null) {
+            List<String> prefixes = new ArrayList<>();
+            prefixes.add(parentPrefix + "." +this.getName());
+            return prefixes;
+        } else {
+            throw new IllegalStateException("The parent prefix of MethodConfig is null");
+        }
+    }
+
+    @Override
+    public void addIntoConfigManager() {
+        // Don't add MethodConfig to ConfigManager
+        // super.addIntoConfigManager();
+    }
+
+    @Parameter(excluded = true)
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
@@ -299,7 +351,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.isReturn = isReturn;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getService() {
         return service;
     }
@@ -308,7 +360,7 @@ public class MethodConfig extends AbstractMethodConfig {
         this.service = service;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getServiceId() {
         return serviceId;
     }
@@ -317,16 +369,12 @@ public class MethodConfig extends AbstractMethodConfig {
         this.serviceId = serviceId;
     }
 
-    /**
-     * service and name must not be null.
-     *
-     * @return
-     */
-    @Override
-    @Parameter(excluded = true)
-    public String getPrefix() {
-        return CommonConstants.DUBBO + "." + service
-                + (StringUtils.isEmpty(serviceId) ? "" : ("." + serviceId))
-                + "." + getName();
+    public void setParentPrefix(String parentPrefix) {
+        this.parentPrefix = parentPrefix;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public String getParentPrefix() {
+        return parentPrefix;
     }
 }

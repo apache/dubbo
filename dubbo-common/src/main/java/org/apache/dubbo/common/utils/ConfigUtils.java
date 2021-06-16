@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.config.Configuration;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -128,6 +130,10 @@ public class ConfigUtils {
     }
 
     public static String replaceProperty(String expression, Map<String, String> params) {
+        return replaceProperty(expression, new InmemoryConfiguration(params));
+    }
+
+    public static String replaceProperty(String expression, Configuration configuration) {
         if (expression == null || expression.length() == 0 || expression.indexOf('$') < 0) {
             return expression;
         }
@@ -136,11 +142,13 @@ public class ConfigUtils {
         while (matcher.find()) {
             String key = matcher.group(1);
             String value = System.getProperty(key);
-            if (value == null && params != null) {
-                value = params.get(key);
+            if (value == null && configuration != null) {
+                Object val = configuration.getProperty(key);
+                value = (val != null) ? val.toString() : null;
             }
             if (value == null) {
-                value = "";
+                // maybe not placeholders, use origin express
+                value = matcher.group();
             }
             matcher.appendReplacement(sb, Matcher.quoteReplacement(value));
         }
@@ -148,7 +156,13 @@ public class ConfigUtils {
         return sb.toString();
     }
 
+    /**
+     * Get dubbo properties.
+     * It is not recommended to use this method to modify dubbo properties.
+     * @return
+     */
     public static Properties getProperties() {
+        //TODO remove global instance PROPERTIES from ConfigUtils
         if (PROPERTIES == null) {
             synchronized (ConfigUtils.class) {
                 if (PROPERTIES == null) {
@@ -166,10 +180,18 @@ public class ConfigUtils {
         return PROPERTIES;
     }
 
+    /**
+     * This method should be called before Dubbo starting.
+     * It is not recommended to use this method to modify dubbo properties.
+     */
     public static void setProperties(Properties properties) {
         PROPERTIES = properties;
     }
 
+    /**
+     * This method should be called before Dubbo starting.
+     * It is not recommended to use this method to modify dubbo properties.
+     */
     public static void addProperties(Properties properties) {
         if (properties != null) {
             getProperties().putAll(properties);
@@ -186,7 +208,10 @@ public class ConfigUtils {
         if (value != null && value.length() > 0) {
             return value;
         }
-        Properties properties = getProperties();
+        return getProperty(getProperties(), key, defaultValue);
+    }
+
+    public static String getProperty(Properties properties, String key, String defaultValue) {
         return replaceProperty(properties.getProperty(key, defaultValue), (Map) properties);
     }
 

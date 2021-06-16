@@ -16,56 +16,129 @@
  */
 package org.apache.dubbo.config.spring;
 
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ReflectUtils;
-import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ReferenceConfigBase;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
-import org.apache.dubbo.rpc.support.ProtocolUtils;
-
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 
 /**
- * ReferenceFactoryBean
+ * <p>
+ * Spring FactoryBean for {@link ReferenceConfig}.
+ * </p>
+ *
+ *
+ * <p></p>
+ * Step 1: Register ReferenceBean in Java-config class:
+ * <pre class="code">
+ * &#64;Configuration
+ * public class ReferenceConfiguration {
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo")
+ *     public ReferenceBean&lt;HelloService&gt; helloService() {
+ *         return new ReferenceBean();
+ *     }
+ *
+ *     // As GenericService
+ *     &#64;Bean
+ *     &#64;DubboReference(group = "demo", interfaceClass = HelloService.class)
+ *     public ReferenceBean&lt;GenericService&gt; genericHelloService() {
+ *         return new ReferenceBean();
+ *     }
+ * }
+ * </pre>
+ *
+ * Or register ReferenceBean in xml:
+ * <pre class="code">
+ * &lt;dubbo:reference id="helloService" interface="org.apache.dubbo.config.spring.api.HelloService"/&gt;
+ * &lt;!-- As GenericService --&gt;
+ * &lt;dubbo:reference id="genericHelloService" interface="org.apache.dubbo.config.spring.api.HelloService" generic="true"/&gt;
+ * </pre>
+ *
+ * Step 2: Inject ReferenceBean by @Autowired
+ * <pre class="code">
+ * public class FooController {
+ *     &#64;Autowired
+ *     private HelloService helloService;
+ *
+ *     &#64;Autowired
+ *     private GenericService genericHelloService;
+ * }
+ * </pre>
+ *
+ *
+ * @see org.apache.dubbo.config.annotation.DubboReference
+ * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  */
 public class ReferenceBean<T> implements FactoryBean,
-        ApplicationContextAware, BeanClassLoaderAware, InitializingBean, DisposableBean {
+        ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
 
     private transient ApplicationContext applicationContext;
+
     private ClassLoader beanClassLoader;
-    private DubboReferenceLazyInitTargetSource referenceTargetSource;
-    private Object referenceLazyProxy;
+
+    // lazy proxy of reference
+    private Object lazyProxy;
+
+    // beanName
+    protected String id;
+
+    // reference key
+    private String key;
+
     /**
      * The interface class of the reference service
      */
-    protected Class<?> interfaceClass;
+    private Class<?> interfaceClass;
 
-    //beanName
-    protected String id;
+    /**
+     * Actual interface class of this reference.
+     * The actual service type of remote provider.
+     * see {@link ReferenceConfigBase#getActualInterface()}
+     */
+    private Class actualInterface;
+
+    /*
+     * actual interface class name
+     */
+    // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
+    private String interfaceName;
+
     //from annotation attributes
     private Map<String, Object> referenceProps;
-    //from bean definition
+
+    //from xml bean definition
     private MutablePropertyValues propertyValues;
+
     //actual reference config
     private ReferenceConfig referenceConfig;
-    private String generic;
-    private String interfaceName;
+
+    // Registration sources of this reference, may be xml file or annotation location
+    private List<Map<String,Object>> sources = new ArrayList<>();
 
     public ReferenceBean() {
         super();
@@ -86,11 +159,40 @@ public class ReferenceBean<T> implements FactoryBean,
     }
 
     @Override
+    public void setBeanName(String name) {
+        this.setId(name);
+    }
+
+    /**
+     * Create bean instance.
+     * <p/>
+     * When Spring searches beans by type, if Spring cannot determine the type of a factory bean, it may try to initialize it.
+     * The ReferenceBean is also a FactoryBean.
+     *
+     * <p/>
+     * In addition, if some ReferenceBeans are dependent on beans that are initialized very early,
+     * and dubbo config beans are not ready yet, there will be many unexpected problems if initializing the dubbo reference immediately.
+     *
+     * <p/>
+     * When it is initialized, only a lazy proxy object will be created,
+     * and dubbo reference-related resources will not be initialized.
+     * <br/>
+     * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
+     *
+     * <p/>
+     * Dubbo config beans are initialized in DubboConfigInitializationPostProcessor.
+     * <br/>
+     * The actual references will be processing in DubboBootstrap.referServices().
+     *
+     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
+     * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
+     */
+    @Override
     public Object getObject() {
-        if (referenceLazyProxy == null) {
-            createReferenceLazyProxy();
+        if (lazyProxy == null) {
+            createLazyProxy();
         }
-        return referenceLazyProxy;
+        return lazyProxy;
     }
 
     @Override
@@ -106,12 +208,46 @@ public class ReferenceBean<T> implements FactoryBean,
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        if (referenceProps == null) {
-            Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
-            ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
-            propertyValues = beanDefinition.getPropertyValues();
+        ConfigurableListableBeanFactory beanFactory = getBeanFactory();
+
+        // pre init xml reference bean or @DubboReference annotation
+        Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
+        BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
+        this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
+        this.actualInterface = (Class) beanDefinition.getAttribute(ReferenceAttributes.ACTUAL_INTERFACE);
+        Assert.notNull(this.interfaceClass, "The interface class of ReferenceBean is not initialized");
+
+        if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
+            // @DubboReference annotation at java-config class @Bean method
+            // @DubboReference annotation at reference field or setter method
+            referenceProps = (Map<String, Object>) beanDefinition.getAttribute(Constants.REFERENCE_PROPS);
+        } else {
+            if (beanDefinition instanceof AnnotatedBeanDefinition) {
+                // Return ReferenceBean in java-config class @Bean method
+                if (referenceProps == null) {
+                    referenceProps = new LinkedHashMap<>();
+                }
+                ReferenceBeanSupport.convertReferenceProps(referenceProps, interfaceClass);
+                if (this.actualInterface == null) {
+                    try {
+                        this.actualInterface = ClassUtils.forName((String) referenceProps.get(ReferenceAttributes.INTERFACE));
+                    } catch (ClassNotFoundException e) {
+                        throw new IllegalStateException(e.getMessage(), e);
+                    }
+                }
+            } else {
+                // xml reference bean
+                propertyValues = beanDefinition.getPropertyValues();
+            }
         }
+        Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
+        this.interfaceName = actualInterface.getName();
+
+//        this.sources = (List<Map<String, Object>>) beanDefinition.getAttribute(Constants.REFERENCE_SOURCES);
+//        Assert.notNull(this.sources, "The registration sources of this reference is empty");
+
+        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
+        referenceBeanManager.addReference(this);
     }
 
     private ConfigurableListableBeanFactory getBeanFactory() {
@@ -123,16 +259,6 @@ public class ReferenceBean<T> implements FactoryBean,
         // do nothing
     }
 
-    /**
-     * TODO remove get() method
-     *
-     * @return
-     */
-    @Deprecated
-    public Object get() {
-        throw new UnsupportedOperationException("Should not call this method");
-    }
-
     public String getId() {
         return id;
     }
@@ -141,17 +267,27 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
-    /* Compatible with seata: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
-    @Deprecated
-    public String getGroup() {
-        Object version = propertyValues.get(CommonConstants.GROUP_KEY);
-        return version == null ? null : String.valueOf(version);
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    public Class<?> getInterfaceClass() {
+        return interfaceClass;
     }
 
-    @Deprecated
+    public Class getActualInterface() {
+        return actualInterface;
+    }
+
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    public String getGroup() {
+        return referenceConfig.getGroup();
+    }
+
+    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
     public String getVersion() {
-        Object version = propertyValues.get(CommonConstants.VERSION_KEY);
-        return version == null ? null : String.valueOf(version);
+        return referenceConfig.getVersion();
+    }
+
+    public String getKey() {
+        return key;
     }
 
     public Map<String, Object> getReferenceProps() {
@@ -166,74 +302,36 @@ public class ReferenceBean<T> implements FactoryBean,
         return referenceConfig;
     }
 
-    public void setReferenceConfig(ReferenceConfig referenceConfig) {
+    public void setKeyAndReferenceConfig(String key, ReferenceConfig referenceConfig) {
+        this.key = key;
         this.referenceConfig = referenceConfig;
     }
 
-    public Class<?> getInterfaceClass() {
-        // get interface class
-        if (interfaceClass == null) {
-            if (referenceProps != null) {
-                //get interface class name of @DubboReference
-                String interfaceName = (String) referenceProps.get("interfaceName");
-                if (interfaceName == null) {
-                    Class clazz = (Class) referenceProps.get("interfaceClass");
-                    if (clazz != null) {
-                        interfaceName = clazz.getName();
-                    }
-                }
-                if (StringUtils.isBlank(interfaceName)) {
-                    throw new RuntimeException("Need to specify the 'interfaceName' or 'interfaceClass' attribute of '@DubboReference'");
-                }
-                this.interfaceName = interfaceName;
-
-                //get generic
-                Object genericValue = referenceProps.get("generic");
-                generic = genericValue != null ? genericValue.toString() : null;
-                String consumer = (String) referenceProps.get("consumer");
-                if (StringUtils.isBlank(generic) && consumer != null) {
-                    // get generic from consumerConfig
-                    BeanDefinition consumerBeanDefinition = getBeanFactory().getBeanDefinition(consumer);
-                    if (consumerBeanDefinition != null) {
-                        generic = (String) consumerBeanDefinition.getPropertyValues().get("generic");
-                    }
-                }
-            } else if (propertyValues != null) {
-                generic = (String) propertyValues.get("generic");
-                interfaceName = (String) propertyValues.get("interface");
-            } else {
-                throw new RuntimeException("Required 'referenceProps' or beanDefinition");
-            }
-
-            interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
-        }
-        return interfaceClass;
-    }
-
-    private void createReferenceLazyProxy() {
-        this.referenceTargetSource = new DubboReferenceLazyInitTargetSource();
+    /**
+     * Create lazy proxy for reference.
+     */
+    private void createLazyProxy() {
 
         //set proxy interfaces
         //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
         ProxyFactory proxyFactory = new ProxyFactory();
-        proxyFactory.setTargetSource(referenceTargetSource);
+        proxyFactory.setTargetSource(new DubboReferenceLazyInitTargetSource());
         proxyFactory.addInterface(getInterfaceClass());
         Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
         for (Class<?> anInterface : internalInterfaces) {
             proxyFactory.addInterface(anInterface);
         }
-        if (ProtocolUtils.isGeneric(generic)) {
+        if (actualInterface != interfaceClass){
             //add actual interface
-            proxyFactory.addInterface(ReflectUtils.forName(interfaceName));
+            proxyFactory.addInterface(actualInterface);
         }
 
-        this.referenceLazyProxy = proxyFactory.getProxy(this.beanClassLoader);
+        this.lazyProxy = proxyFactory.getProxy(this.beanClassLoader);
     }
 
     private Object getCallProxy() throws Exception {
-
         if (referenceConfig == null) {
-            throw new IllegalStateException("ReferenceBean is not ready yet, maybe dubbo engine is not started");
+            throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
         return ReferenceConfigCache.getCache().get(referenceConfig);

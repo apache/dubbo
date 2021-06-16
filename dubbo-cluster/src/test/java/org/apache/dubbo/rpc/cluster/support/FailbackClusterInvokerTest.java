@@ -107,7 +107,7 @@ public class FailbackClusterInvokerTest {
         FailbackClusterInvoker<FailbackClusterInvokerTest> invoker = new FailbackClusterInvoker<FailbackClusterInvokerTest>(
                 dic);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
         DubboAppender.clear();
     }
 
@@ -163,7 +163,7 @@ public class FailbackClusterInvokerTest {
         invoker.invoke(invocation);
         invoker.invoke(invocation);
         invoker.invoke(invocation);
-        Assertions.assertNull(RpcContext.getContext().getInvoker());
+        Assertions.assertNull(RpcContext.getServiceContext().getInvoker());
 //        invoker.retryFailed();// when retry the invoker which get from failed map already is not the mocked invoker,so
         //Ensure that the main thread is online
         CountDownLatch countDown = new CountDownLatch(1);
