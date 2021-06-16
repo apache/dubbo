@@ -760,7 +760,7 @@ public class DubboBootstrap {
         for (MetadataReportConfig metadataReportConfig : metadataReportConfigs) {
             ConfigValidationUtils.validateMetadataConfig(metadataReportConfig);
             if (!metadataReportConfig.isValid()) {
-                return;
+                continue;
             }
             MetadataReportInstance.init(metadataReportConfig);
         }
