@@ -36,7 +36,7 @@ import org.apache.dubbo.common.extension.SPI;
  *
  * Starting from 3.0, Filter on consumer side has been refactored. There're two different kinds of Filters working at different stages
  * of an RPC request.
- * 1. Filter. Works at the instance level, Filters are binding to one specific Provider instance(invoker).
+ * 1. Filter. Works at the instance level, each Filter is bond to one specific Provider instance(invoker).
  * 2. ClusterFilter. Newly introduced in 3.0, intercepts request before Loadbalancer picks one specific Filter(Invoker).
  *
  * Filter Chain in 3.x
