@@ -24,10 +24,12 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 
+import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -74,7 +76,32 @@ public class InjvmProtocolTest {
         assertEquals(service.getSize(new String[]{"", "", ""}), 3);
         service.invoke("injvm://127.0.0.1/TestService", "invoke");
 
-        InjvmInvoker injvmInvoker = new InjvmInvoker(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"), null, new HashMap<String, Exporter<?>>());
+        InjvmInvoker injvmInvoker = new InjvmInvoker(DemoService.class, URL.valueOf("injvm://127.0.0.1/TestService"), null, new DelegateExporterMap() {
+            @Override
+            public boolean isEmpty() {
+                return true;
+            }
+
+            @Override
+            public Exporter<?> getExport(String key) {
+                return null;
+            }
+
+            @Override
+            public void addExportMap(String key, Exporter<?> exporter) {
+
+            }
+
+            @Override
+            public boolean removeExportMap(String key, Exporter<?> exporter) {
+                return true;
+            }
+
+            @Override
+            public Collection<Exporter<?>> getExporters() {
+                return null;
+            }
+        });
         assertFalse(injvmInvoker.isAvailable());
 
     }
