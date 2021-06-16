@@ -71,7 +71,6 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     @Override
     public Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = beanDefinitionMap.get(basePackage);
-        // if beanDefinitions size ge 0 => don't scan
         // if beanDefinitions size is null => scan
         if (Objects.isNull(beanDefinitions)) {
             beanDefinitions = super.findCandidateComponents(basePackage);
