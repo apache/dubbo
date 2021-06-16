@@ -169,7 +169,7 @@ public class ServiceInstancesChangedListener {
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
-        List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
+        List<URL> urls = getAddresses(serviceKey);
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
@@ -253,14 +253,12 @@ public class ServiceInstancesChangedListener {
         if (revisionToMetadata == null) {
             return false;
         }
-        boolean result = false;
         for (Map.Entry<String, MetadataInfo> entry : revisionToMetadata.entrySet()) {
             if (entry.getValue() == MetadataInfo.EMPTY) {
-                result = true;
-                break;
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
     protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
@@ -351,14 +349,14 @@ public class ServiceInstancesChangedListener {
         return urls;
     }
 
-    protected List<URL> getAddresses(String serviceProtocolKey, URL consumerURL) {
+    protected List<URL> getAddresses(String serviceProtocolKey) {
         return (List<URL>) serviceUrls.get(serviceProtocolKey);
     }
 
     protected void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
+            List<URL> urls = toUrlsWithEmpty(getAddresses(key));
             logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });

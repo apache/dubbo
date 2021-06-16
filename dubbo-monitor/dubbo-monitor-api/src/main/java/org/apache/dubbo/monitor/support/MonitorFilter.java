@@ -131,7 +131,7 @@ public class MonitorFilter implements Filter, Filter.Listener {
                     return;
                 }
                 URL statisticsURL = createStatisticsUrl(invoker, invocation, result, remoteHost, start, error);
-                monitor.collect(statisticsURL);
+                monitor.collect(statisticsURL.toSerializableURL());
             }
         } catch (Throwable t) {
             logger.warn("Failed to monitor count service " + invoker.getUrl() + ", cause: " + t.getMessage(), t);

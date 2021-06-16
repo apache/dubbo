@@ -100,7 +100,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
      * @return {@link ServiceBean}'s name
      * @since 2.6.5
      */
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getBeanName() {
         return this.beanName;
     }

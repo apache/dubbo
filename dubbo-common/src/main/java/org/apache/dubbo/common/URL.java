@@ -23,6 +23,7 @@ import org.apache.dubbo.common.url.component.PathURLAddress;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
+import org.apache.dubbo.common.url.component.URLPlainParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.LRUCache;
@@ -1831,4 +1832,7 @@ class URL implements Serializable {
         return getMethodNumbers();
     }
 
+    public URL toSerializableURL() {
+        return returnURL(URLPlainParam.toURLPlainParam(urlParam));
+    }
 }

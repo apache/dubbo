@@ -236,7 +236,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     private void verifyStubAndLocal(String className, String label, Class<?> interfaceClass){
-    	if (ConfigUtils.isNotEmpty(className)) {
+        if (ConfigUtils.isNotEmpty(className)) {
             Class<?> localClass = ConfigUtils.isDefault(className) ?
                     ReflectUtils.forName(interfaceClass.getName() + label) : ReflectUtils.forName(className);
                         verify(interfaceClass, localClass);
@@ -263,11 +263,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
                 List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
-                if (registryConfigs.isEmpty()) {
-                    throw new IllegalStateException("Default registry is not initialized");
-                } else {
-                    registryConfigs = new ArrayList<>(registryConfigs);
-                }
+                registryConfigs = new ArrayList<>(registryConfigs);
                 setRegistries(registryConfigs);
             }
         } else {

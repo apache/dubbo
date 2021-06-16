@@ -86,7 +86,7 @@ public abstract class AbstractConfig implements Serializable {
     protected final AtomicBoolean refreshed = new AtomicBoolean(false);
 
     /**
-     * Is default or not
+     * Is default config or not
      */
     protected Boolean isDefault;
 
@@ -606,6 +606,36 @@ public abstract class AbstractConfig implements Serializable {
         return refreshed.get();
     }
 
+    /**
+     * FIXME check @Parameter(required=true) and any conditions that need to match.
+     */
+    @Parameter(excluded = true, attribute = false)
+    public boolean isValid() {
+        return true;
+    }
+
+    @Parameter(excluded = true, attribute = false)
+    public Boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(Boolean isDefault) {
+        this.isDefault = isDefault;
+    }
+
+    /**
+     * Add {@link AbstractConfig instance} into {@link ConfigManager}
+     * <p>
+     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
+     *
+     * @see ConfigManager#addConfig(AbstractConfig)
+     * @since 2.7.5
+     */
+    @PostConstruct
+    public void addIntoConfigManager() {
+        ApplicationModel.getConfigManager().addConfig(this);
+    }
+
     @Override
     public String toString() {
         try {
@@ -658,15 +688,6 @@ public abstract class AbstractConfig implements Serializable {
         return fieldNamesCache.computeIfAbsent(configClass, ReflectUtils::getAllFieldNames);
     }
 
-    /**
-     * FIXME check @Parameter(required=true) and any conditions that need to match.
-     */
-    @Parameter(excluded = true, attribute = false)
-    public boolean isValid() {
-        return true;
-    }
-
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null || obj.getClass() != this.getClass()) {
@@ -708,19 +729,6 @@ public abstract class AbstractConfig implements Serializable {
         return true;
     }
 
-    /**
-     * Add {@link AbstractConfig instance} into {@link ConfigManager}
-     * <p>
-     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
-     *
-     * @see ConfigManager#addConfig(AbstractConfig)
-     * @since 2.7.5
-     */
-    @PostConstruct
-    public void addIntoConfigManager() {
-        ApplicationModel.getConfigManager().addConfig(this);
-    }
-
     @Override
     public int hashCode() {
         int hashCode = 1;
@@ -748,11 +756,4 @@ public abstract class AbstractConfig implements Serializable {
         return hashCode;
     }
 
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
-    }
 }

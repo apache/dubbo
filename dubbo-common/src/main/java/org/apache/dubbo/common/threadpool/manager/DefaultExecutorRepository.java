@@ -22,9 +22,13 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.threadpool.ThreadPool;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
+import org.apache.dubbo.config.ConsumerConfig;
+import org.apache.dubbo.config.ProviderConfig;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -34,11 +38,15 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
+import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
@@ -52,7 +60,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
-    private ScheduledExecutorService serviceExporterExecutor;
+    private volatile ScheduledExecutorService exportReferExecutor;
 
     public ScheduledExecutorService registryNotificationExecutor;
 
@@ -67,6 +75,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     private ExecutorService poolRouterExecutor;
 
     private static Ring<ExecutorService> executorServiceRing = new Ring<ExecutorService>();
+
+    private static final Object LOCK = new Object();
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -83,7 +93,6 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-        serviceExporterExecutor = Executors.newScheduledThreadPool(1, new NamedThreadFactory("Dubbo-exporter-scheduler"));
         serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
         registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
@@ -118,7 +127,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
          */
         if (executors == null) {
             logger.warn("No available executors, this is not expected, framework should call createExecutorIfAbsent first " +
-                    "before coming to here.");
+                "before coming to here.");
             return null;
         }
 
@@ -142,7 +151,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     public void updateThreadpool(URL url, ExecutorService executor) {
         try {
             if (url.hasParameter(THREADS_KEY)
-                    && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
+                && executor instanceof ThreadPoolExecutor && !executor.isShutdown()) {
                 ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor) executor;
                 int threads = url.getParameter(THREADS_KEY, 0);
                 int max = threadPoolExecutor.getMaximumPoolSize();
@@ -177,8 +186,51 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
-    public ScheduledExecutorService getServiceExporterExecutor() {
-        return serviceExporterExecutor;
+    public ScheduledExecutorService getExportReferExecutor() {
+        if (exportReferExecutor == null) {
+            synchronized (LOCK) {
+                if (exportReferExecutor == null) {
+                    int coreSize = getExportReferThreadNum();
+                    exportReferExecutor = Executors.newScheduledThreadPool(coreSize,
+                        new NamedThreadFactory("Dubbo-export-refer", true));
+                }
+            }
+        }
+
+        return exportReferExecutor;
+    }
+
+    public void shutdownExportReferExecutor() {
+        synchronized (LOCK) {
+            if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
+                exportReferExecutor.shutdown();
+            }
+
+            exportReferExecutor = null;
+        }
+    }
+
+    private Integer getExportReferThreadNum() {
+        Stream<Integer> provider = getConfigManager().getProviders()
+            .stream()
+            .map(ProviderConfig::getAsyncThreadNum);
+
+        Stream<Integer> consumer = getConfigManager().getConsumers()
+            .stream()
+            .map(ConsumerConfig::getAsyncThreadNum);
+
+        List<Integer> threadNums = Stream.concat(provider, consumer)
+            .filter(k -> k != null && k > 0)
+            .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(threadNums)) {
+            logger.info("Cannot get config `async-thread-num` for export-refer thread, using default: " + DEFAULT_ASYNC_THREAD_NUM);
+            return DEFAULT_ASYNC_THREAD_NUM;
+        } else if (threadNums.size() > 1) {
+            logger.info("Detect multiple config `async-thread-num` for export-refer thread, using: " + threadNums.get(0));
+        }
+
+        return threadNums.get(0);
     }
 
     @Override
@@ -212,10 +264,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public void destroyAll() {
         poolRouterExecutor.shutdown();
-        serviceExporterExecutor.shutdown();
         serviceDiscoveryAddressNotificationExecutor.shutdown();
         registryNotificationExecutor.shutdown();
         metadataRetryExecutor.shutdown();
+
+        shutdownExportReferExecutor();
 
         data.values().forEach(executors -> {
             if (executors != null) {

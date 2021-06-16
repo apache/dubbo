@@ -47,7 +47,6 @@ public class GenericApplication {
 
         ApplicationConfig applicationConfig = new ApplicationConfig("demo-consumer");
         Map<String, String> parameters = new HashMap<>();
-        parameters.put("mapping-type", "metadata");
         applicationConfig.setParameters(parameters);
 
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();

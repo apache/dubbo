@@ -1,0 +1,1 @@
+default=org.apache.dubbo.common.url.component.param.DefaultDynamicParamSource

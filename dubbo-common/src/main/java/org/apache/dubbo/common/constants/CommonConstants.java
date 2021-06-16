@@ -199,8 +199,6 @@ public interface CommonConstants {
 
     String METADATA_KEY = "metadata-type";
 
-    String MAPPING_KEY = "mapping-type";
-
     String CONFIG_MAPPING_TYPE = "config";
 
     String METADATA_MAPPING_TYPE = "metadata";
@@ -417,6 +415,14 @@ public interface CommonConstants {
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
+
+    String EXPORT_ASYNC_KEY = "export-async";
+
+    String REFER_ASYNC_KEY = "refer-async";
+
+    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+
+    int DEFAULT_ASYNC_THREAD_NUM = 10;
 
     /**
      * Url merge processor key

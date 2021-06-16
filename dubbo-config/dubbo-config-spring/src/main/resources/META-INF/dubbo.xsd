@@ -245,6 +245,12 @@
                             <![CDATA[ The routers ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="refer-async" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ Weather the reference is refer asynchronously, default false. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
         </xsd:complexContent>
     </xsd:complexType>
@@ -334,6 +340,12 @@
                 <xsd:attribute name="serialization" type="xsd:string">
                     <xsd:annotation>
                         <xsd:documentation><![CDATA[ The serialization protocol of service. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="export-async" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation>
+                            <![CDATA[ Weather the service is export asynchronously, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1007,6 +1019,11 @@
                         <xsd:documentation><![CDATA[ The Url merge processor. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="async-thread-num" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Thread num for asynchronous export-refer pool size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>
@@ -1398,6 +1415,12 @@
                         <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
+                <xsd:attribute name="async-thread-num" type="xsd:integer">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Thread num for asynchronous export-refer pool size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>

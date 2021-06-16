@@ -19,6 +19,7 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.support.Parameter;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ASYNC_THREAD_NUM_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.URL_MERGE_PROCESSOR_KEY;
 
 /**
@@ -66,6 +67,11 @@ public class ConsumerConfig extends AbstractReferenceConfig {
      *  Used to customize the URL merge of consumer and provider
      */
     private String urlMergeProcessor;
+
+    /**
+     * Thread num for asynchronous export-refer pool size
+     */
+    private Integer asyncThreadNum;
 
     @Override
     public void setTimeout(Integer timeout) {
@@ -132,5 +138,14 @@ public class ConsumerConfig extends AbstractReferenceConfig {
 
     public void setUrlMergeProcessor(String urlMergeProcessor) {
         this.urlMergeProcessor = urlMergeProcessor;
+    }
+
+    @Parameter(key = ASYNC_THREAD_NUM_KEY)
+    public Integer getAsyncThreadNum() {
+        return asyncThreadNum;
+    }
+
+    public void setAsyncThreadNum(Integer asyncThreadNum) {
+        this.asyncThreadNum = asyncThreadNum;
     }
 }

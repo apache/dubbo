@@ -34,7 +34,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.BeanCreationException;
-import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -47,7 +46,6 @@ import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.annotation.MergedAnnotations;
 import org.springframework.core.type.MethodMetadata;
 
 import java.beans.PropertyDescriptor;
@@ -63,6 +61,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
+import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -193,8 +192,8 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // Extract beanClass from generic return type of java-config bean method: ReferenceBean<DemoService>
         // see org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.getTypeForFactoryBeanFromMethod
         Class beanClass = getBeanFactory().getType(beanName);
+        MethodMetadata factoryMethodMetadata = beanDefinition.getFactoryMethodMetadata();
         if (beanClass == null) {
-            MethodMetadata factoryMethodMetadata = beanDefinition.getFactoryMethodMetadata();
             String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
             throw new BeanCreationException("The ReferenceBean is missing necessary generic type, which returned by the @Bean method of Java-config class. " +
                     "The generic type of the returned ReferenceBean must be specified as the referenced interface type, " +
@@ -203,14 +202,14 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
         // get dubbo reference annotation attributes
         Map<String, Object> annotationAttributes = null;
-        MergedAnnotations mergedAnnotations = beanDefinition.getFactoryMethodMetadata().getAnnotations();
-        Class referenceAnnotationType = null;
         // try all dubbo reference annotation types
         for (Class<? extends Annotation> annotationType : getAnnotationTypes()) {
-            if (mergedAnnotations.isPresent(annotationType)) {
-                referenceAnnotationType = annotationType;
-                annotationAttributes = mergedAnnotations.get(annotationType).filterDefaultValues().asMap();
-                break;
+            if (factoryMethodMetadata.isAnnotated(annotationType.getName())) {
+                // Since Spring 5.2
+                // return factoryMethodMetadata.getAnnotations().get(annotationType).filterDefaultValues().asMap();
+                // Compatible with Spring 4.x
+                annotationAttributes = factoryMethodMetadata.getAnnotationAttributes(annotationType.getName());
+                annotationAttributes = filterDefaultValues(annotationType, annotationAttributes);
             }
         }
 
@@ -226,7 +225,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             String interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE);
             // check beanClass and reference interface class
             if (!StringUtils.isEquals(interfaceName, beanClass.getName()) && beanClass != GenericService.class) {
-                MethodMetadata factoryMethodMetadata = beanDefinition.getFactoryMethodMetadata();
                 String beanMethodSignature = factoryMethodMetadata.getDeclaringClassName()+"#"+factoryMethodMetadata.getMethodName()+"()";
                 throw new BeanCreationException("The 'interfaceClass' or 'interfaceName' attribute value of @DubboReference annotation " +
                         "is inconsistent with the generic type of the ReferenceBean returned by the bean method. " +
@@ -468,7 +466,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         beanDefinition.setDecoratedDefinition(new BeanDefinitionHolder(targetDefinition, id+"_decorated"));
 
         // signal object type since Spring 5.2
-        beanDefinition.setAttribute(FactoryBean.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
+        beanDefinition.setAttribute(Constants.OBJECT_TYPE_ATTRIBUTE, interfaceClass);
 
         beanDefinitionRegistry.registerBeanDefinition(referenceBeanName, beanDefinition);
         logger.info("Register dubbo reference bean: "+referenceBeanName+" = "+referenceKey+" at "+member);

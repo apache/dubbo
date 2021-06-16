@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORTER_LISTENER_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_ASYNC_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_FILTER_KEY;
 
 /**
@@ -116,6 +117,11 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
      * The serialization type
      */
     private String serialization;
+
+    /**
+     * Weather the service is export asynchronously
+     */
+    private Boolean exportAsync;
 
     @Override
     protected void checkDefault() {
@@ -298,5 +304,14 @@ public abstract class AbstractServiceConfig extends AbstractInterfaceConfig {
 
     public void setSerialization(String serialization) {
         this.serialization = serialization;
+    }
+
+    @Parameter(key = EXPORT_ASYNC_KEY)
+    public Boolean getExportAsync() {
+        return exportAsync;
+    }
+
+    public void setExportAsync(Boolean exportAsync) {
+        this.exportAsync = exportAsync;
     }
 }

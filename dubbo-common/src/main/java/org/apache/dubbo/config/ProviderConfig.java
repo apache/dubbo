@@ -21,6 +21,8 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ASYNC_THREAD_NUM_KEY;
+
 /**
  * The service provider default configuration
  *
@@ -154,15 +156,14 @@ public class ProviderConfig extends AbstractServiceConfig {
      */
     private Integer wait;
 
+    /**
+     * Thread num for asynchronous export-refer pool size
+     */
+    private Integer asyncThreadNum;
+
     @Deprecated
     public void setProtocol(String protocol) {
         this.protocols = new ArrayList<>(Arrays.asList(new ProtocolConfig(protocol)));
-    }
-
-    @Override
-    @Parameter(excluded = true)
-    public Boolean isDefault() {
-        return isDefault;
     }
 
     @Parameter(excluded = true)
@@ -427,6 +428,15 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setWait(Integer wait) {
         this.wait = wait;
+    }
+
+    @Parameter(key = ASYNC_THREAD_NUM_KEY)
+    public Integer getAsyncThreadNum() {
+        return asyncThreadNum;
+    }
+
+    public void setAsyncThreadNum(Integer asyncThreadNum) {
+        this.asyncThreadNum = asyncThreadNum;
     }
 
     @Override

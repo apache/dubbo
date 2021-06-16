@@ -37,13 +37,13 @@ import org.apache.dubbo.registry.support.FailbackRegistry;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -56,7 +56,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_CHAR_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -105,7 +104,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     private final Set<String> registeredListeners = new LinkedHashSet<>();
 
     /* apps - listener */
-    private final Map<String, ServiceInstancesChangedListener> serviceListeners = new HashMap<>();
+    private final Map<String, ServiceInstancesChangedListener> serviceListeners = new ConcurrentHashMap<>();
 
     private URL registryURL;
 
@@ -234,8 +233,6 @@ public class ServiceDiscoveryRegistry implements Registry {
             logger.warn("Cannot find app mapping for service " + url.getServiceInterface() + ", will not migrate.", e);
         }
 
-        Set<String> serviceNames = writableMetadataService.getCachedMapping(url);
-
         if (CollectionUtils.isEmpty(subscribedServices)) {
             if (check) {
                 throw new IllegalStateException("Should has at least one way to know which services this interface belongs to, subscription url: " + url);
@@ -292,7 +289,7 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     @Override
     public boolean isAvailable() {
-        return !serviceDiscovery.getServices().isEmpty();
+        return !serviceDiscovery.isDestroy() && !serviceDiscovery.getServices().isEmpty();
     }
 
     @Override
@@ -468,9 +465,8 @@ public class ServiceDiscoveryRegistry implements Registry {
 
     protected Set<String> findMappedServices(URL registryURL, URL subscribedURL, MappingListener listener) {
         Set<String> result = new LinkedHashSet<>();
-        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getExtension(registryURL.getParameter(MAPPING_KEY));
+        ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
         result.addAll(serviceNameMapping.getAndListen(subscribedURL, listener));
-        result.addAll(serviceNameMapping.getAndListenWithNewStore(subscribedURL, listener));
         return result;
     }
 

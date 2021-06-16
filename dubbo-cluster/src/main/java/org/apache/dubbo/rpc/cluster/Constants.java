@@ -91,6 +91,11 @@ public interface Constants {
      * key for router type, for e.g., "script"/"file",  corresponding to ScriptRouterFactory.NAME, FileRouterFactory.NAME
      */
     String ROUTER_KEY = "router";
+
+    /**
+     * The key for state router
+     */
+    String STATE_ROUTER_KEY="stateRouter";
     /**
      * The key name for reference URL in register center
      */
