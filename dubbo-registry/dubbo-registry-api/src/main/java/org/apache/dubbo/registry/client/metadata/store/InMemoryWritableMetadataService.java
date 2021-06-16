@@ -32,6 +32,7 @@ import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
 
 import java.util.Comparator;
 import java.util.Map;
@@ -173,7 +174,8 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 if (StringUtils.isNotEmpty(interfaceName)) {
                     Class interfaceClass = Class.forName(interfaceName);
                     ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
-                    String data = new Gson().toJson(serviceDefinition);
+                    boolean isNative = providerUrl.getParameter(NATIVE,"false").equals("true");
+                    String data = isNative ? new Gson().toJson(serviceDefinition) : JSON.toJSONString(serviceDefinition);
                     serviceDefinitions.put(providerUrl.getServiceKey(), data);
                     return;
                 }

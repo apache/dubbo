@@ -53,6 +53,7 @@ public class Application {
         applicationConfig.setCompiler("jdk");
         Map<String,String> m = new HashMap<>(1);
         m.put("proxy","jdk");
+        m.put("native","true");
         applicationConfig.setParameters(m);
 
         bootstrap.application(applicationConfig)
@@ -61,7 +62,7 @@ public class Application {
                 .start();
 
         DemoService demoService = ReferenceConfigCache.getCache().get(reference);
-        String message = demoService.sayHello("dubbo");
+        String message = demoService.sayHello("Native");
         System.out.println(message);
     }
 

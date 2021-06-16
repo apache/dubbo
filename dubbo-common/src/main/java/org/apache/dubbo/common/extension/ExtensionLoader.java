@@ -1067,25 +1067,18 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> createAdaptiveExtensionClass() {
+        ClassLoader classLoader = findClassLoader();
         try {
-            Class c = Class.forName(generatePackageInfo() + "." + type.getSimpleName() + "$Adaptive");
-            return c;
-        } catch (Throwable e) {
+            return classLoader.loadClass(type.getName() + "$Adaptive");
+        } catch (ClassNotFoundException e) {
             //ignore
         }
         String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
-        ClassLoader classLoader = findClassLoader();
         org.apache.dubbo.common.compiler.Compiler compiler =
                 ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         return compiler.compile(code, classLoader);
     }
 
-
-    private static final String CODE_PACKAGE = "%s";
-
-    private String generatePackageInfo() {
-        return String.format(CODE_PACKAGE, type.getPackage().getName());
-    }
 
     @Override
     public String toString() {

@@ -42,13 +42,6 @@ public class JavassistCompiler extends AbstractCompiler {
 
     @Override
     public Class<?> doCompile(String name, String source) throws Throwable {
-        try {
-            Class<?> res = Class.forName(name);
-            return res;
-        } catch (Throwable ex) {
-            //ignore
-        }
-
         CtClassBuilder builder = new CtClassBuilder();
         builder.setClassName(name);
 
