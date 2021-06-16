@@ -123,7 +123,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
         setParameterTypesDesc(desc);
 
         try {
-            if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, false)) {
+            if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
                 CodecSupport.checkSerialization(path, version, serializationType);
             }
             Object[] args = DubboCodec.EMPTY_OBJECT_ARRAY;
