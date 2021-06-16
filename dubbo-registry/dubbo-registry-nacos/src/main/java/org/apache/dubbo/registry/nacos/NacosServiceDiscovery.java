@@ -17,8 +17,6 @@ package org.apache.dubbo.registry.nacos;/*
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.function.ThrowableFunction;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -47,8 +45,6 @@ import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toIns
  * @since 2.7.5
  */
 public class NacosServiceDiscovery implements ServiceDiscovery {
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private String group;
 
