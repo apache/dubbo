@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.config.spring.context.annotation;
 
-import org.apache.dubbo.common.utils.CollectionUtils;
 import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.env.Environment;
@@ -67,11 +65,6 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     }
 
     @Override
-    public Set<BeanDefinitionHolder> doScan(String... basePackages) {
-        return super.doScan(basePackages);
-    }
-
-    @Override
     public boolean checkCandidate(String beanName, BeanDefinition beanDefinition) throws IllegalStateException {
         return super.checkCandidate(beanName, beanDefinition);
     }
@@ -79,7 +72,7 @@ public class DubboClassPathBeanDefinitionScanner extends ClassPathBeanDefinition
     @Override
     public Set<BeanDefinition> findCandidateComponents(String basePackage) {
         Set<BeanDefinition> beanDefinitions = beanDefinitionMap.get(basePackage);
-        // if beanDefinitions size eq 0 => don't scan
+        // if beanDefinitions size ge 0 => don't scan
         // if beanDefinitions size is null => scan
         if (Objects.isNull(beanDefinitions)) {
             beanDefinitions = super.findCandidateComponents(basePackage);
