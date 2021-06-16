@@ -414,4 +414,6 @@ public interface CommonConstants {
 
     String DISPATHER = "dispather";
 
+    String NATIVE = "native";
+
 }
