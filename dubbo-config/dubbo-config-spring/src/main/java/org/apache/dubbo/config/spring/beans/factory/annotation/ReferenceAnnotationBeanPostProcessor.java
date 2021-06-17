@@ -162,6 +162,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
     private boolean isAnnotatedReferenceBean(BeanDefinition beanDefinition) {
         if (beanDefinition instanceof AnnotatedBeanDefinition) {
             AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
+            if (annotatedBeanDefinition.getFactoryMethodMetadata() == null) {
+                return false;
+            }
             String beanClassName = annotatedBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
             if (ReferenceBean.class.getName().equals(beanClassName)) {
                 return true;
