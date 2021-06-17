@@ -1098,27 +1098,21 @@ public class DubboBootstrap {
             }
 
             referServices();
+
             if (asyncExportingFutures.size() > 0 || asyncReferringFutures.size() > 0) {
-                new Thread(() -> {
-                    try {
-                        this.awaitFinish();
-                    } catch (Exception e) {
-                        logger.warn(NAME + " asynchronous export / refer occurred an exception.");
-                    }
-                    startup.set(true);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(NAME + " is ready.");
-                    }
-                    onStart();
-                }).start();
-            } else {
-                startup.set(true);
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is ready.");
+                try {
+                    this.awaitFinish();
+                } catch (Exception e) {
+                    logger.warn(NAME + " asynchronous export / refer occurred an exception.");
                 }
-                onStart();
             }
 
+            startup.set(true);
+            if (logger.isInfoEnabled()) {
+                logger.info(NAME + " is ready.");
+            }
+
+            onStart();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
             }
