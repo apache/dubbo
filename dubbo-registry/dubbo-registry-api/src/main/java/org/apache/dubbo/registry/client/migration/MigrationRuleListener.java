@@ -38,8 +38,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
@@ -55,8 +53,6 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private volatile String rawRule;
     private volatile MigrationRule rule;
-
-    private static final ReadWriteLock RW_LOCK = new ReentrantReadWriteLock();
 
     public MigrationRuleListener() {
         this.configuration = ApplicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
@@ -104,9 +100,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public void process(ConfigChangedEvent event) {
-        RW_LOCK.writeLock().lock();
-
+    public synchronized void process(ConfigChangedEvent event) {
         String rawRule = event.getContent();
         if (StringUtils.isEmpty(rawRule)) {
             logger.warn("Received empty migration rule, will ignore.");
@@ -121,8 +115,6 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         if (CollectionUtils.isNotEmptyMap(handlers)) {
             handlers.forEach((_key, handler) -> handler.doMigrate(rule));
         }
-
-        RW_LOCK.writeLock().unlock();
     }
 
     public void setRawRule(String rawRule) {
@@ -151,16 +143,12 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
-        RW_LOCK.readLock().lock();
-
         MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent((MigrationInvoker<?>) invoker, _key -> {
             ((MigrationInvoker<?>) invoker).setMigrationRuleListener(this);
             return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });
 
         migrationRuleHandler.doMigrate(rule);
-
-        RW_LOCK.readLock().unlock();
     }
 
     @Override
