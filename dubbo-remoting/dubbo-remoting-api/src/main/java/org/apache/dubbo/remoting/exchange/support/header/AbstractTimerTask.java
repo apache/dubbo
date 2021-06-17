@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.exchange.support.header;
 
+import io.vavr.control.Option;
 import org.apache.dubbo.common.timer.Timeout;
 import org.apache.dubbo.common.timer.Timer;
 import org.apache.dubbo.common.timer.TimerTask;
@@ -54,6 +55,10 @@ public abstract class AbstractTimerTask implements TimerTask {
 
     static Long now() {
         return System.currentTimeMillis();
+    }
+
+    static boolean compare2GapTime(long last, long time) {
+        return Option.of(last).exists(p -> now() - last > time);
     }
 
     public void cancel() {

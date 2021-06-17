@@ -40,8 +40,6 @@ public class ReconnectTimerTask extends AbstractTimerTask {
     protected void doTask(Channel channel) {
         try {
             Long lastRead = lastRead(channel);
-            Long now = now();
-
             // Rely on reconnect timer to reconnect when AbstractClient.doConnect fails to init the connection
             if (!channel.isConnected()) {
                 try {
@@ -51,7 +49,7 @@ public class ReconnectTimerTask extends AbstractTimerTask {
                     logger.error("Fail to connect to " + channel, e);
                 }
             // check pong at client
-            } else if (lastRead != null && now - lastRead > idleTimeout) {
+            } else if (compare2GapTime(lastRead, idleTimeout)) {
                 logger.warn("Reconnect to channel " + channel + ", because heartbeat read idle time out: "
                         + idleTimeout + "ms");
                 try {

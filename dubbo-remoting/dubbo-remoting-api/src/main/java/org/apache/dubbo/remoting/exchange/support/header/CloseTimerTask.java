@@ -40,10 +40,8 @@ public class CloseTimerTask extends AbstractTimerTask {
         try {
             Long lastRead = lastRead(channel);
             Long lastWrite = lastWrite(channel);
-            Long now = now();
             // check ping & pong at server
-            if ((lastRead != null && now - lastRead > idleTimeout)
-                    || (lastWrite != null && now - lastWrite > idleTimeout)) {
+            if (compare2GapTime(lastRead, idleTimeout) || compare2GapTime(lastWrite, idleTimeout)) {
                 logger.warn("Close channel " + channel + ", because idleCheck timeout: "
                         + idleTimeout + "ms");
                 channel.close();

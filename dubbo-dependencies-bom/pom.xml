@@ -169,6 +169,7 @@
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
         <revision>2.7.13-SNAPSHOT</revision>
+        <io.vavr.verson>0.10.3</io.vavr.verson>
     </properties>
 
     <dependencyManagement>
@@ -742,6 +743,11 @@
                 <artifactId>kubernetes-server-mock</artifactId>
                 <scope>test</scope>
                 <version>${fabric8_kubernetes_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>${io.vavr.verson}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
