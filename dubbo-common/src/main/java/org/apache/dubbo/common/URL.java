@@ -248,7 +248,7 @@ class URL implements Serializable {
         Map<String, String> parameters = null;
         int i = url.indexOf('?'); // separator between body and parameters
         if (i >= 0) {
-            String[] parts = url.substring(i + 1).split("&");
+            String[] parts = url.substring(i + 1).split("[&;]");
             parameters = new HashMap<>();
             for (String part : parts) {
                 part = part.trim();
