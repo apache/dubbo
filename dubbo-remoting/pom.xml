@@ -36,5 +36,6 @@
         <module>dubbo-remoting-netty</module>
         <module>dubbo-remoting-zookeeper</module>
         <module>dubbo-remoting-netty4</module>
+        <module>dubbo-remoting-etcd3</module>
     </modules>
 </project>

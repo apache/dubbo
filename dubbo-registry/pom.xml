@@ -38,5 +38,6 @@
         <module>dubbo-registry-kubernetes</module>
         <module>dubbo-registry-dns</module>
         <module>dubbo-registry-xds</module>
+        <module>dubbo-registry-etcd3</module>
     </modules>
 </project>
