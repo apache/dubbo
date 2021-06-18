@@ -21,8 +21,8 @@ import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingListener;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
-public class MetadataServiceNameMapping implements ServiceNameMapping {
+public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -71,6 +71,19 @@ public class MetadataServiceNameMapping implements ServiceNameMapping {
                 success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
             } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
         });
+    }
+
+    @Override
+    public Set<String> get(URL url) {
+        Set<String> serviceNames = new LinkedHashSet<>();
+        execute(() -> {
+            String serviceInterface = url.getServiceInterface();
+            String registryCluster = getRegistryCluster(url);
+            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+            Set<String> apps = metadataReport.getServiceAppMapping(serviceInterface, url);
+            serviceNames.addAll(apps);
+        });
+        return serviceNames;
     }
 
     @Override

@@ -18,7 +18,7 @@ package org.apache.dubbo.registry.client.migration.model;
 
 import java.util.Map;
 
-public class InterfaceMigrationRule {
+public class SubMigrationRule {
     private String serviceKey;
     private MigrationStep step;
     private Float threshold;
@@ -26,8 +26,8 @@ public class InterfaceMigrationRule {
     private Integer delay;
     private Boolean force;
 
-    public static InterfaceMigrationRule parseFromMap(Map<String, Object> map) {
-        InterfaceMigrationRule interfaceMigrationRule = new InterfaceMigrationRule();
+    public static SubMigrationRule parseFromMap(Map<String, Object> map) {
+        SubMigrationRule interfaceMigrationRule = new SubMigrationRule();
         interfaceMigrationRule.setServiceKey((String) map.get("serviceKey"));
 
         Object step = map.get("step");
@@ -58,9 +58,9 @@ public class InterfaceMigrationRule {
         return interfaceMigrationRule;
     }
 
-    public InterfaceMigrationRule(){}
+    public SubMigrationRule(){}
 
-    public InterfaceMigrationRule(String serviceKey, MigrationStep step, Float threshold, Integer proportion) {
+    public SubMigrationRule(String serviceKey, MigrationStep step, Float threshold, Integer proportion) {
         this.serviceKey = serviceKey;
         this.step = step;
         this.threshold = threshold;

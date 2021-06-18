@@ -45,6 +45,9 @@ public class PathURLAddress extends URLAddress {
         while (path != null && path.startsWith("/")) {
             path = path.substring(1);
         }
+        if (path != null) {
+            path = path.intern();
+        }
         this.path = path;
     }
 

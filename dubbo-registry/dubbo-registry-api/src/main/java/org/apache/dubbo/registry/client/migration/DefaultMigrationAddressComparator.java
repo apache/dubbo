@@ -64,8 +64,7 @@ public class DefaultMigrationAddressComparator implements MigrationAddressCompar
         migrationData.put(NEW_ADDRESS_SIZE, newAddressSize);
 
         String rawThreshold = null;
-        String serviceKey = oldInvoker.getUrl().getDisplayServiceKey();
-        Float configedThreshold = rule == null ? null : rule.getThreshold(serviceKey);
+        Float configedThreshold = rule == null ? null : rule.getThreshold(oldInvoker.getUrl());
         if (configedThreshold != null && configedThreshold >= 0) {
             rawThreshold = String.valueOf(configedThreshold);
         }

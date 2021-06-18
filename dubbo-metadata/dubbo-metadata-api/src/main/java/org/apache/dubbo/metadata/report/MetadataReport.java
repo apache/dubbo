@@ -80,4 +80,8 @@ public interface MetadataReport {
     default Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
         return Collections.emptySet();
     }
+
+    default Set<String> getServiceAppMapping(String serviceKey, URL url) {
+        return Collections.emptySet();
+    }
 }
