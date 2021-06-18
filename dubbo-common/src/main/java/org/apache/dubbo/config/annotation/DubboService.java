@@ -17,6 +17,8 @@
 package org.apache.dubbo.config.annotation;
 
 
+import org.apache.dubbo.common.constants.ClusterRules;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -25,13 +27,40 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Class-level annotation used for declaring Dubbo service
+ * Class-level annotation used for declaring Dubbo service.
+ * <p/>
+ * <b>1. Using with java config bean:</b>
+ * <p/>
+ * <b>This usage is recommended</b>.<br/>
+ * It is more flexible on bean methods than on implementation classes, and is more compatible with Spring.
+ * <pre>
+ * &#64;Configuration
+ * class ProviderConfiguration {
+ *
+ *     &#64;Bean
+ *     &#64;DubboService(group="demo")
+ *     public DemoService demoServiceImpl() {
+ *         return new DemoServiceImpl();
+ *     }
+ * }
+ * </pre>
+ *
+ * <b>2. Using on implementation class of service:  </b>
+ * <pre>
+ * &#64;DubboService(group="demo")
+ * public class DemoServiceImpl implements DemoService {
+ *     ...
+ * }
+ * </pre>
+ *
+ * This usage causes the implementation class to rely on the Dubbo module.
+ *
  *
  * @since 2.7.7
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
 public @interface DubboService {
 
@@ -123,8 +152,9 @@ public @interface DubboService {
 
     /**
      * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * you can use {@link org.apache.dubbo.common.constants.ClusterRules#FAIL_FAST} ……
      */
-    String cluster() default "";
+    String cluster() default ClusterRules.EMPTY;
 
     /**
      * How the proxy is generated, legal values include: jdk, javassist
@@ -173,9 +203,9 @@ public @interface DubboService {
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
      *
-     * @see org.apache.dubbo.common.constants.CommonConstants#DEFAULT_LOADBALANCE
+     * you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default "";
+    String loadbalance() default ClusterRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false
@@ -233,7 +263,9 @@ public @interface DubboService {
 
     /**
      * Application spring bean name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**
@@ -280,4 +312,8 @@ public @interface DubboService {
      */
     String scope() default "";
 
+    /**
+     * Weather the service is export asynchronously
+     */
+    boolean exportAsync() default false;
 }

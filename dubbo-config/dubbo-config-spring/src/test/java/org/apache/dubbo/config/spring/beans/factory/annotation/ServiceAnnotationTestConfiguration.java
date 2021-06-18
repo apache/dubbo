@@ -22,7 +22,6 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.annotation.Service;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
@@ -77,7 +76,7 @@ public class ServiceAnnotationTestConfiguration {
      *
      * @return {@link ProtocolConfig} Bean
      */
-    @Bean("dubbo")
+    @Bean//("dubbo")
     public ProtocolConfig protocolConfig() {
         ProtocolConfig protocolConfig = new ProtocolConfig();
         protocolConfig.setName("dubbo");
@@ -105,12 +104,6 @@ public class ServiceAnnotationTestConfiguration {
 
             }
         };
-    }
-
-    @Bean
-    public ServiceAnnotationBeanPostProcessor serviceAnnotationBeanPostProcessor
-            (@Value("${packagesToScan}") String... packagesToScan) {
-        return new ServiceAnnotationBeanPostProcessor(packagesToScan);
     }
 
 }

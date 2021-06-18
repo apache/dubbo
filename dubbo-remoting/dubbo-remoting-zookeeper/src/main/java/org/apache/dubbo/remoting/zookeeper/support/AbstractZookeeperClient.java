@@ -185,15 +185,15 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
     }
 
     @Override
-    public void createOrUpdate(String path, String content, boolean ephemeral, Object stat) {
+    public void createOrUpdate(String path, String content, boolean ephemeral, int version) {
         int i = path.lastIndexOf('/');
         if (i > 0) {
             create(path.substring(0, i), false);
         }
         if (ephemeral) {
-            createOrUpdateEphemeral(path, content, stat);
+            createOrUpdateEphemeral(path, content, version);
         } else {
-            createOrUpdatePersistent(path, content, stat);
+            createOrUpdatePersistent(path, content, version);
         }
     }
 
@@ -207,9 +207,6 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     @Override
     public ConfigItem getConfigItem(String path) {
-        if (!checkExists(path)) {
-            return new ConfigItem();
-        }
         return doGetConfigItem(path);
     }
 
@@ -223,11 +220,11 @@ public abstract class AbstractZookeeperClient<TargetDataListener, TargetChildLis
 
     protected abstract void createEphemeral(String path, String data);
 
-    protected abstract void update(String path, String data, Object stat);
+    protected abstract void update(String path, String data, int version);
 
-    protected abstract void createOrUpdatePersistent(String path, String data, Object stat);
+    protected abstract void createOrUpdatePersistent(String path, String data, int version);
 
-    protected abstract void createOrUpdateEphemeral(String path, String data, Object stat);
+    protected abstract void createOrUpdateEphemeral(String path, String data, int version);
 
     @Override
     public abstract boolean checkExists(String path);

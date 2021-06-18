@@ -19,7 +19,7 @@ package org.apache.dubbo.spring.boot.actuate.autoconfigure;
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboConfigsMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboMetadataEndpoint;
 import org.apache.dubbo.spring.boot.actuate.endpoint.DubboPropertiesMetadataEndpoint;
@@ -113,12 +113,12 @@ public class DubboEndpointAnnotationAutoConfigurationTest {
 
     @BeforeEach
     public void init() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @AfterEach
     public void destroy() {
-        ApplicationModel.reset();
+        DubboBootstrap.reset();
     }
 
     @Test

@@ -31,8 +31,7 @@
 		<dubbo:parameter key="qos.enable" value="false" />
 	</dubbo:application>
 
-	<dubbo:protocol id="cimmdmsSrvClientProtocol"
-		accesslog="true" />
+	<dubbo:protocol name="dubbo" accesslog="true" />
 	
 	<dubbo:registry id="cimmdmsSrvClientRegistry"
 		protocol="${dubbo.registry.protocol}" address="${dubbo.registry.address}" client="curator"

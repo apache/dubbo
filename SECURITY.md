@@ -2,10 +2,11 @@
 
 ## Supported Versions
 
-Below is a table that shows versions that accept security fix.
+Below is a table that shows versions that we accept security fixes.
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 3.0.x   | :white_check_mark: |
 | 2.7.x   | :white_check_mark: |
 | 2.6.x   | :white_check_mark: |
 | 2.5.x   | :x: |
@@ -15,11 +16,11 @@ Below is a table that shows versions that accept security fix.
 
 The Apache Software Foundation takes a rigorous standpoint in annihilating the security issues in its software projects. Apache Dubbo is highly sensitive and forthcoming to issues pertaining to its features and functionality.
 
-If you have apprehensions regarding Dubbo's security or you discover vulnerability or potential threat, don’t hesitate to get in touch with the Apache Dubbo Security Team by dropping a mail at security@dubbo.apache.org. In the mail, specify the description of the issue or potential threat. You are also urged to recommend the way to reproduce and replicate the issue. The Dubbo community will get back to you after assessing and analysing the findings.
+If you have apprehensions regarding Dubbo's security or you discover vulnerability or potential threat, don’t hesitate to get in touch with the Apache Dubbo Security Team by dropping a mail at security@dubbo.apache.org. In the email, specify the description of the issue or potential threat. You are also urged to recommend the way to reproduce and replicate the issue. The Dubbo community will get back to you after assessing and analysing the findings.
 
 PLEASE PAY ATTENTION to report the security issue on the security email before disclosing it on public domain.
 
-## VULNERABILITY HANDLING
+## Vulnerability Handling
 
 An overview of the vulnerability handling process is:
 

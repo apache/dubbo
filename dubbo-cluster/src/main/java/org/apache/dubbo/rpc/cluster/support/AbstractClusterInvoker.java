@@ -254,7 +254,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         checkWhetherDestroyed();
 
         // binding attachments into invocation.
-//        Map<String, Object> contextAttachments = RpcContext.getContext().getObjectAttachments();
+//        Map<String, Object> contextAttachments = RpcContext.getClientAttachment().getObjectAttachments();
 //        if (contextAttachments != null && contextAttachments.size() != 0) {
 //            ((RpcInvocation) invocation).addObjectAttachmentsIfAbsent(contextAttachments);
 //        }
@@ -333,7 +333,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
 
     private void setContext(Invoker<T> invoker) {
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
         context.setInvoker(invoker)
                 .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
                 .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
@@ -341,7 +341,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
     private void clearContext(Invoker<T> invoker) {
         // do nothing
-        RpcContext context = RpcContext.getContext();
+        RpcContext context = RpcContext.getServiceContext();
         context.setInvoker(null);
     }
 }

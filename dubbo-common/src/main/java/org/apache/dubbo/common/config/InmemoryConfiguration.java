@@ -24,8 +24,21 @@ import java.util.Map;
  */
 public class InmemoryConfiguration implements Configuration {
 
+    private String name;
+
     // stores the configuration key-value pairs
     private Map<String, String> store = new LinkedHashMap<>();
+
+    public InmemoryConfiguration() {
+    }
+
+    public InmemoryConfiguration(String name) {
+        this.name = name;
+    }
+
+    public InmemoryConfiguration(Map<String, String> properties) {
+        this.setProperties(properties);
+    }
 
     @Override
     public Object getInternalProperty(String key) {
@@ -57,8 +70,8 @@ public class InmemoryConfiguration implements Configuration {
         }
     }
 
-    // for unit test
-    public void clear() {
-        this.store.clear();
+    public Map<String, String> getProperties() {
+        return store;
     }
+
 }

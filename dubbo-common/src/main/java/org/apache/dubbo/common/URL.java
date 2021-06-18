@@ -23,6 +23,7 @@ import org.apache.dubbo.common.url.component.PathURLAddress;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLAddress;
 import org.apache.dubbo.common.url.component.URLParam;
+import org.apache.dubbo.common.url.component.URLPlainParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.LRUCache;
@@ -48,7 +49,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
-import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPERATOR;
+import static org.apache.dubbo.common.BaseServiceMetadata.COLON_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
 import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
@@ -1281,7 +1282,7 @@ class URL implements Serializable {
             return getServiceInterface();
         }
         return getServiceInterface() +
-                COLON_SEPERATOR + getVersion();
+                COLON_SEPARATOR + getVersion();
     }
 
     /**
@@ -1831,4 +1832,7 @@ class URL implements Serializable {
         return getMethodNumbers();
     }
 
+    public URL toSerializableURL() {
+        return returnURL(URLPlainParam.toURLPlainParam(urlParam));
+    }
 }

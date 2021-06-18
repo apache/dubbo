@@ -34,30 +34,28 @@ import org.apache.dubbo.common.extension.SPI;
  *    remote call configured caching type's (e.g. Thread Local, JCache etc) implementation invoke method gets called.
  * </pre>
  *
- * Start from 3.0, the semantics of the Filter component at the consumer side has changed.
- * Instead of intercepting a specific instance of invoker, Filter in 3.0 now intercepts ClusterInvoker. A new SPI named
- * InstanceFilter is introduced to work as the same semantic as Filter in 2.x.
+ * Starting from 3.0, Filter on consumer side has been refactored. There're two different kinds of Filters working at different stages
+ * of an RPC request.
+ * 1. Filter. Works at the instance level, each Filter is bond to one specific Provider instance(invoker).
+ * 2. ClusterFilter. Newly introduced in 3.0, intercepts request before Loadbalancer picks one specific Filter(Invoker).
  *
- * The difference of Filter is as follows:
+ * Filter Chain in 3.x
  *
- * 3.x Filter
+ *                                          -> Filter -> Invoker
  *
- *                                             -> InstanceFilter -> Invoker
+ * Proxy -> ClusterFilter -> ClusterInvoker -> Filter -> Invoker
  *
- * Proxy -> Filter -> Filter -> ClusterInvoker -> InstanceFilter -> Invoker
- *
- *                                             -> InstanceFilter -> Invoker
+ *                                          -> Filter -> Invoker
  *
  *
- * 2.x Filter
+ * Filter Chain in 2.x
  *
- *                            Filter -> Filter -> Invoker
+ *                            Filter -> Invoker
  *
- * Proxy -> ClusterInvoker -> Filter -> Filter -> Invoker
+ * Proxy -> ClusterInvoker -> Filter -> Invoker
  *
- *                            Filter -> Filter -> Invoker
+ *                            Filter -> Invoker
  *
- * If you want to a Filter
  *
  * Filter. (SPI, Singleton, ThreadSafe)
  *
@@ -69,3 +67,4 @@ import org.apache.dubbo.common.extension.SPI;
 @SPI
 public interface Filter extends BaseFilter {
 }
+

@@ -23,6 +23,7 @@ import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NetUtils;
@@ -30,12 +31,8 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.event.ReferenceConfigDestroyedEvent;
-import org.apache.dubbo.config.event.ReferenceConfigInitializedEvent;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.event.Event;
-import org.apache.dubbo.event.EventDispatcher;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
@@ -203,9 +200,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (destroyed) {
             throw new IllegalStateException("The invoker of ReferenceConfig(" + url + ") has already destroyed!");
         }
+
         if (ref == null) {
             init();
         }
+
         return ref;
     }
 
@@ -224,26 +223,46 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         invoker = null;
         ref = null;
-
-        // dispatch a ReferenceConfigDestroyedEvent since 2.7.4
-        dispatch(new ReferenceConfigDestroyedEvent(this));
     }
 
-    public synchronized void init() {
+    protected synchronized void init() {
         if (initialized) {
             return;
         }
 
+        // Using DubboBootstrap API will associate bootstrap when registering reference.
+        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
+        // Initializing bootstrap here only for compatible with old API usages.
         if (bootstrap == null) {
             bootstrap = DubboBootstrap.getInstance();
             bootstrap.initialize();
             bootstrap.reference(this);
         }
 
-        checkAndUpdateSubConfigs();
+        // check bootstrap state
+        if (!bootstrap.isInitialized()) {
+            throw new IllegalStateException("DubboBootstrap is not initialized");
+        }
 
-        checkStubAndLocal(interfaceClass);
-        ConfigValidationUtils.checkMock(interfaceClass, this);
+        if (!this.isRefreshed()) {
+            this.refresh();
+        }
+
+        //init serivceMetadata
+        initServiceMetadata(consumer);
+        serviceMetadata.setServiceType(getActualInterface());
+        // TODO, uncomment this line once service key is unified
+        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
+
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        repository.registerConsumer(
+                serviceMetadata.getServiceKey(),
+                serviceDescriptor,
+                this,
+                null,
+                serviceMetadata);
+
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, CONSUMER_SIDE);
@@ -299,7 +318,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (StringUtils.isEmpty(hostToRegistry)) {
             hostToRegistry = NetUtils.getLocalHost();
         } else if (isInvalidLocalHost(hostToRegistry)) {
-            throw new IllegalArgumentException("Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
+            throw new IllegalArgumentException(
+                    "Specified invalid registry ip from property:" + DUBBO_IP_TO_REGISTRY + ", value:" + hostToRegistry);
         }
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
@@ -316,15 +336,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         initialized = true;
 
         checkInvokerAvailable();
-
-        // dispatch a ReferenceConfigInitializedEvent since 2.7.4
-        dispatch(new ReferenceConfigInitializedEvent(this, invoker));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes", "deprecation"})
     private T createProxy(Map<String, String> map) {
         if (shouldJvmRefer(map)) {
-            URL url = new URL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
+            URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(map);
             invoker = REF_PROTOCOL.refer(interfaceClass, url);
             if (logger.isInfoEnabled()) {
                 logger.info("Using injvm service " + interfaceClass.getName());
@@ -357,13 +374,16 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                         for (URL u : us) {
                             URL monitorUrl = ConfigValidationUtils.loadMonitor(this, u);
                             if (monitorUrl != null) {
-                                map.put(MONITOR_KEY, URL.encode(monitorUrl.toFullString()));
+                                u = u.putAttribute(MONITOR_KEY, monitorUrl);
                             }
                             urls.add(u.putAttribute(REFER_KEY, map));
                         }
                     }
                     if (urls.isEmpty()) {
-                        throw new IllegalStateException("No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() + " use dubbo version " + Version.getVersion() + ", please config <dubbo:registry address=\"...\" /> to your spring config.");
+                        throw new IllegalStateException(
+                                "No such any registry to reference " + interfaceName + " on the consumer " + NetUtils.getLocalHost() +
+                                        " use dubbo version " + Version.getVersion() +
+                                        ", please config <dubbo:registry address=\"...\" /> to your spring config.");
                     }
                 }
             }
@@ -374,11 +394,15 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 List<Invoker<?>> invokers = new ArrayList<Invoker<?>>();
                 URL registryURL = null;
                 for (URL url : urls) {
+                    // For multi-registry scenarios, it is not checked whether each referInvoker is available.
+                    // Because this invoker may become available later.
                     invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+
                     if (UrlUtils.isRegistry(url)) {
                         registryURL = url; // use last registry url
                     }
                 }
+
                 if (registryURL != null) { // registry url is available
                     // for multi-subscription scenario, use 'zone-aware' policy by default
                     String cluster = registryURL.getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME);
@@ -386,7 +410,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     invoker = Cluster.getCluster(cluster, false).join(new StaticDirectory(registryURL, invokers));
                 } else { // not a registry url, must be direct invoke.
                     String cluster = CollectionUtils.isNotEmpty(invokers)
-                            ? (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) : Cluster.DEFAULT)
+                            ?
+                            (invokers.get(0).getUrl() != null ? invokers.get(0).getUrl().getParameter(CLUSTER_KEY, ZoneAwareCluster.NAME) :
+                                    Cluster.DEFAULT)
                             : Cluster.DEFAULT;
                     invoker = Cluster.getCluster(cluster).join(new StaticDirectory(invokers));
                 }
@@ -397,7 +423,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             logger.info("Referred dubbo service " + interfaceClass.getName());
         }
 
-        URL consumerURL = new URL(CONSUMER_PROTOCOL, map.get(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
+        URL consumerURL = new ServiceConfigURL(CONSUMER_PROTOCOL, map.get(REGISTER_IP_KEY), 0, map.get(INTERFACE_KEY), map);
         MetadataUtils.publishServiceDefinition(consumerURL);
 
         // create service proxy
@@ -424,25 +450,19 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
      * Check each config modules are created properly and override their properties if necessary.
      */
-    public void checkAndUpdateSubConfigs() {
+    protected void checkAndUpdateSubConfigs() {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
-        completeCompoundConfigs(consumer);
-        if (consumer != null) {
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(consumer.getRegistryIds());
-            }
-        }
+
         // get consumer's global configuration
-        checkDefault();
+        completeCompoundConfigs();
 
         // init some null configuration.
         List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
                 .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
         configInitializers.forEach(e -> e.initReferConfig(this));
 
-        this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());
         }
@@ -455,32 +475,31 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e.getMessage(), e);
             }
-            checkInterfaceAndMethods(interfaceClass, getMethods());
+            //checkInterfaceAndMethods(interfaceClass, getMethods());
         }
 
-        //init serivceMetadata
-        serviceMetadata.setVersion(getVersion());
-        serviceMetadata.setGroup(getGroup());
-        serviceMetadata.setDefaultGroup(getGroup());
-        serviceMetadata.setServiceType(getActualInterface());
-        serviceMetadata.setServiceInterfaceName(interfaceName);
-        // TODO, uncomment this line once service key is unified
-        serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
-
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerConsumer(
-                serviceMetadata.getServiceKey(),
-                serviceDescriptor,
-                this,
-                null,
-                serviceMetadata);
+        checkStubAndLocal(interfaceClass);
+        ConfigValidationUtils.checkMock(interfaceClass, this);
 
         resolveFile();
         ConfigValidationUtils.validateReferenceConfig(this);
         postProcessConfig();
     }
 
+    @Override
+    protected void postProcessRefresh() {
+        super.postProcessRefresh();
+        checkAndUpdateSubConfigs();
+    }
+
+    protected void completeCompoundConfigs() {
+        super.completeCompoundConfigs(consumer);
+        if (consumer != null) {
+            if (StringUtils.isEmpty(registryIds)) {
+                setRegistryIds(consumer.getRegistryIds());
+            }
+        }
+    }
 
     /**
      * Figure out should refer the service in the same JVM from configurations. The default behavior is true
@@ -491,7 +510,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * call, which is the default behavior
      */
     protected boolean shouldJvmRefer(Map<String, String> map) {
-        URL tmpUrl = new URL("temp", "localhost", 0, map);
+        URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
         boolean isJvmRefer;
         if (isInjvm() == null) {
             // if a url is specified, don't do local reference
@@ -505,16 +524,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             isJvmRefer = isInjvm();
         }
         return isJvmRefer;
-    }
-
-    /**
-     * Dispatch an {@link Event event}
-     *
-     * @param event an {@link Event event}
-     * @since 2.7.5
-     */
-    protected void dispatch(Event event) {
-        EventDispatcher.getDefaultExtension().dispatch(event);
     }
 
     public DubboBootstrap getBootstrap() {
@@ -532,7 +541,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     // just for test
-    Invoker<?> getInvoker() {
+    @Deprecated
+    public Invoker<?> getInvoker() {
         return invoker;
     }
 }

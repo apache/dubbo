@@ -22,12 +22,11 @@
        http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd">
 
     <dubbo:application name="demo-consumer">
-        <dubbo:parameter key="mapping-type" value="metadata"/>
     </dubbo:application>
 
-    <!--    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>-->
+    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
 
-    <dubbo:registry address="zookeeper://127.0.0.1:2181?registry-type=service"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:reference id="demoService" check="false"
                      interface="org.apache.dubbo.demo.DemoService"/>

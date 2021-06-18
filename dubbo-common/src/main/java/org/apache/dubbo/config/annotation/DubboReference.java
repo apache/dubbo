@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.config.annotation;
 
+import org.apache.dubbo.common.constants.ClusterRules;
+import org.apache.dubbo.common.constants.LoadbalanceRules;
 import org.apache.dubbo.common.constants.RegistryConstants;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
@@ -163,8 +165,9 @@ public @interface DubboReference {
 
     /**
      * Cluster strategy, legal values include: failover, failfast, failsafe, failback, forking
+     * you can use {@link org.apache.dubbo.common.constants.ClusterRules#FAIL_FAST} ……
      */
-    String cluster() default "";
+    String cluster() default ClusterRules.EMPTY;
 
     /**
      * Maximum connections service provider can accept, default value is 0 - connection is shared
@@ -207,10 +210,9 @@ public @interface DubboReference {
 
     /**
      * Load balance strategy, legal values include: random, roundrobin, leastactive
-     * <p>
-     * see Constants#DEFAULT_LOADBALANCE
+     * you can use {@link org.apache.dubbo.common.constants.LoadbalanceRules#RANDOM} ……
      */
-    String loadbalance() default "";
+    String loadbalance() default LoadbalanceRules.EMPTY;
 
     /**
      * Whether to enable async invocation, default value is false
@@ -268,7 +270,9 @@ public @interface DubboReference {
 
     /**
      * Application associated name
+     * @deprecated Do not set it and use the global Application Config
      */
+    @Deprecated
     String application() default "";
 
     /**
@@ -343,4 +347,9 @@ public @interface DubboReference {
      * @see org.apache.dubbo.rpc.Constants#SCOPE_REMOTE
      */
     String scope() default "";
+
+    /**
+     * Weather the reference is refer asynchronously
+     */
+    boolean referAsync() default false;
 }

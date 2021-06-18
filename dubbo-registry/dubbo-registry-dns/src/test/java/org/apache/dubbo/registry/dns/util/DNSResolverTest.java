@@ -26,8 +26,5 @@ public class DNSResolverTest {
         DNSResolver dnsResolver = new DNSResolver("8.8.8.8", 53, 1);
         ResolveResult resolve = dnsResolver.resolve("aliyun.com");
         Assertions.assertTrue(resolve.getHostnameList().size() > 0);
-
-        resolve = dnsResolver.resolve("unknowhost.unknowhost.unknowhost");
-        Assertions.assertEquals(0, resolve.getHostnameList().size());
     }
 }

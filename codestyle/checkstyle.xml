@@ -12,6 +12,10 @@
         <property name="fileExtensions" value="java"/>
     </module>
 
+    <module name="FileTabCharacter">
+        <property name="fileExtensions" value="java,xml"/>
+    </module>
+
     <!-- TreeWalker Checks -->
     <module name="TreeWalker">
         <module name="SuppressWarningsHolder"/>

@@ -40,15 +40,17 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     private static final long serialVersionUID = 1149677083747278100L;
 
+    private String rawAddress;
+
     private String serviceName;
 
     private String host;
 
     private int port;
 
-    private boolean enabled;
+    private boolean enabled = true;
 
-    private boolean healthy;
+    private boolean healthy = true;
 
     private Map<String, String> metadata = new UnifiedMap<>();
 
@@ -77,14 +79,16 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
-        if (port != null && port.intValue() < 1) {
-            throw new IllegalArgumentException("The port must be greater than zero!");
+        if (port == null || port < 1) {
+            throw new IllegalArgumentException("The port value is illegal, the value is " + port);
         }
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
-        this.enabled = true;
-        this.healthy = true;
+    }
+
+    public void setRawAddress(String rawAddress) {
+        this.rawAddress = rawAddress;
     }
 
     public DefaultServiceInstance(String serviceName) {
@@ -126,8 +130,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         return address;
     }
 
-    private static String getAddress(String host, int port) {
-        return port <= 0 ? host : host + ':' + port;
+    private static String getAddress(String host, Integer port) {
+        return port != null && port <= 0 ? host : host + ':' + port;
     }
 
     @Override
@@ -219,8 +223,12 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof DefaultServiceInstance)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DefaultServiceInstance)) {
+            return false;
+        }
         DefaultServiceInstance that = (DefaultServiceInstance) o;
         boolean equals = Objects.equals(getServiceName(), that.getServiceName()) &&
                 Objects.equals(getHost(), that.getHost()) &&
@@ -249,6 +257,10 @@ public class DefaultServiceInstance implements ServiceInstance {
 
     @Override
     public String toString() {
+        return rawAddress == null ? toFullString() : rawAddress;
+    }
+
+    public String toFullString() {
         return "DefaultServiceInstance{" +
                 ", serviceName='" + serviceName + '\'' +
                 ", host='" + host + '\'' +

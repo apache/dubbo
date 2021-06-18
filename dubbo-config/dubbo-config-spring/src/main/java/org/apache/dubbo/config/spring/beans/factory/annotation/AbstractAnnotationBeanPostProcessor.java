@@ -241,7 +241,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
     private AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata buildAnnotatedMetadata(final Class<?> beanClass) {
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements = findFieldAnnotationMetadata(beanClass);
         Collection<AbstractAnnotationBeanPostProcessor.AnnotatedMethodElement> methodElements = findAnnotatedMethodMetadata(beanClass);
-        return new AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata(beanClass, fieldElements, methodElements);
+        return new AnnotatedInjectionMetadata(beanClass, fieldElements, methodElements);
     }
 
     protected AnnotatedInjectionMetadata findInjectionMetadata(String beanName, Class<?> clazz, PropertyValues pvs) {
@@ -249,11 +249,11 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
         String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
         // Quick check on the concurrent map first, with minimal locking.
         AbstractAnnotationBeanPostProcessor.AnnotatedInjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
-        if (InjectionMetadata.needsRefresh(metadata, clazz)) {
+        if (needsRefreshInjectionMetadata(metadata, clazz)) {
             synchronized (this.injectionMetadataCache) {
                 metadata = this.injectionMetadataCache.get(cacheKey);
 
-                if (InjectionMetadata.needsRefresh(metadata, clazz)) {
+                if (needsRefreshInjectionMetadata(metadata, clazz)) {
                     if (metadata != null) {
                         metadata.clear(pvs);
                     }
@@ -268,6 +268,11 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             }
         }
         return metadata;
+    }
+
+    // Use custom check method to compatible with Spring 4.x
+    private boolean needsRefreshInjectionMetadata(AnnotatedInjectionMetadata metadata, Class<?> clazz) {
+        return (metadata == null || metadata.needsRefresh(clazz));
     }
 
     @Override
@@ -402,7 +407,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
     /**
      * {@link Annotation Annotated} {@link InjectionMetadata} implementation
      */
-    protected class AnnotatedInjectionMetadata extends InjectionMetadata {
+    protected static class AnnotatedInjectionMetadata extends InjectionMetadata {
 
         private Class<?> targetClass;
         private final Collection<AbstractAnnotationBeanPostProcessor.AnnotatedFieldElement> fieldElements;
@@ -425,7 +430,7 @@ public abstract class AbstractAnnotationBeanPostProcessor extends
             return methodElements;
         }
 
-        @Override
+        //@Override // since Spring 5.2.4
         protected boolean needsRefresh(Class<?> clazz) {
             if (this.targetClass == clazz) {
                 return false;

@@ -24,6 +24,34 @@ import io.fabric8.kubernetes.client.ConfigBuilder;
 
 import java.util.Base64;
 
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.API_VERSION;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NAMESPACE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.USERNAME;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PASSWORD;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.OAUTH_TOKEN;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CA_CERT_FILE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CA_CERT_DATA;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_KEY_FILE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_KEY_DATA;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_CERT_FILE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_CERT_DATA;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_KEY_ALGO;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CLIENT_KEY_PASSPHRASE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.CONNECTION_TIMEOUT;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.REQUEST_TIMEOUT;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.WATCH_RECONNECT_INTERVAL;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.ROLLING_TIMEOUT;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.WATCH_RECONNECT_LIMIT;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.LOGGING_INTERVAL;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.TRUST_CERTS;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.HTTP2_DISABLE;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.HTTP_PROXY;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.HTTPS_PROXY;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PROXY_USERNAME;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.PROXY_PASSWORD;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.NO_PROXY;
+import static org.apache.dubbo.registry.kubernetes.util.KubernetesClientConst.USE_HTTPS;
+
 public class KubernetesConfigUtils {
 
     public static Config createKubernetesConfig(URL url) {
@@ -31,74 +59,48 @@ public class KubernetesConfigUtils {
         Config base = Config.autoConfigure(null);
 
         // replace config with parameters if presents
-        return new ConfigBuilder(base)
-                .withMasterUrl(buildMasterUrl(url))
-                .withApiVersion(url.getParameter(KubernetesClientConst.API_VERSION,
-                        base.getApiVersion()))
-                .withNamespace(url.getParameter(KubernetesClientConst.NAMESPACE,
-                        base.getNamespace()))
-                .withUsername(url.getParameter(KubernetesClientConst.USERNAME,
-                        base.getUsername()))
-                .withPassword(url.getParameter(KubernetesClientConst.PASSWORD,
-                        base.getPassword()))
+        return new ConfigBuilder(base) //
+            .withMasterUrl(buildMasterUrl(url)) //
+            .withApiVersion(url.getParameter(API_VERSION, base.getApiVersion())) //
+            .withNamespace(url.getParameter(NAMESPACE, base.getNamespace())) //
+            .withUsername(url.getParameter(USERNAME, base.getUsername())) //
+            .withPassword(url.getParameter(PASSWORD, base.getPassword())) //
 
-                .withOauthToken(url.getParameter(KubernetesClientConst.OAUTH_TOKEN,
-                        base.getOauthToken()))
+            .withOauthToken(url.getParameter(OAUTH_TOKEN, base.getOauthToken())) //
 
-                .withCaCertFile(url.getParameter(KubernetesClientConst.CA_CERT_FILE,
-                        base.getCaCertFile()))
-                .withCaCertData(url.getParameter(KubernetesClientConst.CA_CERT_DATA,
-                        decodeBase64(base.getCaCertData())))
+            .withCaCertFile(url.getParameter(CA_CERT_FILE,base.getCaCertFile())) //
+            .withCaCertData(url.getParameter(CA_CERT_DATA,decodeBase64(base.getCaCertData()))) //
 
-                .withClientKeyFile(url.getParameter(KubernetesClientConst.CLIENT_KEY_FILE,
-                        base.getClientKeyFile()))
-                .withClientKeyData(url.getParameter(KubernetesClientConst.CLIENT_KEY_DATA,
-                        decodeBase64(base.getClientKeyData())))
+            .withClientKeyFile(url.getParameter(CLIENT_KEY_FILE,base.getClientKeyFile())) //
+            .withClientKeyData(url.getParameter(CLIENT_KEY_DATA, decodeBase64(base.getClientKeyData()))) //
 
-                .withClientCertFile(url.getParameter(KubernetesClientConst.CLIENT_CERT_FILE,
-                        base.getClientCertFile()))
-                .withClientCertData(url.getParameter(KubernetesClientConst.CLIENT_CERT_DATA,
-                        decodeBase64(base.getClientCertData())))
+            .withClientCertFile(url.getParameter(CLIENT_CERT_FILE,base.getClientCertFile())) //
+            .withClientCertData(url.getParameter(CLIENT_CERT_DATA,decodeBase64(base.getClientCertData()))) //
 
-                .withClientKeyAlgo(url.getParameter(KubernetesClientConst.CLIENT_KEY_ALGO,
-                        base.getClientKeyAlgo()))
-                .withClientKeyPassphrase(url.getParameter(KubernetesClientConst.CLIENT_KEY_PASSPHRASE,
-                        base.getClientKeyPassphrase()))
+            .withClientKeyAlgo(url.getParameter(CLIENT_KEY_ALGO,base.getClientKeyAlgo())) //
+            .withClientKeyPassphrase(url.getParameter(CLIENT_KEY_PASSPHRASE,base.getClientKeyPassphrase())) //
 
-                .withConnectionTimeout(url.getParameter(KubernetesClientConst.CONNECTION_TIMEOUT,
-                        base.getConnectionTimeout()))
-                .withRequestTimeout(url.getParameter(KubernetesClientConst.REQUEST_TIMEOUT,
-                        base.getRequestTimeout()))
-                .withRollingTimeout(url.getParameter(KubernetesClientConst.ROLLING_TIMEOUT,
-                        base.getRollingTimeout()))
+            .withConnectionTimeout(url.getParameter(CONNECTION_TIMEOUT,base.getConnectionTimeout())) //
+            .withRequestTimeout(url.getParameter(REQUEST_TIMEOUT,base.getRequestTimeout())) //
+            .withRollingTimeout(url.getParameter(ROLLING_TIMEOUT,base.getRollingTimeout())) //
 
-                .withWatchReconnectInterval(url.getParameter(KubernetesClientConst.WATCH_RECONNECT_INTERVAL,
-                        base.getWatchReconnectInterval()))
-                .withWatchReconnectLimit(url.getParameter(KubernetesClientConst.WATCH_RECONNECT_LIMIT,
-                        base.getWatchReconnectLimit()))
-                .withLoggingInterval(url.getParameter(KubernetesClientConst.LOGGING_INTERVAL,
-                        base.getLoggingInterval()))
+            .withWatchReconnectInterval(url.getParameter(WATCH_RECONNECT_INTERVAL,base.getWatchReconnectInterval())) //
+            .withWatchReconnectLimit(url.getParameter(WATCH_RECONNECT_LIMIT,base.getWatchReconnectLimit())) //
+            .withLoggingInterval(url.getParameter(LOGGING_INTERVAL,base.getLoggingInterval())) //
 
-                .withTrustCerts(url.getParameter(KubernetesClientConst.TRUST_CERTS,
-                        base.isTrustCerts()))
-                .withHttp2Disable(url.getParameter(KubernetesClientConst.HTTP2_DISABLE,
-                        base.isTrustCerts()))
+            .withTrustCerts(url.getParameter(TRUST_CERTS,base.isTrustCerts())) //
+            .withHttp2Disable(url.getParameter(HTTP2_DISABLE,base.isTrustCerts())) //
 
-                .withHttpProxy(url.getParameter(KubernetesClientConst.HTTP_PROXY,
-                        base.getHttpProxy()))
-                .withHttpsProxy(url.getParameter(KubernetesClientConst.HTTPS_PROXY,
-                        base.getHttpsProxy()))
-                .withProxyUsername(url.getParameter(KubernetesClientConst.PROXY_USERNAME,
-                        base.getProxyUsername()))
-                .withProxyPassword(url.getParameter(KubernetesClientConst.PROXY_PASSWORD,
-                        base.getProxyPassword()))
-                .withNoProxy(url.getParameter(KubernetesClientConst.NO_PROXY,
-                        base.getNoProxy()))
-                .build();
+            .withHttpProxy(url.getParameter(HTTP_PROXY,base.getHttpProxy())) //
+            .withHttpsProxy(url.getParameter(HTTPS_PROXY,base.getHttpsProxy())) //
+            .withProxyUsername(url.getParameter(PROXY_USERNAME,base.getProxyUsername())) //
+            .withProxyPassword(url.getParameter(PROXY_PASSWORD,base.getProxyPassword())) //
+            .withNoProxy(url.getParameter(NO_PROXY,base.getNoProxy())) //
+            .build();
     }
 
     private static String buildMasterUrl(URL url) {
-        return (url.getParameter(KubernetesClientConst.USE_HTTPS, true) ?
+        return (url.getParameter(USE_HTTPS, true) ?
                 "https://" : "http://")
                 + url.getHost() + ":" + url.getPort();
     }
@@ -106,6 +108,6 @@ public class KubernetesConfigUtils {
     private static String decodeBase64(String str) {
         return StringUtils.isNotEmpty(str) ?
                 new String(Base64.getDecoder().decode(str)) :
-                "";
+                null;
     }
 }

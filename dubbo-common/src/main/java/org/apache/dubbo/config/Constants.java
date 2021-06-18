@@ -30,9 +30,13 @@ public interface Constants {
 
     String LAYER_KEY = "layer";
 
+    // General
+
     /**
-     * General
+     * Config id
      */
+    String ID = "id";
+
     /**
      * Application name;
      */
@@ -119,4 +123,6 @@ public interface Constants {
     String MULTI_SERIALIZATION_KEY = "serialize.multiple";
 
     String[] DOT_COMPATIBLE_KEYS = new String[]{"qos-enable", "qos-port", "qos-accept-foreign-ip"};
+
+    String IGNORE_CHECK_KEYS = "ignoreCheckKeys";
 }

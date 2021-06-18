@@ -20,14 +20,19 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
+import org.apache.zookeeper.data.Stat;
+
 import java.util.Collection;
-import java.util.concurrent.CountDownLatch;
+import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,33 +44,31 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     // The final root path would be: /configRootPath/"config"
     private String rootPath;
     private final ZookeeperClient zkClient;
-    private CountDownLatch initializedLatch;
 
     private CacheListener cacheListener;
     private URL url;
-
+    private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
+    private static final int DEFAULT_QUEUE = 10000;
+    private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
         this.url = url;
         rootPath = getRootPath(url);
 
-        initializedLatch = new CountDownLatch(1);
-        this.cacheListener = new CacheListener(rootPath, initializedLatch);
-        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
+        this.cacheListener = new CacheListener(rootPath);
+
+        final String threadName = this.getClass().getSimpleName();
+        this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url));
 
         zkClient = zookeeperTransporter.connect(url);
-        zkClient.addDataListener(rootPath, cacheListener, executor);
-        try {
-            // Wait for connection
-            long timeout = url.getParameter("init.timeout", 5000);
-            boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
-            if (!isCountDown) {
-                throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "
-                        + url + " is correct");
-            }
-        } catch (InterruptedException e) {
-            logger.warn("Failed to build local cache for config center (zookeeper)." + url);
+        boolean isConnected = zkClient.isConnected();
+        if (!isConnected) {
+            throw new IllegalStateException("Failed to connect with zookeeper, pls check if url " + url + " is correct.");
         }
     }
 
@@ -90,10 +93,18 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     }
 
     @Override
-    public boolean publishConfigCas(String key, String group, String content, Object stat) {
-        String pathKey = buildPathKey(group, key);
-        zkClient.createOrUpdate(pathKey, content, false, stat);
-        return true;
+    public boolean publishConfigCas(String key, String group, String content, Object ticket) {
+        try {
+            if (ticket != null && !(ticket instanceof Stat)) {
+                throw new IllegalArgumentException("zookeeper publishConfigCas requires stat type ticket");
+            }
+            String pathKey = buildPathKey(group, key);
+            zkClient.createOrUpdate(pathKey, content, false, ticket == null ? 0 : ((Stat) ticket).getVersion());
+            return true;
+        } catch (Exception e) {
+            logger.warn("zookeeper publishConfigCas failed.", e);
+            return false;
+        }
     }
 
     @Override
@@ -121,15 +132,15 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doAddListener(String pathKey, ConfigurationListener listener) {
         cacheListener.addListener(pathKey, listener);
+        zkClient.addDataListener(pathKey, cacheListener, executor);
     }
 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
         cacheListener.removeListener(pathKey, listener);
-    }
-
-    @Override
-    public boolean hasSupportCas() {
-        return true;
+        Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
+        if (CollectionUtils.isNotEmpty(configurationListeners)) {
+            zkClient.removeDataListener(pathKey, cacheListener);
+        }
     }
 }

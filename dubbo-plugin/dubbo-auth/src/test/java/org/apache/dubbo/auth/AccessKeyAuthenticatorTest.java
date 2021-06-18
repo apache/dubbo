@@ -22,6 +22,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.RpcInvocation;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;

@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
 @Deprecated
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Inherited
 public @interface Service {
 
@@ -113,6 +113,11 @@ public @interface Service {
 
     String[] parameters() default {};
 
+    /**
+     * Application associated name
+     * @deprecated Do not set it and use the global Application Config
+     */
+    @Deprecated
     String application() default "";
 
     String module() default "";

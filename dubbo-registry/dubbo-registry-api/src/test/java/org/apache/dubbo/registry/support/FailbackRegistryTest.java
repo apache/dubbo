@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.apache.dubbo.registry.Constants.CONSUMER_PROTOCOL;
@@ -151,36 +150,6 @@ public class FailbackRegistryTest {
         assertEquals(0, latch.getCount());
         //The failedsubcribe corresponding key will be cleared when unsubscribing
         assertEquals(true, notified.get());
-    }
-
-    @Test
-    public void testDoRetry_nofify() throws Exception {
-
-        //Initial value 0
-        final AtomicInteger count = new AtomicInteger(0);
-
-        NotifyListener listner = new NotifyListener() {
-            @Override
-            public void notify(List<URL> urls) {
-                count.incrementAndGet();
-                //The exception is thrown for the first time to see if the back will be called again to incrementAndGet
-                if (count.get() == 1L) {
-                    throw new RuntimeException("test exception please ignore");
-                }
-            }
-        };
-        registry = new MockRegistry(registryUrl, new CountDownLatch(0));
-        registry.subscribe(serviceUrl.setProtocol(CONSUMER_PROTOCOL).addParameters(CollectionUtils.toStringMap("check", "false")), listner);
-
-        assertEquals(1, count.get()); //Make sure that the subscribe call has just been called once count.incrementAndGet after the call is completed
-        //Wait for the timer.
-        for (int i = 0; i < trytimes; i++) {
-            System.out.println("failback notify retry ,times:" + i);
-            if (count.get() == 2)
-                break;
-            Thread.sleep(sleeptime);
-        }
-        assertEquals(2, count.get());
     }
 
     @Test

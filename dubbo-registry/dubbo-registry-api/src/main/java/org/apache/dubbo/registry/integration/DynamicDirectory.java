@@ -90,15 +90,18 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     public DynamicDirectory(Class<T> serviceType, URL url) {
         super(url, true);
+
         if (serviceType == null) {
             throw new IllegalArgumentException("service type is null.");
         }
 
-        shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
-        shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
         if (url.getServiceKey() == null || url.getServiceKey().length() == 0) {
             throw new IllegalArgumentException("registry serviceKey is null.");
         }
+
+        this.shouldRegister = !ANY_VALUE.equals(url.getServiceInterface()) && url.getParameter(REGISTER_KEY, true);
+        this.shouldSimplified = url.getParameter(SIMPLIFIED_KEY, false);
+
         this.serviceType = serviceType;
         this.serviceKey = super.getConsumerUrl().getServiceKey();
 
@@ -228,15 +231,15 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
                 registry.unregister(getRegisteredConsumerUrl());
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unregister service " + serviceKey + "from registry" + registry.getUrl(), t);
+            logger.warn("unexpected error when unregister service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
         // unsubscribe.
         try {
-            if (getConsumerUrl() != null && registry != null && registry.isAvailable()) {
+            if (getSubscribeUrl() != null && registry != null && registry.isAvailable()) {
                 registry.unsubscribe(getSubscribeUrl(), this);
             }
         } catch (Throwable t) {
-            logger.warn("unexpected error when unsubscribe service " + serviceKey + "from registry" + registry.getUrl(), t);
+            logger.warn("unexpected error when unsubscribe service " + serviceKey + " from registry: " + registry.getUrl(), t);
         }
 
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
@@ -284,6 +287,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
         invokersChanged = true;
         if (invokersChangedListener != null) {
             invokersChangedListener.onChange();
+            invokersChanged = false;
         }
     }
 

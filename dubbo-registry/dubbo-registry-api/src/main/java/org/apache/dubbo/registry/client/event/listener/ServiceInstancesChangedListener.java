@@ -22,8 +22,6 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.event.ConditionalEventListener;
-import org.apache.dubbo.event.EventListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.MetadataInfo.ServiceInfo;
 import org.apache.dubbo.metadata.MetadataService;
@@ -60,12 +58,12 @@ import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.getExportedServicesRevision;
 
 /**
- * The Service Discovery Changed {@link EventListener Event Listener}
+ * The Service Discovery Changed Listener
  *
  * @see ServiceInstancesChangedEvent
  * @since 2.7.5
  */
-public class ServiceInstancesChangedListener implements ConditionalEventListener<ServiceInstancesChangedEvent> {
+public class ServiceInstancesChangedListener {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceInstancesChangedListener.class);
 
@@ -102,10 +100,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get()) {
-            return;
-        }
-        if (this.isRetryAndExpired(event)) {
+        if (destroyed.get() || this.isRetryAndExpired(event) || !accept(event)) {
             return;
         }
 
@@ -149,35 +144,32 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
                 retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
-            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-            this.revisionToMetadata = newRevisionToMetadata;
-            return;
+//            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+//            this.revisionToMetadata = newRevisionToMetadata;
+//            return;
         }
 
         this.revisionToMetadata = newRevisionToMetadata;
 
         localServiceToRevisions.forEach((serviceInfo, revisions) -> {
             String protocol = serviceInfo.getProtocol();
-            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> {
-                return new HashMap<>();
-            });
+            Map<Set<String>, Object> revisionsToUrls = protocolRevisionsToUrls.computeIfAbsent(protocol, k -> new HashMap<>());
             Object urls = revisionsToUrls.get(revisions);
-            if (urls != null) {
-                newServiceUrls.put(serviceInfo.getMatchKey(), urls);
-            } else {
+            if (urls == null) {
                 urls = getServiceUrlsCache(revisionToInstances, revisions, protocol);
                 revisionsToUrls.put(revisions, urls);
-                newServiceUrls.put(serviceInfo.getMatchKey(), urls);
             }
-        });
-        this.serviceUrls = newServiceUrls;
 
+            newServiceUrls.put(serviceInfo.getMatchKey(), urls);
+        });
+
+        this.serviceUrls = newServiceUrls;
         this.notifyAddressChanged();
     }
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
-        List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
+        List<URL> urls = getAddresses(serviceKey);
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
@@ -233,7 +225,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
      * @param event {@link ServiceInstancesChangedEvent event}
      * @return If service name matches, return <code>true</code>, or <code>false</code>
      */
-    public final boolean accept(ServiceInstancesChangedEvent event) {
+    private boolean accept(ServiceInstancesChangedEvent event) {
         return serviceNames.contains(event.getServiceName());
     }
 
@@ -244,7 +236,7 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
             logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
-            if (retryEvent.getFailureRecordTime() < lastRefreshTime) {
+            if (retryEvent.getFailureRecordTime() < lastRefreshTime && !hasEmptyMetadata(revisionToMetadata)) {
                 logger.warn("Ignore retry event, event time: " + retryEvent.getFailureRecordTime() + ", last refresh time: " + lastRefreshTime);
                 return true;
             }
@@ -261,14 +253,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         if (revisionToMetadata == null) {
             return false;
         }
-        boolean result = false;
         for (Map.Entry<String, MetadataInfo> entry : revisionToMetadata.entrySet()) {
             if (entry.getValue() == MetadataInfo.EMPTY) {
-                result = true;
-                break;
+                return true;
             }
         }
-        return result;
+        return false;
     }
 
     protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
@@ -359,14 +349,14 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
         return urls;
     }
 
-    protected List<URL> getAddresses(String serviceProtocolKey, URL consumerURL) {
+    protected List<URL> getAddresses(String serviceProtocolKey) {
         return (List<URL>) serviceUrls.get(serviceProtocolKey);
     }
 
     protected void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
+            List<URL> urls = toUrlsWithEmpty(getAddresses(key));
             logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });
@@ -403,8 +393,12 @@ public class ServiceInstancesChangedListener implements ConditionalEventListener
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ServiceInstancesChangedListener)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ServiceInstancesChangedListener)) {
+            return false;
+        }
         ServiceInstancesChangedListener that = (ServiceInstancesChangedListener) o;
         return Objects.equals(getServiceNames(), that.getServiceNames());
     }

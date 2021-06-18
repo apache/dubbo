@@ -24,11 +24,10 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.AddressListener;
-import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.integration.DynamicDirectory;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
-import org.apache.dubbo.rpc.RpcContext;
+import org.apache.dubbo.rpc.RpcServiceContext;
 import org.apache.dubbo.rpc.cluster.RouterChain;
 
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
@@ -44,7 +43,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_TYPE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_TYPE;
 
-public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> implements NotifyListener {
+public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     private static final Logger logger = LoggerFactory.getLogger(ServiceDiscoveryRegistryDirectory.class);
 
     // instance address to invoker mapping.
@@ -81,7 +80,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
             return;
         }
         // Set the context of the address notification thread.
-        RpcContext.setRpcContext(getConsumerUrl());
+        RpcServiceContext.setRpcContext(getConsumerUrl());
 
         /**
          * 3.x added for extend URL address
@@ -103,7 +102,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> im
     }
 
     /**
-     * This implementation wants to make sure all application names related to serviceListener received  address notification.
+     * This implementation makes sure all application names related to serviceListener received address notification.
      *
      * FIXME, make sure deprecated "interface-application" mapping item be cleared in time.
      */

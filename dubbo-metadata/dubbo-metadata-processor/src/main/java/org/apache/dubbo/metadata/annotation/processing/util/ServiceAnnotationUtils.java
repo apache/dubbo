@@ -18,7 +18,8 @@ package org.apache.dubbo.metadata.annotation.processing.util;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import static java.lang.String.valueOf;
@@ -36,14 +37,26 @@ public interface ServiceAnnotationUtils {
 
     /**
      * The class name of @Service
+     *
+     * @deprecated Recommend {@link #DUBBO_SERVICE_ANNOTATION_TYPE}
      */
+    @Deprecated
     String SERVICE_ANNOTATION_TYPE = "org.apache.dubbo.config.annotation.Service";
 
     /**
      * The class name of the legacy @Service
+     *
+     * @deprecated Recommend {@link #DUBBO_SERVICE_ANNOTATION_TYPE}
      */
     @Deprecated
     String LEGACY_SERVICE_ANNOTATION_TYPE = "com.alibaba.dubbo.config.annotation.Service";
+
+    /**
+     * The class name of @DubboService
+     *
+     * @since 2.7.9
+     */
+    String DUBBO_SERVICE_ANNOTATION_TYPE = "org.apache.dubbo.config.annotation.DubboService";
 
     /**
      * the attribute name of @Service.interfaceClass()
@@ -65,11 +78,13 @@ public interface ServiceAnnotationUtils {
      */
     String VERSION_ATTRIBUTE_NAME = "version";
 
-    Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new HashSet(asList(SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
+    Set<String> SUPPORTED_ANNOTATION_TYPES = unmodifiableSet(new LinkedHashSet<>(asList(DUBBO_SERVICE_ANNOTATION_TYPE, SERVICE_ANNOTATION_TYPE, LEGACY_SERVICE_ANNOTATION_TYPE)));
 
     static boolean isServiceAnnotationPresent(TypeElement annotatedType) {
-        return isAnnotationPresent(annotatedType, SERVICE_ANNOTATION_TYPE) ||
-                isAnnotationPresent(annotatedType, LEGACY_SERVICE_ANNOTATION_TYPE);
+        return SUPPORTED_ANNOTATION_TYPES.stream()
+                .filter(type -> isAnnotationPresent(annotatedType, type))
+                .findFirst()
+                .isPresent();
     }
 
     static AnnotationMirror getAnnotation(TypeElement annotatedClass) {
@@ -78,19 +93,20 @@ public interface ServiceAnnotationUtils {
 
     static AnnotationMirror getAnnotation(Iterable<? extends AnnotationMirror> annotationMirrors) {
         AnnotationMirror matchedAnnotationMirror = null;
-        for (AnnotationMirror annotationMirror : annotationMirrors) {
-            String annotationType = annotationMirror.getAnnotationType().toString();
-            if (SERVICE_ANNOTATION_TYPE.equals(annotationType)) {
-                matchedAnnotationMirror = annotationMirror;
-                break;
-            } else if (LEGACY_SERVICE_ANNOTATION_TYPE.equals(annotationType)) {
-                matchedAnnotationMirror = annotationMirror;
+
+        MAIN:
+        for (String supportedAnnotationType : SUPPORTED_ANNOTATION_TYPES) { // Prioritized
+            for (AnnotationMirror annotationMirror : annotationMirrors) {
+                String annotationType = annotationMirror.getAnnotationType().toString();
+                if (Objects.equals(supportedAnnotationType, annotationType)) {
+                    matchedAnnotationMirror = annotationMirror;
+                    break MAIN;
+                }
             }
         }
 
         if (matchedAnnotationMirror == null) {
-            throw new IllegalArgumentException("The annotated element must be implemented the interface "
-                    + SERVICE_ANNOTATION_TYPE + " or " + LEGACY_SERVICE_ANNOTATION_TYPE);
+            throw new IllegalArgumentException("The annotated element must be annotated any of " + SUPPORTED_ANNOTATION_TYPES);
         }
 
         return matchedAnnotationMirror;

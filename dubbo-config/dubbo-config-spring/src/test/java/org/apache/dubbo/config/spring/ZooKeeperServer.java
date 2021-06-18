@@ -22,14 +22,14 @@ public class ZooKeeperServer {
     private static EmbeddedZooKeeper zookeeper2;
 
     public static void start() {
-        if (zookeeper1 == null) {
-            zookeeper1 = new EmbeddedZooKeeper(2181, true);
-            zookeeper1.start();
-        }
-        if (zookeeper2 == null) {
-            zookeeper2 = new EmbeddedZooKeeper(2182, true);
-            zookeeper2.start();
-        }
+            if (zookeeper1 == null) {
+                zookeeper1 = new EmbeddedZooKeeper(2181, true);
+                zookeeper1.start();
+            }
+            if (zookeeper2 == null) {
+                zookeeper2 = new EmbeddedZooKeeper(2182, true);
+                zookeeper2.start();
+            }
     }
 
     public static void stop() {

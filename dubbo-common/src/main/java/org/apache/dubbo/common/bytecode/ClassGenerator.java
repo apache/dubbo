@@ -340,9 +340,7 @@ public final class ClassGenerator {
             return mCtc.toClass(loader, pd);
         } catch (RuntimeException e) {
             throw e;
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e.getMessage(), e);
-        } catch (CannotCompileException e) {
+        } catch (NotFoundException | CannotCompileException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
     }

@@ -27,7 +27,7 @@ public class ChainServiceImpl implements ChainService {
 
     @Override
     public String chain(String input) {
-        logger.info("Received " + input + ", request from consumer: " + RpcContext.getContext().getRemoteAddress());
-        return "Received " + input + ", response from provider: " + RpcContext.getContext().getLocalAddress();
+        logger.info("Received " + input + ", request from consumer: " + RpcContext.getServiceContext().getRemoteAddress());
+        return "Received " + input + ", response from provider: " + RpcContext.getServiceContext().getLocalAddress();
     }
 }

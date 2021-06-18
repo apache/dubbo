@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.url.component;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +37,39 @@ public class ServiceConfigURL extends URL {
     public ServiceConfigURL(URLAddress urlAddress, URLParam urlParam, Map<String, Object> attributes) {
         super(urlAddress, urlParam);
         this.attributes = (attributes != null ? attributes : new HashMap<>());
+    }
+
+
+    public ServiceConfigURL(String protocol, String host, int port) {
+        this(protocol, null, null, host, port, null, (Map<String, String>) null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String[] pairs) { // varargs ... conflict with the following path argument, use array instead.
+        this(protocol, null, null, host, port, null, CollectionUtils.toStringMap(pairs));
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, Map<String, String> parameters) {
+        this(protocol, null, null, host, port, null, parameters);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path) {
+        this(protocol, null, null, host, port, path, (Map<String, String>) null);
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path, String... pairs) {
+        this(protocol, null, null, host, port, path, CollectionUtils.toStringMap(pairs));
+    }
+
+    public ServiceConfigURL(String protocol, String host, int port, String path, Map<String, String> parameters) {
+        this(protocol, null, null, host, port, path, parameters);
+    }
+
+    public ServiceConfigURL(String protocol, String username, String password, String host, int port, String path) {
+        this(protocol, username, password, host, port, path, (Map<String, String>) null);
+    }
+
+    public ServiceConfigURL(String protocol, String username, String password, String host, int port, String path, String... pairs) {
+        this(protocol, username, password, host, port, path, CollectionUtils.toStringMap(pairs));
     }
 
     public ServiceConfigURL(String protocol,
