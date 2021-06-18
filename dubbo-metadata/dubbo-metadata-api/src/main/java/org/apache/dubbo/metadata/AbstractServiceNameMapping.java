@@ -54,6 +54,12 @@ public abstract class AbstractServiceNameMapping implements ServiceNameMapping {
     public Set<String> getServices(URL subscribedURL) {
         Set<String> subscribedServices = new TreeSet<>();
 
+        String serviceNames = subscribedURL.getParameter(PROVIDED_BY);
+        if (StringUtils.isNotEmpty(serviceNames)) {
+            logger.info(subscribedURL.getServiceInterface() + " mapping to " + serviceNames + " instructed by provided-by set by user.");
+            subscribedServices.addAll(parseServices(serviceNames));
+        }
+
         if (isEmpty(subscribedServices)) {
             subscribedServices = WritableMetadataService.getDefaultExtension().getCachedMapping(ServiceNameMapping.buildMappingKey(subscribedURL));
         }

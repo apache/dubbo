@@ -49,6 +49,13 @@ import java.util.stream.Collectors;
  *     step: APPLICATION_FIRST
  *   - serviceKey: GreetingService:1.0.0
  *     step: FORCE_APPLICATION
+ * applications:
+ *  - serviceKey: TestApplication
+ *    threshold: 0.3
+ *    proportion: 20
+ *    delay: 10
+ *    force: false
+ *    step: FORCE_INTERFACE
  */
 public class MigrationRule {
     public static final MigrationRule INIT = new MigrationRule();
