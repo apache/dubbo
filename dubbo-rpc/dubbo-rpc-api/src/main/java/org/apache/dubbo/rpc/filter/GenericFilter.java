@@ -65,7 +65,10 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  */
 @Activate(group = CommonConstants.PROVIDER, order = -20000)
 public class GenericFilter implements Filter, Filter.Listener {
+
     private static final Logger logger = LoggerFactory.getLogger(GenericFilter.class);
+
+    private static final Gson gson = new Gson();
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation inv) throws RpcException {
@@ -190,8 +193,10 @@ public class GenericFilter implements Filter, Filter.Listener {
     }
 
     private Object[] getGsonGenericArgs(final Object[] args, Type[] types) {
-        Gson gson = new Gson();
         return IntStream.range(0, args.length).mapToObj(i -> {
+            if (!(args[i] instanceof String)) {
+                throw new RpcException("When using GSON to deserialize generic dubbo request arguments, the arguments must be of type String");
+            }
             String str = args[i].toString();
             Type type = TypeToken.get(types[i]).getType();
             try {
