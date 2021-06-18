@@ -16,7 +16,7 @@ install: true
 
 branches:
   only:
-    - master
+    - '3.0'
 
 before_script:
   - rm -rf $HOME/.m2/repository/org/glassfish/javax.el/3.0.1-b08
