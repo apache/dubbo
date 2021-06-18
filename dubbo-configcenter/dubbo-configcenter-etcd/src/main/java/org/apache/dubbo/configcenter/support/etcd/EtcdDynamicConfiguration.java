@@ -26,15 +26,15 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.jetcd.JEtcdClient;
 
-import com.google.protobuf.ByteString;
+import io.etcd.jetcd.shaded.com.google.protobuf.ByteString;
 import io.etcd.jetcd.api.Event;
 import io.etcd.jetcd.api.WatchCancelRequest;
 import io.etcd.jetcd.api.WatchCreateRequest;
 import io.etcd.jetcd.api.WatchGrpc;
 import io.etcd.jetcd.api.WatchRequest;
 import io.etcd.jetcd.api.WatchResponse;
-import io.grpc.ManagedChannel;
-import io.grpc.stub.StreamObserver;
+import io.etcd.jetcd.shaded.io.grpc.ManagedChannel;
+import io.etcd.jetcd.shaded.io.grpc.stub.StreamObserver;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

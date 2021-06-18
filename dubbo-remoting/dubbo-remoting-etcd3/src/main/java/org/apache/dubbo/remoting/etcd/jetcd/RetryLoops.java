@@ -33,7 +33,7 @@
  */
 package org.apache.dubbo.remoting.etcd.jetcd;
 
-import io.grpc.Status;
+import io.etcd.jetcd.shaded.io.grpc.Status;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.remoting.etcd.RetryPolicy;

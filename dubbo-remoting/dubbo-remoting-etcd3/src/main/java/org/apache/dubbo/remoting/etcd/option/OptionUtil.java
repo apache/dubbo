@@ -17,7 +17,7 @@
 package org.apache.dubbo.remoting.etcd.option;
 
 import io.etcd.jetcd.ByteSequence;
-import io.grpc.Status;
+import io.etcd.jetcd.shaded.io.grpc.Status;
 import io.netty.handler.codec.http2.Http2Exception;
 
 public class OptionUtil {

@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.remoting.etcd.jetcd;
 
+import io.etcd.jetcd.ByteSequence;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -27,8 +28,7 @@ import org.apache.dubbo.remoting.etcd.StateListener;
 import org.apache.dubbo.remoting.etcd.option.OptionUtil;
 import org.apache.dubbo.remoting.etcd.support.AbstractEtcdClient;
 
-import com.google.protobuf.ByteString;
-import io.etcd.jetcd.ByteSequence;
+import io.etcd.jetcd.shaded.com.google.protobuf.ByteString;
 import io.etcd.jetcd.api.Event;
 import io.etcd.jetcd.api.KeyValue;
 import io.etcd.jetcd.api.WatchCancelRequest;
@@ -37,9 +37,9 @@ import io.etcd.jetcd.api.WatchGrpc;
 import io.etcd.jetcd.api.WatchRequest;
 import io.etcd.jetcd.api.WatchResponse;
 import io.etcd.jetcd.common.exception.ClosedClientException;
-import io.grpc.ManagedChannel;
-import io.grpc.Status;
-import io.grpc.stub.StreamObserver;
+import io.etcd.jetcd.shaded.io.grpc.ManagedChannel;
+import io.etcd.jetcd.shaded.io.grpc.Status;
+import io.etcd.jetcd.shaded.io.grpc.stub.StreamObserver;
 import io.netty.util.internal.ConcurrentSet;
 
 import java.util.ArrayList;

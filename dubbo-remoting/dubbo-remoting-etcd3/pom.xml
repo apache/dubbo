@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>io.etcd</groupId>
-            <artifactId>jetcd-core</artifactId>
+            <artifactId>jetcd-all</artifactId>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
