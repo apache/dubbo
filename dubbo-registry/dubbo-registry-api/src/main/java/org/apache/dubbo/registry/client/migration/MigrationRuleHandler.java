@@ -54,9 +54,8 @@ public class MigrationRuleHandler<T> {
                             ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
         } else {
             try {
-                String serviceKey = consumerURL.getDisplayServiceKey();
-                step = getMigrationStep(rule, step, serviceKey);
-                threshold = getMigrationThreshold(rule, threshold, serviceKey);
+                step = getMigrationStep(rule, step);
+                threshold = getMigrationThreshold(rule, threshold);
             } catch (Exception e) {
                 logger.error("Failed to get step and threshold info from rule: " + rule, e);
             }
@@ -117,14 +116,14 @@ public class MigrationRuleHandler<T> {
         this.migrationInvoker.setMigrationRule(rule);
     }
 
-    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step, String serviceKey) {
-        MigrationStep configuredStep = rule.getStep(serviceKey);
+    private MigrationStep getMigrationStep(MigrationRule rule, MigrationStep step) {
+        MigrationStep configuredStep = rule.getStep(consumerURL);
         step = configuredStep == null ? step : configuredStep;
         return step;
     }
 
-    private Float getMigrationThreshold(MigrationRule rule, Float threshold, String serviceKey) {
-        Float configuredThreshold = rule.getThreshold(serviceKey);
+    private Float getMigrationThreshold(MigrationRule rule, Float threshold) {
+        Float configuredThreshold = rule.getThreshold(consumerURL);
         threshold = configuredThreshold == null ? threshold : configuredThreshold;
         return threshold;
     }

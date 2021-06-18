@@ -82,7 +82,7 @@ public class DefaultMigrationAddressComparatorTest {
 
         Assertions.assertTrue(comparator.shouldMigrate(newInvoker, oldInvoker, null));
 
-        Mockito.when(rule.getThreshold("test")).thenReturn(0.5f);
+        Mockito.when(rule.getThreshold(url)).thenReturn(0.5f);
         newInvokerList.clear();
         newInvokerList.add(Mockito.mock(Invoker.class));
         Assertions.assertTrue(comparator.shouldMigrate(newInvoker, oldInvoker, rule));

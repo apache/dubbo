@@ -174,7 +174,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         // wait and compare threshold
         waitAddressNotify(newRule, latch);
 
-        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
+        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl))) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = invoker;
             this.destroyServiceDiscoveryInvoker();
@@ -211,7 +211,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         // wait and compare threshold
         waitAddressNotify(newRule, latch);
 
-        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl.getDisplayServiceKey()))) {
+        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl))) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = serviceDiscoveryInvoker;
             this.destroyInterfaceInvoker();
@@ -247,7 +247,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private void waitAddressNotify(MigrationRule newRule, CountDownLatch latch) {
         // wait and compare threshold
-        Integer delay = newRule.getDelay(consumerUrl.getDisplayServiceKey());
+        Integer delay = newRule.getDelay(consumerUrl);
         if (delay != null) {
             try {
                 Thread.sleep(delay * 1000);
@@ -397,7 +397,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public void setMigrationRule(MigrationRule rule) {
         this.rule = rule;
-        promotion = Optional.ofNullable(rule.getProportion(consumerUrl.getDisplayServiceKey())).orElse(100);
+        promotion = Optional.ofNullable(rule.getProportion(consumerUrl)).orElse(100);
     }
 
     protected void destroyServiceDiscoveryInvoker() {

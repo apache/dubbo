@@ -55,7 +55,7 @@ public class MigrationRuleListenerTest {
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Test");
         Mockito.when(consumerURL.getParameter("timestamp")).thenReturn("1");
 
-        System.setProperty("dubbo.application.migration.delay", "100");
+        System.setProperty("dubbo.application.migration.delay", "1000");
         MigrationRuleHandler handler = Mockito.mock(MigrationRuleHandler.class);
 
         MigrationRuleListener migrationRuleListener = new MigrationRuleListener();

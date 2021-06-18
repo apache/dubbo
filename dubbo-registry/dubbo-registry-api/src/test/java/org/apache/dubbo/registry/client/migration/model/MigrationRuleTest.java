@@ -16,53 +16,79 @@
  */
 package org.apache.dubbo.registry.client.migration.model;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.WritableMetadataService;
+
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class MigrationRuleTest {
 
     @Test
     public void test_parse() {
         String rule = "key: demo-consumer\n" +
-                "step: APPLICATION_FIRST\n" +
-                "threshold: 1.0\n" +
-                "proportion: 60\n" +
-                "delay: 60\n" +
-                "force: false\n" +
-                "interfaces:\n" +
-                "  - serviceKey: DemoService:1.0.0\n" +
-                "    threshold: 0.5\n" +
-                "    proportion: 30\n" +
-                "    delay: 30\n" +
-                "    force: true\n" +
-                "    step: APPLICATION_FIRST\n" +
-                "  - serviceKey: GreetingService:1.0.0\n" +
-                "    step: FORCE_APPLICATION";
+            "step: APPLICATION_FIRST\n" +
+            "threshold: 1.0\n" +
+            "proportion: 60\n" +
+            "delay: 60\n" +
+            "force: false\n" +
+            "interfaces:\n" +
+            "  - serviceKey: DemoService:1.0.0\n" +
+            "    threshold: 0.5\n" +
+            "    proportion: 30\n" +
+            "    delay: 30\n" +
+            "    force: true\n" +
+            "    step: APPLICATION_FIRST\n" +
+            "  - serviceKey: GreetingService:1.0.0\n" +
+            "    step: FORCE_APPLICATION\n" +
+            "applications:\n" +
+            "  - serviceKey: TestApplication\n" +
+            "    threshold: 0.3\n" +
+            "    proportion: 20\n" +
+            "    delay: 10\n" +
+            "    force: false\n" +
+            "    step: FORCE_INTERFACE\n";
 
         MigrationRule migrationRule = MigrationRule.parse(rule);
         assertEquals("demo-consumer", migrationRule.getKey());
-        assertEquals(MigrationStep.APPLICATION_FIRST ,migrationRule.getStep());
+        assertEquals(MigrationStep.APPLICATION_FIRST, migrationRule.getStep());
         assertEquals(1.0f, migrationRule.getThreshold());
         assertEquals(60, migrationRule.getProportion());
         assertEquals(60, migrationRule.getDelay());
         assertEquals(false, migrationRule.getForce());
 
+        URL url = Mockito.mock(URL.class);
+        Mockito.when(url.getDisplayServiceKey()).thenReturn("DemoService:1.0.0");
+
         assertEquals(migrationRule.getInterfaces().size(), 2);
-        assertNotNull(migrationRule.getInterfaceRule("DemoService:1.0.0"));
-        assertNotNull(migrationRule.getInterfaceRule("GreetingService:1.0.0"));
 
-        assertEquals(0.5f, migrationRule.getThreshold("DemoService:1.0.0"));
-        assertEquals(30, migrationRule.getProportion("DemoService:1.0.0"));
-        assertEquals(30, migrationRule.getDelay("DemoService:1.0.0"));
-        assertEquals(true, migrationRule.getForce("DemoService:1.0.0"));
-        assertEquals(MigrationStep.APPLICATION_FIRST ,migrationRule.getStep("DemoService:1.0.0"));
+        assertEquals(0.5f, migrationRule.getThreshold(url));
+        assertEquals(30, migrationRule.getProportion(url));
+        assertEquals(30, migrationRule.getDelay(url));
+        assertEquals(true, migrationRule.getForce(url));
+        assertEquals(MigrationStep.APPLICATION_FIRST, migrationRule.getStep(url));
 
-        assertEquals(1.0f, migrationRule.getThreshold("GreetingService:1.0.0"));
-        assertEquals(60, migrationRule.getProportion("GreetingService:1.0.0"));
-        assertEquals(60, migrationRule.getDelay("GreetingService:1.0.0"));
-        assertEquals(false, migrationRule.getForce("GreetingService:1.0.0"));
-        assertEquals(MigrationStep.FORCE_APPLICATION ,migrationRule.getStep("GreetingService:1.0.0"));
+        Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.0");
+        assertEquals(1.0f, migrationRule.getThreshold(url));
+        assertEquals(60, migrationRule.getProportion(url));
+        assertEquals(60, migrationRule.getDelay(url));
+        assertEquals(false, migrationRule.getForce(url));
+        assertEquals(MigrationStep.FORCE_APPLICATION, migrationRule.getStep(url));
+
+        Mockito.when(url.getDisplayServiceKey()).thenReturn("GreetingService:1.0.1");
+        Mockito.when(url.getServiceInterface()).thenReturn("GreetingService");
+        WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(url), Collections.singleton("TestApplication"));
+        assertEquals(0.3f, migrationRule.getThreshold(url));
+        assertEquals(20, migrationRule.getProportion(url));
+        assertEquals(10, migrationRule.getDelay(url));
+        assertEquals(false, migrationRule.getForce(url));
+        assertEquals(MigrationStep.FORCE_INTERFACE, migrationRule.getStep(url));
+
+        WritableMetadataService.getDefaultExtension().removeCachedMapping("GreetingService");
     }
 }

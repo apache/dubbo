@@ -162,6 +162,12 @@ public class ZookeeperMetadataReport extends AbstractMetadataReport {
     }
 
     @Override
+    public Set<String> getServiceAppMapping(String serviceKey, URL url) {
+        String path = buildPathKey(DEFAULT_MAPPING_GROUP, serviceKey);
+        return getAppNames(zkClient.getContent(path));
+    }
+
+    @Override
     public ConfigItem getConfigItem(String serviceKey, String group) {
         String path = buildPathKey(group, serviceKey);
         return zkClient.getConfigItem(path);
