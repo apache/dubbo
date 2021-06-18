@@ -382,8 +382,10 @@ public class PojoUtils {
             // special logic for enum
             if (type.isEnum()) {
                 Object name = ((Map<Object, Object>) pojo).get("name");
-                if (name != null) {
-                    return Enum.valueOf((Class<Enum>) type, name.toString());
+                if (!(name instanceof String)) {
+                    throw new IllegalArgumentException("`name` filed should be string!");
+                } else {
+                    return Enum.valueOf((Class<Enum>) type, (String) name);
                 }
             }
             Map<Object, Object> map;
@@ -455,7 +457,7 @@ public class PojoUtils {
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                     throw new RuntimeException("Failed to set pojo " + dest.getClass().getSimpleName() + " property " + name
-                                            + " value " + value + "(" + value.getClass() + "), cause: " + e.getMessage(), e);
+                                            + " value " + value.getClass() + ", cause: " + e.getMessage(), e);
                                 }
                             } else if (field != null) {
                                 value = realize0(value, field.getType(), field.getGenericType(), history);
