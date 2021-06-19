@@ -112,7 +112,7 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
     }
 
     @Override
-    public void dispatch(Event event) {
+    public void  dispatch(Event event) {
 
         Executor executor = getExecutor();
 
