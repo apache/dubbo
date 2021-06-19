@@ -45,6 +45,7 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.ScannedGenericBeanDefinition;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.type.MethodMetadata;
 
@@ -161,13 +162,15 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
      */
     private boolean isAnnotatedReferenceBean(BeanDefinition beanDefinition) {
         if (beanDefinition instanceof AnnotatedBeanDefinition) {
-            AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
+            AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition)beanDefinition;
             if (annotatedBeanDefinition.getFactoryMethodMetadata() == null) {
                 return false;
             }
-            String beanClassName = annotatedBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
-            if (ReferenceBean.class.getName().equals(beanClassName)) {
-                return true;
+            if (!(annotatedBeanDefinition instanceof ScannedGenericBeanDefinition)) {
+                String beanClassName = annotatedBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
+                if (StringUtils.isEquals(ReferenceBean.class.getName(), beanClassName)) {
+                    return true;
+                }
             }
         }
         return false;
