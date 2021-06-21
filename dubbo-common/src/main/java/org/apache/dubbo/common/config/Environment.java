@@ -60,6 +60,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     private CompositeConfiguration dynamicGlobalConfiguration;
 
     private DynamicConfiguration dynamicConfiguration;
+
+    private List<Map<String, String>> globalConfigurationMaps;
+
     private String localMigrationRule;
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
@@ -181,13 +184,14 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      */
     public CompositeConfiguration getConfiguration() {
         if (globalConfiguration == null) {
-            globalConfiguration = new CompositeConfiguration();
-            globalConfiguration.addConfiguration(systemConfiguration);
-            globalConfiguration.addConfiguration(environmentConfiguration);
-            globalConfiguration.addConfiguration(appExternalConfiguration);
-            globalConfiguration.addConfiguration(externalConfiguration);
-            globalConfiguration.addConfiguration(appConfiguration);
-            globalConfiguration.addConfiguration(propertiesConfiguration);
+            CompositeConfiguration configuration = new CompositeConfiguration();
+            configuration.addConfiguration(systemConfiguration);
+            configuration.addConfiguration(environmentConfiguration);
+            configuration.addConfiguration(appExternalConfiguration);
+            configuration.addConfiguration(externalConfiguration);
+            configuration.addConfiguration(appConfiguration);
+            configuration.addConfiguration(propertiesConfiguration);
+            globalConfiguration = configuration;
         }
         return globalConfiguration;
     }
@@ -220,7 +224,10 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
      * @return
      */
     public List<Map<String, String>> getConfigurationMaps() {
-        return getConfigurationMaps(null, null);
+        if (globalConfigurationMaps == null) {
+            globalConfigurationMaps = getConfigurationMaps(null, null);
+        }
+        return globalConfigurationMaps;
     }
 
     public Configuration getDynamicGlobalConfiguration() {
@@ -257,6 +264,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
         appExternalConfiguration = null;
         appConfiguration = null;
         globalConfiguration = null;
+        globalConfigurationMaps = null;
         dynamicConfiguration = null;
         dynamicGlobalConfiguration = null;
     }

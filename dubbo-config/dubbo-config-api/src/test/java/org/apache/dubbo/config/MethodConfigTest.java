@@ -265,7 +265,7 @@ public class MethodConfigTest {
     }
 
     @Test
-    public void testOverrideMethodConfig() {
+    public void testOverrideMethodConfigOfReference() {
 
         String interfaceName = DemoService.class.getName();
         SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
@@ -273,29 +273,58 @@ public class MethodConfigTest {
         SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
         SysProps.setProperty("dubbo.reference."+ interfaceName +".init", "false");
 
-        try {
-            ReferenceConfig referenceConfig = new ReferenceConfig();
-            referenceConfig.setInterface(interfaceName);
-            MethodConfig methodConfig = new MethodConfig();
-            methodConfig.setName("sayName");
-            methodConfig.setTimeout(1000);
-            referenceConfig.setMethods(Arrays.asList(methodConfig));
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(interfaceName);
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        methodConfig.setTimeout(1000);
+        referenceConfig.setMethods(Arrays.asList(methodConfig));
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .reference(referenceConfig)
-                    .initialize();
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .reference(referenceConfig)
+            .initialize();
 
-            Map<String, String> params = new LinkedHashMap<>();
-            params.put("a", "1");
-            params.put("b", "2");
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
 
-            Assertions.assertEquals(1234, methodConfig.getTimeout());
-            Assertions.assertEquals(true, methodConfig.getSticky());
-            Assertions.assertEquals(params, methodConfig.getParameters());
-            Assertions.assertEquals(false, referenceConfig.isInit());
-        } finally {
-        }
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(false, referenceConfig.isInit());
+
+    }
+
+    @Test
+    public void testAddMethodConfigOfReference() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.reference."+ interfaceName +".init", "false");
+
+        ReferenceConfig referenceConfig = new ReferenceConfig();
+        referenceConfig.setInterface(interfaceName);
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .reference(referenceConfig)
+            .initialize();
+
+        List<MethodConfig> methodConfigs = referenceConfig.getMethods();
+        Assertions.assertEquals(1, methodConfigs.size());
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(false, referenceConfig.isInit());
 
     }
 
@@ -309,30 +338,71 @@ public class MethodConfigTest {
         SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
         SysProps.setProperty("dubbo.registry.address", "N/A");
 
-        try {
-            ServiceConfig serviceConfig = new ServiceConfig();
-            serviceConfig.setInterface(interfaceName);
-            serviceConfig.setRef(new DemoServiceImpl());
-            MethodConfig methodConfig = new MethodConfig();
-            methodConfig.setName("sayName");
-            methodConfig.setTimeout(1000);
-            serviceConfig.setMethods(Arrays.asList(methodConfig));
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        methodConfig.setTimeout(1000);
+        serviceConfig.setMethods(Arrays.asList(methodConfig));
 
-            DubboBootstrap.getInstance()
-                    .application("demo-app")
-                    .service(serviceConfig)
-                    .initialize();
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
 
-            Map<String, String> params = new LinkedHashMap<>();
-            params.put("a", "1");
-            params.put("b", "2");
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
 
-            Assertions.assertEquals(1234, methodConfig.getTimeout());
-            Assertions.assertEquals(true, methodConfig.getSticky());
-            Assertions.assertEquals(params, methodConfig.getParameters());
-            Assertions.assertEquals("demo", serviceConfig.getGroup());
-        } finally {
-        }
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals("demo", serviceConfig.getGroup());
+
+    }
+
+    @Test
+    public void testAddMethodConfigOfService() {
+
+        String interfaceName = DemoService.class.getName();
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.timeout", "1234");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.sticky", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.parameters", "[{a:1},{b:2}]");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".sayName.0.callback", "true");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".group", "demo");
+        SysProps.setProperty("dubbo.service."+ interfaceName +".echo", "non-method-config");
+        SysProps.setProperty("dubbo.registry.address", "N/A");
+
+        ServiceConfig serviceConfig = new ServiceConfig();
+        serviceConfig.setInterface(interfaceName);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        Assertions.assertEquals(null, serviceConfig.getMethods());
+
+        DubboBootstrap.getInstance()
+            .application("demo-app")
+            .service(serviceConfig)
+            .initialize();
+
+        List<MethodConfig> methodConfigs = serviceConfig.getMethods();
+        Assertions.assertEquals(1, methodConfigs.size());
+        MethodConfig methodConfig = methodConfigs.get(0);
+
+        List<ArgumentConfig> arguments = methodConfig.getArguments();
+        Assertions.assertEquals(1, arguments.size());
+        ArgumentConfig argumentConfig = arguments.get(0);
+
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("a", "1");
+        params.put("b", "2");
+
+        Assertions.assertEquals("demo", serviceConfig.getGroup());
+        Assertions.assertEquals(params, methodConfig.getParameters());
+        Assertions.assertEquals(1234, methodConfig.getTimeout());
+        Assertions.assertEquals(true, methodConfig.getSticky());
+        Assertions.assertEquals(0, argumentConfig.getIndex());
+        Assertions.assertEquals(true, argumentConfig.isCallback());
 
     }
 
