@@ -284,6 +284,7 @@ final class EventPublishingServiceDiscovery implements ServiceDiscovery {
         try {
             action.execute();
         } catch (Throwable e) {
+            logger.error("Execute action throws and dispatch a ServiceDiscoveryExceptionEvent.", e);
             dispatchEvent(new ServiceDiscoveryExceptionEvent(this, serviceDiscovery, e));
         }
         afterEvent.ifPresent(this::dispatchEvent);
