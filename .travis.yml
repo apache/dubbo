@@ -21,7 +21,7 @@ branches:
 before_script:
   - rm -rf $HOME/.m2/repository/org/glassfish/javax.el/3.0.1-b08
 
-script: if [[ "${TRAVIS_EVENT_TYPE}" == "cron" ]]; then travis_wait 60 ./mvnw --batch-mode -U -e --no-transfer-progress clean test -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true;  fi
+script: if [[ "${TRAVIS_EVENT_TYPE}" == "cron" ]]; then travis_wait 60 ./mvnw --batch-mode -U -q -e --no-transfer-progress clean test -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 -Dmaven.wagon.http.retryHandler.count=5 -DskipTests=false -DskipIntegrationTests=false -Dcheckstyle.skip=false -Drat.skip=false -Dmaven.javadoc.skip=true;  fi
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
