@@ -527,7 +527,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return invokers;
+        return this.invokers == null ? Collections.emptyList() : this.invokers;
     }
 
     @Override

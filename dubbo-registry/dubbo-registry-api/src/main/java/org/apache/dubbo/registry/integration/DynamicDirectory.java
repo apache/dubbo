@@ -173,7 +173,7 @@ public abstract class DynamicDirectory<T> extends AbstractDirectory<T> implement
 
     @Override
     public List<Invoker<T>> getAllInvokers() {
-        return invokers;
+        return this.invokers == null ? Collections.emptyList() : this.invokers;
     }
 
     // The currently effective consumer url
