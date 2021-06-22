@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.annotation;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Argument;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Reference;
@@ -23,6 +24,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -56,6 +58,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  *
  * @since 2.5.7
  */
+@EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.context.annotation.provider")
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
@@ -64,7 +67,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
                 ReferenceAnnotationBeanPostProcessorTest.TestAspect.class
         })
 @TestPropertySource(properties = {
-        "packagesToScan = org.apache.dubbo.config.spring.context.annotation.provider",
+        "packagesToScan = nopackage",
         "consumer.version = ${demo.service.version}",
         "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
 })
@@ -94,11 +97,6 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         return new TestBean();
     }
 
-    @Bean(BEAN_NAME)
-    public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
-        return new ReferenceAnnotationBeanPostProcessor();
-    }
-
     @Autowired
     private ConfigurableApplicationContext context;
 
@@ -115,7 +113,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
-    @Reference
+    @Reference(id="helloService2", tag = "demo_tag")
     private HelloService helloService2;
 
     // Instance 1
@@ -203,6 +201,17 @@ public class ReferenceAnnotationBeanPostProcessorTest {
 
         Assertions.assertNotNull(ReferenceConfigCache.getCache().get(referenceBean));
 
+        ReferenceBean helloService2Bean = getReferenceBean("helloService2", referenceBeans);
+        Assertions.assertEquals("demo_tag", helloService2Bean.getTag());
+    }
+
+    private ReferenceBean getReferenceBean(String name, Collection<ReferenceBean<?>> referenceBeans) {
+        for (ReferenceBean<?> referenceBean : referenceBeans) {
+            if (StringUtils.isEquals(name, referenceBean.getId())) {
+                return referenceBean;
+            }
+        }
+        return null;
     }
 
     @Test
