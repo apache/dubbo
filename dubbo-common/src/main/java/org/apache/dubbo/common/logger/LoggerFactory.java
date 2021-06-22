@@ -95,6 +95,7 @@ public class LoggerFactory {
             if (loggerAdapter == LOGGER_ADAPTER) {
                 return;
             }
+            loggerAdapter.getLogger(LoggerFactory.class.getName());
             LoggerFactory.LOGGER_ADAPTER = loggerAdapter;
             for (Map.Entry<String, FailsafeLogger> entry : LOGGERS.entrySet()) {
                 entry.getValue().setLogger(LOGGER_ADAPTER.getLogger(entry.getKey()));
