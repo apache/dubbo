@@ -65,12 +65,12 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             if (StringUtils.isEmpty(rawRule)) {
                 rawRule = INIT;
             }
-            this.rawRule = rawRule;
+            setRawRule(rawRule);
         } else {
             if (logger.isWarnEnabled()) {
                 logger.warn("Using default configuration rule because config center is not configured!");
             }
-            rawRule = INIT;
+            setRawRule(INIT);
         }
 
         String localRawRule = ApplicationModel.getEnvironment().getLocalMigrationRule();
@@ -101,7 +101,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     @Override
     public synchronized void process(ConfigChangedEvent event) {
-        rawRule = event.getContent();
+        String rawRule = event.getContent();
         if (StringUtils.isEmpty(rawRule)) {
             logger.warn("Received empty migration rule, will ignore.");
             return;
@@ -110,11 +110,16 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
         logger.info("Using the following migration rule to migrate:");
         logger.info(rawRule);
 
-        rule = parseRule(rawRule);
+        setRawRule(rawRule);
 
         if (CollectionUtils.isNotEmptyMap(handlers)) {
             handlers.forEach((_key, handler) -> handler.doMigrate(rule));
         }
+    }
+
+    public void setRawRule(String rawRule) {
+        this.rawRule = rawRule;
+        this.rule = parseRule(this.rawRule);
     }
 
     private MigrationRule parseRule(String rawRule) {
@@ -132,18 +137,16 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     @Override
-    public synchronized void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
+    public void onExport(RegistryProtocol registryProtocol, Exporter<?> exporter) {
 
     }
 
     @Override
-    public synchronized void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
+    public void onRefer(RegistryProtocol registryProtocol, ClusterInvoker<?> invoker, URL consumerUrl, URL registryURL) {
         MigrationRuleHandler<?> migrationRuleHandler = handlers.computeIfAbsent((MigrationInvoker<?>) invoker, _key -> {
             ((MigrationInvoker<?>) invoker).setMigrationRuleListener(this);
             return new MigrationRuleHandler<>((MigrationInvoker<?>) invoker, consumerUrl);
         });
-
-        rule = parseRule(rawRule);
 
         migrationRuleHandler.doMigrate(rule);
     }

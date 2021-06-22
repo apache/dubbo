@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.ApplicationModel;
@@ -58,6 +59,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     protected AbstractServerStream(URL url, Executor executor, ProviderModel providerModel) {
         super(url, executor);
         this.providerModel = providerModel;
+        this.serialize(getUrl().getParameter(Constants.SERIALIZATION_KEY, Constants.DEFAULT_REMOTING_SERIALIZATION));
     }
 
     private static Executor lookupExecutor(URL url, ProviderModel providerModel) {
@@ -142,7 +144,13 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
             if (getMethodDescriptor() == null || getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleRequestWrapper wrapper = TripleUtil.unpack(data,
                         TripleWrapper.TripleRequestWrapper.class);
-                serialize(wrapper.getSerializeType());
+                if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INVALID_ARGUMENT)
+                        .withDescription("Received inconsistent serialization type from client, " +
+                            "reject to deserialize! Expected:" + getSerializeType() +
+                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
+                    return null;
+                }
                 if (getMethodDescriptor() == null) {
                     final String[] paramTypes = wrapper.getArgTypesList().toArray(new String[wrapper.getArgsCount()]);
 

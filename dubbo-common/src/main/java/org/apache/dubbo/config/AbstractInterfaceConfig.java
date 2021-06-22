@@ -18,7 +18,9 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -28,6 +30,7 @@ import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -215,6 +218,44 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        if (StringUtils.hasText(interfaceName)) {
+            Class<?> interfaceClass = null;
+            try {
+                interfaceClass = ClassUtils.forName(interfaceName);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("The interface class is not found", e);
+            }
+            if (!interfaceClass.isInterface()) {
+                throw new IllegalStateException(interfaceName+" is not an interface");
+            }
+
+            Map<String, String> configProperties = subPropsConfiguration.getProperties();
+            Method[] methods = interfaceClass.getMethods();
+            for (Method method : methods) {
+                if (ConfigurationUtils.hasSubProperties(configProperties, method.getName())) {
+                    MethodConfig methodConfig = getMethodByName(method.getName());
+                    // Add method config if not found
+                    if (methodConfig == null) {
+                        methodConfig = new MethodConfig();
+                        methodConfig.setName(method.getName());
+                        this.addMethod(methodConfig);
+                    }
+                    // Add argument config
+                    // dubbo.service.{interfaceName}.{methodName}.{arg-index}.xxx=xxx
+                    java.lang.reflect.Parameter[] arguments = method.getParameters();
+                    for (int i = 0; i < arguments.length; i++) {
+                        if (getArgumentByIndex(methodConfig, i) == null &&
+                            hasArgumentConfigProps(configProperties, methodConfig.getName(), i)) {
+
+                            ArgumentConfig argumentConfig = new ArgumentConfig();
+                            argumentConfig.setIndex(i);
+                            methodConfig.addArgument(argumentConfig);
+                        }
+                    }
+                }
+            }
+        }
+
         List<MethodConfig> methodConfigs = this.getMethods();
         if (methodConfigs != null && methodConfigs.size() > 0) {
             for (MethodConfig methodConfig : methodConfigs) {
@@ -222,6 +263,33 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 methodConfig.refresh();
             }
         }
+    }
+
+    private ArgumentConfig getArgumentByIndex(MethodConfig methodConfig, int argIndex) {
+        if (methodConfig.getArguments() != null && methodConfig.getArguments().size() > 0) {
+            for (ArgumentConfig argument : methodConfig.getArguments()) {
+                if (argument.getIndex() != null && argument.getIndex() == argIndex) {
+                    return argument;
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean hasArgumentConfigProps(Map<String, String> configProperties, String methodName, int argIndex) {
+        String argPrefix = methodName + "." + argIndex + ".";
+        return ConfigurationUtils.hasSubProperties(configProperties, argPrefix);
+    }
+
+    protected MethodConfig getMethodByName(String name) {
+        if (methods != null && methods.size() > 0) {
+            for (MethodConfig methodConfig : methods) {
+                if (StringUtils.isEquals(methodConfig.getName(), name)) {
+                    return methodConfig;
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -494,13 +562,17 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return methods;
     }
 
-    // ======== Deprecated ========
-
     @SuppressWarnings("unchecked")
     public void setMethods(List<? extends MethodConfig> methods) {
         this.methods = (List<MethodConfig>) methods;
     }
 
+    public void addMethod(MethodConfig methodConfig) {
+        if (this.methods == null) {
+            this.methods = new ArrayList<>();
+        }
+        this.methods.add(methodConfig);
+    }
 
     public MonitorConfig getMonitor() {
         if (monitor != null) {

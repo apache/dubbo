@@ -77,13 +77,13 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         } catch (RejectedExecutionException e) {
             LOGGER.error("Consumer's thread pool is full", e);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
-                    .withDescription("Consumer's thread pool is full").asException());
+                .withDescription("Consumer's thread pool is full").asException());
         } catch (Throwable t) {
             LOGGER.error("Consumer submit request to thread pool error ", t);
             getStreamSubscriber().onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(t)
-                    .withDescription("Consumer's error")
-                    .asException());
+                .withCause(t)
+                .withDescription("Consumer's error")
+                .asException());
         }
     }
 
@@ -128,8 +128,12 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
             }
             if (getMethodDescriptor().isNeedWrap()) {
                 final TripleWrapper.TripleResponseWrapper wrapper = TripleUtil.unpack(data,
-                        TripleWrapper.TripleResponseWrapper.class);
-                serialize(wrapper.getSerializeType());
+                    TripleWrapper.TripleResponseWrapper.class);
+                if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
+                    throw new UnsupportedOperationException("Received inconsistent serialization type from server, " +
+                        "reject to deserialize! Expected:" + getSerializeType() +
+                        " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()));
+                }
                 return TripleUtil.unwrapResp(getUrl(), wrapper, getMultipleSerialization());
             } else {
                 return TripleUtil.unpack(data, getMethodDescriptor().getReturnClass());
@@ -142,17 +146,17 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
         metadata.put(TripleConstant.PATH_KEY, "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
-                .put(TripleConstant.AUTHORITY_KEY, getUrl().getAddress())
-                .put(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO)
-                .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
-                .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
+            .put(TripleConstant.AUTHORITY_KEY, getUrl().getAddress())
+            .put(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO)
+            .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+            .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
         metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion())
-                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                        (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
-                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
-                        (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
+            .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
+            .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
+            .putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
         inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
         inv.getObjectAttachments().remove(CommonConstants.INTERFACE_KEY);
         inv.getObjectAttachments().remove(CommonConstants.PATH_KEY);

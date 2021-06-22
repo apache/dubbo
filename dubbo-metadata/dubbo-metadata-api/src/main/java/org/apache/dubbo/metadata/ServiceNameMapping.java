@@ -45,13 +45,6 @@ public interface ServiceNameMapping {
     void map(URL url);
 
     /**
-     * Get the service names from the specified Dubbo service interface, group, version and protocol
-     *
-     * @return
-     */
-    Set<String> getAndListen(URL url, MappingListener mappingListener);
-
-    /**
      * Get the default extension of {@link ServiceNameMapping}
      *
      * @return non-null {@link ServiceNameMapping}
@@ -79,4 +72,17 @@ public interface ServiceNameMapping {
         }
         return new HashSet<>(Arrays.asList(content.split(COMMA_SEPARATOR)));
     }
+
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     */
+    Set<String> getServices(URL subscribedURL);
+
+    /**
+     * 1.developer explicitly specifies the application name this interface belongs to
+     * 2.check Interface-App mapping
+     * 3.use the services specified in registry url.
+     */
+    Set<String> getAndListenServices(URL registryURL, URL subscribedURL, MappingListener listener);
 }

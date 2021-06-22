@@ -449,19 +449,14 @@ public class AbstractConfigTest {
 
             Map<String, String> external = new HashMap<>();
             external.put("dubbo.overrides.override-id.address", "external-override-id://127.0.0.1:2181");
-            external.put("dubbo.override.address", "external://127.0.0.1:2181");
-            // @Parameter(exclude=true)
-            external.put("dubbo.override.exclude", "external");
-            // @Parameter(key="key1", useKeyAsProperty=false)
             external.put("dubbo.overrides.override-id.key", "external");
-            // @Parameter(key="key2", useKeyAsProperty=true)
             external.put("dubbo.overrides.override-id.key2", "external");
+            external.put("dubbo.override.address", "external://127.0.0.1:2181");
+            external.put("dubbo.override.exclude", "external");
             ApplicationModel.getEnvironment().initialize();
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
 
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            overrideConfig.setConfigCenter(configCenter);
-            // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
+            // refresh config
             overrideConfig.refresh();
 
             Assertions.assertEquals("external-override-id://127.0.0.1:2181", overrideConfig.getAddress());
@@ -489,9 +484,7 @@ public class AbstractConfigTest {
             ApplicationModel.getEnvironment().initialize();
             ApplicationModel.getEnvironment().setExternalConfigMap(external);
 
-            ConfigCenterConfig configCenter = new ConfigCenterConfig();
-            overrideConfig.setConfigCenter(configCenter);
-            // Load configuration from  system properties -> externalConfiguration -> RegistryConfig -> dubbo.properties
+            // refresh config
             overrideConfig.refresh();
 
             Assertions.assertEquals("value1", overrideConfig.getParameters().get("key1"));
@@ -603,7 +596,7 @@ public class AbstractConfigTest {
         ConfigField configField() default @ConfigField;
     }
 
-    private static class OverrideConfig extends AbstractInterfaceConfig {
+    private static class OverrideConfig extends AbstractConfig {
         public String address;
         public String protocol;
         public String exclude;
@@ -612,6 +605,7 @@ public class AbstractConfigTest {
         public String escape;
         public String notConflictKey;
         public String notConflictKey2;
+        protected Map<String, String> parameters;
 
         public String getAddress() {
             return address;
@@ -679,6 +673,14 @@ public class AbstractConfigTest {
 
         public void setNotConflictKey2(String notConflictKey2) {
             this.notConflictKey2 = notConflictKey2;
+        }
+
+        public Map<String, String> getParameters() {
+            return parameters;
+        }
+
+        public void setParameters(Map<String, String> parameters) {
+            this.parameters = parameters;
         }
     }
 

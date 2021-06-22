@@ -368,6 +368,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
         }
         if (CollectionUtils.isNotEmpty(getMethods())) {
+            //TODO Improve method config processing
             for (MethodConfig method : getMethods()) {
                 AbstractConfig.appendParameters(map, method, method.getName());
                 String retryKey = method.getName() + ".retry";
@@ -409,6 +410,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                                                 }
                                             }
                                         }
+                                        break;
                                     }
                                 }
                             }

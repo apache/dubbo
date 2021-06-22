@@ -169,17 +169,21 @@ public class ConfigurationUtils {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
-        String finalPrefix = prefix;
         Map<String, V> map = new LinkedHashMap<>();
         for (Map<String, V> configMap : configMaps) {
-            configMap.forEach((key, val) -> {
-                if (StringUtils.startsWithIgnoreCase(key, finalPrefix) && !ConfigurationUtils.isEmptyValue(val)) {
-                    String k = key.substring(finalPrefix.length());
+            for (Map.Entry<String, V> entry : configMap.entrySet()) {
+                String key = entry.getKey();
+                V val = entry.getValue();
+                if (StringUtils.startsWithIgnoreCase(key, prefix)
+                    && key.length() > prefix.length()
+                    && !ConfigurationUtils.isEmptyValue(val)) {
+
+                    String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
                     k = StringUtils.convertToSplitName(k, "-");
                     map.putIfAbsent(k, val);
                 }
-            });
+            }
         }
         return map;
     }
@@ -189,11 +193,23 @@ public class ConfigurationUtils {
             prefix += ".";
         }
         for (Map<String, V> configMap : configMaps) {
-            for (Map.Entry<String, V> entry : configMap.entrySet()) {
-                String key = entry.getKey();
-                if (StringUtils.startsWithIgnoreCase(key, prefix) && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
-                    return true;
-                }
+            if (hasSubProperties(configMap, prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static <V extends Object> boolean hasSubProperties(Map<String, V> configMap, String prefix) {
+        if (!prefix.endsWith(".")) {
+            prefix += ".";
+        }
+        for (Map.Entry<String, V> entry : configMap.entrySet()) {
+            String key = entry.getKey();
+            if (StringUtils.startsWithIgnoreCase(key, prefix)
+                && key.length() > prefix.length()
+                && !ConfigurationUtils.isEmptyValue(entry.getValue())) {
+                return true;
             }
         }
         return false;
@@ -218,10 +234,18 @@ public class ConfigurationUtils {
      * @return
      */
     public static <V extends Object> Set<String> getSubIds(Collection<Map<String, V>> configMaps, String prefix) {
+        if (!prefix.endsWith(".")) {
+            prefix += ".";
+        }
         Set<String> ids = new LinkedHashSet<>();
         for (Map<String, V> configMap : configMaps) {
-            configMap.forEach((key, val) -> {
-                if (StringUtils.startsWithIgnoreCase(key, prefix) && !ConfigurationUtils.isEmptyValue(val)) {
+            for (Map.Entry<String, V> entry : configMap.entrySet()) {
+                String key = entry.getKey();
+                V val = entry.getValue();
+                if (StringUtils.startsWithIgnoreCase(key, prefix)
+                    && key.length() > prefix.length()
+                    && !ConfigurationUtils.isEmptyValue(val)) {
+
                     String k = key.substring(prefix.length());
                     int endIndex = k.indexOf(".");
                     if (endIndex > 0) {
@@ -229,7 +253,7 @@ public class ConfigurationUtils {
                         ids.add(id);
                     }
                 }
-            });
+            }
         }
         return ids;
     }

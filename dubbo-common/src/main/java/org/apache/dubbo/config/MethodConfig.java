@@ -16,8 +16,14 @@
  */
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.config.Environment;
+import org.apache.dubbo.common.config.InmemoryConfiguration;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.MethodUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -209,6 +215,47 @@ public class MethodConfig extends AbstractMethodConfig {
     }
 
     @Override
+    protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        if (this.getArguments() != null && this.getArguments().size() > 0) {
+            for (ArgumentConfig argument : this.getArguments()) {
+                refreshArgument(argument, subPropsConfiguration);
+            }
+        }
+    }
+
+    private void refreshArgument(ArgumentConfig argument, InmemoryConfiguration subPropsConfiguration) {
+        if (argument.getIndex() != null && argument.getIndex() >= 0) {
+            String prefix = argument.getIndex() + ".";
+            Environment environment = ApplicationModel.getEnvironment();
+            java.lang.reflect.Method[] methods = argument.getClass().getMethods();
+            for (java.lang.reflect.Method method : methods) {
+                if (MethodUtils.isSetter(method)) {
+                    String propertyName = extractPropertyName(method.getName());
+                    // ignore attributes: 'index' / 'type'
+                    if (StringUtils.isEquals(propertyName, "index") ||
+                        StringUtils.isEquals(propertyName, "type")) {
+                        continue;
+                    }
+                    // convert camelCase/snake_case to kebab-case
+                    String kebabPropertyName = prefix + StringUtils.convertToSplitName(propertyName, "-");
+
+                    try {
+                        String value = StringUtils.trim(subPropsConfiguration.getString(kebabPropertyName));
+                        if (StringUtils.hasText(value) && ClassUtils.isTypeMatch(method.getParameterTypes()[0], value)) {
+                            value = environment.resolvePlaceholders(value);
+                            method.invoke(argument, ClassUtils.convertPrimitive(method.getParameterTypes()[0], value));
+                        }
+                    } catch (Exception e) {
+                        logger.info("Failed to override the property " + method.getName() + " in " +
+                            this.getClass().getSimpleName() +
+                            ", please make sure every property has getter/setter method provided.");
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public void addIntoConfigManager() {
         // Don't add MethodConfig to ConfigManager
         // super.addIntoConfigManager();
@@ -376,5 +423,12 @@ public class MethodConfig extends AbstractMethodConfig {
     @Parameter(excluded = true, attribute = false)
     public String getParentPrefix() {
         return parentPrefix;
+    }
+
+    public void addArgument(ArgumentConfig argumentConfig) {
+        if (arguments == null) {
+            arguments = new ArrayList<>();
+        }
+        arguments.add(argumentConfig);
     }
 }
