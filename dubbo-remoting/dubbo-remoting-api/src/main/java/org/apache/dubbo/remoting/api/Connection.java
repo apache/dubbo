@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
+import io.netty.handler.ssl.SslContext;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -48,8 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
-import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.*;
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
 public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
@@ -103,14 +103,19 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             @Override
             protected void initChannel(SocketChannel ch) {
                 ch.attr(CONNECTION).set(Connection.this);
-                // TODO support SSL
+
+                SslContext sslContext = SslContexts.buildClientSslContext(url);
+
+                if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
+                    ch.pipeline().addLast("negotiation", SslHandlerInitializer.sslClientHandler(sslContext, connectionHandler));
+                }
+
                 final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug
                 // TODO support IDLE
 //                int heartbeatInterval = UrlUtils.getHeartbeat(getUrl());
 //                p.addLast("client-idle-handler", new IdleStateHandler(heartbeatInterval, 0, 0, MILLISECONDS));
                 p.addLast(connectionHandler);
-                // TODO support ssl
-                protocol.configClientPipeline(p, null);
+                protocol.configClientPipeline(p, sslContext);
                 // TODO support Socks5
             }
         });
