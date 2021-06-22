@@ -16,15 +16,15 @@
  */
 package org.apache.dubbo.metadata.definition.model;
 
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatType;
+import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatTypes;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
-import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatType;
-import static org.apache.dubbo.metadata.definition.model.TypeDefinition.formatTypes;
 
 /**
  * 2015/1/27.
