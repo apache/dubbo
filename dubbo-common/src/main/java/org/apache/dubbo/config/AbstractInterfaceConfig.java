@@ -730,11 +730,11 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
     
     public String getGroup(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(this.group) ? (interfaceConfig != null ? interfaceConfig.getGroup() : this.group) : this.group;
+        return StringUtils.isEmpty(getGroup()) ? (interfaceConfig != null ? interfaceConfig.getGroup() : getGroup()) : getGroup();
     }
 
     public String getVersion(AbstractInterfaceConfig interfaceConfig) {
-        return StringUtils.isEmpty(this.version) ? (interfaceConfig != null ? interfaceConfig.getVersion() : this.version) : this.version;
+        return StringUtils.isEmpty(getVersion()) ? (interfaceConfig != null ? interfaceConfig.getVersion() : getVersion()) : getVersion();
     }
     
     public String getVersion() {

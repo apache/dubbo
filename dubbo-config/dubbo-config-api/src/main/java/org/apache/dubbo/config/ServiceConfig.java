@@ -34,8 +34,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -64,6 +64,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -133,6 +134,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private DubboBootstrap bootstrap;
 
+    private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
+
     /**
      * The exported services
      */
@@ -180,43 +183,45 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         unexported = true;
     }
 
-    @Override
-    public synchronized void export() {
-        if (!shouldExport() || exported) {
-            return;
-        }
+    public void init() {
+        if (this.initialized.compareAndSet(false, true)) {
+            if (this.bootstrap == null) {
+                this.bootstrap = DubboBootstrap.getInstance();
+                this.bootstrap.initialize();
+            }
 
-        // Using DubboBootstrap API will associate bootstrap when registering service.
-        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
-        // Initializing bootstrap here only for compatible with old API usages.
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.service(this);
-        }
-
-        // check bootstrap state
-        if (!bootstrap.isInitialized()) {
-            throw new IllegalStateException("DubboBootstrap is not initialized");
-        }
-
-        if (!this.isRefreshed()) {
-            this.refresh();
+            this.checkAndUpdateSubConfigs();
         }
 
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setTarget(getRef());
         serviceMetadata.generateServiceKey();
+    }
 
-        if (!shouldExport()) {
-            return;
-        }
+    public synchronized void export() {
+        if (this.shouldExport() && !this.exported) {
+            this.init();
+            this.bootstrap.service(this);
 
-        if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
-        } else {
-            doExport();
+            // check bootstrap state
+            if (!bootstrap.isInitialized()) {
+                throw new IllegalStateException("DubboBootstrap is not initialized");
+            }
+
+            if (!this.isRefreshed()) {
+                this.refresh();
+            }
+
+            if (!shouldExport()) {
+                return;
+            }
+
+            if (shouldDelay()) {
+                DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+            } else {
+                doExport();
+            }
         }
     }
 
