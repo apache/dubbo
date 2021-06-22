@@ -49,7 +49,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.apache.dubbo.common.constants.CommonConstants.*;
+import static org.apache.dubbo.common.constants.CommonConstants.SSL_ENABLED_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_CLIENT_THREADPOOL;
+
 import static org.apache.dubbo.remoting.api.NettyEventLoopFactory.socketChannelClass;
 
 public class Connection extends AbstractReferenceCounted implements ReferenceCounted {
@@ -90,11 +93,11 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .remoteAddress(getConnectAddress())
-                .channel(socketChannelClass());
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.TCP_NODELAY, true)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .remoteAddress(getConnectAddress())
+            .channel(socketChannelClass());
 
         final ConnectionHandler connectionHandler = new ConnectionHandler(this);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
