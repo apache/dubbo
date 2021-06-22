@@ -17,25 +17,67 @@
 package org.apache.dubbo.config.spring.impl;
 
 import org.apache.dubbo.config.spring.api.MethodCallback;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+
+import javax.annotation.PostConstruct;
 
 public class MethodCallbackImpl implements MethodCallback {
     private String onInvoke;
     private String onReturn;
     private String onThrow;
 
+    @Autowired
+    private Environment environment;
+
+    @Autowired
+    private ApplicationContext context;
+
+    @PostConstruct
+    protected void init() {
+        checkInjection();
+    }
+
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void oninvoke(String request) {
-        this.onInvoke = "dubbo invoke success";
+        try {
+            checkInjection();
+            checkTranscation();
+            this.onInvoke = "dubbo invoke success";
+        } catch (Exception e) {
+            this.onInvoke = e.toString();
+            throw e;
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void onreturn(String response, String request) {
-        this.onReturn = "dubbo return success";
+        try {
+            checkInjection();
+            checkTranscation();
+            this.onReturn = "dubbo return success";
+        } catch (Exception e) {
+            this.onReturn = e.toString();
+            throw e;
+        }
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void onthrow(Throwable ex, String request) {
-        this.onThrow = "dubbo throw exception";
+        try {
+            checkInjection();
+            checkTranscation();
+            this.onThrow = "dubbo throw exception";
+        } catch (Exception e) {
+            this.onThrow = e.toString();
+            throw e;
+        }
     }
 
     public String getOnInvoke() {
@@ -49,4 +91,20 @@ public class MethodCallbackImpl implements MethodCallback {
     public String getOnThrow() {
         return this.onThrow;
     }
+
+    private void checkInjection() {
+        if (environment == null) {
+            throw new IllegalStateException("environment is null");
+        }
+        if (context == null) {
+            throw new IllegalStateException("application context is null");
+        }
+    }
+
+    private void checkTranscation() {
+        if (!TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new IllegalStateException("No active transaction");
+        }
+    }
+
 }
