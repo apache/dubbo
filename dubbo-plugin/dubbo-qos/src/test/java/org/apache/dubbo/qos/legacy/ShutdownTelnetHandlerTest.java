@@ -46,7 +46,7 @@ public class ShutdownTelnetHandlerTest {
     @Test
     public void testInvokeWithTimeParameter() throws RemotingException {
         mockChannel = mock(Channel.class);
-        int sleepTime = 2000;
+        int sleepTime = 10000;
         long start = System.currentTimeMillis();
         String result = handler.telnet(mockChannel, "-t " + sleepTime);
         long end = System.currentTimeMillis();
