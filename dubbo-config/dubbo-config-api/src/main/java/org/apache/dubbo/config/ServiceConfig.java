@@ -234,7 +234,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
 
         if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+            DELAY_EXPORT_EXECUTOR.schedule(() -> {
+                try {
+                    // Delay export server should print stack trace if there are exception occur.
+                    this.doExport();
+                } catch (Exception e) {
+                    logger.error("delay export server occur exception, please check it.", e);
+                }
+            }, getDelay(), TimeUnit.MILLISECONDS);
         } else {
             doExport();
         }
