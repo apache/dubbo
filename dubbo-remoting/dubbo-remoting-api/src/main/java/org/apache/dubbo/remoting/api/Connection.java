@@ -222,6 +222,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         @Override
         public void operationComplete(ChannelFuture future) {
             if (future.isSuccess()) {
+                onConnected(future.channel());
                 return;
             }
             final Connection conn = Connection.this;
