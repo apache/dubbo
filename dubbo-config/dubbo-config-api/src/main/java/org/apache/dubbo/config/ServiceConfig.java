@@ -30,7 +30,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
-import org.apache.dubbo.config.bootstrap.BootstrapTakeoverState;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
@@ -224,7 +224,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 doExport();
             }
 
-            if (this.bootstrap.getBootstrapTakeoverState() == BootstrapTakeoverState.AUTO) {
+            if (this.bootstrap.getTakeoverState() == BootstrapTakeoverMode.AUTO) {
                 this.bootstrap.start();
             }
         }

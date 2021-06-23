@@ -17,7 +17,7 @@
 package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.config.bootstrap.BootstrapTakeoverState;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
@@ -47,13 +47,13 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     public DubboBootstrapApplicationListener() {
         this.dubboBootstrap = DubboBootstrap.getInstance();
-        this.dubboBootstrap.setBootstrapTakeoverState(BootstrapTakeoverState.SPRING);
+        this.dubboBootstrap.setTakeoverState(BootstrapTakeoverMode.SPRING);
     }
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
-        this.dubboBootstrap.setBootstrapTakeoverState(BootstrapTakeoverState.SPRING);
+        this.dubboBootstrap.setTakeoverState(BootstrapTakeoverMode.SPRING);
         DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
     }
 
