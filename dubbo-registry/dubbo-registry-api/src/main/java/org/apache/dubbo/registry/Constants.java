@@ -107,6 +107,6 @@ public interface Constants {
 
     String MIGRATION_PROMOTION_KEY = "migration.promotion";
 
-    String MIGRATION_THRESHOLD_KEY = "migration.promotion";
+    String MIGRATION_THRESHOLD_KEY = "migration.threshold";
 
 }
