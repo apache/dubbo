@@ -47,13 +47,13 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     public DubboBootstrapApplicationListener() {
         this.dubboBootstrap = DubboBootstrap.getInstance();
-        this.dubboBootstrap.setTakeoverState(BootstrapTakeoverMode.SPRING);
+        this.dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
     }
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
         this.dubboBootstrap = DubboBootstrap.getInstance();
-        this.dubboBootstrap.setTakeoverState(BootstrapTakeoverMode.SPRING);
+        this.dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
         DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
     }
 

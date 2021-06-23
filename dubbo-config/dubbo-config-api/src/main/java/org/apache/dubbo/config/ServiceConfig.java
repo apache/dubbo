@@ -224,7 +224,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 doExport();
             }
 
-            if (this.bootstrap.getTakeoverState() == BootstrapTakeoverMode.AUTO) {
+            if (this.bootstrap.getTakeoverMode() == BootstrapTakeoverMode.AUTO) {
                 this.bootstrap.start();
             }
         }

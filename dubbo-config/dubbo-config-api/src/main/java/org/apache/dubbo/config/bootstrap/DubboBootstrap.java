@@ -148,7 +148,7 @@ public class DubboBootstrap {
 
     private final AtomicBoolean awaited = new AtomicBoolean(false);
 
-    private volatile BootstrapTakeoverMode takeoverState = BootstrapTakeoverMode.AUTO;
+    private volatile BootstrapTakeoverMode takeoverMode = BootstrapTakeoverMode.AUTO;
 
     private final Lock lock = new ReentrantLock();
 
@@ -1585,11 +1585,11 @@ public class DubboBootstrap {
         return configManager.getApplicationOrElseThrow();
     }
 
-    public void setTakeoverState(BootstrapTakeoverMode takeoverState) {
-        this.takeoverState = takeoverState;
+    public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        this.takeoverMode = takeoverMode;
     }
 
-    public BootstrapTakeoverMode getTakeoverState() {
-        return takeoverState;
+    public BootstrapTakeoverMode getTakeoverMode() {
+        return takeoverMode;
     }
 }
