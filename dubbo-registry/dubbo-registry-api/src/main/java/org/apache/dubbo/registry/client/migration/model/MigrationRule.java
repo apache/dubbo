@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.client.migration.model;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
@@ -29,6 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static org.apache.dubbo.registry.Constants.MIGRATION_DELAY_KEY;
+import static org.apache.dubbo.registry.Constants.MIGRATION_FORCE_KEY;
+import static org.apache.dubbo.registry.Constants.MIGRATION_PROMOTION_KEY;
+import static org.apache.dubbo.registry.Constants.MIGRATION_STEP_KEY;
+import static org.apache.dubbo.registry.Constants.MIGRATION_THRESHOLD_KEY;
+import static org.apache.dubbo.registry.client.migration.MigrationRuleHandler.DUBBO_SERVICEDISCOVERY_MIGRATION;
 
 /**
  * # key = demo-consumer.migration
@@ -153,6 +161,14 @@ public class MigrationRule {
             }
         }
 
+        if(step == null) {
+            // initial step : APPLICATION_FIRST
+            step = MigrationStep.APPLICATION_FIRST;
+            step = Enum.valueOf(MigrationStep.class,
+                consumerURL.getParameter(MIGRATION_STEP_KEY,
+                    ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
+        }
+
         return step;
     }
 
@@ -160,7 +176,7 @@ public class MigrationRule {
         return step;
     }
 
-    public Float getThreshold(URL consumerURL) {
+    public float getThreshold(URL consumerURL) {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
@@ -181,7 +197,7 @@ public class MigrationRule {
             }
         }
 
-        return threshold;
+        return threshold == null ? consumerURL.getParameter(MIGRATION_THRESHOLD_KEY, -1f) : threshold;
     }
 
     public Float getThreshold() {
@@ -196,7 +212,7 @@ public class MigrationRule {
         return proportion;
     }
 
-    public Integer getProportion(URL consumerURL) {
+    public int getProportion(URL consumerURL) {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
@@ -217,7 +233,7 @@ public class MigrationRule {
             }
         }
 
-        return proportion;
+        return proportion == null ? consumerURL.getParameter(MIGRATION_PROMOTION_KEY, 100) : proportion;
     }
 
     public void setProportion(Integer proportion) {
@@ -228,7 +244,7 @@ public class MigrationRule {
         return delay;
     }
 
-    public Integer getDelay(URL consumerURL) {
+    public int getDelay(URL consumerURL) {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
@@ -249,7 +265,7 @@ public class MigrationRule {
             }
         }
 
-        return delay;
+        return delay == null ? consumerURL.getParameter(MIGRATION_DELAY_KEY, 0) : delay;
     }
 
     public void setDelay(Integer delay) {
@@ -264,7 +280,7 @@ public class MigrationRule {
         return force;
     }
 
-    public Boolean getForce(URL consumerURL) {
+    public boolean getForce(URL consumerURL) {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
@@ -285,7 +301,7 @@ public class MigrationRule {
             }
         }
 
-        return force;
+        return force == null ? consumerURL.getParameter(MIGRATION_FORCE_KEY, false) : force;
     }
 
     public void setForce(Boolean force) {

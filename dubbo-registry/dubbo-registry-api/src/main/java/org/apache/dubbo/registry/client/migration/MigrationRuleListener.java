@@ -103,7 +103,9 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     public synchronized void process(ConfigChangedEvent event) {
         String rawRule = event.getContent();
         if (StringUtils.isEmpty(rawRule)) {
-            logger.warn("Received empty migration rule, will ignore.");
+            // fail back to startup status
+            setRawRule(INIT);
+            //logger.warn("Received empty migration rule, will ignore.");
             return;
         }
 
