@@ -30,6 +30,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
@@ -221,6 +222,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
             } else {
                 doExport();
+            }
+
+            if (this.bootstrap.getTakeoverMode() == BootstrapTakeoverMode.AUTO) {
+                this.bootstrap.start();
             }
         }
     }

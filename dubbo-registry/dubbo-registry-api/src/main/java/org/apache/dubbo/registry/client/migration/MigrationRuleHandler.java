@@ -17,7 +17,6 @@
 package org.apache.dubbo.registry.client.migration;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
@@ -26,7 +25,6 @@ import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
 public class MigrationRuleHandler<T> {
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "dubbo.application.service-discovery.migration";
-    public static final String MIGRATION_KEY = "migration";
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
     private MigrationClusterInvoker<T> migrationInvoker;
@@ -45,20 +43,15 @@ public class MigrationRuleHandler<T> {
             return;
         }
 
-        // initial step : FORCE_INTERFACE
+        // initial step : APPLICATION_FIRST
         MigrationStep step = MigrationStep.APPLICATION_FIRST;
-        Float threshold = -1f;
-        if (rule == MigrationRule.INIT) {
-            step = Enum.valueOf(MigrationStep.class,
-                    consumerURL.getParameter(MIGRATION_KEY,
-                            ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
-        } else {
-            try {
-                step = getMigrationStep(rule, step);
-                threshold = getMigrationThreshold(rule, threshold);
-            } catch (Exception e) {
-                logger.error("Failed to get step and threshold info from rule: " + rule, e);
-            }
+        float threshold = -1f;
+
+        try {
+            step = rule.getStep(consumerURL);
+            threshold = rule.getThreshold(consumerURL);
+        } catch (Exception e) {
+            logger.error("Failed to get step and threshold info from rule: " + rule, e);
         }
 
         if (refreshInvoker(step, threshold, rule)) {

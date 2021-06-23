@@ -38,7 +38,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -174,7 +173,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         // wait and compare threshold
         waitAddressNotify(newRule, latch);
 
-        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl))) {
+        if (newRule.getForce(consumerUrl)) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = invoker;
             this.destroyServiceDiscoveryInvoker();
@@ -211,7 +210,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         // wait and compare threshold
         waitAddressNotify(newRule, latch);
 
-        if (Boolean.TRUE.equals(newRule.getForce(consumerUrl))) {
+        if (newRule.getForce(consumerUrl)) {
             // force migrate, ignore threshold check
             this.currentAvailableInvoker = serviceDiscoveryInvoker;
             this.destroyInterfaceInvoker();
@@ -247,10 +246,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
 
     private void waitAddressNotify(MigrationRule newRule, CountDownLatch latch) {
         // wait and compare threshold
-        Integer delay = newRule.getDelay(consumerUrl);
-        if (delay != null) {
+        int delay = newRule.getDelay(consumerUrl);
+        if (delay > 0) {
             try {
-                Thread.sleep(delay * 1000);
+                Thread.sleep(delay * 1000L);
             } catch (InterruptedException e) {
                 logger.error("Interrupter when waiting for address notify!" + e);
             }
@@ -397,7 +396,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     @Override
     public void setMigrationRule(MigrationRule rule) {
         this.rule = rule;
-        promotion = Optional.ofNullable(rule.getProportion(consumerUrl)).orElse(100);
+        promotion = rule.getProportion(consumerUrl);
     }
 
     protected void destroyServiceDiscoveryInvoker() {
