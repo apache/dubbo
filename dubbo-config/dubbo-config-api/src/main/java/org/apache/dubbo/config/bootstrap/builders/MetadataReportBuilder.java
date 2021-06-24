@@ -60,6 +60,11 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
      */
     private Boolean syncReport;
 
+    /**
+     * File for saving metadata center dynamic list
+     */
+    private String file;
+
     public static MetadataReportBuilder newBuilder() {
         return new MetadataReportBuilder();
     }
@@ -119,6 +124,11 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         return getThis();
     }
 
+    public MetadataReportBuilder file(String file) {
+        this.file = file;
+        return getThis();
+    }
+
     public MetadataReportConfig build() {
         MetadataReportConfig metadataReport = new MetadataReportConfig();
         super.build(metadataReport);
@@ -133,6 +143,7 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         metadataReport.setRetryPeriod(retryPeriod);
         metadataReport.setCycleReport(cycleReport);
         metadataReport.setSyncReport(syncReport);
+        metadataReport.setFile(file);
 
         return metadataReport;
     }

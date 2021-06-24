@@ -77,7 +77,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
     @SuppressWarnings("unchecked")
     public <T> Exporter<T> export(final Invoker<T> invoker) throws RpcException {
         final String uri = serviceKey(invoker.getUrl());
-        Exporter<T> exporter = (Exporter<T>) exporterMap.get(uri);
+        Exporter<T> exporter = (Exporter<T>) exporterMap.getExport(uri);
         if (exporter != null) {
             // When modifying the configuration through override, you need to re-expose the newly modified service.
             if (Objects.equals(exporter.getInvoker().getUrl(), invoker.getUrl())) {
@@ -88,7 +88,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
         exporter = new AbstractExporter<T>(invoker) {
             @Override
             public void afterUnExport() {
-                exporterMap.remove(uri);
+                exporterMap.removeExportMap(uri, this);
                 if (runnable != null) {
                     try {
                         runnable.run();
@@ -98,7 +98,7 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
                 }
             }
         };
-        exporterMap.put(uri, exporter);
+        exporterMap.addExportMap(uri, exporter);
         return exporter;
     }
 
@@ -276,6 +276,5 @@ public abstract class AbstractProxyProtocol extends AbstractProtocol {
             return false;
         }
     }
-
 
 }
