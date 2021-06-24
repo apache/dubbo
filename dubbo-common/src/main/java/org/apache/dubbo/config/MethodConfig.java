@@ -255,6 +255,27 @@ public class MethodConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * Set default field values of MethodConfig.
+     *
+     * @see org.apache.dubbo.config.annotation.Method
+     */
+    @Override
+    protected void checkDefault() {
+        super.checkDefault();
+
+        // set default field values
+        // org.apache.dubbo.config.annotation.Method.isReturn() default true;
+        if (isReturn() == null) {
+            setReturn(true);
+        }
+
+        // org.apache.dubbo.config.annotation.Method.sent() default true;
+        if (getSent() == null) {
+            setSent(true);
+        }
+    }
+
     @Override
     public void addIntoConfigManager() {
         // Don't add MethodConfig to ConfigManager
