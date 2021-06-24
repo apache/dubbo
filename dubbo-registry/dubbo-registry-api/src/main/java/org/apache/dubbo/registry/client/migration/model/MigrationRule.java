@@ -144,24 +144,26 @@ public class MigrationRule {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                return rule.getStep() == null ? step : rule.getStep();
+                if (rule.getStep() != null) {
+                    return rule.getStep();
+                }
             }
         }
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             Set<String> services = serviceNameMapping.getServices(consumerURL);
-            if(CollectionUtils.isNotEmpty(services)) {
+            if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
-                    if (rule != null) {
-                        return rule.getStep() == null ? step : rule.getStep();
+                    if (rule.getStep() != null) {
+                        return rule.getStep();
                     }
                 }
             }
         }
 
-        if(step == null) {
+        if (step == null) {
             // initial step : APPLICATION_FIRST
             step = MigrationStep.APPLICATION_FIRST;
             step = Enum.valueOf(MigrationStep.class,
@@ -180,18 +182,22 @@ public class MigrationRule {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                return rule.getThreshold() == null ? threshold : rule.getThreshold();
+                if (rule.getThreshold() != null) {
+                    return rule.getThreshold();
+                }
             }
         }
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             Set<String> services = serviceNameMapping.getServices(consumerURL);
-            if(CollectionUtils.isNotEmpty(services)) {
+            if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
                     if (rule != null) {
-                        return rule.getThreshold() == null ? threshold : rule.getThreshold();
+                        if (rule.getThreshold() != null) {
+                            return rule.getThreshold();
+                        }
                     }
                 }
             }
@@ -216,18 +222,22 @@ public class MigrationRule {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                return rule.getProportion() == null ? proportion : rule.getProportion();
+                if (rule.getProportion() != null) {
+                    return rule.getProportion();
+                }
             }
         }
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             Set<String> services = serviceNameMapping.getServices(consumerURL);
-            if(CollectionUtils.isNotEmpty(services)) {
+            if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
                     if (rule != null) {
-                        return rule.getProportion() == null ? proportion : rule.getProportion();
+                        if (rule.getProportion() != null) {
+                            return rule.getProportion();
+                        }
                     }
                 }
             }
@@ -248,18 +258,22 @@ public class MigrationRule {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                return rule.getDelay() == null ? delay : rule.getDelay();
+                if (rule.getDelay() != null) {
+                    return rule.getDelay();
+                }
             }
         }
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             Set<String> services = serviceNameMapping.getServices(consumerURL);
-            if(CollectionUtils.isNotEmpty(services)) {
+            if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
                     if (rule != null) {
-                        return rule.getDelay() == null ? delay : rule.getDelay();
+                        if (rule.getDelay() != null) {
+                            return rule.getDelay();
+                        }
                     }
                 }
             }
@@ -284,18 +298,22 @@ public class MigrationRule {
         if (interfaceRules != null) {
             SubMigrationRule rule = interfaceRules.get(consumerURL.getDisplayServiceKey());
             if (rule != null) {
-                return rule.getForce() == null ? force : rule.getForce();
+                if (rule.getForce() != null) {
+                    return rule.getForce();
+                }
             }
         }
 
         if (applications != null) {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             Set<String> services = serviceNameMapping.getServices(consumerURL);
-            if(CollectionUtils.isNotEmpty(services)) {
+            if (CollectionUtils.isNotEmpty(services)) {
                 for (String service : services) {
                     SubMigrationRule rule = applicationRules.get(service);
                     if (rule != null) {
-                        return rule.getForce() == null ? force : rule.getForce();
+                        if (rule.getForce() != null) {
+                            return rule.getForce();
+                        }
                     }
                 }
             }
