@@ -55,6 +55,11 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             String registryCluster = getRegistryCluster(url);
             MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
 
+            if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
+                // MetadataReport support directly register service-app mapping
+                return;
+            }
+
             int currentRetryTimes = 1;
             boolean success;
             String newConfigContent = getName();
