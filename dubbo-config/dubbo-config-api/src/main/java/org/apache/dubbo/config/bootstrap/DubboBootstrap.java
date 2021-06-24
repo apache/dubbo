@@ -257,9 +257,9 @@ public class DubboBootstrap {
         DubboShutdownHook.getDubboShutdownHook().unregister();
     }
 
-    private boolean isOnlyRegisterProvider() {
+    private boolean isRegisterConsumerInstance() {
         Boolean registerConsumer = getApplication().getRegisterConsumer();
-        return registerConsumer == null || !registerConsumer;
+        return Boolean.TRUE.equals(registerConsumer);
     }
 
     private String getMetadataType() {
@@ -1095,8 +1095,8 @@ public class DubboBootstrap {
             // 1. export Dubbo Services
             exportServices();
 
-            // Not only provider register
-            if (!isOnlyRegisterProvider() || hasExportedServices()) {
+            // If register consumer instance or has exported services
+            if (isRegisterConsumerInstance() || hasExportedServices()) {
                 // 2. export MetadataService
                 exportMetadataService();
                 // 3. Register the local ServiceInstance if required

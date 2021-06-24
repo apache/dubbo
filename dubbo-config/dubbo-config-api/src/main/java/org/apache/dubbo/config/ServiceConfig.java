@@ -142,6 +142,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
 
+    private List<ServiceListener> serviceListeners = new ArrayList<>();
+
     public ServiceConfig() {
     }
 
@@ -182,14 +184,19 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
+        onUnexpoted();
     }
 
     public void init() {
         if (this.initialized.compareAndSet(false, true)) {
             if (this.bootstrap == null) {
-                this.bootstrap = DubboBootstrap.getInstance();
+                this.setBootstrap(DubboBootstrap.getInstance());
                 this.bootstrap.initialize();
             }
+
+            // load ServiceListeners from extension
+            ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
+            this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
 
             this.checkAndUpdateSubConfigs();
         }
@@ -203,7 +210,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public synchronized void export() {
         if (this.shouldExport() && !this.exported) {
             this.init();
-            this.bootstrap.service(this);
 
             // check bootstrap state
             if (!bootstrap.isInitialized()) {
@@ -236,6 +242,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
             serviceNameMapping.map(url);
         });
+        onExported();
     }
 
     private void checkAndUpdateSubConfigs() {
@@ -747,5 +754,25 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
+    }
+
+    public void addServiceListener(ServiceListener listener) {
+        this.serviceListeners.add(listener);
+    }
+
+    public boolean removeServiceListener(ServiceListener listener) {
+        return this.serviceListeners.remove(listener);
+    }
+
+    protected void onExported() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.exported(this);
+        }
+    }
+
+    protected void onUnexpoted() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.unexported(this);
+        }
     }
 }

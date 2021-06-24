@@ -18,10 +18,12 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.api.Greeting;
 import org.apache.dubbo.config.mock.MockProtocol2;
 import org.apache.dubbo.config.mock.MockRegistryFactory2;
+import org.apache.dubbo.config.mock.MockServiceListener;
 import org.apache.dubbo.config.mock.TestProxyFactory;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.registry.Registry;
@@ -40,6 +42,7 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -67,6 +70,8 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.withSettings;
 
@@ -288,7 +293,7 @@ public class ServiceConfigTest {
     @Test
     public void testApplicationInUrl() {
         service.export();
-        Assertions.assertNotNull(service.toUrl().getApplication());
+        assertNotNull(service.toUrl().getApplication());
         Assertions.assertEquals("app", service.toUrl().getApplication());
     }
 
@@ -334,5 +339,26 @@ public class ServiceConfigTest {
         assertThat(url.getParameters().get(METHODS_KEY), containsString("echo"));
         assertThat(url.getParameters(), hasEntry(SIDE_KEY, PROVIDER));
         Mockito.verify(protocolDelegate).export(Mockito.any(Invoker.class));
+    }
+
+    @Test
+    public void testServiceListener() {
+        ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
+        Set<ServiceListener> serviceListeners = extensionLoader.getSupportedExtensionInstances();
+        MockServiceListener mockServiceListener = null;
+        for (ServiceListener serviceListener : serviceListeners) {
+            if (serviceListener instanceof MockServiceListener) {
+                mockServiceListener = (MockServiceListener) serviceListener;
+            }
+        }
+        assertNotNull(mockServiceListener);
+        mockServiceListener.clearExportedServices();
+
+        service.export();
+
+        Map<String, ServiceConfig> exportedServices = mockServiceListener.getExportedServices();
+        assertEquals(1, exportedServices.size());
+        ServiceConfig serviceConfig = exportedServices.get(service.getUniqueServiceName());
+        assertSame(service, serviceConfig);
     }
 }
