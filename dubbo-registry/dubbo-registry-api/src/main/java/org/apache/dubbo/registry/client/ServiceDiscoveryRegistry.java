@@ -259,10 +259,13 @@ public class ServiceDiscoveryRegistry implements Registry {
             String serviceNamesKey = toStringKeys(serviceNames);
             ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (instancesChangedListener != null) {
+                String listenerId = createListenerId(url, instancesChangedListener);
+
                 instancesChangedListener.removeListener(protocolServiceKey);
                 if (!instancesChangedListener.hasListeners()) {
                     serviceListeners.remove(serviceNamesKey);
                 }
+                registeredListeners.remove(listenerId);
             }
         }
     }
