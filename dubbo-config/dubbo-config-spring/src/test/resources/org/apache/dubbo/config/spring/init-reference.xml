@@ -37,7 +37,7 @@
     <!-- service reference configuration -->
     <dubbo:reference id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" group="demo" version="1.2.3"
                      url="dubbo://127.0.0.1:20813" init="true" timeout="${call.timeout:foo100}"
-                     scope="remote" protocol="dubbo" registry="my-registry" consumer="my-consumer" >
+                     scope="remote" protocol="dubbo" registry="my-registry" consumer="my-consumer" tag="demo_tag" >
         <dubbo:parameter key="connec.timeout" value="${connection.timeout:foo1000}"/>
         <dubbo:method name="sayName" retry="${sayName.retry:foo-retry}" oninvoke="notifyService.onInvoke"
                       onreturn="notifyService.onReturn" onthrow="notifyService.onThrow">

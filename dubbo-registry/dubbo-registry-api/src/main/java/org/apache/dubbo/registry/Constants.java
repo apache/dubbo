@@ -98,4 +98,15 @@ public interface Constants {
      * Default value for check frequency: 60000 (ms)
      */
     int DEFAULT_ECHO_POLLING_CYCLE = 60000;
+
+    String MIGRATION_STEP_KEY = "migration.step";
+
+    String MIGRATION_DELAY_KEY = "migration.delay";
+
+    String MIGRATION_FORCE_KEY = "migration.force";
+
+    String MIGRATION_PROMOTION_KEY = "migration.promotion";
+
+    String MIGRATION_THRESHOLD_KEY = "migration.threshold";
+
 }

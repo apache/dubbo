@@ -17,6 +17,7 @@
 package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
 import com.alibaba.spring.context.OnceApplicationContextEventListener;
@@ -45,13 +46,21 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     private final DubboBootstrap dubboBootstrap;
 
     public DubboBootstrapApplicationListener() {
-        this.dubboBootstrap = DubboBootstrap.getInstance();
+        this.dubboBootstrap = initBootstrap();
     }
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
         super(applicationContext);
-        this.dubboBootstrap = DubboBootstrap.getInstance();
+        this.dubboBootstrap = initBootstrap();
         DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
+    }
+
+    private DubboBootstrap initBootstrap() {
+        DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
+        if (dubboBootstrap.getTakeoverMode() != BootstrapTakeoverMode.MANUAL) {
+            dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
+        }
+        return dubboBootstrap;
     }
 
     @Override
@@ -67,11 +76,15 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        dubboBootstrap.start();
+        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            dubboBootstrap.start();
+        }
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        DubboShutdownHook.getDubboShutdownHook().run();
+        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            DubboShutdownHook.getDubboShutdownHook().run();
+        }
     }
 
     @Override
