@@ -210,6 +210,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     public synchronized void export() {
         if (this.shouldExport() && !this.exported) {
             this.init();
+            this.bootstrap.service(this);
 
             // check bootstrap state
             if (!bootstrap.isInitialized()) {
