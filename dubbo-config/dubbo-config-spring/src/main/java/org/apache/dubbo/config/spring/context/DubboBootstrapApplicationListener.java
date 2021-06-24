@@ -58,7 +58,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     private DubboBootstrap initBootstrap() {
         DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
         if (dubboBootstrap.getTakeoverMode() != BootstrapTakeoverMode.MANUAL) {
-            this.dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
+            dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
         }
         return dubboBootstrap;
     }
