@@ -259,13 +259,10 @@ public class ServiceDiscoveryRegistry implements Registry {
             String serviceNamesKey = toStringKeys(serviceNames);
             ServiceInstancesChangedListener instancesChangedListener = serviceListeners.get(serviceNamesKey);
             if (instancesChangedListener != null) {
-                String listenerId = createListenerId(url, instancesChangedListener);
-
                 instancesChangedListener.removeListener(protocolServiceKey);
                 if (!instancesChangedListener.hasListeners()) {
                     serviceListeners.remove(serviceNamesKey);
                 }
-                registeredListeners.remove(listenerId);
             }
         }
     }
@@ -299,39 +296,30 @@ public class ServiceDiscoveryRegistry implements Registry {
         String protocolServiceKey = url.getServiceKey() + GROUP_CHAR_SEPARATOR + url.getParameter(PROTOCOL_KEY, DUBBO);
 
         // register ServiceInstancesChangedListener
-        ServiceInstancesChangedListener serviceListener = serviceListeners.computeIfAbsent(serviceNamesKey, k -> {
-            ServiceInstancesChangedListener serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
-            serviceInstancesChangedListener.setUrl(url);
-            serviceNames.forEach(serviceName -> {
-                List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
-                if (CollectionUtils.isNotEmpty(serviceInstances)) {
-                    serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+        boolean serviceListenerRegistered = true;
+        ServiceInstancesChangedListener serviceInstancesChangedListener;
+        synchronized (this) {
+            serviceInstancesChangedListener = serviceListeners.get(serviceNamesKey);
+            if (serviceInstancesChangedListener == null) {
+                serviceInstancesChangedListener = serviceDiscovery.createListener(serviceNames);
+                serviceInstancesChangedListener.setUrl(url);
+                for (String serviceName : serviceNames) {
+                    List<ServiceInstance> serviceInstances = serviceDiscovery.getInstances(serviceName);
+                    if (CollectionUtils.isNotEmpty(serviceInstances)) {
+                        serviceInstancesChangedListener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
+                    }
                 }
-            });
-            return serviceInstancesChangedListener;
-        });
-
-        serviceListener.setUrl(url);
-        listener.addServiceListener(serviceListener);
-        serviceListener.addListenerAndNotify(protocolServiceKey, listener);
-        registerServiceInstancesChangedListener(url, serviceListener);
-    }
-
-    /**
-     * Register the {@link ServiceInstancesChangedListener} If absent
-     *
-     * @param url      {@link URL}
-     * @param listener the {@link ServiceInstancesChangedListener}
-     */
-    private void registerServiceInstancesChangedListener(URL url, ServiceInstancesChangedListener listener) {
-        String listenerId = createListenerId(url, listener);
-        if (registeredListeners.add(listenerId)) {
-            serviceDiscovery.addServiceInstancesChangedListener(listener);
+                serviceListenerRegistered = false;
+                serviceListeners.put(serviceNamesKey, serviceInstancesChangedListener);
+            }
         }
-    }
 
-    private String createListenerId(URL url, ServiceInstancesChangedListener listener) {
-        return listener.getServiceNames() + ":" + url.toString(VERSION_KEY, GROUP_KEY, PROTOCOL_KEY);
+        serviceInstancesChangedListener.setUrl(url);
+        listener.addServiceListener(serviceInstancesChangedListener);
+        serviceInstancesChangedListener.addListenerAndNotify(protocolServiceKey, listener);
+        if (!serviceListenerRegistered) {
+            serviceDiscovery.addServiceInstancesChangedListener(serviceInstancesChangedListener);
+        }
     }
 
 //    public void doSubscribe(URL url, NotifyListener listener) {
@@ -415,10 +403,6 @@ public class ServiceDiscoveryRegistry implements Registry {
     private static boolean isCompatibleProtocol(String protocol, URL targetURL) {
         return protocol == null || Objects.equals(protocol, targetURL.getParameter(PROTOCOL_KEY))
                 || Objects.equals(protocol, targetURL.getProtocol());
-    }
-
-    public Set<String> getRegisteredListeners() {
-        return registeredListeners;
     }
 
     public Map<String, ServiceInstancesChangedListener> getServiceListeners() {
