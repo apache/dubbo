@@ -488,6 +488,7 @@ public class ConfigTest {
                 ReferenceConfig referenceConfig = referenceBean.getReferenceConfig();
                 // reference parameters
                 Assertions.assertNotNull(referenceConfig.getParameters().get("connec.timeout"));
+                Assertions.assertEquals("demo_tag", referenceConfig.getTag());
 
                 //methods
                 Assertions.assertEquals(1, referenceConfig.getMethods().size());

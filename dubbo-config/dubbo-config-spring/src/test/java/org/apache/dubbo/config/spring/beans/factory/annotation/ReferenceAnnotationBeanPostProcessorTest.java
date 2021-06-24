@@ -124,7 +124,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     private HelloService helloService;
 
     // #5 ReferenceBean (Field Injection #3)
-    @DubboReference(version = "2", url = "dubbo://127.0.0.1:12345?version=2")
+    @DubboReference(version = "2", url = "dubbo://127.0.0.1:12345?version=2", tag = "demo_tag")
     private HelloService helloService2;
 
 
@@ -276,7 +276,11 @@ public class ReferenceAnnotationBeanPostProcessorTest {
         Assertions.assertEquals(demoServiceFromParentReferenceBean.getKey(), demoServiceReferenceBean.getKey());
         Assertions.assertEquals(demoServiceFromParentReferenceBean.getReferenceConfig(), demoServiceReferenceBean.getReferenceConfig());
 
-        Assertions.assertNotNull(referenceBeanManager.getById("helloService2"));
+        ReferenceBean helloService2Bean = referenceBeanManager.getById("helloService2");
+        Assertions.assertNotNull(helloService2Bean);
+        Assertions.assertNotNull(helloService2Bean.getReferenceConfig());
+        Assertions.assertEquals("demo_tag", helloService2Bean.getReferenceConfig().getTag());
+
         Assertions.assertNotNull(referenceBeanManager.getById("myDemoService"));
 
     }

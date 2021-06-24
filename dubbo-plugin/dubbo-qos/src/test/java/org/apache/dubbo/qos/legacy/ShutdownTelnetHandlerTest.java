@@ -50,7 +50,8 @@ public class ShutdownTelnetHandlerTest {
         long start = System.currentTimeMillis();
         String result = handler.telnet(mockChannel, "-t " + sleepTime);
         long end = System.currentTimeMillis();
-        assertTrue(result.contains("Application has shutdown successfully") && (end - start) > sleepTime);
+        assertTrue(result.contains("Application has shutdown successfully"), result);
+        assertTrue((end - start) > sleepTime, "sleepTime: " + sleepTime + ", execTime: " + (end - start));
     }
 
 
