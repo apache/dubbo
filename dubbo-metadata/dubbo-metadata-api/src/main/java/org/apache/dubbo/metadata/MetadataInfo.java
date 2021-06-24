@@ -62,6 +62,7 @@ public class MetadataInfo implements Serializable {
     private transient AtomicBoolean reported = new AtomicBoolean(false);
 
     public MetadataInfo() {
+        this(null);
     }
 
     public MetadataInfo(String app) {
