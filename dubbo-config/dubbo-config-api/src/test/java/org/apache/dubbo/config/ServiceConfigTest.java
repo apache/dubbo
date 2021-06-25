@@ -42,7 +42,6 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
@@ -344,13 +343,7 @@ public class ServiceConfigTest {
     @Test
     public void testServiceListener() {
         ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
-        Set<ServiceListener> serviceListeners = extensionLoader.getSupportedExtensionInstances();
-        MockServiceListener mockServiceListener = null;
-        for (ServiceListener serviceListener : serviceListeners) {
-            if (serviceListener instanceof MockServiceListener) {
-                mockServiceListener = (MockServiceListener) serviceListener;
-            }
-        }
+        MockServiceListener mockServiceListener = (MockServiceListener) extensionLoader.getExtension("mock");
         assertNotNull(mockServiceListener);
         mockServiceListener.clearExportedServices();
 
