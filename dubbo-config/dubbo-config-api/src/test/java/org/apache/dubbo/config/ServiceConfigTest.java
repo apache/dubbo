@@ -357,8 +357,7 @@ public class ServiceConfigTest {
         service.export();
 
         Map<String, ServiceConfig> exportedServices = mockServiceListener.getExportedServices();
-        // MetadataService, DemoService
-        assertEquals(2, exportedServices.size());
+        assertEquals(1, exportedServices.size());
         ServiceConfig serviceConfig = exportedServices.get(service.getUniqueServiceName());
         assertSame(service, serviceConfig);
     }
