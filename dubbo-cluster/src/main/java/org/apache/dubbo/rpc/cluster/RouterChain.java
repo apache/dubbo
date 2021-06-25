@@ -149,6 +149,10 @@ public class RouterChain<T> {
         return routers;
     }
 
+    public List<StateRouter> getStateRouters() {
+        return stateRouters;
+    }
+
     private void sort() {
         Collections.sort(routers);
     }
