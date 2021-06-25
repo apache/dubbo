@@ -16,19 +16,17 @@
  */
 package org.apache.dubbo.metadata.definition;
 
+import com.google.gson.Gson;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.MethodDefinition;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.metadata.definition.model.TypeDefinition;
 import org.apache.dubbo.metadata.definition.util.ClassUtils;
 
-import com.google.gson.Gson;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +63,7 @@ public final class ServiceDefinitionBuilder {
         sd.setCanonicalName(interfaceClass.getCanonicalName());
         sd.setCodeSource(ClassUtils.getCodeSource(interfaceClass));
         Annotation[] classAnnotations = interfaceClass.getAnnotations();
-        sd.setAnnotations(classAnnotations == null ? Collections.emptyList() : Arrays.asList(classAnnotations));
+        sd.setAnnotations(annotationToStringList(classAnnotations));
 
         TypeDefinitionBuilder builder = new TypeDefinitionBuilder();
         List<Method> methods = ClassUtils.getPublicNonStaticMethods(interfaceClass);
@@ -74,7 +72,7 @@ public final class ServiceDefinitionBuilder {
             md.setName(method.getName());
 
             Annotation[] methodAnnotations = method.getAnnotations();
-            md.setAnnotations(methodAnnotations == null ? Collections.emptyList() : Arrays.asList(methodAnnotations));
+            md.setAnnotations(annotationToStringList(methodAnnotations));
 
             // Process parameter types.
             Class<?>[] paramTypes = method.getParameterTypes();
@@ -95,6 +93,17 @@ public final class ServiceDefinitionBuilder {
         }
 
         sd.setTypes(builder.getTypeDefinitions());
+    }
+
+    private static List<String> annotationToStringList(Annotation[] annotations) {
+        List<String> list = new ArrayList<>();
+        if (annotations == null) {
+            return list;
+        }
+        for (Annotation annotation : annotations) {
+            list.add(annotation.toString());
+        }
+        return list;
     }
 
     /**

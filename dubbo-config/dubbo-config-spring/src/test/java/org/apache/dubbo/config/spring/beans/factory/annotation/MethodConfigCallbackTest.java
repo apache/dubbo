@@ -21,54 +21,50 @@ import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.api.MethodCallback;
+import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.impl.MethodCallbackImpl;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.event.annotation.AfterTestMethod;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(
         classes = {
-                ServiceAnnotationTestConfiguration.class,
+                ProviderConfiguration.class,
                 MethodConfigCallbackTest.class,
+                MethodConfigCallbackTest.MethodCallbackConfiguration.class
         })
 @TestPropertySource(properties = {
-        "packagesToScan = org.apache.dubbo.config.spring.context.annotation.provider",
-        "consumer.version = ${demo.service.version}",
-        "consumer.url = dubbo://127.0.0.1:12345?version=2.5.7",
+        "dubbo.protocols.dubbo.port=-1",
+        //"dubbo.registries.my-registry.address=zookeeper://127.0.0.1:2181"
 })
 @EnableAspectJAutoProxy(proxyTargetClass = true, exposeProxy = true)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class MethodConfigCallbackTest {
 
-    @AfterTestMethod
-    public void setUp() {
+    @BeforeAll
+    public static void setUp() {
         DubboBootstrap.reset();
-    }
-
-    @Bean("referenceAnnotationBeanPostProcessor")
-    public ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor() {
-        return new ReferenceAnnotationBeanPostProcessor();
     }
 
     @Autowired
     private ConfigurableApplicationContext context;
 
-    @Bean("methodCallback")
-    public MethodCallback methodCallback() {
-        return new MethodCallbackImpl();
-    }
-
-    @DubboReference(check = false,methods = {@Method(name = "sayHello",oninvoke = "methodCallback.oninvoke",onreturn = "methodCallback.onreturn",onthrow = "methodCallback.onthrow")})
+    @DubboReference(check = false,
+            methods = {@Method(name = "sayHello",
+                    oninvoke = "methodCallback.oninvoke",
+                    onreturn = "methodCallback.onreturn",
+                    onthrow = "methodCallback.onthrow")})
     private HelloService helloServiceMethodCallBack;
 
     @Test
@@ -77,5 +73,15 @@ public class MethodConfigCallbackTest {
         MethodCallback notify = (MethodCallback) context.getBean("methodCallback");
         Assertions.assertEquals("dubbo invoke success", notify.getOnInvoke());
         Assertions.assertEquals("dubbo return success", notify.getOnReturn());
+    }
+
+    @Configuration
+    static class MethodCallbackConfiguration {
+
+        @Bean("methodCallback")
+        public MethodCallback methodCallback() {
+            return new MethodCallbackImpl();
+        }
+
     }
 }

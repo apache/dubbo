@@ -175,7 +175,8 @@ public class ReferenceConfigCache {
 
         Map<String, Object> proxiesOftype = proxies.get(type);
         if (CollectionUtils.isNotEmptyMap(proxiesOftype)) {
-            proxiesOftype.remove(key);
+            Destroyable proxy = (Destroyable) proxiesOftype.remove(key);
+            proxy.$destroy();
             if (proxiesOftype.isEmpty()) {
                 proxies.remove(type);
             }
