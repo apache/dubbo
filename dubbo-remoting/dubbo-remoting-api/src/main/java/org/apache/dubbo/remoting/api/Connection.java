@@ -90,11 +90,11 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private Bootstrap create() {
         final Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(NettyEventLoopFactory.NIO_EVENT_LOOP_GROUP)
-                .option(ChannelOption.SO_KEEPALIVE, true)
-                .option(ChannelOption.TCP_NODELAY, true)
-                .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
-                .remoteAddress(getConnectAddress())
-                .channel(socketChannelClass());
+            .option(ChannelOption.SO_KEEPALIVE, true)
+            .option(ChannelOption.TCP_NODELAY, true)
+            .option(ChannelOption.ALLOCATOR, PooledByteBufAllocator.DEFAULT)
+            .remoteAddress(getConnectAddress())
+            .channel(socketChannelClass());
 
         final ConnectionHandler connectionHandler = new ConnectionHandler(this);
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectTimeout);
@@ -136,7 +136,8 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     @Override
     public String toString() {
-        return super.toString() + " (Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" + (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
+        return super.toString() + " (Ref=" + ReferenceCountUtil.refCnt(this) + ",local=" +
+            (getChannel() == null ? null : getChannel().localAddress()) + ",remote=" + getRemote();
     }
 
     public void onGoaway(Channel channel) {
@@ -157,6 +158,14 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     public void connectSync() {
         this.initPromise.awaitUninterruptibly(this.connectTimeout);
+        long start = System.currentTimeMillis();
+        while (!isAvailable()) {
+            if (System.currentTimeMillis() - start <= connectTimeout) {
+                Thread.yield();
+            } else {
+                break;
+            }
+        }
     }
 
     public boolean isAvailable() {
@@ -171,7 +180,8 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     //TODO replace channelFuture with intermediate future
     public ChannelFuture write(Object request) throws RemotingException {
         if (!isAvailable()) {
-            throw new RemotingException(null, null, "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
+            throw new RemotingException(null, null,
+                "Failed to send request " + request + ", cause: The channel to " + remote + " is closed!");
         }
         return getChannel().writeAndFlush(request);
     }
@@ -222,7 +232,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
         @Override
         public void operationComplete(ChannelFuture future) {
             if (future.isSuccess()) {
-                onConnected(future.channel());
                 return;
             }
             final Connection conn = Connection.this;
