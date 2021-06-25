@@ -18,6 +18,7 @@ package org.apache.dubbo.config.mock;
 
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
+import org.apache.dubbo.metadata.MetadataService;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,6 +29,10 @@ public class MockServiceListener implements ServiceListener {
 
     @Override
     public void exported(ServiceConfig sc) {
+        // Ignore MetadataService
+        if (sc.getInterfaceClass() == MetadataService.class) {
+            return;
+        }
         exportedServices.put(sc.getUniqueServiceName(), sc);
     }
 
