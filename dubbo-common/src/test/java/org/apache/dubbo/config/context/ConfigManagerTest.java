@@ -191,11 +191,23 @@ public class ConfigManagerTest {
     // Test ConfigCenterConfig correlative methods
     @Test
     public void testConfigCenterConfig() {
+        String address = "zookeeper://127.0.0.1:2181";
         ConfigCenterConfig config = new ConfigCenterConfig();
+        config.setAddress(address);
         configManager.addConfigCenters(asList(config, null));
         Collection<ConfigCenterConfig> configs = configManager.getConfigCenters();
         assertEquals(1, configs.size());
         assertEquals(config, configs.iterator().next());
+
+        // add duplicated config, expecting ignore equivalent configs
+        ConfigCenterConfig config2 = new ConfigCenterConfig();
+        config2.setAddress(address);
+        configManager.addConfigCenter(config2);
+
+        configs = configManager.getConfigCenters();
+        assertEquals(1, configs.size());
+        assertEquals(config, configs.iterator().next());
+
     }
 
     @Test

@@ -634,13 +634,12 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 // the new one is same as existing one
                 return prevConfig.get();
             }
-            if (unique) {
-                // unique config just need single instance, use prev equivalent instance is ok
-                if (logger.isInfoEnabled()) {
-                    logger.info("Ignore duplicated config: " + config);
-                }
-                return prevConfig.get();
+
+            // ignore duplicated equivalent config
+            if (logger.isInfoEnabled()) {
+                logger.info("Ignore duplicated config: " + config);
             }
+            return prevConfig.get();
 
             // throw new IllegalStateException("An equivalent config instance already exists, please remove the redundant configuration. " +
             //        "prev: " + prevConfig.get() + ", new: " + config);
