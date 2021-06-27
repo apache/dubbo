@@ -24,6 +24,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
@@ -254,6 +255,12 @@ public class DubboConfigurationProperties {
     static class Config {
 
         /**
+         * Config processing mode
+         * @see ConfigMode
+         */
+        private ConfigMode mode = ConfigMode.STRICT;
+
+        /**
          * Indicates multiple properties binding from externalized configuration or not.
          */
         private boolean multiple = DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE;
@@ -277,6 +284,14 @@ public class DubboConfigurationProperties {
 
         public void setMultiple(boolean multiple) {
             this.multiple = multiple;
+        }
+
+        public ConfigMode getMode() {
+            return mode;
+        }
+
+        public void setMode(ConfigMode mode) {
+            this.mode = mode;
         }
     }
 

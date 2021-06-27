@@ -49,6 +49,9 @@ public class ApplicationModel {
     public static final String NAME = "application";
 
     private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
+    private static Environment environment;
+    private static ConfigManager configManager;
+    private static ServiceRepository serviceRepository;
 
     public static void init() {
         if (INIT_FLAG.compareAndSet(false, true)) {
@@ -76,7 +79,7 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-    private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
+    private static ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
     public static void initFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
@@ -86,15 +89,24 @@ public class ApplicationModel {
     }
 
     public static Environment getEnvironment() {
-        return (Environment) LOADER.getExtension(Environment.NAME);
+        if (environment == null) {
+            environment = (Environment) LOADER.getExtension(Environment.NAME);
+        }
+        return environment;
     }
 
     public static ConfigManager getConfigManager() {
-        return (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+        if (configManager == null) {
+            configManager = (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+        }
+        return configManager;
     }
 
     public static ServiceRepository getServiceRepository() {
-        return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+        if (serviceRepository == null) {
+            serviceRepository = (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+        }
+        return serviceRepository;
     }
 
     public static ExecutorRepository getExecutorRepository() {
@@ -125,9 +137,20 @@ public class ApplicationModel {
 
     // only for unit test
     public static void reset() {
-        getServiceRepository().destroy();
-        getConfigManager().destroy();
-        getEnvironment().reset();
+        if (serviceRepository!=null){
+            serviceRepository.destroy();
+            serviceRepository = null;
+        }
+        if (configManager != null) {
+            configManager.destroy();
+            configManager = null;
+        }
+        if (environment != null) {
+            environment.destroy();
+            environment = null;
+        }
+        ExtensionLoader.resetExtensionLoader(FrameworkExt.class);
+        LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
     }
 
 }

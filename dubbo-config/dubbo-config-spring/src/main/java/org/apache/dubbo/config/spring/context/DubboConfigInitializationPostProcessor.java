@@ -103,7 +103,6 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
     }
 
     private void prepareReferenceBeans(ConfigurableListableBeanFactory beanFactory) throws Exception {
-        ReferenceBeanManager referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
         referenceBeanManager.prepareReferenceBeans();
     }
 
@@ -132,10 +131,5 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-
-        // Extract dubbo props from Spring env and put them to app config
-        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
-        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
-        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
     }
 }
