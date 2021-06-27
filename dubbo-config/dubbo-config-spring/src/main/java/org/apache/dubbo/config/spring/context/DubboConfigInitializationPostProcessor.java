@@ -28,8 +28,6 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
-import org.apache.dubbo.config.spring.util.EnvironmentUtils;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -40,9 +38,7 @@ import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.Ordered;
-import org.springframework.core.env.ConfigurableEnvironment;
 
-import java.util.SortedMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncludingAncestors;
