@@ -38,7 +38,13 @@ import static org.apache.dubbo.common.constants.CommonConstants.DOT_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_PARAMETER_DESC;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_ATTACHMENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
-import static org.apache.dubbo.rpc.Constants.*;
+import static org.apache.dubbo.rpc.Constants.$ECHO;
+import static org.apache.dubbo.rpc.Constants.$ECHO_PARAMETER_DESC;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
+import static org.apache.dubbo.rpc.Constants.AUTO_ATTACH_INVOCATIONID_KEY;
+import static org.apache.dubbo.rpc.Constants.ID_KEY;
+import static org.apache.dubbo.rpc.Constants.RETURN_KEY;
+import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
 /**
  * RpcUtils
