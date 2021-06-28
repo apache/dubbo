@@ -18,7 +18,6 @@ package org.apache.dubbo.config.spring.schema;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractServiceConfig;
@@ -32,6 +31,7 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -246,27 +246,21 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
 
     private static void configReferenceBean(Element element, ParserContext parserContext, RootBeanDefinition beanDefinition, BeanDefinition consumerDefinition) {
         // process interface class
-        String interfaceName = resolveAttribute(element, "interface", parserContext);
-        String generic = resolveAttribute(element, "generic", parserContext);
+        String interfaceName = resolveAttribute(element, ReferenceAttributes.INTERFACE, parserContext);
+        String generic = resolveAttribute(element, ReferenceAttributes.GENERIC, parserContext);
         if (StringUtils.isBlank(generic) && consumerDefinition != null) {
             // get generic from consumerConfig
-            generic = (String) consumerDefinition.getPropertyValues().get("generic");
+            generic = (String) consumerDefinition.getPropertyValues().get(ReferenceAttributes.GENERIC);
         }
         if (generic != null) {
             Environment environment = parserContext.getReaderContext().getEnvironment();
             generic = environment.resolvePlaceholders(generic);
-            beanDefinition.getPropertyValues().add("generic", generic);
+            beanDefinition.getPropertyValues().add(ReferenceAttributes.GENERIC, generic);
         }
+        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
         Class interfaceClass = ReferenceConfig.determineInterfaceClass(generic, interfaceName);
-        Class actualInterface = null;
-        try {
-            actualInterface = ClassUtils.forName(interfaceName);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-        beanDefinition.setAttribute("interfaceClass", interfaceClass);
-        beanDefinition.setAttribute("actualInterface", actualInterface);
+        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
 
         // TODO Only register one reference bean for same (group, interface, version)
 

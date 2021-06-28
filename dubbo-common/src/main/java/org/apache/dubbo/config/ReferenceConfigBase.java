@@ -144,17 +144,17 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     }
 
     /**
-     * Get actual interface class of this reference.
+     * Get service interface class of this reference.
      * The actual service type of remote provider.
      * @return
      */
-    public Class<?> getActualInterface() {
+    public Class<?> getServiceInterfaceClass() {
         Class actualInterface = interfaceClass;
         if (interfaceClass == GenericService.class) {
             try {
                 actualInterface = Class.forName(interfaceName);
             } catch (ClassNotFoundException e) {
-                // ignore
+                return null;
             }
         }
         return actualInterface;
