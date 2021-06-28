@@ -30,7 +30,6 @@ import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils;
-import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 
 import java.util.HashMap;
@@ -42,6 +41,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_IP_KEY;
+import static org.apache.dubbo.remoting.Constants.BIND_PORT_KEY;
 
 public class RemoteMetadataServiceImpl {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -125,7 +126,7 @@ public class RemoteMetadataServiceImpl {
     private void publishProvider(URL providerUrl) throws RpcException {
         //first add into the list
         // remove the individual param
-        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY);
+        providerUrl = providerUrl.removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY);
 
         try {
             String interfaceName = providerUrl.getServiceInterface();
@@ -149,7 +150,7 @@ public class RemoteMetadataServiceImpl {
     }
 
     private void publishConsumer(URL consumerURL) throws RpcException {
-        final URL url = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, Constants.BIND_IP_KEY, Constants.BIND_PORT_KEY, REGISTER_IP_KEY);
+        final URL url = consumerURL.removeParameters(PID_KEY, TIMESTAMP_KEY, BIND_IP_KEY, BIND_PORT_KEY, REGISTER_IP_KEY);
         getMetadataReports().forEach((registryKey, config) -> {
             config.storeConsumerMetadata(new MetadataIdentifier(url.getServiceInterface(),
                 url.getVersion(), url.getGroup(), CONSUMER_SIDE,
