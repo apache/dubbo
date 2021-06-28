@@ -237,7 +237,8 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
-    public void exported() {
+    protected void exported() {
+        exported = true;
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
             ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
@@ -330,7 +331,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (exported) {
             return;
         }
-        exported = true;
 
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
