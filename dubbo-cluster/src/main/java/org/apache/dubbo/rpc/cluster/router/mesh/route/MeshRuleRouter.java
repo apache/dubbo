@@ -320,6 +320,10 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         return true;
     }
 
+    @Override
+    public void stop() {
+        MeshRuleManager.unregister(this);
+    }
 
     /**
      * just for test

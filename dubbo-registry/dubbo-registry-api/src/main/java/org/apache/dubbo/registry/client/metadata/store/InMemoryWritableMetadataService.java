@@ -54,8 +54,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
@@ -209,6 +211,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
                 Gson gson = new Gson();
                 String data = gson.toJson(serviceDefinition);
                 serviceDefinitions.put(providerUrl.getServiceKey(), data);
+                return;
+            } else if (CONSUMER_SIDE.equalsIgnoreCase(providerUrl.getParameter(SIDE_KEY))) {
+                //to avoid consumer generic invoke style error
                 return;
             }
             logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
