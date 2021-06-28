@@ -253,41 +253,44 @@ public class ConfigManagerTest {
         ApplicationConfig applicationConfig1 = new ApplicationConfig("app1");
         ApplicationConfig applicationConfig2 = new ApplicationConfig("app2");
 
-        // test strict mode
-        ApplicationModel.reset();
-        Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
-
-        System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.STRICT.name());
-        ApplicationModel.reset();
-        Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
-
-        getConfigManager().addConfig(applicationConfig1);
         try {
+            // test strict mode
+            ApplicationModel.reset();
+            Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
+
+            System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.STRICT.name());
+            ApplicationModel.reset();
+            Assertions.assertEquals(ConfigMode.STRICT, getConfigManager().getConfigMode());
+
+            getConfigManager().addConfig(applicationConfig1);
+            try {
+                getConfigManager().addConfig(applicationConfig2);
+                fail("strict mode cannot add two application configs");
+            } catch (Exception e) {
+                assertEquals(IllegalStateException.class, e.getClass());
+                assertTrue(e.getMessage().contains("please remove redundant configs and keep only one"));
+            }
+
+            // test override mode
+            System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
+            ApplicationModel.reset();
+            Assertions.assertEquals(ConfigMode.OVERRIDE, getConfigManager().getConfigMode());
+
+            getConfigManager().addConfig(applicationConfig1);
             getConfigManager().addConfig(applicationConfig2);
-            fail("strict mode cannot add two application configs");
-        } catch (Exception e) {
-            assertEquals(IllegalStateException.class, e.getClass());
-            assertTrue(e.getMessage().contains("please remove redundant configs and keep only one"));
+            assertEquals(applicationConfig2, getConfigManager().getApplicationOrElseThrow());
+
+
+            // test ignore mode
+            System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
+            ApplicationModel.reset();
+            Assertions.assertEquals(ConfigMode.IGNORE, getConfigManager().getConfigMode());
+
+            getConfigManager().addConfig(applicationConfig1);
+            getConfigManager().addConfig(applicationConfig2);
+            assertEquals(applicationConfig1, getConfigManager().getApplicationOrElseThrow());
+        } finally {
+            System.clearProperty(DUBBO_CONFIG_MODE);
         }
-
-        // test override mode
-        System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
-        ApplicationModel.reset();
-        Assertions.assertEquals(ConfigMode.OVERRIDE, getConfigManager().getConfigMode());
-
-        getConfigManager().addConfig(applicationConfig1);
-        getConfigManager().addConfig(applicationConfig2);
-        assertEquals(applicationConfig2, getConfigManager().getApplicationOrElseThrow());
-
-
-        // test ignore mode
-        System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
-        ApplicationModel.reset();
-        Assertions.assertEquals(ConfigMode.IGNORE, getConfigManager().getConfigMode());
-
-        getConfigManager().addConfig(applicationConfig1);
-        getConfigManager().addConfig(applicationConfig2);
-        assertEquals(applicationConfig1, getConfigManager().getApplicationOrElseThrow());
-
     }
 }
