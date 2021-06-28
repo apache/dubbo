@@ -250,7 +250,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         //init serivceMetadata
         initServiceMetadata(consumer);
-        serviceMetadata.setServiceType(getActualInterface());
+        serviceMetadata.setServiceType(getServiceInterfaceClass());
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 

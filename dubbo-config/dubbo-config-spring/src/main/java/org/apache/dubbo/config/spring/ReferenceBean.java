@@ -18,8 +18,8 @@ package org.apache.dubbo.config.spring;
 
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
@@ -115,17 +115,10 @@ public class ReferenceBean<T> implements FactoryBean,
      */
     private Class<?> interfaceClass;
 
-    /**
-     * Actual interface class of this reference.
-     * The actual service type of remote provider.
-     * see {@link ReferenceConfigBase#getActualInterface()}
-     */
-    private Class actualInterface;
-
     /*
-     * actual interface class name
+     * remote service interface class name
      */
-    // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
+    // 'interfaceName' field for compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
     private String interfaceName;
 
     //from annotation attributes
@@ -214,7 +207,7 @@ public class ReferenceBean<T> implements FactoryBean,
         Assert.notEmptyString(getId(), "The id of ReferenceBean cannot be empty");
         BeanDefinition beanDefinition = beanFactory.getBeanDefinition(getId());
         this.interfaceClass = (Class<?>) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_CLASS);
-        this.actualInterface = (Class) beanDefinition.getAttribute(ReferenceAttributes.ACTUAL_INTERFACE);
+        this.interfaceName = (String) beanDefinition.getAttribute(ReferenceAttributes.INTERFACE_NAME);
         Assert.notNull(this.interfaceClass, "The interface class of ReferenceBean is not initialized");
 
         if (beanDefinition.hasAttribute(Constants.REFERENCE_PROPS)) {
@@ -228,20 +221,15 @@ public class ReferenceBean<T> implements FactoryBean,
                     referenceProps = new LinkedHashMap<>();
                 }
                 ReferenceBeanSupport.convertReferenceProps(referenceProps, interfaceClass);
-                if (this.actualInterface == null) {
-                    try {
-                        this.actualInterface = ClassUtils.forName((String) referenceProps.get(ReferenceAttributes.INTERFACE));
-                    } catch (ClassNotFoundException e) {
-                        throw new IllegalStateException(e.getMessage(), e);
-                    }
+                if (this.interfaceName == null) {
+                    this.interfaceName = (String) referenceProps.get(ReferenceAttributes.INTERFACE);
                 }
             } else {
                 // xml reference bean
                 propertyValues = beanDefinition.getPropertyValues();
             }
         }
-        Assert.notNull(this.actualInterface, "The actual interface of ReferenceBean is not initialized");
-        this.interfaceName = actualInterface.getName();
+        Assert.notNull(this.interfaceName, "The interface name of ReferenceBean is not initialized");
 
 //        this.sources = (List<Map<String, Object>>) beanDefinition.getAttribute(Constants.REFERENCE_SOURCES);
 //        Assert.notNull(this.sources, "The registration sources of this reference is empty");
@@ -267,22 +255,36 @@ public class ReferenceBean<T> implements FactoryBean,
         this.id = id;
     }
 
-    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+
+    /**
+     * The interface of this ReferenceBean, for injection purpose
+     * @return
+     */
     public Class<?> getInterfaceClass() {
+        // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
         return interfaceClass;
     }
 
-    public Class getActualInterface() {
-        return actualInterface;
+    /**
+     * The interface of remote service
+     */
+    public String getServiceInterface() {
+        return interfaceName;
     }
 
-    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    /**
+     * The group of the service
+     */
     public String getGroup() {
+        // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
         return referenceConfig.getGroup();
     }
 
-    /* Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc() */
+    /**
+     * The version of the service
+     */
     public String getVersion() {
+        // Compatible with seata-1.4.0: io.seata.rm.tcc.remoting.parser.DubboRemotingParser#getServiceDesc()
         return referenceConfig.getVersion();
     }
 
@@ -316,14 +318,19 @@ public class ReferenceBean<T> implements FactoryBean,
         //see also: org.apache.dubbo.rpc.proxy.AbstractProxyFactory.getProxy(org.apache.dubbo.rpc.Invoker<T>, boolean)
         ProxyFactory proxyFactory = new ProxyFactory();
         proxyFactory.setTargetSource(new DubboReferenceLazyInitTargetSource());
-        proxyFactory.addInterface(getInterfaceClass());
+        proxyFactory.addInterface(interfaceClass);
         Class<?>[] internalInterfaces = AbstractProxyFactory.getInternalInterfaces();
         for (Class<?> anInterface : internalInterfaces) {
             proxyFactory.addInterface(anInterface);
         }
-        if (actualInterface != interfaceClass){
-            //add actual interface
-            proxyFactory.addInterface(actualInterface);
+        if (!StringUtils.isEquals(interfaceClass.getName(), interfaceName)) {
+            //add service interface
+            try {
+                Class<?> serviceInterface = ClassUtils.forName(interfaceName, beanClassLoader);
+                proxyFactory.addInterface(serviceInterface);
+            } catch (ClassNotFoundException e) {
+                // generic call maybe without service interface class locally
+            }
         }
 
         this.lazyProxy = proxyFactory.getProxy(this.beanClassLoader);

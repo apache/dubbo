@@ -237,23 +237,17 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             }
 
             Class interfaceClass = beanClass;
-            Class actualInterface = null;
-            try {
-                actualInterface = ClassUtils.forName(interfaceName);
-            } catch (ClassNotFoundException e) {
-                throw new IllegalStateException(e.getMessage(), e);
-            }
 
             // set attribute instead of property values
             beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
             beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
-            beanDefinition.setAttribute(ReferenceAttributes.ACTUAL_INTERFACE, actualInterface);
+            beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
         } else {
             // raw reference bean
             // the ReferenceBean is not yet initialized
             beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, beanClass);
             if (beanClass != GenericService.class) {
-                beanDefinition.setAttribute(ReferenceAttributes.ACTUAL_INTERFACE, beanClass);
+                beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, beanClass.getName());
             }
         }
 
@@ -442,12 +436,6 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         Class interfaceClass = injectedType;
-        Class actualInterface = null;
-        try {
-            actualInterface = ClassUtils.forName(interfaceName);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
 
         // TODO Only register one reference bean for same (group, interface, version)
 
@@ -459,7 +447,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // set attribute instead of property values
         beanDefinition.setAttribute(Constants.REFERENCE_PROPS, attributes);
         beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_CLASS, interfaceClass);
-        beanDefinition.setAttribute(ReferenceAttributes.ACTUAL_INTERFACE, actualInterface);
+        beanDefinition.setAttribute(ReferenceAttributes.INTERFACE_NAME, interfaceName);
 
         // create decorated definition for reference bean, Avoid being instantiated when getting the beanType of ReferenceBean
         // see org.springframework.beans.factory.support.AbstractBeanFactory#getTypeForFactoryBean()

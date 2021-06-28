@@ -71,12 +71,12 @@ public class JavaConfigReferenceBeanTest {
         ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
         Assertions.assertEquals("demo", referenceBean.getGroup());
         Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
-        Assertions.assertEquals(HelloService.class, referenceBean.getActualInterface());
+        Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
 
         ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
         Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
         Assertions.assertEquals(GenericService.class, genericHelloServiceReferenceBean.getInterfaceClass());
-        Assertions.assertEquals(HelloService.class, genericHelloServiceReferenceBean.getActualInterface());
+        Assertions.assertEquals(HelloService.class.getName(), genericHelloServiceReferenceBean.getServiceInterface());
 
         context.close();
         Assertions.assertEquals(1, SpringExtensionFactory.getContexts().size());
@@ -101,12 +101,12 @@ public class JavaConfigReferenceBeanTest {
         Assertions.assertEquals(3, referenceBeanMap.size());
         ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
         Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
-        Assertions.assertEquals(HelloService.class, referenceBean.getActualInterface());
+        Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
 
         ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
         Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
         Assertions.assertEquals(GenericService.class, genericHelloServiceReferenceBean.getInterfaceClass());
-        Assertions.assertEquals(HelloService.class, genericHelloServiceReferenceBean.getActualInterface());
+        Assertions.assertEquals(HelloService.class.getName(), genericHelloServiceReferenceBean.getServiceInterface());
 
         context.close();
         Assertions.assertEquals(1, SpringExtensionFactory.getContexts().size());
