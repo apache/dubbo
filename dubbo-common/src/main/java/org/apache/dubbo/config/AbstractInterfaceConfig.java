@@ -223,7 +223,8 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             try {
                 interfaceClass = ClassUtils.forName(interfaceName);
             } catch (ClassNotFoundException e) {
-                throw new IllegalStateException("The interface class is not found", e);
+                // There may be no interface class when generic call
+                return;
             }
             if (!interfaceClass.isInterface()) {
                 throw new IllegalStateException(interfaceName+" is not an interface");

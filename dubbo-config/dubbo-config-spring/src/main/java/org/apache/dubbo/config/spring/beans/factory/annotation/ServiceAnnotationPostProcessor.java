@@ -614,7 +614,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.servicePackagesHolder = applicationContext.getBean(ServicePackagesHolder.class);
+        this.servicePackagesHolder = applicationContext.getBean(ServicePackagesHolder.BEAN_NAME, ServicePackagesHolder.class);
     }
 
     private class ScanExcludeFilter implements TypeFilter {
