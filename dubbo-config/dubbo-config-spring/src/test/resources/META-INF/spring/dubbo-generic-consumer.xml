@@ -25,12 +25,17 @@
     <dubbo:application name="dubbo-generic-consumer"/>
 
     <!-- 连接注册中心配置 -->
-    <dubbo:registry address="N/A"/>
+    <dubbo:registry address="zookeeper://127.0.0.1:2181"/>
 
     <dubbo:reference id="demoServiceRef" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true" init="false"/>
 
     <bean id="genericService" class="org.apache.dubbo.config.spring.schema.MyGenericService"/>
 
     <dubbo:service id="demoService" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
+                   ref="genericService"/>
+
+    <!-- generic service without interface class -->
+    <dubbo:reference id="genericServiceWithoutInterfaceRef" interface="org.apache.dubbo.config.spring.api.LocalMissService" generic="true" init="false"/>
+    <dubbo:service id="genericServiceWithoutInterface" interface="org.apache.dubbo.config.spring.api.LocalMissService" generic="true"
                    ref="genericService"/>
 </beans>
