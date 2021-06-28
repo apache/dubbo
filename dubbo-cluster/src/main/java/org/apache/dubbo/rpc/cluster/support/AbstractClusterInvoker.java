@@ -220,21 +220,12 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
         // First, try picking a invoker not in `selected`.
         for (Invoker<T> invoker : invokers) {
+            if (availablecheck && !invoker.isAvailable()) {
+                continue;
+            }
+
             if (selected == null || !selected.contains(invoker)) {
                 reselectInvokers.add(invoker);
-            }
-        }
-
-        if (availablecheck) {
-            int retryCount = 10;
-            if (reselectInvokers.size() < retryCount) {
-                retryCount = reselectInvokers.size();
-            }
-            for (int retry = 0; retry < retryCount; retry++) {
-                Invoker<T> resultInvoker = loadbalance.select(reselectInvokers, getUrl(), invocation);
-                if (resultInvoker != null && resultInvoker.isAvailable()) {
-                    return resultInvoker;
-                }
             }
         }
 
