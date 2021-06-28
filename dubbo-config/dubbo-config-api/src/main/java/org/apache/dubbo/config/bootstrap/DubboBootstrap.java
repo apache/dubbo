@@ -1397,12 +1397,13 @@ public class DubboBootstrap {
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->
             {
-                calInstanceRevision(serviceDiscovery, serviceInstance);
+                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (logger.isDebugEnabled()) {
-                    logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+                    logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
                 }
                 // register metadata
-                serviceDiscovery.register(serviceInstance);
+                serviceDiscovery.register(serviceInstanceForRegistry);
             });
         }
     }
