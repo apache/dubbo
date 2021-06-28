@@ -20,6 +20,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.EnvironmentUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -27,6 +28,9 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.SortedMap;
 
 
 /**
@@ -62,5 +66,11 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
+
+        // Initialize dubbo Environment before ConfigManager
+        // Extract dubbo props from Spring env and put them to app config
+        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
+        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
+        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
     }
 }
