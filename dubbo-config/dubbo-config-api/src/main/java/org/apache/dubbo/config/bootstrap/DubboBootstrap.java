@@ -1178,8 +1178,9 @@ public class DubboBootstrap {
         logger.info("Service asynchronous export / refer finished.");
 
         // release the resources.
-        logger.info("Shutting down the export-refer executor.");
-        executorRepository.shutdownExportReferExecutor();
+        logger.info("Shutting down the service-export and service-refer executor.");
+        executorRepository.shutdownServiceExportExecutor();
+        executorRepository.shutdownServiceReferExecutor();
 
         return this;
     }
@@ -1286,7 +1287,7 @@ public class DubboBootstrap {
             }
 
             if (sc.shouldExportAsync()) {
-                ExecutorService executor = executorRepository.getExportReferExecutor();
+                ExecutorService executor = executorRepository.getServiceExportExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
                         sc.export();
@@ -1334,7 +1335,7 @@ public class DubboBootstrap {
 
             if (rc.shouldInit()) {
                 if (rc.shouldReferAsync()) {
-                    ExecutorService executor = executorRepository.getExportReferExecutor();
+                    ExecutorService executor = executorRepository.getServiceReferExecutor();
                     CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                         try {
                             cache.get(rc);

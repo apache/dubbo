@@ -420,9 +420,13 @@ public interface CommonConstants {
 
     String REFER_ASYNC_KEY = "refer-async";
 
-    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+    String EXPORT_THREAD_NUM_KEY = "export-thread-num";
 
-    int DEFAULT_ASYNC_THREAD_NUM = 10;
+    String REFER_THREAD_NUM_KEY = "refer-thread-num";
+
+    int DEFAULT_EXPORT_THREAD_NUM = 1;
+
+    int DEFAULT_REFER_THREAD_NUM = 1;
 
     /**
      * Url merge processor key
