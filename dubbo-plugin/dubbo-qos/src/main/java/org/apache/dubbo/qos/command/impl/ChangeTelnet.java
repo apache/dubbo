@@ -7,7 +7,6 @@ import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import io.netty.channel.Channel;
-import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 
 
