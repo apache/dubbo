@@ -19,6 +19,7 @@ package org.apache.dubbo.demo.consumer;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.GreeterWrapperService;
 
 import java.io.IOException;
@@ -30,8 +31,13 @@ public class ApiWrapperConsumer {
         referenceConfig.setCheck(false);
         referenceConfig.setProtocol("tri");
         referenceConfig.setLazy(true);
-        referenceConfig.setApplication(new ApplicationConfig("dubbo-demo-triple-api-wrapper-consumer"));
-        referenceConfig.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
+
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+        bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-wrapper-consumer"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .reference(referenceConfig)
+                .start();
+
         final GreeterWrapperService greeterWrapperService = referenceConfig.get();
         System.out.println("dubbo referenceConfig started");
         long st = System.currentTimeMillis();
