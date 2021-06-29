@@ -81,6 +81,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
 import static org.apache.dubbo.common.constants.CommonConstants.FILE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.HOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
@@ -378,7 +379,7 @@ public class ConfigValidationUtils {
 
         checkExtension(ProxyFactory.class, PROXY_KEY, config.getProxy());
         checkExtension(Cluster.class, CLUSTER_KEY, config.getCluster());
-        checkMultiExtension(Arrays.asList(Filter.class, ClusterFilter.class), FILE_KEY, config.getFilter());
+        checkMultiExtension(Arrays.asList(Filter.class, ClusterFilter.class), FILTER_KEY, config.getFilter());
         checkNameHasSymbol(LAYER_KEY, config.getLayer());
 
         List<MethodConfig> methods = config.getMethods();
