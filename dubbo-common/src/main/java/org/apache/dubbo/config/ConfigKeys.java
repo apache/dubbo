@@ -39,9 +39,9 @@ public interface ConfigKeys {
     String DUBBO_CONFIG_MODE = "dubbo.config.mode";
 
     /**
-     * Ignore method config verification error. Default value is false.
+     * Ignore invalid method config. Default value is false.
      */
-    String DUBBO_CONFIG_IGNORE_METHOD_ERROR = "dubbo.config.ignore-method-error";
+    String DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG = "dubbo.config.ignore-invalid-method-config";
 
 
 }
