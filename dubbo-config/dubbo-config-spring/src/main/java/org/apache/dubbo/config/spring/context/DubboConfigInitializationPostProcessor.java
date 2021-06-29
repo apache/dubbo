@@ -26,6 +26,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.springframework.beans.BeansException;
@@ -118,6 +119,9 @@ public class DubboConfigInitializationPostProcessor implements BeanPostProcessor
         beansOfTypeIncludingAncestors(beanFactory, MetadataReportConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, MetricsConfig.class);
         beansOfTypeIncludingAncestors(beanFactory, SslConfig.class);
+
+        // All infrastructure config beans are loaded, initialize dubbo here
+        DubboBootstrap.getInstance().initialize();
 
         //SHOULD NOT init service beans here, all BeanPostProcessors have not been loaded yet,
         //seata is not loaded, so the ServiceBean cannot be processed by seata

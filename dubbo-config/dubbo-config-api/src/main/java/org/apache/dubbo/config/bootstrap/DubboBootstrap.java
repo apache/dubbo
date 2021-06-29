@@ -1084,7 +1084,6 @@ public class DubboBootstrap {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             startup.set(false);
-            initialized.set(false);
             shutdown.set(false);
             awaited.set(false);
 
