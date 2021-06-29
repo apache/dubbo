@@ -30,7 +30,7 @@ public class Version implements BaseCommand {
         StringBuilder versionDescBuilder = new StringBuilder();
         versionDescBuilder.append("dubbo version \"");
         versionDescBuilder.append(org.apache.dubbo.common.Version.getVersion());
-        versionDescBuilder.append("\"");
+        versionDescBuilder.append('\"');
         return versionDescBuilder.toString();
     }
 

@@ -325,19 +325,19 @@ public final class ReflectUtils {
 
     public static String getSignature(String methodName, Class<?>[] parameterTypes) {
         StringBuilder sb = new StringBuilder(methodName);
-        sb.append("(");
+        sb.append('(');
         if (parameterTypes != null && parameterTypes.length > 0) {
             boolean first = true;
             for (Class<?> type : parameterTypes) {
                 if (first) {
                     first = false;
                 } else {
-                    sb.append(",");
+                    sb.append(',');
                 }
                 sb.append(type.getName());
             }
         }
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 
@@ -349,7 +349,7 @@ public final class ReflectUtils {
      * @return name.
      */
     public static String getName(final Constructor<?> c) {
-        StringBuilder ret = new StringBuilder("(");
+        StringBuilder ret = new StringBuilder('(');
         Class<?>[] parameterTypes = c.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
             if (i > 0) {
@@ -600,7 +600,7 @@ public final class ReflectUtils {
             name = name.substring(0, index);
         }
         while (c-- > 0) {
-            sb.append("[");
+            sb.append('[');
         }
         if ("void".equals(name)) {
             sb.append(JVM_VOID);
@@ -732,7 +732,7 @@ public final class ReflectUtils {
         if (c > 0) {
             StringBuilder sb = new StringBuilder();
             while (c-- > 0) {
-                sb.append("[");
+                sb.append('[');
             }
 
             if ("void".equals(name)) {

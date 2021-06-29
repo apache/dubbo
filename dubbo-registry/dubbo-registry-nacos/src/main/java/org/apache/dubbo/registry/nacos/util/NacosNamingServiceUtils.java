@@ -125,13 +125,13 @@ public class NacosNamingServiceUtils {
     private static void setServerAddr(URL url, Properties properties) {
         StringBuilder serverAddrBuilder =
                 new StringBuilder(url.getHost()) // Host
-                        .append(":")
+                        .append(':')
                         .append(url.getPort()); // Port
 
         // Append backup parameter as other servers
         String backup = url.getParameter(BACKUP_KEY);
         if (backup != null) {
-            serverAddrBuilder.append(",").append(backup);
+            serverAddrBuilder.append(',').append(backup);
         }
 
         String serverAddr = serverAddrBuilder.toString();

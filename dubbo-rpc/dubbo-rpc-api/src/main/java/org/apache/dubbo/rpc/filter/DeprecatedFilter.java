@@ -58,7 +58,7 @@ public class DeprecatedFilter implements Filter {
 
     private String getMethodSignature(Invocation invocation) {
         StringBuilder buf = new StringBuilder(invocation.getMethodName());
-        buf.append("(");
+        buf.append('(');
         Class<?>[] types = invocation.getParameterTypes();
         if (types != null && types.length > 0) {
             boolean first = true;
@@ -71,7 +71,7 @@ public class DeprecatedFilter implements Filter {
                 buf.append(type.getSimpleName());
             }
         }
-        buf.append(")");
+        buf.append(')');
         return buf.toString();
     }
 

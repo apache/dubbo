@@ -56,11 +56,11 @@ public class ReferenceConfigCache {
 
         StringBuilder ret = new StringBuilder();
         if (!StringUtils.isBlank(referenceConfig.getGroup())) {
-            ret.append(referenceConfig.getGroup()).append("/");
+            ret.append(referenceConfig.getGroup()).append('/');
         }
         ret.append(iName);
         if (!StringUtils.isBlank(referenceConfig.getVersion())) {
-            ret.append(":").append(referenceConfig.getVersion());
+            ret.append(':').append(referenceConfig.getVersion());
         }
         return ret.toString();
     };
