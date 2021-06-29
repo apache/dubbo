@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.config.spring.util;
 
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 
+import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 
 import java.util.Map;
 
 import static com.alibaba.spring.util.AnnotationUtils.getAttribute;
 import static org.springframework.util.ClassUtils.getAllInterfacesForClass;
-import static org.springframework.util.ClassUtils.resolveClassName;
 import static org.springframework.util.StringUtils.hasText;
 
 /**
@@ -60,73 +60,48 @@ public class DubboAnnotationUtils {
     }
 
     /**
-     * Resolve the interface name from annotation attributes
+     * Resolve the service interface name from @Service annotation attributes.
+     * <p/>
+     * Note: the service interface class maybe not found locally if is a generic service.
      *
-     * @param attributes             annotation attributes instance, may be {@link Service @Service} or {@link Reference @Reference}
+     * @param attributes             annotation attributes of {@link Service @Service}
      * @param defaultInterfaceClass the default class of interface
      * @return the interface name if found
      * @throws IllegalStateException if interface name was not found
      */
     public static String resolveInterfaceName(Map<String, Object> attributes, Class<?> defaultInterfaceClass) {
         Boolean generic = getAttribute(attributes, "generic");
-        if (generic != null && generic) {
-            // it's a generic reference
-            String interfaceClassName = getAttribute(attributes, "interfaceName");
-            Assert.hasText(interfaceClassName,
-                    "@Reference interfaceName() must be present when reference a generic service!");
+        // 1. get from DubboService.interfaceName()
+        String interfaceClassName = getAttribute(attributes, "interfaceName");
+        if (StringUtils.hasText(interfaceClassName)) {
+            if (GenericService.class.getName().equals(interfaceClassName) ||
+                com.alibaba.dubbo.rpc.service.GenericService.class.getName().equals(interfaceClassName)) {
+                throw new IllegalStateException("@Service interfaceName() cannot be GenericService: " + interfaceClassName);
+            }
             return interfaceClassName;
         }
-        return resolveServiceInterfaceClass(attributes, defaultInterfaceClass).getName();
-    }
 
-    /**
-     * Resolve the interface class of Dubbo Service annotation from the specified
-     * annotation attributes and annotated class.
-     *
-     * @param attributes            annotation attributes
-     * @param defaultInterfaceClass the annotated class.
-     * @return the class of Dubbo Service interface
-     * @throws IllegalArgumentException if can't resolved
-     */
-    public static Class<?> resolveServiceInterfaceClass(Map<String, Object> attributes, Class<?> defaultInterfaceClass)
-            throws IllegalArgumentException {
-
-        ClassLoader classLoader = defaultInterfaceClass != null ? defaultInterfaceClass.getClassLoader() : Thread.currentThread().getContextClassLoader();
-
+        // 2. get from DubboService.interfaceClass()
         Class<?> interfaceClass = getAttribute(attributes, "interfaceClass");
-
         if (interfaceClass == null || void.class.equals(interfaceClass)) { // default or set void.class for purpose.
-
             interfaceClass = null;
-
-            String interfaceClassName = getAttribute(attributes, "interfaceName");
-
-            if (hasText(interfaceClassName)) {
-                if (ClassUtils.isPresent(interfaceClassName, classLoader)) {
-                    interfaceClass = resolveClassName(interfaceClassName, classLoader);
-                }
-            }
-
+        } else  if (GenericService.class.isAssignableFrom(interfaceClass)) {
+            throw new IllegalStateException("@Service interfaceClass() cannot be GenericService :" + interfaceClass.getName());
         }
 
-        if (interfaceClass == null && defaultInterfaceClass != null) {
+        // 3. get from annotation element type, ignore GenericService
+        if (interfaceClass == null && defaultInterfaceClass != null  && !GenericService.class.isAssignableFrom(defaultInterfaceClass)) {
             // Find all interfaces from the annotated class
             // To resolve an issue : https://github.com/apache/dubbo/issues/3251
             Class<?>[] allInterfaces = getAllInterfacesForClass(defaultInterfaceClass);
-
             if (allInterfaces.length > 0) {
                 interfaceClass = allInterfaces[0];
             }
-
         }
 
-        Assert.notNull(interfaceClass,
-                "@Service interfaceClass() or interfaceName() or interface class must be present!");
-
-        Assert.isTrue(interfaceClass.isInterface(),
-                "The annotated type must be an interface!");
-
-        return interfaceClass;
+        Assert.notNull(interfaceClass, "@Service interfaceClass() or interfaceName() or interface class must be present!");
+        Assert.isTrue(interfaceClass.isInterface(), "The annotated type must be an interface!");
+        return interfaceClass.getName();
     }
 
     @Deprecated
