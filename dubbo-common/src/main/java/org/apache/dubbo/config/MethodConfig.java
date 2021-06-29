@@ -216,6 +216,7 @@ public class MethodConfig extends AbstractMethodConfig {
 
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        // refresh ArgumentConfigs
         if (this.getArguments() != null && this.getArguments().size() > 0) {
             for (ArgumentConfig argument : this.getArguments()) {
                 refreshArgument(argument, subPropsConfiguration);

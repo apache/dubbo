@@ -230,6 +230,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException(interfaceName+" is not an interface");
             }
 
+            // Auto create MethodConfig/ArgumentConfig according to config props
             Map<String, String> configProperties = subPropsConfiguration.getProperties();
             Method[] methods = interfaceClass.getMethods();
             for (Method method : methods) {
@@ -255,15 +256,46 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     }
                 }
             }
-        }
 
-        List<MethodConfig> methodConfigs = this.getMethods();
-        if (methodConfigs != null && methodConfigs.size() > 0) {
-            for (MethodConfig methodConfig : methodConfigs) {
-                methodConfig.setParentPrefix(preferredPrefix);
-                methodConfig.refresh();
+            // refresh MethodConfigs
+            List<MethodConfig> methodConfigs = this.getMethods();
+            if (methodConfigs != null && methodConfigs.size() > 0) {
+                // whether ignore method config error
+                Object ignoreMethodConfigErrorVal = ApplicationModel.getEnvironment().getConfiguration()
+                    .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_METHOD_ERROR, "false");
+                boolean ignoreMethodConfigError = Boolean.parseBoolean(ignoreMethodConfigErrorVal.toString());
+
+                for (MethodConfig methodConfig : methodConfigs) {
+                    methodConfig.setParentPrefix(preferredPrefix);
+                    methodConfig.refresh();
+
+                    // check method exist
+                    String methodName = methodConfig.getName();
+                    if (StringUtils.isEmpty(methodName)) {
+                        String msg = "<dubbo:method> name attribute is required! Please check: " +
+                            "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
+                            "<dubbo:method name=\"\" ... /></<dubbo:reference>";
+                        if (ignoreMethodConfigError) {
+                            logger.warn(msg);
+                            continue;
+                        } else {
+                            throw new IllegalStateException(msg);
+                        }
+                    }
+
+                    boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
+                    if (!hasMethod) {
+                        String msg = "The interface " + interfaceClass.getName() + " not found method " + methodName;
+                        if (ignoreMethodConfigError) {
+                            logger.warn(msg);
+                        } else {
+                            throw new IllegalStateException(msg);
+                        }
+                    }
+                }
             }
         }
+
     }
 
     private ArgumentConfig getArgumentByIndex(MethodConfig methodConfig, int argIndex) {
