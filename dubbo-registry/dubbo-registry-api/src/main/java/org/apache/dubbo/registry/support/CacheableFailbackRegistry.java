@@ -308,26 +308,34 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
     private static class RemovalTask implements Runnable {
         @Override
         public void run() {
-            logger.info("Clearing cached URLs, size " + waitForRemove.size());
-            Iterator<Map.Entry<ServiceAddressURL, Long>> it = waitForRemove.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<ServiceAddressURL, Long> entry = it.next();
-                ServiceAddressURL removeURL = entry.getKey();
-                long removeTime = entry.getValue();
-                long current = System.currentTimeMillis();
-                if (current - removeTime >= cacheClearWaitingThresholdInMillis) {
-                    URLAddress urlAddress = removeURL.getUrlAddress();
-                    URLParam urlParam = removeURL.getUrlParam();
-                    if (current - urlAddress.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
-                        stringAddress.remove(urlAddress.getRawAddress());
+            logger.info("Clearing cached URLs, waiting to clear size " + waitForRemove.size());
+            int clearCount = 0;
+            try {
+                Iterator<Map.Entry<ServiceAddressURL, Long>> it = waitForRemove.entrySet().iterator();
+                while (it.hasNext()) {
+                    Map.Entry<ServiceAddressURL, Long> entry = it.next();
+                    ServiceAddressURL removeURL = entry.getKey();
+                    long removeTime = entry.getValue();
+                    long current = System.currentTimeMillis();
+                    if (current - removeTime >= cacheClearWaitingThresholdInMillis) {
+                        URLAddress urlAddress = removeURL.getUrlAddress();
+                        URLParam urlParam = removeURL.getUrlParam();
+                        if (current - urlAddress.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
+                            stringAddress.remove(urlAddress.getRawAddress());
+                        }
+                        if (current - urlParam.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
+                            stringParam.remove(urlParam.getRawParam());
+                        }
+                        it.remove();
+                        clearCount++;
                     }
-                    if (current - urlParam.getTimestamp() >= cacheClearWaitingThresholdInMillis) {
-                        stringParam.remove(urlParam.getRawParam());
-                    }
-                    it.remove();
                 }
+            } catch (Throwable t) {
+                logger.error("Error occurred when clearing cached URLs", t);
+            } finally {
+                semaphore.release();
             }
-            semaphore.release();
+            logger.info("Clear cached URLs, size " + clearCount);
 
             if (CollectionUtils.isNotEmptyMap(waitForRemove)) {
                 // move to next schedule

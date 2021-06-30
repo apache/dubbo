@@ -42,7 +42,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
@@ -79,9 +79,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         if (routeDestination == null) {
             return invokers;
         } else {
-            Random random = new Random();
-            int index = random.nextInt(routeDestination.size());
-            DubboRouteDestination dubboRouteDestination = routeDestination.get(index);
+            DubboRouteDestination dubboRouteDestination = routeDestination.get(ThreadLocalRandom.current().nextInt(routeDestination.size()));
 
             DubboDestination dubboDestination = dubboRouteDestination.getDestination();
 
