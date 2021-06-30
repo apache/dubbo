@@ -362,7 +362,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         }
 
         // check reference key
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(attributes, applicationContext.getEnvironment());
+        String referenceKey = ReferenceBeanSupport.generateReferenceKey(attributes, applicationContext);
 
         // check registered reference beans in referenceBeanManager
         List<String> registeredReferenceBeanNames = referenceBeanManager.getByKey(referenceKey);
@@ -379,7 +379,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
             if (isReferenceBean(prevBeanDefinition)) {
                 //check reference key
-                String prevReferenceKey = ReferenceBeanSupport.generateReferenceKey(prevBeanDefinition, applicationContext.getEnvironment());
+                String prevReferenceKey = ReferenceBeanSupport.generateReferenceKey(prevBeanDefinition, applicationContext);
                 if (StringUtils.isEquals(prevReferenceKey, referenceKey)) {
                     //found matched dubbo reference bean, ignore register
                     return referenceBeanName;

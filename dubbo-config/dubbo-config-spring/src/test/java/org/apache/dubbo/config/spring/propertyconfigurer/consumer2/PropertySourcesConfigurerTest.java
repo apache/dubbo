@@ -21,7 +21,6 @@ import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,7 +29,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class PropertySourcesConfigurerTest {
@@ -76,11 +74,16 @@ public class PropertySourcesConfigurerTest {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.propertyconfigurer.consumer2")
     @ComponentScan(value = {"org.apache.dubbo.config.spring.propertyconfigurer.consumer2"})
     @ImportResource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/dubbo-consumer.xml")
-    @PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/app.properties")
+    //@PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer2/app.properties")
     static class ConsumerConfiguration {
         @Bean
         public DemoBeanFactoryPostProcessor bizBeanFactoryPostProcessor(HelloService service) {
             return new DemoBeanFactoryPostProcessor(service);
         }
+    }
+
+    @Configuration
+    static class PropertyConfiguration {
+
     }
 }

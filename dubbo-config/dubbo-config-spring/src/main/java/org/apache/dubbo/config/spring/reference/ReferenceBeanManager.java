@@ -25,7 +25,6 @@ import org.apache.dubbo.config.spring.ReferenceBean;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.env.PropertyResolver;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,20 +51,19 @@ public class ReferenceBeanManager implements ApplicationContextAware {
     public void addReference(ReferenceBean referenceBean) throws Exception {
         String referenceBeanName = referenceBean.getId();
         Assert.notEmptyString(referenceBeanName, "The id of ReferenceBean cannot be empty");
-        PropertyResolver propertyResolver = applicationContext.getEnvironment();
 
         if (!initialized) {
             //TODO add issue url to describe early initialization
             logger.warn("Early initialize reference bean before DubboConfigInitializationPostProcessor," +
                     " the BeanPostProcessor has not been loaded at this time, which may cause abnormalities in some components (such as seata): " +
-                    referenceBeanName + " = " + ReferenceBeanSupport.generateReferenceKey(referenceBean, propertyResolver));
+                    referenceBeanName + " = " + ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext));
         }
 
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, propertyResolver);
+        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
         ReferenceBean oldReferenceBean = referenceIdMap.get(referenceBeanName);
         if (oldReferenceBean != null) {
             if (referenceBean != oldReferenceBean) {
-                String oldReferenceKey = ReferenceBeanSupport.generateReferenceKey(oldReferenceBean, propertyResolver);
+                String oldReferenceKey = ReferenceBeanSupport.generateReferenceKey(oldReferenceBean, applicationContext);
                 throw new IllegalStateException("Found duplicated ReferenceBean with id: " + referenceBeanName +
                         ", old: " + oldReferenceKey + ", new: " + referenceKey);
             }
@@ -133,7 +131,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         }
 
         // reference key
-        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext.getEnvironment());
+        String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
 
         ReferenceConfig referenceConfig = referenceConfigMap.get(referenceKey);
         if (referenceConfig == null) {
