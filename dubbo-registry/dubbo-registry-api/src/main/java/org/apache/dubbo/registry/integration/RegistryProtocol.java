@@ -561,7 +561,7 @@ public class RegistryProtocol implements Protocol {
         bounds.clear();
 
         ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                .removeListener(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
+                .removeListener(ApplicationModel.getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
     }
 
     @Override
@@ -730,7 +730,7 @@ public class RegistryProtocol implements Protocol {
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
         public ProviderConfigurationListener() {
-            this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+            this.initWith(ApplicationModel.getName() + CONFIGURATORS_SUFFIX);
         }
 
         /**
