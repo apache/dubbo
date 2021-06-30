@@ -428,4 +428,6 @@ public interface CommonConstants {
      * Url merge processor key
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
+
+    String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
 }
