@@ -349,7 +349,7 @@ public final class ReflectUtils {
      * @return name.
      */
     public static String getName(final Constructor<?> c) {
-        StringBuilder ret = new StringBuilder('(');
+        StringBuilder ret = new StringBuilder("(");
         Class<?>[] parameterTypes = c.getParameterTypes();
         for (int i = 0; i < parameterTypes.length; i++) {
             if (i > 0) {
