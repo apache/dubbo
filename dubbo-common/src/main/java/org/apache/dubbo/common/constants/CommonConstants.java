@@ -420,6 +420,10 @@ public interface CommonConstants {
 
     String REFER_ASYNC_KEY = "refer-async";
 
+    String EXPORT_BACKGROUND_KEY = "export-background";
+
+    String REFER_BACKGROUND_KEY = "refer-background";
+
     String EXPORT_THREAD_NUM_KEY = "export-thread-num";
 
     String REFER_THREAD_NUM_KEY = "refer-thread-num";

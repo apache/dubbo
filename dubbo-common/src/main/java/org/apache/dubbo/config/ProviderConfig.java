@@ -21,6 +21,7 @@ import org.apache.dubbo.config.support.Parameter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_BACKGROUND_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.EXPORT_THREAD_NUM_KEY;
 
 /**
@@ -160,6 +161,11 @@ public class ProviderConfig extends AbstractServiceConfig {
      * Thread num for asynchronous export pool size
      */
     private Integer exportThreadNum;
+
+    /**
+     * Whether export should run in background or not
+     */
+    private Boolean exportBackground;
 
     @Deprecated
     public void setProtocol(String protocol) {
@@ -437,6 +443,15 @@ public class ProviderConfig extends AbstractServiceConfig {
 
     public void setExportThreadNum(Integer exportThreadNum) {
         this.exportThreadNum = exportThreadNum;
+    }
+
+    @Parameter(key = EXPORT_BACKGROUND_KEY, excluded = true)
+    public Boolean getExportBackground() {
+        return exportBackground;
+    }
+
+    public void setExportBackground(Boolean exportBackground) {
+        this.exportBackground = exportBackground;
     }
 
     @Override
