@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -54,10 +55,11 @@ public class ProtocolConfigTest {
     @Test
     public void testPort() throws Exception {
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setPort(8080);
+        int port = NetUtils.getAvailablePort();
+        protocol.setPort(port);
         Map<String, String> parameters = new HashMap<String, String>();
         ProtocolConfig.appendParameters(parameters, protocol);
-        assertThat(protocol.getPort(), equalTo(8080));
+        assertThat(protocol.getPort(), equalTo(port));
         assertThat(parameters.isEmpty(), is(true));
     }
 
