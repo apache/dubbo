@@ -428,9 +428,9 @@ public interface CommonConstants {
 
     String REFER_THREAD_NUM_KEY = "refer-thread-num";
 
-    int DEFAULT_EXPORT_THREAD_NUM = 1;
+    int DEFAULT_EXPORT_THREAD_NUM = 10;
 
-    int DEFAULT_REFER_THREAD_NUM = 1;
+    int DEFAULT_REFER_THREAD_NUM = 10;
 
     /**
      * Url merge processor key
