@@ -71,17 +71,35 @@ public class JavaConfigReferenceBeanTest {
         Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
         Assertions.assertEquals(2, helloServiceMap.size());
         Assertions.assertNotNull(helloServiceMap.get("helloService"));
+        Assertions.assertNotNull(helloServiceMap.get("helloServiceImpl"));
+
+        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+        Assertions.assertEquals(1, referenceBeanMap.size());
+        ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
+        Assertions.assertEquals("demo", referenceBean.getGroup());
+        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
+
+        context.close();
+        Assertions.assertEquals(1, SpringExtensionFactory.getContexts().size());
+    }
+
+    @Test
+    public void testGenericServiceAnnotationBean() {
+        Assertions.assertEquals(0, SpringExtensionFactory.getContexts().size());
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
+            GenericServiceAnnotationBeanConfiguration.class);
+
+        Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
+        Assertions.assertEquals(1, helloServiceMap.size());
+        Assertions.assertNotNull(helloServiceMap.get("helloServiceImpl"));
 
         Map<String, GenericService> genericServiceMap = context.getBeansOfType(GenericService.class);
         Assertions.assertEquals(3, genericServiceMap.size());
         Assertions.assertNotNull(genericServiceMap.get("genericHelloService"));
 
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(3, referenceBeanMap.size());
-        ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
-        Assertions.assertEquals("demo", referenceBean.getGroup());
-        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
-        Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
+        Assertions.assertEquals(2, referenceBeanMap.size());
 
         ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
         Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
@@ -103,7 +121,7 @@ public class JavaConfigReferenceBeanTest {
     }
 
     @Test
-    public void testGenericReferenceBean() {
+    public void testReferenceBean() {
         Assertions.assertEquals(0, SpringExtensionFactory.getContexts().size());
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
                 ReferenceBeanConfiguration.class);
@@ -111,16 +129,39 @@ public class JavaConfigReferenceBeanTest {
         Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
         Assertions.assertEquals(2, helloServiceMap.size());
         Assertions.assertNotNull(helloServiceMap.get("helloService"));
-
-        Map<String, GenericService> genericServiceMap = context.getBeansOfType(GenericService.class);
-        Assertions.assertEquals(2, genericServiceMap.size());
-        Assertions.assertNotNull(genericServiceMap.get("genericHelloService"));
+        Assertions.assertNotNull(helloServiceMap.get("helloServiceImpl"));
 
         Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(2, referenceBeanMap.size());
         ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
         Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
         Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
+
+        ReferenceBean demoServiceReferenceBean = referenceBeanMap.get("&demoService");
+        Assertions.assertEquals(DemoService.class, demoServiceReferenceBean.getInterfaceClass());
+        Assertions.assertEquals(DemoService.class.getName(), demoServiceReferenceBean.getServiceInterface());
+
+        context.close();
+        Assertions.assertEquals(1, SpringExtensionFactory.getContexts().size());
+    }
+
+    @Test
+    public void testGenericServiceReferenceBean() {
+        Assertions.assertEquals(0, SpringExtensionFactory.getContexts().size());
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
+            GenericServiceReferenceBeanConfiguration.class);
+
+        Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
+        Assertions.assertEquals(1, helloServiceMap.size());
+        Assertions.assertNotNull(helloServiceMap.get("helloServiceImpl"));
+
+        Map<String, GenericService> genericServiceMap = context.getBeansOfType(GenericService.class);
+        Assertions.assertEquals(2, genericServiceMap.size());
+        Assertions.assertNotNull(genericServiceMap.get("localMissClassGenericServiceImpl"));
+        Assertions.assertNotNull(genericServiceMap.get("genericHelloService"));
+
+        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+        Assertions.assertEquals(1, referenceBeanMap.size());
 
         ReferenceBean genericHelloServiceReferenceBean = referenceBeanMap.get("&genericHelloService");
         Assertions.assertEquals("demo", genericHelloServiceReferenceBean.getGroup());
@@ -249,6 +290,11 @@ public class JavaConfigReferenceBeanTest {
             return new ReferenceBean();
         }
 
+    }
+
+    @Configuration
+    public static class GenericServiceAnnotationBeanConfiguration {
+
         @Bean
         @Reference(group = "${myapp.group}", interfaceClass = HelloService.class)
         public ReferenceBean<GenericService> genericHelloService() {
@@ -260,7 +306,6 @@ public class JavaConfigReferenceBeanTest {
         public ReferenceBean<GenericService> genericServiceWithoutInterface() {
             return new ReferenceBean();
         }
-
     }
 
     @Configuration
@@ -277,15 +322,18 @@ public class JavaConfigReferenceBeanTest {
         public ReferenceBean<DemoService> demoService() {
             return new ReferenceBean();
         }
+    }
+
+    @Configuration
+    public static class GenericServiceReferenceBeanConfiguration {
 
         @Bean
         public ReferenceBean<GenericService> genericHelloService() {
             return new ReferenceBeanBuilder()
-                    .setGroup("${myapp.group}")
-                    .setInterface(HelloService.class)
-                    .build();
+                .setGroup("${myapp.group}")
+                .setInterface(HelloService.class)
+                .build();
         }
-
     }
 
     @Configuration
