@@ -90,7 +90,7 @@ public class ReferenceConfigCache {
      * Get the cache use specified name and {@link KeyGenerator}.
      * Create cache if not existed yet.
      */
-    private static ReferenceConfigCache getCache(String name) {
+    public static ReferenceConfigCache getCache(String name) {
         return getCache(name, DEFAULT_KEY_GENERATOR);
     }
 
