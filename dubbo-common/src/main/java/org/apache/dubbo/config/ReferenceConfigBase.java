@@ -296,7 +296,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         super.computeValidRegistryIds();
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getUniqueServiceName() {
         return interfaceName != null ? URL.buildKey(interfaceName, getGroup(), getVersion()) : null;
     }

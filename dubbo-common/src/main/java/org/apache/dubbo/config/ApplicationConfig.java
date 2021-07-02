@@ -379,7 +379,7 @@ public class ApplicationConfig extends AbstractConfig {
      *
      * @return
      */
-    @Parameter(key = "qos-enable", excluded = true)
+    @Parameter(key = "qos-enable", excluded = true, attribute = false)
     public Boolean getQosEnableCompatible() {
         return getQosEnable();
     }
@@ -388,7 +388,7 @@ public class ApplicationConfig extends AbstractConfig {
         setQosEnable(qosEnable);
     }
 
-    @Parameter(key = "qos-host", excluded = true)
+    @Parameter(key = "qos-host", excluded = true, attribute = false)
     public String getQosHostCompatible() {
         return getQosHost();
     }
@@ -397,7 +397,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosHost(qosHost);
     }
 
-    @Parameter(key = "qos-port", excluded = true)
+    @Parameter(key = "qos-port", excluded = true, attribute = false)
     public Integer getQosPortCompatible() {
         return getQosPort();
     }
@@ -406,7 +406,7 @@ public class ApplicationConfig extends AbstractConfig {
         this.setQosPort(qosPort);
     }
 
-    @Parameter(key = "qos-accept-foreign-ip", excluded = true)
+    @Parameter(key = "qos-accept-foreign-ip", excluded = true, attribute = false)
     public Boolean getQosAcceptForeignIpCompatible() {
         return this.getQosAcceptForeignIp();
     }

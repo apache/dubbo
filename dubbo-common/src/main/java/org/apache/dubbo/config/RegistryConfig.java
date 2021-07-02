@@ -307,7 +307,7 @@ public class RegistryConfig extends AbstractConfig {
      * @deprecated
      */
     @Deprecated
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getTransport() {
         return getTransporter();
     }

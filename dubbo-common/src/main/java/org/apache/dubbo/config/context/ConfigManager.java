@@ -26,6 +26,7 @@ import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -45,6 +46,8 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +79,12 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
     final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
+
+    private Map<String, ReferenceConfigBase> referenceConfigCache = new HashMap<>();
+
+    private Map<String, ServiceConfigBase> serviceConfigCache = new HashMap<>();
+
+    private Set<AbstractConfig> duplicatedConfigs = new HashSet<>();
 
     private ConfigMode configMode = ConfigMode.STRICT;
 
@@ -426,6 +435,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         write(() -> {
             this.configsCache.clear();
             configIdIndexes.clear();
+            this.referenceConfigCache.clear();
+            this.serviceConfigCache.clear();
+            this.duplicatedConfigs.clear();
         });
     }
 
@@ -628,22 +640,50 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             return config;
         }
 
-        // find by value
+        // check duplicated config
         // TODO Is there any problem with ignoring duplicate and equivalent but different ReferenceConfig instances?
-        Optional<C> prevConfig = configsMap.values().stream()
+        if (config instanceof ReferenceConfigBase) {
+            // special check service and reference config, speed up the processing of a large number of instances
+            ReferenceConfigBase<?> referenceConfig = (ReferenceConfigBase<?>) config;
+            String uniqueServiceName = referenceConfig.getUniqueServiceName();
+            ReferenceConfigBase prevReferenceConfig = referenceConfigCache.putIfAbsent(uniqueServiceName, referenceConfig);
+            if (prevReferenceConfig != null) {
+                if (prevReferenceConfig == config) {
+                    return config;
+                }
+                if (isIgnoreDuplicateService(uniqueServiceName, prevReferenceConfig, config)) {
+                    return (C) prevReferenceConfig;
+                }
+            }
+        } else if (config instanceof ServiceConfigBase) {
+            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
+            String uniqueServiceName = serviceConfig.getUniqueServiceName();
+            ServiceConfigBase prevServiceConfig = serviceConfigCache.putIfAbsent(uniqueServiceName, serviceConfig);
+            if (prevServiceConfig != null) {
+                if (prevServiceConfig == config) {
+                    return config;
+                }
+                if (isIgnoreDuplicateService(uniqueServiceName, prevServiceConfig, config)) {
+                    return (C) prevServiceConfig;
+                }
+            }
+        } else {
+            // find by value
+            Optional<C> prevConfig = configsMap.values().stream()
                 .filter(val -> isEquals(val, config))
                 .findFirst();
-        if (prevConfig.isPresent()) {
-            if (prevConfig.get() == config) {
-                // the new one is same as existing one
+            if (prevConfig.isPresent()) {
+                if (prevConfig.get() == config) {
+                    // the new one is same as existing one
+                    return prevConfig.get();
+                }
+
+                // ignore duplicated equivalent config
+                if (logger.isInfoEnabled() && duplicatedConfigs.add(config)) {
+                    logger.info("Ignore duplicated config: " + config);
+                }
                 return prevConfig.get();
             }
-
-            // ignore duplicated equivalent config
-            if (logger.isInfoEnabled()) {
-                logger.info("Ignore duplicated config: " + config);
-            }
-            return prevConfig.get();
         }
 
         // check unique config
@@ -661,13 +701,17 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
                 }
                 case IGNORE: {
                     // ignore later config
-                    logger.warn(msgPrefix + "keep previous config and ignore later config: " + config);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "keep previous config and ignore later config: " + config);
+                    }
                     return oldOne;
                 }
                 case OVERRIDE: {
                     // clear previous config, add new config
                     configsMap.clear();
-                    logger.warn(msgPrefix + "override previous config with later config: " + config);
+                    if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                        logger.warn(msgPrefix + "override previous config with later config: " + config);
+                    }
                     break;
                 }
             }
@@ -689,6 +733,22 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             configsMap.put(key, config);
         }
         return config;
+    }
+
+    private <C extends AbstractConfig> boolean isIgnoreDuplicateService(String uniqueServiceName, AbstractInterfaceConfig prevConfig, C config) {
+        String configType = config.getClass().getSimpleName();
+        String msg = "Found equivalent " + configType + " with unique service name [" +
+            uniqueServiceName + "], previous: " + prevConfig + ", later: " + config + ". " +
+            "There can only be one instance of " + configType + " with the same triple (group, interface, version). " +
+            "If multiple instances are required for the same interface, please use a different group or version.";
+
+        if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+            logger.warn(msg);
+        }
+        if (configMode == ConfigMode.STRICT) {
+            throw new IllegalStateException(msg);
+        }
+        return true;
     }
 
     public static <C extends AbstractConfig> String generateConfigId(C config) {
