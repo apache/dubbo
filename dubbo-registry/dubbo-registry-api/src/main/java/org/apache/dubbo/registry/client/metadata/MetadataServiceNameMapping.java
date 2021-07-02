@@ -73,7 +73,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     }
                     newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
                 }
-                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
+                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
             } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
         });
     }
