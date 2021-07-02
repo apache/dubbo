@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.UrlUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -42,6 +43,11 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 public class RegistryConfigTest {
+
+    @BeforeEach
+    public void beforeEach() {
+        DubboBootstrap.reset();
+    }
 
     @AfterEach
     public void afterEach() {

@@ -24,7 +24,6 @@ import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
@@ -341,7 +340,7 @@ public class ReferenceBean<T> implements FactoryBean,
             throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
-        return ReferenceConfigCache.getCache().get(referenceConfig);
+        return referenceConfig.get();
     }
 
     private class DubboReferenceLazyInitTargetSource extends AbstractLazyCreationTargetSource {

@@ -202,7 +202,7 @@ public class MethodConfig extends AbstractMethodConfig {
      * @return
      */
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         // parent prefix + method name
         if (parentPrefix != null) {

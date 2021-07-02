@@ -26,7 +26,7 @@
 
     <dubbo:registry id="my-registry" address="N/A" />
 
-    <dubbo:consumer id="my-consumer" registry="my-registry" group="demo" version="1.2.3" scope="remote"
+    <dubbo:consumer id="my-consumer" registry="my-registry" group="demo" version="1.2.4" scope="remote"
                     timeout="${call.timeout:foo100}" >
         <dubbo:reference id="demoService2" interface="org.apache.dubbo.config.spring.api.DemoService" generic="true"
                          url="dubbo://127.0.0.1:20813" init="false" />

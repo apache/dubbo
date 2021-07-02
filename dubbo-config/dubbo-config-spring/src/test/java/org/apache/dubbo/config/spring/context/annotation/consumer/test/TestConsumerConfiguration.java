@@ -78,7 +78,7 @@ public class TestConsumerConfiguration {
 
     public static abstract class Ancestor {
 
-        @DubboReference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @DubboReference(version = "2.5.7", url = remoteURL,filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromAncestor;
 
         public DemoService getDemoServiceFromAncestor() {
@@ -98,7 +98,7 @@ public class TestConsumerConfiguration {
             return demoServiceFromParent;
         }
 
-        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @com.alibaba.dubbo.config.annotation.Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         public void setDemoServiceFromParent(DemoService demoServiceFromParent) {
             this.demoServiceFromParent = demoServiceFromParent;
         }
@@ -107,7 +107,7 @@ public class TestConsumerConfiguration {
 
     public static class Child extends Parent {
 
-        @Reference(version = "2.5.7", url = remoteURL, application = "dubbo-demo-application")
+        @Reference(version = "2.5.7", url = remoteURL, filter = "mymock", application = "dubbo-demo-application")
         private DemoService demoServiceFromChild;
 
         public DemoService getDemoServiceFromChild() {

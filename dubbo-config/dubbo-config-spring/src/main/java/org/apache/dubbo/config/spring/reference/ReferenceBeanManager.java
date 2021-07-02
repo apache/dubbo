@@ -130,6 +130,8 @@ public class ReferenceBeanManager implements ApplicationContextAware {
             return;
         }
 
+        // TOTO check same unique service name but difference reference key (means difference attributes).
+
         // reference key
         String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
 
