@@ -189,6 +189,8 @@ public interface CommonConstants {
 
     String FILE_KEY = "file";
 
+    String FILTER_KEY = "filter";
+
     String DUMP_DIRECTORY = "dump.directory";
 
     String CLASSIFIER_KEY = "classifier";

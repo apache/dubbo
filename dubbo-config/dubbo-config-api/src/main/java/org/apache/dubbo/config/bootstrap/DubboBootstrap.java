@@ -1590,6 +1590,7 @@ public class DubboBootstrap {
     }
 
     public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        this.started.set(false);
         this.takeoverMode = takeoverMode;
     }
 
