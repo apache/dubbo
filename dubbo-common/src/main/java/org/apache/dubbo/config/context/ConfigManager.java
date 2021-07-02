@@ -563,15 +563,13 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     private <V> V write(Callable<V> callable) {
-        V value = null;
+        V value;
         Lock writeLock = lock.writeLock();
         try {
             writeLock.lock();
             value = callable.call();
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Throwable e) {
-            throw new RuntimeException(e.getCause());
+            throw new RuntimeException(e);
         } finally {
             writeLock.unlock();
         }
@@ -587,7 +585,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private <V> V read(Callable<V> callable) {
         Lock readLock = lock.readLock();
-        V value = null;
+        V value;
         try {
             readLock.lock();
             value = callable.call();
@@ -718,10 +716,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
 
         String key = getId(config);
-            if (key == null) {
-                // generate key for non-default config compatible with API usages
-                key = generateConfigId(config);
-            }
+        if (key == null) {
+            // generate key for non-default config compatible with API usages
+            key = generateConfigId(config);
+        }
 
         C existedConfig = configsMap.get(key);
 
@@ -729,9 +727,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             String type = config.getClass().getSimpleName();
             throw new IllegalStateException(String.format("Duplicate %s found, there already has one default %s or more than two %ss have the same id, " +
                     "you can try to give each %s a different id, key: %s, prev: %s, new: %s", type, type, type, type, key, existedConfig, config));
-        } else {
-            configsMap.put(key, config);
         }
+        configsMap.put(key, config);
+
         return config;
     }
 
