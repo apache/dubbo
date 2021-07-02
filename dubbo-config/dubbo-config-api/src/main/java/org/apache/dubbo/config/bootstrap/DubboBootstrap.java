@@ -1288,8 +1288,10 @@ public class DubboBootstrap {
                 ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        sc.export();
-                        exportedServices.add(sc);
+                        if (!sc.isExported()) {
+                            sc.export();
+                            exportedServices.add(sc);
+                        }
                     } catch (Throwable t) {
                         logger.error("export async catch error : " + t.getMessage(), t);
                     }
@@ -1297,8 +1299,10 @@ public class DubboBootstrap {
 
                 asyncExportingFutures.add(future);
             } else {
-                sc.export();
-                exportedServices.add(sc);
+                if (!sc.isExported()) {
+                    sc.export();
+                    exportedServices.add(sc);
+                }
             }
         }
     }
@@ -1586,6 +1590,7 @@ public class DubboBootstrap {
     }
 
     public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        this.started.set(false);
         this.takeoverMode = takeoverMode;
     }
 

@@ -118,6 +118,7 @@ public class ServiceConfigTest {
         service.setInterface(DemoService.class);
         service.setRef(new DemoServiceImpl());
         service.setMethods(Collections.singletonList(method));
+        service.setGroup("demo1");
 
         service2.setProvider(provider);
         service2.setApplication(app);
@@ -126,6 +127,7 @@ public class ServiceConfigTest {
         service2.setRef(new DemoServiceImpl());
         service2.setMethods(Collections.singletonList(method));
         service2.setProxy("testproxyfactory");
+        service2.setGroup("demo2");
 
         delayService.setProvider(provider);
         delayService.setApplication(app);
@@ -134,13 +136,14 @@ public class ServiceConfigTest {
         delayService.setRef(new DemoServiceImpl());
         delayService.setMethods(Collections.singletonList(method));
         delayService.setDelay(100);
+        delayService.setGroup("demo3");
 
         serviceWithoutRegistryConfig.setProvider(provider);
         serviceWithoutRegistryConfig.setApplication(app);
         serviceWithoutRegistryConfig.setInterface(DemoService.class);
         serviceWithoutRegistryConfig.setRef(new DemoServiceImpl());
         serviceWithoutRegistryConfig.setMethods(Collections.singletonList(method));
-
+        serviceWithoutRegistryConfig.setGroup("demo4");
     }
 
     @AfterEach

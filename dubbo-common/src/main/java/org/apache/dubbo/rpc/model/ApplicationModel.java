@@ -34,14 +34,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * singleton or static (by itself totally static or uses some static fields). So the instances
  * returned from them are of process scope. If you want to support multiple dubbo servers in one
  * single process, you may need to refactor those three classes.
- *
+ * <p>
  * Represent a application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services
  * and many Consumer Model which is about subscribed services.
  * <p>
- *
  */
 
 public class ApplicationModel {
@@ -122,14 +121,19 @@ public class ApplicationModel {
     }
 
     @Deprecated
+    //It will be remove at next version
     private static String application;
 
+    /**
+     *
+     * @deprecated Use {@link #getName()} instead. It will be remove at next version.
+     */
     @Deprecated
     public static String getApplication() {
         return application == null ? getName() : application;
     }
 
-    // Currently used by UT.
+    // Currently used by UT, it will be remove at next version.
     @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;

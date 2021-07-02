@@ -50,10 +50,10 @@ import static org.apache.dubbo.rpc.cluster.Constants.STATE_ROUTER_KEY;
  * Router chain
  */
 public class RouterChain<T> {
-    public static final Logger LOGGER = LoggerFactory.getLogger(RouterChain.class);
+    private static final Logger logger = LoggerFactory.getLogger(RouterChain.class);
 
     // full list of addresses from registry, classified by method name.
-    private List<Invoker<T>> invokers = Collections.emptyList();
+    private volatile List<Invoker<T>> invokers = Collections.emptyList();
 
     // containing all routers, reconstruct every time 'route://' urls change.
     private volatile List<Router> routers = Collections.emptyList();
@@ -223,7 +223,7 @@ public class RouterChain<T> {
                 //file cache
                 routerCacheMap.put(stateRouter.getName(), routerCache);
             } catch (Throwable t) {
-                LOGGER.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
+                logger.error("Failed to pool router: " + stateRouter.getUrl() + ", cause: " + t.getMessage(), t);
                 return;
             }
         }
@@ -303,7 +303,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                LOGGER.error("Error trying to stop router " + router.getClass(), e);
+                logger.error("Error trying to stop router " + router.getClass(), e);
             }
         }
         routers = Collections.emptyList();
@@ -313,7 +313,7 @@ public class RouterChain<T> {
             try {
                 router.stop();
             } catch (Exception e) {
-                LOGGER.error("Error trying to stop stateRouter " + router.getClass(), e);
+                logger.error("Error trying to stop stateRouter " + router.getClass(), e);
             }
         }
         stateRouters = Collections.emptyList();

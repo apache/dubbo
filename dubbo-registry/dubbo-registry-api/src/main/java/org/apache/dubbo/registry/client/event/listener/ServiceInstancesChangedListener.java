@@ -129,7 +129,11 @@ public class ServiceInstancesChangedListener {
 
                 MetadataInfo metadata = getRemoteMetadata(instance, revision, localServiceToRevisions, subInstances);
 
-                // it means fetching Meta Server failed if metadata is null
+                if (metadata==null || metadata == MetadataInfo.EMPTY) {
+                    // it means fetching Meta Server failed if metadata is null, ignore this instance
+                    subInstances.remove(instance);
+                    continue;
+                }
                 ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
                 newRevisionToMetadata.putIfAbsent(revision, metadata);
             }

@@ -633,7 +633,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
         List<RegistryDirectory> listeners = new ArrayList<>();
 
         ConsumerConfigurationListener() {
-            this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+            this.initWith(ApplicationModel.getName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

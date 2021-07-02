@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -189,6 +190,28 @@ public class ReferenceConfigTest {
         long end = System.currentTimeMillis();
         System.out.println("ReferenceConfig get prefixes cost: " + (end - start));
 
+    }
+
+    @Test
+    public void testLargeReferences() {
+        int amount = 5000;
+        List<ReferenceConfig> referenceConfigs = new ArrayList<>(amount);
+        for (int i = 0; i < amount; i++) {
+            ReferenceConfig referenceConfig = new ReferenceConfig();
+            referenceConfig.setInterface("com.test.TestService" + i);
+            referenceConfigs.add(referenceConfig);
+        }
+
+        // test add large number of references
+        long t1 = System.currentTimeMillis();
+        for (ReferenceConfig referenceConfig : referenceConfigs) {
+            DubboBootstrap.getInstance().reference(referenceConfig);
+        }
+        long t2 = System.currentTimeMillis();
+        long cost = t2 - t1;
+        System.out.println("Add large references cost: " + cost + "ms");
+        Assertions.assertEquals(amount, DubboBootstrap.getInstance().getConfigManager().getReferences().size());
+        Assertions.assertTrue( cost < 500, "add large reference too slowly: "+cost);
     }
 
     @Test
