@@ -17,11 +17,16 @@
 package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.url.component.ServiceConfigURL;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.remoting.Constants;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 class ConnectionTest {
 
@@ -54,5 +59,18 @@ class ConnectionTest {
         connection.release(2);
         latch.await();
         Assertions.assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void connectSyncTest() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = new ServiceConfigURL("empty", "localhost", port,
+            new String[]{Constants.BIND_PORT_KEY, String.valueOf(port)});
+        PortUnificationServer server = new PortUnificationServer(url);
+        server.bind();
+
+        Connection connection = new Connection(url);
+        connection.connectSync();
+        Assertions.assertNotNull(connection.getChannel());
     }
 }
