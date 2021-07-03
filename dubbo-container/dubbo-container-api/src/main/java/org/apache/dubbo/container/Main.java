@@ -61,9 +61,10 @@ public class Main {
             final List<Container> containers = new ArrayList<Container>();
             for (int i = 0; i < args.length; i++) {
                 Container container = LOADER.getExtension(args[i]);
-                if (null != container) {
-                    containers.add(LOADER.getExtension(args[i]));
+                if (null == container) {
+                    throw new IllegalArgumentException("Default extension is not configured, but the extension name is 'true'");
                 }
+                containers.add(LOADER.getExtension(args[i]));
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo service.");
 
