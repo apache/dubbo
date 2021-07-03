@@ -23,6 +23,7 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -42,8 +43,12 @@ public class PropertySourcesInJavaConfigTest {
 
     @BeforeAll
     public static void setUp() {
-        DubboBootstrap.reset();
         ZooKeeperServer.start();
+    }
+
+    @BeforeEach
+    public void beforeTest() {
+        DubboBootstrap.reset();
     }
 
     @Test

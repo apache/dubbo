@@ -116,9 +116,10 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            String s = e.toString();
-            Assertions.assertTrue(s.contains("Already exists another reference bean with the same bean name and type but difference attributes"), getStackTrace(e));
-            Assertions.assertTrue(s.contains("ConsumerConfiguration2.demoService"), getStackTrace(e));
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains("Found equivalent ReferenceConfig with unique service name [demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3]"), msg);
+//            Assertions.assertTrue(msg.contains("Already exists another reference bean with the same bean name and type but difference attributes"), msg);
+//            Assertions.assertTrue(msg.contains("ConsumerConfiguration2.demoService"), msg);
         }
     }
 
@@ -143,7 +144,8 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            Assertions.assertTrue(e.getMessage().contains("Duplicate spring bean name: demoService"), getStackTrace(e));
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains("Duplicate spring bean name: demoService"), msg);
         } finally {
             if (context != null) {
                 context.close();
@@ -171,9 +173,10 @@ public class ReferenceKeyTest {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
-            String checkString = "Already exists another bean definition with the same bean name, but cannot rename the reference bean name";
-            Assertions.assertTrue(e.getMessage().contains(checkString), getStackTrace(e));
-            Assertions.assertTrue(e.getMessage().contains("ConsumerConfiguration6.demoService"), getStackTrace(e));
+            String checkString = "Already exists another bean definition with the same bean name [demoService], but cannot rename the reference bean name";
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains(checkString), msg);
+            Assertions.assertTrue(msg.contains("ConsumerConfiguration6.demoService"), msg);
         }
     }
 

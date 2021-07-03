@@ -140,9 +140,10 @@ public class ReferenceBeanSupport {
             // resolve placeholder with Spring BeanFactory ( using PropertyResourceConfigurer/PropertySourcesPlaceholderConfigurer )
             referenceKey = ((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory()).resolveEmbeddedValue(referenceKey);
         }
-        if (referenceKey != null && referenceKey.contains("${")) {
-            throw new IllegalStateException("Reference key contains unresolved placeholders ${..} : " + referenceKey);
-        }
+        // The property placeholder maybe not resolved if is early init
+        // if (referenceKey != null && referenceKey.contains("${")) {
+        //     throw new IllegalStateException("Reference key contains unresolved placeholders ${..} : " + referenceKey);
+        // }
         return referenceKey;
     }
 

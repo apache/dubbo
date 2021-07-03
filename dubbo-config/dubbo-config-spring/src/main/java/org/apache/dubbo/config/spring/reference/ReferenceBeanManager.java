@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,14 +38,19 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ReferenceBeanManager implements ApplicationContextAware {
     public static final String BEAN_NAME = "dubboReferenceBeanManager";
     private final Log logger = LogFactory.getLog(getClass());
-    //reference bean id/name -> ReferenceBean
-    private Map<String, ReferenceBean> referenceIdMap = new ConcurrentHashMap<>();
 
-    //reference key -> [ reference bean names ]
+    //reference key -> reference bean names
     private Map<String, List<String>> referenceKeyMap = new ConcurrentHashMap<>();
+
+    // reference alias -> reference bean name
+    private Map<String, String> referenceAliasMap = new ConcurrentHashMap<>();
+
+    //reference bean name -> ReferenceBean
+    private Map<String, ReferenceBean> referenceBeanMap = new ConcurrentHashMap<>();
 
     //reference key -> ReferenceConfig instance
     private Map<String, ReferenceConfig> referenceConfigMap = new ConcurrentHashMap<>();
+
     private ApplicationContext applicationContext;
     private volatile boolean initialized = false;
 
@@ -60,7 +66,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         }
 
         String referenceKey = ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext);
-        ReferenceBean oldReferenceBean = referenceIdMap.get(referenceBeanName);
+        ReferenceBean oldReferenceBean = referenceBeanMap.get(referenceBeanName);
         if (oldReferenceBean != null) {
             if (referenceBean != oldReferenceBean) {
                 String oldReferenceKey = ReferenceBeanSupport.generateReferenceKey(oldReferenceBean, applicationContext);
@@ -69,7 +75,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
             }
             return;
         }
-        referenceIdMap.put(referenceBeanName, referenceBean);
+        referenceBeanMap.put(referenceBeanName, referenceBean);
         //save cache, map reference key to referenceBeanName
         this.registerReferenceKeyAndBeanName(referenceKey, referenceBeanName);
 
@@ -79,20 +85,31 @@ public class ReferenceBeanManager implements ApplicationContextAware {
         }
     }
 
-    public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanName) {
-        referenceKeyMap.getOrDefault(referenceKey, new ArrayList<>()).add(referenceBeanName);
+    public void registerReferenceKeyAndBeanName(String referenceKey, String referenceBeanNameOrAlias) {
+        List<String> list = referenceKeyMap.computeIfAbsent(referenceKey, (key) -> new ArrayList<>());
+        if (!list.contains(referenceBeanNameOrAlias)) {
+            list.add(referenceBeanNameOrAlias);
+            // register bean name as alias
+            referenceAliasMap.put(referenceBeanNameOrAlias, list.get(0));
+        }
     }
 
-    public ReferenceBean getById(String key) {
-        return referenceIdMap.get(key);
+    public ReferenceBean getById(String referenceBeanNameOrAlias) {
+        String referenceBeanName = transformName(referenceBeanNameOrAlias);
+        return referenceBeanMap.get(referenceBeanName);
     }
 
-    public List<String> getByKey(String key) {
-        return Collections.unmodifiableList(referenceKeyMap.getOrDefault(key, new ArrayList<>()));
+    // convert reference name/alias to referenceBeanName
+    private String transformName(String referenceBeanNameOrAlias) {
+        return referenceAliasMap.getOrDefault(referenceBeanNameOrAlias, referenceBeanNameOrAlias);
+    }
+
+    public List<String> getBeanNamesByKey(String key) {
+        return Collections.unmodifiableList(referenceKeyMap.getOrDefault(key, Collections.EMPTY_LIST));
     }
 
     public Collection<ReferenceBean> getReferences() {
-        return referenceIdMap.values();
+        return new HashSet<>(referenceBeanMap.values());
     }
 
     @Override

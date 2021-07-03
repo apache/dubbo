@@ -37,7 +37,8 @@ import java.util.SortedMap;
  * Register some infrastructure beans if not exists.
  * This post-processor MUST impl BeanDefinitionRegistryPostProcessor,
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
- * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+ * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
+ * org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
 public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
@@ -56,6 +57,25 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+
+        // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+        // for processing early init ReferenceBean
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
+            ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+        beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
+
+        //process placeholder
+//        Map<String, PropertySourcesPlaceholderConfigurer> configurerMap = beanFactory.getBeansOfType(
+//              PropertySourcesPlaceholderConfigurer.class, true, false);
+//        for (PropertySourcesPlaceholderConfigurer configurer : configurerMap.values()) {
+//            configurer.postProcessBeanFactory(beanFactory);
+//        }
+//        Map<String, PropertyPlaceholderConfigurer> configurerMap2 = beanFactory.getBeansOfType(
+//              PropertyPlaceholderConfigurer.class, true, false);
+//        for (PropertyPlaceholderConfigurer configurer : configurerMap2.values()) {
+//            configurer.postProcessBeanFactory(beanFactory);
+//        }
+
         DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
 
         // register ConfigManager singleton
