@@ -53,6 +53,9 @@ public class PropertiesConfiguration implements Configuration {
         //override the properties.
         for (OrderedPropertiesProvider orderedPropertiesProvider :
                 orderedPropertiesProviders) {
+            if (orderedPropertiesProvider == null) {
+                continue;
+            }
             properties.putAll(orderedPropertiesProvider.initProperties());
         }
 
