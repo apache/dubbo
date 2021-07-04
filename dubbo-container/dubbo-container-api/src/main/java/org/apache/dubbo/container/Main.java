@@ -62,9 +62,10 @@ public class Main {
             for (int i = 0; i < args.length; i++) {
                 Container container = LOADER.getExtension(args[i]);
                 if (null == container) {
-                    throw new IllegalArgumentException("Default extension is not configured, but the extension name is 'true'");
+                    throw new IllegalArgumentException(String.format("The extension is not found, " +
+                            "pls check if your param '%s' match spi", args[i]));
                 }
-                containers.add(LOADER.getExtension(args[i]));
+                containers.add(container);
             }
             logger.info("Use container type(" + Arrays.toString(args) + ") to run dubbo service.");
 
