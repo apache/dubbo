@@ -606,7 +606,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings("unchecked")
     public void setMethods(List<? extends MethodConfig> methods) {
-        this.methods = new ArrayList<>(methods);
+        this.methods = (methods != null) ? new ArrayList<>(methods) : null;
     }
 
     public void addMethod(MethodConfig methodConfig) {
