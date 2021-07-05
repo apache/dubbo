@@ -66,6 +66,7 @@ public class PropertySourcesInJavaConfigTest {
             // reset config
             DubboBootstrap.reset(false);
 
+            // Resolve placeholder by import property sources
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, ImportPropertyConfiguration.class);
             try {
                 // expect auto create PropertySourcesPlaceholderConfigurer bean
@@ -101,6 +102,7 @@ public class PropertySourcesInJavaConfigTest {
             // reset config
             DubboBootstrap.reset(false);
 
+            // Resolve placeholder by custom PropertySourcesPlaceholderConfigurer bean
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, PropertyBeanConfiguration.class);
             try {
                 // expect using custom PropertySourcesPlaceholderConfigurer bean

@@ -54,6 +54,7 @@ public class PropertySourcesConfigurerTest {
             // reset config
             DubboBootstrap.reset(false);
 
+            // Resolve placeholder by PropertySourcesPlaceholderConfigurer in dubbo-consumer.xml, without import property source.
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             try {
                 context.start();
@@ -79,10 +80,5 @@ public class PropertySourcesConfigurerTest {
         public DemoBeanFactoryPostProcessor bizBeanFactoryPostProcessor(HelloService service) {
             return new DemoBeanFactoryPostProcessor(service);
         }
-    }
-
-    @Configuration
-    static class PropertyConfiguration {
-
     }
 }
