@@ -753,7 +753,8 @@ public abstract class AbstractConfig implements Serializable {
         for (Method method : methods) {
             if (MethodUtils.isGetter(method)) {
                 Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter != null && parameter.excluded()) {
+                // filter non attribute
+                if (parameter != null && !parameter.attribute()) {
                     continue;
                 }
                 try {

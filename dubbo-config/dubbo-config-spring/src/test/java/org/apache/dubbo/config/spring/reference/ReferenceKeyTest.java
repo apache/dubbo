@@ -266,7 +266,7 @@ public class ReferenceKeyTest {
     static class ConsumerConfiguration3 {
 
         //both are reference beans, same bean name but difference interface type
-        @DubboReference(group = "demo", version = "1.2.3", consumer="my-consumer", init=false,
+        @DubboReference(group = "demo", version = "1.2.4", consumer="my-consumer", init=false,
                 url="dubbo://127.0.0.1:20813")
         private HelloService demoService;
 

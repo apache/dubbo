@@ -89,6 +89,7 @@ public class GenericServiceTest {
 
         ReferenceConfigBase<Object> reference = configManager.getReference("genericServiceWithoutInterfaceRef");
         Assertions.assertNull(reference.getServiceInterfaceClass());
+        Assertions.assertEquals("org.apache.dubbo.config.spring.api.LocalMissClass", reference.getInterface());
         Assertions.assertThrows(ClassNotFoundException.class, () -> ClassUtils.forName(reference.getInterface()));
 
     }

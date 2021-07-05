@@ -149,11 +149,11 @@ public class ZookeeperDynamicConfigurationTest {
         String group = "org.apache.dubbo.service.UserService";
         String content = "test";
         ConfigItem configItem = configuration.getConfigItem(key, group);
-        assertTrue(configuration.publishConfigCas(key, group, content, configItem.getStat()));
+        assertTrue(configuration.publishConfigCas(key, group, content, configItem.getTicket()));
         configItem = configuration.getConfigItem(key, group);
         assertEquals("test", configItem.getContent());
-        assertTrue(configuration.publishConfigCas(key, group, "newtest", configItem.getStat()));
-        assertFalse(configuration.publishConfigCas(key, group, "newtest2", configItem.getStat()));
+        assertTrue(configuration.publishConfigCas(key, group, "newtest", configItem.getTicket()));
+        assertFalse(configuration.publishConfigCas(key, group, "newtest2", configItem.getTicket()));
         assertEquals("newtest", configuration.getConfigItem(key, group).getContent());
     }
 
