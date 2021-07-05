@@ -27,6 +27,7 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.apache.dubbo.rpc.RpcContext;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -38,8 +39,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.InjectionMetadata;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -202,13 +201,7 @@ public class ReferenceAnnotationBeanPostProcessorTest {
     }
 
     private ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor() {
-        AbstractBeanFactory beanFactory = (AbstractBeanFactory) context.getAutowireCapableBeanFactory();
-        for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
-            if (beanPostProcessor instanceof ReferenceAnnotationBeanPostProcessor) {
-                return (ReferenceAnnotationBeanPostProcessor) beanPostProcessor;
-            }
-        }
-        return null;
+        return DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(context);
     }
 
     @Test

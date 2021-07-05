@@ -28,10 +28,13 @@ import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor;
 import org.apache.dubbo.config.spring.context.DubboLifecycleComponentApplicationListener;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.RootBeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 import java.util.HashMap;
@@ -162,4 +165,17 @@ public interface DubboBeanUtils {
         return (beanNames != null && beanNames.length > 0);
     }
 
+
+    static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(AbstractBeanFactory beanFactory) {
+        for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof ReferenceAnnotationBeanPostProcessor) {
+                return (ReferenceAnnotationBeanPostProcessor) beanPostProcessor;
+            }
+        }
+        return null;
+    }
+
+    static ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor(ApplicationContext applicationContext) {
+        return getReferenceAnnotationBeanPostProcessor((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory());
+    }
 }

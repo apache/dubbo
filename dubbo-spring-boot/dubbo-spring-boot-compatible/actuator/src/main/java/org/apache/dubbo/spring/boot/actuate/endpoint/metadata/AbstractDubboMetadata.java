@@ -20,9 +20,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.config.BeanPostProcessor;
-import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -114,13 +113,7 @@ public abstract class AbstractDubboMetadata implements ApplicationContextAware, 
     }
 
     protected ReferenceAnnotationBeanPostProcessor getReferenceAnnotationBeanPostProcessor() {
-        AbstractBeanFactory beanFactory = (AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory();
-        for (BeanPostProcessor beanPostProcessor : beanFactory.getBeanPostProcessors()) {
-            if (beanPostProcessor instanceof ReferenceAnnotationBeanPostProcessor) {
-                return (ReferenceAnnotationBeanPostProcessor) beanPostProcessor;
-            }
-        }
-        return null;
+        return DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
     }
 
     protected Map<String, ProtocolConfig> getProtocolConfigsBeanMap() {
