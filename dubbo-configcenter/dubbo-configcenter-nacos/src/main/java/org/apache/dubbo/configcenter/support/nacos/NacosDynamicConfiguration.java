@@ -260,7 +260,9 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
             HttpRestResult<String> result = httpAgent.httpGet(GET_CONFIG_KEYS_PATH, emptyMap(), paramsValues, encoding, 5 * 1000);
             Stream<String> keysStream = toKeysStream(result.getData());
-            keysStream.forEach(keys::add);
+            if (keysStream != null) {
+                keysStream.forEach(keys::add);
+            }
         } catch (Exception e) {
             if (logger.isErrorEnabled()) {
                 logger.error(e.getMessage(), e);
@@ -284,7 +286,13 @@ public class NacosDynamicConfiguration implements DynamicConfiguration {
 
     private Stream<String> toKeysStream(String content) {
         JSONObject jsonObject = JSON.parseObject(content);
+        if (jsonObject == null) {
+            return null;
+        }
         JSONArray pageItems = jsonObject.getJSONArray("pageItems");
+        if (pageItems == null) {
+            return null;
+        }
         return pageItems.stream()
                 .map(object -> (JSONObject) object)
                 .map(json -> json.getString("dataId"));
