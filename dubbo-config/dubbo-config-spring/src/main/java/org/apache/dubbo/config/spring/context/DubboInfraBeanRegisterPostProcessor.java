@@ -64,18 +64,7 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
             ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
         beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
 
-        //process placeholder
-//        Map<String, PropertySourcesPlaceholderConfigurer> configurerMap = beanFactory.getBeansOfType(
-//              PropertySourcesPlaceholderConfigurer.class, true, false);
-//        for (PropertySourcesPlaceholderConfigurer configurer : configurerMap.values()) {
-//            configurer.postProcessBeanFactory(beanFactory);
-//        }
-//        Map<String, PropertyPlaceholderConfigurer> configurerMap2 = beanFactory.getBeansOfType(
-//              PropertyPlaceholderConfigurer.class, true, false);
-//        for (PropertyPlaceholderConfigurer configurer : configurerMap2.values()) {
-//            configurer.postProcessBeanFactory(beanFactory);
-//        }
-
+        // register PropertySourcesPlaceholderConfigurer bean if not exits
         DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
 
         // register ConfigManager singleton
