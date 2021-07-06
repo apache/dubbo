@@ -313,6 +313,7 @@
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
                                         **/generated/**/*,
                                         **/target/**/*,
+                                        **/*.json
                                     </excludes>
                                 </configuration>
                                 <goals>

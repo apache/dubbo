@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.demo.graalvm.provider;
 
-import org.apace.dubbo.graalvm.demo.DemoService;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+
+import org.apace.dubbo.graalvm.demo.DemoService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,6 @@ public class Application {
         applicationConfig.setCompiler("jdk");
         Map<String,String> m = new HashMap<>(1);
         m.put("proxy","jdk");
-        m.put("native","true");
         applicationConfig.setParameters(m);
 
         bootstrap.application(applicationConfig)

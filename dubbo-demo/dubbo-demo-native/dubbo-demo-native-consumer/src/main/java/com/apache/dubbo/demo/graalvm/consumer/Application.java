@@ -52,7 +52,6 @@ public class Application {
         applicationConfig.setCompiler("jdk");
         Map<String,String> m = new HashMap<>(1);
         m.put("proxy","jdk");
-        m.put("native","true");
         applicationConfig.setParameters(m);
 
         bootstrap.application(applicationConfig)

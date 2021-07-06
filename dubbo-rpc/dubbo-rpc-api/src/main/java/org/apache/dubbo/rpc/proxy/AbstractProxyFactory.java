@@ -26,9 +26,7 @@ import org.apache.dubbo.rpc.service.EchoService;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.rpc.Constants.INTERFACES;
@@ -48,6 +46,7 @@ public abstract class AbstractProxyFactory implements ProxyFactory {
 
     @Override
     public <T> T getProxy(Invoker<T> invoker, boolean generic) throws RpcException {
+        // when compiling with native image, ensure that the order of the interfaces remains unchanged
         LinkedHashSet<Class<?>> interfaces = new LinkedHashSet<>();
 
         String config = invoker.getUrl().getParameter(INTERFACES);

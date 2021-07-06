@@ -219,8 +219,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * To obtain the method list in the port, use reflection when in native mode and javaassist otherwise.
+     * @param interfaceClass
+     * @return
+     */
     protected String[] methods(Class<?> interfaceClass) {
-        if (getApplication().getParameters().getOrDefault(NATIVE, Boolean.FALSE.toString()).equals(Boolean.TRUE.toString())) {
+        boolean isNative = ApplicationModel.getEnvironment().getConfiguration().getBoolean(NATIVE, false);
+        if (isNative) {
             return Arrays.stream(interfaceClass.getMethods()).map(it -> it.getName()).toArray(String[]::new);
         } else {
             return Wrapper.getWrapper(interfaceClass).getMethodNames();
