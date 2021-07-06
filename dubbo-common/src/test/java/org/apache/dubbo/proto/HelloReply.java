@@ -14,23 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.descriptor;
 
-import org.apache.dubbo.rpc.model.MethodDescriptor;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+package org.apache.dubbo.proto;
 
-import java.lang.reflect.Method;
+import com.google.protobuf.Message;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+public final class HelloReply extends com.google.protobuf.GeneratedMessageV3 {
 
-public class MethodDescritorTest {
-    @Test
-    public void testMethodWithNoParameters() throws Exception {
-        Method method = DescriptorService.class.getMethod("noParameterMethod");
-        MethodDescriptor descriptor = new MethodDescriptor(method);
-        assertEquals("", descriptor.getParamDesc());
-        Assertions.assertEquals(0, descriptor.getParameterClasses().length);
+    @Override
+    protected FieldAccessorTable internalGetFieldAccessorTable() {
+        return null;
+    }
+
+    @Override
+    protected Message.Builder newBuilderForType(BuilderParent builderParent) {
+        return null;
+    }
+
+    @Override
+    public Message.Builder newBuilderForType() {
+        return null;
+    }
+
+    @Override
+    public Message.Builder toBuilder() {
+        return null;
+    }
+
+    @Override
+    public Message getDefaultInstanceForType() {
+        return null;
     }
 }
