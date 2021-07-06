@@ -189,6 +189,8 @@ public interface CommonConstants {
 
     String FILE_KEY = "file";
 
+    String FILTER_KEY = "filter";
+
     String DUMP_DIRECTORY = "dump.directory";
 
     String CLASSIFIER_KEY = "classifier";
@@ -430,4 +432,7 @@ public interface CommonConstants {
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
 
     String NATIVE = "native";
+  
+    String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
 }

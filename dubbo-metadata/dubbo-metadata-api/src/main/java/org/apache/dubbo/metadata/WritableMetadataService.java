@@ -76,7 +76,7 @@ public interface WritableMetadataService extends MetadataService {
      */
     boolean unsubscribeURL(URL url);
 
-    void publishServiceDefinition(URL providerUrl);
+    void publishServiceDefinition(URL url);
 
     default void setMetadataServiceURL(URL url) {
 

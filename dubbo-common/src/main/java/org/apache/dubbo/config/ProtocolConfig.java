@@ -263,7 +263,7 @@ public class ProtocolConfig extends AbstractConfig {
     }
 
     @Deprecated
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getPath() {
         return getContextpath();
     }
@@ -473,7 +473,7 @@ public class ProtocolConfig extends AbstractConfig {
      * @deprecated {@link #getDispatcher()}
      */
     @Deprecated
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getDispather() {
         return getDispatcher();
     }
