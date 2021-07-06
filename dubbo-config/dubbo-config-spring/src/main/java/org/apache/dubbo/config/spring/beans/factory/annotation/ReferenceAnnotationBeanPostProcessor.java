@@ -25,6 +25,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.Constants;
+import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -154,6 +155,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
                 }
             }
         }
+
+        // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
+        applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
     }
 
     /**
