@@ -21,6 +21,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -79,7 +80,7 @@ public class DubboConfigBeanInitializerTest {
         int fooServiceIndex = beanNames.indexOf("fooService");
         int applicationConfigIndex = beanNames.indexOf("dubbo-demo-application");
         int registryConfigIndex = beanNames.indexOf("my-registry");
-        int configInitializerIndex = beanNames.indexOf("dubboConfigInitializer");
+        int configInitializerIndex = beanNames.indexOf(DubboConfigBeanInitializer.BEAN_NAME);
         Assertions.assertTrue(fooServiceIndex < applicationConfigIndex);
         Assertions.assertTrue(fooServiceIndex < registryConfigIndex);
         Assertions.assertTrue(fooServiceIndex < configInitializerIndex);
