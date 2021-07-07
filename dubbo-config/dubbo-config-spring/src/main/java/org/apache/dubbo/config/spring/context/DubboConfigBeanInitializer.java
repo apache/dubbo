@@ -27,8 +27,10 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.SslConfig;
+import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.BeanFactory;
@@ -48,16 +50,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class DubboConfigBeanInitializer implements BeanFactoryAware, InitializingBean {
 
-    public static String BEAN_NAME = "dubboConfigInitializer";
+    public static String BEAN_NAME = "dubboConfigBeanInitializer";
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private ConfigurableListableBeanFactory beanFactory;
     private ReferenceBeanManager referenceBeanManager;
+    private ConfigManager configManager;
 
     @Override
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
         this.beanFactory = (ConfigurableListableBeanFactory) beanFactory;
-        referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
     }
 
     @Override
@@ -67,6 +69,8 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
 
     private void init() {
         if (initialized.compareAndSet(false, true)) {
+            configManager = ApplicationModel.getConfigManager();
+            referenceBeanManager = beanFactory.getBean(ReferenceBeanManager.BEAN_NAME, ReferenceBeanManager.class);
             try {
                 prepareDubboConfigBeans();
                 referenceBeanManager.prepareReferenceBeans();
@@ -97,7 +101,9 @@ public class DubboConfigBeanInitializer implements BeanFactoryAware, Initializin
     private void loadConfigBeansOfType(Class<? extends AbstractConfig> configClass) {
         String[] beanNames = beanFactory.getBeanNamesForType(configClass, true, false);
         for (String beanName : beanNames) {
-            beanFactory.getBean(beanName);
+            AbstractConfig configBean = beanFactory.getBean(beanName, configClass);
+            // Register config bean here, avoid relying on unreliable @PostConstruct init method
+            configManager.addConfig(configBean);
         }
     }
 
