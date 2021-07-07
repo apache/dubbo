@@ -17,10 +17,6 @@
 package org.apache.dubbo.serialize.hessian;
 
 
-import com.caucho.hessian.io.AbstractSerializerFactory;
-import com.caucho.hessian.io.ExtSerializerFactory;
-import com.caucho.hessian.io.HessianProtocolException;
-import com.caucho.hessian.io.Serializer;
 import org.apache.dubbo.serialize.hessian.serializer.java8.DurationHandle;
 import org.apache.dubbo.serialize.hessian.serializer.java8.InstantHandle;
 import org.apache.dubbo.serialize.hessian.serializer.java8.LocalDateHandle;
@@ -36,13 +32,16 @@ import org.apache.dubbo.serialize.hessian.serializer.java8.ZoneIdSerializer;
 import org.apache.dubbo.serialize.hessian.serializer.java8.ZoneOffsetHandle;
 import org.apache.dubbo.serialize.hessian.serializer.java8.ZonedDateTimeHandle;
 
+import com.caucho.hessian.io.ExtSerializerFactory;
+import com.caucho.hessian.io.HessianProtocolException;
+import com.caucho.hessian.io.Serializer;
+
 import static org.apache.dubbo.serialize.hessian.serializer.java8.Java8TimeSerializer.create;
 
 
 public class Java8SerializerFactory extends ExtSerializerFactory {
-    public static final AbstractSerializerFactory INSTANCE = new Java8SerializerFactory();
 
-    private Java8SerializerFactory() {
+    public Java8SerializerFactory() {
         if (isJava8()) {
             try {
                 this.addSerializer(Class.forName("java.time.LocalTime"), create(LocalTimeHandle.class));
