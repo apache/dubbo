@@ -68,6 +68,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final AtomicReference<Channel> channel = new AtomicReference<>();
     private final ChannelFuture initPromise;
     private final CompletableFuture<Object> connectedFuture = new CompletableFuture<>();
+    private static final Object CONNECTED_OBJECT = new Object();
     private final Bootstrap bootstrap;
     private final ConnectionListener connectionListener = new ConnectionListener();
 
@@ -155,7 +156,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     public void onConnected(Channel channel) {
         this.channel.set(channel);
         // This indicates that the connection is available.
-        this.connectedFuture.complete(new Object());
+        this.connectedFuture.complete(CONNECTED_OBJECT);
         channel.attr(CONNECTION).set(this);
         if (logger.isInfoEnabled()) {
             logger.info(String.format("%s connected ", this));
