@@ -164,7 +164,6 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     }
 
     public void connectSync() throws InterruptedException, ExecutionException, TimeoutException {
-        this.initPromise.awaitUninterruptibly(this.connectTimeout);
         this.connectedFuture.get(this.connectTimeout, TimeUnit.MILLISECONDS);
     }
 
