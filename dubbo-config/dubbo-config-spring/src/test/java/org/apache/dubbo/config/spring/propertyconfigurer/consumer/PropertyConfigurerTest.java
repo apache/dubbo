@@ -48,7 +48,6 @@ public class PropertyConfigurerTest {
             providerContext.start();
 
             // clear config manager
-            //ApplicationModel.getConfigManager().clear();
             DubboBootstrap.reset(false);
 
             try {
@@ -56,6 +55,7 @@ public class PropertyConfigurerTest {
             } catch (InterruptedException e) {
             }
 
+            // Resolve placeholder by PropertyPlaceholderConfigurer in dubbo-consumer.xml, without import property source.
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);
             context.start();
 
@@ -76,7 +76,6 @@ public class PropertyConfigurerTest {
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.config.spring.propertyconfigurer.consumer")
     @ComponentScan(value = {"org.apache.dubbo.config.spring.propertyconfigurer.consumer"})
     @ImportResource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer/dubbo-consumer.xml")
-    @PropertySource("classpath:/org/apache/dubbo/config/spring/propertyconfigurer/consumer/app.properties")
     static class ConsumerConfiguration {
         @Bean
         public DemoBeanFactoryPostProcessor bizBeanFactoryPostProcessor(HelloService service) {

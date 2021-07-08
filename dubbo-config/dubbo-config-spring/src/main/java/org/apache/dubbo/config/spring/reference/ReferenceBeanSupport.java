@@ -28,10 +28,11 @@ import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanReference;
 import org.springframework.beans.factory.config.TypedStringValue;
+import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.beans.factory.support.ManagedList;
 import org.springframework.beans.factory.support.ManagedMap;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationAttributes;
-import org.springframework.core.env.PropertyResolver;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.annotation.Annotation;
@@ -70,7 +71,8 @@ public class ReferenceBeanSupport {
 
         //reset generic value
         String generic = String.valueOf(defaultInterfaceClass == GenericService.class);
-        String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ? String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
+        String oldGeneric = attributes.containsValue(ReferenceAttributes.GENERIC) ?
+            String.valueOf(attributes.get(ReferenceAttributes.GENERIC)) : "false";
         if (!StringUtils.isEquals(oldGeneric, generic)) {
             attributes.put(ReferenceAttributes.GENERIC, generic);
         }
@@ -86,7 +88,7 @@ public class ReferenceBeanSupport {
 
     }
 
-    public static String generateReferenceKey(Map<String, Object> attributes, PropertyResolver propertyResolver) {
+    public static String generateReferenceKey(Map<String, Object> attributes, ApplicationContext applicationContext) {
 
         String interfaceClass = (String) attributes.get(ReferenceAttributes.INTERFACE);
         Assert.notEmptyString(interfaceClass, "No interface class or name found from attributes");
@@ -108,7 +110,9 @@ public class ReferenceBeanSupport {
         //sort attributes keys
         List<String> sortedAttrKeys = new ArrayList<>(attributes.keySet());
         Collections.sort(sortedAttrKeys);
-        List<String> ignoredAttrs = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP, ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME, ReferenceAttributes.INTERFACE_CLASS);
+        List<String> ignoredAttrs = Arrays.asList(ReferenceAttributes.ID, ReferenceAttributes.GROUP,
+            ReferenceAttributes.VERSION, ReferenceAttributes.INTERFACE, ReferenceAttributes.INTERFACE_NAME,
+            ReferenceAttributes.INTERFACE_CLASS);
         for (String key : sortedAttrKeys) {
             if (ignoredAttrs.contains(key)) {
                 continue;
@@ -130,17 +134,18 @@ public class ReferenceBeanSupport {
         }
 
         String referenceKey = beanNameBuilder.toString();
-        if (propertyResolver != null) {
-            referenceKey = propertyResolver.resolveRequiredPlaceholders(referenceKey);
+        if (applicationContext != null) {
+            // resolve placeholder with Spring Environment
+            referenceKey = applicationContext.getEnvironment().resolvePlaceholders(referenceKey);
+            // resolve placeholder with Spring BeanFactory ( using PropertyResourceConfigurer/PropertySourcesPlaceholderConfigurer )
+            referenceKey = ((AbstractBeanFactory) applicationContext.getAutowireCapableBeanFactory()).resolveEmbeddedValue(referenceKey);
         }
+        // The property placeholder maybe not resolved if is early init
+        // if (referenceKey != null && referenceKey.contains("${")) {
+        //     throw new IllegalStateException("Reference key contains unresolved placeholders ${..} : " + referenceKey);
+        // }
         return referenceKey;
     }
-
-//    public static void verifyReferenceKey(String referenceKey) {
-//        if (referenceKey != null && referenceKey.contains("${")) {
-//            throw new IllegalStateException("Reference key contains unresolved placeholders ${..}");
-//        }
-//    }
 
     private static String convertToString(String key, Object obj) {
         if (obj == null) {
@@ -226,12 +231,12 @@ public class ReferenceBeanSupport {
         return map;
     }
 
-    public static String generateReferenceKey(ReferenceBean referenceBean, PropertyResolver propertyResolver) {
-        return generateReferenceKey(getReferenceAttributes(referenceBean), propertyResolver);
+    public static String generateReferenceKey(ReferenceBean referenceBean, ApplicationContext applicationContext) {
+        return generateReferenceKey(getReferenceAttributes(referenceBean), applicationContext);
     }
 
-    public static String generateReferenceKey(BeanDefinition beanDefinition, PropertyResolver propertyResolver) {
-        return generateReferenceKey(getReferenceAttributes(beanDefinition), propertyResolver);
+    public static String generateReferenceKey(BeanDefinition beanDefinition, ApplicationContext applicationContext) {
+        return generateReferenceKey(getReferenceAttributes(beanDefinition), applicationContext);
     }
 
     public static Map<String, Object> getReferenceAttributes(ReferenceBean referenceBean) {
