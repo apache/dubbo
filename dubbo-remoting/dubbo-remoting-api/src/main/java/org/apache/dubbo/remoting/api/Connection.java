@@ -44,7 +44,10 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import io.netty.util.concurrent.Promise;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,6 +67,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
     private final ChannelFuture initPromise;
+    private final CompletableFuture<Object> connectedFuture = new CompletableFuture<>();
     private final Bootstrap bootstrap;
     private final ConnectionListener connectionListener = new ConnectionListener();
 
@@ -150,22 +154,17 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
     public void onConnected(Channel channel) {
         this.channel.set(channel);
+        // This indicates that the connection is available.
+        this.connectedFuture.complete(new Object());
         channel.attr(CONNECTION).set(this);
         if (logger.isInfoEnabled()) {
             logger.info(String.format("%s connected ", this));
         }
     }
 
-    public void connectSync() {
+    public void connectSync() throws InterruptedException, ExecutionException, TimeoutException {
         this.initPromise.awaitUninterruptibly(this.connectTimeout);
-        long start = System.currentTimeMillis();
-        while (!isAvailable()) {
-            if (System.currentTimeMillis() - start <= connectTimeout) {
-                Thread.yield();
-            } else {
-                break;
-            }
-        }
+        this.connectedFuture.get(this.connectTimeout, TimeUnit.MILLISECONDS);
     }
 
     public boolean isAvailable() {
