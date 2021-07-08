@@ -41,7 +41,7 @@ public class ChangeTelnetHandler implements TelnetHandler {
         if ("/".equals(message) || "..".equals(message)) {
             String service = (String) channel.getAttribute(SERVICE_KEY);
             channel.removeAttribute(SERVICE_KEY);
-            buf.append("Cancelled default service ").append(service).append(".");
+            buf.append("Cancelled default service ").append(service).append('.');
         } else {
             boolean found = false;
             for (Exporter<?> exporter : DubboProtocol.getDubboProtocol().getExporters()) {

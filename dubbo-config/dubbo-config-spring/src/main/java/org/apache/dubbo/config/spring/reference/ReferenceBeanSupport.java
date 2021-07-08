@@ -96,11 +96,11 @@ public class ReferenceBeanSupport {
         //ReferenceBean:group/interface:version
         StringBuilder beanNameBuilder = new StringBuilder("ReferenceBean:");
         if (StringUtils.isNotEmpty(group)) {
-            beanNameBuilder.append(group).append("/");
+            beanNameBuilder.append(group).append('/');
         }
         beanNameBuilder.append(interfaceClass);
         if (StringUtils.isNotEmpty(version)) {
-            beanNameBuilder.append(":").append(version);
+            beanNameBuilder.append(':').append(version);
         }
 
         // append attributes

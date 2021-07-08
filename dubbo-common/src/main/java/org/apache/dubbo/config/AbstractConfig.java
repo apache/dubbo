@@ -681,11 +681,11 @@ public abstract class AbstractConfig implements Serializable {
 
                         Object value = method.invoke(this);
                         if (value != null) {
-                            buf.append(" ");
+                            buf.append(' ');
                             buf.append(key);
                             buf.append("=\"");
                             buf.append(key.equals("password") ? "******" : value);
-                            buf.append("\"");
+                            buf.append('\"');
                         }
                     }
                 } catch (Exception e) {

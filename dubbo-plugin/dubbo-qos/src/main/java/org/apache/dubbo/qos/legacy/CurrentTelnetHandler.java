@@ -36,7 +36,7 @@ public class CurrentTelnetHandler implements TelnetHandler {
         String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
         StringBuilder buf = new StringBuilder();
         if (service == null || service.length() == 0) {
-            buf.append("/");
+            buf.append('/');
         } else {
             buf.append(service);
         }
