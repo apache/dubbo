@@ -67,7 +67,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
     private final AtomicBoolean closed = new AtomicBoolean(false);
     private final AtomicReference<Channel> channel = new AtomicReference<>();
     private final ChannelFuture initPromise;
-    private final CompletableFuture<Object> connectedFuture = new CompletableFuture<>();
+    private volatile CompletableFuture<Object> connectedFuture = new CompletableFuture<>();
     private static final Object CONNECTED_OBJECT = new Object();
     private final Bootstrap bootstrap;
     private final ConnectionListener connectionListener = new ConnectionListener();
@@ -151,6 +151,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
                 logger.info(String.format("%s goaway", this));
             }
         }
+        this.connectedFuture = new CompletableFuture<>();
     }
 
     public void onConnected(Channel channel) {
@@ -206,6 +207,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
             current.close();
         }
         this.channel.set(null);
+        this.connectedFuture = new CompletableFuture<>();
     }
 
     @Override
