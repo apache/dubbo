@@ -458,7 +458,11 @@ public class ExtensionLoader<T> {
      */
     @SuppressWarnings("unchecked")
     public T getExtension(String name) {
-        return getExtension(name, true);
+        T extension = getExtension(name, true);
+        if (extension == null) {
+            throw new IllegalArgumentException("Not find extension: " + name);
+        }
+        return extension;
     }
 
     public T getExtension(String name, boolean wrap) {
