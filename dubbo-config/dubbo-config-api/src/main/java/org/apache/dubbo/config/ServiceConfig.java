@@ -227,7 +227,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 return;
             }
 
-            if (!MetadataService.class.getName().equals(getInterface()) && shouldDelay()) {
+            if (shouldDelay()) {
                 DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
             } else {
                 doExport();
