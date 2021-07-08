@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
@@ -230,6 +231,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 throw new IllegalStateException(interfaceName+" is not an interface");
             }
 
+            // Auto create MethodConfig/ArgumentConfig according to config props
             Map<String, String> configProperties = subPropsConfiguration.getProperties();
             Method[] methods = interfaceClass.getMethods();
             for (Method method : methods) {
@@ -255,15 +257,54 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                     }
                 }
             }
-        }
 
-        List<MethodConfig> methodConfigs = this.getMethods();
-        if (methodConfigs != null && methodConfigs.size() > 0) {
-            for (MethodConfig methodConfig : methodConfigs) {
-                methodConfig.setParentPrefix(preferredPrefix);
-                methodConfig.refresh();
+            // refresh MethodConfigs
+            List<MethodConfig> methodConfigs = this.getMethods();
+            if (methodConfigs != null && methodConfigs.size() > 0) {
+                // whether ignore invalid method config
+                Object ignoreInvalidMethodConfigVal = ApplicationModel.getEnvironment().getConfiguration()
+                    .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
+                boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
+
+                Class<?> finalInterfaceClass = interfaceClass;
+                List<MethodConfig> validMethodConfigs = methodConfigs.stream().filter(methodConfig -> {
+                    methodConfig.setParentPrefix(preferredPrefix);
+                    methodConfig.refresh();
+                    // verify method config
+                    return verifyMethodConfig(methodConfig, finalInterfaceClass, ignoreInvalidMethodConfig);
+                }).collect(Collectors.toList());
+                this.setMethods(validMethodConfigs);
             }
         }
+
+    }
+
+    private boolean verifyMethodConfig(MethodConfig methodConfig, Class<?> interfaceClass, boolean ignoreInvalidMethodConfig) {
+        String methodName = methodConfig.getName();
+        if (StringUtils.isEmpty(methodName)) {
+            String msg = "<dubbo:method> name attribute is required! Please check: " +
+                "<dubbo:service interface=\"" + interfaceName + "\" ... >" +
+                "<dubbo:method name=\"\" ... /></<dubbo:reference>";
+            if (ignoreInvalidMethodConfig) {
+                logger.warn(msg);
+                return false;
+            } else {
+                throw new IllegalStateException(msg);
+            }
+        }
+
+        boolean hasMethod = Arrays.stream(interfaceClass.getMethods()).anyMatch(method -> method.getName().equals(methodName));
+        if (!hasMethod) {
+            String msg = "Found invalid method config, the interface " + interfaceClass.getName() + " not found method \""
+                + methodName + "\" : [" + methodConfig + "]";
+            if (ignoreInvalidMethodConfig) {
+                logger.warn(msg);
+                return false;
+            } else {
+                throw new IllegalStateException(msg);
+            }
+        }
+        return true;
     }
 
     private ArgumentConfig getArgumentByIndex(MethodConfig methodConfig, int argIndex) {
@@ -565,7 +606,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     @SuppressWarnings("unchecked")
     public void setMethods(List<? extends MethodConfig> methods) {
-        this.methods = (List<MethodConfig>) methods;
+        this.methods = (methods != null) ? new ArrayList<>(methods) : null;
     }
 
     public void addMethod(MethodConfig methodConfig) {
