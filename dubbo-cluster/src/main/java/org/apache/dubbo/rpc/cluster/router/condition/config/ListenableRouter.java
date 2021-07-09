@@ -51,7 +51,7 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
 
     public ListenableRouter(URL url, String ruleKey) {
         super(url);
-        this.force = false;
+        this.setForce(false);
         this.init(ruleKey);
     }
 
@@ -91,11 +91,6 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
     }
 
     @Override
-    public int getPriority() {
-        return priority;
-    }
-
-    @Override
     public boolean isForce() {
         return (routerRule != null && routerRule.isForce());
     }
@@ -118,8 +113,8 @@ public abstract class ListenableRouter extends AbstractRouter implements Configu
             return;
         }
         String routerKey = ruleKey + RULE_SUFFIX;
-        ruleRepository.addListener(routerKey, this);
-        String rule = ruleRepository.getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
+        this.getRuleRepository().addListener(routerKey, this);
+        String rule = this.getRuleRepository().getRule(routerKey, DynamicConfiguration.DEFAULT_GROUP);
         if (StringUtils.isNotEmpty(rule)) {
             this.process(new ConfigChangedEvent(routerKey, DynamicConfiguration.DEFAULT_GROUP, rule));
         }

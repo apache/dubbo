@@ -38,11 +38,11 @@ public class BaseServiceMetadata {
         length += 3;
         StringBuilder buf = new StringBuilder(length);
         if (group != null && group.length() > 0) {
-            buf.append(group).append("/");
+            buf.append(group).append('/');
         }
         buf.append(path);
         if (version != null && version.length() > 0) {
-            buf.append(":").append(version);
+            buf.append(':').append(version);
         }
         return buf.toString().intern();
     }

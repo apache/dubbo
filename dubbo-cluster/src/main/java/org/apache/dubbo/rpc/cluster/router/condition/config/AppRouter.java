@@ -31,6 +31,6 @@ public class AppRouter extends ListenableRouter {
 
     public AppRouter(URL url) {
         super(url, url.getParameter(CommonConstants.APPLICATION_KEY));
-        this.priority = APP_ROUTER_DEFAULT_PRIORITY;
+        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -43,6 +44,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 /**
  * Dubbo {@link ConfigurationProperties Config Properties} only used to generate JSON metadata(non-public class)
  *
+ * @see ConfigKeys
  * @since 2.7.1
  */
 @ConfigurationProperties(DUBBO_PREFIX)

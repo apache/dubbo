@@ -1528,6 +1528,7 @@ public class DubboBootstrap {
 
     private void destroyMetadataReports() {
         AbstractMetadataReportFactory.destroy();
+        MetadataReportInstance.reset();
         ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
     }
 

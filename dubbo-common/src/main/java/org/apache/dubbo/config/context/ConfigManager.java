@@ -29,6 +29,7 @@ import org.apache.dubbo.config.AbstractConfig;
 import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConfigCenterConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.MethodConfig;
@@ -74,7 +75,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     public static final String NAME = "config";
     public static final String BEAN_NAME = "dubboConfigManager";
     private static final String CONFIG_NAME_READ_METHOD = "getName";
-    public static final String DUBBO_CONFIG_MODE = "dubbo.config.mode";
+    public static final String DUBBO_CONFIG_MODE = ConfigKeys.DUBBO_CONFIG_MODE;
 
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
