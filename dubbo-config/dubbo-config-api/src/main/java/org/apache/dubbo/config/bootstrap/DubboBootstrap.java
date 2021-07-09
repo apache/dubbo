@@ -876,6 +876,7 @@ public class DubboBootstrap {
      */
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
+            destroyed.set(false);
             ready.set(false);
             initialize();
             if (logger.isInfoEnabled()) {
@@ -1258,16 +1259,15 @@ public class DubboBootstrap {
     public void destroy() {
         if (destroyLock.tryLock()) {
             try {
-                if (started.compareAndSet(true, false)
-                        && destroyed.compareAndSet(false, true)) {
-
-                    unregisterServiceInstance();
-                    unexportMetadataService();
-                    unexportServices();
-                    unreferServices();
+                if (destroyed.compareAndSet(false, true)) {
+                    if (started.compareAndSet(true, false)) {
+                        unregisterServiceInstance();
+                        unexportMetadataService();
+                        unexportServices();
+                        unreferServices();
+                    }
 
                     destroyRegistries();
-
                     destroyServiceDiscoveries();
                     destroyExecutorRepository();
                     clear();
@@ -1279,6 +1279,7 @@ public class DubboBootstrap {
 
                 DubboShutdownHook.destroyAll();
             } finally {
+                initialized.set(false);
                 destroyLock.unlock();
             }
         }
@@ -1428,6 +1429,7 @@ public class DubboBootstrap {
      */
     @Deprecated
     public static void reset(boolean destroy) {
+        DubboShutdownHook.reset();
         if (destroy) {
             if (instance != null) {
                 instance.destroy();
