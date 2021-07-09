@@ -117,7 +117,7 @@ public class ReferenceKeyTest {
             Assertions.fail("Reference bean check failed");
         } catch (BeansException e) {
             String msg = getStackTrace(e);
-            Assertions.assertTrue(msg.contains("Found equivalent ReferenceConfig with unique service name [demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3]"), msg);
+            Assertions.assertTrue(msg.contains("Found multiple ReferenceConfigs with unique service name [demo/org.apache.dubbo.config.spring.api.DemoService:1.2.3]"), msg);
 //            Assertions.assertTrue(msg.contains("Already exists another reference bean with the same bean name and type but difference attributes"), msg);
 //            Assertions.assertTrue(msg.contains("ConsumerConfiguration2.demoService"), msg);
         }
