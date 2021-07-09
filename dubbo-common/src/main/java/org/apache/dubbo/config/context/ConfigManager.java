@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
@@ -89,6 +90,8 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private ConfigMode configMode = ConfigMode.STRICT;
 
+    private boolean ignoreDuplicatedInterface = false;
+
     private static Map<Class, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
@@ -113,18 +116,24 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void initialize() throws IllegalStateException {
-        String configModeStr = null;
+        CompositeConfiguration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
-            configModeStr = (String) ApplicationModel.getEnvironment().getConfiguration().getProperty(DUBBO_CONFIG_MODE);
             if (StringUtils.hasText(configModeStr)) {
                 this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase());
             }
-            logger.info("Dubbo config mode: " + configMode);
         } catch (Exception e) {
             String msg = "Illegal '" + DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
             logger.error(msg, e);
             throw new IllegalArgumentException(msg, e);
         }
+
+        String ignoreDuplicatedInterfaceStr = (String) configuration
+            .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
+        if (ignoreDuplicatedInterfaceStr != null) {
+            this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
+        }
+        logger.info("Dubbo config mode: " + configMode +", ignore duplicated interface: " + ignoreDuplicatedInterface);
     }
 
 
@@ -763,7 +772,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
                 logger.warn(msg);
             }
-            if (configMode == ConfigMode.STRICT) {
+            if (!ignoreDuplicatedInterface) {
                 throw new IllegalStateException(msg);
             }
         }
