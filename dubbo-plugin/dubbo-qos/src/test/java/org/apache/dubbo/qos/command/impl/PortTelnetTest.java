@@ -14,39 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.remoting.exchange.Exchangers;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
-/**
- * PortTelnetHandlerTest.java
- */
-public class PortTelnetHandlerTest {
+public class PortTelnetTest {
+    private static final BaseCommand port = new PortTelnet();
 
-    private static TelnetHandler port = new PortTelnetHandler();
-    private static Invoker<DemoService> mockInvoker;
-    private static int availablePort = NetUtils.getAvailablePort();
+    private Invoker<DemoService> mockInvoker;
+    private CommandContext mockCommandContext;
+
+    private static final int availablePort = NetUtils.getAvailablePort();
 
     @SuppressWarnings("unchecked")
-    @BeforeAll
-    public static void before() {
+    @BeforeEach
+    public void before() {
+        mockCommandContext = mock(CommandContext.class);
         mockInvoker = mock(Invoker.class);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(URL.valueOf("dubbo://127.0.0.1:" + availablePort + "/demo"));
@@ -54,9 +57,10 @@ public class PortTelnetHandlerTest {
         DubboProtocol.getDubboProtocol().export(mockInvoker);
     }
 
-    @AfterAll
-    public static void after() {
+    @AfterEach
+    public void after() {
         ProtocolUtils.closeAll();
+        reset(mockInvoker, mockCommandContext);
     }
 
     /**
@@ -68,7 +72,7 @@ public class PortTelnetHandlerTest {
         ExchangeClient client1 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         ExchangeClient client2 = Exchangers.connect("dubbo://127.0.0.1:" + availablePort + "/demo");
         Thread.sleep(5000);
-        String result = port.telnet(null, "-l " + availablePort + "");
+        String result = port.execute(mockCommandContext, new String[]{"-l", availablePort + ""});
         String client1Addr = client1.getLocalAddress().toString();
         String client2Addr = client2.getLocalAddress().toString();
         System.out.printf("Result: %s %n", result);
@@ -80,26 +84,25 @@ public class PortTelnetHandlerTest {
 
     @Test
     public void testListDetail() throws RemotingException {
-        String result = port.telnet(null, "-l");
+        String result = port.execute(mockCommandContext, new String[]{"-l"});
         assertEquals("dubbo://127.0.0.1:" + availablePort + "", result);
     }
 
     @Test
     public void testListAllPort() throws RemotingException {
-        String result = port.telnet(null, "");
+        String result = port.execute(mockCommandContext, new String[0]);
         assertEquals("" + availablePort + "", result);
     }
 
     @Test
     public void testErrorMessage() throws RemotingException {
-        String result = port.telnet(null, "a");
+        String result = port.execute(mockCommandContext, new String[]{"a"});
         assertEquals("Illegal port a, must be integer.", result);
     }
 
     @Test
     public void testNoPort() throws RemotingException {
-        String result = port.telnet(null, "-l 20880");
+        String result = port.execute(mockCommandContext, new String[]{"-l", "20880"});
         assertEquals("No such port 20880", result);
     }
-
 }

@@ -14,45 +14,55 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 
+import io.netty.channel.Channel;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
-/**
- * SelectTelnetHandlerTest.java
- */
-public class ShutdownTelnetHandlerTest {
+public class ShutdownTelnetTest {
 
-    private static TelnetHandler handler = new ShutdownTelnetHandler();
+    private static final BaseCommand shutdown = new ShutdownTelnet();
     private Channel mockChannel;
+    private CommandContext mockCommandContext;
 
-    @SuppressWarnings("unchecked")
+    @BeforeEach
+    public void setUp() {
+        mockCommandContext = mock(CommandContext.class);
+        mockChannel = mock(Channel.class);
+        given(mockCommandContext.getRemote()).willReturn(mockChannel);
+    }
+
+    @AfterEach
+    public void after() {
+        ProtocolUtils.closeAll();
+        reset(mockChannel, mockCommandContext);
+    }
+
     @Test
     public void testInvoke() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        String result = handler.telnet(mockChannel, "");
+        String result = shutdown.execute(mockCommandContext, new String[0]);
         assertTrue(result.contains("Application has shutdown successfully"));
     }
 
-
-    @SuppressWarnings("unchecked")
     @Test
     public void testInvokeWithTimeParameter() throws RemotingException {
-        mockChannel = mock(Channel.class);
         int sleepTime = 2000;
         long start = System.currentTimeMillis();
-        String result = handler.telnet(mockChannel, "-t " + sleepTime);
+        String result = shutdown.execute(mockCommandContext, new String[]{"-t", "" + sleepTime});
         long end = System.currentTimeMillis();
         assertTrue(result.contains("Application has shutdown successfully"), result);
         assertTrue((end - start) > sleepTime, "sleepTime: " + sleepTime + ", execTime: " + (end - start));
     }
-
-
 }
