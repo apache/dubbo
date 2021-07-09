@@ -227,7 +227,8 @@ public class RegistryConfigTest {
             Assertions.assertEquals(1, registries.size());
             RegistryConfig registryConfig = registries.iterator().next();
             Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
-        } finally {
+        } catch(Exception e){
+            e.printStackTrace();
         }
     }
 
