@@ -25,6 +25,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.Constants;
+import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.spring.ReferenceBean;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
@@ -158,6 +159,9 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // This bean has bean register as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
         // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
         beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
+
+        // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
+        applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
     }
 
     /**

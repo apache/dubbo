@@ -277,12 +277,6 @@ public class MethodConfig extends AbstractMethodConfig {
         }
     }
 
-    @Override
-    public void addIntoConfigManager() {
-        // Don't add MethodConfig to ConfigManager
-        // super.addIntoConfigManager();
-    }
-
     @Parameter(excluded = true)
     public String getName() {
         return name;

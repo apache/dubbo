@@ -60,7 +60,7 @@ public class ReferenceBeanManager implements ApplicationContextAware {
 
         if (!initialized) {
             //TODO add issue url to describe early initialization
-            logger.warn("Early initialize reference bean before DubboConfigInitializationPostProcessor," +
+            logger.warn("Early initialize reference bean before DubboConfigBeanInitializer," +
                     " the BeanPostProcessor has not been loaded at this time, which may cause abnormalities in some components (such as seata): " +
                     referenceBeanName + " = " + ReferenceBeanSupport.generateReferenceKey(referenceBean, applicationContext));
         }
