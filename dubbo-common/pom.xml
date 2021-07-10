@@ -83,6 +83,7 @@
         <dependency>
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
