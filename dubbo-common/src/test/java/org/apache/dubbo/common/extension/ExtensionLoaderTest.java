@@ -442,12 +442,19 @@ public class ExtensionLoaderTest {
         List<ActivateExt1> list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
-        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
-        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+        Assertions.assertSame(list.get(0).getClass(), OrderActivateExtImpl1.class);
+        Assertions.assertSame(list.get(1).getClass(), ActivateExt1Impl1.class);
 
         url = URL.valueOf("test://localhost/test?ext=default,order1");
         list = getExtensionLoader(ActivateExt1.class)
                 .getActivateExtension(url, "ext", "default_group");
+        Assertions.assertEquals(2, list.size());
+        Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
+        Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);
+
+        url = URL.valueOf("test://localhost/test?ext=order1");
+        list = getExtensionLoader(ActivateExt1.class)
+            .getActivateExtension(url, "ext", "default_group");
         Assertions.assertEquals(2, list.size());
         Assertions.assertSame(list.get(0).getClass(), ActivateExt1Impl1.class);
         Assertions.assertSame(list.get(1).getClass(), OrderActivateExtImpl1.class);

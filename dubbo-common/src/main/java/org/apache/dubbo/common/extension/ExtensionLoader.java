@@ -316,21 +316,38 @@ public class ExtensionLoader<T> {
             });
         }
 
-        for (int i = 0; i < names.size(); i++) {
-            String name = names.get(i);
-            if (!name.startsWith(REMOVE_VALUE_PREFIX)
+        if (names.contains(DEFAULT_KEY)) {
+            // will affect order
+            // `ext1,default,ext2` means ext1 will happens before all of the default extensions while ext2 will after them
+            ArrayList<T> extensionsResult = new ArrayList<>(activateExtensionsMap.size() + names.size());
+            for (int i = 0; i < names.size(); i++) {
+                String name = names.get(i);
+                if (!name.startsWith(REMOVE_VALUE_PREFIX)
                     && !names.contains(REMOVE_VALUE_PREFIX + name)) {
-                if (!DEFAULT_KEY.equals(name)) {
-                    if (containsExtension(name)) {
-                        activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
+                    if (!DEFAULT_KEY.equals(name)) {
+                        if (containsExtension(name)) {
+                            extensionsResult.add(getExtension(name));
+                        }
+                    } else {
+                        extensionsResult.addAll(activateExtensionsMap.values());
                     }
                 }
             }
+            return extensionsResult;
+        } else {
+            for (int i = 0; i < names.size(); i++) {
+                String name = names.get(i);
+                if (!name.startsWith(REMOVE_VALUE_PREFIX)
+                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                    if (!DEFAULT_KEY.equals(name)) {
+                        if (containsExtension(name)) {
+                            activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
+                        }
+                    }
+                }
+            }
+            return new ArrayList<>(activateExtensionsMap.values());
         }
-        if (activateExtensionsMap.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return new ArrayList<>(activateExtensionsMap.values());
     }
 
     public List<T> getActivateExtensions() {
