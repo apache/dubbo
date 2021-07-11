@@ -281,6 +281,7 @@ public class ExtensionLoader<T> {
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
                 synchronized (cachedActivateGroups) {
+                    // cache all extensions
                     if (cachedActivateGroups.size() == 0) {
                         getExtensionClasses();
                         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
@@ -305,6 +306,7 @@ public class ExtensionLoader<T> {
                 }
             }
 
+            // traverse all cached extensions
             cachedActivateGroups.forEach((name, activateGroup)->{
                 if (isMatchGroup(group, activateGroup)
                         && !names.contains(name)
@@ -335,6 +337,7 @@ public class ExtensionLoader<T> {
             }
             return extensionsResult;
         } else {
+            // add extensions, will be sorted by its order
             for (int i = 0; i < names.size(); i++) {
                 String name = names.get(i);
                 if (!name.startsWith(REMOVE_VALUE_PREFIX)
@@ -342,6 +345,8 @@ public class ExtensionLoader<T> {
                     if (!DEFAULT_KEY.equals(name)) {
                         if (containsExtension(name)) {
                             activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
+                        } else {
+                            logger.warn("Extension not found! Name: " + name +" Class:" + type.getName());
                         }
                     }
                 }
