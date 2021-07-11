@@ -20,6 +20,7 @@ import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotati
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
 
 import com.alibaba.spring.context.config.ConfigurationBeanBinder;
+import org.apache.dubbo.config.spring.util.DubboBeanUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.ObjectProvider;
@@ -27,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -64,23 +66,25 @@ public class DubboRelaxedBinding2AutoConfigurationTest {
     private ObjectProvider<ServiceAnnotationPostProcessor> serviceAnnotationPostProcessor;
 
     @Autowired
-    private ObjectProvider<ReferenceAnnotationBeanPostProcessor> referenceAnnotationBeanPostProcessor;
-
-    @Autowired
     private Environment environment;
 
     @Autowired
     private Map<String, Environment> environments;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Test
     public void testBeans() {
+
 
         assertTrue(ClassUtils.isAssignableValue(BinderDubboConfigBinder.class, dubboConfigBinder));
 
         assertNotNull(serviceAnnotationPostProcessor);
         assertNotNull(serviceAnnotationPostProcessor.getIfAvailable());
+
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor =  DubboBeanUtils.getReferenceAnnotationBeanPostProcessor(applicationContext);
         assertNotNull(referenceAnnotationBeanPostProcessor);
-        assertNotNull(referenceAnnotationBeanPostProcessor.getIfAvailable());
 
         assertNotNull(environment);
         assertNotNull(environments);

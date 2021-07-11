@@ -172,8 +172,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-
-                // Refactor since 2.7.8
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
                 updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
@@ -298,18 +296,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 
         return address.contains("://") || StringUtils.isNotEmpty(protocol);
-    }
-
-    protected void updatePortIfAbsent(Integer value) {
-        if (value != null && value > 0 && port == null) {
-            this.port = value;
-        }
-    }
-
-    protected void updateProtocolIfAbsent(String value) {
-        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
-            this.protocol = value;
-        }
     }
 
     public void updateParameters(Map<String, String> parameters) {

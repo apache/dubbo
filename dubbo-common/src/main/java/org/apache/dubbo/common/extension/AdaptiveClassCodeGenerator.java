@@ -101,7 +101,7 @@ public class AdaptiveClassCodeGenerator {
         for (Method method : methods) {
             code.append(generateMethod(method));
         }
-        code.append("}");
+        code.append('}');
 
         if (logger.isDebugEnabled()) {
             logger.debug(code.toString());

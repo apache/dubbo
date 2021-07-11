@@ -78,7 +78,7 @@ public class PerformanceClientTest  {
         // Create some data for test
         StringBuilder buf = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
-            buf.append("A");
+            buf.append('A');
         }
         final String data = buf.toString();
 

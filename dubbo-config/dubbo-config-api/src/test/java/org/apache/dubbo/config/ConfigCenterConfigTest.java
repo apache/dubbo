@@ -285,4 +285,20 @@ public class ConfigCenterConfigTest {
         Assertions.assertEquals(null, attributes.get("refreshed"));
 
     }
+
+    @Test
+    public void testSetAddress() {
+        String address = "zookeeper://127.0.0.1:2181";
+        ConfigCenterConfig cc = new ConfigCenterConfig();
+        cc.setUsername("user123"); // set username first
+        cc.setPassword("pass123");
+        cc.setAddress(address); // set address last, expect did not override username/password
+
+        Assertions.assertEquals(address, cc.getAddress());
+        Assertions.assertEquals("zookeeper", cc.getProtocol());
+        Assertions.assertEquals(2181, cc.getPort());
+        Assertions.assertEquals("user123", cc.getUsername());
+        Assertions.assertEquals("pass123", cc.getPassword());
+
+    }
 }
