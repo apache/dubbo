@@ -16,8 +16,17 @@
  */
 package org.apache.dubbo.descriptor;
 
+import org.apache.dubbo.proto.HelloReply;
+
 public interface DescriptorService {
 
     void noParameterMethod();
 
+    /**
+     * only for test.
+     *
+     * @param reply
+     * @return
+     */
+    HelloReply sayHello(HelloReply reply);
 }
