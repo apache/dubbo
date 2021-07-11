@@ -26,7 +26,7 @@
     </dubbo:application>
 
     <dubbo:config-center address="zookeeper://127.0.0.1:2181"/>
-    <dubbo:metadata-report address="zookeeper://127.0.0.1:2181"/>
+    <dubbo:metadata-report address="127.0.0.1" protocol="zookeeper" port="30"/>
     <dubbo:registry id="registry1" address="zookeeper://127.0.0.1:2181"/>
 
 
