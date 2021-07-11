@@ -1156,14 +1156,14 @@ class URL implements Serializable {
                         && (includes == null || includes.contains(entry.getKey()))) {
                     if (first) {
                         if (concat) {
-                            buf.append("?");
+                            buf.append('?');
                         }
                         first = false;
                     } else {
-                        buf.append("&");
+                        buf.append('&');
                     }
                     buf.append(entry.getKey());
-                    buf.append("=");
+                    buf.append('=');
                     buf.append(entry.getValue() == null ? "" : entry.getValue().trim());
                 }
             }
@@ -1183,10 +1183,10 @@ class URL implements Serializable {
         if (appendUser && StringUtils.isNotEmpty(getUsername())) {
             buf.append(getUsername());
             if (StringUtils.isNotEmpty(getPassword())) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(getPassword());
             }
-            buf.append("@");
+            buf.append('@');
         }
         String host;
         if (useIP) {
@@ -1197,7 +1197,7 @@ class URL implements Serializable {
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
             if (getPort() > 0) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(getPort());
             }
         }
@@ -1208,7 +1208,7 @@ class URL implements Serializable {
             path = getPath();
         }
         if (StringUtils.isNotEmpty(path)) {
-            buf.append("/");
+            buf.append('/');
             buf.append(path);
         }
 
@@ -1247,11 +1247,11 @@ class URL implements Serializable {
         String parameterValue = this.getParameter(parameterName);
         if (!isBlank(parameterValue)) {
             if (!first) {
-                target.append(":");
+                target.append(':');
             }
             target.append(parameterValue);
         } else {
-            target.append(":");
+            target.append(':');
         }
     }
 

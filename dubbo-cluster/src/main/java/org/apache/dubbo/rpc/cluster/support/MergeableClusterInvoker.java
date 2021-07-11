@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 import static org.apache.dubbo.rpc.Constants.MERGER_KEY;
@@ -97,7 +98,7 @@ public class MergeableClusterInvoker<T> extends AbstractClusterInvoker<T> {
         for (Map.Entry<String, Result> entry : results.entrySet()) {
             Result asyncResult = entry.getValue();
             try {
-                Result r = asyncResult.get();
+                Result r = asyncResult.get(Integer.MAX_VALUE, TimeUnit.MILLISECONDS);
                 if (r.hasException()) {
                     log.error("Invoke " + getGroupDescFromServiceKey(entry.getKey()) +
                                     " failed: " + r.getException().getMessage(),

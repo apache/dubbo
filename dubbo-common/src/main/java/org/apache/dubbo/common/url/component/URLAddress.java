@@ -154,7 +154,7 @@ public class URLAddress implements Serializable {
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
             if (port > 0) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(port);
             }
         }

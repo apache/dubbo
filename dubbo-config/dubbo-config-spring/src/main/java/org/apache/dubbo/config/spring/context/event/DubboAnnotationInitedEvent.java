@@ -14,29 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.config.spring.context.event;
 
-import org.apache.dubbo.common.context.Lifecycle;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
- *
- * @since 2.7.5
- * @deprecated as 2.7.6,  Dubbo {@link Lifecycle} components will be registered automatically. Current annotation may be
- * removed in the future
+ * An {@link ApplicationEvent} after Dubbo service/reference annotation has been processed.
+ * <p />
+ * NOTE: This event is used to trigger init {@link DubboConfigBeanInitializer}
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-//@Import(DubboLifecycleComponentRegistrar.class) // Disabled since 2.7.6
-@Deprecated
-public @interface EnableDubboLifecycle {
+public class DubboAnnotationInitedEvent extends ApplicationEvent {
+    /**
+     * Create a new {@code ApplicationEvent}.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     */
+    public DubboAnnotationInitedEvent(Object source) {
+        super(source);
+    }
 }

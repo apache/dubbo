@@ -349,7 +349,7 @@ public class ClassUtils {
             StringBuilder buf = new StringBuilder(rightCode);
             for (int i = parameterClasses.length; i < types.length; i++) {
                 if (buf.length() > 0) {
-                    buf.append(",");
+                    buf.append(',');
                 }
                 Class<?> type = types[i];
                 String def;

@@ -20,6 +20,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
@@ -172,11 +173,11 @@ public class ReferenceBean<T> implements FactoryBean,
      * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
      *
      * <p/>
-     * Dubbo config beans are initialized in DubboConfigInitializationPostProcessor.
+     * Dubbo config beans are initialized in DubboConfigBeanInitializer.
      * <br/>
      * The actual references will be processing in DubboBootstrap.referServices().
      *
-     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
+     * @see DubboConfigBeanInitializer
      * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
      */
     @Override
