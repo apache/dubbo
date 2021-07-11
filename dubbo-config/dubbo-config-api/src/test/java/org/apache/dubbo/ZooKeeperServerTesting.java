@@ -57,7 +57,7 @@ public class ZooKeeperServerTesting {
     /**
      * Returns the zookeeper server's port.
      */
-    public static int getPort(){
+    public static int getPort() {
         return INSTANCE.getClientPort();
     }
 
@@ -67,6 +67,7 @@ public class ZooKeeperServerTesting {
     public static void shutdown() {
         if (INSTANCE != null) {
             INSTANCE.shutdown();
+            INSTANCE = null;
         }
     }
 
