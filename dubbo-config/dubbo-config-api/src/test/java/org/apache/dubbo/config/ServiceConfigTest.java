@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.config;
 
+import com.google.common.collect.Lists;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -72,6 +73,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -320,7 +322,6 @@ public class ServiceConfigTest {
     }
 
 
-
     @Test
     public void testExportWithoutRegistryConfig() {
         serviceWithoutRegistryConfig.export();
@@ -356,5 +357,177 @@ public class ServiceConfigTest {
         assertEquals(1, exportedServices.size());
         ServiceConfig serviceConfig = exportedServices.get(service.getUniqueServiceName());
         assertSame(service, serviceConfig);
+    }
+
+
+    @Test
+    public void testMethodConfigWithInvalidArgumentConfig() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setProtocol(new ProtocolConfig() {{
+                setName("dubbo");
+            }});
+
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            // invalid argument index.
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+                // unset config.
+            }}));
+            service.setMethods(Lists.newArrayList(methodConfig));
+
+            service.export();
+        });
+    }
+
+    @Test
+    public void testMethodConfigWithConfiguredArgumentTypeAndIndex() {
+        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.setProtocol(new ProtocolConfig() {{
+            setName("dubbo");
+        }});
+
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        // invalid argument index.
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+            setType(String.class.getName());
+            setIndex(0);
+            setCallback(false);
+        }}));
+        service.setMethods(Lists.newArrayList(methodConfig));
+
+        service.export();
+
+        assertFalse(service.getExportedUrls().isEmpty());
+        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+    }
+
+    @Test
+    public void testMethodConfigWithConfiguredArgumentIndex() {
+        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.setProtocol(new ProtocolConfig() {{
+            setName("dubbo");
+        }});
+
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        // invalid argument index.
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+            setIndex(0);
+            setCallback(false);
+        }}));
+        service.setMethods(Lists.newArrayList(methodConfig));
+
+        service.export();
+
+        assertFalse(service.getExportedUrls().isEmpty());
+        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+    }
+
+    @Test
+    public void testMethodConfigWithConfiguredArgumentType() {
+        ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+        service.setInterface(DemoService.class);
+        service.setRef(new DemoServiceImpl());
+        service.setProtocol(new ProtocolConfig() {{
+            setName("dubbo");
+        }});
+
+        MethodConfig methodConfig = new MethodConfig();
+        methodConfig.setName("sayName");
+        // invalid argument index.
+        methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+            setType(String.class.getName());
+            setCallback(false);
+        }}));
+        service.setMethods(Lists.newArrayList(methodConfig));
+
+        service.export();
+
+        assertFalse(service.getExportedUrls().isEmpty());
+        assertEquals("false", service.getExportedUrls().get(0).getParameters().get("sayName.0.callback"));
+    }
+
+    @Test
+    public void testMethodConfigWithUnknownArgumentType() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setProtocol(new ProtocolConfig() {{
+                setName("dubbo");
+            }});
+
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            // invalid argument index.
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+                setType(Integer.class.getName());
+                setCallback(false);
+            }}));
+            service.setMethods(Lists.newArrayList(methodConfig));
+
+            service.export();
+        });
+    }
+
+    @Test
+    public void testMethodConfigWithUnmatchedArgument() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setProtocol(new ProtocolConfig() {{
+                setName("dubbo");
+            }});
+
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            // invalid argument index.
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+                setType(Integer.class.getName());
+                setIndex(0);
+            }}));
+            service.setMethods(Lists.newArrayList(methodConfig));
+
+            service.export();
+        });
+    }
+
+    @Test
+    public void testMethodConfigWithInvalidArgumentIndex() {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            ServiceConfig<DemoServiceImpl> service = new ServiceConfig<>();
+
+            service.setInterface(DemoService.class);
+            service.setRef(new DemoServiceImpl());
+            service.setProtocol(new ProtocolConfig() {{
+                setName("dubbo");
+            }});
+
+            MethodConfig methodConfig = new MethodConfig();
+            methodConfig.setName("sayName");
+            // invalid argument index.
+            methodConfig.setArguments(Lists.newArrayList(new ArgumentConfig() {{
+                setType(String.class.getName());
+                setIndex(1);
+            }}));
+            service.setMethods(Lists.newArrayList(methodConfig));
+
+            service.export();
+        });
     }
 }
