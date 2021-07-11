@@ -24,7 +24,7 @@ import org.apache.dubbo.remoting.Constants;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
-@SPI
+@SPI("curator")
 public interface ZookeeperTransporter {
 
     String CURATOR_5 = "curator5";
