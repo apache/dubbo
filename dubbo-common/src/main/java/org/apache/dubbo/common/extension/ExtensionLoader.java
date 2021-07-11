@@ -357,7 +357,7 @@ public class ExtensionLoader<T> {
 
     public List<T> getActivateExtensions() {
         List<T> activateExtensions = new ArrayList<>();
-        TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
+        TreeMap<Class<?>, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         getExtensionClasses();
         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
             String name = entry.getKey();
