@@ -26,7 +26,16 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
  */
 public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
 
-    private ZookeeperTransporter zookeeperTransporter = ZookeeperTransporter.getExtension();
+    private ZookeeperTransporter zookeeperTransporter;
+
+    {
+        ZookeeperTransporter extension = ZookeeperTransporter.getExtension();
+        setZookeeperTransporter(extension);
+    }
+
+    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
+        this.zookeeperTransporter = zookeeperTransporter;
+    }
 
     @Override
     protected DynamicConfiguration createDynamicConfiguration(URL url) {
