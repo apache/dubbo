@@ -14,22 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.configcenter.support.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.config.configcenter.AbstractDynamicConfigurationFactory;
-import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
 
-/**
- *
- */
-public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigurationFactory {
-
-    private ZookeeperTransporter zookeeperTransporter = ZookeeperTransporter.getExtension();
+public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
 
     @Override
-    protected DynamicConfiguration createDynamicConfiguration(URL url) {
-        return new ZookeeperDynamicConfiguration(url, zookeeperTransporter);
+    public ZookeeperClient createZookeeperClient(URL url) {
+        return new Curator5ZookeeperClient(url);
     }
+
 }

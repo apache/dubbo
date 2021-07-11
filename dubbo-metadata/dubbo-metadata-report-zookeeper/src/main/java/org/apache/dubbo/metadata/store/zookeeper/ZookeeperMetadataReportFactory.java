@@ -26,11 +26,7 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
  */
 public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactory {
 
-    private ZookeeperTransporter zookeeperTransporter;
-
-    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
-        this.zookeeperTransporter = zookeeperTransporter;
-    }
+    private ZookeeperTransporter zookeeperTransporter = ZookeeperTransporter.getExtension();
 
     @Override
     public MetadataReport createMetadataReport(URL url) {
