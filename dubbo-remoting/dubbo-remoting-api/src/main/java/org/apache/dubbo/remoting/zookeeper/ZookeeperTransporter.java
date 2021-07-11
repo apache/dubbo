@@ -17,21 +17,18 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
 
 import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
-@SPI("curator")
+@SPI
 public interface ZookeeperTransporter {
 
     String CURATOR_5 = "curator5";
 
     String CURATOR = "curator";
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
     ZookeeperClient connect(URL url);
 
     static ZookeeperTransporter getExtension() {
