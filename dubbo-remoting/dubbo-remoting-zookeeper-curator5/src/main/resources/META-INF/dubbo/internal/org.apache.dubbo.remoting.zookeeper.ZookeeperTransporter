@@ -1,0 +1,1 @@
+curator5=org.apache.dubbo.remoting.zookeeper.curator5.Curator5ZookeeperTransporter

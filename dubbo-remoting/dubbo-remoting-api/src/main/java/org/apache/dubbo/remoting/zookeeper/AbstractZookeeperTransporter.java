@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper.support;
+package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.RemotingConstants;
@@ -90,7 +90,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param addressList
      * @return
      */
-    ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
+    public ZookeeperClient fetchAndUpdateZookeeperClientCache(List<String> addressList) {
 
         ZookeeperClient zookeeperClient = null;
         for (String address : addressList) {
@@ -110,7 +110,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      * @param url such as:zookeeper://127.0.0.1:2181?127.0.0.1:8989,127.0.0.1:9999
      * @return such as 127.0.0.1:2181,127.0.0.1:8989,127.0.0.1:9999
      */
-    List<String> getURLBackupAddress(URL url) {
+    public List<String> getURLBackupAddress(URL url) {
         List<String> addressList = new ArrayList<String>();
         addressList.add(url.getAddress());
         addressList.addAll(url.getParameter(RemotingConstants.BACKUP_KEY, Collections.EMPTY_LIST));
@@ -176,7 +176,7 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
      *
      * @return
      */
-    Map<String, ZookeeperClient> getZookeeperClientMap() {
+    public Map<String, ZookeeperClient> getZookeeperClientMap() {
         return zookeeperClientMap;
     }
 }
