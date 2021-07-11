@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.config.context;
 
+import org.apache.dubbo.common.config.CompositeConfiguration;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.DisableInject;
@@ -81,13 +82,15 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     final Map<String, Map<String, AbstractConfig>> configsCache = newMap();
 
-    private Map<String, ReferenceConfigBase> referenceConfigCache = new HashMap<>();
+    private Map<String, AbstractInterfaceConfig> referenceConfigCache = new HashMap<>();
 
-    private Map<String, ServiceConfigBase> serviceConfigCache = new HashMap<>();
+    private Map<String, AbstractInterfaceConfig> serviceConfigCache = new HashMap<>();
 
     private Set<AbstractConfig> duplicatedConfigs = new HashSet<>();
 
     private ConfigMode configMode = ConfigMode.STRICT;
+
+    private boolean ignoreDuplicatedInterface = false;
 
     private static Map<Class, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
@@ -113,18 +116,24 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void initialize() throws IllegalStateException {
-        String configModeStr = null;
+        CompositeConfiguration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
-            configModeStr = (String) ApplicationModel.getEnvironment().getConfiguration().getProperty(DUBBO_CONFIG_MODE);
             if (StringUtils.hasText(configModeStr)) {
                 this.configMode = ConfigMode.valueOf(configModeStr.toUpperCase());
             }
-            logger.info("Dubbo config mode: " + configMode);
         } catch (Exception e) {
             String msg = "Illegal '" + DUBBO_CONFIG_MODE + "' config value [" + configModeStr + "], available values " + Arrays.toString(ConfigMode.values());
             logger.error(msg, e);
             throw new IllegalArgumentException(msg, e);
         }
+
+        String ignoreDuplicatedInterfaceStr = (String) configuration
+            .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_DUPLICATED_INTERFACE);
+        if (ignoreDuplicatedInterfaceStr != null) {
+            this.ignoreDuplicatedInterface = Boolean.parseBoolean(ignoreDuplicatedInterfaceStr);
+        }
+        logger.info("Dubbo config mode: " + configMode +", ignore duplicated interface: " + ignoreDuplicatedInterface);
     }
 
 
@@ -641,38 +650,17 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
             return config;
         }
 
-        // check duplicated config
+        // check duplicated configs
         // TODO Is there any problem with ignoring duplicate and equivalent but different ReferenceConfig instances?
-        if (config instanceof ReferenceConfigBase) {
-            // special check service and reference config, speed up the processing of a large number of instances
-            ReferenceConfigBase<?> referenceConfig = (ReferenceConfigBase<?>) config;
-            String uniqueServiceName = referenceConfig.getUniqueServiceName();
-            ReferenceConfigBase prevReferenceConfig = referenceConfigCache.putIfAbsent(uniqueServiceName, referenceConfig);
-            if (prevReferenceConfig != null) {
-                if (prevReferenceConfig == config) {
-                    return config;
-                }
-                if (isIgnoreDuplicateService(uniqueServiceName, prevReferenceConfig, config)) {
-                    return (C) prevReferenceConfig;
-                }
-            }
-        } else if (config instanceof ServiceConfigBase) {
-            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
-            String uniqueServiceName = serviceConfig.getUniqueServiceName();
-            ServiceConfigBase prevServiceConfig = serviceConfigCache.putIfAbsent(uniqueServiceName, serviceConfig);
-            if (prevServiceConfig != null) {
-                if (prevServiceConfig == config) {
-                    return config;
-                }
-                if (isIgnoreDuplicateService(uniqueServiceName, prevServiceConfig, config)) {
-                    return (C) prevServiceConfig;
-                }
+        // special check service and reference config by unique service name, speed up the processing of large number of instances
+        if (config instanceof ReferenceConfigBase || config instanceof ServiceConfigBase) {
+            C existedConfig = (C) checkDuplicatedInterfaceConfig((AbstractInterfaceConfig) config);
+            if (existedConfig != null) {
+                return existedConfig;
             }
         } else {
             // find by value
-            Optional<C> prevConfig = configsMap.values().stream()
-                .filter(val -> isEquals(val, config))
-                .findFirst();
+            Optional<C> prevConfig = findConfigByValue(configsMap.values(), config);
             if (prevConfig.isPresent()) {
                 if (prevConfig.get() == config) {
                     // the new one is same as existing one
@@ -736,20 +724,59 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         return config;
     }
 
-    private <C extends AbstractConfig> boolean isIgnoreDuplicateService(String uniqueServiceName, AbstractInterfaceConfig prevConfig, C config) {
-        String configType = config.getClass().getSimpleName();
-        String msg = "Found equivalent " + configType + " with unique service name [" +
-            uniqueServiceName + "], previous: " + prevConfig + ", later: " + config + ". " +
-            "There can only be one instance of " + configType + " with the same triple (group, interface, version). " +
-            "If multiple instances are required for the same interface, please use a different group or version.";
+    private <C extends AbstractConfig> Optional<C> findConfigByValue(Collection<C> values, C config) {
+        // 1. find same config instance (speed up raw api usage)
+        Optional<C> prevConfig = values.stream().filter(val -> val == config).findFirst();
+        if (prevConfig.isPresent()) {
+            return prevConfig;
+        }
 
-        if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
-            logger.warn(msg);
+        // 2. find equal config
+        prevConfig = values.stream()
+            .filter(val -> isEquals(val, config))
+            .findFirst();
+        return prevConfig;
+    }
+
+    /**
+     * check duplicated ReferenceConfig/ServiceConfig
+     * @param config
+     */
+    private AbstractInterfaceConfig checkDuplicatedInterfaceConfig(AbstractInterfaceConfig config) {
+        String uniqueServiceName;
+        Map<String, AbstractInterfaceConfig> configCache;
+        if (config instanceof ReferenceConfigBase) {
+            ReferenceConfigBase<?> referenceConfig = (ReferenceConfigBase<?>) config;
+            uniqueServiceName = referenceConfig.getUniqueServiceName();
+            configCache = referenceConfigCache;
+        } else if (config instanceof ServiceConfigBase) {
+            ServiceConfigBase serviceConfig = (ServiceConfigBase) config;
+            uniqueServiceName = serviceConfig.getUniqueServiceName();
+            configCache = serviceConfigCache;
+        } else {
+            throw new IllegalArgumentException("Illegal type of parameter 'config' : " + config.getClass().getName());
         }
-        if (configMode == ConfigMode.STRICT) {
-            throw new IllegalStateException(msg);
+
+        AbstractInterfaceConfig prevConfig = configCache.putIfAbsent(uniqueServiceName, config);
+        if (prevConfig != null) {
+            if (prevConfig == config) {
+                return config;
+            }
+
+            String configType = config.getClass().getSimpleName();
+            String msg = "Found multiple " + configType + "s with unique service name [" +
+                uniqueServiceName + "], previous: " + prevConfig + ", later: " + config + ". " +
+                "There can only be one instance of " + configType + " with the same triple (group, interface, version). " +
+                "If multiple instances are required for the same interface, please use a different group or version.";
+
+            if (logger.isWarnEnabled() && duplicatedConfigs.add(config)) {
+                logger.warn(msg);
+            }
+            if (!ignoreDuplicatedInterface) {
+                throw new IllegalStateException(msg);
+            }
         }
-        return true;
+        return prevConfig;
     }
 
     public static <C extends AbstractConfig> String generateConfigId(C config) {
