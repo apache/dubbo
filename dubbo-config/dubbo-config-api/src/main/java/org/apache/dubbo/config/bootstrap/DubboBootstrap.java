@@ -1084,7 +1084,6 @@ public class DubboBootstrap {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             startup.set(false);
-            initialized.set(false);
             shutdown.set(false);
             awaited.set(false);
 
@@ -1289,8 +1288,10 @@ public class DubboBootstrap {
                 ExecutorService executor = executorRepository.getExportReferExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        sc.export();
-                        exportedServices.add(sc);
+                        if (!sc.isExported()) {
+                            sc.export();
+                            exportedServices.add(sc);
+                        }
                     } catch (Throwable t) {
                         logger.error("export async catch error : " + t.getMessage(), t);
                     }
@@ -1298,8 +1299,10 @@ public class DubboBootstrap {
 
                 asyncExportingFutures.add(future);
             } else {
-                sc.export();
-                exportedServices.add(sc);
+                if (!sc.isExported()) {
+                    sc.export();
+                    exportedServices.add(sc);
+                }
             }
         }
     }
@@ -1397,12 +1400,13 @@ public class DubboBootstrap {
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->
             {
-                calInstanceRevision(serviceDiscovery, serviceInstance);
+                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
                 if (logger.isDebugEnabled()) {
-                    logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstance);
+                    logger.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
                 }
                 // register metadata
-                serviceDiscovery.register(serviceInstance);
+                serviceDiscovery.register(serviceInstanceForRegistry);
             });
         }
     }
@@ -1524,6 +1528,7 @@ public class DubboBootstrap {
 
     private void destroyMetadataReports() {
         AbstractMetadataReportFactory.destroy();
+        MetadataReportInstance.reset();
         ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
     }
 
@@ -1586,6 +1591,7 @@ public class DubboBootstrap {
     }
 
     public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        this.started.set(false);
         this.takeoverMode = takeoverMode;
     }
 

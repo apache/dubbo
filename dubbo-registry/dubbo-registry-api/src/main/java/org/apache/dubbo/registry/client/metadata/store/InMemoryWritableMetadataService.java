@@ -54,8 +54,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import static java.util.Collections.emptySortedSet;
 import static java.util.Collections.unmodifiableSortedSet;
 import static org.apache.dubbo.common.URL.buildKey;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
 
@@ -199,22 +201,25 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     }
 
     @Override
-    public void publishServiceDefinition(URL providerUrl) {
+    public void publishServiceDefinition(URL url) {
         try {
-            String interfaceName = providerUrl.getServiceInterface();
+            String interfaceName = url.getServiceInterface();
             if (StringUtils.isNotEmpty(interfaceName)
-                    && !ProtocolUtils.isGeneric(providerUrl.getParameter(GENERIC_KEY))) {
+                    && !ProtocolUtils.isGeneric(url.getParameter(GENERIC_KEY))) {
                 Class interfaceClass = Class.forName(interfaceName);
                 ServiceDefinition serviceDefinition = ServiceDefinitionBuilder.build(interfaceClass);
                 Gson gson = new Gson();
                 String data = gson.toJson(serviceDefinition);
-                serviceDefinitions.put(providerUrl.getServiceKey(), data);
+                serviceDefinitions.put(url.getServiceKey(), data);
+                return;
+            } else if (CONSUMER_SIDE.equalsIgnoreCase(url.getParameter(SIDE_KEY))) {
+                //to avoid consumer generic invoke style error
                 return;
             }
-            logger.error("publishProvider interfaceName is empty . providerUrl: " + providerUrl.toFullString());
+            logger.error("publish service definition interfaceName is empty. url: " + url.toFullString());
         } catch (Throwable e) {
             //ignore error
-            logger.error("publishProvider getServiceDescriptor error. providerUrl: " + providerUrl.toFullString(), e);
+            logger.error("publish service definition getServiceDescriptor error. url: " + url.toFullString(), e);
         }
     }
 

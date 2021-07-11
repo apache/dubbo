@@ -19,17 +19,17 @@ package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.registry.AddressListener;
 import org.apache.dubbo.rpc.cluster.Directory;
 
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 @Activate(order = 670)
 public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
-    private static final Object MARK = new Object();
-    private static final ConcurrentHashMap<String, Object> APP_MAP = new ConcurrentHashMap<>();
+    private static final Set<String> APP_SET = new ConcurrentHashSet<>();
 
     @Override
     public List<URL> notify(List<URL> addresses, URL consumerUrl, Directory registryDirectory) {
@@ -39,7 +39,7 @@ public class MeshRuleAddressListenerInterceptor implements AddressListener {
 
                 String app = url.getRemoteApplication();
                 if (app != null && !app.isEmpty()) {
-                    if (APP_MAP.putIfAbsent(app, MARK) == null) {
+                    if (APP_SET.add(app)) {
                         MeshRuleManager.subscribeAppRule(app);
                     }
                 }

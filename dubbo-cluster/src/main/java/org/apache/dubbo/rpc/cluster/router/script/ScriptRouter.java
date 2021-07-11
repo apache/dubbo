@@ -81,8 +81,8 @@ public class ScriptRouter extends AbstractRouter {
     }
 
     public ScriptRouter(URL url) {
-        this.url = url;
-        this.priority = url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY);
+        this.setUrl(url);
+        this.setPriority(url.getParameter(PRIORITY_KEY, SCRIPT_ROUTER_DEFAULT_PRIORITY));
 
         engine = getEngine(url);
         rule = getRule(url);
@@ -166,12 +166,12 @@ public class ScriptRouter extends AbstractRouter {
 
     @Override
     public boolean isRuntime() {
-        return this.url.getParameter(RUNTIME_KEY, false);
+        return this.getUrl().getParameter(RUNTIME_KEY, false);
     }
 
     @Override
     public boolean isForce() {
-        return url.getParameter(FORCE_KEY, false);
+        return this.getUrl().getParameter(FORCE_KEY, false);
     }
 
 }

@@ -210,7 +210,7 @@ public class AbstractConfigTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
-                builder.append("a");
+                builder.append('a');
             }
             ConfigValidationUtils.checkLength("hello", builder.toString());
         });
@@ -221,7 +221,7 @@ public class AbstractConfigTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
-                builder.append("a");
+                builder.append('a');
             }
             ConfigValidationUtils.checkPathLength("hello", builder.toString());
         });

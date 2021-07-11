@@ -34,7 +34,7 @@ public class PwdTelnet implements BaseCommand {
         String service = commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
         StringBuilder buf = new StringBuilder();
         if (service == null || service.length() == 0) {
-            buf.append("/");
+            buf.append('/');
         } else {
             buf.append(service);
         }

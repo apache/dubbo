@@ -127,12 +127,12 @@ public class MetricsFilter implements Filter {
         StringBuilder method = new StringBuilder(methodName);
         Class<?>[] argTypes = RpcUtils.getParameterTypes(invocation);
 
-        method.append("(");
+        method.append('(');
 
         for (int i = 0; i < argTypes.length; i++) {
             method.append((i == 0 ? "" : ", ") + argTypes[i].getSimpleName());
         }
-        method.append(")");
+        method.append(')');
         Class<?> returnType = RpcUtils.getReturnType(invocation);
         String typeName = null;
         if(returnType != null) {

@@ -20,6 +20,7 @@ import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.spring.util.DubboBeanUtils;
+import org.apache.dubbo.config.spring.util.EnvironmentUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -27,13 +28,17 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.env.ConfigurableEnvironment;
+
+import java.util.SortedMap;
 
 
 /**
  * Register some infrastructure beans if not exists.
  * This post-processor MUST impl BeanDefinitionRegistryPostProcessor,
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
- * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+ * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
+ * org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
 public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
@@ -52,7 +57,15 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        DubboBeanUtils.registerBeansIfNotExists(registry);
+
+        // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+        // for processing early init ReferenceBean
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
+            ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+        beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
+
+        // register PropertySourcesPlaceholderConfigurer bean if not exits
+        DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
 
         // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, ApplicationModel.getConfigManager());
@@ -62,5 +75,11 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
+
+        // Initialize dubbo Environment before ConfigManager
+        // Extract dubbo props from Spring env and put them to app config
+        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
+        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
+        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
     }
 }

@@ -17,6 +17,7 @@
 package org.apache.dubbo.spring.boot.autoconfigure;
 
 import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ConfigKeys;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.config.ModuleConfig;
@@ -24,6 +25,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.context.ConfigMode;
 import org.apache.dubbo.config.spring.ConfigCenterBean;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 
@@ -42,6 +44,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_PREFIX;
 /**
  * Dubbo {@link ConfigurationProperties Config Properties} only used to generate JSON metadata(non-public class)
  *
+ * @see ConfigKeys
  * @since 2.7.1
  */
 @ConfigurationProperties(DUBBO_PREFIX)
@@ -254,6 +257,12 @@ public class DubboConfigurationProperties {
     static class Config {
 
         /**
+         * Config processing mode
+         * @see ConfigMode
+         */
+        private ConfigMode mode = ConfigMode.STRICT;
+
+        /**
          * Indicates multiple properties binding from externalized configuration or not.
          */
         private boolean multiple = DEFAULT_MULTIPLE_CONFIG_PROPERTY_VALUE;
@@ -277,6 +286,14 @@ public class DubboConfigurationProperties {
 
         public void setMultiple(boolean multiple) {
             this.multiple = multiple;
+        }
+
+        public ConfigMode getMode() {
+            return mode;
+        }
+
+        public void setMode(ConfigMode mode) {
+            this.mode = mode;
         }
     }
 

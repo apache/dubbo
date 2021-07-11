@@ -150,7 +150,7 @@ public abstract class Wrapper {
                 continue;
             }
 
-            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append("=").append(arg(ft, "$3")).append("; return; }");
+            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append('=').append(arg(ft, "$3")).append("; return; }");
             c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
             pts.put(fn, ft);
         }
@@ -242,7 +242,7 @@ public abstract class Wrapper {
             } else if ((matcher = ReflectUtils.SETTER_METHOD_DESC_PATTERN.matcher(md)).matches()) {
                 Class<?> pt = method.getParameterTypes()[0];
                 String pn = propertyName(matcher.group(1));
-                c1.append(" if( $2.equals(\"").append(pn).append("\") ){ w.").append(method.getName()).append("(").append(arg(pt, "$3")).append("); return; }");
+                c1.append(" if( $2.equals(\"").append(pn).append("\") ){ w.").append(method.getName()).append('(').append(arg(pt, "$3")).append("); return; }");
                 pts.put(pn, pt);
             }
         }

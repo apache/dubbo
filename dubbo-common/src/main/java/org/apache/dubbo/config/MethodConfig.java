@@ -202,7 +202,7 @@ public class MethodConfig extends AbstractMethodConfig {
      * @return
      */
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         // parent prefix + method name
         if (parentPrefix != null) {
@@ -216,6 +216,7 @@ public class MethodConfig extends AbstractMethodConfig {
 
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        // refresh ArgumentConfigs
         if (this.getArguments() != null && this.getArguments().size() > 0) {
             for (ArgumentConfig argument : this.getArguments()) {
                 refreshArgument(argument, subPropsConfiguration);
@@ -274,12 +275,6 @@ public class MethodConfig extends AbstractMethodConfig {
         if (getSent() == null) {
             setSent(true);
         }
-    }
-
-    @Override
-    public void addIntoConfigManager() {
-        // Don't add MethodConfig to ConfigManager
-        // super.addIntoConfigManager();
     }
 
     @Parameter(excluded = true)
