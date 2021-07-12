@@ -479,7 +479,7 @@ public class MetadataInfo implements Serializable {
         @Override
         public int hashCode() {
 //            return Objects.hash(getMatchKey(), getParams());
-            return Objects.hash(getMatchKey());
+            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol());
 
         }
 
