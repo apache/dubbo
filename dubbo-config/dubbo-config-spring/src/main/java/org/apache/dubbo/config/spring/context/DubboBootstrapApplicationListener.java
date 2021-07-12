@@ -83,6 +83,7 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
 
     private void onContextClosedEvent(ContextClosedEvent event) {
         if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            // will call dubboBootstrap.stop() through shutdown callback.
             DubboShutdownHook.getDubboShutdownHook().run();
         }
     }

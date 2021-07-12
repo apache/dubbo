@@ -14,23 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.client.event;
+package org.apache.dubbo.metadata;
 
-import java.util.Collections;
-
-/**
- * A retry task when is failed.
- */
-public class RetryServiceInstancesChangedEvent extends ServiceInstancesChangedEvent {
-
-    private volatile long failureRecordTime;
-
-    public RetryServiceInstancesChangedEvent(String serviceName) {
-        super(serviceName, Collections.emptyList());// instance list has been stored by ServiceInstancesChangedListener
-        this.failureRecordTime = System.currentTimeMillis();
+public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
+    @Override
+    public String[] serviceParamsIncluded() {
+        return new String[0];
     }
 
-    public long getFailureRecordTime() {
-        return failureRecordTime;
+    @Override
+    public String[] instanceParamsIncluded() {
+        return new String[0];
     }
 }
