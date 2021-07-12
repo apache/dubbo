@@ -267,7 +267,7 @@ public class ConfigManagerTest {
                 getConfigManager().addConfig(applicationConfig2);
                 fail("strict mode cannot add two application configs");
             } catch (Exception e) {
-                assertEquals(IllegalStateException.class, e.getClass());
+                assertEquals(RuntimeException.class, e.getClass());
                 assertTrue(e.getMessage().contains("please remove redundant configs and keep only one"));
             }
 
