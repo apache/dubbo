@@ -32,6 +32,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFIL
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
@@ -171,13 +172,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
                 updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
-                updateParameters(url.getParameters());
+                Map<String, String> params = url.getParameters();
+                if (CollectionUtils.isNotEmptyMap(params)) {
+                    params.remove(BACKUP_KEY);
+                }
+                updateParameters(params);
             } catch (Exception ignored) {
             }
         }
