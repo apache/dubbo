@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.common.utils;
 
+import org.apache.dubbo.common.constants.CommonConstants;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.Properties;
@@ -30,16 +32,28 @@ public class RegexProperties extends Properties {
     @Override
     public String getProperty(String key) {
         String value = super.getProperty(key);
-        if(value != null) {
+        if (value != null) {
             return value;
         }
 
-        List<String> sortedKeyList = keySet().stream().map(k -> (String) k)
+        // Sort the keys to solve the problem of matching priority.
+        List<String> sortedKeyList = keySet()
+                .stream()
+                .map(k -> (String) k)
                 .sorted(Comparator.reverseOrder())
                 .collect(Collectors.toList());
 
         String keyPattern = sortedKeyList
-                .stream().filter(k -> Pattern.matches(k, key)).findFirst().orElse(null);
+                .stream()
+                .filter(k -> {
+                    String matchingKey = k;
+                    if(matchingKey.startsWith(CommonConstants.ANY_VALUE)){
+                        matchingKey = CommonConstants.HIDE_KEY_PREFIX + matchingKey;
+                    }
+                    return Pattern.matches(matchingKey, key);
+                })
+                .findFirst()
+                .orElse(null);
 
         return keyPattern == null ? null : super.getProperty(keyPattern);
     }
