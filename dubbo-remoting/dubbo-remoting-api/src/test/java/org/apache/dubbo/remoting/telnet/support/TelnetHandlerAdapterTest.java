@@ -35,7 +35,7 @@ class TelnetHandlerAdapterTest {
         Channel channel = Mockito.mock(Channel.class);
         Map<String, String> param = new HashMap<>();
         param.put("telnet", "status");
-        URL url = new URL("p1", "1.2.3.4", 1010, "path1", param);
+        URL url = new URL("p1", "127.0.0.1", 12345, "path1", param);
         Mockito.when(channel.getUrl()).thenReturn(url);
         TelnetHandlerAdapter telnetHandlerAdapter = new TelnetHandlerAdapter();
 
