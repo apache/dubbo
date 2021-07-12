@@ -206,6 +206,8 @@ public class ExtensionLoader<T> {
                 }
             }
         });
+        EXTENSION_INSTANCES.clear();
+        EXTENSION_LOADERS.clear();
     }
 
     private static ClassLoader findClassLoader() {

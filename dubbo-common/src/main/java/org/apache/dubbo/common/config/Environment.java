@@ -197,6 +197,7 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void destroy() throws IllegalStateException {
         clearExternalConfigs();
         clearAppExternalConfigs();
+        clearDynamicConfiguration();
     }
 
     public PropertiesConfiguration getPropertiesConfiguration() {
@@ -229,5 +230,9 @@ public class Environment extends LifecycleAdapter implements FrameworkExt {
     public void clearAppExternalConfigs() {
         this.appExternalConfiguration.clear();
         this.appExternalConfigurationMap.clear();
+    }
+
+    public void clearDynamicConfiguration() {
+        this.dynamicConfiguration = null;
     }
 }
