@@ -275,13 +275,13 @@ public class ExtensionLoader<T> {
      * @see org.apache.dubbo.common.extension.Activate
      */
     public List<T> getActivateExtension(URL url, String[] values, String group) {
-        List<T> activateExtensions = new ArrayList<>();
         // solve the bug of using @SPI's wrapper method to report a null pointer exception.
-        TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
+        Map<Class<?>, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         List<String> names = values == null ? new ArrayList<>(0) : asList(values);
         if (!names.contains(REMOVE_VALUE_PREFIX + DEFAULT_KEY)) {
             if (cachedActivateGroups.size() == 0) {
                 synchronized (cachedActivateGroups) {
+                    // cache all extensions
                     if (cachedActivateGroups.size() == 0) {
                         getExtensionClasses();
                         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
@@ -306,6 +306,7 @@ public class ExtensionLoader<T> {
                 }
             }
 
+            // traverse all cached extensions
             cachedActivateGroups.forEach((name, activateGroup)->{
                 if (isMatchGroup(group, activateGroup)
                         && !names.contains(name)
@@ -315,35 +316,46 @@ public class ExtensionLoader<T> {
                     activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
                 }
             });
-
-            if (!activateExtensionsMap.isEmpty()) {
-                activateExtensions.addAll(activateExtensionsMap.values());
-            }
         }
-        List<T> loadedExtensions = new ArrayList<>();
-        for (int i = 0; i < names.size(); i++) {
-            String name = names.get(i);
-            if (!name.startsWith(REMOVE_VALUE_PREFIX)
+
+        if (names.contains(DEFAULT_KEY)) {
+            // will affect order
+            // `ext1,default,ext2` means ext1 will happens before all of the default extensions while ext2 will after them
+            ArrayList<T> extensionsResult = new ArrayList<>(activateExtensionsMap.size() + names.size());
+            for (int i = 0; i < names.size(); i++) {
+                String name = names.get(i);
+                if (!name.startsWith(REMOVE_VALUE_PREFIX)
                     && !names.contains(REMOVE_VALUE_PREFIX + name)) {
-                if (DEFAULT_KEY.equals(name)) {
-                    if (!loadedExtensions.isEmpty()) {
-                        activateExtensions.addAll(0, loadedExtensions);
-                        loadedExtensions.clear();
+                    if (!DEFAULT_KEY.equals(name)) {
+                        if (containsExtension(name)) {
+                            extensionsResult.add(getExtension(name));
+                        }
+                    } else {
+                        extensionsResult.addAll(activateExtensionsMap.values());
                     }
-                } else {
-                    loadedExtensions.add(getExtension(name));
                 }
             }
+            return extensionsResult;
+        } else {
+            // add extensions, will be sorted by its order
+            for (int i = 0; i < names.size(); i++) {
+                String name = names.get(i);
+                if (!name.startsWith(REMOVE_VALUE_PREFIX)
+                    && !names.contains(REMOVE_VALUE_PREFIX + name)) {
+                    if (!DEFAULT_KEY.equals(name)) {
+                        if (containsExtension(name)) {
+                            activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
+                        }
+                    }
+                }
+            }
+            return new ArrayList<>(activateExtensionsMap.values());
         }
-        if (!loadedExtensions.isEmpty()) {
-            activateExtensions.addAll(loadedExtensions);
-        }
-        return activateExtensions;
     }
 
     public List<T> getActivateExtensions() {
         List<T> activateExtensions = new ArrayList<>();
-        TreeMap<Class, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
+        TreeMap<Class<?>, T> activateExtensionsMap = new TreeMap<>(ActivateComparator.COMPARATOR);
         getExtensionClasses();
         for (Map.Entry<String, Object> entry : cachedActivates.entrySet()) {
             String name = entry.getKey();

@@ -27,9 +27,9 @@ import java.util.Comparator;
 /**
  * OrderComparator
  */
-public class ActivateComparator implements Comparator<Class> {
+public class ActivateComparator implements Comparator<Class<?>> {
 
-    public static final Comparator<Class> COMPARATOR = new ActivateComparator();
+    public static final Comparator<Class<?>> COMPARATOR = new ActivateComparator();
 
     @Override
     public int compare(Class o1, Class o2) {
@@ -90,7 +90,7 @@ public class ActivateComparator implements Comparator<Class> {
         }
     }
 
-    private Class<?> findSpi(Class clazz) {
+    private Class<?> findSpi(Class<?> clazz) {
         if (clazz.getInterfaces().length == 0) {
             return null;
         }
@@ -99,7 +99,7 @@ public class ActivateComparator implements Comparator<Class> {
             if (intf.isAnnotationPresent(SPI.class)) {
                 return intf;
             } else {
-                Class result = findSpi(intf);
+                Class<?> result = findSpi(intf);
                 if (result != null) {
                     return result;
                 }
@@ -116,12 +116,14 @@ public class ActivateComparator implements Comparator<Class> {
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();
-        } else {
+        } else if (clazz.isAnnotationPresent(com.alibaba.dubbo.common.extension.Activate.class)){
             com.alibaba.dubbo.common.extension.Activate activate = clazz.getAnnotation(
                     com.alibaba.dubbo.common.extension.Activate.class);
             info.before = activate.before();
             info.after = activate.after();
             info.order = activate.order();
+        } else {
+            info.order = 0;
         }
         return info;
     }
