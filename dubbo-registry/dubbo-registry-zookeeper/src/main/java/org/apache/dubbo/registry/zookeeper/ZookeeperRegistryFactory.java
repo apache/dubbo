@@ -29,9 +29,8 @@ public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
 
     private ZookeeperTransporter zookeeperTransporter;
 
-    {
-        ZookeeperTransporter extension = ZookeeperTransporter.getExtension();
-        setZookeeperTransporter(extension);
+    public ZookeeperRegistryFactory() {
+        this.zookeeperTransporter = ZookeeperTransporter.getExtension();
     }
 
     @DisableInject

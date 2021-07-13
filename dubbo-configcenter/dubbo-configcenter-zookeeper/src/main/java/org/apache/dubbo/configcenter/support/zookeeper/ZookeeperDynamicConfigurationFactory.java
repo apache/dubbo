@@ -29,9 +29,8 @@ public class ZookeeperDynamicConfigurationFactory extends AbstractDynamicConfigu
 
     private ZookeeperTransporter zookeeperTransporter;
 
-    {
-        ZookeeperTransporter extension = ZookeeperTransporter.getExtension();
-        setZookeeperTransporter(extension);
+    public ZookeeperDynamicConfigurationFactory() {
+        this.zookeeperTransporter = ZookeeperTransporter.getExtension();
     }
 
     @DisableInject

@@ -29,9 +29,8 @@ public class ZookeeperMetadataReportFactory extends AbstractMetadataReportFactor
 
     private ZookeeperTransporter zookeeperTransporter;
 
-    {
-        ZookeeperTransporter extension = ZookeeperTransporter.getExtension();
-        setZookeeperTransporter(extension);
+    public ZookeeperMetadataReportFactory() {
+        this.zookeeperTransporter = ZookeeperTransporter.getExtension();
     }
 
     @DisableInject
