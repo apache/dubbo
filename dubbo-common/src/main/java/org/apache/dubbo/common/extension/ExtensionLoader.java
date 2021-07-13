@@ -345,8 +345,6 @@ public class ExtensionLoader<T> {
                     if (!DEFAULT_KEY.equals(name)) {
                         if (containsExtension(name)) {
                             activateExtensionsMap.put(getExtensionClass(name), getExtension(name));
-                        } else {
-                            logger.warn("Extension not found! Name: " + name +" Class:" + type.getName());
                         }
                     }
                 }
