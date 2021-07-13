@@ -23,6 +23,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -229,7 +230,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkName() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkName("hello", "world%"));
+        Assertions.assertDoesNotThrow(() -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
@@ -279,9 +280,9 @@ public class AbstractConfigTest {
 
         try {
             ConfigValidationUtils.checkMethodName("hello", "0a");
-            fail("the value should be illegal.");
         } catch (Exception e) {
             // ignore
+            fail("the value should be legal.");
         }
     }
 

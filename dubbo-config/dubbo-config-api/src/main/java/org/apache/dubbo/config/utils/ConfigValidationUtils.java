@@ -707,7 +707,7 @@ public class ConfigValidationUtils {
         if (pattern != null) {
             Matcher matcher = pattern.matcher(value);
             if (!matcher.matches()) {
-                throw new IllegalStateException("Invalid " + property + "=\"" + value + "\" contains illegal " +
+                logger.error("Invalid " + property + "=\"" + value + "\" contains illegal " +
                     "character, only digit, letter, '-', '_' or '.' is legal.");
             }
         }
