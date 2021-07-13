@@ -17,14 +17,36 @@
 package org.apache.dubbo.remoting.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
 
-@SPI("curator")
+import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
+
+@SPI
 public interface ZookeeperTransporter {
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
+    String CURATOR_5 = "curator5";
+
+    String CURATOR = "curator";
+
     ZookeeperClient connect(URL url);
+
+    static ZookeeperTransporter getExtension() {
+        ExtensionLoader<ZookeeperTransporter> extensionLoader = getExtensionLoader(ZookeeperTransporter.class);
+        boolean isHighVersion = isHighVersionCurator();
+        if (isHighVersion) {
+            return extensionLoader.getExtension(CURATOR_5);
+        }
+        return extensionLoader.getExtension(CURATOR);
+    }
+
+    static boolean isHighVersionCurator() {
+        try {
+            Class.forName("org.apache.curator.framework.recipes.cache.CuratorCache");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 
 }

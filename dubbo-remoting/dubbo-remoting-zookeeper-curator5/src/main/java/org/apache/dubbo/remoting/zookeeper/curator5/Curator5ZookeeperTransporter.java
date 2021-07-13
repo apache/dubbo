@@ -14,33 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registry.zookeeper;
+package org.apache.dubbo.remoting.zookeeper.curator5;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.DisableInject;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
+import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
+import org.apache.dubbo.remoting.zookeeper.AbstractZookeeperTransporter;
 
-/**
- * ZookeeperRegistryFactory.
- */
-public class ZookeeperRegistryFactory extends AbstractRegistryFactory {
-
-    private ZookeeperTransporter zookeeperTransporter;
-
-    public ZookeeperRegistryFactory() {
-        this.zookeeperTransporter = ZookeeperTransporter.getExtension();
-    }
-
-    @DisableInject
-    public void setZookeeperTransporter(ZookeeperTransporter zookeeperTransporter) {
-        this.zookeeperTransporter = zookeeperTransporter;
-    }
+public class Curator5ZookeeperTransporter extends AbstractZookeeperTransporter {
 
     @Override
-    public Registry createRegistry(URL url) {
-        return new ZookeeperRegistry(url, zookeeperTransporter);
+    public ZookeeperClient createZookeeperClient(URL url) {
+        return new Curator5ZookeeperClient(url);
     }
 
 }
