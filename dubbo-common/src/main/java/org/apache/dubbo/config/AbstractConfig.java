@@ -28,12 +28,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
-import javax.annotation.PostConstruct;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -639,19 +637,6 @@ public abstract class AbstractConfig implements Serializable {
         this.isDefault = isDefault;
     }
 
-    /**
-     * Add {@link AbstractConfig instance} into {@link ConfigManager}
-     * <p>
-     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
-     *
-     * @see ConfigManager#addConfig(AbstractConfig)
-     * @since 2.7.5
-     */
-    @PostConstruct
-    public void addIntoConfigManager() {
-        ApplicationModel.getConfigManager().addConfig(this);
-    }
-
     @Override
     public String toString() {
         try {
@@ -681,11 +666,11 @@ public abstract class AbstractConfig implements Serializable {
 
                         Object value = method.invoke(this);
                         if (value != null) {
-                            buf.append(" ");
+                            buf.append(' ');
                             buf.append(key);
                             buf.append("=\"");
                             buf.append(key.equals("password") ? "******" : value);
-                            buf.append("\"");
+                            buf.append('\"');
                         }
                     }
                 } catch (Exception e) {

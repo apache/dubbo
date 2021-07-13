@@ -37,7 +37,8 @@ import java.util.SortedMap;
  * Register some infrastructure beans if not exists.
  * This post-processor MUST impl BeanDefinitionRegistryPostProcessor,
  * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
- * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
+ * @see org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors(
+ * org.springframework.beans.factory.config.ConfigurableListableBeanFactory, java.util.List)
  */
 public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegistryPostProcessor, ApplicationContextAware {
 
@@ -56,7 +57,15 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
 
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        DubboBeanUtils.registerBeansIfNotExists(registry);
+
+        // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+        // for processing early init ReferenceBean
+        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
+            ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+        beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
+
+        // register PropertySourcesPlaceholderConfigurer bean if not exits
+        DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
 
         // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, ApplicationModel.getConfigManager());

@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.common;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -48,26 +49,28 @@ public class URLBuilderTest {
     @Test
     public void shouldSet() {
         URL url1 = URL.valueOf("dubbo://admin:hello1234@10.20.130.230:20880/context/path?version=1.0.0&application=morgan");
+        int port = NetUtils.getAvailablePort();
         URL url2 = URLBuilder.from(url1)
                 .setProtocol("rest")
                 .setUsername("newUsername")
                 .setPassword("newPassword")
                 .setHost("newHost")
                 .setPath("newContext")
-                .setPort(1234)
+                .setPort(port)
                 .build();
         assertThat(url2.getProtocol(), equalTo("rest"));
         assertThat(url2.getUsername(), equalTo("newUsername"));
         assertThat(url2.getPassword(), equalTo("newPassword"));
         assertThat(url2.getHost(), equalTo("newHost"));
-        assertThat(url2.getPort(), equalTo(1234));
+        assertThat(url2.getPort(), equalTo(port));
         assertThat(url2.getPath(), equalTo("newContext"));
 
+        int port2 = NetUtils.getAvailablePort();
         url2 = URLBuilder.from(url1)
-                .setAddress("newHost2:2345")
+                .setAddress("newHost2:"+ port2)
                 .build();
         assertThat(url2.getHost(), equalTo("newHost2"));
-        assertThat(url2.getPort(), equalTo(2345));
+        assertThat(url2.getPort(), equalTo(port2));
     }
 
     @Test

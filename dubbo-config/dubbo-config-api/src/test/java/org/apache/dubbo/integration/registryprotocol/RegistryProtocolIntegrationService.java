@@ -14,29 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.context.annotation;
+package org.apache.dubbo.integration.registryprotocol;
 
-import org.apache.dubbo.common.context.Lifecycle;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.apache.dubbo.integration.IntegrationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Enables Dubbo {@link Lifecycle} components
- *
- * @since 2.7.5
- * @deprecated as 2.7.6,  Dubbo {@link Lifecycle} components will be registered automatically. Current annotation may be
- * removed in the future
+ * The implementation for {@link IntegrationService}
  */
-@Target({ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Documented
-//@Import(DubboLifecycleComponentRegistrar.class) // Disabled since 2.7.6
-@Deprecated
-public @interface EnableDubboLifecycle {
+public class RegistryProtocolIntegrationService implements IntegrationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RegistryProtocolIntegrationService.class);
+
+    @Override
+    public String hello(String name) {
+        String value = "Hello " + name;
+        logger.info(value);
+        return value;
+    }
 }

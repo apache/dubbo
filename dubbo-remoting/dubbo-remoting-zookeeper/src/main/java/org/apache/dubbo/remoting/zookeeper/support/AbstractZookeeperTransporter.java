@@ -121,10 +121,10 @@ public abstract class AbstractZookeeperTransporter implements ZookeeperTransport
             StringBuilder buf = new StringBuilder();
             buf.append(url.getUsername());
             if (StringUtils.isNotEmpty(url.getPassword())) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(url.getPassword());
             }
-            buf.append("@");
+            buf.append('@');
             authPrefix = buf.toString();
         }
 

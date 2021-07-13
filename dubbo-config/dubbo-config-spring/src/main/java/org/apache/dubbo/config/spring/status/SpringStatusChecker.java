@@ -86,7 +86,7 @@ public class SpringStatusChecker implements StatusChecker {
                 if (configs != null && configs.length > 0) {
                     for (String config : configs) {
                         if (buf.length() > 0) {
-                            buf.append(",");
+                            buf.append(',');
                         }
                         buf.append(config);
                     }

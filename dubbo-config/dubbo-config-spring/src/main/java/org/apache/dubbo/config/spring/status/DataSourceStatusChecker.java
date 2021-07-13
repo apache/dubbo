@@ -73,11 +73,11 @@ public class DataSourceStatusChecker implements StatusChecker {
                     }
                 }
                 buf.append(metaData.getURL());
-                buf.append("(");
+                buf.append('(');
                 buf.append(metaData.getDatabaseProductName());
-                buf.append("-");
+                buf.append('-');
                 buf.append(metaData.getDatabaseProductVersion());
-                buf.append(")");
+                buf.append(')');
             } catch (Throwable e) {
                 logger.warn(e.getMessage(), e);
                 return new Status(level, e.getMessage());
