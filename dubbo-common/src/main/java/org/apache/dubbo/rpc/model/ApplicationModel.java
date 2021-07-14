@@ -119,6 +119,7 @@ public class ApplicationModel {
     }
 
     // only for unit test
+    @Deprecated
     public static void reset() {
         getServiceRepository().destroy();
         getConfigManager().destroy();

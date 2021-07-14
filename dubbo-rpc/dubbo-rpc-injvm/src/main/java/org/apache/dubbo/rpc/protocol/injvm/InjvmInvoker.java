@@ -17,17 +17,27 @@
 package org.apache.dubbo.rpc.protocol.injvm;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
+import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.FutureContext;
 import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.InvokeMode;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.protocol.AbstractInvoker;
+import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 import static org.apache.dubbo.common.constants.CommonConstants.LOCALHOST_VALUE;
+import static org.apache.dubbo.rpc.Constants.ASYNC_KEY;
 
 /**
  * InjvmInvoker
@@ -36,17 +46,19 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     private final String key;
 
-    private final Map<String, Exporter<?>> exporterMap;
+    private final DelegateExporterMap delegateExporterMap;
 
-    InjvmInvoker(Class<T> type, URL url, String key, Map<String, Exporter<?>> exporterMap) {
+    private final ExecutorRepository executorRepository = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+
+    InjvmInvoker(Class<T> type, URL url, String key, DelegateExporterMap delegateExporterMap) {
         super(type, url);
         this.key = key;
-        this.exporterMap = exporterMap;
+        this.delegateExporterMap = delegateExporterMap;
     }
 
     @Override
     public boolean isAvailable() {
-        InjvmExporter<?> exporter = (InjvmExporter<?>) exporterMap.get(key);
+        InjvmExporter<?> exporter = (InjvmExporter<?>) delegateExporterMap.getExport(key);
         if (exporter == null) {
             return false;
         } else {
@@ -56,7 +68,7 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
 
     @Override
     public Result doInvoke(Invocation invocation) throws Throwable {
-        Exporter<?> exporter = InjvmProtocol.getExporter(exporterMap, getUrl());
+        Exporter<?> exporter = InjvmProtocol.getExporter(delegateExporterMap, getUrl());
         if (exporter == null) {
             throw new RpcException("Service [" + key + "] not found.");
         }
@@ -67,6 +79,33 @@ class InjvmInvoker<T> extends AbstractInvoker<T> {
         if (serverHasToken) {
             invocation.setAttachment(Constants.TOKEN_KEY, serverURL.getParameter(Constants.TOKEN_KEY));
         }
-        return exporter.getInvoker().invoke(invocation);
+
+        if (isAsync(exporter.getInvoker().getUrl(), getUrl())) {
+            ((RpcInvocation) invocation).setInvokeMode(InvokeMode.ASYNC);
+            // use consumer executor
+            ExecutorService executor = executorRepository.createExecutorIfAbsent(getUrl());
+            CompletableFuture<AppResponse> appResponseFuture = CompletableFuture.supplyAsync(() -> {
+                Result result = exporter.getInvoker().invoke(invocation);
+                if (result.hasException()) {
+                    return new AppResponse(result.getException());
+                } else {
+                    return new AppResponse(result.getValue());
+                }
+            }, executor);
+            // save for 2.6.x compatibility, for example, TraceFilter in Zipkin uses com.alibaba.xxx.FutureAdapter
+            FutureContext.getContext().setCompatibleFuture(appResponseFuture);
+            AsyncRpcResult result = new AsyncRpcResult(appResponseFuture, invocation);
+            result.setExecutor(executor);
+            return result;
+        } else {
+            return exporter.getInvoker().invoke(invocation);
+        }
+    }
+
+    private boolean isAsync(URL remoteUrl, URL localUrl) {
+        if (localUrl.hasParameter(ASYNC_KEY)) {
+            return localUrl.getParameter(ASYNC_KEY, false);
+        }
+        return remoteUrl.getParameter(ASYNC_KEY, false);
     }
 }

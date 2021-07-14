@@ -17,6 +17,7 @@
 package org.apache.dubbo.registry.etcd;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -57,9 +58,9 @@ import static org.apache.dubbo.remoting.Constants.CHECK_KEY;
  */
 public class EtcdRegistry extends FailbackRegistry {
 
-    private final static int DEFAULT_ETCD_PORT = 2379;
+    private static final int DEFAULT_ETCD_PORT = 2379;
 
-    private final static String DEFAULT_ROOT = "dubbo";
+    private static final String DEFAULT_ROOT = "dubbo";
 
     private final String root;
 
@@ -245,7 +246,7 @@ public class EtcdRegistry extends FailbackRegistry {
     public void doUnsubscribe(URL url, NotifyListener listener) {
         ConcurrentMap<NotifyListener, ChildListener> listeners = etcdListeners.get(url);
         if (listeners != null) {
-            ChildListener etcdListener = listeners.get(listener);
+            ChildListener etcdListener = listeners.remove(listener);
             if (etcdListener != null) {
                 if (ANY_VALUE.equals(url.getServiceInterface())) {
                     String root = toRootPath();
@@ -256,6 +257,10 @@ public class EtcdRegistry extends FailbackRegistry {
                         etcdClient.removeChildListener(path, etcdListener);
                     }
                 }
+            }
+
+            if(listeners.isEmpty()){
+                etcdListeners.remove(url);
             }
         }
     }
@@ -349,7 +354,7 @@ public class EtcdRegistry extends FailbackRegistry {
 
     protected List<URL> toUrlsWithEmpty(URL consumer, String path, List<String> providers) {
         List<URL> urls = toUrlsWithoutEmpty(consumer, providers);
-        if (urls == null || urls.isEmpty()) {
+        if (CollectionUtils.isEmpty(urls)) {
             int i = path.lastIndexOf('/');
             String category = i < 0 ? path : path.substring(i + 1);
             URL empty = consumer.setProtocol(EMPTY_PROTOCOL).addParameter(CATEGORY_KEY, category);

@@ -19,6 +19,7 @@ package org.apache.dubbo.configcenter.support.zookeeper;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.config.configcenter.TreePathDynamicConfiguration;
+import org.apache.dubbo.common.threadpool.support.AbortPolicyWithReport;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
@@ -27,7 +28,10 @@ import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -41,7 +45,9 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     private CacheListener cacheListener;
     private URL url;
-
+    private static final int DEFAULT_ZK_EXECUTOR_THREADS_NUM = 1;
+    private static final int DEFAULT_QUEUE = 10000;
+    private static final Long THREAD_KEEP_ALIVE_TIME = 0L;
 
     ZookeeperDynamicConfiguration(URL url, ZookeeperTransporter zookeeperTransporter) {
         super(url);
@@ -49,7 +55,14 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         rootPath = getRootPath(url);
 
         this.cacheListener = new CacheListener(rootPath);
-        this.executor = Executors.newFixedThreadPool(1, new NamedThreadFactory(this.getClass().getSimpleName(), true));
+
+        final String threadName = this.getClass().getSimpleName();
+        this.executor = new ThreadPoolExecutor(DEFAULT_ZK_EXECUTOR_THREADS_NUM, DEFAULT_ZK_EXECUTOR_THREADS_NUM,
+                THREAD_KEEP_ALIVE_TIME, TimeUnit.MILLISECONDS,
+                new LinkedBlockingQueue<Runnable>(DEFAULT_QUEUE),
+                new NamedThreadFactory(threadName, true),
+                new AbortPolicyWithReport(threadName, url));
+
         zkClient = zookeeperTransporter.connect(url);
         boolean isConnected = zkClient.isConnected();
         if (!isConnected) {
@@ -69,6 +82,13 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
     @Override
     protected void doClose() throws Exception {
         zkClient.close();
+        if (executor instanceof ExecutorService) {
+            ExecutorService executorService = (ExecutorService) executor;
+            if (!executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+        }
+        cacheListener.removeAllListeners();
     }
 
     @Override
@@ -101,10 +121,10 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
 
     @Override
     protected void doRemoveListener(String pathKey, ConfigurationListener listener) {
-        cacheListener.removeListener(pathKey, listener);
         Set<ConfigurationListener> configurationListeners = cacheListener.getConfigurationListeners(pathKey);
         if (CollectionUtils.isNotEmpty(configurationListeners)) {
             zkClient.removeDataListener(pathKey, cacheListener);
         }
+        cacheListener.removeListener(pathKey, listener);
     }
 }

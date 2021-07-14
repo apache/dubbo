@@ -115,8 +115,8 @@ public class DefaultServiceInstance implements ServiceInstance {
         return address;
     }
 
-    private static String getAddress(String host, int port) {
-        return port <= 0 ? host : host + ':' + port;
+    private static String getAddress(String host, Integer port) {
+        return port != null && port <= 0 ? host : host + ':' + port;
     }
 
     @Override

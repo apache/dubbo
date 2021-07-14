@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * The type Environment configuration test.
  */
-class EnvironmentConfigurationTest {
+public class EnvironmentConfigurationTest {
 
     private static final String MOCK_KEY = "DUBBO_KEY";
     private static final String MOCK_VALUE = "mockValue";

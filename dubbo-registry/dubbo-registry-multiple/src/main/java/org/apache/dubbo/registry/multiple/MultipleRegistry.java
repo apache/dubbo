@@ -20,6 +20,8 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -40,6 +42,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  * MultipleRegistry
  */
 public class MultipleRegistry extends AbstractRegistry {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
 
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
@@ -90,7 +94,7 @@ public class MultipleRegistry extends AbstractRegistry {
                 serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
             registryMap.put(tmpUrl, registry);
             serviceRegistries.put(tmpUrl, registry);
         }
@@ -104,12 +108,20 @@ public class MultipleRegistry extends AbstractRegistry {
                 referenceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
                 continue;
             }
-            Registry registry = registryFactory.getRegistry(URL.valueOf(tmpUrl));
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
             registryMap.put(tmpUrl, registry);
             referenceRegistries.put(tmpUrl, registry);
         }
     }
 
+    protected Registry getRegistry(URL url) {
+        try {
+            return registryFactory.getRegistry(url);
+        } catch (Throwable t) {
+            LOGGER.error(t.getMessage(), t);
+            throw t;
+        }
+    }
 
     @Override
     public URL getUrl() {
