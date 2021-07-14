@@ -1,0 +1,29 @@
+{{#packageName}}
+    package {{packageName}};
+{{/packageName}}
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+{{#deprecated}}
+    @java.lang.Deprecated
+{{/deprecated}}
+@javax.annotation.Generated(
+value = "by Dubbo generator",
+comments = "Source: {{protoName}}")
+public final class {{className}} {
+private static final AtomicBoolean registered = new AtomicBoolean();
+
+public static boolean init() {
+    if (registered.compareAndSet(false, true)) {
+        {{#methodTypes}}
+            org.apache.dubbo.common.serialize.protobuf.support.ProtobufUtils.marshaller(
+            {{.}}.getDefaultInstance());
+        {{/methodTypes}}
+    }
+    return true;
+}
+
+private {{className}}() {}
+
+}
