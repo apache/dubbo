@@ -74,37 +74,36 @@ public abstract class AbstractDirectory<T> implements Directory<T> {
 
         this.url = url.removeAttribute(REFER_KEY).removeAttribute(MONITOR_KEY);
 
-        Map<String, String> referParams = (Map<String, String>) url.getAttribute(REFER_KEY);
-        this.consumerUrl = (URL) url.getAttribute(CONSUMER_URL_KEY);
+        Map<String, String> queryMap;
+        Object referParams =  url.getAttribute(REFER_KEY);
+        if (referParams instanceof Map) {
+            queryMap = (Map<String, String>) referParams;
+            this.consumerUrl = (URL) url.getAttribute(CONSUMER_URL_KEY);
+        } else {
+            queryMap = StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY));
+        }
 
-        if (consumerUrl == null && referParams != null) {
-            String host = StringUtils.isNotEmpty(referParams.get("register.ip")) ? referParams.get("register.ip") : this.url.getHost();
-            String path = referParams.get(PATH_KEY);
-            String consumedProtocol = referParams.get(PROTOCOL_KEY) == null ? DUBBO : referParams.get(PROTOCOL_KEY);
+        // remove some local only parameters
+        this.queryMap = ClusterUtils.mergeLocalParams(queryMap);
+
+        if (consumerUrl == null) {
+            String host = StringUtils.isNotEmpty(queryMap.get("register.ip")) ? queryMap.get("register.ip") : this.url.getHost();
+            String path = queryMap.get(PATH_KEY);
+            String consumedProtocol = queryMap.get(PROTOCOL_KEY) == null ? DUBBO : queryMap.get(PROTOCOL_KEY);
 
             URL consumerUrlFrom = this.url
                     .setHost(host)
                     .setPort(0)
                     .setProtocol(consumedProtocol)
-                    .setPath(path == null ? referParams.get(INTERFACE_KEY) : path);
+                    .setPath(path == null ? queryMap.get(INTERFACE_KEY) : path);
             if (isUrlFromRegistry) {
                 // reserve parameters if url is already a consumer url
                 consumerUrlFrom = consumerUrlFrom.clearParameters();
             }
-            this.consumerUrl = consumerUrlFrom.addParameters(referParams).removeAttribute(MONITOR_KEY);
+            this.consumerUrl = consumerUrlFrom.addParameters(queryMap).removeAttribute(MONITOR_KEY);
         }
 
         setRouterChain(routerChain);
-
-        Map<String, String> queryMap;
-        if (referParams != null) {
-            queryMap = ClusterUtils.mergeLocalParams(referParams);
-        } else {
-            queryMap = ClusterUtils.mergeLocalParams(StringUtils.parseQueryString(url.getParameterAndDecoded(REFER_KEY)));
-        }
-
-        // remove some local only parameters
-        this.queryMap = ClusterUtils.mergeLocalParams(queryMap);
     }
 
     @Override
