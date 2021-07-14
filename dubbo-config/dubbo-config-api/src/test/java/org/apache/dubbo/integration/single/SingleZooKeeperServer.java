@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo;
+package org.apache.dubbo.integration.single;
 
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.zookeeper.server.ServerConfig;
@@ -30,14 +30,15 @@ import java.util.UUID;
 
 /**
  * The zookeeper server is just for testing.
+ * Also there is only one static instance, which can be created.
  * <p>
  * Note: It can only be used if the following conditions are satisfied
  * <p>1. Integration testcase instead of unit testcase
  * <p>2. You can use only one zookeeper instance per Package, because the zookeeper is a static global instance.
  */
-public class ZooKeeperServerTesting {
+public class SingleZooKeeperServer {
 
-    private static final Logger logger = LoggerFactory.getLogger(ZooKeeperServerTesting.class);
+    private static final Logger logger = LoggerFactory.getLogger(SingleZooKeeperServer.class);
 
     /**
      * Define a static zookeeper instance.
@@ -59,6 +60,20 @@ public class ZooKeeperServerTesting {
      */
     public static int getPort() {
         return INSTANCE.getClientPort();
+    }
+
+    /**
+     * Checks if the zookeeper server is running.
+     */
+    public static boolean isRunning(){
+        return INSTANCE.isRunning();
+    }
+
+    /**
+     * Returns the zookeeper server's name.
+     */
+    public static String getZookeeperServerName(){
+        return "single-zookeeper-server-for-test";
     }
 
     /**
@@ -147,7 +162,7 @@ public class ZooKeeperServerTesting {
                     } catch (Exception e) {
                         logger.error("Exception running embedded ZooKeeper", e);
                     }
-                }, "zookeeper-server-for-test");
+                }, getZookeeperServerName());
                 zkServerThread.setDaemon(true);
                 zkServerThread.start();
             }

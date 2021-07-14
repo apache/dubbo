@@ -22,17 +22,7 @@ package org.apache.dubbo.integration;
 public interface IntegrationTest {
 
     /**
-     * Initialize all needed resources.
-     */
-    void initialize();
-
-    /**
      * Run the integration testcases.
      */
     void integrate();
-
-    /**
-     * Release all resources.
-     */
-    void destroy();
 }

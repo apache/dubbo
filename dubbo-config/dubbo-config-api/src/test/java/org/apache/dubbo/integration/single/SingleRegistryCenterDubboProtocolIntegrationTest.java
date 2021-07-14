@@ -1,0 +1,258 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.integration.single;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.integration.IntegrationTest;
+import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.Registry;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Map;
+import java.util.Set;
+
+
+/**
+ * This abstraction class will implement some methods as base for single registry center.
+ */
+public class SingleRegistryCenterDubboProtocolIntegrationTest implements IntegrationTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);
+    /**
+     * Define the application name.
+     */
+    private static String APPLICATION_NAME = "single-registry-center-integration-testcase-for-dubbo-protocol";
+    /**
+     * Define the protocol's name.
+     */
+    private static String PROTOCOL_NAME = CommonConstants.DUBBO;
+    /**
+     * Define the protocol's port.
+     */
+    private static int PROTOCOL_PORT = 20800;
+
+    /**
+     * Define the {@link ServiceConfig} instance.
+     */
+    private ServiceConfig<SingleRegistryCenterIntegrationServiceImpl> serviceConfig;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        logger.info(getClass().getSimpleName() + " testcase is beginning...");
+        DubboBootstrap.reset();
+        //start zookeeper only once
+        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
+        SingleZooKeeperServer.start();
+        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
+        // initialize ServiceConfig
+        serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
+        serviceConfig.setRef(new SingleRegistryCenterIntegrationServiceImpl());
+        serviceConfig.setAsync(false);
+
+        DubboBootstrap.getInstance()
+            .application(new ApplicationConfig(APPLICATION_NAME))
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
+            .service(serviceConfig);
+    }
+
+    @Test
+    @Override
+    public void integrate() {
+        this.beforeExport();
+        // export provider
+        DubboBootstrap.getInstance().start();
+        this.afterExport();
+    }
+
+    /**
+     * There are some checkpoints needed to check as follow :
+     * <li>ZookeeperServer's status</li>
+     * <li>ServiceConfig is exported or not</li>
+     * <li>ServiceConfig's exportedUrl has values or not</li>
+     * <li>DubboBootstrap is initialized or not</li>
+     * <li>DubboBootstrap is started or not</li>
+     * <li>DubboBootstrap is shutdown or not</li>
+     */
+    private void beforeExport() {
+        // ZookeeperServer's status
+        Assertions.assertTrue(SingleZooKeeperServer.isRunning());
+        // ServiceConfig is exported or not
+        Assertions.assertFalse(serviceConfig.isExported());
+        // ServiceConfig's exportedUrl has values or not
+        Assertions.assertEquals(serviceConfig.getExportedUrls().size(), 0);
+        // DubboBootstrap is initialized or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isInitialized());
+        // DubboBootstrap is started or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isStarted());
+        // DubboBootstrap is shutdown or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
+    }
+
+    /**
+     * There are some checkpoints needed to check as follow :
+     * <li>DubboBootstrap is initialized or not</li>
+     * <li>DubboBootstrap is started or not</li>
+     * <li>DubboBootstrap is shutdown or not</li>
+     * <li>Service has been exported or not</li>
+     * <li>There is exported urls or not</li>
+     * <li>Protocol name is right or not</li>
+     * <li>Protocol port is right or not</li>
+     * <li>ServiceDiscoveryRegistry's protocol is right or not</li>
+     * <li>ServiceDiscoveryRegistry is destroy or not</li>
+     * <li>Registered service in registry center is right or not</li>
+     * <li>Exported url is right or not in InMemoryWritableMetadataService</li>
+     * <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
+     * <li>MetadataInfo has reported or not</li>
+     * <li>MetadataInfo has reported or not has service or not</li>
+     * <li>MetadataInfo's application name is right or not</li>
+     * <li>MetadataInfo's service exists or not</li>
+     * <li>The name of MetadataInfo's service is right or not</li>
+     * <li>The group of MetadataInfo's service is right or not</li>
+     * <li>The version of MetadataInfo's service is right or not</li>
+     * <li>The protocol of MetadataInfo's service is right or not</li>
+     * <li>The serviceKey of MetadataInfo's service is right or not</li>
+     * <li>The matchKey of MetadataInfo's service is right or not</li>
+     */
+    private void afterExport() {
+        // DubboBootstrap is initialized or not
+        Assertions.assertTrue(DubboBootstrap.getInstance().isInitialized());
+        // DubboBootstrap is started or not
+        Assertions.assertTrue(DubboBootstrap.getInstance().isStarted());
+        // DubboBootstrap is shutdown or not
+        Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
+        // Service has been exported or not
+        Assertions.assertTrue(this.serviceConfig.isExported());
+        // There is exported urls or not
+        Assertions.assertEquals(this.serviceConfig.getExportedUrls().size(), 1);
+        URL exportedUrl = this.serviceConfig.getExportedUrls().get(0);
+        // Protocol name is right or not
+        Assertions.assertEquals(exportedUrl.getProtocol(), PROTOCOL_NAME);
+        // Protocol port is right or not
+        Assertions.assertEquals(exportedUrl.getPort(), PROTOCOL_PORT);
+        // Application name is right or not
+        Assertions.assertEquals(exportedUrl.getApplication(), APPLICATION_NAME);
+
+        // obtain ServiceDiscoveryRegistry instance
+        ServiceDiscoveryRegistry serviceDiscoveryRegistry = this.getServiceDiscoveryRegistry();
+        // ServiceDiscoveryRegistry instance cannot be null
+        Assertions.assertNotNull(serviceDiscoveryRegistry);
+        // ServiceDiscoveryRegistry's protocol is right or not
+        Assertions.assertTrue(serviceDiscoveryRegistry.getServiceDiscovery() instanceof ZookeeperServiceDiscovery);
+        // Convert to ZookeeperServiceDiscovery instance
+        ZookeeperServiceDiscovery zookeeperServiceDiscovery = (ZookeeperServiceDiscovery) serviceDiscoveryRegistry.getServiceDiscovery();
+        // ServiceDiscoveryRegistry is destroy or not
+        Assertions.assertFalse(zookeeperServiceDiscovery.isDestroy());
+        // Gets registered service by ZookeeperServiceDiscovery
+        Set<String> services = zookeeperServiceDiscovery.getServices();
+        // check service exists
+        Assertions.assertTrue(!services.isEmpty());
+        // Registered service in registry center is right or not
+        Assertions.assertTrue(services.contains(APPLICATION_NAME));
+
+        // obtain InMemoryWritableMetadataService instance
+        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        // Exported url is right or not in InMemoryWritableMetadataService
+        Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
+        // MetadataInfo exists or not in InMemoryWritableMetadataService
+        Assertions.assertFalse(inMemoryWritableMetadataService.getMetadataInfos().values().isEmpty());
+        // get MetadataInfo
+        MetadataInfo metadataInfo = inMemoryWritableMetadataService.getMetadataInfos().get("default");
+        // MetadataInfo exists or not in InMemoryWritableMetadataService
+        Assertions.assertNotNull(metadataInfo);
+        // MetadataInfo has reported or not
+        Assertions.assertTrue(metadataInfo.hasReported());
+        // MetadataInfo has reported or not has service or not
+        Assertions.assertFalse(metadataInfo.getServices().isEmpty());
+        // MetadataInfo has reported or not has service or not
+        Assertions.assertEquals(metadataInfo.getServices().size(), 1);
+        // obtain the service's key
+        String key = SingleRegistryCenterIntegrationService.class.getName() + ":" + PROTOCOL_NAME;
+        MetadataInfo.ServiceInfo serviceInfo = metadataInfo.getServices().get(key);
+        // MetadataInfo's service exists or not
+        Assertions.assertNotNull(serviceInfo);
+        // The name of MetadataInfo's service is right or not
+        Assertions.assertEquals(serviceInfo.getName(),SingleRegistryCenterIntegrationService.class.getName());
+        // The group of MetadataInfo's service is right or not
+        Assertions.assertNull(serviceInfo.getGroup());
+        // The version of MetadataInfo's service is right or not
+        Assertions.assertNull(serviceInfo.getVersion());
+        // The protocol of MetadataInfo's service is right or not
+        Assertions.assertEquals(serviceInfo.getProtocol(),PROTOCOL_NAME);
+        // The serviceKey of MetadataInfo's service is right or not
+        Assertions.assertEquals(serviceInfo.getServiceKey(),SingleRegistryCenterIntegrationService.class.getName());
+        // The matchKey of MetadataInfo's service is right or not
+        Assertions.assertEquals(serviceInfo.getMatchKey(),key);
+    }
+
+    /**
+     * Returns {@link ServiceDiscoveryRegistry} instance.
+     * <p>
+     * FIXME It's not a good way to obtain {@link ServiceDiscoveryRegistry} using Reflection.
+     */
+    private ServiceDiscoveryRegistry getServiceDiscoveryRegistry() {
+        ServiceDiscoveryRegistry serviceDiscoveryRegistry = null;
+        try {
+            // get AbstractRegistryFactory.REGISTRIES
+            Field field = AbstractRegistryFactory.class.getDeclaredField("REGISTRIES");
+            field.setAccessible(true);
+            Map<String, Registry> REGISTRIES = (Map<String, Registry>) field.get(AbstractRegistryFactory.class);
+            for (Registry registry : REGISTRIES.values()) {
+                if (registry instanceof ServiceDiscoveryRegistry) {
+                    serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
+                    break;
+                }
+            }
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            // ignore
+        }
+        return serviceDiscoveryRegistry;
+    }
+
+    @AfterEach
+    public void tearDown() throws IOException {
+        DubboBootstrap.reset();
+        APPLICATION_NAME = null;
+        PROTOCOL_NAME = null;
+        PROTOCOL_PORT = 0;
+        serviceConfig = null;
+        logger.info(getClass().getSimpleName() + " testcase is ending...");
+        // destroy zookeeper only once
+        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
+        SingleZooKeeperServer.shutdown();
+        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+    }
+}
