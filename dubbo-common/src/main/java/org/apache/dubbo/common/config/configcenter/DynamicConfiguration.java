@@ -224,31 +224,6 @@ public interface DynamicConfiguration extends Configuration, AutoCloseable {
     }
 
     /**
-     * Find DynamicConfiguration instance
-     *
-     * @return DynamicConfiguration instance
-     */
-    static DynamicConfiguration getDynamicConfiguration() {
-        Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
-        return optional.orElseGet(() -> getExtensionLoader(DynamicConfigurationFactory.class)
-                .getDefaultExtension()
-                .getDynamicConfiguration(null));
-    }
-
-    /**
-     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL}
-     *
-     * @param connectionURL
-     * @return non-null
-     * @since 2.7.5
-     */
-    static DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
-        String protocol = connectionURL.getProtocol();
-        DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
-        return factory.getDynamicConfiguration(connectionURL);
-    }
-
-    /**
      * The format is '{interfaceName}:[version]:[group]'
      *
      * @return

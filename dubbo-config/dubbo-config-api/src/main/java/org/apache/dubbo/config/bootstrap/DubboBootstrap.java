@@ -99,7 +99,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.Executors.newSingleThreadExecutor;
 import static org.apache.dubbo.common.config.ConfigurationUtils.parseProperties;
-import static org.apache.dubbo.common.config.configcenter.DynamicConfiguration.getDynamicConfiguration;
+import static org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory.getDynamicConfigurationFactory;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTRY_SPLIT_PATTERN;
@@ -1260,6 +1260,19 @@ public class DubboBootstrap {
             return dynamicConfiguration;
         }
         return null;
+    }
+
+    /**
+     * Get the instance of {@link DynamicConfiguration} by the specified connection {@link URL} of config-center
+     *
+     * @param connectionURL of config-center
+     * @return non-null
+     * @since 2.7.5
+     */
+    private DynamicConfiguration getDynamicConfiguration(URL connectionURL) {
+        String protocol = connectionURL.getProtocol();
+        DynamicConfigurationFactory factory = getDynamicConfigurationFactory(protocol);
+        return factory.getDynamicConfiguration(connectionURL);
     }
 
     /**
