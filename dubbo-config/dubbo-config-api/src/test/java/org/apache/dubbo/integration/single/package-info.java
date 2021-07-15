@@ -14,35 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.registryprotocol;
-
 /**
- * <pre>The purpose of this testcase is to check
- * if there exists problems between {@link org.apache.dubbo.config.ServiceConfig} and {@link org.apache.dubbo.registry.integration.RegistryProtocol} using dubbo protocol.</pre>
+ * There are two scenario in integration testcases.<p>
+ * The one is single registry center, the other is multiple registry centers.<p>
+ * The purpose of all of testcases in this package is to test for single registry center.
  */
-public class RegistryProtocol4DubboTest extends AbstractRegistryProtocolTest {
-
-    /**
-     * Returns the protocol name.
-     */
-    @Override
-    protected String getProtocolName() {
-        return "dubbo";
-    }
-
-    /**
-     * Returns the application name.
-     */
-    @Override
-    protected String getApplicationName() {
-        return "integration-registry-protocol-dubbo";
-    }
-
-    /**
-     * Returns the protocol's port.
-     */
-    @Override
-    protected int getProtocolPort() {
-        return 20880;
-    }
-}
+package org.apache.dubbo.integration.single;

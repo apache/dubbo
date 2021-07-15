@@ -14,12 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration;
+package org.apache.dubbo.integration.single;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * This interface for integration testcases.
+ * The implementation for {@link SingleRegistryCenterIntegrationService}
  */
-public interface IntegrationService {
+public class SingleRegistryCenterIntegrationServiceImpl implements SingleRegistryCenterIntegrationService {
 
-    String hello(String name);
+    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterIntegrationServiceImpl.class);
+
+    @Override
+    public String hello(String name) {
+        String value = "Hello " + name;
+        logger.info(value);
+        return value;
+    }
 }
