@@ -30,7 +30,7 @@ public class JavaCodeTest {
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
-        code.append("}");
+        code.append('}');
         return code.toString();
     }
 
@@ -40,7 +40,7 @@ public class JavaCodeTest {
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
-        code.append("}");
+        code.append('}');
         return code.toString();
     }
 
@@ -80,7 +80,7 @@ public class JavaCodeTest {
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world!\"; ");
         code.append("   }");
-        code.append("}");
+        code.append('}');
         return code.toString();
     }
 
@@ -95,7 +95,7 @@ public class JavaCodeTest {
         code.append("   public String sayHello() { ");
         code.append("       return \"Hello world3!\"; ");
         code.append("   }");
-        code.append("}");
+        code.append('}');
         return code.toString();
     }
 }

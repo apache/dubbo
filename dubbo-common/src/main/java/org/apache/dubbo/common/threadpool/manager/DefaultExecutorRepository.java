@@ -64,11 +64,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private volatile ExecutorService serviceReferExecutor;
 
-    public ScheduledExecutorService registryNotificationExecutor;
-
     private ScheduledExecutorService reconnectScheduledExecutor;
 
-    private ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor;
+    public  Ring<ScheduledExecutorService> registryNotificationExecutorRing = new Ring<>();
+
+    private Ring<ScheduledExecutorService> serviceDiscoveryAddressNotificationExecutorRing = new Ring<>();
 
     private ScheduledExecutorService metadataRetryExecutor;
 
@@ -95,8 +95,17 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        reconnectScheduledExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-reconnect-scheduler"));
         poolRouterExecutor = new ThreadPoolExecutor(1, 10, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1024),
             new NamedInternalThreadFactory("Dubbo-state-router-pool-router", true), new ThreadPoolExecutor.AbortPolicy());
-        serviceDiscoveryAddressNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh"));
-        registryNotificationExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification"));
+
+        for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
+            ScheduledExecutorService serviceDiscoveryAddressNotificationExecutor =
+                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-SD-address-refresh-" + i));
+            ScheduledExecutorService registryNotificationExecutor =
+                Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-registry-notification-" + i));
+
+            serviceDiscoveryAddressNotificationExecutorRing.addItem(serviceDiscoveryAddressNotificationExecutor);
+            registryNotificationExecutorRing.addItem(registryNotificationExecutor);
+        }
+
         metadataRetryExecutor = Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("Dubbo-metadata-retry"));
     }
 
@@ -275,11 +284,11 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     @Override
     public ScheduledExecutorService getRegistryNotificationExecutor() {
-        return registryNotificationExecutor;
+        return registryNotificationExecutorRing.pollItem();
     }
 
     public ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor() {
-        return serviceDiscoveryAddressNotificationExecutor;
+        return serviceDiscoveryAddressNotificationExecutorRing.pollItem();
     }
 
     @Override
@@ -304,8 +313,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     @Override
     public void destroyAll() {
         poolRouterExecutor.shutdown();
-        serviceDiscoveryAddressNotificationExecutor.shutdown();
-        registryNotificationExecutor.shutdown();
+//        serviceDiscoveryAddressNotificationExecutor.shutdown();
+//        registryNotificationExecutor.shutdown();
         metadataRetryExecutor.shutdown();
 
         shutdownServiceExportExecutor();

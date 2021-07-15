@@ -26,6 +26,7 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
@@ -68,6 +69,7 @@ public class SpringBootMultipleConfigPropsTest {
     @BeforeAll
     public static void setUp() {
         ZooKeeperServer.start();
+        DubboBootstrap.reset();
     }
 
     @Autowired

@@ -32,6 +32,8 @@ import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_CONFIGFIL
 import static org.apache.dubbo.common.constants.CommonConstants.CONFIG_ENABLE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
+import static org.apache.dubbo.common.utils.PojoUtils.updatePropertyIfAbsent;
 import static org.apache.dubbo.config.Constants.CONFIG_APP_CONFIGFILE_KEY;
 import static org.apache.dubbo.config.Constants.ZOOKEEPER_PROTOCOL;
 
@@ -170,11 +172,16 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (address != null) {
             try {
                 URL url = URL.valueOf(address);
-                setUsername(url.getUsername());
-                setPassword(url.getPassword());
-                updateProtocolIfAbsent(url.getProtocol());
-                updatePortIfAbsent(url.getPort());
-                updateParameters(url.getParameters());
+                updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
+                updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
+                updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
+                updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
+
+                Map<String, String> params = url.getParameters();
+                if (CollectionUtils.isNotEmptyMap(params)) {
+                    params.remove(BACKUP_KEY);
+                }
+                updateParameters(params);
             } catch (Exception ignored) {
             }
         }
@@ -289,18 +296,6 @@ public class ConfigCenterConfig extends AbstractConfig {
         }
 
         return address.contains("://") || StringUtils.isNotEmpty(protocol);
-    }
-
-    protected void updatePortIfAbsent(Integer value) {
-        if (value != null && value > 0 && port == null) {
-            this.port = value;
-        }
-    }
-
-    protected void updateProtocolIfAbsent(String value) {
-        if (StringUtils.isNotEmpty(value) && StringUtils.isEmpty(protocol)) {
-            this.protocol = value;
-        }
     }
 
     public void updateParameters(Map<String, String> parameters) {

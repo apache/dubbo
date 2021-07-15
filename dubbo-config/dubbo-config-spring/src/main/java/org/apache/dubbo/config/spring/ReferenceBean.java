@@ -20,11 +20,11 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanManager;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanSupport;
 import org.apache.dubbo.config.spring.reference.ReferenceAttributes;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.rpc.proxy.AbstractProxyFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.aop.target.AbstractLazyCreationTargetSource;
@@ -173,11 +173,11 @@ public class ReferenceBean<T> implements FactoryBean,
      * In this way, the influence of Spring is eliminated, and the dubbo configuration initialization is controllable.
      *
      * <p/>
-     * Dubbo config beans are initialized in DubboConfigInitializationPostProcessor.
+     * Dubbo config beans are initialized in DubboConfigBeanInitializer.
      * <br/>
      * The actual references will be processing in DubboBootstrap.referServices().
      *
-     * @see org.apache.dubbo.config.spring.context.DubboConfigInitializationPostProcessor
+     * @see DubboConfigBeanInitializer
      * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
      */
     @Override
@@ -341,7 +341,7 @@ public class ReferenceBean<T> implements FactoryBean,
             throw new IllegalStateException("ReferenceBean is not ready yet, please make sure to call reference interface method after dubbo is started.");
         }
         //get reference proxy
-        return ReferenceConfigCache.getCache().get(referenceConfig);
+        return referenceConfig.get();
     }
 
     private class DubboReferenceLazyInitTargetSource extends AbstractLazyCreationTargetSource {

@@ -83,7 +83,7 @@ public class ConfigParser {
 
         addresses.forEach(addr -> {
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append("override://").append(addr).append("/");
+            urlBuilder.append("override://").append(addr).append('/');
 
             urlBuilder.append(appendService(config.getKey()));
             urlBuilder.append(toParameterString(item));
@@ -111,7 +111,7 @@ public class ConfigParser {
         List<String> addresses = parseAddresses(item);
         for (String addr : addresses) {
             StringBuilder urlBuilder = new StringBuilder();
-            urlBuilder.append("override://").append(addr).append("/");
+            urlBuilder.append("override://").append(addr).append('/');
             List<String> services = item.getServices();
             if (services == null) {
                 services = new ArrayList<>();
@@ -152,16 +152,16 @@ public class ConfigParser {
         }
 
         parameters.forEach((k, v) -> {
-            sb.append("&");
+            sb.append('&');
             sb.append(k);
-            sb.append("=");
+            sb.append('=');
             sb.append(v);
         });
 
         if (CollectionUtils.isNotEmpty(item.getProviderAddresses())) {
-            sb.append("&");
+            sb.append('&');
             sb.append(OVERRIDE_PROVIDERS_KEY);
-            sb.append("=");
+            sb.append('=');
             sb.append(CollectionUtils.join(item.getProviderAddresses(), ","));
         }
 
@@ -179,7 +179,7 @@ public class ConfigParser {
         if (i > 0) {
             sb.append("group=");
             sb.append(interfaceName, 0, i);
-            sb.append("&");
+            sb.append('&');
 
             interfaceName = interfaceName.substring(i + 1);
         }
@@ -187,7 +187,7 @@ public class ConfigParser {
         if (j > 0) {
             sb.append("version=");
             sb.append(interfaceName.substring(j + 1));
-            sb.append("&");
+            sb.append('&');
             interfaceName = interfaceName.substring(0, j);
         }
         sb.insert(0, interfaceName + "?");

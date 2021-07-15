@@ -22,7 +22,6 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.status.RegistryStatusChecker;
-import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperTransporter;
 
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
@@ -59,7 +58,6 @@ public class ZookeeperRegistryTest {
 
         this.registryUrl = URL.valueOf("zookeeper://localhost:" + zkServerPort);
         zookeeperRegistryFactory = new ZookeeperRegistryFactory();
-        zookeeperRegistryFactory.setZookeeperTransporter(new CuratorZookeeperTransporter());
         this.zookeeperRegistry = (ZookeeperRegistry) zookeeperRegistryFactory.createRegistry(registryUrl);
     }
 

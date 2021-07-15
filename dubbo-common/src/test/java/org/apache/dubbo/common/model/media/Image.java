@@ -70,7 +70,7 @@ public class Image implements java.io.Serializable {
         sb.append(", width=").append(width);
         sb.append(", height=").append(height);
         sb.append(", size=").append(size);
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

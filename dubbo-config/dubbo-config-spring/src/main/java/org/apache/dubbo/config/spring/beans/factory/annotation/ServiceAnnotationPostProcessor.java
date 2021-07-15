@@ -80,7 +80,7 @@ import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
-import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveServiceInterfaceClass;
+import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
 import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
@@ -303,17 +303,17 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         // The attributes of @Service annotation
         Map<String, Object> serviceAnnotationAttributes = AnnotationUtils.getAttributes(service, true);
 
-        Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
+        String serviceInterface = resolveInterfaceName(serviceAnnotationAttributes, beanClass);
 
         String annotatedServiceBeanName = beanDefinitionHolder.getBeanName();
 
         // ServiceBean Bean name
-        String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
+        String beanName = generateServiceBeanName(serviceAnnotationAttributes, serviceInterface);
 
         AbstractBeanDefinition serviceBeanDefinition =
-                buildServiceBeanDefinition(serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
+                buildServiceBeanDefinition(serviceAnnotationAttributes, serviceInterface, annotatedServiceBeanName);
 
-        registerServiceBeanDefinition(beanName, serviceBeanDefinition, interfaceClass);
+        registerServiceBeanDefinition(beanName, serviceBeanDefinition, serviceInterface);
 
     }
 
@@ -337,12 +337,12 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * Generates the bean name of {@link ServiceBean}
      *
      * @param serviceAnnotationAttributes
-     * @param interfaceClass              the class of interface annotated {@link Service}
+     * @param serviceInterface              the class of interface annotated {@link Service}
      * @return ServiceBean@interfaceClassName#annotatedServiceBeanName
      * @since 2.7.3
      */
-    private String generateServiceBeanName(Map<String, Object> serviceAnnotationAttributes, Class<?> interfaceClass) {
-        ServiceBeanNameBuilder builder = create(interfaceClass, environment)
+    private String generateServiceBeanName(Map<String, Object> serviceAnnotationAttributes, String serviceInterface) {
+        ServiceBeanNameBuilder builder = create(serviceInterface, environment)
                 .group((String) serviceAnnotationAttributes.get("group"))
                 .version((String) serviceAnnotationAttributes.get("version"));
         return builder.build();
@@ -380,13 +380,13 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      *
      *
      * @param serviceAnnotationAttributes
-     * @param interfaceClass
+     * @param serviceInterface
      * @param refServiceBeanName
      * @return
      * @since 2.7.3
      */
     private AbstractBeanDefinition buildServiceBeanDefinition(Map<String, Object> serviceAnnotationAttributes,
-                                                              Class<?> interfaceClass,
+                                                              String serviceInterface,
                                                               String refServiceBeanName) {
 
         BeanDefinitionBuilder builder = rootBeanDefinition(ServiceBean.class);
@@ -405,7 +405,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         // References "ref" property to annotated-@Service Bean
         addPropertyReference(builder, "ref", refServiceBeanName);
         // Set interface
-        builder.addPropertyValue("interface", interfaceClass.getName());
+        builder.addPropertyValue("interface", serviceInterface);
         // Convert parameters into map
         builder.addPropertyValue("parameters", convertParameters((String[]) serviceAnnotationAttributes.get("parameters")));
         // Add methods parameters
@@ -563,20 +563,20 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         String returnTypeName = refServiceBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
         Class<?> beanClass = resolveClassName(returnTypeName, classLoader);
 
-        Class<?> interfaceClass = resolveServiceInterfaceClass(serviceAnnotationAttributes, beanClass);
+        String serviceInterface = resolveInterfaceName(serviceAnnotationAttributes, beanClass);
 
         // ServiceBean Bean name
-        String serviceBeanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
+        String serviceBeanName = generateServiceBeanName(serviceAnnotationAttributes, serviceInterface);
 
-        AbstractBeanDefinition serviceBeanDefinition = buildServiceBeanDefinition(serviceAnnotationAttributes, interfaceClass, refServiceBeanName);
+        AbstractBeanDefinition serviceBeanDefinition = buildServiceBeanDefinition(serviceAnnotationAttributes, serviceInterface, refServiceBeanName);
 
         // set id
         serviceBeanDefinition.getPropertyValues().add(Constants.ID, serviceBeanName);
 
-        registerServiceBeanDefinition(serviceBeanName, serviceBeanDefinition, interfaceClass);
+        registerServiceBeanDefinition(serviceBeanName, serviceBeanDefinition, serviceInterface);
     }
 
-    private void registerServiceBeanDefinition(String serviceBeanName, AbstractBeanDefinition serviceBeanDefinition, Class<?> interfaceClass) {
+    private void registerServiceBeanDefinition(String serviceBeanName, AbstractBeanDefinition serviceBeanDefinition, String serviceInterface) {
         // check service bean
         if (registry.containsBeanDefinition(serviceBeanName)) {
             BeanDefinition existingDefinition = registry.getBeanDefinition(serviceBeanName);
@@ -585,7 +585,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
                 return;
             }
 
-            String msg = "Found duplicated BeanDefinition of service interface [" + interfaceClass.getName() + "] with bean name [" + serviceBeanName +
+            String msg = "Found duplicated BeanDefinition of service interface [" + serviceInterface + "] with bean name [" + serviceBeanName +
                     "], existing definition [ " + existingDefinition + "], new definition [" + serviceBeanDefinition + "]";
             logger.error(msg);
             throw new BeanDefinitionStoreException(serviceBeanDefinition.getResourceDescription(), serviceBeanName, msg);

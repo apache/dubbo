@@ -106,7 +106,7 @@ public class Media implements java.io.Serializable {
         sb.append(", persons=").append(persons);
         sb.append(", player=").append(player);
         sb.append(", copyright=").append(copyright);
-        sb.append("]");
+        sb.append(']');
         return sb.toString();
     }
 

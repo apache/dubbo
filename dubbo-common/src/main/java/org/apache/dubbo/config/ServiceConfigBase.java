@@ -403,7 +403,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         return prefixes;
     }
 
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public String getUniqueServiceName() {
         return interfaceName != null ? URL.buildKey(interfaceName, getGroup(), getVersion()) : null;
     }

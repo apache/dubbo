@@ -29,7 +29,7 @@ public class ConfigItem {
     /**
      * version information corresponding to the current configure item.
      */
-    private Object stat;
+    private Object ticket;
 
     public String getContent() {
         return content;
@@ -39,17 +39,17 @@ public class ConfigItem {
         this.content = content;
     }
 
-    public Object getStat() {
-        return stat;
+    public Object getTicket() {
+        return ticket;
     }
 
-    public void setStat(Object stat) {
-        this.stat = stat;
+    public void setTicket(Object ticket) {
+        this.ticket = ticket;
     }
 
-    public ConfigItem(String content, Object stat) {
+    public ConfigItem(String content, Object ticket) {
         this.content = content;
-        this.stat = stat;
+        this.ticket = ticket;
     }
 
     public ConfigItem() {

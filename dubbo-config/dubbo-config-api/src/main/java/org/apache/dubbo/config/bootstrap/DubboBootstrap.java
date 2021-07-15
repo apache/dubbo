@@ -1089,7 +1089,6 @@ public class DubboBootstrap {
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
             startup.set(false);
-            initialized.set(false);
             shutdown.set(false);
             awaited.set(false);
 
@@ -1347,8 +1346,10 @@ public class DubboBootstrap {
                 ExecutorService executor = executorRepository.getServiceExportExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                     try {
-                        sc.export();
-                        exportedServices.add(sc);
+                        if (!sc.isExported()) {
+                            sc.export();
+                            exportedServices.add(sc);
+                        }
                     } catch (Throwable t) {
                         logger.error("export async catch error : " + t.getMessage(), t);
                     }
@@ -1356,8 +1357,10 @@ public class DubboBootstrap {
 
                 asyncExportingFutures.add(future);
             } else {
-                sc.export();
-                exportedServices.add(sc);
+                if (!sc.isExported()) {
+                    sc.export();
+                    exportedServices.add(sc);
+                }
             }
         }
     }
@@ -1583,6 +1586,7 @@ public class DubboBootstrap {
 
     private void destroyMetadataReports() {
         AbstractMetadataReportFactory.destroy();
+        MetadataReportInstance.reset();
         ExtensionLoader.resetExtensionLoader(MetadataReportFactory.class);
     }
 
@@ -1645,6 +1649,7 @@ public class DubboBootstrap {
     }
 
     public void setTakeoverMode(BootstrapTakeoverMode takeoverMode) {
+        this.started.set(false);
         this.takeoverMode = takeoverMode;
     }
 

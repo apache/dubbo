@@ -199,7 +199,7 @@ public abstract class Proxy {
                     }
                     code.append(" Object ret = handler.invoke(this, methods[").append(ix).append("], args);");
                     if (!Void.TYPE.equals(rt)) {
-                        code.append(" return ").append(asArgument(rt, "ret")).append(";");
+                        code.append(" return ").append(asArgument(rt, "ret")).append(';');
                     }
 
                     methods.add(method);

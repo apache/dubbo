@@ -196,41 +196,41 @@ public final class AccessLogData {
     public String getLogMessage() {
         StringBuilder sn = new StringBuilder();
 
-        sn.append("[")
+        sn.append('[')
                 .append(MESSAGE_DATE_FORMATTER.format(getInvocationTime()))
                 .append("] ")
                 .append(get(REMOTE_HOST))
-                .append(":")
+                .append(':')
                 .append(get(REMOTE_PORT))
                 .append(" -> ")
                 .append(get(LOCAL_HOST))
-                .append(":")
+                .append(':')
                 .append(get(LOCAL_PORT))
                 .append(" - ");
 
         String group = get(GROUP) != null ? get(GROUP).toString() : "";
         if (StringUtils.isNotEmpty(group)) {
-            sn.append(group).append("/");
+            sn.append(group).append('/');
         }
 
         sn.append(get(SERVICE));
 
         String version = get(VERSION) != null ? get(VERSION).toString() : "";
         if (StringUtils.isNotEmpty(version)) {
-            sn.append(":").append(version);
+            sn.append(':').append(version);
         }
 
-        sn.append(" ");
+        sn.append(' ');
         sn.append(get(METHOD_NAME));
 
-        sn.append("(");
+        sn.append('(');
         Class<?>[] types = get(TYPES) != null ? (Class<?>[]) get(TYPES) : new Class[0];
         boolean first = true;
         for (Class<?> type : types) {
             if (first) {
                 first = false;
             } else {
-                sn.append(",");
+                sn.append(',');
             }
             sn.append(type.getName());
         }

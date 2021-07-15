@@ -32,7 +32,7 @@ public class ActivateComparatorTest {
         Filter3 f3 = new Filter3();
         Filter4 f4 = new Filter4();
         OldFilter5 f5 = new OldFilter5();
-        List<Class> filters = new ArrayList<>();
+        List<Class<?>> filters = new ArrayList<>();
         filters.add(f1.getClass());
         filters.add(f2.getClass());
         filters.add(f3.getClass());
@@ -53,13 +53,13 @@ public class ActivateComparatorTest {
         Order0Filter1 order0Filter1 = new Order0Filter1();
         Order0Filter2 order0Filter2 = new Order0Filter2();
 
-        List<Class> filters = null;
+        List<Class<?>> filters = null;
 
         {
             filters = new ArrayList<>();
             filters.add(order0Filter1.getClass());
             filters.add(order0Filter2.getClass());
-            Collections.sort(filters, ActivateComparator.COMPARATOR);
+            filters.sort(ActivateComparator.COMPARATOR);
             Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
             Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
         }
@@ -68,7 +68,7 @@ public class ActivateComparatorTest {
             filters = new ArrayList<>();
             filters.add(order0Filter2.getClass());
             filters.add(order0Filter1.getClass());
-            Collections.sort(filters, ActivateComparator.COMPARATOR);
+            filters.sort(ActivateComparator.COMPARATOR);
             Assertions.assertEquals(order0Filter1.getClass(), filters.get(0));
             Assertions.assertEquals(order0Filter2.getClass(), filters.get(1));
         }
