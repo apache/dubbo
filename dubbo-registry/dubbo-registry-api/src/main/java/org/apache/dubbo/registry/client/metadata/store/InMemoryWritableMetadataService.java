@@ -90,7 +90,9 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     URL metadataServiceURL;
     ConcurrentMap<String, MetadataInfo> metadataInfos;
 
-    // used to mark whether current metadata info is being updated to registry
+    // used to mark whether current metadata info is being updated to registry,
+    // readLock for export or unExport which are support concurrency update,
+    // writeLock for ServiceInstance update which should not work during exporting services
     final ReentrantReadWriteLock updateLock = new ReentrantReadWriteLock();
     final Semaphore metadataSemaphore = new Semaphore(0);
     final Map<String, Set<String>> serviceToAppsMapping = new HashMap<>();
