@@ -33,6 +33,11 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
     private final URLParam overrideParams;
     private final InstanceAddressURL originUrl;
 
+    private final transient Map<String, Map<String, Map<String, Number>>> methodNumberCache = new ConcurrentHashMap<>();
+    private volatile transient Map<String, Map<String, Number>> methodNumbers;
+    private final transient Map<String, Map<String, Number>> serviceNumberCache = new ConcurrentHashMap<>();
+    private volatile transient Map<String, Number> numbers;
+
     public OverrideInstanceAddressURL(InstanceAddressURL originUrl) {
         this.originUrl = originUrl;
         this.overrideParams = URLParam.parse("");
@@ -231,16 +236,16 @@ public class OverrideInstanceAddressURL extends InstanceAddressURL {
 
     @Override
     protected Map<String, Number> getServiceNumbers(String protocolServiceKey) {
-        return originUrl.getServiceNumbers(protocolServiceKey);
+        return serviceNumberCache.computeIfAbsent(protocolServiceKey, (k) -> new ConcurrentHashMap<>());
     }
 
     @Override
     protected Map<String, Number> getNumbers() {
-        return originUrl.getNumbers();
+        if (numbers == null) { // concurrent initialization is tolerant
+            numbers = new ConcurrentHashMap<>();
+        }
+        return numbers;
     }
-
-    private final transient Map<String, Map<String, Map<String, Number>>> methodNumberCache = new ConcurrentHashMap<>();
-    private volatile transient Map<String, Map<String, Number>> methodNumbers;
 
     @Override
     protected Map<String, Map<String, Number>> getServiceMethodNumbers(String protocolServiceKey) {
