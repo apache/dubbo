@@ -1389,6 +1389,8 @@ public class DubboBootstrap {
                 ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
             } catch (Exception e) {
                 logger.error("Refresh instance and metadata error", e);
+            } finally {
+                localMetadataService.releaseBlock();
             }
         }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
     }
