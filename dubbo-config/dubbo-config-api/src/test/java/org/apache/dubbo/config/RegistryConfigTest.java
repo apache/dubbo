@@ -211,7 +211,7 @@ public class RegistryConfigTest {
     public void testMetaData() {
         RegistryConfig config = new RegistryConfig();
         Map<String, String> metaData = config.getMetaData();
-        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: "+metaData);
+        Assertions.assertEquals(0, metaData.size(), "Expect empty metadata but found: " + metaData);
     }
 
     @Test
@@ -233,8 +233,8 @@ public class RegistryConfigTest {
             Assertions.assertEquals(1, registries.size());
             RegistryConfig registryConfig = registries.iterator().next();
             Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());
-        } catch(Exception e){
-            e.printStackTrace();
+        } finally {
+
         }
     }
 

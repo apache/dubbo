@@ -59,6 +59,7 @@ public class InvokeTelnetTest {
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        DubboBootstrap.reset();
         reset(mockChannel, mockCommandContext);
     }
 
