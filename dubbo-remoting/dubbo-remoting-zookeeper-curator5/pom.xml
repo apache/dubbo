@@ -22,12 +22,14 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>dubbo-remoting-zookeeper</artifactId>
+    <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The zookeeper curator remoting module of dubbo project</description>
+    <description>The zookeeper curator5 remoting module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
+        <curator5_version>5.0.0</curator5_version>
+        <zookeeper_version>3.6.0</zookeeper_version>
     </properties>
     <dependencies>
         <dependency>
@@ -43,14 +45,22 @@
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-recipes</artifactId>
+            <version>${curator5_version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+            <version>${curator5_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
+            <version>${zookeeper_version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
+            <version>${curator5_version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

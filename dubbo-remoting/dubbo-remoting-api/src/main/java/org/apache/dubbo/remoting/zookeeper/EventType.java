@@ -16,15 +16,29 @@
  */
 package org.apache.dubbo.remoting.zookeeper;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
+/**
+ * 2019-02-26
+ */
+public enum EventType {
+    None(-1),
+    NodeCreated(1),
+    NodeDeleted(2),
+    NodeDataChanged(3),
+    NodeChildrenChanged(4),
+    CONNECTION_SUSPENDED(11),
+    CONNECTION_RECONNECTED(12),
+    CONNECTION_LOST(12),
+    INITIALIZED(10);
 
-@SPI("curator")
-public interface ZookeeperTransporter {
+    private final int intValue;     // Integer representation of value
+    // for sending over wire
 
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    ZookeeperClient connect(URL url);
+    EventType(int intValue) {
+        this.intValue = intValue;
+    }
+
+    public int getIntValue() {
+        return intValue;
+    }
 
 }
