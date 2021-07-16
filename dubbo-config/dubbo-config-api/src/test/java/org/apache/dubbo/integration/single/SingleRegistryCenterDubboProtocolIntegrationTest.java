@@ -18,10 +18,11 @@ package org.apache.dubbo.integration.single;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -29,6 +30,7 @@ import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
+import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.junit.jupiter.api.Assertions;
@@ -43,6 +45,8 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+
 
 /**
  * This abstraction class will implement some methods as base for single registry center.
@@ -51,9 +55,9 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
     private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterDubboProtocolIntegrationTest.class);
     /**
-     * Define the application name.
+     * Define the provider application name.
      */
-    private static String APPLICATION_NAME = "single-registry-center-integration-testcase-for-dubbo-protocol";
+    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-dubbo-protocol";
     /**
      * Define the protocol's name.
      */
@@ -67,6 +71,21 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      * Define the {@link ServiceConfig} instance.
      */
     private ServiceConfig<SingleRegistryCenterIntegrationServiceImpl> serviceConfig;
+
+    /**
+     * Define the {@link ReferenceConfig} instance.
+     */
+    private ReferenceConfig<SingleRegistryCenterIntegrationService> referenceConfig;
+
+    /**
+     * Define the {@link RegistryConfig} instance.
+     */
+    private RegistryConfig registryConfig;
+
+    /**
+     * The service instance of {@link SingleRegistryCenterIntegrationService}
+     */
+    private SingleRegistryCenterIntegrationService singleRegistryCenterIntegrationService;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -83,8 +102,8 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         serviceConfig.setAsync(false);
 
         DubboBootstrap.getInstance()
-            .application(new ApplicationConfig(APPLICATION_NAME))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
+            .registry(registryConfig = new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
     }
@@ -96,6 +115,12 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // export provider
         DubboBootstrap.getInstance().start();
         this.afterExport();
+
+        // initialize consumer
+        this.initConsumer();
+        this.beforeRefer();
+        singleRegistryCenterIntegrationService = referenceConfig.get();
+        this.afterRefer();
     }
 
     /**
@@ -164,7 +189,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // Protocol port is right or not
         Assertions.assertEquals(exportedUrl.getPort(), PROTOCOL_PORT);
         // Application name is right or not
-        Assertions.assertEquals(exportedUrl.getApplication(), APPLICATION_NAME);
+        Assertions.assertEquals(exportedUrl.getApplication(), PROVIDER_APPLICATION_NAME);
 
         // obtain ServiceDiscoveryRegistry instance
         ServiceDiscoveryRegistry serviceDiscoveryRegistry = this.getServiceDiscoveryRegistry();
@@ -181,7 +206,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // check service exists
         Assertions.assertTrue(!services.isEmpty());
         // Registered service in registry center is right or not
-        Assertions.assertTrue(services.contains(APPLICATION_NAME));
+        Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
         InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
@@ -242,13 +267,54 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         return serviceDiscoveryRegistry;
     }
 
+    /**
+     * Initialize the consumer.
+     */
+    private void initConsumer(){
+        referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
+        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
+        DubboBootstrap.getInstance().reference(referenceConfig);
+        referenceConfig.setRegistry(registryConfig);
+        referenceConfig.setScope(SCOPE_REMOTE);
+        referenceConfig.setGeneric("false");
+        referenceConfig.setProtocol(PROTOCOL_NAME);
+    }
+
+    /**
+     * There are some checkpoints needed to check before referring as follow :
+     * <li>ReferenceConfig has integrated into DubboBootstrap or not</li>
+     */
+    private void beforeRefer(){
+        // ReferenceConfig has integrated into DubboBootstrap or not
+        Assertions.assertEquals(referenceConfig.getBootstrap(),DubboBootstrap.getInstance());
+    }
+
+    /**
+     * There are some checkpoints needed to check after referred as follow :
+     * <li>SingleRegistryCenterIntegrationService instance can't be null</li>
+     * <li>RPC works well or not</li>
+     * <li>Invoker is right or not</li>
+     */
+    private void afterRefer(){
+        // SingleRegistryCenterIntegrationService instance can't be null
+        Assertions.assertNotNull(singleRegistryCenterIntegrationService);
+        // Invoker is right or not
+        Assertions.assertNotNull(referenceConfig.getInvoker());
+        Assertions.assertTrue(referenceConfig.getInvoker() instanceof MigrationInvoker);
+        // RPC works well or not
+        Assertions.assertEquals("Hello Reference",
+            singleRegistryCenterIntegrationService.hello("Reference"));
+    }
+
     @AfterEach
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
-        APPLICATION_NAME = null;
+        PROVIDER_APPLICATION_NAME = null;
         PROTOCOL_NAME = null;
         PROTOCOL_PORT = 0;
         serviceConfig = null;
+        referenceConfig = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
         // destroy zookeeper only once
         logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
