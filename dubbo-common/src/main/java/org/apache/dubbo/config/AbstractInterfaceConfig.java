@@ -25,7 +25,6 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
@@ -661,12 +660,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
         if (configCenter != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            Collection<ConfigCenterConfig> configs = configManager.getConfigCenters();
-            if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.equals(configCenter))) {
-                configManager.addConfigCenter(configCenter);
-            }
+            ApplicationModel.getConfigManager().addConfigCenter(configCenter);
         }
     }
 
@@ -718,12 +712,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
-            ConfigManager configManager = ApplicationModel.getConfigManager();
-            Collection<MetadataReportConfig> configs = configManager.getMetadataConfigs();
-            if (CollectionUtils.isEmpty(configs)
-                    || configs.stream().noneMatch(existed -> existed.equals(metadataReportConfig))) {
-                configManager.addMetadataReport(metadataReportConfig);
-            }
+            ApplicationModel.getConfigManager().addMetadataReport(metadataReportConfig);
         }
     }
 
