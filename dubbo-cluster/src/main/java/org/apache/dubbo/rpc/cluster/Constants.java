@@ -117,4 +117,5 @@ public interface Constants {
      */
     String ARGUMENTS = "arguments";
 
+    String NEED_REEXPORT = "need-reexport";
 }
