@@ -28,6 +28,7 @@ import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 
 import com.google.gson.Gson;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -52,6 +53,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
 import static org.apache.dubbo.common.utils.CollectionUtils.isEmpty;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.EXPORTED_SERVICES_REVISION_PROPERTY_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 
 /**
@@ -150,7 +152,7 @@ public class ServiceInstancesChangedListenerTest {
         serviceNames.add("app1");
         ServiceDiscovery serviceDiscovery = Mockito.mock(ServiceDiscovery.class);
         ServiceInstancesChangedListener spyListener = Mockito.spy(new ServiceInstancesChangedListener(serviceNames, serviceDiscovery));
-        Mockito.doReturn(metadataInfo_111).when(spyListener).getRemoteMetadata(eq("111"), Mockito.anyMap(), Mockito.anyList());
+        Mockito.doReturn(metadataInfo_111).when(spyListener).getRemoteMetadata(eq("111"), Mockito.anyMap(), Mockito.any());
         ServiceInstancesChangedEvent event = new ServiceInstancesChangedEvent("app1", app1Instances);
         spyListener.onEvent(event);
 
@@ -196,6 +198,10 @@ public class ServiceInstancesChangedListenerTest {
             List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(3, serviceUrls.size());
             Assertions.assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
+
+            assertThat(serviceUrls, Matchers.hasItem(Matchers.hasProperty("instance", Matchers.notNullValue())));
+            assertThat(serviceUrls, Matchers.hasItem(Matchers.hasProperty("metadataInfo", Matchers.notNullValue())));
+
         }
     }
 

@@ -132,7 +132,12 @@ public class ServiceInstancesChangedListener {
         for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
             String revision = entry.getKey();
             List<ServiceInstance> subInstances = entry.getValue();
-            MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, subInstances);
+            ServiceInstance instance = selectInstance(subInstances);
+            MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
+            // update metadata into each instance, in case new instance created.
+            for (ServiceInstance tmpInstance : subInstances) {
+                ((DefaultServiceInstance)tmpInstance).setServiceMetadata(metadata);
+            }
 //            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
             newRevisionToMetadata.putIfAbsent(revision, metadata);
         }
@@ -262,8 +267,7 @@ public class ServiceInstancesChangedListener {
         return false;
     }
 
-    protected MetadataInfo getRemoteMetadata(String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
-        ServiceInstance instance = selectInstance(subInstances);
+    protected MetadataInfo getRemoteMetadata(String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, ServiceInstance instance) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
@@ -272,10 +276,6 @@ public class ServiceInstancesChangedListener {
                 logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
             }
             parseMetadata(revision, metadata, localServiceToRevisions);
-            // update metadata into each instance, in case new instance created.
-            for (ServiceInstance tmpInstance : subInstances) {
-                ((DefaultServiceInstance)tmpInstance).setServiceMetadata(metadata);
-            }
             return metadata;
         }
 
