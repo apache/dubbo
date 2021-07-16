@@ -1112,21 +1112,29 @@ public class DubboBootstrap {
             // wait async export / refer finish if needed
             awaitFinish();
 
-            new Thread(() -> {
-                while (!asyncExportFinish || !asyncReferFinish) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        logger.error(NAME + " waiting async export / refer occurred and error.", e);
+            if (isExportBackground() || isReferBackground()) {
+                new Thread(() -> {
+                    while (!asyncExportFinish || !asyncReferFinish) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            logger.error(NAME + " waiting async export / refer occurred and error.", e);
+                        }
                     }
-                }
 
+                    startup.set(true);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(NAME + " is ready.");
+                    }
+                    onStart();
+                }).start();
+            } else {
                 startup.set(true);
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is ready.");
                 }
                 onStart();
-            }).start();
+            }
 
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
