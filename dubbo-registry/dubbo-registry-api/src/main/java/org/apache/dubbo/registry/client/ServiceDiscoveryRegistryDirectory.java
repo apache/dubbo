@@ -69,7 +69,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     @Override
     public void subscribe(URL url) {
         super.subscribe(url);
-        if (url.getParameter(Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             enableConfigurationListen = true;
             CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
@@ -82,7 +82,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
         this.originalUrls = null;
-        if (url.getParameter(Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
             referenceConfigurationListener.stop();
         }
