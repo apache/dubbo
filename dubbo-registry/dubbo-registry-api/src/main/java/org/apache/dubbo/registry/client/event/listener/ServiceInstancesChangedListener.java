@@ -49,9 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.metadata.RevisionResolver.EMPTY_REVISION;
@@ -78,8 +78,6 @@ public class ServiceInstancesChangedListener {
     protected Map<String, MetadataInfo> revisionToMetadata;
 
     private volatile long lastRefreshTime;
-    private volatile long lastFailureTime;
-    private volatile AtomicInteger failureCounter = new AtomicInteger(0);
     private Semaphore retryPermission;
     private volatile ScheduledFuture<?> retryFuture;
     private static ScheduledExecutorService scheduler = ExtensionLoader.getExtensionLoader(ExecutorRepository.class).getDefaultExtension().getMetadataRetryExecutor();
@@ -114,6 +112,7 @@ public class ServiceInstancesChangedListener {
         Map<String, Object> newServiceUrls = new HashMap<>();//TODO
         Map<String, MetadataInfo> newRevisionToMetadata = new HashMap<>();
 
+        // grouping all instances of this app(service name) by revision
         for (Map.Entry<String, List<ServiceInstance>> entry : allInstances.entrySet()) {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
@@ -126,17 +125,21 @@ public class ServiceInstancesChangedListener {
                 }
                 List<ServiceInstance> subInstances = revisionToInstances.computeIfAbsent(revision, r -> new LinkedList<>());
                 subInstances.add(instance);
-
-                MetadataInfo metadata = getRemoteMetadata(instance, revision, localServiceToRevisions, subInstances);
-
-                if (metadata==null || metadata == MetadataInfo.EMPTY) {
-                    // it means fetching Meta Server failed if metadata is null, ignore this instance
-                    subInstances.remove(instance);
-                    continue;
-                }
-                ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
-                newRevisionToMetadata.putIfAbsent(revision, metadata);
             }
+        }
+
+        // get MetadataInfo with revision
+        for (Map.Entry<String, List<ServiceInstance>> entry : revisionToInstances.entrySet()) {
+            String revision = entry.getKey();
+            List<ServiceInstance> subInstances = entry.getValue();
+            ServiceInstance instance = selectInstance(subInstances);
+            MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
+            // update metadata into each instance, in case new instance created.
+            for (ServiceInstance tmpInstance : subInstances) {
+                ((DefaultServiceInstance)tmpInstance).setServiceMetadata(metadata);
+            }
+//            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
+            newRevisionToMetadata.putIfAbsent(revision, metadata);
         }
 
         if(logger.isDebugEnabled()) {
@@ -145,12 +148,11 @@ public class ServiceInstancesChangedListener {
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
-                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission), 10000, TimeUnit.MILLISECONDS);
+                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10000, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
-//            logger.warn("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
-//            this.revisionToMetadata = newRevisionToMetadata;
-//            return;
+            logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
+            return;
         }
 
         this.revisionToMetadata = newRevisionToMetadata;
@@ -265,33 +267,37 @@ public class ServiceInstancesChangedListener {
         return false;
     }
 
-    protected MetadataInfo getRemoteMetadata(ServiceInstance instance, String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, List<ServiceInstance> subInstances) {
+    protected MetadataInfo getRemoteMetadata(String revision, Map<ServiceInfo, Set<String>> localServiceToRevisions, ServiceInstance instance) {
         MetadataInfo metadata = revisionToMetadata.get(revision);
 
         if (metadata != null && metadata != MetadataInfo.EMPTY) {
+            // metadata loaded from cache
             if (logger.isDebugEnabled()) {
                 logger.debug("MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision + "&cluster=" + instance.getRegistryCluster() + ", " + metadata);
             }
-        }
-
-        if (metadata == null
-                || (metadata == MetadataInfo.EMPTY && (failureCounter.get() < 3 || (System.currentTimeMillis() - lastFailureTime > 10000)))) {
-            metadata = getMetadataInfo(instance);
-
-            if (metadata != MetadataInfo.EMPTY) {
-                failureCounter.set(0);
-                revisionToMetadata.putIfAbsent(revision, metadata);
-                parseMetadata(revision, metadata, localServiceToRevisions);
-            } else {
-                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                        + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
-                lastFailureTime = System.currentTimeMillis();
-                failureCounter.incrementAndGet();
-            }
-        } else if (metadata != MetadataInfo.EMPTY && subInstances.size() == 1) {
-            // "subInstances.size() >= 2" means metadata of this revision has been parsed, ignore
             parseMetadata(revision, metadata, localServiceToRevisions);
+            return metadata;
         }
+
+        // try to load metadata from remote.
+        int triedTimes = 0;
+        while (triedTimes < 3) {
+            metadata = doGetMetadataInfo(instance);
+
+            if (metadata != MetadataInfo.EMPTY) {// succeeded
+                parseMetadata(revision, metadata, localServiceToRevisions);
+                break;
+            } else {// failed
+                logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
+                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
+                triedTimes++;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {}
+            }
+        }
+
+        revisionToMetadata.putIfAbsent(revision, metadata);
         return metadata;
     }
 
@@ -305,7 +311,7 @@ public class ServiceInstancesChangedListener {
         return localServiceToRevisions;
     }
 
-    protected MetadataInfo getMetadataInfo(ServiceInstance instance) {
+    protected MetadataInfo doGetMetadataInfo(ServiceInstance instance) {
         String metadataType = ServiceInstanceMetadataUtils.getMetadataStorageType(instance);
         // FIXME, check "REGISTRY_CLUSTER_KEY" must be set by every registry implementation.
         if (instance.getRegistryCluster() == null) {
@@ -320,6 +326,7 @@ public class ServiceInstancesChangedListener {
                 RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
+                // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
@@ -332,6 +339,13 @@ public class ServiceInstancesChangedListener {
             metadataInfo = MetadataInfo.EMPTY;
         }
         return metadataInfo;
+    }
+
+    private ServiceInstance selectInstance(List<ServiceInstance> instances) {
+        if (instances.size() == 1) {
+            return instances.get(0);
+        }
+        return instances.get(ThreadLocalRandom.current().nextInt(0, instances.size()));
     }
 
     protected Object getServiceUrlsCache(Map<String, List<ServiceInstance>> revisionToInstances, Set<String> revisions, String protocol) {
@@ -412,12 +426,12 @@ public class ServiceInstancesChangedListener {
         return Objects.hash(getClass(), getServiceNames());
     }
 
-    private class AddressRefreshRetryTask implements Runnable {
+    protected class AddressRefreshRetryTask implements Runnable {
         private final RetryServiceInstancesChangedEvent retryEvent;
         private final Semaphore retryPermission;
 
-        public AddressRefreshRetryTask(Semaphore semaphore) {
-            this.retryEvent = new RetryServiceInstancesChangedEvent();
+        public AddressRefreshRetryTask(Semaphore semaphore, String serviceName) {
+            this.retryEvent = new RetryServiceInstancesChangedEvent(serviceName);
             this.retryPermission = semaphore;
         }
 

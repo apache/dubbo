@@ -134,7 +134,7 @@ public class MetadataUtils {
 
         List<URL> urls = builder.build(instance);
         if (CollectionUtils.isEmpty(urls)) {
-            throw new IllegalStateException("You have enabled introspection service discovery mode for instance "
+            throw new IllegalStateException("Introspection service discovery mode is enabled "
                     + instance + ", but no metadata service can build from it.");
         }
 

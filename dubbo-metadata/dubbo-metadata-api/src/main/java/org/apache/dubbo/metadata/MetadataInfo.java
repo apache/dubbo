@@ -467,14 +467,19 @@ public class MetadataInfo implements Serializable {
 
             ServiceInfo serviceInfo = (ServiceInfo) obj;
 //            return this.getMatchKey().equals(serviceInfo.getMatchKey()) && this.getParams().equals(serviceInfo.getParams());
-            // Please check ServiceInstancesChangedListener.localServiceToRevisions before change this behaviour.
-            return this.getMatchKey().equals(serviceInfo.getMatchKey());
+            // Please check ServiceInstancesChangedListener.localServiceToRevisions before changing this behaviour.
+            // equals to Objects.equals(this.getMatchKey(), serviceInfo.getMatchKey()), but match key will not get initialized
+            // on json deserialization.
+            return Objects.equals(this.getVersion(), serviceInfo.getVersion())
+                && Objects.equals(this.getGroup(), serviceInfo.getGroup())
+                && Objects.equals(this.getName(), serviceInfo.getName())
+                && Objects.equals(this.getProtocol(), serviceInfo.getProtocol());
         }
 
         @Override
         public int hashCode() {
 //            return Objects.hash(getMatchKey(), getParams());
-            return Objects.hash(getMatchKey());
+            return Objects.hash(getVersion(), getGroup(), getName(), getProtocol());
 
         }
 
