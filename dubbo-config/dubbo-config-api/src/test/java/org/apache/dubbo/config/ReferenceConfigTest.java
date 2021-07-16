@@ -33,9 +33,13 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
@@ -51,6 +55,11 @@ public class ReferenceConfigTest {
         this.zkServer = new TestingServer(zkServerPort, true);
         this.zkServer.start();
         this.registryUrl = "zookeeper://localhost:" + zkServerPort;
+
+        // preload
+        ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
+        ApplicationModel.getConfigManager();
+        DubboBootstrap.getInstance();
     }
 
     @AfterEach
@@ -193,25 +202,80 @@ public class ReferenceConfigTest {
     }
 
     @Test
-    public void testLargeReferences() {
-        int amount = 5000;
-        List<ReferenceConfig> referenceConfigs = new ArrayList<>(amount);
-        for (int i = 0; i < amount; i++) {
-            ReferenceConfig referenceConfig = new ReferenceConfig();
-            referenceConfig.setInterface("com.test.TestService" + i);
-            referenceConfigs.add(referenceConfig);
-        }
+    public void testLargeReferences() throws InterruptedException {
+        int amount = 10000;
+        ApplicationConfig applicationConfig = new ApplicationConfig();
+        applicationConfig.setName("test-app");
+        MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
+        metadataReportConfig.setAddress("metadata://");
+        ConfigCenterConfig configCenterConfig = new ConfigCenterConfig();
+        configCenterConfig.setAddress("diamond://");
 
-        // test add large number of references
+        testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
+        ApplicationModel.getConfigManager().clear();
+        testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
+
         long t1 = System.currentTimeMillis();
-        for (ReferenceConfig referenceConfig : referenceConfigs) {
-            DubboBootstrap.getInstance().reference(referenceConfig);
+        int nThreads = 8;
+        ExecutorService executorService = Executors.newFixedThreadPool(nThreads);
+        for(int i=0;i<nThreads;i++) {
+            int perCount = (int) (1.0* amount / nThreads);
+            int start = perCount * i;
+            int end = start + perCount;
+            if (i == nThreads - 1) {
+                end = amount;
+            }
+            int finalEnd = end;
+            System.out.println(String.format("start thread %s: range: %s - %s, count: %s", i, start, end, (end-start)));
+            executorService.submit(()->{
+                testInitReferences(start, finalEnd, applicationConfig, metadataReportConfig, configCenterConfig);
+            });
         }
+        executorService.shutdown();
+        executorService.awaitTermination(100, TimeUnit.SECONDS);
+
         long t2 = System.currentTimeMillis();
         long cost = t2 - t1;
-        System.out.println("Add large references cost: " + cost + "ms");
+        System.out.println("Init large references cost: " + cost + "ms");
         Assertions.assertEquals(amount, DubboBootstrap.getInstance().getConfigManager().getReferences().size());
-        Assertions.assertTrue( cost < 500, "add large reference too slowly: "+cost);
+        Assertions.assertTrue( cost < 1000, "Init large references too slowly: "+cost);
+
+        //test equals
+        testSearchReferences();
+
+    }
+
+    private void testSearchReferences() {
+        long t1 = System.currentTimeMillis();
+        Collection<ReferenceConfigBase<?>> references = DubboBootstrap.getInstance().getConfigManager().getReferences();
+        List<ReferenceConfigBase<?>> results = references.stream().filter(rc -> rc.equals(references.iterator().next()))
+            .collect(Collectors.toList());
+        long t2 = System.currentTimeMillis();
+        long cost = t2 - t1;
+        System.out.println("Search large references cost: " + cost + "ms");
+        Assertions.assertEquals(1, results.size());
+        Assertions.assertTrue( cost < 1000, "Search large references too slowly: "+cost);
+    }
+
+    private long testInitReferences(int start, int end, ApplicationConfig applicationConfig, MetadataReportConfig metadataReportConfig, ConfigCenterConfig configCenterConfig) {
+        // test add large number of references
+        long t1 = System.currentTimeMillis();
+        try {
+            for (int i = start; i < end; i++) {
+                ReferenceConfig referenceConfig = new ReferenceConfig();
+                referenceConfig.setInterface("com.test.TestService" + i);
+                referenceConfig.setApplication(applicationConfig);
+                referenceConfig.setMetadataReportConfig(metadataReportConfig);
+                referenceConfig.setConfigCenter(configCenterConfig);
+                DubboBootstrap.getInstance().reference(referenceConfig);
+
+                //ApplicationModel.getConfigManager().getConfigCenters();
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        long t2 = System.currentTimeMillis();
+        return t2 - t1;
     }
 
     @Test

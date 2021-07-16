@@ -40,6 +40,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +63,50 @@ public class JavaConfigReferenceBeanTest {
         DubboBootstrap.reset();
     }
 
+    @Test
+    public void testAnnotationAtField() {
+        Assertions.assertEquals(0, SpringExtensionFactory.getContexts().size());
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(CommonConfig.class,
+            AnnotationAtFieldConfiguration.class);
+
+        Map<String, HelloService> helloServiceMap = context.getBeansOfType(HelloService.class);
+        Assertions.assertEquals(2, helloServiceMap.size());
+        Assertions.assertNotNull(helloServiceMap.get("helloService"));
+        Assertions.assertNotNull(helloServiceMap.get("helloServiceImpl"));
+
+        Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
+        Assertions.assertEquals(1, referenceBeanMap.size());
+        ReferenceBean referenceBean = referenceBeanMap.get("&helloService");
+        Assertions.assertEquals("demo", referenceBean.getGroup());
+        Assertions.assertEquals(HelloService.class, referenceBean.getInterfaceClass());
+        Assertions.assertEquals(HelloService.class.getName(), referenceBean.getServiceInterface());
+
+        context.close();
+        Assertions.assertEquals(1, SpringExtensionFactory.getContexts().size());
+    }
+
+    @Test
+    public void testAnnotationAtField2() {
+        AnnotationConfigApplicationContext context = null;
+        try {
+            context = new AnnotationConfigApplicationContext(CommonConfig.class,
+                AnnotationAtFieldConfiguration.class, AnnotationAtFieldConfiguration2.class);
+            Assertions.fail("Should not load duplicated @DubboReference fields");
+        } catch (Exception e) {
+            String msg = getStackTrace(e);
+            Assertions.assertTrue(msg.contains("Found multiple ReferenceConfigs with unique service name [demo/org.apache.dubbo.config.spring.api.HelloService]"), msg);
+        } finally {
+            if (context != null) {
+                context.close();
+            }
+        }
+    }
+
+    private String getStackTrace(Throwable ex) {
+        StringWriter stringWriter = new StringWriter();
+        ex.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString();
+    }
 
     @Test
     public void testAnnotationBean() {
@@ -279,6 +325,23 @@ public class JavaConfigReferenceBeanTest {
                 }
             };
         }
+    }
+
+
+    @Configuration
+    public static class AnnotationAtFieldConfiguration {
+
+        @DubboReference(group = "${myapp.group}")
+        private HelloService helloService;
+
+    }
+
+    @Configuration
+    public static class AnnotationAtFieldConfiguration2 {
+
+        @DubboReference(group = "${myapp.group}", timeout = 2000)
+        private HelloService helloService;
+
     }
 
     @Configuration

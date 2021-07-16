@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.descriptor;
+package org.apache.dubbo.integration.single;
 
-import org.apache.dubbo.rpc.model.MethodDescriptor;
+/**
+ * This interface for integration testcases in single registry center.
+ */
+public interface SingleRegistryCenterIntegrationService {
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
-import java.lang.reflect.Method;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-public class MethodDescritorTest {
-    @Test
-    public void testMethodWithNoParameters() throws Exception {
-        Method method = DescriptorService.class.getMethod("noParameterMethod");
-        MethodDescriptor descriptor = new MethodDescriptor(method);
-        assertEquals("", descriptor.getParamDesc());
-        Assertions.assertEquals(0, descriptor.getParameterClasses().length);
-    }
+    String hello(String name);
 }

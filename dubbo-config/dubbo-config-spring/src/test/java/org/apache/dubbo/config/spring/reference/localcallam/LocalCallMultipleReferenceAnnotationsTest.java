@@ -71,15 +71,14 @@ public class LocalCallMultipleReferenceAnnotationsTest {
         Assertions.assertEquals("Hello world, response from provider: 127.0.0.1:0", demoResult);
 
         Map<String, ReferenceBean> referenceBeanMap = applicationContext.getBeansOfType(ReferenceBean.class);
-        Assertions.assertEquals(3, referenceBeanMap.size());
+        Assertions.assertEquals(2, referenceBeanMap.size());
         Assertions.assertTrue(referenceBeanMap.containsKey("&helloService"));
         Assertions.assertTrue(referenceBeanMap.containsKey("&demoHelloService"));
-        Assertions.assertTrue(referenceBeanMap.containsKey("&helloService3"));
 
         //helloService3 and demoHelloService share the same ReferenceConfig instance
-        ReferenceBean helloService3ReferenceBean = referenceBeanMap.get("&helloService3");
-        ReferenceBean demoHelloServiceReferenceBean = referenceBeanMap.get("&demoHelloService");
-        Assertions.assertTrue(helloService3ReferenceBean.getReferenceConfig() == demoHelloServiceReferenceBean.getReferenceConfig());
+        ReferenceBean helloService3ReferenceBean = applicationContext.getBean("&helloService3", ReferenceBean.class);
+        ReferenceBean demoHelloServiceReferenceBean = applicationContext.getBean("&demoHelloService", ReferenceBean.class);
+        Assertions.assertSame(helloService3ReferenceBean, demoHelloServiceReferenceBean);
 
     }
 

@@ -43,7 +43,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testAddressNull() {
-        assertNull(UrlUtils.parseURL(null, null));
+        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        try {
+            UrlUtils.parseURL(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test
@@ -133,7 +138,12 @@ public class UrlUtilsTest {
 
     @Test
     public void testParseUrlsAddressNull() {
-        assertNull(UrlUtils.parseURLs(null, null));
+        String exceptionMessage = "Address is not allowed to be empty, please re-enter.";
+        try {
+            UrlUtils.parseURLs(null, null);
+        } catch (IllegalArgumentException illegalArgumentException) {
+            assertEquals(exceptionMessage, illegalArgumentException.getMessage());
+        }
     }
 
     @Test

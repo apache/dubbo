@@ -24,6 +24,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Objects;
 
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_SEPARATOR;
+
 public class URLAddress implements Serializable {
     private static final long serialVersionUID = -1985165475234910535L;
 
@@ -154,7 +156,7 @@ public class URLAddress implements Serializable {
         if (StringUtils.isNotEmpty(host)) {
             buf.append(host);
             if (port > 0) {
-                buf.append(":");
+                buf.append(':');
                 buf.append(port);
             }
         }
@@ -168,7 +170,7 @@ public class URLAddress implements Serializable {
                 decodeStr = URLDecoder.decode(rawAddress, "UTF-8");
             }
 
-            boolean isPathAddress = !Character.isDigit(decodeStr.charAt(0));
+            boolean isPathAddress = decodeStr.contains(PATH_SEPARATOR);
             if (isPathAddress) {
                 return createPathURLAddress(decodeStr, rawAddress, defaultProtocol);
             }

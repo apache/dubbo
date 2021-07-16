@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.remoting.zookeeper;
+package org.apache.dubbo.config.spring.context.event;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
+import org.springframework.context.ApplicationEvent;
 
-@SPI("curator")
-public interface ZookeeperTransporter {
-
-    @Adaptive({Constants.CLIENT_KEY, Constants.TRANSPORTER_KEY})
-    ZookeeperClient connect(URL url);
-
+/**
+ * An {@link ApplicationEvent} after Dubbo service/reference annotation has been processed.
+ * <p />
+ * NOTE: This event is used to trigger init {@link DubboConfigBeanInitializer}
+ */
+public class DubboAnnotationInitedEvent extends ApplicationEvent {
+    /**
+     * Create a new {@code ApplicationEvent}.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     */
+    public DubboAnnotationInitedEvent(Object source) {
+        super(source);
+    }
 }

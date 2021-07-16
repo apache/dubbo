@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata.store.zookeeper;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.FullServiceDefinition;
@@ -26,7 +25,6 @@ import org.apache.dubbo.metadata.report.identifier.KeyTypeEnum;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
-import org.apache.dubbo.remoting.zookeeper.ZookeeperTransporter;
 
 import com.google.gson.Gson;
 import org.apache.curator.test.TestingServer;
@@ -60,8 +58,6 @@ public class ZookeeperMetadataReportTest {
         this.registryUrl = URL.valueOf("zookeeper://127.0.0.1:" + zkServerPort);
 
         zookeeperMetadataReportFactory = new ZookeeperMetadataReportFactory();
-        ZookeeperTransporter zookeeperTransporter = ExtensionLoader.getExtensionLoader(ZookeeperTransporter.class).getExtension("curator");
-        zookeeperMetadataReportFactory.setZookeeperTransporter(zookeeperTransporter);
         this.zookeeperMetadataReport = (ZookeeperMetadataReport) zookeeperMetadataReportFactory.getMetadataReport(registryUrl);
     }
 

@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.RegexProperties;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.support.Parameter;
@@ -263,7 +264,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
                 }
             }
             if (resolveFile != null && resolveFile.length() > 0) {
-                Properties properties = new Properties();
+                Properties properties = new RegexProperties();
                 try (FileInputStream fis = new FileInputStream(new File(resolveFile))) {
                     properties.load(fis);
                 } catch (IOException e) {
