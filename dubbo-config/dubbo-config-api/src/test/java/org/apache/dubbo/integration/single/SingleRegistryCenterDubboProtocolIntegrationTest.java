@@ -27,12 +27,15 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
+import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
+import org.apache.dubbo.registry.client.ServiceDiscoveryRegistryDirectory;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
+import org.apache.dubbo.rpc.cluster.Directory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
@@ -45,6 +48,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.CONSUMERS_CATEGORY;
 import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
 
 
@@ -295,6 +299,15 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      * <li>SingleRegistryCenterIntegrationService instance can't be null</li>
      * <li>RPC works well or not</li>
      * <li>Invoker is right or not</li>
+     * <li>Directory is null or not</li>
+     * <li>Registered interface is right or not</li>
+     * <li>Directory is available or not</li>
+     * <li>Directory is destroyed or not</li>
+     * <li>Directory has received notification or not</li>
+     * <li>ServiceDiscoveryRegistryDirectory should register or not</li>
+     * <li>ServiceDiscoveryRegistryDirectory's registered consumer url is right or not</li>
+     * <li>ServiceDiscoveryRegistryDirectory's registry is right or not</li>
+     * <li>Directory's invokers are right or not</li>
      */
     private void afterRefer(){
         // SingleRegistryCenterIntegrationService instance can't be null
@@ -305,6 +318,30 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // RPC works well or not
         Assertions.assertEquals("Hello Reference",
             singleRegistryCenterIntegrationService.hello("Reference"));
+        // get ServiceDiscoveryRegistryDirectory instance
+        Directory directory = ((MigrationInvoker)referenceConfig.getInvoker()).getDirectory();
+        // Directory is null or not
+        Assertions.assertNotNull(directory);
+        // Check Directory's type
+        Assertions.assertTrue(directory instanceof ServiceDiscoveryRegistryDirectory);
+        // Registered interface is right or not
+        Assertions.assertEquals(directory.getInterface(),SingleRegistryCenterIntegrationService.class);
+        // Directory is available or not
+        Assertions.assertTrue(directory.isAvailable());
+        // Directory is destroyed or not
+        Assertions.assertFalse(directory.isDestroyed());
+        // Directory has received notification or not
+        Assertions.assertTrue(directory.isNotificationReceived());
+        ServiceDiscoveryRegistryDirectory serviceDiscoveryRegistryDirectory = (ServiceDiscoveryRegistryDirectory) directory;
+        // ServiceDiscoveryRegistryDirectory should register or not
+        Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
+        // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(),CONSUMERS_CATEGORY);
+        // ServiceDiscoveryRegistryDirectory's registry is right or not
+        Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
+        // Directory's invokers are right or not
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getAllInvokers().size(),1);
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getInvokers(),serviceDiscoveryRegistryDirectory.getAllInvokers());
     }
 
     @AfterEach
