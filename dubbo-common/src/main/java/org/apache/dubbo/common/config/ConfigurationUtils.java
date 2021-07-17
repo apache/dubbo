@@ -166,12 +166,28 @@ public class ConfigurationUtils {
      * @return
      */
     public static <V extends Object> Map<String, V> getSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
+        Map<String, V> map = new LinkedHashMap<>();
+        for (Map<String, V> configMap : configMaps) {
+            getSubProperties(configMap, prefix, map);
+        }
+        return map;
+    }
+
+    public static <V extends Object> Map<String, V> getSubProperties(Map<String, V> configMap, String prefix) {
+        return getSubProperties(configMap, prefix, null);
+    }
+
+    private static <V extends Object> Map<String, V> getSubProperties(Map<String, V> configMap, String prefix, Map<String, V> resultMap) {
         if (!prefix.endsWith(".")) {
             prefix += ".";
         }
-        Map<String, V> map = new LinkedHashMap<>();
-        for (Map<String, V> configMap : configMaps) {
-            for (Map.Entry<String, V> entry : configMap.entrySet()) {
+
+        if (null == resultMap) {
+            resultMap = new LinkedHashMap<>();
+        }
+
+        if (null != configMap) {
+            for(Map.Entry<String, V> entry : configMap.entrySet()) {
                 String key = entry.getKey();
                 V val = entry.getValue();
                 if (StringUtils.startsWithIgnoreCase(key, prefix)
@@ -181,11 +197,12 @@ public class ConfigurationUtils {
                     String k = key.substring(prefix.length());
                     // convert camelCase/snake_case to kebab-case
                     k = StringUtils.convertToSplitName(k, "-");
-                    map.putIfAbsent(k, val);
+                    resultMap.putIfAbsent(k, val);
                 }
             }
         }
-        return map;
+
+        return resultMap;
     }
 
     public static <V extends Object> boolean hasSubProperties(Collection<Map<String, V>> configMaps, String prefix) {
