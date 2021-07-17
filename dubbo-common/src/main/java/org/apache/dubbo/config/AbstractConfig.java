@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
+import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -540,10 +541,10 @@ public abstract class AbstractConfig implements Serializable {
                     String propertyName = extractPropertyName(method.getName());
                     String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
                     if (StringUtils.hasText(value)) {
-                        Map<String, String> map = invokeGetParameters(getClass(), this);
-                        map = map == null ? new HashMap<>() : map;
-                        map.putAll(convert(StringUtils.parseParameters(value), ""));
-                        invokeSetParameters(getClass(), this, map);
+                        invokeSetParameters(convert(StringUtils.parseParameters(value), ""));
+                    } else {
+                        // in this case, maybe parameters.item3=value3.
+                        invokeSetParameters(ConfigurationUtils.getSubProperties(subProperties, PARAMETERS));
                     }
                 }
             }
@@ -557,6 +558,13 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+    }
+
+    private void invokeSetParameters(Map<String, String> values) {
+        Map<String, String> map = invokeGetParameters(getClass(), this);
+        map = map == null ? new HashMap<>() : map;
+        map.putAll(values);
+        invokeSetParameters(getClass(), this, map);
     }
 
     private boolean isIgnoredAttribute(Class<? extends AbstractConfig> clazz, String propertyName) {
