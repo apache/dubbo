@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.RemotingException;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
@@ -47,7 +48,7 @@ public abstract class ClientToServerTest {
 
     @BeforeEach
     protected void setUp() throws Exception {
-        int port = (int) (1000 * Math.random() + 10000);
+        int port = NetUtils.getAvailablePort();
         server = newServer(port, handler);
         client = newClient(port);
     }

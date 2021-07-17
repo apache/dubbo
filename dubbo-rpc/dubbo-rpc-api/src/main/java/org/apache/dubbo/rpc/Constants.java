@@ -27,6 +27,7 @@ public interface Constants {
     String DEPRECATED_KEY = "deprecated";
 
     String $ECHO = "$echo";
+    String $ECHO_PARAMETER_DESC = "Ljava/lang/Object;";
 
     String RETURN_PREFIX = "return ";
 
@@ -42,14 +43,6 @@ public interface Constants {
 
     String FORCE_USE_TAG = "dubbo.force.tag";
 
-    String GENERIC_SERIALIZATION_NATIVE_JAVA = "nativejava";
-
-    String GENERIC_SERIALIZATION_DEFAULT = "true";
-
-    String GENERIC_SERIALIZATION_BEAN = "bean";
-
-    String GENERIC_SERIALIZATION_PROTOBUF = "protobuf-json";
-
     String TPS_LIMIT_RATE_KEY = "tps";
 
     String TPS_LIMIT_INTERVAL_KEY = "tps.interval";
@@ -58,8 +51,6 @@ public interface Constants {
 
     String AUTO_ATTACH_INVOCATIONID_KEY = "invocationid.autoattach";
 
-    String STUB_EVENT_KEY = "dubbo.stub.event";
-
     boolean DEFAULT_STUB_EVENT = false;
 
     String STUB_EVENT_METHODS_KEY = "dubbo.stub.event.methods";
@@ -67,14 +58,6 @@ public interface Constants {
     String PROXY_KEY = "proxy";
 
     String EXECUTES_KEY = "executes";
-
-    String REFERENCE_FILTER_KEY = "reference.filter";
-
-    String INVOKER_LISTENER_KEY = "invoker.listener";
-
-    String SERVICE_FILTER_KEY = "service.filter";
-
-    String EXPORTER_LISTENER_KEY = "exporter.listener";
 
     String ACCESS_LOG_KEY = "accesslog";
 
@@ -88,6 +71,8 @@ public interface Constants {
 
     String TOKEN_KEY = "token";
 
+    String INTERFACE = "interface";
+
     String INTERFACES = "interfaces";
 
     String GENERIC_KEY = "generic";
@@ -99,26 +84,14 @@ public interface Constants {
     String SCOPE_KEY = "scope";
     String SCOPE_LOCAL = "local";
     String SCOPE_REMOTE = "remote";
-    /**
-     * To decide whether to make connection when the client is created
-     */
-    String LAZY_CONNECT_KEY = "lazy";
-    String $INVOKE = "$invoke";
-    String $INVOKE_ASYNC = "$invokeAsync";
 
     String INPUT_KEY = "input";
     String OUTPUT_KEY = "output";
-    /**
-     * The limit of callback service instances for one interface on every client
-     */
-    String CALLBACK_INSTANCES_LIMIT_KEY = "callbacks";
 
-    /**
-     * The default limit number for callback service instances
-     *
-     * @see #CALLBACK_INSTANCES_LIMIT_KEY
-     */
-    int DEFAULT_CALLBACK_INSTANCES = 1;
+    String CONSUMER_MODEL = "consumerModel";
+    String METHOD_MODEL = "methodModel";
 
-
+    String SERIALIZATION_SECURITY_CHECK_KEY = "serialization.security.check";
+    String INVOCATION_KEY = "invocation";
+    String SERIALIZATION_ID_KEY = "serialization_id";
 }

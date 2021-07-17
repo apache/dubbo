@@ -58,6 +58,7 @@ public class ForkingClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(ForkingClusterInvokerTest.class);
 
@@ -129,7 +130,7 @@ public class ForkingClusterInvokerTest {
 
         RpcContext.getContext().setAttachment(attachKey, attachValue);
 
-        Map<String, String> attachments = RpcContext.getContext().getAttachments();
+        Map<String, Object> attachments = RpcContext.getContext().getObjectAttachments();
         Assertions.assertTrue(attachments != null && attachments.size() == 1, "set attachment failed!");
         try {
             invoker.invoke(invocation);
@@ -138,7 +139,7 @@ public class ForkingClusterInvokerTest {
             Assertions.assertTrue(expected.getMessage().contains("Failed to forking invoke provider"), "Succeeded to forking invoke provider !");
             assertFalse(expected.getCause() instanceof RpcException);
         }
-        Map<String, String> afterInvoke = RpcContext.getContext().getAttachments();
+        Map<String, Object> afterInvoke = RpcContext.getContext().getObjectAttachments();
         Assertions.assertTrue(afterInvoke != null && afterInvoke.size() == 0, "clear attachment failed!");
     }
 

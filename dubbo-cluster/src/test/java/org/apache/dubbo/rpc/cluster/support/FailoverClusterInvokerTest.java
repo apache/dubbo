@@ -18,9 +18,11 @@ package org.apache.dubbo.rpc.cluster.support;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.AsyncRpcResult;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.cluster.Directory;
@@ -67,6 +69,7 @@ public class FailoverClusterInvokerTest {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");
@@ -141,10 +144,38 @@ public class FailoverClusterInvokerTest {
     }
 
     @Test()
+    public void testInvoke_retryTimes2() {
+        int finalRetries = 1;
+        given(invoker1.invoke(invocation)).willThrow(new RpcException(RpcException.TIMEOUT_EXCEPTION));
+        given(invoker1.isAvailable()).willReturn(false);
+        given(invoker1.getUrl()).willReturn(url);
+        given(invoker1.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        given(invoker2.invoke(invocation)).willThrow(new RpcException());
+        given(invoker2.isAvailable()).willReturn(false);
+        given(invoker2.getUrl()).willReturn(url);
+        given(invoker2.getInterface()).willReturn(FailoverClusterInvokerTest.class);
+
+        RpcContext rpcContext = RpcContext.getContext();
+        rpcContext.setAttachment("retries", finalRetries);
+
+        FailoverClusterInvoker<FailoverClusterInvokerTest> invoker = new FailoverClusterInvoker<FailoverClusterInvokerTest>(dic);
+        try {
+            Result ret = invoker.invoke(invocation);
+            assertSame(result, ret);
+            fail();
+        } catch (RpcException expected) {
+            assertTrue((expected.isTimeout() || expected.getCode() == 0));
+            assertTrue(expected.getMessage().indexOf((finalRetries+1) + " times") > 0);
+        }
+    }
+
+    @Test()
     public void testNoInvoke() {
         dic = mock(Directory.class);
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(null);
         given(dic.getInterface()).willReturn(FailoverClusterInvokerTest.class);
         invocation.setMethodName("method1");
@@ -179,17 +210,16 @@ public class FailoverClusterInvokerTest {
         invokers.add(invoker1);
         invokers.add(invoker2);
 
-        Callable<Object> callable = new Callable<Object>() {
-            public Object call() throws Exception {
-                //Simulation: all invokers are destroyed
-                for (Invoker<Demo> invoker : invokers) {
-                    invoker.destroy();
-                }
-                invokers.clear();
-                MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
-                invokers.add(invoker3);
-                return null;
+        Callable<Object> callable = () -> {
+            //Simulation: all invokers are destroyed
+            for (Invoker<Demo> invoker : invokers) {
+                invoker.destroy();
             }
+            invokers.clear();
+            MockInvoker<Demo> invoker3 = new MockInvoker<Demo>(Demo.class, url);
+            invoker3.setResult(AsyncRpcResult.newDefaultAsyncResult(null));
+            invokers.add(invoker3);
+            return null;
         };
         invoker1.setCallable(callable);
         invoker2.setCallable(callable);

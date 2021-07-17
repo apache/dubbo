@@ -25,9 +25,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.core.io.support.ResourcePropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.io.IOException;
 
@@ -36,6 +36,7 @@ import java.io.IOException;
  *
  * @since 2.5.8
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboConfigConfigurationTest {
 
     private AnnotationConfigApplicationContext context;

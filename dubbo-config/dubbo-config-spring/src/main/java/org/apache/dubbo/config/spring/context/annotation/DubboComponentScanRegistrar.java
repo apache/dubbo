@@ -18,10 +18,8 @@ package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationBeanPostProcessor;
-import org.apache.dubbo.config.spring.util.BeanRegistrar;
 
-import org.springframework.beans.factory.BeanFactory;
+import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceClassPostProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -37,6 +35,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
@@ -45,7 +44,7 @@ import static org.springframework.beans.factory.support.BeanDefinitionBuilder.ro
  * @see Service
  * @see DubboComponentScan
  * @see ImportBeanDefinitionRegistrar
- * @see ServiceAnnotationBeanPostProcessor
+ * @see ServiceClassPostProcessor
  * @see ReferenceAnnotationBeanPostProcessor
  * @since 2.5.7
  */
@@ -56,39 +55,26 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
 
         Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
 
-        registerServiceAnnotationBeanPostProcessor(packagesToScan, registry);
+        registerServiceClassPostProcessor(packagesToScan, registry);
 
-        registerReferenceAnnotationBeanPostProcessor(registry);
-
+        // @since 2.7.6 Register the common beans
+        registerCommonBeans(registry);
     }
 
     /**
-     * Registers {@link ServiceAnnotationBeanPostProcessor}
+     * Registers {@link ServiceClassPostProcessor}
      *
      * @param packagesToScan packages to scan without resolving placeholders
      * @param registry       {@link BeanDefinitionRegistry}
      * @since 2.5.8
      */
-    private void registerServiceAnnotationBeanPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+    private void registerServiceClassPostProcessor(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
 
-        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceAnnotationBeanPostProcessor.class);
+        BeanDefinitionBuilder builder = rootBeanDefinition(ServiceClassPostProcessor.class);
         builder.addConstructorArgValue(packagesToScan);
         builder.setRole(BeanDefinition.ROLE_INFRASTRUCTURE);
         AbstractBeanDefinition beanDefinition = builder.getBeanDefinition();
         BeanDefinitionReaderUtils.registerWithGeneratedName(beanDefinition, registry);
-
-    }
-
-    /**
-     * Registers {@link ReferenceAnnotationBeanPostProcessor} into {@link BeanFactory}
-     *
-     * @param registry {@link BeanDefinitionRegistry}
-     */
-    private void registerReferenceAnnotationBeanPostProcessor(BeanDefinitionRegistry registry) {
-
-        // Register @Reference Annotation Bean Processor
-        BeanRegistrar.registerInfrastructureBean(registry,
-                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
 
     }
 

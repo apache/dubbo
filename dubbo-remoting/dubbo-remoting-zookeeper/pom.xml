@@ -20,11 +20,12 @@
         <groupId>org.apache.dubbo</groupId>
         <artifactId>dubbo-remoting</artifactId>
         <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dubbo-remoting-zookeeper</artifactId>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>The zookeeper remoting module of dubbo project</description>
+    <description>The zookeeper curator remoting module of dubbo project</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>

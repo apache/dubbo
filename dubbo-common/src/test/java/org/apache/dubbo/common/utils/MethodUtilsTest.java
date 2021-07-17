@@ -21,6 +21,17 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 
+import static org.apache.dubbo.common.utils.MethodUtils.excludedDeclaredClass;
+import static org.apache.dubbo.common.utils.MethodUtils.findMethod;
+import static org.apache.dubbo.common.utils.MethodUtils.findNearestOverriddenMethod;
+import static org.apache.dubbo.common.utils.MethodUtils.findOverriddenMethod;
+import static org.apache.dubbo.common.utils.MethodUtils.getAllDeclaredMethods;
+import static org.apache.dubbo.common.utils.MethodUtils.getAllMethods;
+import static org.apache.dubbo.common.utils.MethodUtils.getDeclaredMethods;
+import static org.apache.dubbo.common.utils.MethodUtils.getMethods;
+import static org.apache.dubbo.common.utils.MethodUtils.invokeMethod;
+import static org.apache.dubbo.common.utils.MethodUtils.overrides;
+
 public class MethodUtilsTest {
 
     @Test
@@ -47,6 +58,44 @@ public class MethodUtilsTest {
         Assertions.assertEquals("setValue", setMethod.getName());
     }
 
+    @Test
+    public void testIsDeprecated() throws Exception {
+        Assertions.assertTrue(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("deprecatedMethod")));
+        Assertions.assertFalse(MethodUtils.isDeprecated(MethodTestClazz.class.getMethod("getValue")));
+    }
+
+    @Test
+    public void testIsMetaMethod() {
+        boolean containMetaMethod = false;
+        for (Method method : MethodTestClazz.class.getMethods()) {
+            if (MethodUtils.isMetaMethod(method)) {
+                containMetaMethod = true;
+            }
+        }
+        Assertions.assertTrue(containMetaMethod);
+    }
+
+    @Test
+    public void testGetMethods() throws NoSuchMethodException {
+        Assertions.assertTrue(getDeclaredMethods(MethodTestClazz.class, excludedDeclaredClass(String.class)).size() > 0);
+        Assertions.assertTrue(getMethods(MethodTestClazz.class).size() > 0);
+        Assertions.assertTrue(getAllDeclaredMethods(MethodTestClazz.class).size() > 0);
+        Assertions.assertTrue(getAllMethods(MethodTestClazz.class).size() > 0);
+        Assertions.assertNotNull(findMethod(MethodTestClazz.class, "getValue"));
+
+        MethodTestClazz methodTestClazz = new MethodTestClazz();
+        invokeMethod(methodTestClazz, "setValue", "Test");
+        Assertions.assertEquals(methodTestClazz.getValue(), "Test");
+
+        Assertions.assertTrue(overrides(MethodOverrideClazz.class.getMethod("get"),
+                MethodTestClazz.class.getMethod("get")));
+        Assertions.assertEquals(findNearestOverriddenMethod(MethodOverrideClazz.class.getMethod("get")),
+                MethodTestClazz.class.getMethod("get"));
+        Assertions.assertEquals(findOverriddenMethod(MethodOverrideClazz.class.getMethod("get"), MethodOverrideClazz.class),
+                MethodTestClazz.class.getMethod("get"));
+
+    }
+
     public class MethodTestClazz {
         private String value;
 
@@ -56,6 +105,22 @@ public class MethodUtilsTest {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        public MethodTestClazz get() {
+            return this;
+        }
+
+        @Deprecated
+        public Boolean deprecatedMethod() {
+            return true;
+        }
+    }
+
+    public class MethodOverrideClazz extends MethodTestClazz {
+        @Override
+        public MethodTestClazz get() {
+            return this;
         }
     }
 

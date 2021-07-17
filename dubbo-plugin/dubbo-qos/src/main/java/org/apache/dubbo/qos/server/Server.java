@@ -18,6 +18,7 @@ package org.apache.dubbo.qos.server;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.qos.server.handler.QosProcessHandler;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -25,10 +26,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.DefaultThreadFactory;
-
+import org.apache.dubbo.remoting.transport.netty4.NettyEventLoopFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -48,6 +46,8 @@ public class Server {
         return INSTANCE;
     }
 
+    private String host;
+
     private int port;
 
     private boolean acceptForeignIp = true;
@@ -57,7 +57,7 @@ public class Server {
     private EventLoopGroup worker;
 
     private Server() {
-        this.welcome = DubboLogo.dubbo;
+        this.welcome = DubboLogo.DUBBO;
     }
 
     private String welcome;
@@ -82,13 +82,13 @@ public class Server {
         if (!started.compareAndSet(false, true)) {
             return;
         }
-        boss = new NioEventLoopGroup(1, new DefaultThreadFactory("qos-boss", true));
-        worker = new NioEventLoopGroup(0, new DefaultThreadFactory("qos-worker", true));
+        boss = NettyEventLoopFactory.eventLoopGroup(1, "qos-boss");
+        worker = NettyEventLoopFactory.eventLoopGroup(0, "qos-worker");
         ServerBootstrap serverBootstrap = new ServerBootstrap();
         serverBootstrap.group(boss, worker);
-        serverBootstrap.channel(NioServerSocketChannel.class);
+        serverBootstrap.channel(NettyEventLoopFactory.serverSocketChannelClass());
+        serverBootstrap.option(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
-        serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         serverBootstrap.childHandler(new ChannelInitializer<Channel>() {
 
             @Override
@@ -97,7 +97,12 @@ public class Server {
             }
         });
         try {
-            serverBootstrap.bind(port).sync();
+            if (StringUtils.isBlank(host)) {
+                serverBootstrap.bind(port).sync();
+            } else {
+                serverBootstrap.bind(host, port).sync();
+            }
+
             logger.info("qos-server bind localhost:" + port);
         } catch (Throwable throwable) {
             logger.error("qos-server can not bind localhost:" + port, throwable);
@@ -116,6 +121,14 @@ public class Server {
         if (worker != null) {
             worker.shutdownGracefully();
         }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
     }
 
     public void setPort(int port) {

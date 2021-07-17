@@ -20,10 +20,10 @@ package org.apache.dubbo.common.serialize.protostuff.utils;
 import org.apache.dubbo.common.serialize.protostuff.Wrapper;
 import org.apache.dubbo.common.serialize.protostuff.delegate.SqlDateDelegate;
 import org.apache.dubbo.common.serialize.protostuff.delegate.TimeDelegate;
+import org.apache.dubbo.common.serialize.protostuff.delegate.TimestampDelegate;
 
 import io.protostuff.runtime.DefaultIdStrategy;
 import io.protostuff.runtime.RuntimeEnv;
-import org.apache.dubbo.common.serialize.protostuff.delegate.TimestampDelegate;
 
 import java.math.BigDecimal;
 import java.sql.Time;

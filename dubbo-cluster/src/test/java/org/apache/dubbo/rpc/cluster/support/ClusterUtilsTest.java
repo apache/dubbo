@@ -28,22 +28,22 @@ import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CORE_THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY_PREFIX;
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_PROTOCOL;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.LOADBALANCE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.METHODS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.LOADBALANCE_KEY;
-import static org.apache.dubbo.rpc.cluster.Constants.TAG_KEY;
 
 public class ClusterUtilsTest {
 
@@ -72,6 +72,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .addParameter(APPLICATION_KEY, "provider")
                 .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
+                .addParameter(TAG_KEY,"TTT")
                 .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
@@ -79,6 +80,7 @@ public class ClusterUtilsTest {
                 .addParameter(THREADPOOL_KEY, "foo")
                 .addParameter(APPLICATION_KEY, "consumer")
                 .addParameter(REFERENCE_FILTER_KEY, "filter3")
+                .addParameter(TAG_KEY,"UUU")
                 .build();
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
@@ -108,6 +110,8 @@ public class ClusterUtilsTest {
         Assertions.assertEquals(url.getParameter(APPLICATION_KEY), "consumer");
         Assertions.assertEquals(url.getParameter(REMOTE_APPLICATION_KEY), "provider");
         Assertions.assertEquals(url.getParameter(REFERENCE_FILTER_KEY), "filter1,filter2,filter3");
+
+        Assertions.assertEquals(url.getParameter(TAG_KEY), "TTT");
     }
 
     @Test
@@ -133,8 +137,8 @@ public class ClusterUtilsTest {
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService");
         mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertNull(mergedUrl.getParameter(VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(GROUP_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
         Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
@@ -147,8 +151,8 @@ public class ClusterUtilsTest {
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?key=value");
         mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertNull(mergedUrl.getParameter(VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(GROUP_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
         Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
         Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
         Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));

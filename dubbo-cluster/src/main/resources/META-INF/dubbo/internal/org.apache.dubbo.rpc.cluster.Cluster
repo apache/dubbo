@@ -7,4 +7,5 @@ forking=org.apache.dubbo.rpc.cluster.support.ForkingCluster
 available=org.apache.dubbo.rpc.cluster.support.AvailableCluster
 mergeable=org.apache.dubbo.rpc.cluster.support.MergeableCluster
 broadcast=org.apache.dubbo.rpc.cluster.support.BroadcastCluster
-registryaware=org.apache.dubbo.rpc.cluster.support.RegistryAwareCluster
+broadcast2=org.apache.dubbo.rpc.cluster.support.BroadcastCluster2
+zone-aware=org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster

@@ -43,7 +43,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
     // true means to accept foreign IP
     private boolean acceptForeignIp;
 
-    public static final String prompt = "dubbo>";
+    public static final String PROMPT = "dubbo>";
 
     public QosProcessHandler(String welcome, boolean acceptForeignIp) {
         this.welcome = welcome;
@@ -58,7 +58,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             public void run() {
                 if (welcome != null) {
                     ctx.write(Unpooled.wrappedBuffer(welcome.getBytes()));
-                    ctx.writeAndFlush(Unpooled.wrappedBuffer(prompt.getBytes()));
+                    ctx.writeAndFlush(Unpooled.wrappedBuffer(PROMPT.getBytes()));
                 }
             }
 
@@ -90,6 +90,7 @@ public class QosProcessHandler extends ByteToMessageDecoder {
             p.addLast(new StringDecoder(CharsetUtil.UTF_8));
             p.addLast(new StringEncoder(CharsetUtil.UTF_8));
             p.addLast(new IdleStateHandler(0, 0, 5 * 60));
+            p.addLast(new TelnetIdleEventHandler());
             p.addLast(new TelnetProcessHandler());
             p.remove(this);
         }

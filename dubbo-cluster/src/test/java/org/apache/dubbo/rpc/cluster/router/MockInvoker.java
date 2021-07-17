@@ -38,6 +38,12 @@ public class MockInvoker<T> implements Invoker<T> {
         this.available = available;
     }
 
+    public MockInvoker(URL url, boolean available) {
+        super();
+        this.url = url;
+        this.available = available;
+    }
+
     @Override
     public Class<T> getInterface() {
         return null;
@@ -52,6 +58,7 @@ public class MockInvoker<T> implements Invoker<T> {
         return available;
     }
 
+    @Override
     public Result invoke(Invocation invocation) throws RpcException {
         return null;
     }

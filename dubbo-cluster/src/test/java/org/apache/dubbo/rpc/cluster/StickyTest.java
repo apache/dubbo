@@ -59,9 +59,11 @@ public class StickyTest {
     @BeforeEach
     public void setUp() throws Exception {
         dic = mock(Directory.class);
+
         invocation = new RpcInvocation();
 
         given(dic.getUrl()).willReturn(url);
+        given(dic.getConsumerUrl()).willReturn(url);
         given(dic.list(invocation)).willReturn(invokers);
         given(dic.getInterface()).willReturn(StickyTest.class);
 
@@ -75,14 +77,14 @@ public class StickyTest {
 
     @Test
     public void testStickyNoCheck() {
-        int count = testSticky(null, false);
+        int count = testSticky("t1", false);
         System.out.println(count);
         Assertions.assertTrue(count > 0 && count <= runs);
     }
 
     @Test
     public void testStickyForceCheck() {
-        int count = testSticky(null, true);
+        int count = testSticky("t2", true);
         Assertions.assertTrue(count == 0 || count == runs);
     }
 

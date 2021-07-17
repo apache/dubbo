@@ -16,7 +16,10 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.Experimental;
+
 import java.util.Map;
+import java.util.stream.Stream;
 
 /**
  * Invocation. (API, Prototype, NonThreadSafe)
@@ -27,6 +30,10 @@ import java.util.Map;
  */
 public interface Invocation {
 
+    String getTargetServiceUniqueName();
+
+    String getProtocolServiceKey();
+
     /**
      * get method name.
      *
@@ -35,6 +42,13 @@ public interface Invocation {
      */
     String getMethodName();
 
+
+    /**
+     * get the interface name
+     * @return
+     */
+    String getServiceName();
+
     /**
      * get parameter types.
      *
@@ -42,6 +56,17 @@ public interface Invocation {
      * @serial
      */
     Class<?>[] getParameterTypes();
+
+    /**
+     * get parameter's signature, string representation of parameter types.
+     *
+     * @return parameter's signature
+     */
+    default String[] getCompatibleParamSignatures() {
+        return Stream.of(getParameterTypes())
+                .map(Class::getName)
+                .toArray(String[]::new);
+    }
 
     /**
      * get arguments.
@@ -59,9 +84,24 @@ public interface Invocation {
      */
     Map<String, String> getAttachments();
 
+    @Experimental("Experiment api for supporting Object transmission")
+    Map<String, Object> getObjectAttachments();
+
     void setAttachment(String key, String value);
 
+    @Experimental("Experiment api for supporting Object transmission")
+    void setAttachment(String key, Object value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachment(String key, Object value);
+
     void setAttachmentIfAbsent(String key, String value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setAttachmentIfAbsent(String key, Object value);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    void setObjectAttachmentIfAbsent(String key, Object value);
 
     /**
      * get attachment by key.
@@ -71,6 +111,9 @@ public interface Invocation {
      */
     String getAttachment(String key);
 
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key);
+
     /**
      * get attachment by key with default value.
      *
@@ -78,6 +121,9 @@ public interface Invocation {
      * @serial
      */
     String getAttachment(String key, String defaultValue);
+
+    @Experimental("Experiment api for supporting Object transmission")
+    Object getObjectAttachment(String key, Object defaultValue);
 
     /**
      * get the invoker in current context.
@@ -87,4 +133,9 @@ public interface Invocation {
      */
     Invoker<?> getInvoker();
 
+    Object put(Object key, Object value);
+
+    Object get(Object key);
+
+    Map<Object, Object> getAttributes();
 }

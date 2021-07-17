@@ -17,8 +17,6 @@
 package org.apache.dubbo.registry.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
@@ -36,20 +34,19 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class SimpleRegistryService extends AbstractRegistryService {
 
-    private final static Logger logger = LoggerFactory.getLogger(SimpleRegistryService.class);
     private final ConcurrentMap<String, ConcurrentMap<String, URL>> remoteRegistered = new ConcurrentHashMap<String, ConcurrentMap<String, URL>>();
     private final ConcurrentMap<String, ConcurrentMap<String, NotifyListener>> remoteListeners = new ConcurrentHashMap<String, ConcurrentMap<String, NotifyListener>>();
     private List<String> registries;
+
+    public SimpleRegistryService() {
+
+    }
 
     @Override
     public void register(String service, URL url) {
         super.register(service, url);
         String client = RpcContext.getContext().getRemoteAddressString();
-        Map<String, URL> urls = remoteRegistered.get(client);
-        if (urls == null) {
-            remoteRegistered.putIfAbsent(client, new ConcurrentHashMap<String, URL>());
-            urls = remoteRegistered.get(client);
-        }
+        Map<String, URL> urls = remoteRegistered.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         urls.put(service, url);
         notify(service, getRegistered().get(service));
     }
@@ -88,11 +85,7 @@ public class SimpleRegistryService extends AbstractRegistryService {
         }
         super.subscribe(service, url, listener);
 
-        Map<String, NotifyListener> listeners = remoteListeners.get(client);
-        if (listeners == null) {
-            remoteListeners.putIfAbsent(client, new ConcurrentHashMap<String, NotifyListener>());
-            listeners = remoteListeners.get(client);
-        }
+        Map<String, NotifyListener> listeners = remoteListeners.computeIfAbsent(client, k -> new ConcurrentHashMap<>());
         listeners.put(service, listener);
         urls = getRegistered().get(service);
         if (urls != null && urls.size() > 0) {

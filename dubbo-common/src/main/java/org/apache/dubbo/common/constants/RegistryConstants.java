@@ -21,6 +21,10 @@ public interface RegistryConstants {
 
     String REGISTRY_KEY = "registry";
 
+    String REGISTRY_CLUSTER_KEY = "REGISTRY_CLUSTER";
+
+    String REGISTRY_CLUSTER_TYPE_KEY = "registry-cluster-type";
+
     String REGISTRY_PROTOCOL = "registry";
 
     String DYNAMIC_KEY = "dynamic";
@@ -52,4 +56,65 @@ public interface RegistryConstants {
     String OVERRIDE_PROTOCOL = "override";
 
     String COMPATIBLE_CONFIG_KEY = "compatible_config";
+
+    String REGISTRY_PUBLISH_INTERFACE_KEY = "publish-interface";
+
+    String DUBBO_PUBLISH_INTERFACE_DEFAULT_KEY = "dubbo.application.publish-interface";
+    /**
+     * The parameter key of Dubbo Registry type
+     *
+     * @since 2.7.5
+     */
+    String REGISTRY_TYPE_KEY = "registry-type";
+
+    /**
+     * The parameter value of Service-Oriented Registry type
+     *
+     * @since 2.7.5
+     */
+    String SERVICE_REGISTRY_TYPE = "service";
+
+    /**
+     * The protocol for Service Discovery
+     *
+     * @since 2.7.5
+     */
+    String SERVICE_REGISTRY_PROTOCOL = "service-discovery-registry";
+
+    /**
+     * The parameter key of the subscribed service names for Service-Oriented Registry
+     * <p>
+     * If there is a multiple-values, the  "comma" is the separator.
+     *
+     * @since 2.7.5
+     */
+    String SUBSCRIBED_SERVICE_NAMES_KEY = "subscribed-services";
+
+    String PROVIDED_BY = "provided-by";
+
+    /**
+     * The request size of service instances
+     *
+     * @since 2.7.5
+     */
+    String INSTANCES_REQUEST_SIZE_KEY = "instances-request-size";
+
+    /**
+     * The default request size of service instances
+     */
+    int DEFAULT_INSTANCES_REQUEST_SIZE = 100;
+
+    String ACCEPTS_KEY = "accepts";
+
+    String REGISTRY_ZONE = "registry_zone";
+    String REGISTRY_ZONE_FORCE = "registry_zone_force";
+    String ZONE_KEY = "zone";
+
+    String REGISTRY_SERVICE_REFERENCE_PATH = "org.apache.dubbo.registry.RegistryService";
+
+    String INIT = "INIT";
+
+    String MIGRATION_MULTI_REGISTRY = "MIGRATION_MULTI_REGISTRY";
+
+    String LOADBALANCE_AMONG_REGISTRIES = "random";
 }

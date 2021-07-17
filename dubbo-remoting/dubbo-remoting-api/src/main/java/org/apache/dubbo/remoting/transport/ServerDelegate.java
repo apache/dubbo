@@ -16,11 +16,12 @@
  */
 package org.apache.dubbo.remoting.transport;
 
+import org.apache.dubbo.common.Parameters;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.ChannelHandler;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 
 import java.net.InetSocketAddress;
 import java.util.Collection;
@@ -30,22 +31,22 @@ import java.util.Collection;
  *
  *
  */
-public class ServerDelegate implements Server {
+public class ServerDelegate implements RemotingServer {
 
-    private transient Server server;
+    private transient RemotingServer server;
 
     public ServerDelegate() {
     }
 
-    public ServerDelegate(Server server) {
+    public ServerDelegate(RemotingServer server) {
         setServer(server);
     }
 
-    public Server getServer() {
+    public RemotingServer getServer() {
         return server;
     }
 
-    public void setServer(Server server) {
+    public void setServer(RemotingServer server) {
         this.server = server;
     }
 
@@ -61,7 +62,7 @@ public class ServerDelegate implements Server {
 
     @Override
     @Deprecated
-    public void reset(org.apache.dubbo.common.Parameters parameters) {
+    public void reset(Parameters parameters) {
         reset(getUrl().addParameters(parameters.getParameters()));
     }
 

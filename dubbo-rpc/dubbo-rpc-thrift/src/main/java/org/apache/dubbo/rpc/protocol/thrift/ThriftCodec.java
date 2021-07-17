@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.thrift;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Codec2;
@@ -88,10 +89,10 @@ public class ThriftCodec implements Codec2 {
     public static final byte VERSION = (byte) 1;
     public static final short MAGIC = (short) 0xdabc;
     static final ConcurrentMap<Long, RequestData> CACHED_REQUEST =
-            new ConcurrentHashMap<Long, RequestData>();
+            new ConcurrentHashMap<>();
     private static final AtomicInteger THRIFT_SEQ_ID = new AtomicInteger(0);
     private static final ConcurrentMap<String, Class<?>> CACHED_CLASS =
-            new ConcurrentHashMap<String, Class<?>>();
+            new ConcurrentHashMap<>();
 
     private static int nextSeqId() {
         return THRIFT_SEQ_ID.incrementAndGet();
@@ -214,9 +215,7 @@ public class ThriftCodec implements Codec2 {
 
             try {
                 args = (TBase) clazz.newInstance();
-            } catch (InstantiationException e) {
-                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 
@@ -227,8 +226,8 @@ public class ThriftCodec implements Codec2 {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 
-            List<Object> parameters = new ArrayList<Object>();
-            List<Class<?>> parameterTypes = new ArrayList<Class<?>>();
+            List<Object> parameters = new ArrayList<>();
+            List<Class<?>> parameterTypes = new ArrayList<>();
             int index = 1;
 
             while (true) {
@@ -255,10 +254,7 @@ public class ThriftCodec implements Codec2 {
                 parameterTypes.add(getMethod.getReturnType());
                 try {
                     parameters.add(getMethod.invoke(args));
-                } catch (IllegalAccessException e) {
-                    throw new RpcException(
-                            RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-                } catch (InvocationTargetException e) {
+                } catch (IllegalAccessException | InvocationTargetException e) {
                     throw new RpcException(
                             RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
                 }
@@ -266,7 +262,7 @@ public class ThriftCodec implements Codec2 {
             }
 
             result.setArguments(parameters.toArray());
-            result.setParameterTypes(parameterTypes.toArray(new Class[parameterTypes.size()]));
+            result.setParameterTypes(parameterTypes.toArray(new Class[0]));
 
             Request request = new Request(id);
             request.setData(result);
@@ -328,9 +324,7 @@ public class ThriftCodec implements Codec2 {
             TBase<?, ? extends TFieldIdEnum> result;
             try {
                 result = (TBase<?, ?>) clazz.newInstance();
-            } catch (InstantiationException e) {
-                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-            } catch (IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 
@@ -357,7 +351,7 @@ public class ThriftCodec implements Codec2 {
 
                 try {
                     field = clazz.getDeclaredField(fieldIdEnum.getFieldName());
-                    field.setAccessible(true);
+                    ReflectUtils.makeAccessible(field);
                 } catch (NoSuchFieldException e) {
                     throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
                 }
@@ -445,9 +439,7 @@ public class ThriftCodec implements Codec2 {
 
         try {
             args = (TBase) clazz.newInstance();
-        } catch (InstantiationException e) {
-            throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
         }
 
@@ -473,9 +465,7 @@ public class ThriftCodec implements Codec2 {
 
             try {
                 method.invoke(args, obj);
-            } catch (IllegalAccessException e) {
-                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-            } catch (InvocationTargetException e) {
+            } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 
@@ -569,9 +559,7 @@ public class ThriftCodec implements Codec2 {
 
         try {
             resultObj = (TBase) clazz.newInstance();
-        } catch (InstantiationException e) {
-            throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
         }
 
@@ -599,11 +587,7 @@ public class ThriftCodec implements Codec2 {
                         setMethod = clazz.getMethod(setMethodName, throwable.getClass());
                         setMethod.invoke(resultObj, throwable);
                     }
-                } catch (NoSuchMethodException e) {
-                    throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-                } catch (InvocationTargetException e) {
-                    throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-                } catch (IllegalAccessException e) {
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                     throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
                 }
             }
@@ -624,11 +608,7 @@ public class ThriftCodec implements Codec2 {
                 getMethod = clazz.getMethod(getMethodName);
                 setMethod = clazz.getMethod(setMethodName, getMethod.getReturnType());
                 setMethod.invoke(resultObj, realResult);
-            } catch (NoSuchMethodException e) {
-                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-            } catch (InvocationTargetException e) {
-                throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
-            } catch (IllegalAccessException e) {
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
                 throw new RpcException(RpcException.SERIALIZATION_EXCEPTION, e.getMessage(), e);
             }
 

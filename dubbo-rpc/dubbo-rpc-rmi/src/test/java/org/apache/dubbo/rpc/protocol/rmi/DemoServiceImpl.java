@@ -80,4 +80,10 @@ public class DemoServiceImpl implements DemoService {
         } catch (InterruptedException e) {
         }
     }
+
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
+    }
 }

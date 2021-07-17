@@ -16,11 +16,9 @@
  */
 package org.apache.dubbo.rpc.protocol.injvm;
 
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.protocol.AbstractExporter;
-
-import java.util.Map;
+import org.apache.dubbo.rpc.protocol.DelegateExporterMap;
 
 /**
  * InjvmExporter
@@ -29,19 +27,17 @@ class InjvmExporter<T> extends AbstractExporter<T> {
 
     private final String key;
 
-    private final Map<String, Exporter<?>> exporterMap;
+    private final DelegateExporterMap delegateExporterMap;
 
-    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
+    InjvmExporter(Invoker<T> invoker, String key, DelegateExporterMap delegateExporterMap) {
         super(invoker);
         this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
+        this.delegateExporterMap = delegateExporterMap;
     }
 
     @Override
-    public void unexport() {
-        super.unexport();
-        exporterMap.remove(key);
+    public void afterUnExport() {
+        delegateExporterMap.removeExportMap(key, this);
     }
-
 }
+

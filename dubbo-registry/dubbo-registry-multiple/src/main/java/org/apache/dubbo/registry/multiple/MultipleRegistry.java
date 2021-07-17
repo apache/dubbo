@@ -20,6 +20,8 @@ package org.apache.dubbo.registry.multiple;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.Registry;
@@ -41,6 +43,8 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
  */
 public class MultipleRegistry extends AbstractRegistry {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(MultipleRegistry.class);
+
     public static final String REGISTRY_FOR_SERVICE = "service-registry";
     public static final String REGISTRY_FOR_REFERENCE = "reference-registry";
 
@@ -55,38 +59,69 @@ public class MultipleRegistry extends AbstractRegistry {
     private URL registryUrl;
     private String applicationName;
 
-
     public MultipleRegistry(URL url) {
-        super(url);
-        this.registryUrl = url;
-        this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
-        init();
-        checkApplicationName(this.applicationName);
-        // This urls contain parameter and it donot inherit from the parameter of url in MultipleRegistry
-        origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
-        origReferenceRegistryURLs = url.getParameter(REGISTRY_FOR_REFERENCE, new ArrayList<String>());
-        effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
-        effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
+        this(url, true, true);
 
         boolean defaultRegistry = url.getParameter(CommonConstants.DEFAULT_KEY, true);
         if (defaultRegistry && effectServiceRegistryURLs.isEmpty() && effectReferenceRegistryURLs.isEmpty()) {
             throw new IllegalArgumentException("Illegal registry url. You need to configure parameter " +
                     REGISTRY_FOR_SERVICE + " or " + REGISTRY_FOR_REFERENCE);
         }
-        Set<String> allURLs = new HashSet<String>(effectServiceRegistryURLs);
-        allURLs.addAll(effectReferenceRegistryURLs);
-        Map<String, Registry> tmpMap = new HashMap<String, Registry>(4);
-        for (String tmpUrl : allURLs) {
-            tmpMap.put(tmpUrl, registryFactory.getRegistry(URL.valueOf(tmpUrl)));
+    }
+
+    public MultipleRegistry(URL url, boolean initServiceRegistry, boolean initReferenceRegistry) {
+        super(url);
+        this.registryUrl = url;
+        this.applicationName = url.getParameter(CommonConstants.APPLICATION_KEY);
+        init();
+        checkApplicationName(this.applicationName);
+        // This urls contain parameter and it do not inherit from the parameter of url in MultipleRegistry
+
+        Map<String, Registry> registryMap = new HashMap<>();
+        if (initServiceRegistry) {
+            initServiceRegistry(url, registryMap);
         }
-        for (String serviceRegistyURL : effectServiceRegistryURLs) {
-            serviceRegistries.put(serviceRegistyURL, tmpMap.get(serviceRegistyURL));
-        }
-        for (String referenceReigstyURL : effectReferenceRegistryURLs) {
-            referenceRegistries.put(referenceReigstyURL, tmpMap.get(referenceReigstyURL));
+        if (initReferenceRegistry) {
+            initReferenceRegistry(url, registryMap);
         }
     }
 
+    protected void initServiceRegistry(URL url, Map<String, Registry> registryMap) {
+        origServiceRegistryURLs = url.getParameter(REGISTRY_FOR_SERVICE, new ArrayList<String>());
+        effectServiceRegistryURLs = this.filterServiceRegistry(origServiceRegistryURLs);
+        for (String tmpUrl : effectServiceRegistryURLs) {
+            if (registryMap.get(tmpUrl) != null) {
+                serviceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
+                continue;
+            }
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
+            registryMap.put(tmpUrl, registry);
+            serviceRegistries.put(tmpUrl, registry);
+        }
+    }
+
+    protected void initReferenceRegistry(URL url, Map<String, Registry> registryMap) {
+        origReferenceRegistryURLs = url.getParameter(REGISTRY_FOR_REFERENCE, new ArrayList<String>());
+        effectReferenceRegistryURLs = this.filterReferenceRegistry(origReferenceRegistryURLs);
+        for (String tmpUrl : effectReferenceRegistryURLs) {
+            if (registryMap.get(tmpUrl) != null) {
+                referenceRegistries.put(tmpUrl, registryMap.get(tmpUrl));
+                continue;
+            }
+            Registry registry = getRegistry(URL.valueOf(tmpUrl));
+            registryMap.put(tmpUrl, registry);
+            referenceRegistries.put(tmpUrl, registry);
+        }
+    }
+
+    protected Registry getRegistry(URL url) {
+        try {
+            return registryFactory.getRegistry(url);
+        } catch (Throwable t) {
+            LOGGER.error(t.getMessage(), t);
+            throw t;
+        }
+    }
 
     @Override
     public URL getUrl() {
@@ -95,7 +130,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
     @Override
     public boolean isAvailable() {
-        boolean available = serviceRegistries.isEmpty() ? true : false;
+        boolean available = serviceRegistries.isEmpty();
         for (Registry serviceRegistry : serviceRegistries.values()) {
             if (serviceRegistry.isAvailable()) {
                 available = true;
@@ -105,7 +140,7 @@ public class MultipleRegistry extends AbstractRegistry {
             return false;
         }
 
-        available = referenceRegistries.isEmpty() ? true : false;
+        available = referenceRegistries.isEmpty();
         for (Registry referenceRegistry : referenceRegistries.values()) {
             if (referenceRegistry.isAvailable()) {
                 available = true;

@@ -69,4 +69,20 @@ public class DemoServiceImpl implements DemoService {
     public int stringLength(String str) {
         return str.length();
     }
+
+    @Override
+    public String getRemoteApplicationName() {
+        return RpcContext.getContext().getRemoteApplicationName();
+    }
+
+    @Override
+    public String getAsyncResult() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.out.println("getAsyncResult() Interrupted");
+        }
+        return "DONE";
+    }
+
 }

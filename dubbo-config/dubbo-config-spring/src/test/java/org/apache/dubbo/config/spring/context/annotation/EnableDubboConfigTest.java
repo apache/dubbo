@@ -24,19 +24,25 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.util.Map;
+
+import static com.alibaba.spring.util.BeanRegistrar.hasAlias;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 
 /**
  * {@link EnableDubboConfig} Test
  *
  * @since 2.5.8
  */
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class EnableDubboConfigTest {
 
     @Test
@@ -76,6 +82,11 @@ public class EnableDubboConfigTest {
         ConsumerConfig consumerConfig = context.getBean(ConsumerConfig.class);
         Assertions.assertEquals("netty", consumerConfig.getClient());
 
+        // asserts aliases
+        assertFalse(hasAlias(context, "org.apache.dubbo.config.RegistryConfig#0", "zookeeper"));
+        assertFalse(hasAlias(context, "org.apache.dubbo.config.MonitorConfig#0", "zookeeper"));
+
+        context.close();
     }
 
     @Test
@@ -89,6 +100,7 @@ public class EnableDubboConfigTest {
         ApplicationConfig applicationConfig = context.getBean("applicationBean", ApplicationConfig.class);
         Assertions.assertEquals("dubbo-demo-application", applicationConfig.getName());
 
+
         ApplicationConfig applicationBean2 = context.getBean("applicationBean2", ApplicationConfig.class);
         Assertions.assertEquals("dubbo-demo-application2", applicationBean2.getName());
 
@@ -98,10 +110,15 @@ public class EnableDubboConfigTest {
         Map<String, ProtocolConfig> protocolConfigs = context.getBeansOfType(ProtocolConfig.class);
 
         for (Map.Entry<String, ProtocolConfig> entry : protocolConfigs.entrySet()) {
-            String beanName = entry.getKey();
             ProtocolConfig protocol = entry.getValue();
-            Assert.assertEquals(beanName, protocol.getName());
+            Assertions.assertEquals(protocol, context.getBean(protocol.getName(), ProtocolConfig.class));
         }
+
+        // asserts aliases
+        assertTrue(hasAlias(context, "applicationBean2", "dubbo-demo-application2"));
+        assertTrue(hasAlias(context, "applicationBean3", "dubbo-demo-application3"));
+
+        context.close();
 
     }
 

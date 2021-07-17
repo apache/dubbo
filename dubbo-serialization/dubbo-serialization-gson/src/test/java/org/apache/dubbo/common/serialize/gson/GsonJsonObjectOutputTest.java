@@ -26,7 +26,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class GsonJsonObjectOutputTest {
@@ -124,13 +126,33 @@ public class GsonJsonObjectOutputTest {
 
     @Test
     public void testWriteObject() throws IOException, ClassNotFoundException {
-        Image image = new Image("http://dubbo.io/logo.png", "logo", 300, 480, Image.Size.SMALL);
+        Image image = new Image("http://dubbo.apache.org/img/dubbo_white.png", "logo", 300, 480, Image.Size.SMALL);
         this.gsonJsonObjectOutput.writeObject(image);
         this.flushToInput();
 
         Image readObjectForImage = gsonJsonObjectInput.readObject(Image.class);
         assertThat(readObjectForImage, not(nullValue()));
         assertThat(readObjectForImage, is(image));
+    }
+
+    public class BizException extends RuntimeException {
+
+        public BizException(String message) {
+            super(message);
+        }
+
+    }
+
+
+    @Test
+    public void testWriteThrowable() throws IOException, ClassNotFoundException {
+        BizException exception = new BizException("biz_exception");
+        this.gsonJsonObjectOutput.writeThrowable(exception);
+        this.flushToInput();
+        Throwable ex = this.gsonJsonObjectInput.readThrowable();
+        assertThat(ex.getMessage(), is("biz_exception"));
+        assertThat(ex.getClass(), is(BizException.class));
+
     }
 
     private void flushToInput() throws IOException {

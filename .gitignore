@@ -6,6 +6,7 @@ target/
 *.zip
 *.tar
 *.tar.gz
+.flattened-pom.xml
 
 # eclipse ignore
 .settings/
@@ -17,6 +18,9 @@ target/
 *.ipr
 *.iml
 *.iws
+
+# visual-studio-code ignore
+.vscode/
 
 # temp ignore
 *.log
@@ -30,8 +34,13 @@ target/
 Thumbs.db
 *.orig
 
-# flatten ignore
-.flattened-pom.xml
-
 # license check result
-license-list.txt
+license-list
+
+# grpc compiler
+compiler/gradle.properties
+compiler/build/*
+compiler/.gradle/*
+
+# protobuf
+dubbo-serialization/dubbo-serialization-protobuf/build/*

@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.protocol.nativethrift;
 
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 
@@ -39,8 +40,11 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
+
 /**
- *  native thrift protocol
+ * native thrift protocol
  */
 public class ThriftProtocol extends AbstractProxyProtocol {
 
@@ -51,16 +55,20 @@ public class ThriftProtocol extends AbstractProxyProtocol {
     public static final String THRIFT_PROCESSOR = "$Processor";
     public static final String THRIFT_CLIENT = "$Client";
 
-    private static final Map<String, TServer> serverMap = new HashMap<>();
+    private static final Map<String, TServer> SERVER_MAP = new HashMap<>();
     private TMultiplexedProcessor processor = new TMultiplexedProcessor();
+
+    public ThriftProtocol() {
+        super(TException.class, RpcException.class);
+    }
+
+    public ThriftProtocol(Class<?>... exceptions) {
+        super(exceptions);
+    }
 
     @Override
     public int getDefaultPort() {
         return DEFAULT_PORT;
-    }
-
-    public ThriftProtocol() {
-        super(TException.class, RpcException.class);
     }
 
     @Override
@@ -73,65 +81,14 @@ public class ThriftProtocol extends AbstractProxyProtocol {
         return doReferFrameAndCompact(type, url);
     }
 
-    public ThriftProtocol(Class<?>... exceptions) {
-        super(exceptions);
-    }
-
     private <T> Runnable exportThreadedSelectorServer(T impl, Class<T> type, URL url) throws RpcException {
 
-        TThreadedSelectorServer.Args tArgs = null;
-        String typeName = type.getName();
 
-        TServer tserver = null;
-        if (typeName.endsWith(THRIFT_IFACE)) {
-            String processorClsName = typeName.substring(0, typeName.indexOf(THRIFT_IFACE)) + THRIFT_PROCESSOR;
-            try {
-                Class<?> clazz = Class.forName(processorClsName);
-                Constructor constructor = clazz.getConstructor(type);
-                try {
-                    TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
-                    processor.registerProcessor(typeName,tprocessor);
-
-                    tserver = serverMap.get(url.getAddress());
-                    if(tserver == null) {
-
-                        /**Solve the problem of only 50 of the default number of concurrent connections*/
-                        TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
-                        /**1000 connections*/
-                        args.backlog(1000);
-                        args.bindAddr(new InetSocketAddress(url.getHost(), url.getPort()));
-                        /**timeout: 10s */
-                        args.clientTimeout(10000);
-
-                        TNonblockingServerSocket transport = new TNonblockingServerSocket(args);
-
-                        tArgs = new TThreadedSelectorServer.Args(transport);
-                        tArgs.workerThreads(200);
-                        tArgs.selectorThreads(4);
-                        tArgs.acceptQueueSizePerThread(256);
-                        tArgs.processor(processor);
-                        tArgs.transportFactory(new TFramedTransport.Factory());
-                        tArgs.protocolFactory(new TCompactProtocol.Factory());
-                    }else{
-                        return null; // if server is starting, return and do nothing here
-                    }
-                } catch (Exception e) {
-                    logger.error(e.getMessage(), e);
-                    throw new RpcException("Fail to create nativethrift server(" + url + ") : " + e.getMessage(), e);
-                }
-            } catch (Exception e) {
-                logger.error(e.getMessage(), e);
-                throw new RpcException("Fail to create nativethrift server(" + url + ") : " + e.getMessage(), e);
-            }
+        final TServer thriftServer = getTServer(impl, type, url);
+        if (thriftServer == null) {
+            return null;
         }
-
-        if (tserver == null && tArgs == null) {
-            logger.error("Fail to create nativethrift server(" + url + ") due to null args");
-            throw new RpcException("Fail to create nativethrift server(" + url + ") due to null args");
-        }
-        final TServer thriftServer =  new TThreadedSelectorServer(tArgs);
-        serverMap.put(url.getAddress(),thriftServer);
-
+        SERVER_MAP.put(url.getAddress(), thriftServer);
         new Thread(() -> {
             logger.info("Start Thrift ThreadedSelectorServer");
             thriftServer.serve();
@@ -161,7 +118,7 @@ public class ThriftProtocol extends AbstractProxyProtocol {
                     TSocket tSocket = new TSocket(url.getHost(), url.getPort());
                     TTransport transport = new TFramedTransport(tSocket);
                     TProtocol tprotocol = new TCompactProtocol(transport);
-                    TMultiplexedProtocol protocol = new TMultiplexedProtocol(tprotocol,typeName);
+                    TMultiplexedProtocol protocol = new TMultiplexedProtocol(tprotocol, typeName);
                     thriftClient = (T) constructor.newInstance(protocol);
                     transport.open();
                     logger.info("nativethrift client opened for service(" + url + ")");
@@ -175,6 +132,66 @@ public class ThriftProtocol extends AbstractProxyProtocol {
             logger.error(e.getMessage(), e);
             throw new RpcException("Fail to create remote client for service(" + url + "): " + e.getMessage(), e);
         }
+    }
+
+    private <T> TServer getTServer(T impl, Class<T> type, URL url) {
+
+        TThreadedSelectorServer.Args tArgs = null;
+        String typeName = type.getName();
+
+        TServer tserver;
+        if (typeName.endsWith(THRIFT_IFACE)) {
+            String processorClsName = typeName.substring(0, typeName.indexOf(THRIFT_IFACE)) + THRIFT_PROCESSOR;
+            try {
+                Class<?> clazz = Class.forName(processorClsName);
+                Constructor constructor = clazz.getConstructor(type);
+
+                TProcessor tprocessor = (TProcessor) constructor.newInstance(impl);
+                processor.registerProcessor(typeName, tprocessor);
+
+                tserver = SERVER_MAP.get(url.getAddress());
+                if (tserver == null) {
+
+                    /**Solve the problem of only 50 of the default number of concurrent connections*/
+                    TNonblockingServerSocket.NonblockingAbstractServerSocketArgs args = new TNonblockingServerSocket.NonblockingAbstractServerSocketArgs();
+                    /**1000 connections*/
+                    args.backlog(1000);
+                    String bindIp = url.getParameter(Constants.BIND_IP_KEY, url.getHost());
+                    if (url.getParameter(ANYHOST_KEY, false)) {
+                        bindIp = ANYHOST_VALUE;
+                    }
+                    int bindPort = url.getParameter(Constants.BIND_PORT_KEY, url.getPort());
+                    args.bindAddr(new InetSocketAddress(bindIp, bindPort));
+                    /**timeout: 10s */
+                    args.clientTimeout(10000);
+
+                    TNonblockingServerSocket transport = new TNonblockingServerSocket(args);
+
+                    tArgs = new TThreadedSelectorServer.Args(transport);
+                    tArgs.workerThreads(200);
+                    tArgs.selectorThreads(4);
+                    tArgs.acceptQueueSizePerThread(256);
+                    tArgs.processor(processor);
+                    tArgs.transportFactory(new TFramedTransport.Factory());
+                    tArgs.protocolFactory(new TCompactProtocol.Factory());
+                } else {
+                    // if server is starting, return and do nothing here
+                    return null;
+                }
+
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+                throw new RpcException("Fail to create nativethrift server(" + url + ") : " + e.getMessage(), e);
+            }
+        }
+
+        if (tArgs == null) {
+            logger.error("Fail to create native thrift server(" + url + ") due to null args");
+            throw new RpcException("Fail to create nativethrift server(" + url + ") due to null args");
+        }
+        tserver = new TThreadedSelectorServer(tArgs);
+        return tserver;
+
     }
 
 }

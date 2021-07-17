@@ -19,22 +19,26 @@ package org.apache.dubbo.monitor.dubbo;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.monitor.Monitor;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.ProxyFactory;
+
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
+import java.util.List;
+
+import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.MockitoAnnotations.initMocks;
-
-import static org.apache.dubbo.rpc.Constants.REFERENCE_FILTER_KEY;
 
 public class DubboMonitorFactoryTest {
     private DubboMonitorFactory dubboMonitorFactory;
@@ -45,8 +49,17 @@ public class DubboMonitorFactoryTest {
     public void setUp() throws Exception {
         initMocks(this);
         this.dubboMonitorFactory = new DubboMonitorFactory();
-        this.dubboMonitorFactory.setProtocol(new DubboProtocol());
+        this.dubboMonitorFactory.setProtocol(DubboProtocol.getDubboProtocol());
         this.dubboMonitorFactory.setProxyFactory(proxyFactory);
+    }
+
+    @AfterEach
+    public void tearDownAfterClass() {
+        DubboProtocol.getDubboProtocol().destroy();
+        List<ProtocolServer> servers = DubboProtocol.getDubboProtocol().getServers();
+        for (ProtocolServer server : servers) {
+            server.close();
+        }
     }
 
     @Test

@@ -16,16 +16,15 @@
  */
 package org.apache.dubbo.filter;
 
-
 import com.alibaba.dubbo.rpc.Invocation;
 import com.alibaba.dubbo.rpc.Invoker;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.remoting.Constants.DUBBO_VERSION_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.rpc.Constants.TOKEN_KEY;
@@ -39,6 +38,16 @@ public class LegacyInvocation implements Invocation {
 
     public LegacyInvocation(String arg0) {
         this.arg0 = arg0;
+    }
+
+    @Override
+    public String getTargetServiceUniqueName() {
+        return null;
+    }
+
+    @Override
+    public String getProtocolServiceKey() {
+        return null;
     }
 
     public String getMethodName() {
@@ -65,6 +74,21 @@ public class LegacyInvocation implements Invocation {
     }
 
     public Invoker<?> getInvoker() {
+        return null;
+    }
+
+    @Override
+    public Object put(Object key, Object value) {
+        return null;
+    }
+
+    @Override
+    public Object get(Object key) {
+        return null;
+    }
+
+    @Override
+    public Map<Object, Object> getAttributes() {
         return null;
     }
 

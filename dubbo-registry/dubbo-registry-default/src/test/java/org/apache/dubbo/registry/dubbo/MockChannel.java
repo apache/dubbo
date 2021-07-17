@@ -24,6 +24,7 @@ import org.apache.dubbo.remoting.exchange.ExchangeHandler;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 public class MockChannel implements ExchangeChannel {
 
@@ -90,6 +91,16 @@ public class MockChannel implements ExchangeChannel {
     }
 
     public CompletableFuture<Object> request(Object request, int timeout) throws RemotingException {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, ExecutorService executor) throws RemotingException {
+        return null;
+    }
+
+    @Override
+    public CompletableFuture<Object> request(Object request, int timeout, ExecutorService executor) throws RemotingException {
         return null;
     }
 

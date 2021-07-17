@@ -25,6 +25,7 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperRegistry;
 import org.apache.dubbo.remoting.zookeeper.ZookeeperClient;
 import org.apache.dubbo.remoting.zookeeper.curator.CuratorZookeeperClient;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -32,8 +33,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import redis.embedded.RedisServer;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
+
+import static redis.embedded.RedisServer.newRedisServer;
 
 /**
  * 2019-04-30
@@ -65,11 +70,30 @@ public class MultipleRegistry2S2RTest {
         zkServer = new TestingServer(zkServerPort, true);
         zookeeperRegistryURLStr = "zookeeper://127.0.0.1:" + zkServerPort;
 
-        redisServerPort = NetUtils.getAvailablePort();
-        redisServer = new RedisServer(redisServerPort);
-        redisServer.start();
-        redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 
+        IOException exception = null;
+
+        for (int i = 0; i < 10; i++) {
+            try {
+                redisServerPort = NetUtils.getAvailablePort(30000 + new Random().nextInt(10000));
+                redisServer = newRedisServer()
+                        .port(redisServerPort)
+                        // set maxheap to fix Windows error 0x70 while starting redis
+                        .settingIf(SystemUtils.IS_OS_WINDOWS, "maxheap 128mb")
+                        .build();
+                redisServer.start();
+                exception = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+                exception = e;
+            }
+            if (exception == null) {
+                break;
+            }
+        }
+
+        Assertions.assertNull(exception);
+        redisRegistryURLStr = "redis://127.0.0.1:" + redisServerPort;
 
         URL url = URL.valueOf("multiple://127.0.0.1?application=vic&" +
                 MultipleRegistry.REGISTRY_FOR_SERVICE + "=" + zookeeperRegistryURLStr + "," + redisRegistryURLStr + "&"

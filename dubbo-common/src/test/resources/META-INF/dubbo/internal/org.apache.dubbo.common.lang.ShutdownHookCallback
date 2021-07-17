@@ -1,0 +1,1 @@
+default=org.apache.dubbo.common.lang.DefaultShutdownHookCallback

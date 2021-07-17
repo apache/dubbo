@@ -22,7 +22,7 @@ import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.Client;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.Server;
+import org.apache.dubbo.remoting.RemotingServer;
 import org.apache.dubbo.remoting.exchange.Exchangers;
 import org.apache.dubbo.remoting.exchange.support.ExchangeHandlerAdapter;
 
@@ -46,8 +46,8 @@ public class ClientReconnectTest {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 200);
             Assertions.assertFalse(client.isConnected());
-            Server server = startServer(port);
-            for (int i = 0; i < 100 && !client.isConnected(); i++) {
+            RemotingServer server = startServer(port);
+            for (int i = 0; i < 1000 && !client.isConnected(); i++) {
                 Thread.sleep(10);
             }
             Assertions.assertTrue(client.isConnected());
@@ -58,7 +58,7 @@ public class ClientReconnectTest {
             int port = NetUtils.getAvailablePort();
             Client client = startClient(port, 20000);
             Assertions.assertFalse(client.isConnected());
-            Server server = startServer(port);
+            RemotingServer server = startServer(port);
             for (int i = 0; i < 5; i++) {
                 Thread.sleep(200);
             }
@@ -70,11 +70,12 @@ public class ClientReconnectTest {
 
 
     public Client startClient(int port, int heartbeat) throws RemotingException {
-        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" + Constants.HEARTBEAT_KEY + "=" + heartbeat;
+        final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?check=false&client=netty3&" +
+                Constants.HEARTBEAT_KEY + "=" + heartbeat;
         return Exchangers.connect(url);
     }
 
-    public Server startServer(int port) throws RemotingException {
+    public RemotingServer startServer(int port) throws RemotingException {
         final String url = "exchange://127.0.0.1:" + port + "/client.reconnect.test?server=netty3";
         return Exchangers.bind(url, new HandlerAdapter());
     }
