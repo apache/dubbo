@@ -540,12 +540,14 @@ public abstract class AbstractConfig implements Serializable {
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(method.getName());
                     String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
+                    Map<String, String> parameterMap = null;
                     if (StringUtils.hasText(value)) {
-                        invokeSetParameters(convert(StringUtils.parseParameters(value), ""));
+                        parameterMap = StringUtils.parseParameters(value);
                     } else {
                         // in this case, maybe parameters.item3=value3.
-                        invokeSetParameters(ConfigurationUtils.getSubProperties(subProperties, PARAMETERS));
+                        parameterMap = ConfigurationUtils.getSubProperties(subProperties, PARAMETERS);
                     }
+                    invokeSetParameters(convert(parameterMap, ""));
                 }
             }
 
