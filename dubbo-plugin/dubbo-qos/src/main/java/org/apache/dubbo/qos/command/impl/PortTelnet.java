@@ -14,35 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.Channel;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.remoting.exchange.ExchangeChannel;
 import org.apache.dubbo.remoting.exchange.ExchangeServer;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
-import org.apache.dubbo.remoting.telnet.support.Help;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import java.util.Collection;
 
-/**
- * ServerTelnetHandler
- */
-@Activate
-@Help(parameter = "[-l] [port]", summary = "Print server ports and connections.", detail = "Print server ports and connections.")
-public class PortTelnetHandler implements TelnetHandler {
-
+@Cmd(name = "ps", summary = "Print server ports and connections.", example = {
+    "ps -l [port]", "ps", "ps -l", "ps -l 20880"
+})
+public class PortTelnet implements BaseCommand {
     @Override
-    public String telnet(Channel channel, String message) {
+    public String execute(CommandContext commandContext, String[] args) {
         StringBuilder buf = new StringBuilder();
         String port = null;
         boolean detail = false;
-        if (message.length() > 0) {
-            String[] parts = message.split("\\s+");
-            for (String part : parts) {
+        if (args.length > 0) {
+            for (String part : args) {
                 if ("-l".equals(part)) {
                     detail = true;
                 } else {
@@ -92,5 +87,4 @@ public class PortTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-
 }

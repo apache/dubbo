@@ -14,30 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.DubboShutdownHook;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
-import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 
-/**
- * ShutdownTelnetHandler
- */
-@Activate
-@Help(parameter = "[-t <milliseconds>]", summary = "Shutdown Dubbo Application.", detail = "Shutdown Dubbo Application.")
-public class ShutdownTelnetHandler implements TelnetHandler {
+@Cmd(name = "shutdown", summary = "Shutdown Dubbo Application.", example = {
+    "shutdown -t <milliseconds>"
+})
+public class ShutdownTelnet implements BaseCommand {
     @Override
-    public String telnet(Channel channel, String message) throws RemotingException {
+    public String execute(CommandContext commandContext, String[] args) {
 
         int sleepMilliseconds = 0;
-        if (StringUtils.isNotEmpty(message)) {
-            String[] parameters = message.split("\\s+");
-            if (parameters.length == 2 && "-t".equals(parameters[0]) && StringUtils.isInteger(parameters[1])) {
-                sleepMilliseconds = Integer.parseInt(parameters[1]);
+        if (args != null && args.length > 0) {
+            if (args.length == 2 && "-t".equals(args[0]) && StringUtils.isInteger(args[1])) {
+                sleepMilliseconds = Integer.parseInt(args[1]);
             } else {
                 return "Invalid parameter,please input like shutdown -t 10000";
             }

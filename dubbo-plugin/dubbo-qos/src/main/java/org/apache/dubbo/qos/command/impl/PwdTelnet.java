@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
-import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 
-/**
- * CurrentServiceTelnetHandler
- */
-@Activate
-@Help(parameter = "", summary = "Print working default service.", detail = "Print working default service.")
-public class CurrentTelnetHandler implements TelnetHandler {
+import java.util.Arrays;
 
+@Cmd(name = "pwd", summary = "Print working default service.", example = {
+    "pwd"
+})
+public class PwdTelnet implements BaseCommand {
     @Override
-    public String telnet(Channel channel, String message) {
-        if (message.length() > 0) {
-            return "Unsupported parameter " + message + " for pwd.";
+    public String execute(CommandContext commandContext, String[] args) {
+        if (args.length > 0) {
+            return "Unsupported parameter " + Arrays.toString(args) + " for pwd.";
         }
-        String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
+        String service = commandContext.getRemote().attr(ChangeTelnet.SERVICE_KEY).get();
         StringBuilder buf = new StringBuilder();
         if (service == null || service.length() == 0) {
             buf.append('/');
@@ -42,5 +40,4 @@ public class CurrentTelnetHandler implements TelnetHandler {
         }
         return buf.toString();
     }
-
 }

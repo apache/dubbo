@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.qos.legacy.service.DemoServiceImpl;
-import org.apache.dubbo.remoting.Channel;
 import org.apache.dubbo.remoting.RemotingException;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 
+import io.netty.channel.Channel;
+import io.netty.util.DefaultAttributeMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,16 +40,18 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
 
-/**
- * SelectTelnetHandlerTest.java
- */
-public class SelectTelnetHandlerTest {
+public class SelectTelnetTest {
 
-    private static TelnetHandler select = new SelectTelnetHandler();
+    private static BaseCommand select = new SelectTelnet();
+
     private Channel mockChannel;
-    List<Method> methods;
+    private CommandContext mockCommandContext;
+
     private final ServiceRepository repository = ApplicationModel.getServiceRepository();
+    private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
+    private List<Method> methods;
 
     @BeforeEach
     public void setup() {
@@ -60,68 +64,82 @@ public class SelectTelnetHandlerTest {
         }
 
         DubboBootstrap.reset();
+        mockChannel = mock(Channel.class);
+        mockCommandContext = mock(CommandContext.class);
+        given(mockCommandContext.getRemote()).willReturn(mockChannel);
     }
 
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        reset(mockChannel, mockCommandContext);
     }
 
     @Test
     public void testInvokeWithoutMethodList() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(null);
+
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = select.telnet(mockChannel, "1");
+        String result = select.execute(mockCommandContext, new String[]{"1"});
         assertTrue(result.contains("Please use the invoke command first."));
+
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).remove();
     }
 
     @Test
     public void testInvokeWithIllegalMessage() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
-        given(mockChannel.getAttribute(InvokeTelnetHandler.INVOKE_METHOD_LIST_KEY)).willReturn(methods);
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(methods);
+
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = select.telnet(mockChannel, "index");
+        String result = select.execute(mockCommandContext, new String[]{"index"});
         assertTrue(result.contains("Illegal index ,please input select 1"));
 
-        result = select.telnet(mockChannel, "0");
+        result = select.execute(mockCommandContext, new String[]{"0"});
         assertTrue(result.contains("Illegal index ,please input select 1"));
 
-        result = select.telnet(mockChannel, "1000");
+        result = select.execute(mockCommandContext, new String[]{"1000"});
         assertTrue(result.contains("Illegal index ,please input select 1"));
+
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).remove();
     }
 
     @Test
     public void testInvokeWithNull() throws RemotingException {
-        mockChannel = mock(Channel.class);
-        given(mockChannel.getAttribute("telnet.service")).willReturn(DemoService.class.getName());
-        given(mockChannel.getAttribute(InvokeTelnetHandler.INVOKE_METHOD_LIST_KEY)).willReturn(methods);
-        given(mockChannel.getLocalAddress()).willReturn(NetUtils.toAddress("127.0.0.1:5555"));
-        given(mockChannel.getRemoteAddress()).willReturn(NetUtils.toAddress("127.0.0.1:20886"));
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).set(DemoService.class.getName());
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).set(methods);
+
+        given(mockChannel.attr(ChangeTelnet.SERVICE_KEY)).willReturn(defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY));
+        given(mockChannel.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY)).willReturn(defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY));
 
         registerProvider(DemoService.class.getName(), new DemoServiceImpl(), DemoService.class);
 
-        String result = select.telnet(mockChannel, null);
+        String result = select.execute(mockCommandContext, new String[0]);
         assertTrue(result.contains("Please input the index of the method you want to invoke"));
+
+        defaultAttributeMap.attr(ChangeTelnet.SERVICE_KEY).remove();
+        defaultAttributeMap.attr(InvokeTelnet.INVOKE_METHOD_LIST_KEY).remove();
     }
 
     private void registerProvider(String key, Object impl, Class<?> interfaceClass) {
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         repository.registerProvider(
-                key,
-                impl,
-                serviceDescriptor,
-                null,
-                null
+            key,
+            impl,
+            serviceDescriptor,
+            null,
+            null
         );
     }
 }

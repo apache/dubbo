@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.qos.legacy.channel.MockChannel;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.impl.channel.MockNettyChannel;
+import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,39 +41,45 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 
-public class CountTelnetHandlerTest {
+public class CountTelnetTest {
+    private static final BaseCommand count = new CountTelnet();
 
-    private TelnetHandler handler = new CountTelnetHandler();
-    private MockChannel mockChannel;
+    private MockNettyChannel mockChannel;
     private Invoker<DemoService> mockInvoker;
-    private URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo");
+
+    private CommandContext mockCommandContext;
+
     private CountDownLatch latch;
+    private final URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo");
 
     @BeforeEach
     public void setUp() {
         latch = new CountDownLatch(2);
-        mockChannel = new MockChannel(url, latch);
         mockInvoker = mock(Invoker.class);
+        mockCommandContext = mock(CommandContext.class);
+        mockChannel = new MockNettyChannel(url, latch);
+        given(mockCommandContext.getRemote()).willReturn(mockChannel);
         given(mockInvoker.getInterface()).willReturn(DemoService.class);
         given(mockInvoker.getUrl()).willReturn(url);
+
     }
 
     @AfterEach
     public void tearDown() {
         ProtocolUtils.closeAll();
         mockChannel.close();
-        reset(mockInvoker);
+        reset(mockInvoker, mockCommandContext);
     }
 
     @Test
     public void test() throws Exception {
         String methodName = "sayHello";
-        String message = "org.apache.dubbo.qos.legacy.service.DemoService sayHello 1";
+        String[] args = new String[]{"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
 
         DubboProtocol.getDubboProtocol().export(mockInvoker);
         RpcStatus.beginCount(url, methodName);
         RpcStatus.endCount(url, methodName, 10L, true);
-        handler.telnet(mockChannel, message);
+        count.execute(mockCommandContext, args);
         latch.await();
 
         StringBuilder sb = new StringBuilder();
@@ -79,7 +88,7 @@ public class CountTelnetHandlerTest {
         }
 
         assertThat(sb.toString(), containsString(buildTable(methodName,
-                10, 10, "1", "0", "0")));
+            10, 10, "1", "0", "0")));
     }
 
     public static String buildTable(String methodName, long averageElapsed,

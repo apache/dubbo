@@ -14,21 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.qos.legacy;
+package org.apache.dubbo.qos.command.impl;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.remoting.Channel;
-import org.apache.dubbo.remoting.telnet.TelnetHandler;
-import org.apache.dubbo.remoting.telnet.support.Help;
+import org.apache.dubbo.qos.command.BaseCommand;
+import org.apache.dubbo.qos.command.CommandContext;
+import org.apache.dubbo.qos.command.annotation.Cmd;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ProviderModel;
 
 import com.alibaba.fastjson.JSON;
+import io.netty.channel.Channel;
+import io.netty.util.AttributeKey;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -39,29 +40,26 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.utils.PojoUtils.realize;
 
-/**
- * InvokeTelnetHandler
- */
-@Activate
-@Help(parameter = "[service.]method(args) ", summary = "Invoke the service method.",
-        detail = "Invoke the service method.")
-public class InvokeTelnetHandler implements TelnetHandler {
+@Cmd(name = "invoke", summary = "Invoke the service method.", example = {
+    "invoke IHelloService.sayHello(\"xxxx\")"
+})
+public class InvokeTelnet implements BaseCommand {
+    public static final AttributeKey<String> INVOKE_MESSAGE_KEY = AttributeKey.valueOf("telnet.invoke.method.message");
+    public static final AttributeKey<List<Method>> INVOKE_METHOD_LIST_KEY = AttributeKey.valueOf("telnet.invoke.method.list");
+    public static final AttributeKey<ProviderModel> INVOKE_METHOD_PROVIDER_KEY = AttributeKey.valueOf("telnet.invoke.method.provider");
 
-    public static final String INVOKE_MESSAGE_KEY = "telnet.invoke.method.message";
-    public static final String INVOKE_METHOD_LIST_KEY = "telnet.invoke.method.list";
-    public static final String INVOKE_METHOD_PROVIDER_KEY = "telnet.invoke.method.provider";
 
     @Override
-    @SuppressWarnings("unchecked")
-    public String telnet(Channel channel, String message) {
-        if (StringUtils.isEmpty(message)) {
+    public String execute(CommandContext commandContext, String[] args) {
+        if (args == null || args.length == 0) {
             return "Please input method name, eg: \r\ninvoke xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
-                    "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
-                    "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
+                "invoke XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})\r\n" +
+                "invoke com.xxx.XxxService.xxxMethod(1234, \"abcd\", {\"prop\" : \"value\"})";
         }
+        Channel channel = commandContext.getRemote();
+        String service = channel.attr(ChangeTelnet.SERVICE_KEY).get();
 
-        String service = (String) channel.getAttribute(ChangeTelnetHandler.SERVICE_KEY);
-
+        String message = args[0];
         int i = message.indexOf("(");
 
         if (i < 0 || !message.endsWith(")")) {
@@ -69,7 +67,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
 
         String method = message.substring(0, i).trim();
-        String args = message.substring(i + 1, message.length() - 1).trim();
+        String param = message.substring(i + 1, message.length() - 1).trim();
         i = method.lastIndexOf(".");
         if (i >= 0) {
             service = method.substring(0, i).trim();
@@ -78,7 +76,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
         List<Object> list;
         try {
-            list = JSON.parseArray("[" + args + "]", Object.class);
+            list = JSON.parseArray("[" + param + "]", Object.class);
         } catch (Throwable t) {
             return "Invalid json argument, cause: " + t.getMessage();
         }
@@ -86,8 +84,8 @@ public class InvokeTelnetHandler implements TelnetHandler {
         Method invokeMethod = null;
         ProviderModel selectedProvider = null;
         if (isInvokedSelectCommand(channel)) {
-            selectedProvider = (ProviderModel) channel.getAttribute(INVOKE_METHOD_PROVIDER_KEY);
-            invokeMethod = (Method) channel.getAttribute(SelectTelnetHandler.SELECT_METHOD_KEY);
+            selectedProvider = channel.attr(INVOKE_METHOD_PROVIDER_KEY).get();
+            invokeMethod = channel.attr(SelectTelnet.SELECT_METHOD_KEY).get();
         } else {
             for (ProviderModel provider : ApplicationModel.allProviderModels()) {
                 if (!isServiceMatch(service, provider)) {
@@ -110,9 +108,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
                     if (matchMethods.size() == 1) {
                         invokeMethod = matchMethods.get(0);
                     } else { //exist overridden method
-                        channel.setAttribute(INVOKE_METHOD_PROVIDER_KEY, provider);
-                        channel.setAttribute(INVOKE_METHOD_LIST_KEY, matchMethods);
-                        channel.setAttribute(INVOKE_MESSAGE_KEY, message);
+                        channel.attr(INVOKE_METHOD_PROVIDER_KEY).set(provider);
+                        channel.attr(INVOKE_METHOD_LIST_KEY).set(matchMethods);
+                        channel.attr(INVOKE_MESSAGE_KEY).set(message);
                         printSelectMessage(buf, matchMethods);
                         return buf.toString();
                     }
@@ -135,7 +133,7 @@ public class InvokeTelnetHandler implements TelnetHandler {
         }
         try {
             Object[] array = realize(list.toArray(), invokeMethod.getParameterTypes(),
-                    invokeMethod.getGenericParameterTypes());
+                invokeMethod.getGenericParameterTypes());
             long start = System.currentTimeMillis();
             AppResponse result = new AppResponse();
             try {
@@ -159,9 +157,9 @@ public class InvokeTelnetHandler implements TelnetHandler {
 
     private boolean isServiceMatch(String service, ProviderModel provider) {
         return provider.getServiceKey().equalsIgnoreCase(service)
-                || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
-                || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
-                || StringUtils.isEmpty(service);
+            || provider.getServiceInterfaceClass().getSimpleName().equalsIgnoreCase(service)
+            || provider.getServiceInterfaceClass().getName().equalsIgnoreCase(service)
+            || StringUtils.isEmpty(service);
     }
 
     private List<Method> findSameSignatureMethod(Set<MethodDescriptor> methods, String lookupMethodName, List<Object> args) {
@@ -257,8 +255,8 @@ public class InvokeTelnetHandler implements TelnetHandler {
     }
 
     private boolean isInvokedSelectCommand(Channel channel) {
-        if (channel.hasAttribute(SelectTelnetHandler.SELECT_KEY)) {
-            channel.removeAttribute(SelectTelnetHandler.SELECT_KEY);
+        if (channel.attr(SelectTelnet.SELECT_KEY).get() != null) {
+            channel.attr(SelectTelnet.SELECT_KEY).remove();
             return true;
         }
         return false;

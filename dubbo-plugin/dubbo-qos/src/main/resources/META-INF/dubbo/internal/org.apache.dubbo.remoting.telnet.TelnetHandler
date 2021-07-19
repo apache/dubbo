@@ -1,9 +1,1 @@
-ls=org.apache.dubbo.qos.legacy.ListTelnetHandler
-ps=org.apache.dubbo.qos.legacy.PortTelnetHandler
-cd=org.apache.dubbo.qos.legacy.ChangeTelnetHandler
-pwd=org.apache.dubbo.qos.legacy.CurrentTelnetHandler
-invoke=org.apache.dubbo.qos.legacy.InvokeTelnetHandler
 trace=org.apache.dubbo.qos.legacy.TraceTelnetHandler
-count=org.apache.dubbo.qos.legacy.CountTelnetHandler
-select=org.apache.dubbo.qos.legacy.SelectTelnetHandler
-shutdown=org.apache.dubbo.qos.legacy.ShutdownTelnetHandler
