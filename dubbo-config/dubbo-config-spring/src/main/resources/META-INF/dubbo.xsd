@@ -1029,9 +1029,14 @@
                         <xsd:documentation><![CDATA[ The Url merge processor. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="async-thread-num" type="xsd:integer">
+                <xsd:attribute name="refer-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous export-refer pool size. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Thread num for asynchronous refer pool size. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="refer-background" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Whether refer should run in background or not, default false. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -1425,12 +1430,16 @@
                         <xsd:documentation><![CDATA[ Is default. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="async-thread-num" type="xsd:integer">
+                <xsd:attribute name="export-thread-num" type="xsd:integer">
                     <xsd:annotation>
-                        <xsd:documentation><![CDATA[ Thread num for asynchronous export-refer pool size. ]]></xsd:documentation>
+                        <xsd:documentation><![CDATA[ Thread num for asynchronous export pool size. ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-
+                <xsd:attribute name="export-background" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[ Whether export should run in background or not, default false. ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
                 <xsd:anyAttribute namespace="##other" processContents="lax"/>
             </xsd:extension>
         </xsd:complexContent>

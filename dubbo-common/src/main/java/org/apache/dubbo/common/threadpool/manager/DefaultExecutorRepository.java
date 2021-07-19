@@ -39,10 +39,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER_SIDE;
-import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_ASYNC_THREAD_NUM;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_EXPORT_THREAD_NUM;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_THREAD_NUM;
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -60,7 +60,9 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 
     private Ring<ScheduledExecutorService> scheduledExecutors = new Ring<>();
 
-    private volatile ScheduledExecutorService exportReferExecutor;
+    private volatile ExecutorService serviceExportExecutor;
+
+    private volatile ExecutorService serviceReferExecutor;
 
     private ScheduledExecutorService reconnectScheduledExecutor;
 
@@ -195,51 +197,89 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     @Override
-    public ScheduledExecutorService getExportReferExecutor() {
-        if (exportReferExecutor == null) {
+    public ExecutorService getServiceExportExecutor() {
+        if (serviceExportExecutor == null) {
             synchronized (LOCK) {
-                if (exportReferExecutor == null) {
-                    int coreSize = getExportReferThreadNum();
-                    exportReferExecutor = Executors.newScheduledThreadPool(coreSize,
-                        new NamedThreadFactory("Dubbo-export-refer", true));
+                if (serviceExportExecutor == null) {
+                    int coreSize = getExportThreadNum();
+                    serviceExportExecutor = Executors.newFixedThreadPool(coreSize,
+                        new NamedThreadFactory("Dubbo-service-export", true));
                 }
             }
         }
 
-        return exportReferExecutor;
+        return serviceExportExecutor;
     }
 
-    public void shutdownExportReferExecutor() {
+    @Override
+    public void shutdownServiceExportExecutor() {
         synchronized (LOCK) {
-            if (exportReferExecutor != null && !exportReferExecutor.isShutdown()) {
-                exportReferExecutor.shutdown();
+            if (serviceExportExecutor != null && !serviceExportExecutor.isShutdown()) {
+                serviceExportExecutor.shutdown();
             }
 
-            exportReferExecutor = null;
+            serviceExportExecutor = null;
         }
     }
 
-    private Integer getExportReferThreadNum() {
-        Stream<Integer> provider = getConfigManager().getProviders()
+    private Integer getExportThreadNum() {
+        List<Integer> threadNum = getConfigManager().getProviders()
             .stream()
-            .map(ProviderConfig::getAsyncThreadNum);
-
-        Stream<Integer> consumer = getConfigManager().getConsumers()
-            .stream()
-            .map(ConsumerConfig::getAsyncThreadNum);
-
-        List<Integer> threadNums = Stream.concat(provider, consumer)
+            .map(ProviderConfig::getExportThreadNum)
             .filter(k -> k != null && k > 0)
             .collect(Collectors.toList());
 
-        if (CollectionUtils.isEmpty(threadNums)) {
-            logger.info("Cannot get config `async-thread-num` for export-refer thread, using default: " + DEFAULT_ASYNC_THREAD_NUM);
-            return DEFAULT_ASYNC_THREAD_NUM;
-        } else if (threadNums.size() > 1) {
-            logger.info("Detect multiple config `async-thread-num` for export-refer thread, using: " + threadNums.get(0));
+        if (CollectionUtils.isEmpty(threadNum)) {
+            logger.info("Cannot get config `export-thread-num` for service export thread, using default: " + DEFAULT_EXPORT_THREAD_NUM);
+            return DEFAULT_EXPORT_THREAD_NUM;
+        } else if (threadNum.size() > 1) {
+            logger.info("Detect multiple config `export-thread-num` for service export thread, using: " + threadNum.get(0));
         }
 
-        return threadNums.get(0);
+        return threadNum.get(0);
+    }
+
+    @Override
+    public ExecutorService getServiceReferExecutor() {
+        if (serviceReferExecutor == null) {
+            synchronized (LOCK) {
+                if (serviceReferExecutor == null) {
+                    int coreSize = getReferThreadNum();
+                    serviceReferExecutor = Executors.newFixedThreadPool(coreSize,
+                        new NamedThreadFactory("Dubbo-service-refer", true));
+                }
+            }
+        }
+
+        return serviceReferExecutor;
+    }
+
+    @Override
+    public void shutdownServiceReferExecutor() {
+        synchronized (LOCK) {
+            if (serviceReferExecutor != null && !serviceReferExecutor.isShutdown()) {
+                serviceReferExecutor.shutdown();
+            }
+
+            serviceReferExecutor = null;
+        }
+    }
+
+    private Integer getReferThreadNum() {
+        List<Integer> threadNum = getConfigManager().getConsumers()
+            .stream()
+            .map(ConsumerConfig::getReferThreadNum)
+            .filter(k -> k != null && k > 0)
+            .collect(Collectors.toList());
+
+        if (CollectionUtils.isEmpty(threadNum)) {
+            logger.info("Cannot get config `refer-thread-num` for service refer thread, using default: " + DEFAULT_REFER_THREAD_NUM);
+            return DEFAULT_REFER_THREAD_NUM;
+        } else if (threadNum.size() > 1) {
+            logger.info("Detect multiple config `refer-thread-num` for service refer thread, using: " + threadNum.get(0));
+        }
+
+        return threadNum.get(0);
     }
 
     @Override
@@ -277,7 +317,8 @@ public class DefaultExecutorRepository implements ExecutorRepository {
 //        registryNotificationExecutor.shutdown();
         metadataRetryExecutor.shutdown();
 
-        shutdownExportReferExecutor();
+        shutdownServiceExportExecutor();
+        shutdownServiceReferExecutor();
 
         data.values().forEach(executors -> {
             if (executors != null) {
