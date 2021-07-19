@@ -68,7 +68,6 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
-        super.subscribe(url);
         if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             enableConfigurationListen = true;
             CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
@@ -76,6 +75,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         } else {
             enableConfigurationListen = false;
         }
+        super.subscribe(url);
     }
 
     @Override
@@ -313,6 +313,17 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         if (!newURL.getInstance().equals(oldURL.getInstance())) {
             return true;
+        }
+
+        if (oldURL instanceof OverrideInstanceAddressURL || newURL instanceof OverrideInstanceAddressURL) {
+            if(!(oldURL instanceof OverrideInstanceAddressURL && newURL instanceof OverrideInstanceAddressURL)) {
+                // sub-class changed
+                return true;
+            } else {
+                if (!((OverrideInstanceAddressURL) oldURL).getOverrideParams().equals(((OverrideInstanceAddressURL) newURL).getOverrideParams())) {
+                    return true;
+                }
+            }
         }
 
         return !oldURL.getMetadataInfo().getServiceInfo(getConsumerUrl().getProtocolServiceKey())
