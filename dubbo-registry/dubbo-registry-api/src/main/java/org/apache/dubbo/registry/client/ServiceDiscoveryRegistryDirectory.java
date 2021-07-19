@@ -283,7 +283,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 instanceAddressURL = overrideWithConfigurator(instanceAddressURL);
             }
 
-            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.remove(instanceAddressURL.getAddress());
+            Invoker<T> invoker = urlInvokerMap == null ? null : urlInvokerMap.get(instanceAddressURL.getAddress());
             if (invoker == null || urlChanged(invoker, instanceAddressURL)) { // Not in the cache, refer again
                 try {
                     boolean enabled = true;
@@ -303,6 +303,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
                 }
             } else {
                 newUrlInvokerMap.put(instanceAddressURL.getAddress(), invoker);
+                urlInvokerMap.remove(instanceAddressURL.getAddress(), invoker);
             }
         }
         return newUrlInvokerMap;
