@@ -662,10 +662,10 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         }
 
         String key = getId(config);
-            if (key == null) {
-                // generate key for non-default config compatible with API usages
-                key = generateConfigId(config);
-            }
+        if (key == null) {
+            // generate key for non-default config compatible with API usages
+            key = generateConfigId(config);
+        }
 
         C existedConfig = configsMap.putIfAbsent(key, config);
         if (isEquals(existedConfig, config)) {
