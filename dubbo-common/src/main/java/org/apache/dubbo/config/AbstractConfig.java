@@ -561,6 +561,9 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private void invokeSetParameters(Map<String, String> values) {
+        if (CollectionUtils.isEmptyMap(values)) {
+            return;
+        }
         Map<String, String> map = invokeGetParameters(getClass(), this);
         map = map == null ? new HashMap<>() : map;
         map.putAll(values);
