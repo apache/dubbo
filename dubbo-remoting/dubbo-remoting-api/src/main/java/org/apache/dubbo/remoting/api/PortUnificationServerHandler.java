@@ -78,11 +78,10 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
                 case RECOGNIZED:
                     protocol.configServerPipeline(ctx.pipeline(), sslCtx);
                     ctx.pipeline().remove(this);
-                    break;
                 case NEED_MORE_DATA:
                     return;
                 default:
-                    break;
+                    return;
             }
         }
         // Unknown protocol; discard everything and close the connection.
