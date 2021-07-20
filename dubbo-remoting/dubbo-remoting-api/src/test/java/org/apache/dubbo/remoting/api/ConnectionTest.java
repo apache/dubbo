@@ -18,6 +18,7 @@ package org.apache.dubbo.remoting.api;
 
 import org.apache.dubbo.common.URL;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -54,5 +55,20 @@ class ConnectionTest {
         connection.release(2);
         latch.await();
         Assertions.assertEquals(0, latch.getCount());
+    }
+
+    @Test
+    public void connectSyncTest() throws Exception {
+        int port = NetUtils.getAvailablePort();
+        URL url = URL.valueOf("empty://127.0.0.1:" + port + "?foo=bar");
+        PortUnificationServer server = new PortUnificationServer(url);
+        server.bind();
+
+        Connection connection = new Connection(url);
+        connection.connectSync();
+        Assertions.assertTrue(connection.isAvailable());
+
+        connection.close();
+        Assertions.assertFalse(connection.isAvailable());
     }
 }

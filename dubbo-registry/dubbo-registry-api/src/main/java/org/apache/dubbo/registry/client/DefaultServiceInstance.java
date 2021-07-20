@@ -275,6 +275,9 @@ public class DefaultServiceInstance implements ServiceInstance {
         Integer port;
         String protocol;
 
+        public Endpoint() {
+        }
+
         public Endpoint(Integer port, String protocol) {
             this.port = port;
             this.protocol = protocol;

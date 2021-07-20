@@ -57,13 +57,21 @@ public interface ExecutorRepository {
 
     ExecutorService nextExecutorExecutor();
 
-    ScheduledExecutorService getExportReferExecutor();
+    ExecutorService getServiceExportExecutor();
 
     /**
      * The executor only used in bootstrap currently, we should call this method to release the resource
-     * after the async export-refer is done.
+     * after the async export is done.
      */
-    void shutdownExportReferExecutor();
+    void shutdownServiceExportExecutor();
+
+    ExecutorService getServiceReferExecutor();
+
+    /**
+     * The executor only used in bootstrap currently, we should call this method to release the resource
+     * after the async refer is done.
+     */
+    void shutdownServiceReferExecutor();
 
     ScheduledExecutorService getServiceDiscoveryAddressNotificationExecutor();
 

@@ -176,7 +176,7 @@ public interface I{{serviceName}} {
 {{#javaDoc}}
     {{{javaDoc}}}
 {{/javaDoc}}
-public static abstract class {{serviceName}}ImplBase implements io.grpc.BindableService, I{{serviceName}} {
+public static abstract class {{serviceName}}ImplBase implements I{{serviceName}}, io.grpc.BindableService {
 
 private I{{serviceName}} proxiedImpl;
 

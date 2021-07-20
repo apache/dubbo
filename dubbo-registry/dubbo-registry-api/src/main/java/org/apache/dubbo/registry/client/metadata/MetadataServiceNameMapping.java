@@ -55,6 +55,11 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             String registryCluster = getRegistryCluster(url);
             MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
 
+            if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
+                // MetadataReport support directly register service-app mapping
+                return;
+            }
+
             int currentRetryTimes = 1;
             boolean success;
             String newConfigContent = getName();
@@ -68,7 +73,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
                     }
                     newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
                 }
-                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getStat());
+                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
             } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
         });
     }

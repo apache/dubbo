@@ -17,15 +17,21 @@
 package org.apache.dubbo.config.spring.context;
 
 import org.apache.dubbo.config.DubboShutdownHook;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 
-import com.alibaba.spring.context.OnceApplicationContextEventListener;
+import org.apache.dubbo.config.spring.context.event.DubboAnnotationInitedEvent;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.Ordered;
+
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 /**
  * The {@link ApplicationListener} for {@link DubboBootstrap}'s lifecycle when the {@link ContextRefreshedEvent}
@@ -33,7 +39,7 @@ import org.springframework.core.Ordered;
  *
  * @since 2.7.5
  */
-public class DubboBootstrapApplicationListener extends OnceApplicationContextEventListener implements Ordered {
+public class DubboBootstrapApplicationListener implements ApplicationListener, ApplicationContextAware, Ordered {
 
     /**
      * The bean name of {@link DubboBootstrapApplicationListener}
@@ -43,19 +49,58 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     public static final String BEAN_NAME = "dubboBootstrapApplicationListener";
 
     private final DubboBootstrap dubboBootstrap;
+    private ApplicationContext applicationContext;
 
     public DubboBootstrapApplicationListener() {
-        this.dubboBootstrap = DubboBootstrap.getInstance();
+        this.dubboBootstrap = initBootstrap();
     }
 
     public DubboBootstrapApplicationListener(ApplicationContext applicationContext) {
-        super(applicationContext);
-        this.dubboBootstrap = DubboBootstrap.getInstance();
+        this.dubboBootstrap = initBootstrap();
         DubboBootstrapStartStopListenerSpringAdapter.applicationContext = applicationContext;
     }
 
+    private DubboBootstrap initBootstrap() {
+        DubboBootstrap dubboBootstrap = DubboBootstrap.getInstance();
+        if (dubboBootstrap.getTakeoverMode() != BootstrapTakeoverMode.MANUAL) {
+            dubboBootstrap.setTakeoverMode(BootstrapTakeoverMode.SPRING);
+        }
+        return dubboBootstrap;
+    }
+
     @Override
-    public void onApplicationContextEvent(ApplicationContextEvent event) {
+    public void onApplicationEvent(ApplicationEvent event) {
+        if (isOriginalEventSource(event)) {
+            if (event instanceof DubboAnnotationInitedEvent) {
+                // This event will be notified at AbstractApplicationContext.registerListeners(),
+                // init dubbo config beans before spring singleton beans
+                applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
+
+                // All infrastructure config beans are loaded, initialize dubbo here
+                DubboBootstrap.getInstance().initialize();
+            } else if (event instanceof ApplicationContextEvent) {
+                this.onApplicationContextEvent((ApplicationContextEvent) event);
+            }
+        }
+    }
+
+    /**
+     * Is original {@link ApplicationContext} as the event source
+     * @param event {@link ApplicationEvent}
+     * @return if original, return <code>true</code>, or <code>false</code>
+     */
+    private boolean isOriginalEventSource(ApplicationEvent event) {
+
+        boolean originalEventSource = nullSafeEquals(getApplicationContext(), event.getSource());
+//        if (!originalEventSource) {
+//            if (log.isDebugEnabled()) {
+//                log.debug("The source of event[" + event.getSource() + "] is not original!");
+//            }
+//        }
+        return originalEventSource;
+    }
+
+    private void onApplicationContextEvent(ApplicationContextEvent event) {
         if (DubboBootstrapStartStopListenerSpringAdapter.applicationContext == null) {
             DubboBootstrapStartStopListenerSpringAdapter.applicationContext = event.getApplicationContext();
         }
@@ -67,15 +112,29 @@ public class DubboBootstrapApplicationListener extends OnceApplicationContextEve
     }
 
     private void onContextRefreshedEvent(ContextRefreshedEvent event) {
-        dubboBootstrap.start();
+        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            dubboBootstrap.start();
+        }
     }
 
     private void onContextClosedEvent(ContextClosedEvent event) {
-        DubboShutdownHook.getDubboShutdownHook().run();
+        if (dubboBootstrap.getTakeoverMode() == BootstrapTakeoverMode.SPRING) {
+            // will call dubboBootstrap.stop() through shutdown callback.
+            DubboShutdownHook.getDubboShutdownHook().run();
+        }
     }
 
     @Override
     public int getOrder() {
         return LOWEST_PRECEDENCE;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 }

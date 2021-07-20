@@ -21,6 +21,7 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.demo.GreeterWrapperService;
 import org.apache.dubbo.demo.GreeterWrapperServiceImpl;
 
@@ -31,11 +32,13 @@ public class ApiWrapperProvider {
         ServiceConfig<GreeterWrapperService> serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(GreeterWrapperService.class);
         serviceConfig.setRef(new GreeterWrapperServiceImpl());
-        serviceConfig.setProtocol(new ProtocolConfig(CommonConstants.TRIPLE, 50051));
-        serviceConfig.setApplication(new ApplicationConfig("dubbo-demo-triple-api-wrapper-provider"));
-        serviceConfig.setRegistry(new RegistryConfig("zookeeper://127.0.0.1:2181"));
-        serviceConfig.export();
-        System.out.println("dubbo service started");
-        System.in.read();
+
+        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
+        bootstrap.application(new ApplicationConfig("dubbo-demo-triple-api-wrapper-provider"))
+                .registry(new RegistryConfig("zookeeper://127.0.0.1:2181"))
+                .protocol(new ProtocolConfig(CommonConstants.TRIPLE, 50051))
+                .service(serviceConfig)
+                .start()
+                .await();
     }
 }

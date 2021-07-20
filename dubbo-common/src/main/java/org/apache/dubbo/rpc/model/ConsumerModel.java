@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
@@ -146,7 +147,12 @@ public class ConsumerModel {
     public void initMethodModels() {
         Class[] interfaceList = null;
         if (proxyObject == null) {
-            interfaceList = new Class[]{referenceConfig.getActualInterface()};
+            Class<?> serviceInterfaceClass = referenceConfig.getServiceInterfaceClass();
+            if (serviceInterfaceClass != null) {
+                interfaceList = new Class[]{serviceInterfaceClass};
+            } else {
+                interfaceList = new Class[0];
+            }
         } else {
             interfaceList = proxyObject.getClass().getInterfaces();
         }
@@ -158,7 +164,8 @@ public class ConsumerModel {
     }
 
     public ClassLoader getClassLoader() {
-        return serviceMetadata.getServiceType().getClassLoader();
+        Class<?> serviceType = serviceMetadata.getServiceType();
+        return serviceType != null ? serviceType.getClassLoader() : ClassUtils.getClassLoader();
     }
 
     /**

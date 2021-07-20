@@ -42,22 +42,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
-    protected int priority = -500;
-    protected boolean force = false;
-    protected URL url;
+    private int priority = -500;
+    private boolean force = false;
+    private URL url;
 
-    private VsDestinationGroup vsDestinationGroup;
+    private volatile VsDestinationGroup vsDestinationGroup;
 
     private Map<String, String> sourcesLabels = new HashMap<>();
 
-    protected List<Invoker<?>> invokerList = new ArrayList<>();
+    private volatile List<Invoker<?>> invokerList = new ArrayList<>();
 
-    Map<String, List<Invoker<?>>> subsetMap;
+    private volatile Map<String, List<Invoker<?>>> subsetMap;
 
     private String remoteAppName;
 
@@ -79,9 +79,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         if (routeDestination == null) {
             return invokers;
         } else {
-            Random random = new Random();
-            int index = random.nextInt(routeDestination.size());
-            DubboRouteDestination dubboRouteDestination = routeDestination.get(index);
+            DubboRouteDestination dubboRouteDestination = routeDestination.get(ThreadLocalRandom.current().nextInt(routeDestination.size()));
 
             DubboDestination dubboDestination = dubboRouteDestination.getDestination();
 
@@ -320,6 +318,10 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         return true;
     }
 
+    @Override
+    public void stop() {
+        MeshRuleManager.unregister(this);
+    }
 
     /**
      * just for test

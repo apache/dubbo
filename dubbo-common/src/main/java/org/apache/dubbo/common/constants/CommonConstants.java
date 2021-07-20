@@ -189,6 +189,8 @@ public interface CommonConstants {
 
     String FILE_KEY = "file";
 
+    String FILTER_KEY = "filter";
+
     String DUMP_DIRECTORY = "dump.directory";
 
     String CLASSIFIER_KEY = "classifier";
@@ -420,12 +422,22 @@ public interface CommonConstants {
 
     String REFER_ASYNC_KEY = "refer-async";
 
-    String ASYNC_THREAD_NUM_KEY = "async-thread-num";
+    String EXPORT_BACKGROUND_KEY = "export-background";
 
-    int DEFAULT_ASYNC_THREAD_NUM = 10;
+    String REFER_BACKGROUND_KEY = "refer-background";
+
+    String EXPORT_THREAD_NUM_KEY = "export-thread-num";
+
+    String REFER_THREAD_NUM_KEY = "refer-thread-num";
+
+    int DEFAULT_EXPORT_THREAD_NUM = 10;
+
+    int DEFAULT_REFER_THREAD_NUM = 10;
 
     /**
      * Url merge processor key
      */
     String URL_MERGE_PROCESSOR_KEY = "url-merge-processor";
+
+    String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
 }

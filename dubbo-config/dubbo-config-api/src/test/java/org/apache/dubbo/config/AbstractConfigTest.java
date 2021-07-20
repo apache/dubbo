@@ -23,6 +23,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -42,6 +43,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -210,7 +212,7 @@ public class AbstractConfigTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
-                builder.append("a");
+                builder.append('a');
             }
             ConfigValidationUtils.checkLength("hello", builder.toString());
         });
@@ -221,7 +223,7 @@ public class AbstractConfigTest {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
-                builder.append("a");
+                builder.append('a');
             }
             ConfigValidationUtils.checkPathLength("hello", builder.toString());
         });
@@ -229,7 +231,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkName() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> ConfigValidationUtils.checkName("hello", "world%"));
+        Assertions.assertDoesNotThrow(() -> ConfigValidationUtils.checkName("hello", "world%"));
     }
 
     @Test
@@ -279,9 +281,9 @@ public class AbstractConfigTest {
 
         try {
             ConfigValidationUtils.checkMethodName("hello", "0a");
-            fail("the value should be illegal.");
         } catch (Exception e) {
             // ignore
+            fail("the value should be legal.");
         }
     }
 
@@ -497,6 +499,19 @@ public class AbstractConfigTest {
 
             Assertions.assertEquals("value6", overrideConfig.getParameters().get("key3"));
             Assertions.assertEquals("value4", overrideConfig.getParameters().get("key4"));
+        } finally {
+            SysProps.clear();
+            ApplicationModel.getEnvironment().destroy();
+        }
+    }
+
+    @Test
+    public void testRefreshParametersWithAttribute() {
+        try {
+            OverrideConfig overrideConfig = new OverrideConfig();
+            SysProps.setProperty("dubbo.override.parameters.key00", "value00");
+            overrideConfig.refresh();
+            assertEquals("value00", overrideConfig.getParameters().get("key00"));
         } finally {
             SysProps.clear();
             ApplicationModel.getEnvironment().destroy();

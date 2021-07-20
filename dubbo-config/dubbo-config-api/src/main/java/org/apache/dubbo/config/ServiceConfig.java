@@ -30,12 +30,13 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
+import org.apache.dubbo.config.bootstrap.BootstrapTakeoverMode;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.invoker.DelegateProviderMetaDataInvoker;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
-import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.MetadataService;
+import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
@@ -64,6 +65,7 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
@@ -77,8 +79,10 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROVIDER_SIDE;
 import static org.apache.dubbo.common.constants.CommonConstants.REGISTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SERVICE_NAME_MAPPING_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.DYNAMIC_KEY;
+import static org.apache.dubbo.common.constants.RegistryConstants.SERVICE_REGISTRY_PROTOCOL;
 import static org.apache.dubbo.common.utils.NetUtils.getAvailablePort;
 import static org.apache.dubbo.common.utils.NetUtils.getLocalHost;
 import static org.apache.dubbo.common.utils.NetUtils.isInvalidLocalHost;
@@ -133,10 +137,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private DubboBootstrap bootstrap;
 
+    private transient volatile AtomicBoolean initialized = new AtomicBoolean(false);
+
     /**
      * The exported services
      */
     private final List<Exporter<?>> exporters = new ArrayList<Exporter<?>>();
+
+    private List<ServiceListener> serviceListeners = new ArrayList<>();
 
     public ServiceConfig() {
     }
@@ -178,54 +186,69 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             exporters.clear();
         }
         unexported = true;
+        onUnexpoted();
     }
 
-    @Override
-    public synchronized void export() {
-        if (!shouldExport() || exported) {
-            return;
-        }
+    public void init() {
+        if (this.initialized.compareAndSet(false, true)) {
+            if (this.bootstrap == null) {
+                this.bootstrap = DubboBootstrap.getInstance();
+                this.bootstrap.initialize();
+            }
+            this.bootstrap.service(this);
 
-        // Using DubboBootstrap API will associate bootstrap when registering service.
-        // Loading by Spring context will associate bootstrap in afterPropertiesSet() method.
-        // Initializing bootstrap here only for compatible with old API usages.
-        if (bootstrap == null) {
-            bootstrap = DubboBootstrap.getInstance();
-            bootstrap.initialize();
-            bootstrap.service(this);
-        }
+            // load ServiceListeners from extension
+            ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
+            this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
 
-        // check bootstrap state
-        if (!bootstrap.isInitialized()) {
-            throw new IllegalStateException("DubboBootstrap is not initialized");
-        }
-
-        if (!this.isRefreshed()) {
-            this.refresh();
+            this.checkAndUpdateSubConfigs();
         }
 
         initServiceMetadata(provider);
         serviceMetadata.setServiceType(getInterfaceClass());
         serviceMetadata.setTarget(getRef());
         serviceMetadata.generateServiceKey();
+    }
 
-        if (!shouldExport()) {
-            return;
-        }
+    public synchronized void export() {
+        if (this.shouldExport() && !this.exported) {
+            this.init();
 
-        if (shouldDelay()) {
-            DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
-        } else {
-            doExport();
+            // check bootstrap state
+            if (!bootstrap.isInitialized()) {
+                throw new IllegalStateException("DubboBootstrap is not initialized");
+            }
+
+            if (!this.isRefreshed()) {
+                this.refresh();
+            }
+
+            if (!shouldExport()) {
+                return;
+            }
+
+            if (shouldDelay()) {
+                DELAY_EXPORT_EXECUTOR.schedule(this::doExport, getDelay(), TimeUnit.MILLISECONDS);
+            } else {
+                doExport();
+            }
+
+            if (this.bootstrap.getTakeoverMode() == BootstrapTakeoverMode.AUTO) {
+                this.bootstrap.start();
+            }
         }
     }
 
-    public void exported() {
+    protected void exported() {
+        exported = true;
         List<URL> exportedURLs = this.getExportedUrls();
         exportedURLs.forEach(url -> {
-            ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
-            serviceNameMapping.map(url);
+            if (url.getParameters().containsKey(SERVICE_NAME_MAPPING_KEY)) {
+                ServiceNameMapping serviceNameMapping = ServiceNameMapping.getDefaultExtension();
+                serviceNameMapping.map(url);
+            }
         });
+        onExported();
     }
 
     private void checkAndUpdateSubConfigs() {
@@ -312,7 +335,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (exported) {
             return;
         }
-        exported = true;
 
         if (StringUtils.isEmpty(path)) {
             path = interfaceName;
@@ -345,15 +367,24 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+
     private void doExportUrlsFor1Protocol(ProtocolConfig protocolConfig, List<URL> registryURLs) {
-        String name = protocolConfig.getName();
-        if (StringUtils.isEmpty(name)) {
-            name = DUBBO;
-        }
+        Map<String, String> map = buildAttributes(protocolConfig);
+
+        //init serviceMetadata attachments
+        serviceMetadata.getAttachments().putAll(map);
+
+        URL url = buildUrl(protocolConfig, registryURLs, map);
+
+        exportUrl(url, registryURLs);
+    }
+
+    private Map<String, String> buildAttributes(ProtocolConfig protocolConfig) {
 
         Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, PROVIDER_SIDE);
 
+        // append params with basic configs,
         ServiceConfig.appendRuntimeParameters(map);
         AbstractConfig.appendParameters(map, getMetrics());
         AbstractConfig.appendParameters(map, getApplication());
@@ -367,62 +398,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
         }
-        if (CollectionUtils.isNotEmpty(getMethods())) {
-            //TODO Improve method config processing
-            for (MethodConfig method : getMethods()) {
-                AbstractConfig.appendParameters(map, method, method.getName());
-                String retryKey = method.getName() + ".retry";
-                if (map.containsKey(retryKey)) {
-                    String retryValue = map.remove(retryKey);
-                    if ("false".equals(retryValue)) {
-                        map.put(method.getName() + ".retries", "0");
-                    }
-                }
-                List<ArgumentConfig> arguments = method.getArguments();
-                if (CollectionUtils.isNotEmpty(arguments)) {
-                    for (ArgumentConfig argument : arguments) {
-                        // convert argument type
-                        if (argument.getType() != null && argument.getType().length() > 0) {
-                            Method[] methods = interfaceClass.getMethods();
-                            // visit all methods
-                            if (methods.length > 0) {
-                                for (int i = 0; i < methods.length; i++) {
-                                    String methodName = methods[i].getName();
-                                    // target the method, and get its signature
-                                    if (methodName.equals(method.getName())) {
-                                        Class<?>[] argtypes = methods[i].getParameterTypes();
-                                        // one callback in the method
-                                        if (argument.getIndex() != -1) {
-                                            if (argtypes[argument.getIndex()].getName().equals(argument.getType())) {
-                                                AbstractConfig.appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                                            } else {
-                                                throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
-                                            }
-                                        } else {
-                                            // multiple callbacks in the method
-                                            for (int j = 0; j < argtypes.length; j++) {
-                                                Class<?> argclazz = argtypes[j];
-                                                if (argclazz.getName().equals(argument.getType())) {
-                                                    AbstractConfig.appendParameters(map, argument, method.getName() + "." + j);
-                                                    if (argument.getIndex() != -1 && argument.getIndex() != j) {
-                                                        throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            }
-                        } else if (argument.getIndex() != -1) {
-                            AbstractConfig.appendParameters(map, argument, method.getName() + "." + argument.getIndex());
-                        } else {
-                            throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
-                        }
 
-                    }
-                }
-            } // end of methods for
+        // append params with method configs,
+        if (CollectionUtils.isNotEmpty(getMethods())) {
+            getMethods().forEach(method -> appendParametersWithMethod(method, map));
         }
 
         if (ProtocolUtils.isGeneric(generic)) {
@@ -457,13 +436,90 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 map.put(TOKEN_KEY, token);
             }
         }
-        //init serviceMetadata attachments
-        serviceMetadata.getAttachments().putAll(map);
+
+        return map;
+    }
+
+    private void appendParametersWithMethod(MethodConfig method, Map<String, String> params) {
+        AbstractConfig.appendParameters(params, method, method.getName());
+
+        String retryKey = method.getName() + ".retry";
+        if (params.containsKey(retryKey)) {
+            String retryValue = params.remove(retryKey);
+            if ("false".equals(retryValue)) {
+                params.put(method.getName() + ".retries", "0");
+            }
+        }
+
+        List<ArgumentConfig> arguments = method.getArguments();
+        if (CollectionUtils.isNotEmpty(arguments)) {
+            Method matchedMethod = findMatchedMethod(method);
+            if (matchedMethod != null) {
+                arguments.forEach(argument -> appendArgumentConfig(argument, matchedMethod, params));
+            }
+        }
+    }
+
+    private Method findMatchedMethod(MethodConfig methodConfig) {
+        for (Method method : interfaceClass.getMethods()) {
+            if (method.getName().equals(methodConfig.getName())) {
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private void appendArgumentConfig(ArgumentConfig argument, Method method, Map<String, String> params) {
+        if (StringUtils.isNotEmpty(argument.getType())) {
+            Integer index = findArgumentIndexIndexWithGivenType(argument, method);
+            AbstractConfig.appendParameters(params, argument, method.getName() + "." + index);
+        } else if (hasIndex(argument)) {
+            AbstractConfig.appendParameters(params, argument, method.getName() + "." + argument.getIndex());
+        } else {
+            throw new IllegalArgumentException("Argument config must set index or type attribute.eg: <dubbo:argument index='0' .../> or <dubbo:argument type=xxx .../>");
+        }
+    }
+
+    private boolean hasIndex(ArgumentConfig argument) {
+        return argument.getIndex() != -1;
+    }
+
+    private boolean isTypeMatched(String type, Integer index, Class<?>[] argtypes) {
+        return index != null && index >= 0 && index < argtypes.length && argtypes[index].getName().equals(type);
+    }
+
+    private Integer findArgumentIndexIndexWithGivenType(ArgumentConfig argument, Method method) {
+        Class<?>[] argtypes = method.getParameterTypes();
+        // one callback in the method
+        if (hasIndex(argument)) {
+            Integer index = argument.getIndex();
+            String type = argument.getType();
+            if (isTypeMatched(type, index, argtypes)) {
+                return index;
+            } else {
+                throw new IllegalArgumentException("Argument config error : the index attribute and type attribute not match :index :" + argument.getIndex() + ", type:" + argument.getType());
+            }
+        } else {
+            // multiple callbacks in the method
+            for (int j = 0; j < argtypes.length; j++) {
+                if (isTypeMatched(argument.getType(), j, argtypes)) {
+                    return j;
+                }
+            }
+            throw new IllegalArgumentException("Argument config error : no argument matched with the type:" + argument.getType());
+        }
+    }
+
+    private URL buildUrl(ProtocolConfig protocolConfig, List<URL> registryURLs, Map<String, String> params) {
+        String name = protocolConfig.getName();
+        if (StringUtils.isEmpty(name)) {
+            name = DUBBO;
+        }
 
         // export service
-        String host = findConfigedHosts(protocolConfig, registryURLs, map);
-        Integer port = findConfigedPorts(protocolConfig, name, map);
-        URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), map);
+        String host = findConfigedHosts(protocolConfig, registryURLs, params);
+        Integer port = findConfigedPorts(protocolConfig, name, params);
+        URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
 
         // You can customize Configurator to append extra parameters
         if (ExtensionLoader.getExtensionLoader(ConfiguratorFactory.class)
@@ -472,6 +528,10 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
 
+        return url;
+    }
+
+    private void exportUrl(URL url, List<URL> registryURLs) {
         String scope = url.getParameter(SCOPE_KEY);
         // don't export when none is configured
         if (!SCOPE_NONE.equalsIgnoreCase(scope)) {
@@ -480,60 +540,80 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             if (!SCOPE_REMOTE.equalsIgnoreCase(scope)) {
                 exportLocal(url);
             }
+
             // export to remote if the config is not local (export to local only when config is local)
             if (!SCOPE_LOCAL.equalsIgnoreCase(scope)) {
-                if (CollectionUtils.isNotEmpty(registryURLs)) {
-                    for (URL registryURL : registryURLs) {
-                        //if protocol is only injvm ,not register
-                        if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
-                            continue;
-                        }
-                        url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
-                        URL monitorUrl = ConfigValidationUtils.loadMonitor(this, registryURL);
-                        if (monitorUrl != null) {
-                            url = url.putAttribute(MONITOR_KEY, monitorUrl);
-                        }
-                        if (logger.isInfoEnabled()) {
-                            if (url.getParameter(REGISTER_KEY, true)) {
-                                logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url.getServiceKey() + " to registry " + registryURL.getAddress());
-                            } else {
-                                logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url.getServiceKey());
-                            }
-                        }
-
-                        // For providers, this is used to enable custom proxy to generate invoker
-                        String proxy = url.getParameter(PROXY_KEY);
-                        if (StringUtils.isNotEmpty(proxy)) {
-                            registryURL = registryURL.addParameter(PROXY_KEY, proxy);
-                        }
-
-                        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, registryURL.putAttribute(EXPORT_KEY, url));
-                        DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
-                        Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
-                        exporters.add(exporter);
-                    }
-                } else {
-                    if (logger.isInfoEnabled()) {
-                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
-                    }
-                    if (MetadataService.class.getName().equals(url.getServiceInterface())) {
-                        MetadataUtils.saveMetadataURL(url);
-                    }
-                    Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
-                    DelegateProviderMetaDataInvoker wrapperInvoker = new DelegateProviderMetaDataInvoker(invoker, this);
-
-                    Exporter<?> exporter = PROTOCOL.export(wrapperInvoker);
-                    exporters.add(exporter);
-                }
-
+                url = exportRemote(url, registryURLs);
                 MetadataUtils.publishServiceDefinition(url);
             }
+
         }
         this.urls.add(url);
     }
 
+    private URL exportRemote(URL url, List<URL> registryURLs) {
+        if (CollectionUtils.isNotEmpty(registryURLs)) {
+            for (URL registryURL : registryURLs) {
+                if (SERVICE_REGISTRY_PROTOCOL.equals(registryURL.getProtocol())) {
+                    url = url.addParameterIfAbsent(SERVICE_NAME_MAPPING_KEY, "true");
+                }
+
+                //if protocol is only injvm ,not register
+                if (LOCAL_PROTOCOL.equalsIgnoreCase(url.getProtocol())) {
+                    continue;
+                }
+
+                url = url.addParameterIfAbsent(DYNAMIC_KEY, registryURL.getParameter(DYNAMIC_KEY));
+                URL monitorUrl = ConfigValidationUtils.loadMonitor(this, registryURL);
+                if (monitorUrl != null) {
+                    url = url.putAttribute(MONITOR_KEY, monitorUrl);
+                }
+
+                // For providers, this is used to enable custom proxy to generate invoker
+                String proxy = url.getParameter(PROXY_KEY);
+                if (StringUtils.isNotEmpty(proxy)) {
+                    registryURL = registryURL.addParameter(PROXY_KEY, proxy);
+                }
+
+                if (logger.isInfoEnabled()) {
+                    if (url.getParameter(REGISTER_KEY, true)) {
+                        logger.info("Register dubbo service " + interfaceClass.getName() + " url " + url.getServiceKey() + " to registry " + registryURL.getAddress());
+                    } else {
+                        logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url.getServiceKey());
+                    }
+                }
+
+                doExportUrl(registryURL.putAttribute(EXPORT_KEY, url), true);
+            }
+
+        } else {
+
+            if (MetadataService.class.getName().equals(url.getServiceInterface())) {
+                MetadataUtils.saveMetadataURL(url);
+            }
+
+            if (logger.isInfoEnabled()) {
+                logger.info("Export dubbo service " + interfaceClass.getName() + " to url " + url);
+            }
+
+            doExportUrl(url, true);
+        }
+
+
+        return url;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
+    private void doExportUrl(URL url, boolean withMetaData) {
+        Invoker<?> invoker = PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, url);
+        if (withMetaData) {
+            invoker = new DelegateProviderMetaDataInvoker(invoker, this);
+        }
+        Exporter<?> exporter = PROTOCOL.export(invoker);
+        exporters.add(exporter);
+    }
+
+
     /**
      * always export injvm
      */
@@ -543,9 +623,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
                 .setHost(LOCALHOST_VALUE)
                 .setPort(0)
                 .build();
-        Exporter<?> exporter = PROTOCOL.export(
-                PROXY_FACTORY.getInvoker(ref, (Class) interfaceClass, local));
-        exporters.add(exporter);
+        doExportUrl(local, false);
         logger.info("Export dubbo service " + interfaceClass.getName() + " to local registry url : " + local);
     }
 
@@ -737,5 +815,25 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     public void setBootstrap(DubboBootstrap bootstrap) {
         this.bootstrap = bootstrap;
+    }
+
+    public void addServiceListener(ServiceListener listener) {
+        this.serviceListeners.add(listener);
+    }
+
+    public boolean removeServiceListener(ServiceListener listener) {
+        return this.serviceListeners.remove(listener);
+    }
+
+    protected void onExported() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.exported(this);
+        }
+    }
+
+    protected void onUnexpoted() {
+        for (ServiceListener serviceListener : this.serviceListeners) {
+            serviceListener.unexported(this);
+        }
     }
 }

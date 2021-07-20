@@ -55,7 +55,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
     public TagRouter(URL url) {
         super(url);
-        this.priority = TAG_ROUTER_DEFAULT_PRIORITY;
+        this.setPriority(TAG_ROUTER_DEFAULT_PRIORITY);
     }
 
     @Override
@@ -75,11 +75,6 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
             logger.error("Failed to parse the raw tag router rule and it will not take effect, please check if the " +
                     "rule matches with the template, the raw rule is:\n ", e);
         }
-    }
-
-    @Override
-    public URL getUrl() {
-        return url;
     }
 
     @Override
@@ -187,7 +182,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
     }
 
     private boolean isForceUseTag(Invocation invocation) {
-        return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, url.getParameter(FORCE_USE_TAG, "false")));
+        return Boolean.parseBoolean(invocation.getAttachment(FORCE_USE_TAG, this.getUrl().getParameter(FORCE_USE_TAG, "false")));
     }
 
     private <T> List<Invoker<T>> filterInvoker(List<Invoker<T>> invokers, Predicate<Invoker<T>> predicate) {
@@ -247,12 +242,12 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
         synchronized (this) {
             if (!providerApplication.equals(application)) {
                 if (!StringUtils.isEmpty(application)) {
-                    ruleRepository.removeListener(application + RULE_SUFFIX, this);
+                    this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;
-                ruleRepository.addListener(key, this);
+                this.getRuleRepository().addListener(key, this);
                 application = providerApplication;
-                String rawRule = ruleRepository.getRule(key, DynamicConfiguration.DEFAULT_GROUP);
+                String rawRule = this.getRuleRepository().getRule(key, DynamicConfiguration.DEFAULT_GROUP);
                 if (StringUtils.isNotEmpty(rawRule)) {
                     this.process(new ConfigChangedEvent(key, DynamicConfiguration.DEFAULT_GROUP, rawRule));
                 }

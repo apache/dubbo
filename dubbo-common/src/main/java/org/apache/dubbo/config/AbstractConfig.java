@@ -28,12 +28,10 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
-import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 
-import javax.annotation.PostConstruct;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -57,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
+import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -69,9 +68,14 @@ public abstract class AbstractConfig implements Serializable {
     private static final long serialVersionUID = 4267533505537413570L;
 
     /**
-     * The field names cache of config class
+     * tag name cache, speed up get tag name frequently
      */
-    private static final Map<Class, Set<String>> fieldNamesCache = new ConcurrentHashMap<>();
+    private static final Map<Class, String> tagNameCache = new ConcurrentHashMap<>();
+
+    /**
+     * attributed getter method cache for equals(), hashCode() and toString()
+     */
+    private static final Map<Class, List<Method>> attributedMethodCache = new ConcurrentHashMap<>();
 
     /**
      * The suffix container
@@ -92,14 +96,16 @@ public abstract class AbstractConfig implements Serializable {
 
 
     public static String getTagName(Class<?> cls) {
-        String tag = cls.getSimpleName();
-        for (String suffix : SUFFIXES) {
-            if (tag.endsWith(suffix)) {
-                tag = tag.substring(0, tag.length() - suffix.length());
-                break;
+        return tagNameCache.computeIfAbsent(cls, (key)-> {
+            String tag = cls.getSimpleName();
+            for (String suffix : SUFFIXES) {
+                if (tag.endsWith(suffix)) {
+                    tag = tag.substring(0, tag.length() - suffix.length());
+                    break;
+                }
             }
-        }
-        return StringUtils.camelToSplitName(tag, "-");
+            return StringUtils.camelToSplitName(tag, "-");
+        });
     }
 
     public static String getPluralTagName(Class<?> cls) {
@@ -136,7 +142,7 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
-        // If asParameters=false, it means as attributes, ignore @Parameter annotation except 'append' and 'attribute'
+        // If asParameters=false, it means append attributes, ignore @Parameter annotation's attributes except 'append' and 'attribute'
 
         // How to select the appropriate one from multiple getter methods of the property?
         // e.g. Using String getGeneric() or Boolean isGeneric()? Judge by field type ?
@@ -428,7 +434,7 @@ public abstract class AbstractConfig implements Serializable {
         return metaData;
     }
 
-    protected static BeanInfo getBeanInfo(Class cls) {
+    private static BeanInfo getBeanInfo(Class cls) {
         BeanInfo beanInfo = null;
         try {
             beanInfo = Introspector.getBeanInfo(cls);
@@ -541,12 +547,14 @@ public abstract class AbstractConfig implements Serializable {
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(method.getName());
                     String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
+                    Map<String, String> parameterMap = null;
                     if (StringUtils.hasText(value)) {
-                        Map<String, String> map = invokeGetParameters(getClass(), this);
-                        map = map == null ? new HashMap<>() : map;
-                        map.putAll(convert(StringUtils.parseParameters(value), ""));
-                        invokeSetParameters(getClass(), this, map);
+                        parameterMap = StringUtils.parseParameters(value);
+                    } else {
+                        // in this case, maybe parameters.item3=value3.
+                        parameterMap = ConfigurationUtils.getSubProperties(subProperties, PARAMETERS);
                     }
+                    invokeSetParameters(convert(parameterMap, ""));
                 }
             }
 
@@ -559,6 +567,16 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+    }
+
+    private void invokeSetParameters(Map<String, String> values) {
+        if (CollectionUtils.isEmptyMap(values)) {
+            return;
+        }
+        Map<String, String> map = invokeGetParameters(getClass(), this);
+        map = map == null ? new HashMap<>() : map;
+        map.putAll(values);
+        invokeSetParameters(getClass(), this, map);
     }
 
     private boolean isIgnoredAttribute(Class<? extends AbstractConfig> clazz, String propertyName) {
@@ -639,53 +657,25 @@ public abstract class AbstractConfig implements Serializable {
         this.isDefault = isDefault;
     }
 
-    /**
-     * Add {@link AbstractConfig instance} into {@link ConfigManager}
-     * <p>
-     * Current method will invoked by Spring or Java EE container automatically, or should be triggered manually.
-     *
-     * @see ConfigManager#addConfig(AbstractConfig)
-     * @since 2.7.5
-     */
-    @PostConstruct
-    public void addIntoConfigManager() {
-        ApplicationModel.getConfigManager().addConfig(this);
-    }
-
     @Override
     public String toString() {
         try {
 
-            Set<String> fieldNames = getFieldNames(this.getClass());
-
             StringBuilder buf = new StringBuilder();
             buf.append("<dubbo:");
             buf.append(getTagName(getClass()));
-            Method[] methods = getClass().getMethods();
-            for (Method method : methods) {
+            for (Method method : getAttributedMethods()) {
                 try {
                     if (MethodUtils.isGetter(method)) {
                         String name = method.getName();
                         String key = calculateAttributeFromGetter(name);
-
-                        // Fixes #4992, endless recursive call when NetUtils method fails.
-                        if (!fieldNames.contains(key)) {
-                            continue;
-                        }
-
-                        // filter non attribute
-                        Parameter parameter = method.getAnnotation(Parameter.class);
-                        if (parameter != null && !parameter.attribute()) {
-                            continue;
-                        }
-
                         Object value = method.invoke(this);
                         if (value != null) {
-                            buf.append(" ");
+                            buf.append(' ');
                             buf.append(key);
                             buf.append("=\"");
                             buf.append(key.equals("password") ? "******" : value);
-                            buf.append("\"");
+                            buf.append('\"');
                         }
                     }
                 } catch (Exception e) {
@@ -700,10 +690,6 @@ public abstract class AbstractConfig implements Serializable {
         }
     }
 
-    private static Set<String> getFieldNames(Class<?> configClass) {
-        return fieldNamesCache.computeIfAbsent(configClass, ReflectUtils::getAllFieldNames);
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null || obj.getClass() != this.getClass()) {
@@ -713,33 +699,19 @@ public abstract class AbstractConfig implements Serializable {
             return true;
         }
 
-        BeanInfo beanInfo = getBeanInfo(this.getClass());
-        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
-            Method method = methodDescriptor.getMethod();
-            if (MethodUtils.isGetter(method)) {
-                // filter non attribute
-                Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter != null && !parameter.attribute()) {
-                    continue;
+        for (Method method : getAttributedMethods()) {
+            // ignore compare 'id' value
+            if ("getId".equals(method.getName())) {
+                continue;
+            }
+            try {
+                Object value1 = method.invoke(this);
+                Object value2 = method.invoke(obj);
+                if (!Objects.equals(value1, value2)) {
+                    return false;
                 }
-                String propertyName = calculateAttributeFromGetter(method.getName());
-                // ignore compare 'id' value
-                if (Constants.ID.equals(propertyName)) {
-                    continue;
-                }
-                // filter non writable property
-                if (!isWritableProperty(beanInfo, propertyName)) {
-                    continue;
-                }
-                try {
-                    Object value1 = method.invoke(this);
-                    Object value2 = method.invoke(obj);
-                    if (!Objects.equals(value1, value2)) {
-                        return false;
-                    }
-                } catch (Exception e) {
-                    throw new IllegalStateException("compare config instances failed", e);
-                }
+            } catch (Exception e) {
+                throw new IllegalStateException("compare config instances failed", e);
             }
         }
         return true;
@@ -749,27 +721,57 @@ public abstract class AbstractConfig implements Serializable {
     public int hashCode() {
         int hashCode = 1;
 
-        Method[] methods = this.getClass().getMethods();
-        for (Method method : methods) {
-            if (MethodUtils.isGetter(method)) {
-                Parameter parameter = method.getAnnotation(Parameter.class);
-                if (parameter != null && parameter.excluded()) {
-                    continue;
-                }
-                try {
-                    Object value = method.invoke(this);
+        for (Method method : getAttributedMethods()) {
+            // ignore compare 'id' value
+            if ("getId".equals(method.getName())) {
+                continue;
+            }
+            try {
+                Object value = method.invoke(this);
+                if (value != null) {
                     hashCode = 31 * hashCode + value.hashCode();
-                } catch (Exception ignored) {
-                    //ignored
                 }
+            } catch (Exception ignored) {
+                //ignored
             }
         }
 
         if (hashCode == 0) {
             hashCode = 1;
         }
-
         return hashCode;
+    }
+
+    private List<Method> getAttributedMethods() {
+        Class<? extends AbstractConfig> cls = this.getClass();
+        return attributedMethodCache.computeIfAbsent(cls, (key)-> computeAttributedMethods());
+    }
+
+    /**
+     * compute attributed getter methods, subclass can override this method to add/remove attributed methods
+     * @return
+     */
+    protected List<Method> computeAttributedMethods() {
+        Class<? extends AbstractConfig> cls = this.getClass();
+        BeanInfo beanInfo = getBeanInfo(cls);
+        List<Method> methods = new ArrayList<>(beanInfo.getMethodDescriptors().length);
+        for (MethodDescriptor methodDescriptor : beanInfo.getMethodDescriptors()) {
+            Method method = methodDescriptor.getMethod();
+            if (MethodUtils.isGetter(method)) {
+                // filter non attribute
+                Parameter parameter = method.getAnnotation(Parameter.class);
+                if (parameter != null && !parameter.attribute()) {
+                    continue;
+                }
+                String propertyName = calculateAttributeFromGetter(method.getName());
+                // filter non writable property, exclude non property methods, fix #4225
+                if (!isWritableProperty(beanInfo, propertyName)) {
+                    continue;
+                }
+                methods.add(method);
+            }
+        }
+        return methods;
     }
 
 }

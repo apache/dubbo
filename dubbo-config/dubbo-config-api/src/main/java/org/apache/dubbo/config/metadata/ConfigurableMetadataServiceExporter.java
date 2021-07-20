@@ -74,6 +74,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             serviceConfig.setRegistry(new RegistryConfig("N/A"));
             serviceConfig.setProtocol(generateMetadataProtocol());
             serviceConfig.setInterface(MetadataService.class);
+            serviceConfig.setDelay(0);
             serviceConfig.setRef(metadataService);
             serviceConfig.setGroup(getApplicationConfig().getName());
             serviceConfig.setVersion(metadataService.version());

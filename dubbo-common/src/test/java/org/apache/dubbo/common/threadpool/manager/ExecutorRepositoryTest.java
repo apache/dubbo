@@ -34,7 +34,8 @@ public class ExecutorRepositoryTest {
         testGet(URL.valueOf("dubbo://127.0.0.1:23456?side=consumer"));
 
         Assertions.assertNotNull(executorRepository.getSharedExecutor());
-        Assertions.assertNotNull(executorRepository.getExportReferExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceExportExecutor());
+        Assertions.assertNotNull(executorRepository.getServiceReferExecutor());
         executorRepository.nextScheduledExecutor();
     }
 

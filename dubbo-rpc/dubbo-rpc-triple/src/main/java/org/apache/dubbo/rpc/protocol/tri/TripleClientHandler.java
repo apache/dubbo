@@ -69,7 +69,12 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         final URL url = inv.getInvoker().getUrl();
         ServiceRepository repo = ApplicationModel.getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
-        final ConsumerModel service = repo.lookupReferredService(url.getServiceKey());
+        String serviceKey = url.getServiceKey();
+        // If it is InstanceAddressURL, the serviceKey may not be obtained.
+        if(null == serviceKey) {
+            serviceKey = inv.getTargetServiceUniqueName();
+        }
+        final ConsumerModel service = repo.lookupReferredService(serviceKey);
         if (service != null) {
             ClassLoadUtil.switchContextLoader(service.getServiceInterfaceClass().getClassLoader());
         }

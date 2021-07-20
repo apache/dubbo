@@ -202,7 +202,7 @@ public class MethodConfig extends AbstractMethodConfig {
      * @return
      */
     @Override
-    @Parameter(excluded = true)
+    @Parameter(excluded = true, attribute = false)
     public List<String> getPrefixes() {
         // parent prefix + method name
         if (parentPrefix != null) {
@@ -216,6 +216,7 @@ public class MethodConfig extends AbstractMethodConfig {
 
     @Override
     protected void processExtraRefresh(String preferredPrefix, InmemoryConfiguration subPropsConfiguration) {
+        // refresh ArgumentConfigs
         if (this.getArguments() != null && this.getArguments().size() > 0) {
             for (ArgumentConfig argument : this.getArguments()) {
                 refreshArgument(argument, subPropsConfiguration);
@@ -255,10 +256,25 @@ public class MethodConfig extends AbstractMethodConfig {
         }
     }
 
+    /**
+     * Set default field values of MethodConfig.
+     *
+     * @see org.apache.dubbo.config.annotation.Method
+     */
     @Override
-    public void addIntoConfigManager() {
-        // Don't add MethodConfig to ConfigManager
-        // super.addIntoConfigManager();
+    protected void checkDefault() {
+        super.checkDefault();
+
+        // set default field values
+        // org.apache.dubbo.config.annotation.Method.isReturn() default true;
+        if (isReturn() == null) {
+            setReturn(true);
+        }
+
+        // org.apache.dubbo.config.annotation.Method.sent() default true;
+        if (getSent() == null) {
+            setSent(true);
+        }
     }
 
     @Parameter(excluded = true)

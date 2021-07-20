@@ -34,14 +34,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * singleton or static (by itself totally static or uses some static fields). So the instances
  * returned from them are of process scope. If you want to support multiple dubbo servers in one
  * single process, you may need to refactor those three classes.
- *
+ * <p>
  * Represent a application which is using Dubbo and store basic metadata info for using
  * during the processing of RPC invoking.
  * <p>
  * ApplicationModel includes many ProviderModel which is about published services
  * and many Consumer Model which is about subscribed services.
  * <p>
- *
  */
 
 public class ApplicationModel {
@@ -49,6 +48,9 @@ public class ApplicationModel {
     public static final String NAME = "application";
 
     private static AtomicBoolean INIT_FLAG = new AtomicBoolean(false);
+    private static Environment environment;
+    private static ConfigManager configManager;
+    private static ServiceRepository serviceRepository;
 
     public static void init() {
         if (INIT_FLAG.compareAndSet(false, true)) {
@@ -76,7 +78,7 @@ public class ApplicationModel {
         return getServiceRepository().lookupReferredService(serviceKey);
     }
 
-    private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
+    private static ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
 
     public static void initFrameworkExts() {
         Set<FrameworkExt> exts = ExtensionLoader.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
@@ -86,15 +88,24 @@ public class ApplicationModel {
     }
 
     public static Environment getEnvironment() {
-        return (Environment) LOADER.getExtension(Environment.NAME);
+        if (environment == null) {
+            environment = (Environment) LOADER.getExtension(Environment.NAME);
+        }
+        return environment;
     }
 
     public static ConfigManager getConfigManager() {
-        return (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+        if (configManager == null) {
+            configManager = (ConfigManager) LOADER.getExtension(ConfigManager.NAME);
+        }
+        return configManager;
     }
 
     public static ServiceRepository getServiceRepository() {
-        return (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+        if (serviceRepository == null) {
+            serviceRepository = (ServiceRepository) LOADER.getExtension(ServiceRepository.NAME);
+        }
+        return serviceRepository;
     }
 
     public static ExecutorRepository getExecutorRepository() {
@@ -110,14 +121,19 @@ public class ApplicationModel {
     }
 
     @Deprecated
+    //It will be remove at next version
     private static String application;
 
+    /**
+     *
+     * @deprecated Use {@link #getName()} instead. It will be remove at next version.
+     */
     @Deprecated
     public static String getApplication() {
         return application == null ? getName() : application;
     }
 
-    // Currently used by UT.
+    // Currently used by UT, it will be remove at next version.
     @Deprecated
     public static void setApplication(String application) {
         ApplicationModel.application = application;
@@ -125,9 +141,20 @@ public class ApplicationModel {
 
     // only for unit test
     public static void reset() {
-        getServiceRepository().destroy();
-        getConfigManager().destroy();
-        getEnvironment().reset();
+        if (serviceRepository!=null){
+            serviceRepository.destroy();
+            serviceRepository = null;
+        }
+        if (configManager != null) {
+            configManager.destroy();
+            configManager = null;
+        }
+        if (environment != null) {
+            environment.destroy();
+            environment = null;
+        }
+        ExtensionLoader.resetExtensionLoader(FrameworkExt.class);
+        LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);
     }
 
 }

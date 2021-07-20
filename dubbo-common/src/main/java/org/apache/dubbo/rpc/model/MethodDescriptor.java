@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.utils.ReflectUtils;
 
@@ -50,6 +52,7 @@ public class MethodDescriptor {
     private final RpcType rpcType;
 
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
 
     public MethodDescriptor(Method method) {
         this.method = method;
@@ -74,7 +77,15 @@ public class MethodDescriptor {
                 rpcType = RpcType.UNARY_UNWRAP;
             }
         }
-        this.returnTypes = ReflectUtils.getReturnTypes(method);
+        Type[] returnTypesResult;
+        try {
+            returnTypesResult = ReflectUtils.getReturnTypes(method);
+        } catch (Throwable throwable) {
+            logger.error("fail to get return types", throwable);
+            returnTypesResult = new Type[]{returnClass, returnClass};
+        }
+
+        this.returnTypes = returnTypesResult;
         this.paramDesc = ReflectUtils.getDesc(parameterClasses);
         this.compatibleParamSignatures = Stream.of(parameterClasses)
                 .map(Class::getName)
