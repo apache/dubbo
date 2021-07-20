@@ -87,7 +87,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     private boolean ignoreDuplicatedInterface = false;
 
-    private static Map<Class, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
+    private static Map<String, AtomicInteger> configIdIndexes = new ConcurrentHashMap<>();
 
     private static Set<Class<? extends AbstractConfig>> uniqueConfigTypes = new ConcurrentHashSet<>();
 
@@ -737,8 +737,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
     }
 
     public static <C extends AbstractConfig> String generateConfigId(C config) {
-        int idx = configIdIndexes.computeIfAbsent(config.getClass(), clazz -> new AtomicInteger(0)).incrementAndGet();
-        return getTagName(config.getClass()) + "#" + idx;
+        String tagName = getTagName(config.getClass());
+        int idx = configIdIndexes.computeIfAbsent(tagName, clazz -> new AtomicInteger(0)).incrementAndGet();
+        return tagName + "#" + idx;
     }
 
     static <C extends AbstractConfig> String getId(C config) {
