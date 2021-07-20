@@ -25,8 +25,6 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
 
-import org.apache.dubbo.remoting.api.SslHandlerInitializer.HandshakeCompletionEvent;
-
 public class PortUnificationServerHandler extends ByteToMessageDecoder {
 
     private final SslContext sslCtx;
@@ -80,18 +78,16 @@ public class PortUnificationServerHandler extends ByteToMessageDecoder {
                 case RECOGNIZED:
                     protocol.configServerPipeline(ctx.pipeline(), sslCtx);
                     ctx.pipeline().remove(this);
+                    break;
                 case NEED_MORE_DATA:
                     return;
+                default:
+                    break;
             }
         }
         // Unknown protocol; discard everything and close the connection.
         in.clear();
         ctx.close();
-    }
-
-
-    public void handshakeCompleted(HandshakeCompletionEvent evt) {
-        // TODO
     }
 
 }

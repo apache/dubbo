@@ -36,7 +36,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.ssl.SslContext;
 import io.netty.handler.timeout.IdleStateHandler;
 
 import java.net.InetSocketAddress;
@@ -116,16 +115,13 @@ public class PortUnificationServer {
 //                        p.addLast(new LoggingHandler(LogLevel.DEBUG));
 
                     final boolean enableSsl = getUrl().getParameter(SSL_ENABLED_KEY, false);
-                    final PortUnificationServerHandler puHandler;
                     if (enableSsl) {
-                        final SslContext sslContext = SslContexts.buildServerSslContext(getUrl());
-                        puHandler = new PortUnificationServerHandler(sslContext, protocols);
-                        p.addLast("negotiation", SslHandlerInitializer.sslServerHandler(sslContext, puHandler));
-                    } else {
-                        puHandler = new PortUnificationServerHandler(protocols);
+                        p.addLast("negotiation-ssl", new SslServerTlsHandler(getUrl()));
                     }
+
+                    final PortUnificationServerHandler puHandler = new PortUnificationServerHandler(protocols);
                     p.addLast("server-idle-handler", new IdleStateHandler(0, 0, idleTimeout, MILLISECONDS));
-                    p.addLast("unificationA", puHandler);
+                    p.addLast("negotiation-protocol", puHandler);
                     channelGroup = puHandler.getChannels();
                 }
             });

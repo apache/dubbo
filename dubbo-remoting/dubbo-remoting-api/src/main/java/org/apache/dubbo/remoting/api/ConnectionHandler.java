@@ -29,8 +29,6 @@ import io.netty.util.AttributeKey;
 
 import java.util.concurrent.TimeUnit;
 
-import org.apache.dubbo.remoting.api.SslHandlerInitializer.HandshakeCompletionEvent;
-
 @ChannelHandler.Sharable
 public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     private static final Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
@@ -89,10 +87,6 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         }
         final EventLoop eventLoop = channel.eventLoop();
         eventLoop.schedule(connection::connect, 1, TimeUnit.SECONDS);
-    }
-
-    public void handshakeCompleted(HandshakeCompletionEvent evt) {
-        // TODO
     }
 
 }
