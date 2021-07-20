@@ -55,6 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.utils.ReflectUtils.findMethodByMethodSignature;
+import static org.apache.dubbo.config.Constants.PARAMETERS;
 
 /**
  * Utility methods and public methods for parsing configuration
@@ -546,12 +547,14 @@ public abstract class AbstractConfig implements Serializable {
                 } else if (isParametersSetter(method)) {
                     String propertyName = extractPropertyName(method.getName());
                     String value = StringUtils.trim(subPropsConfiguration.getString(propertyName));
+                    Map<String, String> parameterMap = null;
                     if (StringUtils.hasText(value)) {
-                        Map<String, String> map = invokeGetParameters(getClass(), this);
-                        map = map == null ? new HashMap<>() : map;
-                        map.putAll(convert(StringUtils.parseParameters(value), ""));
-                        invokeSetParameters(getClass(), this, map);
+                        parameterMap = StringUtils.parseParameters(value);
+                    } else {
+                        // in this case, maybe parameters.item3=value3.
+                        parameterMap = ConfigurationUtils.getSubProperties(subProperties, PARAMETERS);
                     }
+                    invokeSetParameters(convert(parameterMap, ""));
                 }
             }
 
@@ -564,6 +567,16 @@ public abstract class AbstractConfig implements Serializable {
         }
 
         postProcessRefresh();
+    }
+
+    private void invokeSetParameters(Map<String, String> values) {
+        if (CollectionUtils.isEmptyMap(values)) {
+            return;
+        }
+        Map<String, String> map = invokeGetParameters(getClass(), this);
+        map = map == null ? new HashMap<>() : map;
+        map.putAll(values);
+        invokeSetParameters(getClass(), this, map);
     }
 
     private boolean isIgnoredAttribute(Class<? extends AbstractConfig> clazz, String propertyName) {
