@@ -21,12 +21,15 @@ import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.VsDestinationGroup;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.destination.DestinationRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.rule.virtualservice.VirtualServiceRule;
 import org.apache.dubbo.rpc.cluster.router.mesh.util.VsDestinationGroupRuleDispatcher;
 
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import java.text.MessageFormat;
 import java.util.Map;
@@ -56,18 +59,20 @@ public class MeshAppRuleListener implements ConfigurationListener {
             VsDestinationGroup vsDestinationGroup = new VsDestinationGroup();
             vsDestinationGroup.setAppName(appName);
 
-            Yaml yaml = new Yaml();
-            Yaml yaml2 = new Yaml();
+            Representer representer = new Representer();
+            representer.getPropertyUtils().setSkipMissingProperties(true);
+
+            Yaml yaml = new Yaml(new SafeConstructor());
             Iterable<Object> objectIterable = yaml.loadAll(configInfo);
             for (Object result : objectIterable) {
 
                 Map resultMap = (Map) result;
                 if ("DestinationRule".equals(resultMap.get("kind"))) {
-                    DestinationRule destinationRule = yaml2.loadAs(yaml2.dump(result), DestinationRule.class);
+                    DestinationRule destinationRule = PojoUtils.mapToPojo(resultMap, DestinationRule.class);
                     vsDestinationGroup.getDestinationRuleList().add(destinationRule);
 
                 } else if ("VirtualService".equals(resultMap.get("kind"))) {
-                    VirtualServiceRule virtualServiceRule = yaml2.loadAs(yaml2.dump(result), VirtualServiceRule.class);
+                    VirtualServiceRule virtualServiceRule = PojoUtils.mapToPojo(resultMap, VirtualServiceRule.class);
                     vsDestinationGroup.getVirtualServiceRuleList().add(virtualServiceRule);
                 }
             }
