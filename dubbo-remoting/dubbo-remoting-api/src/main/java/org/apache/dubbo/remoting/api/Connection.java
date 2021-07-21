@@ -114,7 +114,7 @@ public class Connection extends AbstractReferenceCounted implements ReferenceCou
 
                 SslContext sslContext = null;
                 if (getUrl().getParameter(SSL_ENABLED_KEY, false)) {
-                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(url, connectionHandler));
+                    ch.pipeline().addLast("negotiation", new SslClientTlsHandler(url));
                 }
 
                 final ChannelPipeline p = ch.pipeline();//.addLast("logging",new LoggingHandler(LogLevel.INFO))//for debug

@@ -98,7 +98,7 @@ public class SslServerTlsHandler extends ByteToMessageDecoder {
 
     private void enableSsl(ChannelHandlerContext ctx) {
         ChannelPipeline p = ctx.pipeline();
-        p.addFirst("ssl", sslContext.newHandler(ctx.alloc()));
+        ctx.pipeline().addAfter(ctx.name(), null, sslContext.newHandler(ctx.alloc()));
         p.addLast("unificationA", new SslServerTlsHandler(sslContext, false));
         p.remove(this);
     }

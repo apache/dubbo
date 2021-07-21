@@ -35,21 +35,19 @@ public  class SslClientTlsHandler extends ChannelInboundHandlerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(SslClientTlsHandler.class);
 
     private final SslContext sslContext;
-    private final ChannelInboundHandler clientHandler;
 
-    public SslClientTlsHandler(URL url, ChannelInboundHandler clientHandler) {
-        this(SslContexts.buildClientSslContext(url), clientHandler);
+    public SslClientTlsHandler(URL url) {
+        this(SslContexts.buildClientSslContext(url));
     }
 
-    public SslClientTlsHandler(SslContext sslContext, ChannelInboundHandler clientHandler) {
+    public SslClientTlsHandler(SslContext sslContext) {
         this.sslContext = sslContext;
-        this.clientHandler = clientHandler;
     }
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) {
         SSLEngine sslEngine = sslContext.newEngine(ctx.alloc());
-        ctx.pipeline().addBefore(ctx.name(), null, new SslHandler(sslEngine, false));
+        ctx.pipeline().addAfter(ctx.name(), null, new SslHandler(sslEngine, false));
     }
 
     @Override
