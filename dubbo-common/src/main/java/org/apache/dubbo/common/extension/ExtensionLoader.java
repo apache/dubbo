@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.Holder;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -62,6 +63,7 @@ import static java.util.ServiceLoader.load;
 import static java.util.stream.StreamSupport.stream;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SPLIT_PATTERN;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.NATIVE;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
@@ -1099,8 +1101,16 @@ public class ExtensionLoader<T> {
     }
 
     private Class<?> createAdaptiveExtensionClass() {
-        String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         ClassLoader classLoader = findClassLoader();
+        if (ApplicationModel.getEnvironment().getConfiguration().getBoolean(NATIVE, false)) {
+            try {
+                return classLoader.loadClass(type.getName() + "$Adaptive");
+            } catch (ClassNotFoundException e) {
+                //ignore
+                e.printStackTrace();
+            }
+        }
+        String code = new AdaptiveClassCodeGenerator(type, cachedDefaultName).generate();
         org.apache.dubbo.common.compiler.Compiler compiler = ExtensionLoader.getExtensionLoader(org.apache.dubbo.common.compiler.Compiler.class).getAdaptiveExtension();
         return compiler.compile(code, classLoader);
     }

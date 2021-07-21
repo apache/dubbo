@@ -37,6 +37,7 @@
         <module>dubbo-demo-api</module>
         <module>dubbo-demo-generic-call</module>
         <module>dubbo-demo-triple</module>
+        <module>dubbo-demo-native</module>
     </modules>
 
     <dependencyManagement>

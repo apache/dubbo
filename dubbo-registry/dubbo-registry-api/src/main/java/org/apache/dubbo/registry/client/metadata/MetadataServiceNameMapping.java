@@ -20,6 +20,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.metadata.AbstractServiceNameMapping;
 import org.apache.dubbo.metadata.MappingListener;
@@ -27,6 +28,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -48,6 +50,9 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public void map(URL url) {
         execute(() -> {
+            if (CollectionUtils.isEmpty(ApplicationModel.getConfigManager().getMetadataConfigs())) {
+                return;
+            }
             String serviceInterface = url.getServiceInterface();
             if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
                 return;
