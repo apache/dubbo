@@ -32,7 +32,6 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
@@ -48,10 +47,12 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 import static org.apache.dubbo.registry.integration.InterfaceCompatibleRegistryProtocol.DEFAULT_REGISTER_PROVIDER_KEYS;
+import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
 import static org.apache.dubbo.rpc.Constants.DEPRECATED_KEY;
 
 /**
@@ -257,9 +258,26 @@ public class ServiceInstanceMetadataUtils {
         instance.getExtendParams().remove(INSTANCE_REVISION_UPDATED_KEY);
     }
 
+    public static void registerMetadataAndInstance(ServiceInstance serviceInstance) {
+        // register instance only when at least one service is exported.
+        if (serviceInstance.getPort() > 0) {
+            reportMetadataToRemote(serviceInstance);
+            LOGGER.info("Start registering instance address to registry.");
+            getServiceDiscoveries().forEach(serviceDiscovery ->
+            {
+                ServiceInstance serviceInstanceForRegistry = new DefaultServiceInstance((DefaultServiceInstance) serviceInstance);
+                calInstanceRevision(serviceDiscovery, serviceInstanceForRegistry);
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.info("Start registering instance address to registry" + serviceDiscovery.getUrl() + ", instance " + serviceInstanceForRegistry);
+                }
+                // register metadata
+                serviceDiscovery.register(serviceInstanceForRegistry);
+            });
+        }
+    }
+
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
-        remoteMetadataService.publishMetadata(ApplicationModel.getName());
+        reportMetadataToRemote(serviceInstance);
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();
@@ -284,6 +302,13 @@ public class ServiceInstanceMetadataUtils {
             // customizes
             customizer.customize(instance);
         });
+    }
+
+    private static void reportMetadataToRemote(ServiceInstance serviceInstance) {
+        if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(getMetadataStorageType(serviceInstance))) {
+            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+            remoteMetadataService.publishMetadata(serviceInstance.getServiceName());
+        }
     }
 
     /**
