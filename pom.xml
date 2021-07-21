@@ -152,6 +152,7 @@
         <module>dubbo-metadata</module>
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
+        <module>dubbo-native</module>
         <module>dubbo-native-maven-plugin</module>
     </modules>
 
@@ -319,6 +320,7 @@
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
                                         **/generated/**/*,
                                         **/target/**/*,
+                                        **/*.json
                                     </excludes>
                                 </configuration>
                                 <goals>
