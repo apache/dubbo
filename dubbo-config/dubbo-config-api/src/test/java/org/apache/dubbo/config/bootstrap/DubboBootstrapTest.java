@@ -40,6 +40,7 @@ import org.apache.dubbo.monitor.MonitorService;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
 import org.junit.jupiter.api.AfterAll;
@@ -93,6 +94,7 @@ public class DubboBootstrapTest {
     @AfterEach
     public void afterEach() throws IOException {
         DubboBootstrap.reset();
+        ApplicationModel.reset();
         SysProps.clear();
     }
 
@@ -236,25 +238,30 @@ public class DubboBootstrapTest {
         registryConfig.setUseAsMetadataCenter(false);
         registryConfig.setUseAsConfigCenter(false);
 
-        DubboBootstrap bootstrap = DubboBootstrap.getInstance();
-
-        bootstrap.application(applicationConfig)
-            .registry(registryConfig)
-            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
-            .service(service);
-
         Exception exception = null;
         try {
-            bootstrap.start();
+            DubboBootstrap.getInstance()
+                .application(applicationConfig)
+                .registry(registryConfig)
+                .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+                .service(service)
+                .start();
         } catch (Exception e) {
             exception = e;
+            DubboBootstrap.reset();
         }
 
         Assertions.assertNotNull(exception);
 
-        bootstrap.metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181")).start();
+        DubboBootstrap.getInstance()
+            .application(applicationConfig)
+            .registry(registryConfig)
+            .protocol(new ProtocolConfig(CommonConstants.DUBBO_PROTOCOL, -1))
+            .service(service)
+            .metadataReport(new MetadataReportConfig("zookeeper://127.0.0.1:2181"))
+            .start();
 
-        assertMetadataService(bootstrap, availablePort, true);
+        assertMetadataService(DubboBootstrap.getInstance(), availablePort, true);
 
     }
 

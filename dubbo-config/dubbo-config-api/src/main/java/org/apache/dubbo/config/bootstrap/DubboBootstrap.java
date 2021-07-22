@@ -1498,7 +1498,9 @@ public final class DubboBootstrap {
                         unexportMetadataService();
                         unexportServices();
                         unreferServices();
-                        asyncMetadataFuture.cancel(true);
+                        if (asyncMetadataFuture != null) {
+                            asyncMetadataFuture.cancel(true);
+                        }
                     }
 
                     destroyRegistries();
