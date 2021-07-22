@@ -521,8 +521,9 @@ public class URLParam {
         }
 
         boolean hasAndEqual = true;
+        Map<String, String> urlParamMap = getParameters();
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
-            String value = getParameters().get(entry.getKey());
+            String value = urlParamMap.get(entry.getKey());
             if (value == null) {
                 if (entry.getValue() != null) {
                     hasAndEqual = false;
