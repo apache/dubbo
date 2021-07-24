@@ -123,7 +123,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                         }
                     });
                 } catch (NacosException e) {
-                    e.printStackTrace();
+                    logger.error("add nacos service instances changed listener fail ", e);
                 }
             });
         });
