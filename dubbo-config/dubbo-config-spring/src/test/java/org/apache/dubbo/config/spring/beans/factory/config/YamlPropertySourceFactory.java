@@ -16,19 +16,11 @@
  */
 package org.apache.dubbo.config.spring.beans.factory.config;
 
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.springframework.beans.factory.config.YamlProcessor;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.core.io.support.PropertySourceFactory;
-
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -37,6 +29,13 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
+
+import java.io.IOException;
+import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * YAML {@link PropertySourceFactory} implementation, some source code is copied Spring Boot
@@ -66,8 +65,8 @@ public class YamlPropertySourceFactory extends YamlProcessor implements Property
             }
 
             @Override
-            protected Map<Object, Object> createDefaultMap() {
-                final Map<Object, Object> delegate = super.createDefaultMap();
+            protected Map<Object, Object> createDefaultMap(int initSize) {
+                final Map<Object, Object> delegate = super.createDefaultMap(initSize);
                 return new AbstractMap<Object, Object>() {
                     @Override
                     public Object put(Object key, Object value) {
