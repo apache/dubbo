@@ -549,7 +549,7 @@ public class DubboBootstrap {
     /**
      * Initialize
      */
-    public void initialize() {
+    public synchronized void initialize() {
         if (!initialized.compareAndSet(false, true)) {
             return;
         }
