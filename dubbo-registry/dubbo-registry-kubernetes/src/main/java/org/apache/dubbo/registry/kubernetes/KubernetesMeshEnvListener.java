@@ -93,10 +93,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
                             String vsRule = new Yaml(new SafeConstructor()).dump(drRuleMap);
                             vsAppCache.put(appName, vsRule);
                             if (drAppCache.containsKey(appName)) {
-                                String rule = vsRule + "\n---\n" + drAppCache.get(appName);
-                                logger.info("Notify App Rule Listener. AppName: " + appName + " Rule:" + rule);
-
-                                appRuleListenerMap.get(appName).receiveConfigInfo(rule);
+                                notifyListener(vsRule, appName, drAppCache.get(appName));
                             }
                         } else {
                             appRuleListenerMap.get(appName).receiveConfigInfo("");
@@ -123,6 +120,13 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
         }
     }
 
+    private void notifyListener(String vsRule, String appName, String drRule) {
+        String rule = vsRule + "\n---\n" + drRule;
+        logger.info("Notify App Rule Listener. AppName: " + appName + " Rule:" + rule);
+
+        appRuleListenerMap.get(appName).receiveConfigInfo(rule);
+    }
+
     private void subscribeDr(String appName) {
         if (drAppWatch.containsKey(appName)) {
             return;
@@ -143,10 +147,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
                             drAppCache.put(appName, drRule);
                             if (vsAppCache.containsKey(appName)) {
-                                String rule = vsAppCache.get(appName) + "\n---\n" + drRule;
-                                logger.info("Notify App Rule Listener. AppName: " + appName + " Rule:" + rule);
-
-                                appRuleListenerMap.get(appName).receiveConfigInfo(rule);
+                                notifyListener(vsAppCache.get(appName), appName, drRule);
                             }
                         } else {
                             appRuleListenerMap.get(appName).receiveConfigInfo("");
@@ -175,9 +176,7 @@ public class KubernetesMeshEnvListener implements MeshEnvListener {
 
     private void notifyOnce(String appName) {
         if (vsAppCache.containsKey(appName) && drAppCache.containsKey(appName)) {
-            String rule = vsAppCache.get(appName) + "\n---\n" + drAppCache.get(appName);
-            logger.info("Notify App Rule Listener. AppName: " + appName + " Rule:" + rule);
-            appRuleListenerMap.get(appName).receiveConfigInfo(rule);
+            notifyListener(vsAppCache.get(appName), appName, drAppCache.get(appName));
         }
     }
 
