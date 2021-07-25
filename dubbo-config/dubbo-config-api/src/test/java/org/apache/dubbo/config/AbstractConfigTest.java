@@ -209,7 +209,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkLength() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
                 builder.append('a');
@@ -220,7 +220,7 @@ public class AbstractConfigTest {
 
     @Test
     public void checkPathLength() throws Exception {
-        Assertions.assertThrows(IllegalStateException.class, () -> {
+        Assertions.assertDoesNotThrow(() -> {
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i <= 200; i++) {
                 builder.append('a');
