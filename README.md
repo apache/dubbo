@@ -1,6 +1,9 @@
 # Apache Dubbo Project
 本仓库主要是为了个人研究源码使用
-
+分支规范
+fearure:项目
+hotfix:热修复
+misc:注释添加不涉及代码的改动
 ### Maven dependency
 
 ```xml
