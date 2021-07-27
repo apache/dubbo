@@ -162,10 +162,7 @@ public class CodecSupport {
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ProviderModel providerModel = repository.lookupExportedServiceWithoutGroup(path + ":" + version);
         if (providerModel == null) {
-            if (logger.isWarnEnabled()) {
-                logger.warn("Serialization security check is enabled but cannot work as expected because " +
-                        "there's no matched provider model for path " + path + ", version " + version);
-            }
+            throw new IOException("Service " + path + " with version " + version + " not found, invocation rejected.");
         } else {
             List<URL> urls = providerModel.getServiceConfig().getExportedUrls();
             if (CollectionUtils.isNotEmpty(urls)) {
