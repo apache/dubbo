@@ -82,6 +82,7 @@ public class MigrationRule {
 
             if (null == migrationRule.getStep()) {
                 LOGGER.warn("Failed to parse migrationRule, step is empty, automatically switch to APPLICATION_FIRST.");
+                migrationRule = getMigrationRule(null);
             }
         } catch (Exception e) {
             LOGGER.error("Failed to parse migrationRule, automatically switch to APPLICATION_FIRST.");
