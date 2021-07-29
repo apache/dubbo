@@ -93,6 +93,10 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
         if (StringUtils.isNotEmpty(configId)) {
             beanDefinition.getPropertyValues().addPropertyValue("id", configId);
         }
+        // get id from name
+        if (StringUtils.isEmpty(configId)) {
+            configId = resolveAttribute(element, "name", parserContext);
+        }
 
         String beanName = configId;
         if (StringUtils.isEmpty(beanName)) {
