@@ -31,8 +31,6 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcContext;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 import org.apache.dubbo.rpc.service.GenericService;
 
 import org.junit.jupiter.api.Assertions;
@@ -42,12 +40,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.fail;
-
 /**
  * HessianProtocolTest
+ * On some machines, there is a limit on the maximum number of threads.
+ * Therefore, the test cases of the Hessian protocol are split into two files
  */
-public class HessianProtocolTest {
+public class HessianProtocolCoreTest {
 
     @Test
     public void testHessianProtocol() {
@@ -151,102 +149,6 @@ public class HessianProtocolTest {
         Object result = client.$invoke("sayHello", new String[]{"java.lang.String"}, new Object[]{javaBeanDescriptor});
         Assertions.assertTrue(server.isCalled());
         Assertions.assertEquals("Hello, haha", JavaBeanSerializeUtil.deserialize((JavaBeanDescriptor) result));
-        invoker.destroy();
-        exporter.unexport();
-    }
-
-    @Test
-    public void testOverload() {
-        HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true&hessian2.request=false");
-        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
-        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
-        HessianService client = proxyFactory.getProxy(invoker);
-        String result = client.sayHello("haha");
-        Assertions.assertEquals("Hello, haha", result);
-        result = client.sayHello("haha", 1);
-        Assertions.assertEquals("Hello, haha. ", result);
-        invoker.destroy();
-        exporter.unexport();
-    }
-
-    @Test
-    public void testHttpClient() {
-        HessianServiceImpl server = new HessianServiceImpl();
-        Assertions.assertFalse(server.isCalled());
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0&client=httpclient&hessian.overload.method=true");
-        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
-        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
-        HessianService client = proxyFactory.getProxy(invoker);
-        String result = client.sayHello("haha");
-        Assertions.assertTrue(server.isCalled());
-        Assertions.assertEquals("Hello, haha", result);
-        invoker.destroy();
-        exporter.unexport();
-    }
-
-    @Test
-    public void testTimeOut() {
-        HessianServiceImpl server = new HessianServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0&timeout=10");
-        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
-        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
-        HessianService client = proxyFactory.getProxy(invoker);
-        try {
-            client.timeOut(6000);
-            fail();
-        } catch (RpcException expected) {
-            Assertions.assertTrue(expected.isTimeout());
-        } finally {
-            invoker.destroy();
-            exporter.unexport();
-        }
-
-    }
-
-    @Test
-    public void testCustomException() {
-        HessianServiceImpl server = new HessianServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0");
-        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
-        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
-        HessianService client = proxyFactory.getProxy(invoker);
-        try {
-            client.customException();
-            fail();
-        } catch (MyException expected) {
-
-        }
-        invoker.destroy();
-        exporter.unexport();
-    }
-
-
-    @Test
-    public void testRemoteApplicationName() {
-        HessianServiceImpl server = new HessianServiceImpl();
-        ProxyFactory proxyFactory = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-        Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
-        int port = NetUtils.getAvailablePort();
-        URL url = URL.valueOf("hessian://127.0.0.1:" + port + "/" + HessianService.class.getName() + "?version=1.0.0&hessian.overload.method=true").addParameter("application", "consumer");
-        Exporter<HessianService> exporter = protocol.export(proxyFactory.getInvoker(server, HessianService.class, url));
-        Invoker<HessianService> invoker = protocol.refer(HessianService.class, url);
-        HessianService client = proxyFactory.getProxy(invoker);
-        String result = client.getRemoteApplicationName();
-        Assertions.assertEquals("consumer", result);
         invoker.destroy();
         exporter.unexport();
     }
