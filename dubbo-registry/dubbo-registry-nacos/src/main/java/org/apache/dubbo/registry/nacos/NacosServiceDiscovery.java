@@ -35,6 +35,8 @@ import com.alibaba.nacos.api.naming.pojo.ListView;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
@@ -57,6 +59,8 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     private NacosNamingServiceWrapper namingService;
 
     private URL registryURL;
+
+    private ConcurrentHashMap<String, AtomicInteger> subscribeMap = new ConcurrentHashMap<>();
 
     @Override
     public void doInitialize(URL registryURL) throws Exception {
@@ -103,10 +107,16 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return ThrowableFunction.execute(namingService, service ->
-                service.selectInstances(serviceName, true)
-                        .stream().map(NacosNamingServiceUtils::toServiceInstance)
-                        .collect(Collectors.toList())
+        return ThrowableFunction.execute(namingService, service -> {
+                boolean subscribe = false;
+                AtomicInteger subscribeNum = subscribeMap.get(serviceName);
+                if (subscribeNum != null && subscribeNum.get() > 0) {
+                    subscribe = true;
+                }
+                return service.selectInstances(serviceName, true, subscribe)
+                    .stream().map(NacosNamingServiceUtils::toServiceInstance)
+                    .collect(Collectors.toList());
+            }
         );
     }
 
@@ -122,6 +132,8 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                             handleEvent(event, listener);
                         }
                     });
+                    AtomicInteger subscribeNum = subscribeMap.computeIfAbsent(serviceName, key -> new AtomicInteger(0));
+                    subscribeNum.incrementAndGet();
                 } catch (NacosException e) {
                     logger.error("add nacos service instances changed listener fail ", e);
                 }
