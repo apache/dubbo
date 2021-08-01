@@ -140,11 +140,14 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceParameter(String service, String key) {
-        String value = getInstanceParameter(key);
-        if (StringUtils.isEmpty(value) && metadataInfo != null) {
-            value = metadataInfo.getParameter(key, service);
+        if (metadataInfo != null) {
+            String value = metadataInfo.getParameter(key, service);
+            if (StringUtils.isNotEmpty(value)) {
+                return value;
+            }
         }
-        return value;
+
+        return getInstanceParameter(key);
     }
 
     /**
