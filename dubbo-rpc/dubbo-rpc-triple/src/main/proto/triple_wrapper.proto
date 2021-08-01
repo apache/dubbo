@@ -14,6 +14,8 @@
 // limitations under the License.
 syntax = "proto3";
 
+import "google/protobuf/any.proto";
+
 package org.apache.dubbo.triple;
 
 message TripleRequestWrapper {
@@ -28,4 +30,25 @@ message TripleResponseWrapper {
     string serializeType = 1;
     bytes data = 2;
     string type = 3;
+}
+
+message TripleExceptionWrapper {
+    string serializeType = 1;
+    bytes data = 2;
+    string type = 3;
+}
+
+
+message Status {
+    // The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+    int32 code = 1;
+
+    // A developer-facing error message, which should be in English. Any
+    // user-facing error message should be localized and sent in the
+    // [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+    string message = 2;
+
+    // A list of messages that carry the error details.  There is a common set of
+    // message types for APIs to use.
+    repeated google.protobuf.Any details = 3;
 }

@@ -20,13 +20,35 @@ import org.apache.dubbo.rpc.RpcException;
 
 public class TripleRpcException extends RpcException {
     private final GrpcStatus status;
+    private final Metadata trailers;
+    private final boolean fillInStackTrace;
 
     public TripleRpcException(GrpcStatus status) {
+        this(status, null);
+    }
+
+    public TripleRpcException(GrpcStatus status, Metadata trailers) {
+        this(status, trailers, true);
+    }
+
+    public TripleRpcException(GrpcStatus status, Metadata trailers, boolean fillInStackTrace) {
         super(status.description, status.cause);
         this.status = status;
+        this.trailers = trailers;
+        this.fillInStackTrace = fillInStackTrace;
+        fillInStackTrace();
+    }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return fillInStackTrace ? super.fillInStackTrace() : this;
     }
 
     public GrpcStatus getStatus() {
         return status;
+    }
+
+    public Metadata getTrailers() {
+        return trailers;
     }
 }

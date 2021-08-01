@@ -16,13 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.netty.buffer.ByteBuf;
@@ -34,6 +27,16 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.serialize.ObjectInput;
+import org.apache.dubbo.common.serialize.ObjectOutput;
+import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -106,6 +109,32 @@ public class TripleUtil {
         }
     }
 
+    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
+                                            Serialization serialization) {
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            final Class<?> aClass = ClassUtils.forName(wrap.getType());
+            final ObjectInput in = serialization.deserialize(null, bais);
+            bais.close();
+            return (Throwable) in.readObject(aClass);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap exception", e);
+        }
+    }
+
+    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
+                                            MultipleSerialization serialization) {
+        String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
+        try {
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
+            bais.close();
+            return (Throwable) ret;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to unwrap exception", e);
+        }
+    }
+
     public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap,
                                      MultipleSerialization multipleSerialization) {
         String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
@@ -139,6 +168,50 @@ public class TripleUtil {
             throw new RuntimeException("Failed to pack wrapper req", e);
         }
     }
+
+    public static boolean supportExceptionSerialization(String serializeType) {
+        if (serializeType.equals("hessian2")) {
+            return true;
+        }
+        return false;
+    }
+
+    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
+                                                                     Serialization serialization) {
+        try {
+            final TripleWrapper.TripleExceptionWrapper.Builder builder =
+                TripleWrapper.TripleExceptionWrapper.newBuilder()
+                    .setType(throwable.getClass().getName())
+                    .setSerializeType("hessian2");
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutput serialize = serialization.serialize(url, bos);
+            serialize.writeObject(throwable);
+            serialize.flushBuffer();
+            builder.setData(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper req", e);
+        }
+    }
+
+    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, String serializeType, Throwable throwable,
+                                                                     MultipleSerialization multipleSerialization) {
+        try {
+            final TripleWrapper.TripleExceptionWrapper.Builder builder =
+                TripleWrapper.TripleExceptionWrapper.newBuilder()
+                    .setType(throwable.getClass().getName())
+                    .setSerializeType(convertHessianToWrapper(serializeType));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            multipleSerialization.serialize(url, serializeType, throwable.getClass().getName(), throwable, bos);
+            builder.setData(ByteString.copyFrom(bos.toByteArray()));
+            bos.close();
+            return builder.build();
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to pack wrapper exception", e);
+        }
+    }
+
 
     public static TripleWrapper.TripleRequestWrapper wrapReq(URL url, String serializeType, Object req,
                                                              String type,

@@ -22,6 +22,7 @@ import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.util.concurrent.Executor;
 
@@ -65,14 +66,34 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         protected void onError(GrpcStatus status) {
             Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-            if (status.description != null) {
-                response.setErrorMessage(status.description);
-            } else {
-                response.setErrorMessage(status.cause.getMessage());
+            response.setErrorMessage(status.description);
+            final AppResponse result = new AppResponse();
+            result.setException(getThrowable(this.getTrailers()));
+            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToMap(this.getTrailers()));
+            response.setResult(result);
+            if (!result.hasException()) {
+                final byte code = GrpcStatus.toDubboStatus(status.code);
+                response.setStatus(code);
             }
-            final byte code = GrpcStatus.toDubboStatus(status.code);
-            response.setStatus(code);
             DefaultFuture2.received(getConnection(), response);
         }
+
+        private Throwable getThrowable(Metadata metadata) {
+            if (metadata.contains(TripleConstant.EXCEPTION_TW_BIN)) {
+                final String raw = metadata.get(TripleConstant.EXCEPTION_TW_BIN).toString();
+                byte[] exceptionTwBin = TripleUtil.decodeASCIIByte(raw);
+                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                try {
+                    final TripleWrapper.TripleExceptionWrapper wrapper = TripleUtil.unpack(exceptionTwBin,
+                        TripleWrapper.TripleExceptionWrapper.class);
+                    return TripleUtil.unWrapException(getUrl(), wrapper, getExceptionMultipleSerialization());
+                } finally {
+                    ClassLoadUtil.switchContextLoader(tccl);
+                }
+            }
+            return null;
+        }
+
+
     }
 }

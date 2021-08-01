@@ -17,20 +17,23 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
+import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.common.serialize.Serialization;
+import org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
-
-import io.netty.handler.codec.http2.Http2Headers;
+import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +66,7 @@ public abstract class AbstractStream implements Stream {
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
+    private final Serialization exceptionSerialization;
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
@@ -83,7 +87,9 @@ public abstract class AbstractStream implements Stream {
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
-                .getExtension(value);
+            .getExtension(value);
+        // fixme should able to set the type？
+        this.exceptionSerialization = new Hessian2Serialization();
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
     }
@@ -144,6 +150,10 @@ public abstract class AbstractStream implements Stream {
         return multipleSerialization;
     }
 
+    public Serialization getExceptionMultipleSerialization() {
+        return exceptionSerialization;
+    }
+
     public StreamObserver<Object> getStreamSubscriber() {
         return streamSubscriber;
     }
@@ -189,24 +199,62 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected void transportError(GrpcStatus status) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
+        // set metadata
+        Metadata metadata = getMetaData(status);
+        getTransportSubscriber().tryOnMetadata(metadata, false);
+        // set trailers
+        TripleWrapper.Status statusWrapper = TripleWrapper.Status.newBuilder()
+            .setCode(status.code.code)
+            .setMessage(status.toMessage())
+            // set detail
+            .build();
+        Metadata trailers = getTrailers(statusWrapper, status.cause);
+        getTransportSubscriber().tryOnMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] " + status.toMessage());
         }
     }
 
     protected void transportError(Throwable throwable) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(Code.UNKNOWN.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, throwable.getMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
+        GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
+        Metadata metadata = getMetaData(status);
+        getTransportSubscriber().tryOnMetadata(metadata, false);
+        TripleWrapper.Status statusWrapper = TripleWrapper.Status.newBuilder()
+            .setCode(Code.UNKNOWN.code)
+            .setMessage(status.toMessage())
+            .build();
+        Metadata trailers = getTrailers(statusWrapper, status.cause);
+        getTransportSubscriber().tryOnMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
                     + " method=" + getMethodName(), throwable);
         }
+    }
+
+    private Metadata getMetaData(GrpcStatus status) {
+        Metadata metadata = new DefaultMetadata();
+        if (StringUtils.isNotEmpty(status.description)) {
+            metadata.put(TripleConstant.MESSAGE_KEY, status.description);
+        } else {
+            metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
+        }
+        metadata.put(TripleConstant.STATUS_KEY, String.valueOf(status.code.code));
+        return metadata;
+    }
+
+    private Metadata getTrailers(TripleWrapper.Status status, Throwable throwable) {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
+        if (throwable != null) {
+            // fixme determine whether serialization is possible now only support hessian2
+            // if (TripleUtil.supportExceptionSerialization(serializeType)) {
+            TripleWrapper.TripleExceptionWrapper tripleExceptionWrapper =
+                TripleUtil.wrapException(getUrl(), throwable, exceptionSerialization);
+            metadata.put(TripleConstant.EXCEPTION_TW_BIN,
+                TripleUtil.encodeBase64ASCII(tripleExceptionWrapper.toByteArray()));
+            // }
+        }
+        return metadata;
     }
 
     protected Map<String, Object> parseMetadataToMap(Metadata metadata) {
@@ -323,14 +371,7 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
-            Metadata metadata;
-            if (getTrailers() == null) {
-                metadata = getHeaders();
-            } else {
-                metadata = getTrailers();
-            }
-
-            final GrpcStatus status = extractStatusFromMeta(metadata);
+            final GrpcStatus status = extractStatusFromMeta(getHeaders());
             if (GrpcStatus.Code.isOk(status.code.code)) {
                 doOnComplete(handler);
             } else {
