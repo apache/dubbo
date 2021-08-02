@@ -221,6 +221,9 @@ public class MetadataInfo implements Serializable {
 
         private transient URL url;
 
+        private final static String[] KEYS_TO_REMOVE = {MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
+            QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY};
+
         public ServiceInfo() {
         }
 
@@ -231,11 +234,10 @@ public class MetadataInfo implements Serializable {
             Map<String, String> params = new HashMap<>();
             List<MetadataParamsFilter> filters = loader.getActivateExtension(url, "params-filter");
             if (filters.size() == 0) {
-                params.putAll(
-                        url.removeParameters(
-                                MONITOR_KEY, BIND_IP_KEY, BIND_PORT_KEY, QOS_ENABLE,
-                                QOS_HOST, QOS_PORT, ACCEPT_FOREIGN_IP, VALIDATION_KEY, INTERFACES, PID_KEY, TIMESTAMP_KEY)
-                                .getParameters());
+                params.putAll(url.getParameters());
+                for (String key : KEYS_TO_REMOVE) {
+                    params.remove(key);
+                }
             }
             for (MetadataParamsFilter filter : filters) {
                 String[] paramsIncluded = filter.serviceParamsIncluded();
