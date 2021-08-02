@@ -44,6 +44,7 @@ public class WhitelistHessian2FactoryInitializer extends AbstractHessian2Factory
                 serializerFactory.getClassFactory().deny(denyPattern);
             }
         }
+        serializerFactory.getClassFactory().allow(RuntimeException.class.getName());
         return serializerFactory;
     }
 
