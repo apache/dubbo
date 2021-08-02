@@ -16,3 +16,4 @@
 #
 
 mockexporterlistener=org.apache.dubbo.config.mock.MockExporterListener
+singleConfigCenterInjvm=org.apache.dubbo.integration.single.listener.InjvmExporterListener
