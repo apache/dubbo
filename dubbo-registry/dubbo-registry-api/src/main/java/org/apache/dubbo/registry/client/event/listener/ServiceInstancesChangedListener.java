@@ -98,9 +98,11 @@ public class ServiceInstancesChangedListener {
      * @param event {@link ServiceInstancesChangedEvent}
      */
     public synchronized void onEvent(ServiceInstancesChangedEvent event) {
-        if (destroyed.get() || this.isRetryAndExpired(event) || !accept(event)) {
+        if (destroyed.get() || !accept(event) || isRetryAndExpired(event)) {
             return;
         }
+
+        refreshInstance(event);
 
         if (logger.isDebugEnabled()) {
             logger.debug(event.getServiceInstances().toString());
@@ -118,7 +120,7 @@ public class ServiceInstancesChangedListener {
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
                 if (EMPTY_REVISION.equals(revision)) {
-                    if(logger.isDebugEnabled()) {
+                    if (logger.isDebugEnabled()) {
                         logger.debug("Find instance without valid service metadata: " + instance.getAddress());
                     }
                     continue;
@@ -136,19 +138,19 @@ public class ServiceInstancesChangedListener {
             MetadataInfo metadata = getRemoteMetadata(revision, localServiceToRevisions, instance);
             // update metadata into each instance, in case new instance created.
             for (ServiceInstance tmpInstance : subInstances) {
-                ((DefaultServiceInstance)tmpInstance).setServiceMetadata(metadata);
+                ((DefaultServiceInstance) tmpInstance).setServiceMetadata(metadata);
             }
 //            ((DefaultServiceInstance) instance).setServiceMetadata(metadata);
             newRevisionToMetadata.putIfAbsent(revision, metadata);
         }
 
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug(newRevisionToMetadata.size() + " unique revisions: " + newRevisionToMetadata.keySet());
         }
 
         if (hasEmptyMetadata(newRevisionToMetadata)) {// retry every 10 seconds
             if (retryPermission.tryAcquire()) {
-                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10000, TimeUnit.MILLISECONDS);
+                retryFuture = scheduler.schedule(new AddressRefreshRetryTask(retryPermission, event.getServiceName()), 10_000L, TimeUnit.MILLISECONDS);
                 logger.warn("Address refresh try task submitted.");
             }
             logger.error("Address refresh failed because of Metadata Server failure, wait for retry or new address refresh event.");
@@ -175,7 +177,7 @@ public class ServiceInstancesChangedListener {
 
     public synchronized void addListenerAndNotify(String serviceKey, NotifyListener listener) {
         this.listeners.put(serviceKey, listener);
-        List<URL> urls = getAddresses(serviceKey, listener.getConsumerUrl());
+        List<URL> urls = getAddresses(serviceKey);
         if (CollectionUtils.isNotEmpty(urls)) {
             listener.notify(urls);
         }
@@ -236,9 +238,6 @@ public class ServiceInstancesChangedListener {
     }
 
     protected boolean isRetryAndExpired(ServiceInstancesChangedEvent event) {
-        String appName = event.getServiceName();
-        List<ServiceInstance> appInstances = event.getServiceInstances();
-
         if (event instanceof RetryServiceInstancesChangedEvent) {
             RetryServiceInstancesChangedEvent retryEvent = (RetryServiceInstancesChangedEvent) event;
             logger.warn("Received address refresh retry event, " + retryEvent.getFailureRecordTime());
@@ -247,12 +246,19 @@ public class ServiceInstancesChangedListener {
                 return true;
             }
             logger.warn("Retrying address notification...");
-        } else {
-            logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
-            allInstances.put(appName, appInstances);
-            lastRefreshTime = System.currentTimeMillis();
         }
         return false;
+    }
+
+    private void refreshInstance(ServiceInstancesChangedEvent event) {
+        if (event instanceof RetryServiceInstancesChangedEvent) {
+            return;
+        }
+        String appName = event.getServiceName();
+        List<ServiceInstance> appInstances = event.getServiceInstances();
+        logger.info("Received instance notification, serviceName: " + appName + ", instances: " + appInstances.size());
+        allInstances.put(appName, appInstances);
+        lastRefreshTime = System.currentTimeMillis();
     }
 
     protected boolean hasEmptyMetadata(Map<String, MetadataInfo> revisionToMetadata) {
@@ -289,11 +295,12 @@ public class ServiceInstancesChangedListener {
                 break;
             } else {// failed
                 logger.error("Failed to get MetadataInfo for instance " + instance.getAddress() + "?revision=" + revision
-                    + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
+                        + "&cluster=" + instance.getRegistryCluster() + ", wait for retry.");
                 triedTimes++;
                 try {
                     Thread.sleep(1000);
-                } catch (InterruptedException e) {}
+                } catch (InterruptedException e) {
+                }
             }
         }
 
@@ -327,7 +334,7 @@ public class ServiceInstancesChangedListener {
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance
-                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance, serviceDiscovery);
+                MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
             }
         } catch (Exception e) {
@@ -367,14 +374,14 @@ public class ServiceInstancesChangedListener {
         return urls;
     }
 
-    protected List<URL> getAddresses(String serviceProtocolKey, URL consumerURL) {
+    protected List<URL> getAddresses(String serviceProtocolKey) {
         return (List<URL>) serviceUrls.get(serviceProtocolKey);
     }
 
     protected void notifyAddressChanged() {
         listeners.forEach((key, notifyListener) -> {
             //FIXME, group wildcard match
-            List<URL> urls = toUrlsWithEmpty(getAddresses(key, notifyListener.getConsumerUrl()));
+            List<URL> urls = toUrlsWithEmpty(getAddresses(key));
             logger.info("Notify service " + key + " with urls " + urls.size());
             notifyListener.notify(urls);
         });

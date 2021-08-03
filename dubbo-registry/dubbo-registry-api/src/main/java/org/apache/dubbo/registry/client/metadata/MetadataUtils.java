@@ -90,7 +90,7 @@ public class MetadataUtils {
                 ServiceInstanceMetadataUtils.getExportedServicesRevision(serviceInstance);
     }
 
-    public static MetadataService getMetadataServiceProxy(ServiceInstance instance, ServiceDiscovery serviceDiscovery) {
+    public static MetadataService getMetadataServiceProxy(ServiceInstance instance) {
         String key = computeKey(instance);
         Lock lock = metadataServiceLocks.computeIfAbsent(key, k -> new ReentrantLock());
 
