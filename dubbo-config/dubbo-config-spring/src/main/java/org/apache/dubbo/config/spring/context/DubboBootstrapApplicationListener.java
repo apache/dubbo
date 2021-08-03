@@ -82,7 +82,11 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
 
     private void initDubboConfigBeans() {
         // load DubboConfigBeanInitializer to init config beans
-        applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
+        if (applicationContext.containsBean(DubboConfigBeanInitializer.BEAN_NAME)) {
+            applicationContext.getBean(DubboConfigBeanInitializer.BEAN_NAME, DubboConfigBeanInitializer.class);
+        } else {
+            logger.warn("Bean '" + DubboConfigBeanInitializer.BEAN_NAME + "' was not found");
+        }
 
         // All infrastructure config beans are loaded, initialize dubbo here
         DubboBootstrap.getInstance().initialize();
@@ -138,6 +142,10 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
 
+        checkCallStackAndInit();
+    }
+
+    private void checkCallStackAndInit() {
         // check call stack whether contains org.springframework.context.support.AbstractApplicationContext.registerListeners()
         Exception exception = new Exception();
         StackTraceElement[] stackTrace = exception.getStackTrace();
@@ -148,13 +156,13 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
                 break;
             }
         }
-        if (!found) {
+        if (found) {
+            // init config beans here, compatible with spring 3.x/4.1.x
+            initDubboConfigBeans();
+        } else {
             logger.warn("DubboBootstrapApplicationListener initialization is unexpected, " +
-                "it should be created in AbstractApplicationContext.registerListeners() method", exception);
+                    "it should be created in AbstractApplicationContext.registerListeners() method", exception);
         }
-
-        // init config beans here, compatible with spring 3.x/4.1.x
-        initDubboConfigBeans();
     }
 
     public ApplicationContext getApplicationContext() {
