@@ -16,8 +16,6 @@
  */
 package org.apache.dubbo.common;
 
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.url.component.URLItemCache;
 
