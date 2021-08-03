@@ -59,7 +59,7 @@ import static org.apache.dubbo.spring.boot.util.DubboUtils.DUBBO_SCAN_PREFIX;
 @AutoConfigureAfter(DubboRelaxedBindingAutoConfiguration.class)
 @EnableConfigurationProperties(DubboConfigurationProperties.class)
 @EnableDubboConfig
-public class DubboAutoConfiguration implements ApplicationContextAware, BeanDefinitionRegistryPostProcessor {
+public class DubboAutoConfiguration {
 
     /**
      * Creates {@link ServiceAnnotationPostProcessor} Bean
@@ -75,33 +75,4 @@ public class DubboAutoConfiguration implements ApplicationContextAware, BeanDefi
         return new ServiceAnnotationPostProcessor(packagesToScan);
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        if (applicationContext instanceof ConfigurableApplicationContext) {
-            ConfigurableApplicationContext context = (ConfigurableApplicationContext) applicationContext;
-
-            // Why register ApplicationListener here?
-            DubboBootstrapApplicationListener dubboBootstrapApplicationListener = new DubboBootstrapApplicationListener();
-            dubboBootstrapApplicationListener.setApplicationContext(applicationContext);
-            context.addApplicationListener(dubboBootstrapApplicationListener);
-        }
-    }
-
-    @Override
-    public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        // Remove the BeanDefinitions of ApplicationListener from DubboBeanUtils#registerCommonBeans(BeanDefinitionRegistry)
-        // TODO Refactoring in Dubbo 2.7.9
-        removeBeanDefinition(registry, DubboBootstrapApplicationListener.BEAN_NAME);
-    }
-
-    private void removeBeanDefinition(BeanDefinitionRegistry registry, String beanName) {
-        if (registry.containsBeanDefinition(beanName)) {
-            registry.removeBeanDefinition(beanName);
-        }
-    }
-
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        // DO NOTHING
-    }
 }
