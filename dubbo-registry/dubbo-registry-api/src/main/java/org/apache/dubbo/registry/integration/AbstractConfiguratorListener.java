@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.registry.integration;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
@@ -29,7 +30,16 @@ import org.apache.dubbo.rpc.cluster.configurator.parser.ConfigParser;
 import org.apache.dubbo.rpc.cluster.governance.GovernanceRuleRepository;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static org.apache.dubbo.rpc.Constants.ACCESS_LOG_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.ROUTER_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RULE_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.RUNTIME_KEY;
+import static org.apache.dubbo.rpc.cluster.Constants.TYPE_KEY;
 
 /**
  * AbstractConfiguratorListener
@@ -40,6 +50,17 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
     protected List<Configurator> configurators = Collections.emptyList();
     protected GovernanceRuleRepository ruleRepository = ExtensionLoader.getExtensionLoader(
             GovernanceRuleRepository.class).getDefaultExtension();
+
+    protected Set<String> securityKey = new HashSet<>();
+
+    {
+        // accessLogKey and FileRouterFactory key
+        securityKey.add(ACCESS_LOG_KEY);
+        securityKey.add(ROUTER_KEY);
+        securityKey.add(RULE_KEY);
+        securityKey.add(RUNTIME_KEY);
+        securityKey.add(TYPE_KEY);
+    }
 
     protected final void initWith(String key) {
         ruleRepository.addListener(key, this);
@@ -75,8 +96,9 @@ public abstract class AbstractConfiguratorListener implements ConfigurationListe
         boolean parseSuccess = true;
         try {
             // parseConfigurators will recognize app/service config automatically.
-            configurators = Configurator.toConfigurators(ConfigParser.parseConfigurators(rawConfig))
-                    .orElse(configurators);
+            List<URL> urls = ConfigParser.parseConfigurators(rawConfig);
+            List<URL> safeUrls = urls.stream().map(url -> url.removeParameters(securityKey)).collect(Collectors.toList());
+            configurators = Configurator.toConfigurators(safeUrls).orElse(configurators);
         } catch (Exception e) {
             logger.error("Failed to parse raw dynamic config and it will not take effect, the raw config is: " +
                     rawConfig, e);
