@@ -209,6 +209,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         serviceMetadata.generateServiceKey();
     }
 
+    @Override
     public synchronized void export() {
         if (this.shouldExport() && !this.exported) {
             this.init();

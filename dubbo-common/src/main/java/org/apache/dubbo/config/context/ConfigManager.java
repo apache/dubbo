@@ -103,7 +103,6 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
         for (Class<? extends AbstractConfig> configType : uniqueConfigTypes) {
             configNames.add(configType.getSimpleName());
         }
-        logger.info("Unique config types: " + configNames);
     }
 
     public ConfigManager() {
