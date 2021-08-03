@@ -1,2 +1,3 @@
 mock=org.apache.dubbo.config.mock.MockServiceListener
 exported=org.apache.dubbo.integration.single.listener.ExportedServiceListener
+singleConfigCenterInjvm=org.apache.dubbo.integration.single.listener.InjvmServiceListener
