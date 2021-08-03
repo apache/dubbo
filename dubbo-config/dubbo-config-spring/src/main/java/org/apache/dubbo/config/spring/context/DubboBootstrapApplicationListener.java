@@ -31,7 +31,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationContextEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.core.Ordered;
 
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
