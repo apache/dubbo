@@ -33,7 +33,6 @@ public final class MeshRuleManager {
     public static final Logger logger = LoggerFactory.getLogger(MeshRuleManager.class);
 
     private static final String MESH_RULE_DATA_ID_SUFFIX = ".MESHAPPRULE";
-    private static final String GROUP = "DEFAULT_GROUP";
 
     private static final ConcurrentHashMap<String, MeshAppRuleListener> APP_RULE_LISTENERS = new ConcurrentHashMap<>();
 
@@ -53,7 +52,7 @@ public final class MeshRuleManager {
 
         if(configuration != null) {
             try {
-                String rawConfig = configuration.getConfig(appRuleDataId, GROUP, 5000L);
+                String rawConfig = configuration.getConfig(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, 5000L);
                 if (rawConfig != null) {
                     meshAppRuleListener.receiveConfigInfo(rawConfig);
                 }
@@ -61,7 +60,7 @@ public final class MeshRuleManager {
                 logger.error("get MeshRuleManager app rule failed.", throwable);
             }
 
-            configuration.addListener(appRuleDataId, GROUP, meshAppRuleListener);
+            configuration.addListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);
         }
 
         for (MeshEnvListener envListener : envListeners) {
