@@ -264,7 +264,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             allServiceInstances.removeAll(oldServiceInstances);
 
             allServiceInstances.forEach(removedServiceInstance -> {
-                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance, this);
+                MetadataUtils.destroyMetadataServiceProxy(removedServiceInstance);
             });
 
             cachedServiceInstances.put(serviceName, instances);
