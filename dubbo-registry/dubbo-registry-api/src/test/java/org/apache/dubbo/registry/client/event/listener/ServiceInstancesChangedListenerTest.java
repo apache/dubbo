@@ -195,7 +195,7 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(1, revisionToMetadata.size());
             Assertions.assertEquals(metadataInfo_111, revisionToMetadata.get("111"));
 
-            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo");
+            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(3, serviceUrls.size());
             Assertions.assertTrue(serviceUrls.get(0) instanceof InstanceAddressURL);
 
@@ -236,12 +236,12 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(metadataInfo_222, revisionToMetadata.get("222"));
             Assertions.assertEquals(metadataInfo_333, revisionToMetadata.get("333"));
 
-            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo");
+            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(7, serviceUrls.size());
-            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo");
+            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls2.size());
             Assertions.assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
-            List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo");
+            List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo", consumerURL);
             Assertions.assertEquals(2, serviceUrls3.size());
             Assertions.assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
         }
@@ -282,13 +282,13 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(metadataInfo_222, revisionToMetadata.get("222"));
             Assertions.assertEquals(metadataInfo_333, revisionToMetadata.get("333"));
 
-            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo");
+            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls.size());
             Assertions.assertTrue(serviceUrls.get(0).getIp().contains("30.10."));
-            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo");
+            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
             Assertions.assertEquals(4, serviceUrls2.size());
             Assertions.assertTrue(serviceUrls2.get(0).getIp().contains("30.10."));
-            List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo");
+            List<URL> serviceUrls3 = listener.getAddresses(service3 + ":dubbo", consumerURL);
             Assertions.assertEquals(2, serviceUrls3.size());
             Assertions.assertTrue(serviceUrls3.get(0).getIp().contains("30.10."));
 
@@ -305,9 +305,9 @@ public class ServiceInstancesChangedListenerTest {
             Map<String, MetadataInfo> revisionToMetadata_app2 = listener.getRevisionToMetadata();
             Assertions.assertEquals(0, revisionToMetadata_app2.size());
 
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service1 + ":dubbo")));
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service2+ ":dubbo")));
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service3 + ":dubbo")));
+            Assertions.assertTrue(isEmpty(listener.getAddresses(service1 + ":dubbo", consumerURL)));
+            Assertions.assertTrue(isEmpty(listener.getAddresses(service2+ ":dubbo", consumerURL)));
+            Assertions.assertTrue(isEmpty(listener.getAddresses(service3 + ":dubbo", consumerURL)));
         }
     }
 
@@ -374,8 +374,8 @@ public class ServiceInstancesChangedListenerTest {
             ServiceInstancesChangedEvent failed_revision_event = new ServiceInstancesChangedEvent("app1", app1FailedInstances);
             listener.onEvent(failed_revision_event);
 
-            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo");
-            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo");
+            List<URL> serviceUrls = listener.getAddresses(service1 + ":dubbo", consumerURL);
+            List<URL> serviceUrls2 = listener.getAddresses(service2 + ":dubbo", consumerURL);
 
             Assertions.assertTrue(isEmpty(serviceUrls));
             Assertions.assertTrue(isEmpty(serviceUrls2));
@@ -438,8 +438,8 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(metadataInfo_111, revisionToMetadata.get("111"));
             Assertions.assertEquals(MetadataInfo.EMPTY, revisionToMetadata.get("222"));
 
-            Assertions.assertEquals(3, listener.getAddresses(service1 + ":dubbo").size());
-            Assertions.assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo")));
+            Assertions.assertEquals(3, listener.getAddresses(service1 + ":dubbo", consumerURL).size());
+            Assertions.assertTrue(isEmpty(listener.getAddresses(service2 + ":dubbo", consumerURL)));
 
             try {
                 Thread.sleep(15000);
@@ -452,9 +452,9 @@ public class ServiceInstancesChangedListenerTest {
             Assertions.assertEquals(metadataInfo_111, revisionToMetadata_after_retry.get("111"));
             Assertions.assertEquals(metadataInfo_222, revisionToMetadata_after_retry.get("222"));
 
-            List<URL> serviceUrls_after_retry = listener.getAddresses(service1 + ":dubbo");
+            List<URL> serviceUrls_after_retry = listener.getAddresses(service1 + ":dubbo", consumerURL);
             Assertions.assertEquals(5, serviceUrls_after_retry.size());
-            List<URL> serviceUrls2_after_retry = listener.getAddresses(service2 + ":dubbo");
+            List<URL> serviceUrls2_after_retry = listener.getAddresses(service2 + ":dubbo", consumerURL);
             Assertions.assertEquals(2, serviceUrls2_after_retry.size());
         } finally {
             MetadataUtils.metadataServiceProxies = tmpProxyMap;
