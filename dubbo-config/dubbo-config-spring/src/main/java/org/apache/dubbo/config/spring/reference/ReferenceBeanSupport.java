@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.spring.Constants;
 import org.apache.dubbo.config.spring.ReferenceBean;
+import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyValue;
@@ -46,7 +47,6 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.utils.StringUtils.join;
-import static org.apache.dubbo.config.spring.reference.ReferenceCreator.convertStringArrayToMap;
 
 public class ReferenceBeanSupport {
 
@@ -153,7 +153,7 @@ public class ReferenceBeanSupport {
         }
         if (ReferenceAttributes.PARAMETERS.equals(key) && obj instanceof String[]) {
             //convert parameters array pairs to map
-            obj = convertStringArrayToMap((String[]) obj);
+            obj = DubboAnnotationUtils.convertParameters((String[]) obj);
         }
 
         //to string
