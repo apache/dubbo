@@ -14,18 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.single.injvm;
+package org.apache.dubbo.integration.multiple.injvm;
 
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.rpc.Filter;
-import org.apache.dubbo.rpc.Invocation;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.Result;
+import org.apache.dubbo.rpc.*;
 
-@Activate(group = CommonConstants.PROVIDER, order = 10000)
-public class InjvmFilter implements Filter,Filter.Listener {
+@Activate(group = CommonConstants.PROVIDER, order = 10200)
+public class MultipleRegistryCenterInjvmFilter implements Filter,Filter.Listener{
 
     /**
      * The filter is called or not
