@@ -16,6 +16,46 @@
  */
 package org.apache.dubbo.registry;
 
-public class DelayedRegistryNotifierTest {
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
+public class DelayedRegistryNotifierTest {
+    @Test
+    public void testDelay() throws InterruptedException {
+        MockRegistryNotifier notifier = new MockRegistryNotifier(1000);
+
+        // The first time the notification is triggered immediately, let lastExecuteTime have a value instead of the
+        // default value of 0
+        notifier.notify("dubbo://127.0.0.1");
+        // Take a nap to make sure the scheduler thread finishes the task
+        Thread.sleep(10);
+        Assertions.assertEquals(notifier.getCount(), 1);
+
+        // Generate 10 delayed tasks, the latest value of lastEventTime is the last call, so that only the last delayed
+        // task satisfies condition that "this.time == listener.lastEventTime", and execute the "doNotify" logic
+        for (int i = 0; i < 10; i++) {
+            Thread.sleep(10);
+            notifier.notify("dubbo://127.0.0.1");
+        }
+        Thread.sleep(1000);
+        Assertions.assertEquals(notifier.getCount(), 2);
+    }
+}
+
+class MockRegistryNotifier extends RegistryNotifier {
+
+    private int count = 0;
+
+    public MockRegistryNotifier(long delayTime) {
+        super(delayTime);
+    }
+
+    @Override
+    protected void doNotify(Object rawAddresses) {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
 }
