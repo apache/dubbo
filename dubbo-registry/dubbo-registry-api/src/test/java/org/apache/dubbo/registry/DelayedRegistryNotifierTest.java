@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 public class DelayedRegistryNotifierTest {
     @Test
     public void testDelay() throws InterruptedException {
-        MockRegistryNotifier notifier = new MockRegistryNotifier(3000);
+        MockRegistryNotifier notifier = new MockRegistryNotifier(10000);
 
         // The first time the notification is triggered immediately, let lastExecuteTime have a value instead of the
         // default value of 0
@@ -34,10 +34,10 @@ public class DelayedRegistryNotifierTest {
         // Generate 10 delayed tasks, the latest value of lastEventTime is the last call, so that only the last delayed
         // task satisfies condition that "this.time == listener.lastEventTime", and execute the "doNotify" logic
         for (int i = 0; i < 10; i++) {
-            Thread.sleep(100);
+            Thread.sleep(500);
             notifier.notify("dubbo://127.0.0.1");
         }
-        Thread.sleep(3000);
+        Thread.sleep(10000);
         Assertions.assertEquals(notifier.getCount(), 2);
     }
 }
