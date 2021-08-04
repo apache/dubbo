@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 public class DelayedRegistryNotifierTest {
     @Test
     public void testDelay() throws InterruptedException {
-        MockRegistryNotifier notifier = new MockRegistryNotifier(5000);
+        MockRegistryNotifier notifier = new MockRegistryNotifier(3000);
 
         // The first time the notification is triggered immediately, let lastExecuteTime have a value instead of the
         // default value of 0
@@ -37,7 +37,7 @@ public class DelayedRegistryNotifierTest {
             Thread.sleep(100);
             notifier.notify("dubbo://127.0.0.1");
         }
-        Thread.sleep(5000);
+        Thread.sleep(3000);
         Assertions.assertEquals(notifier.getCount(), 2);
     }
 }
