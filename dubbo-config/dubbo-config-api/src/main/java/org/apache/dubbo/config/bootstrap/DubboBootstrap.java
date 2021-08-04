@@ -178,6 +178,8 @@ public class DubboBootstrap {
 
     private AtomicBoolean shutdown = new AtomicBoolean(false);
 
+    private volatile boolean isCurrentlyInStart = false;
+
     private volatile ServiceInstance serviceInstance;
 
     private volatile MetadataService metadataService;
@@ -1087,34 +1089,44 @@ public class DubboBootstrap {
      * Start the bootstrap
      */
     public synchronized DubboBootstrap start() {
-        if (started.compareAndSet(false, true)) {
-            startup.set(false);
-            shutdown.set(false);
-            awaited.set(false);
-
-            initialize();
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " is starting...");
-            }
-
-            doStart();
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " has started.");
-            }
-        } else {
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " is started, export/refer new services.");
-            }
-
-            doStart();
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " finish export/refer new services.");
-            }
+        // avoid re-entry start method multiple times in same thread
+        if (isCurrentlyInStart){
+            return this;
         }
-        return this;
+
+        isCurrentlyInStart = true;
+        try {
+            if (started.compareAndSet(false, true)) {
+                startup.set(false);
+                shutdown.set(false);
+                awaited.set(false);
+
+                initialize();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is starting...");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " has started.");
+                }
+            } else {
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is started, export/refer new services.");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " finish export/refer new services.");
+                }
+            }
+            return this;
+        } finally {
+            isCurrentlyInStart = false;
+        }
     }
 
     private void doStart() {
