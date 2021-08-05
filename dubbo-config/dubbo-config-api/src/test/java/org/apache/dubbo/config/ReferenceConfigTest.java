@@ -135,7 +135,7 @@ public class ReferenceConfigTest {
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            // ignore
         }
         Assertions.assertFalse(success);
         Assertions.assertNull(demoService);
@@ -152,7 +152,7 @@ public class ReferenceConfigTest {
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            // ignore
         } finally {
             rc.destroy();
             sc.unexport();
