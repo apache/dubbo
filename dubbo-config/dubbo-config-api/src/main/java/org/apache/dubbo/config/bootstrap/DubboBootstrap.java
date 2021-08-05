@@ -178,6 +178,8 @@ public class DubboBootstrap {
 
     private AtomicBoolean shutdown = new AtomicBoolean(false);
 
+    private volatile boolean isCurrentlyInStart = false;
+
     private volatile ServiceInstance serviceInstance;
 
     private volatile MetadataService metadataService;
@@ -1086,61 +1088,78 @@ public class DubboBootstrap {
     /**
      * Start the bootstrap
      */
-    public DubboBootstrap start() {
-        if (started.compareAndSet(false, true)) {
-            startup.set(false);
-            shutdown.set(false);
-            awaited.set(false);
-
-            initialize();
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " is starting...");
-            }
-            // 1. export Dubbo Services
-            exportServices();
-
-            // If register consumer instance or has exported services
-            if (isRegisterConsumerInstance() || hasExportedServices()) {
-                // 2. export MetadataService
-                exportMetadataService();
-                // 3. Register the local ServiceInstance if required
-                registerServiceInstance();
-            }
-
-            referServices();
-
-            // wait async export / refer finish if needed
-            awaitFinish();
-
-            if (isExportBackground() || isReferBackground()) {
-                new Thread(() -> {
-                    while (!asyncExportFinish || !asyncReferFinish) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            logger.error(NAME + " waiting async export / refer occurred and error.", e);
-                        }
-                    }
-
-                    startup.set(true);
-                    if (logger.isInfoEnabled()) {
-                        logger.info(NAME + " is ready.");
-                    }
-                    onStart();
-                }).start();
-            } else {
-                startup.set(true);
-                if (logger.isInfoEnabled()) {
-                    logger.info(NAME + " is ready.");
-                }
-                onStart();
-            }
-
-            if (logger.isInfoEnabled()) {
-                logger.info(NAME + " has started.");
-            }
+    public synchronized DubboBootstrap start() {
+        // avoid re-entry start method multiple times in same thread
+        if (isCurrentlyInStart){
+            return this;
         }
-        return this;
+
+        isCurrentlyInStart = true;
+        try {
+            if (started.compareAndSet(false, true)) {
+                startup.set(false);
+                shutdown.set(false);
+                awaited.set(false);
+
+                initialize();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is starting...");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " has started.");
+                }
+            } else {
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is started, export/refer new services.");
+                }
+
+                doStart();
+
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " finish export/refer new services.");
+                }
+            }
+            return this;
+        } finally {
+            isCurrentlyInStart = false;
+        }
+    }
+
+    private void doStart() {
+        // 1. export Dubbo Services
+        exportServices();
+
+        // If register consumer instance or has exported services
+        if (isRegisterConsumerInstance() || hasExportedServices()) {
+            // 2. export MetadataService
+            exportMetadataService();
+            // 3. Register the local ServiceInstance if required
+            registerServiceInstance();
+        }
+
+        referServices();
+
+        // wait async export / refer finish if needed
+        awaitFinish();
+
+        if (isExportBackground() || isReferBackground()) {
+            new Thread(() -> {
+                while (!asyncExportFinish || !asyncReferFinish) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        logger.error(NAME + " waiting async export / refer occurred and error.", e);
+                    }
+                }
+                onStarted();
+            }).start();
+        } else {
+            onStarted();
+        }
     }
 
     private boolean hasExportedServices() {
@@ -1243,10 +1262,9 @@ public class DubboBootstrap {
         }
     }
 
-    public DubboBootstrap awaitFinish() {
+    private void awaitFinish() {
         waitAsyncExportIfNeeded();
         waitAsyncReferIfNeeded();
-        return this;
     }
 
     public boolean isInitialized() {
@@ -1362,7 +1380,9 @@ public class DubboBootstrap {
             if (!serviceConfig.isRefreshed()) {
                 serviceConfig.refresh();
             }
-
+            if (sc.isExported()) {
+                continue;
+            }
             if (sc.shouldExportAsync()) {
                 ExecutorService executor = executorRepository.getServiceExportExecutor();
                 CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
@@ -1448,10 +1468,12 @@ public class DubboBootstrap {
     }
 
     private void registerServiceInstance() {
+        if (this.serviceInstance != null) {
+            return;
+        }
+
         ApplicationConfig application = getApplication();
-
         String serviceName = application.getName();
-
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
 
         try {
@@ -1555,7 +1577,11 @@ public class DubboBootstrap {
         }
     }
 
-    private void onStart() {
+    private void onStarted() {
+        startup.set(true);
+        if (logger.isInfoEnabled()) {
+            logger.info(NAME + " is ready.");
+        }
         ExtensionLoader<DubboBootstrapStartStopListener> exts = getExtensionLoader(DubboBootstrapStartStopListener.class);
         exts.getSupportedExtensionInstances().forEach(ext -> ext.onStart(this));
     }
@@ -1637,16 +1663,11 @@ public class DubboBootstrap {
 
     private void release() {
         executeMutually(() -> {
-            while (awaited.compareAndSet(false, true)) {
+            if (awaited.compareAndSet(false, true)) {
                 if (logger.isInfoEnabled()) {
                     logger.info(NAME + " is about to shutdown...");
                 }
                 condition.signalAll();
-                // sleep
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                }
             }
         });
     }
