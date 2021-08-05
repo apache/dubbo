@@ -25,6 +25,7 @@ public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryIn
     protected SerializerFactory createSerializerFactory() {
         Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
         hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
+        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return hessian2SerializerFactory;
     }
 }
