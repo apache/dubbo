@@ -19,12 +19,10 @@ package org.apache.dubbo.rpc.cluster.router.state;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
-/**
- * @author BurningCN
- * @date 2021/8/4 18:03
- */
 public class BitListTest {
     @Test
     public void test() {
