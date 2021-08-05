@@ -153,6 +153,7 @@
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
+        <module>dubbo-test</module>
     </modules>
 
     <dependencyManagement>

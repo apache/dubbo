@@ -58,8 +58,16 @@ public class ReferenceBeanSupport {
             interfaceName = (String) attributes.get(ReferenceAttributes.INTERFACE_NAME);
         }
         if (interfaceName == null) {
-            Class clazz = (Class) attributes.get(ReferenceAttributes.INTERFACE_CLASS);
-            interfaceName = clazz != null ? clazz.getName() : null;
+            Object interfaceClassValue = attributes.get(ReferenceAttributes.INTERFACE_CLASS);
+            if (interfaceClassValue instanceof Class) {
+                interfaceName = ((Class) interfaceClassValue).getName();
+            } else if (interfaceClassValue instanceof String) {
+                if (interfaceClassValue.equals("void")) {
+                    attributes.remove(ReferenceAttributes.INTERFACE_CLASS);
+                } else {
+                    interfaceName = (String) interfaceClassValue;
+                }
+            }
         }
         if (interfaceName == null && defaultInterfaceClass != GenericService.class) {
             interfaceName = defaultInterfaceClass.getName();

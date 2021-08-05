@@ -117,7 +117,7 @@ public interface DubboBeanUtils {
     }
 
     /**
-     * Register some beans later
+     * Register a placeholder configurer beans if not exists.
      * Call this method in BeanDefinitionRegistryPostProcessor,
      * in order to enable the registered BeanFactoryPostProcessor bean to be loaded and executed.
      * @see DubboInfraBeanRegisterPostProcessor
@@ -125,7 +125,7 @@ public interface DubboBeanUtils {
      * @param beanFactory
      * @param registry
      */
-    static void registerBeansIfNotExists(ConfigurableListableBeanFactory beanFactory, BeanDefinitionRegistry registry) {
+    static void registerPlaceholderConfigurerBeanIfNotExists(ConfigurableListableBeanFactory beanFactory, BeanDefinitionRegistry registry) {
         // Auto register a PropertyPlaceholderConfigurer bean to resolve placeholders with Spring Environment PropertySources
         // when loading dubbo xml config with @ImportResource
         if (!checkBeanExists(beanFactory, PropertySourcesPlaceholderConfigurer.class)) {

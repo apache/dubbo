@@ -54,9 +54,15 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
 
     private final DubboBootstrap dubboBootstrap;
     private ApplicationContext applicationContext;
+    private boolean shouldInitConfigBeans;
 
     public DubboBootstrapApplicationListener() {
         this.dubboBootstrap = initBootstrap();
+    }
+
+    public DubboBootstrapApplicationListener(boolean shouldInitConfigBeans) {
+        this.dubboBootstrap = initBootstrap();
+        this.shouldInitConfigBeans = shouldInitConfigBeans;
     }
 
     private DubboBootstrap initBootstrap() {
@@ -142,7 +148,9 @@ public class DubboBootstrapApplicationListener implements ApplicationListener, A
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
 
-        checkCallStackAndInit();
+        if (shouldInitConfigBeans) {
+            checkCallStackAndInit();
+        }
     }
 
     private void checkCallStackAndInit() {
