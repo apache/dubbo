@@ -177,7 +177,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
         } catch (Exception e) {
             // if spring version is less then 4.2, it does not support early application event
-            logger.warn("publish early application event failed, please upgrade spring version to 4.2.x or later", e);
+            logger.warn("publish early application event failed, please upgrade spring version to 4.2.x or later: " + e);
         }
     }
 
