@@ -146,7 +146,7 @@ public abstract class Wrapper {
         for (Field f : c.getFields()) {
             String fn = f.getName();
             Class<?> ft = f.getType();
-            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers())) {
+            if (Modifier.isStatic(f.getModifiers()) || Modifier.isTransient(f.getModifiers()) || Modifier.isFinal(f.getModifiers())) {
                 continue;
             }
 
