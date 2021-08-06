@@ -48,10 +48,9 @@
         <!-- spring test -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-test-spring3</artifactId>
+            <artifactId>dubbo-test-spring</artifactId>
             <version>${project.parent.version}</version>
             <scope>test</scope>
-            <type>test-jar</type>
         </dependency>
     </dependencies>
 
@@ -62,7 +61,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <dependenciesToScan>
-                        <dependency>org.apache.dubbo:dubbo-test-spring3</dependency>
+                        <dependency>org.apache.dubbo:dubbo-test-spring</dependency>
                     </dependenciesToScan>
                 </configuration>
             </plugin>

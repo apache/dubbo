@@ -25,11 +25,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-test-spring4.1</artifactId>
+    <artifactId>dubbo-test-spring3.2</artifactId>
 
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
-        <spring_version>4.1.9.RELEASE</spring_version>
+        <spring_version>3.2.18.RELEASE</spring_version>
     </properties>
 
     <dependencyManagement>

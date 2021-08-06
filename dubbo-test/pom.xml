@@ -29,7 +29,8 @@
 
     <modules>
         <module>dubbo-test-common</module>
-        <module>dubbo-test-spring3</module>
+        <module>dubbo-test-spring</module>
+        <module>dubbo-test-spring3.2</module>
         <module>dubbo-test-spring4.1</module>
         <module>dubbo-test-spring4.2</module>
     </modules>
