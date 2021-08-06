@@ -25,14 +25,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dubbo-test-spring-3.x</artifactId>
+    <artifactId>dubbo-test-spring3</artifactId>
 
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <skip_maven_deploy>true</skip_maven_deploy>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
         <spring_version>3.2.18.RELEASE</spring_version>
+        <!--<spring_version>4.0.9.RELEASE</spring_version>-->
+        <!--<spring_version>4.1.9.RELEASE</spring_version>-->
+        <!--<spring_version>4.2.4.RELEASE</spring_version>-->
     </properties>
 
     <dependencyManagement>
@@ -55,18 +55,7 @@
             <version>${project.parent.version}</version>
         </dependency>
 
-        <!-- demo -->
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-demo-xml-consumer</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-demo-xml-provider</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-
+        <!-- Dubbo -->
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-registry-multicast</artifactId>
@@ -137,5 +126,21 @@
             <artifactId>log4j</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

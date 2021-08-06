@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.spring3.impl;
+package org.apache.dubbo.test.common.api;
 
-import org.apache.dubbo.config.annotation.DubboService;
-import org.apache.dubbo.test.spring3.api.DemoService;
-
-@DubboService
-public class DemoServiceImpl implements DemoService {
-    @Override
-    public String sayName(String name) {
-        return "say:" + name;
-    }
+/**
+ *
+ */
+public interface GreetingService {
+    String hello();
 }

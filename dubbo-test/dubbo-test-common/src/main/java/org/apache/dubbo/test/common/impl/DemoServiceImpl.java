@@ -14,14 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.common;
+package org.apache.dubbo.test.common.impl;
 
-@FunctionalInterface
-public interface ErrorHandler {
+import org.apache.dubbo.config.annotation.DubboService;
+import org.apache.dubbo.test.common.api.DemoService;
 
-    /**
-     * Handle the given error, possibly rethrowing it as a fatal exception.
-     */
-    void handleError(Throwable t);
+import java.util.concurrent.CompletableFuture;
 
+@DubboService
+public class DemoServiceImpl implements DemoService {
+    @Override
+    public String sayHello(String name) {
+        return "Hello " + name;
+    }
+
+    @Override
+    public CompletableFuture<String> sayHelloAsync(String name) {
+        CompletableFuture<String> cf = CompletableFuture.supplyAsync(() -> {
+//            try {
+//                Thread.sleep(1000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+            return "async result:" + name;
+        });
+        return cf;
+    }
 }

@@ -45,7 +45,12 @@ public class SpringCompatUtils {
     public static boolean isFactoryMethodMetadataEnabled() {
         if (factoryMethodMetadataEnabled == null) {
             try {
+                //check AnnotatedBeanDefinition.getFactoryMethodMetadata() since spring 4.1
                 AnnotatedBeanDefinition.class.getMethod("getFactoryMethodMetadata");
+
+                // check MethodMetadata.getReturnTypeName() since spring 4.2
+                MethodMetadata.class.getMethod("getReturnTypeName");
+
                 factoryMethodMetadataEnabled = true;
             } catch (NoSuchMethodException e) {
                 factoryMethodMetadataEnabled = false;

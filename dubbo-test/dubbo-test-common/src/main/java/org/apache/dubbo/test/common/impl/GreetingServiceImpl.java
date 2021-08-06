@@ -14,13 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.spring3.api;
+package org.apache.dubbo.test.common.impl;
+
+
+import org.apache.dubbo.test.common.api.GreetingService;
 
 /**
- * DemoService
+ *
  */
-public interface DemoService {
-
-    String sayName(String name);
-
+public class GreetingServiceImpl implements GreetingService {
+    @Override
+    public String hello() {
+        return "Greetings!";
+    }
 }

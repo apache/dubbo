@@ -29,12 +29,15 @@
 
     <modules>
         <module>dubbo-test-common</module>
-        <module>dubbo-test-spring-3.x</module>
+        <module>dubbo-test-spring3</module>
+        <module>dubbo-test-spring4.1</module>
+        <module>dubbo-test-spring4.2</module>
     </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
 
     <dependencyManagement>

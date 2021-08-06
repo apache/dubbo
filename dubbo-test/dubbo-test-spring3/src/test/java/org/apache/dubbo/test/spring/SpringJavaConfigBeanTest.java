@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.spring3;
+package org.apache.dubbo.test.spring;
 
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ConsumerConfig;
@@ -31,8 +31,8 @@ import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.ZooKeeperServer;
-import org.apache.dubbo.test.spring3.api.DemoService;
-import org.apache.dubbo.test.spring3.impl.DemoServiceImpl;
+import org.apache.dubbo.test.common.api.DemoService;
+import org.apache.dubbo.test.common.impl.DemoServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,7 +45,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Collection;
 import java.util.Map;
 
-public class Spring3JavaConfigBeanTest {
+public class SpringJavaConfigBeanTest {
 
     private static final String MY_PROTOCOL_ID = "myProtocol";
     private static final String MY_REGISTRY_ID = "my-registry";
@@ -53,6 +53,7 @@ public class Spring3JavaConfigBeanTest {
     @BeforeAll
     public static void beforeAll() {
         ZooKeeperServer.start();
+        DubboBootstrap.reset();
     }
 
     @BeforeEach
@@ -115,8 +116,8 @@ public class Spring3JavaConfigBeanTest {
 
             DemoService referProxy = (DemoService) referenceConfig.get();
             Assertions.assertTrue( referProxy instanceof DemoService);
-            String result = referProxy.sayName("dubbo");
-            Assertions.assertEquals("say:dubbo", result);
+            String result = referProxy.sayHello("dubbo");
+            Assertions.assertEquals("Hello dubbo", result);
 
         } finally {
             consumerContext.close();

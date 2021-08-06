@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.spring3;
+package org.apache.dubbo.test.spring;
 
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.test.common.ZooKeeperServer;
-import org.apache.dubbo.test.spring3.api.DemoService;
+import org.apache.dubbo.test.common.api.DemoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,11 +29,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-public class Spring3AnnotationBeanTest {
-
+public class SpringAnnotationBeanTest {
     @BeforeAll
     public static void beforeAll() {
         ZooKeeperServer.start();
+        DubboBootstrap.reset();
     }
 
     @Test
@@ -42,7 +43,7 @@ public class Spring3AnnotationBeanTest {
         testService.test();
     }
 
-    @EnableDubbo(scanBasePackages = "org.apache.dubbo.test.spring3.impl")
+    @EnableDubbo(scanBasePackages = "org.apache.dubbo.test.common.impl")
     @Configuration
     @PropertySource("/demo-app.properties")
     static class TestConfiguration {
@@ -59,8 +60,8 @@ public class Spring3AnnotationBeanTest {
         private DemoService demoService;
 
         public void test() {
-            String result = demoService.sayName("dubbo");
-            Assertions.assertEquals("say:dubbo", result);
+            String result = demoService.sayHello("dubbo");
+            Assertions.assertEquals("Hello dubbo", result);
         }
     }
 }

@@ -14,26 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.spring3;
+package org.apache.dubbo.test.spring;
 
-import org.apache.dubbo.demo.DemoService;
-import org.apache.dubbo.demo.GreetingService;
-import org.apache.dubbo.demo.RestDemoService;
+import org.apache.dubbo.config.bootstrap.DubboBootstrap;
+import org.apache.dubbo.test.common.SysProps;
 import org.apache.dubbo.test.common.ZooKeeperServer;
+import org.apache.dubbo.test.common.api.DemoService;
+import org.apache.dubbo.test.common.api.GreetingService;
+import org.apache.dubbo.test.common.api.RestDemoService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class Spring3XmlConfigTest {
+import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+
+public class SpringXmlConfigTest {
 
     @BeforeAll
     public static void beforeAll() {
         ZooKeeperServer.start();
+        DubboBootstrap.reset();
     }
 
     @Test
     public void test() {
+        SysProps.setProperty(SHUTDOWN_WAIT_KEY, "2000");
         ClassPathXmlApplicationContext applicationContext = null;
         try {
             applicationContext = new ClassPathXmlApplicationContext("/spring/dubbo-demo.xml");
@@ -50,11 +57,11 @@ public class Spring3XmlConfigTest {
             String resetHelloResult = restDemoService.sayHello("dubbo");
             Assertions.assertEquals("Hello, dubbo", resetHelloResult);
         } finally {
+            SysProps.clear();
             if (applicationContext != null) {
                 applicationContext.close();
             }
         }
-
 
     }
 }

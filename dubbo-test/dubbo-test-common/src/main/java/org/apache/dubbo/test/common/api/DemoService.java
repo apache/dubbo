@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.test.common;
+package org.apache.dubbo.test.common.api;
 
-@FunctionalInterface
-public interface ErrorHandler {
+import java.util.concurrent.CompletableFuture;
 
-    /**
-     * Handle the given error, possibly rethrowing it as a fatal exception.
-     */
-    void handleError(Throwable t);
+public interface DemoService {
+
+    String sayHello(String name);
+
+    CompletableFuture<String> sayHelloAsync(String name);
 
 }
