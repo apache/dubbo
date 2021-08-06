@@ -28,6 +28,7 @@
     <artifactId>dubbo-test-spring3</artifactId>
 
     <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
         <slf4j-log4j12.version>1.7.25</slf4j-log4j12.version>
         <spring_version>3.2.18.RELEASE</spring_version>
         <!--<spring_version>4.0.9.RELEASE</spring_version>-->

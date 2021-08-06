@@ -28,6 +28,7 @@
     <artifactId>dubbo-test-spring4.1</artifactId>
 
     <properties>
+        <skip_maven_deploy>true</skip_maven_deploy>
         <spring_version>4.1.9.RELEASE</spring_version>
     </properties>
 
