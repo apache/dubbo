@@ -1,0 +1,2 @@
+default=com.alibaba.dubbo.rpc.protocol.hessian.serialization.DefaultHessian2FactoryInitializer
+whitelist=com.alibaba.dubbo.rpc.protocol.hessian.serialization.WhitelistHessian2FactoryInitializer
