@@ -27,9 +27,7 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.integration.single.listener.ExportedServiceListener;
 import org.apache.dubbo.metadata.MetadataInfo;
-import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.ListenerRegistryWrapper;
 import org.apache.dubbo.registry.Registry;
@@ -96,9 +94,9 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     private SingleRegistryCenterIntegrationService singleRegistryCenterIntegrationService;
 
     /**
-     * Define the {@link ExportedServiceListener} instance to obtain the exported services.
+     * Define the {@link SingleRegistryCenterExportedServiceListener} instance to obtain the exported services.
      */
-    private ExportedServiceListener exportedServiceListener;
+    private SingleRegistryCenterExportedServiceListener singleRegistryCenterExportedServiceListener;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -162,7 +160,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // DubboBootstrap is shutdown or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
         // The ServiceListener is loaded by SPI or not
-        Assertions.assertNull(exportedServiceListener);
+        Assertions.assertNull(singleRegistryCenterExportedServiceListener);
     }
 
     /**
@@ -263,26 +261,17 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // The matchKey of MetadataInfo's service is right or not
         Assertions.assertEquals(serviceInfo.getMatchKey(), key);
         // The exported services are right or not
-        // 1. The exported service must contain SingleRegistryCenterIntegrationService and MetadataService
+        // 1. The exported service must contain SingleRegistryCenterIntegrationService
         // 2. The exported service's interface must be SingleRegistryCenterIntegrationService.class
-        // 3. All exported service must be exported
-        exportedServiceListener = (ExportedServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
-        Assertions.assertNotNull(exportedServiceListener);
-        Assertions.assertEquals(exportedServiceListener.getExportedServices().size(), 2);
-        ServiceConfig singleRegistryCenterServiceConfig = null;
-        ServiceConfig metadataServiceServiceConfig = null;
-        for (ServiceConfig exportedServiceConfig: exportedServiceListener.getExportedServices()) {
-            if(exportedServiceConfig.getInterfaceClass() == SingleRegistryCenterIntegrationService.class){
-                singleRegistryCenterServiceConfig = exportedServiceConfig;
-            }
-            if(exportedServiceConfig.getInterfaceClass() == MetadataService.class){
-                metadataServiceServiceConfig = exportedServiceConfig;
-            }
-        }
+        // 3. All exported services must be exported
+        singleRegistryCenterExportedServiceListener = (SingleRegistryCenterExportedServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
+        Assertions.assertNotNull(singleRegistryCenterExportedServiceListener);
+        Assertions.assertEquals(singleRegistryCenterExportedServiceListener.getExportedServices().size(), 1);
+        Assertions.assertEquals(SingleRegistryCenterIntegrationService.class,
+            singleRegistryCenterExportedServiceListener.getExportedServices().get(0).getInterfaceClass());
+        ServiceConfig singleRegistryCenterServiceConfig = singleRegistryCenterExportedServiceListener.getExportedServices().get(0);
         Assertions.assertNotNull(singleRegistryCenterServiceConfig);
-        Assertions.assertNotNull(metadataServiceServiceConfig);
         Assertions.assertTrue(singleRegistryCenterServiceConfig.isExported());
-        Assertions.assertTrue(metadataServiceServiceConfig.isExported());
     }
 
     /**
@@ -395,8 +384,8 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         serviceConfig = null;
         referenceConfig = null;
         // The exported service has been unexported
-        Assertions.assertTrue(exportedServiceListener.getExportedServices().isEmpty());
-        exportedServiceListener = null;
+        Assertions.assertTrue(singleRegistryCenterExportedServiceListener.getExportedServices().isEmpty());
+        singleRegistryCenterExportedServiceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
         // destroy zookeeper only once
         logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");

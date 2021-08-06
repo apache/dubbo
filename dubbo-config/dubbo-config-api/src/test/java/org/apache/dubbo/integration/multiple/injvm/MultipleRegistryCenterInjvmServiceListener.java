@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2.dubbo;
+package org.apache.dubbo.integration.multiple.injvm;
 
-import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
+import org.apache.dubbo.config.ServiceListener;
+import org.apache.dubbo.integration.AbstractRegistryCenterServiceListener;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+/**
+ * This implementation of {@link ServiceListener} is to record exported services with injvm protocol in multiple registry center.
+ */
+public class MultipleRegistryCenterInjvmServiceListener extends AbstractRegistryCenterServiceListener {
 
-public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected SerializerFactory createSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
-        hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
-        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
-        return hessian2SerializerFactory;
+    protected Class<?> getInterface() {
+        return MultipleRegistryCenterInjvmService.class;
     }
 }

@@ -14,18 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2.dubbo;
+package org.apache.dubbo.integration.multiple.injvm;
 
-import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
-
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
-
-public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
+/**
+ * The simple implementation for {@link MultipleRegistryCenterInjvmService}
+ */
+public class MultipleRegistryCenterInjvmServiceImpl implements MultipleRegistryCenterInjvmService {
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    protected SerializerFactory createSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
-        hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
-        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
-        return hessian2SerializerFactory;
+    public String hello(String name) {
+        return null;
     }
 }

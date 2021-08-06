@@ -14,18 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2.dubbo;
+package org.apache.dubbo.integration.single.injvm;
 
-import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.integration.AbstractRegistryCenterExporterListener;
 
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
+public class SingleRegistryCenterInjvmExporterListener extends AbstractRegistryCenterExporterListener {
 
-public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
+    /**
+     * Returns the interface of exported service.
+     */
     @Override
-    protected SerializerFactory createSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
-        hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
-        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
-        return hessian2SerializerFactory;
+    protected Class<?> getInterface() {
+        return SingleRegistryCenterInjvmService.class;
     }
 }

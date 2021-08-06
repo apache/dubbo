@@ -14,18 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.serialize.hessian2.dubbo;
-
-import org.apache.dubbo.common.serialize.hessian2.Hessian2SerializerFactory;
-
-import com.alibaba.com.caucho.hessian.io.SerializerFactory;
-
-public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
-    @Override
-    protected SerializerFactory createSerializerFactory() {
-        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
-        hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
-        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
-        return hessian2SerializerFactory;
-    }
+package org.apache.dubbo.integration.multiple.injvm;
+/**
+ * This interface is used to check if the exported injvm protocol works well or not.
+ */
+public interface MultipleRegistryCenterInjvmService {
+    /**
+     * The simple method for testing.
+     */
+    String hello(String name);
 }
