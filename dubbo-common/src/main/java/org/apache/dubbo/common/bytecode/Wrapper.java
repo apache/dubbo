@@ -150,8 +150,8 @@ public abstract class Wrapper {
                 continue;
             }
 
-            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append('=').append(arg(ft, "$3")).append("; return; }");
-            c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
+            c1.append(" if( $2.equals(\"").append(fn).append("\") ){ ((" + f.getDeclaringClass().getName() + ")w).").append(fn).append('=').append(arg(ft, "$3")).append("; return; }");
+            c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)((" + f.getDeclaringClass().getName() + ")w).").append(fn).append("; }");
             pts.put(fn, ft);
         }
 
