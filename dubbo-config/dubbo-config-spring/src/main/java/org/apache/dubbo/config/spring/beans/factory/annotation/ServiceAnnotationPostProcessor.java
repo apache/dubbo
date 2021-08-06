@@ -19,7 +19,6 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 import com.alibaba.spring.util.AnnotationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.config.MethodConfig;
@@ -31,7 +30,6 @@ import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefin
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.apache.dubbo.config.spring.util.SpringCompatUtils;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -71,7 +69,6 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -160,6 +157,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
             this.registry = (BeanDefinitionRegistry) beanFactory;
         }
 
+        // scan bean definitions
         String[] beanNames = beanFactory.getBeanDefinitionNames();
         for (String beanName : beanNames) {
             BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
@@ -171,6 +169,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         }
 
         if (!scaned) {
+            // In spring 3.x, may be not call postProcessBeanDefinitionRegistry(), so scan service class here
             scanServiceBeans(resolvedPackagesToScan, registry);
         }
     }
