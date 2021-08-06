@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.single.injvm;
+package org.apache.dubbo.integration.multiple.injvm;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.ServiceConfig;
@@ -25,13 +25,13 @@ import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.integration.single.SingleZooKeeperServer;
+import org.apache.dubbo.integration.multiple.MultipleZooKeeperServer;
+import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmService;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,59 +42,59 @@ import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 /**
  * The testcases are only for checking the process of exporting provider using injvm protocol.
  */
-public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
+public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SingleRegistryCenterInjvmIntegrationTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(MultipleRegistryCenterInjvmIntegrationTest.class);
 
     /**
      * Define the provider application name.
      */
-    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-injvm-protocol";
+    private static String PROVIDER_APPLICATION_NAME = "multiple-registry-center-provider-for-injvm-protocol";
 
     /**
      * The name for getting the specified instance, which is loaded using SPI.
      */
-    private static String SPI_NAME = "singleConfigCenterInjvm";
+    private static String SPI_NAME = "multipleConfigCenterInjvm";
+
     /**
      * Define the {@link ServiceConfig} instance.
      */
-    private ServiceConfig<SingleRegistryCenterInjvmService> serviceConfig;
+    private ServiceConfig<MultipleRegistryCenterInjvmService> serviceConfig;
 
     /**
      * The listener to record exported services
      */
-    private SingleRegistryCenterInjvmServiceListener serviceListener;
+    private MultipleRegistryCenterInjvmServiceListener serviceListener;
 
     /**
      * The listener to record exported exporters.
      */
-    private SingleRegistryCenterInjvmExporterListener exporterListener;
+    private MultipleRegistryCenterInjvmExporterListener exporterListener;
 
     /**
      * The filter for checking filter chain.
      */
-    private SingleRegistryCenterInjvmFilter filter;
+    private MultipleRegistryCenterInjvmFilter filter;
 
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        //start zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
-        SingleZooKeeperServer.start();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
+        //start all zookeeper services only once
+        MultipleZooKeeperServer.start();
 
         // initialize service config
         serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
-        serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
+        serviceConfig.setInterface(MultipleRegistryCenterInjvmService.class);
+        serviceConfig.setRef(new MultipleRegistryCenterInjvmServiceImpl());
         serviceConfig.setAsync(false);
         serviceConfig.setScope(SCOPE_LOCAL);
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + MultipleZooKeeperServer.getPortOne()))
+            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + MultipleZooKeeperServer.getPortTwo()))
             .protocol(new ProtocolConfig("injvm"))
             .service(serviceConfig);
     }
@@ -111,9 +111,9 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      */
     private void beforeExport() {
         // ---------------initialize--------------- //
-        serviceListener = (SingleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
-        exporterListener = (SingleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
-        filter = (SingleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
+        serviceListener = (MultipleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
+        exporterListener = (MultipleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+        filter = (MultipleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
 
         // ---------------checkpoints--------------- //
         // There is nothing in ServiceListener
@@ -127,7 +127,6 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
     /**
      * {@inheritDoc}
      */
-    @Test
     @Override
     public void integrate() {
         beforeExport();
@@ -137,7 +136,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         referenceConfig.setInterface(SingleRegistryCenterInjvmService.class);
         referenceConfig.setBootstrap(DubboBootstrap.getInstance());
         referenceConfig.setScope(SCOPE_LOCAL);
-        referenceConfig.get().hello("Dubbo");
+        referenceConfig.get().hello("Dubbo in multiple registry center");
         afterInvoke();
     }
 
@@ -145,41 +144,42 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      * There are some checkpoints need to check after exported as follow:
      * <ul>
      *     <li>The exported service is only one or not</li>
-     *     <li>The exported service is SingleRegistryCenterInjvmService or not</li>
-     *     <li>The SingleRegistryCenterInjvmService is exported or not</li>
+     *     <li>The exported service is MultipleRegistryCenterInjvmService or not</li>
+     *     <li>The MultipleRegistryCenterInjvmService is exported or not</li>
      *     <li>The exported exporter is only one or not</li>
-     *     <li>The exported exporter contains SingleRegistryCenterInjvmFilter or not</li>
+     *     <li>The exported exporter contains MultipleRegistryCenterInjvmFilter or not</li>
      * </ul>
      */
     private void afterExport() {
         // The exported service is only one
         Assertions.assertEquals(serviceListener.getExportedServices().size(),1);
-        // The exported service is SingleRegistryCenterInjvmService
+        // The exported service is MultipleRegistryCenterInjvmService
         Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
-            SingleRegistryCenterInjvmService.class);
-        // The SingleRegistryCenterInjvmService is exported
+            MultipleRegistryCenterInjvmService.class);
+        // The MultipleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter is only one
         Assertions.assertEquals(exporterListener.getExportedExporters().size(),1);
-        // The exported exporter contains SingleRegistryCenterInjvmFilter
+        // The exported exporter contains MultipleRegistryCenterInjvmFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
     }
 
     /**
      * There are some checkpoints need to check after invoked as follow:
      * <ul>
-     *     <li>The SingleRegistryCenterInjvmFilter has called or not</li>
-     *     <li>The SingleRegistryCenterInjvmFilter exists error after invoked</li>
-     *     <li>The SingleRegistryCenterInjvmFilter's response is right or not</li>
+     *     <li>The MultipleRegistryCenterInjvmFilter has called or not</li>
+     *     <li>The MultipleRegistryCenterInjvmFilter exists error after invoked</li>
+     *     <li>The MultipleRegistryCenterInjvmFilter's response is right or not</li>
      * </ul>
      */
     private void afterInvoke(){
-        // The SingleRegistryCenterInjvmFilter has called
+        // The MultipleRegistryCenterInjvmFilter has called
         Assertions.assertTrue(filter.hasCalled());
-        // The SingleRegistryCenterInjvmFilter doesn't exist error
+        // The MultipleRegistryCenterInjvmFilter doesn't exist error
         Assertions.assertFalse(filter.hasError());
-        // Check the SingleRegistryCenterInjvmFilter's response
-        Assertions.assertEquals("Hello Dubbo",filter.getResponse());
+        // Check the MultipleRegistryCenterInjvmFilter's response
+        Assertions.assertEquals("Hello Dubbo in multiple registry center",
+            filter.getResponse());
     }
 
     @AfterEach
@@ -192,8 +192,6 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         serviceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
         // destroy zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
-        SingleZooKeeperServer.shutdown();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+        MultipleZooKeeperServer.shutdown();
     }
 }

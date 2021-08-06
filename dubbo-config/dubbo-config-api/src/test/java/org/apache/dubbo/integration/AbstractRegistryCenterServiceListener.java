@@ -14,30 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.single.listener;
+package org.apache.dubbo.integration;
 
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
-import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmService;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * This implementation of {@link ServiceListener} is to record exported services with injvm protocol.
+ * This implementation of {@link ServiceListener} is to record exported services, which should be extended by different sub-classes.
  */
-public class InjvmServiceListener implements ServiceListener {
+public abstract class AbstractRegistryCenterServiceListener implements ServiceListener {
 
     private List<ServiceConfig> exportedServices = new ArrayList<>(2);
 
+    /**
+     * Return the interface name of exported service.
+     */
+    protected abstract Class<?> getInterface();
     /**
      * {@inheritDoc}
      */
     @Override
     public void exported(ServiceConfig sc) {
         //All exported services will be added
-        if (sc.getInterfaceClass() == SingleRegistryCenterInjvmService.class) {
+        if (sc.getInterfaceClass() == getInterface()) {
             exportedServices.add(sc);
         }
     }
