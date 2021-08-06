@@ -22,7 +22,6 @@ import org.apache.dubbo.test.common.ZooKeeperServer;
 import org.apache.dubbo.test.common.api.DemoService;
 import org.apache.dubbo.test.common.api.GreetingService;
 import org.apache.dubbo.test.common.api.RestDemoService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
