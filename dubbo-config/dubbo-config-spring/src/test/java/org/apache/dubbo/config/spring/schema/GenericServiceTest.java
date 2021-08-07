@@ -22,13 +22,11 @@ import org.apache.dubbo.config.ServiceConfigBase;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ServiceBean;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.DemoService;
+import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericService;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -46,10 +44,19 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
 
+    private static SingleRegistryCenter singleRegistryCenter;
+
     @BeforeAll
-    public static void setUp() {
-        ZooKeeperServer.start();
+    public static void beforeAll() {
+        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter.startup();
         DubboBootstrap.reset();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        DubboBootstrap.reset();
+        singleRegistryCenter.shutdown();
     }
 
     @AfterEach

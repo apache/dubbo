@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.multiple.injvm;
+package org.apache.dubbo.config.spring.registrycenter;
+
+import org.apache.dubbo.config.RegistryConfig;
 
 /**
- * The simple implementation for {@link MultipleRegistryCenterInjvmService}
+ * Mock single registry center.
  */
-public class MultipleRegistryCenterInjvmServiceImpl implements MultipleRegistryCenterInjvmService {
+public interface SingleRegistryCenter extends RegistryCenter {
+
     /**
-     * {@inheritDoc}
+     * Returns {@link RegistryConfig} instance.
      */
-    @Override
-    public String hello(String name) {
-        return "Hello " + name;
-    }
+    RegistryConfig getRegistryConfig();
 }

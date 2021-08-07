@@ -26,7 +26,7 @@ import org.apache.dubbo.config.RegistryConfig;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;

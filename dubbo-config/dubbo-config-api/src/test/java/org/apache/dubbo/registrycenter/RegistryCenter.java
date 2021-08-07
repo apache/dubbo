@@ -14,17 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.multiple.injvm;
+package org.apache.dubbo.registrycenter;
+
+import org.apache.dubbo.rpc.RpcException;
 
 /**
- * The simple implementation for {@link MultipleRegistryCenterInjvmService}
+ * The mock registry center.
  */
-public class MultipleRegistryCenterInjvmServiceImpl implements MultipleRegistryCenterInjvmService {
+public interface RegistryCenter {
+
     /**
-     * {@inheritDoc}
+     * Start the registry center.
+     * @throws RpcException when an exception occurred
      */
-    @Override
-    public String hello(String name) {
-        return "Hello " + name;
-    }
+    void startup() throws RpcException;
+
+    /**
+     * Stop the registry center.
+     * @throws RpcException when an exception occurred
+     */
+    void shutdown() throws RpcException;
 }
