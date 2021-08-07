@@ -40,6 +40,12 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     public static final Logger logger = LoggerFactory.getLogger(MeshAppRuleListener.class);
 
+    public static final String DESTINATION_RULE_KEY = "DestinationRule";
+
+    public static final String VIRTUAL_SERVICE_KEY = "VirtualService";
+
+    public static final String KIND_KEY = "kind";
+
     private final VsDestinationGroupRuleDispatcher vsDestinationGroupRuleDispatcher = new VsDestinationGroupRuleDispatcher();
 
     private final String appName;
@@ -68,11 +74,11 @@ public class MeshAppRuleListener implements ConfigurationListener {
             for (Object result : objectIterable) {
 
                 Map resultMap = (Map) result;
-                if ("DestinationRule".equals(resultMap.get("kind"))) {
+                if (DESTINATION_RULE_KEY.equals(resultMap.get(KIND_KEY))) {
                     DestinationRule destinationRule = PojoUtils.mapToPojo(resultMap, DestinationRule.class);
                     vsDestinationGroup.getDestinationRuleList().add(destinationRule);
 
-                } else if ("VirtualService".equals(resultMap.get("kind"))) {
+                } else if (VIRTUAL_SERVICE_KEY.equals(resultMap.get(KIND_KEY))) {
                     VirtualServiceRule virtualServiceRule = PojoUtils.mapToPojo(resultMap, VirtualServiceRule.class);
                     vsDestinationGroup.getVirtualServiceRuleList().add(virtualServiceRule);
                 }
