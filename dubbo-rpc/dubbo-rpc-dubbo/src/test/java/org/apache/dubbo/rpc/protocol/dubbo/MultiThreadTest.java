@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
@@ -36,15 +37,23 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
+
 public class MultiThreadTest {
 
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
+    @BeforeEach
+    public void setup() {
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+    }
+
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
         ApplicationModel.getServiceRepository().destroy();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @Test

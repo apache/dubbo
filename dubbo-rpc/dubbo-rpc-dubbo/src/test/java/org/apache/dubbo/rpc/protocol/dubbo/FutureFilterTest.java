@@ -26,10 +26,12 @@ import org.apache.dubbo.rpc.cluster.filter.ClusterFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.filter.FutureFilter;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -48,6 +50,12 @@ public class FutureFilterTest {
         invocation.setMethodName("echo");
         invocation.setParameterTypes(new Class<?>[]{Enum.class});
         invocation.setArguments(new Object[]{"hello"});
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @Test

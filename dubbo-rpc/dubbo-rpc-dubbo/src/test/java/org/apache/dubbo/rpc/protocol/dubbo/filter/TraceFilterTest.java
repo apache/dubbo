@@ -23,6 +23,7 @@ import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.protocol.dubbo.support.DemoService;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -48,11 +50,13 @@ public class TraceFilterTest {
     public void setUp() {
         URL url = URL.valueOf("dubbo://127.0.0.1:20884/demo");
         mockChannel = new MockChannel(url);
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @AfterEach
     public void tearDown() {
         mockChannel.close();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @Test

@@ -26,17 +26,31 @@ import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
+
 public class EnumBak {
 
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+
+    @BeforeAll
+    public static void setUpBeforeClass() throws Exception {
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+    }
+
+    @AfterAll
+    public static void tearDownAfterClass() {
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
+    }
 
     @Test
     public void testNormal() {

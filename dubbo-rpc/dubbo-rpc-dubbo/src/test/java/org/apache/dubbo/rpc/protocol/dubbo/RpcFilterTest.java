@@ -29,15 +29,24 @@ import org.apache.dubbo.rpc.service.EchoService;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class RpcFilterTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
 
+    @BeforeEach
+    public void setup() {
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+    }
+
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @Test

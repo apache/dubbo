@@ -51,6 +51,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
+
 /**
  * These junit tests aim to test unpack and stick pack of dubbo and telnet
  */
@@ -71,11 +73,13 @@ public class DubboTelnetDecodeTest {
     public static void setup() {
         ApplicationModel.getServiceRepository().destroy();
         ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @AfterAll
     public static void teardown() {
         ApplicationModel.getServiceRepository().destroy();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     /**

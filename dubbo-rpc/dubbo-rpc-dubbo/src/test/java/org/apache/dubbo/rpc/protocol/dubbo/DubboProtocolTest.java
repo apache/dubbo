@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -65,11 +66,13 @@ public class DubboProtocolTest {
     public static void after() {
         ProtocolUtils.closeAll();
         ApplicationModel.getServiceRepository().unregisterService(DemoService.class);
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @BeforeAll
     public static void setup() {
         ApplicationModel.getServiceRepository().registerService(DemoService.class);
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @Test

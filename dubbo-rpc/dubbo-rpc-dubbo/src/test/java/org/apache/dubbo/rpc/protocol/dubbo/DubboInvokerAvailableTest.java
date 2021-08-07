@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Field;
 
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -48,6 +49,7 @@ public class DubboInvokerAvailableTest {
 
     @BeforeAll
     public static void setUpBeforeClass() throws Exception {
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
     }
 
     @BeforeEach
@@ -58,6 +60,7 @@ public class DubboInvokerAvailableTest {
     @AfterAll
     public static void tearDownAfterClass() {
         ProtocolUtils.closeAll();
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     @Test

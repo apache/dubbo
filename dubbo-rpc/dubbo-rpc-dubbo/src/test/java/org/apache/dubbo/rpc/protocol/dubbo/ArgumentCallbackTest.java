@@ -25,8 +25,10 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static org.apache.dubbo.common.constants.CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY;
+import static org.apache.dubbo.rpc.Constants.SERIALIZATION_SECURITY_CHECK_KEY;
 
 public class ArgumentCallbackTest {
 
@@ -53,6 +56,16 @@ public class ArgumentCallbackTest {
     public void tearDown() {
         destroyService();
         ProtocolUtils.closeAll();
+    }
+
+    @BeforeAll
+    public static void setUpBeforeClass() throws Exception {
+        System.setProperty(SERIALIZATION_SECURITY_CHECK_KEY, "false");
+    }
+
+    @AfterAll
+    public static void tearDownAfterClass() {
+        System.clearProperty(SERIALIZATION_SECURITY_CHECK_KEY);
     }
 
     public void exportService() {
