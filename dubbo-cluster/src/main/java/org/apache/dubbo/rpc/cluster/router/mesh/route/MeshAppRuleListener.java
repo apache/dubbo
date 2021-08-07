@@ -17,6 +17,7 @@
 
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
+import org.apache.dubbo.common.config.configcenter.ConfigChangeType;
 import org.apache.dubbo.common.config.configcenter.ConfigChangedEvent;
 import org.apache.dubbo.common.config.configcenter.ConfigurationListener;
 import org.apache.dubbo.common.logger.Logger;
@@ -101,6 +102,10 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     @Override
     public void process(ConfigChangedEvent event) {
+        if (event.getChangeType() == ConfigChangeType.DELETED) {
+            receiveConfigInfo("");
+            return;
+        }
         receiveConfigInfo(event.getContent());
     }
 }
