@@ -21,11 +21,11 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.integration.single.SingleZooKeeperServer;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -75,15 +75,17 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      */
     private SingleRegistryCenterInjvmFilter filter;
 
+    /**
+     * Define a registry center.
+     */
+    private SingleRegistryCenter registryCenter;
+
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        //start zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
-        SingleZooKeeperServer.start();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
-
+        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
@@ -94,7 +96,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .registry(registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig("injvm"))
             .service(serviceConfig);
     }
@@ -153,14 +155,14 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      */
     private void afterExport() {
         // The exported service is only one
-        Assertions.assertEquals(serviceListener.getExportedServices().size(),1);
+        Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is SingleRegistryCenterInjvmService
         Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
             SingleRegistryCenterInjvmService.class);
         // The SingleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter is only one
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(),1);
+        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 1);
         // The exported exporter contains SingleRegistryCenterInjvmFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
     }
@@ -173,13 +175,13 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      *     <li>The SingleRegistryCenterInjvmFilter's response is right or not</li>
      * </ul>
      */
-    private void afterInvoke(){
+    private void afterInvoke() {
         // The SingleRegistryCenterInjvmFilter has called
         Assertions.assertTrue(filter.hasCalled());
         // The SingleRegistryCenterInjvmFilter doesn't exist error
         Assertions.assertFalse(filter.hasError());
         // Check the SingleRegistryCenterInjvmFilter's response
-        Assertions.assertEquals("Hello Dubbo",filter.getResponse());
+        Assertions.assertEquals("Hello Dubbo", filter.getResponse());
     }
 
     @AfterEach
@@ -191,9 +193,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
         serviceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
-        // destroy zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
-        SingleZooKeeperServer.shutdown();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+        registryCenter.shutdown();
+        registryCenter = null;
     }
 }

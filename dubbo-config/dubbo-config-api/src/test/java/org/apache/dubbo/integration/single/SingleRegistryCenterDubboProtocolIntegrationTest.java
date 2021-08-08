@@ -37,6 +37,8 @@ import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataS
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,14 +100,17 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      */
     private SingleRegistryCenterExportedServiceListener singleRegistryCenterExportedServiceListener;
 
+    /**
+     * Define a registry center.
+     */
+    private SingleRegistryCenter registryCenter;
+
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        //start zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
-        SingleZooKeeperServer.start();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
+        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter.startup();
         // initialize ServiceConfig
         serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
@@ -114,7 +119,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryConfig = new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .registry(registryConfig = registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
     }
@@ -137,7 +142,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     /**
      * There are some checkpoints needed to check as follow :
      * <ul>
-     *     <li>ZookeeperServer's status</li>
      *     <li>ServiceConfig is exported or not</li>
      *     <li>ServiceConfig's exportedUrl has values or not</li>
      *     <li>DubboBootstrap is initialized or not</li>
@@ -147,8 +151,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      * </ul>
      */
     private void beforeExport() {
-        // ZookeeperServer's status
-        Assertions.assertTrue(SingleZooKeeperServer.isRunning());
         // ServiceConfig is exported or not
         Assertions.assertFalse(serviceConfig.isExported());
         // ServiceConfig's exportedUrl has values or not
@@ -387,9 +389,8 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(singleRegistryCenterExportedServiceListener.getExportedServices().isEmpty());
         singleRegistryCenterExportedServiceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
-        // destroy zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
-        SingleZooKeeperServer.shutdown();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+        // destroy registry center
+        registryCenter.shutdown();
+        registryCenter = null;
     }
 }
