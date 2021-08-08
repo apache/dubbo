@@ -17,6 +17,7 @@
 package org.apache.dubbo.qos.command.impl;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.qos.command.BaseCommand;
 import org.apache.dubbo.qos.command.CommandContext;
 import org.apache.dubbo.qos.command.impl.channel.MockNettyChannel;
@@ -24,6 +25,7 @@ import org.apache.dubbo.qos.legacy.ProtocolUtils;
 import org.apache.dubbo.qos.legacy.service.DemoService;
 import org.apache.dubbo.remoting.telnet.support.TelnetUtils;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.RpcStatus;
 import org.apache.dubbo.rpc.protocol.dubbo.DubboProtocol;
 
@@ -76,7 +78,7 @@ public class CountTelnetTest {
         String methodName = "sayHello";
         String[] args = new String[]{"org.apache.dubbo.qos.legacy.service.DemoService", "sayHello", "1"};
 
-        DubboProtocol.getDubboProtocol().export(mockInvoker);
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(mockInvoker);
         RpcStatus.beginCount(url, methodName);
         RpcStatus.endCount(url, methodName, 10L, true);
         count.execute(mockCommandContext, args);

@@ -24,6 +24,7 @@ import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.remoting.exchange.ExchangeClient;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.protocol.dubbo.support.ProtocolUtils;
 
@@ -47,7 +48,7 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KE
 public class ReferenceCountExchangeClientTest {
 
     public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static DubboProtocol protocol = DubboProtocol.getDubboProtocol();
+    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
     Exporter<?> demoExporter;
     Exporter<?> helloExporter;
     Invoker<IDemoService> demoServiceInvoker;
