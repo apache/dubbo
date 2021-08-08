@@ -41,16 +41,16 @@ public class DubboAttachmentMatch {
     }
 
     public static boolean isMatch(DubboAttachmentMatch dubboAttachmentMatch, Map<String, String> eagleeyeContext, Map<String, String> dubboContext) {
-        boolean result = check(dubboAttachmentMatch.getDubbocontext(), dubboContext);
+        boolean result = isMatch(dubboAttachmentMatch.getDubbocontext(), dubboContext);
 
         if (result) {
-            result = check(dubboAttachmentMatch.getEagleeyecontext(), eagleeyeContext);
+            result = isMatch(dubboAttachmentMatch.getEagleeyecontext(), eagleeyeContext);
         }
 
         return result;
     }
 
-    private static boolean check(Map<String, StringMatch> map, Map<String, String> input) {
+    private static boolean isMatch(Map<String, StringMatch> map, Map<String, String> input) {
         if (map != null) {
             for (Map.Entry<String, StringMatch> stringStringMatchEntry : map.entrySet()) {
                 String key = stringStringMatchEntry.getKey();
