@@ -48,7 +48,6 @@ import static org.apache.dubbo.rpc.protocol.dubbo.Constants.SHARE_CONNECTIONS_KE
 public class ReferenceCountExchangeClientTest {
 
     public static ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
-    private static final Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME);
     Exporter<?> demoExporter;
     Exporter<?> helloExporter;
     Invoker<IDemoService> demoServiceInvoker;
@@ -69,7 +68,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public static Invoker<?> referInvoker(Class<?> type, URL url) {
-        return (Invoker<?>) protocol.refer(type, url);
+        return (Invoker<?>) DubboProtocol.getDubboProtocol().refer(type, url);
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, String url) {
@@ -77,7 +76,7 @@ public class ReferenceCountExchangeClientTest {
     }
 
     public static <T> Exporter<T> export(T instance, Class<T> type, URL url) {
-        return protocol.export(proxy.getInvoker(instance, type, url));
+        return ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(DubboProtocol.NAME).export(proxy.getInvoker(instance, type, url));
     }
 
     @BeforeEach
