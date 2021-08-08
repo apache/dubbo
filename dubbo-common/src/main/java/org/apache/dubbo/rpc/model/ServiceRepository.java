@@ -193,6 +193,16 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return providerUrlsWithoutGroup.get(key);
     }
 
+    @Deprecated
+    public ConcurrentMap<String, Set<URL>> getProviderUrlsWithoutGroup() {
+        return providerUrlsWithoutGroup;
+    }
+
+    @Deprecated
+    public void setProviderUrlsWithoutGroup(ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup) {
+        this.providerUrlsWithoutGroup = providerUrlsWithoutGroup;
+    }
+
     @Override
     public void destroy() throws IllegalStateException {
         // currently works for unit test
