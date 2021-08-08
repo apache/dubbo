@@ -44,7 +44,7 @@ public class MeshAppRuleListener implements ConfigurationListener {
 
     private final String appName;
 
-    private VsDestinationGroup vsDestinationGroupHolder;
+    private volatile VsDestinationGroup vsDestinationGroupHolder;
 
     public MeshAppRuleListener(String appName) {
         this.appName = appName;

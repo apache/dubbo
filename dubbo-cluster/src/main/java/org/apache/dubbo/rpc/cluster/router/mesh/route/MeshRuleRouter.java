@@ -59,7 +59,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     private volatile Map<String, List<Invoker<?>>> subsetMap;
 
-    private String remoteAppName;
+    private volatile String remoteAppName;
 
     public MeshRuleRouter(URL url) {
         this.url = url;
