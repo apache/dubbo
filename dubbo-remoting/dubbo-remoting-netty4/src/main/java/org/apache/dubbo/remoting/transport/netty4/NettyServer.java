@@ -16,7 +16,9 @@
  */
 package org.apache.dubbo.remoting.transport.netty4;
 
+import io.netty.util.concurrent.Future;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ExecutorUtil;
@@ -154,8 +156,11 @@ public class NettyServer extends AbstractServer implements RemotingServer {
         }
         try {
             if (bootstrap != null) {
-                bossGroup.shutdownGracefully().syncUninterruptibly();
-                workerGroup.shutdownGracefully().syncUninterruptibly();
+                int serverShutdownTimeoutMills = ConfigurationUtils.getServerShutdownTimeout();
+                Future<?> bossGroupShutdownFuture = bossGroup.shutdownGracefully(2000L, serverShutdownTimeoutMills, MILLISECONDS);
+                Future<?> workerGroupShutdownFuture = workerGroup.shutdownGracefully(2000L, serverShutdownTimeoutMills, MILLISECONDS);
+                bossGroupShutdownFuture.syncUninterruptibly();
+                workerGroupShutdownFuture.syncUninterruptibly();
             }
         } catch (Throwable e) {
             logger.warn(e.getMessage(), e);
