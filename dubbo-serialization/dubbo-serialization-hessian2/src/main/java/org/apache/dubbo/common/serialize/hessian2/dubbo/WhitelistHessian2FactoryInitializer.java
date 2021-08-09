@@ -35,15 +35,21 @@ public class WhitelistHessian2FactoryInitializer extends AbstractHessian2Factory
             serializerFactory.getClassFactory().setWhitelist(true);
             String allowPattern = ConfigurationUtils.getProperty(ALLOW);
             if (StringUtils.isNotEmpty(allowPattern)) {
-                serializerFactory.getClassFactory().allow(allowPattern);
+                for (String pattern : allowPattern.split(";")) {
+                    serializerFactory.getClassFactory().allow(pattern);
+                }
             }
         } else {
             serializerFactory.getClassFactory().setWhitelist(false);
             String denyPattern = ConfigurationUtils.getProperty(DENY);
             if (StringUtils.isNotEmpty(denyPattern)) {
-                serializerFactory.getClassFactory().deny(denyPattern);
+                for (String pattern : denyPattern.split(";")) {
+                    serializerFactory.getClassFactory().deny(pattern);
+                }
             }
         }
+        serializerFactory.getClassFactory().allow(RuntimeException.class.getName());
+        serializerFactory.getClassFactory().allow("org.apache.dubbo.*");
         return serializerFactory;
     }
 

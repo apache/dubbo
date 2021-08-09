@@ -23,6 +23,7 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
 import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
@@ -122,7 +123,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                         }
                     });
                 } catch (NacosException e) {
-                    e.printStackTrace();
+                    logger.error("add nacos service instances changed listener fail ", e);
                 }
             });
         });
@@ -139,6 +140,6 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
                 .stream()
                 .map(NacosNamingServiceUtils::toServiceInstance)
                 .collect(Collectors.toList());
-        dispatchServiceInstancesChangedEvent(serviceName, serviceInstances);
+        listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }
 }

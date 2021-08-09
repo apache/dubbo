@@ -67,6 +67,12 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
         // register PropertySourcesPlaceholderConfigurer bean if not exits
         DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
 
+        // Initialize dubbo Environment before ConfigManager
+        // Extract dubbo props from Spring env and put them to app config
+        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
+        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
+        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
+
         // register ConfigManager singleton
         beanFactory.registerSingleton(ConfigManager.BEAN_NAME, ApplicationModel.getConfigManager());
     }
@@ -75,11 +81,5 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
         SpringExtensionFactory.addApplicationContext(applicationContext);
-
-        // Initialize dubbo Environment before ConfigManager
-        // Extract dubbo props from Spring env and put them to app config
-        ConfigurableEnvironment environment = (ConfigurableEnvironment) applicationContext.getEnvironment();
-        SortedMap<String, String> dubboProperties = EnvironmentUtils.filterDubboProperties(environment);
-        ApplicationModel.getEnvironment().setAppConfigMap(dubboProperties);
     }
 }

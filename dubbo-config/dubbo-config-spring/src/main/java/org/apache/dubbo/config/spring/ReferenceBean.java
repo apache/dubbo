@@ -94,7 +94,7 @@ import java.util.Map;
  * @see org.apache.dubbo.config.annotation.DubboReference
  * @see org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder
  */
-public class ReferenceBean<T> implements FactoryBean,
+public class ReferenceBean<T> implements FactoryBean<T>,
         ApplicationContextAware, BeanClassLoaderAware, BeanNameAware, InitializingBean, DisposableBean {
 
     private transient ApplicationContext applicationContext;
@@ -181,11 +181,11 @@ public class ReferenceBean<T> implements FactoryBean,
      * @see org.apache.dubbo.config.bootstrap.DubboBootstrap
      */
     @Override
-    public Object getObject() {
+    public T getObject() {
         if (lazyProxy == null) {
             createLazyProxy();
         }
-        return lazyProxy;
+        return (T) lazyProxy;
     }
 
     @Override

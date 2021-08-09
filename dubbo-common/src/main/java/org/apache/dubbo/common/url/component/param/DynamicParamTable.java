@@ -74,7 +74,7 @@ public final class DynamicParamTable {
         return VALUES.get(vi).defaultVal();
     }
 
-    public static void init() {
+    private static void init() {
         List<String> keys = new LinkedList<>();
         List<ParamValue> values = new LinkedList<>();
         Map<String, Integer> key2Index = new HashMap<>(64);

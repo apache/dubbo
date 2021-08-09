@@ -23,6 +23,9 @@ import com.alibaba.com.caucho.hessian.io.SerializerFactory;
 public class DefaultHessian2FactoryInitializer extends AbstractHessian2FactoryInitializer {
     @Override
     protected SerializerFactory createSerializerFactory() {
-        return new Hessian2SerializerFactory();
+        Hessian2SerializerFactory hessian2SerializerFactory = new Hessian2SerializerFactory();
+        hessian2SerializerFactory.getClassFactory().allow(RuntimeException.class.getName());
+        hessian2SerializerFactory.getClassFactory().allow("org.apache.dubbo.*");
+        return hessian2SerializerFactory;
     }
 }

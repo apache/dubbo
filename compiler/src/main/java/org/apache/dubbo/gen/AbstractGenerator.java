@@ -44,6 +44,18 @@ public abstract class AbstractGenerator extends Generator {
 
     protected abstract String getClassSuffix();
 
+    protected String getSingleTemplateFileName () {
+        return getTemplateFileName();
+    }
+
+    protected String getTemplateFileName () {
+        return getClassPrefix() + getClassSuffix() + "Stub.mustache";
+    }
+
+    protected String getInterfaceTemplateFileName () {
+        return getClassPrefix() + getClassSuffix() + "InterfaceStub.mustache";
+    }
+
     private String getServiceJavaDocPrefix() {
         return "    ";
     }
@@ -77,6 +89,8 @@ public abstract class AbstractGenerator extends Generator {
                 );
                 serviceContext.protoName = fileProto.getName();
                 serviceContext.packageName = extractPackageName(fileProto);
+                serviceContext.commonPackageName = extractCommonPackageName(fileProto);
+                serviceContext.multipleFiles = fileProto.getOptions() != null && fileProto.getOptions().getJavaMultipleFiles();
                 contexts.add(serviceContext);
             }
         });
@@ -96,10 +110,17 @@ public abstract class AbstractGenerator extends Generator {
         return Strings.nullToEmpty(proto.getPackage());
     }
 
+    private String extractCommonPackageName(FileDescriptorProto proto) {
+        return Strings.nullToEmpty(proto.getPackage());
+    }
+
     private ServiceContext buildServiceContext(ServiceDescriptorProto serviceProto, ProtoTypeMap typeMap, List<Location> locations, int serviceNumber) {
         ServiceContext serviceContext = new ServiceContext();
         serviceContext.fileName = getClassPrefix() + serviceProto.getName() + getClassSuffix() + ".java";
         serviceContext.className = getClassPrefix() + serviceProto.getName() + getClassSuffix();
+
+        serviceContext.interfaceFileName = serviceProto.getName()+ ".java";
+        serviceContext.interfaceClassName = serviceProto.getName();
         serviceContext.serviceName = serviceProto.getName();
         serviceContext.deprecated = serviceProto.getOptions() != null && serviceProto.getOptions().getDeprecated();
 
@@ -175,27 +196,61 @@ public abstract class AbstractGenerator extends Generator {
     }
 
     private List<PluginProtos.CodeGeneratorResponse.File> generateFiles(List<ServiceContext> services) {
-        return services.stream()
-                .map(this::buildFile)
-                .collect(Collectors.toList());
-    }
-
-    private PluginProtos.CodeGeneratorResponse.File buildFile(ServiceContext context) {
-        String content = applyTemplate(getClassPrefix() + getClassSuffix() + "Stub.mustache", context);
-        return PluginProtos.CodeGeneratorResponse.File
-                .newBuilder()
-                .setName(absoluteFileName(context))
-                .setContent(content)
-                .build();
-    }
-
-    private String absoluteFileName(ServiceContext ctx) {
-        String dir = ctx.packageName.replace('.', '/');
-        if (Strings.isNullOrEmpty(dir)) {
-            return ctx.fileName;
-        } else {
-            return dir + "/" + ctx.fileName;
+        List<PluginProtos.CodeGeneratorResponse.File> allServiceFiles = new ArrayList<>();
+        for (ServiceContext context : services) {
+            List<PluginProtos.CodeGeneratorResponse.File> files = buildFile(context);
+            allServiceFiles.addAll(files);
         }
+        return allServiceFiles;
+    }
+
+    private List<PluginProtos.CodeGeneratorResponse.File> buildFile(ServiceContext context) {
+        List<PluginProtos.CodeGeneratorResponse.File> files = new ArrayList<>();
+
+        if (context.multipleFiles) {
+            String content = applyTemplate(getTemplateFileName(), context);
+            String dir = absoluteDir(context);
+
+            files.add(PluginProtos.CodeGeneratorResponse.File
+                .newBuilder()
+                .setName(getFileName(dir, context.fileName))
+                .setContent(content)
+                .build());
+
+            content = applyTemplate(getInterfaceTemplateFileName(), context);
+            files.add(PluginProtos.CodeGeneratorResponse.File
+                .newBuilder()
+                .setName(getFileName(dir, context.interfaceFileName))
+                .setContent(content)
+                .build());
+        } else {
+            String content = applyTemplate(getSingleTemplateFileName(), context);
+            String dir = absoluteDir(context);
+
+            files.add(PluginProtos.CodeGeneratorResponse.File
+                .newBuilder()
+                .setName(getFileName(dir, context.fileName))
+                .setContent(content)
+                .build());
+        }
+
+        return files;
+    }
+
+    private String absoluteDir(ServiceContext ctx) {
+        return ctx.packageName.replace('.', '/');
+//        if (Strings.isNullOrEmpty(dir)) {
+//            return ctx.fileName;
+//        } else {
+//            return dir + "/" + ctx.fileName;
+//        }if ()
+    }
+
+    private String getFileName(String dir, String fileName) {
+        if (Strings.isNullOrEmpty(dir)) {
+            return fileName;
+        }
+        return dir + "/" + fileName;
     }
 
     private String getComments(Location location) {
@@ -223,12 +278,16 @@ public abstract class AbstractGenerator extends Generator {
     private class ServiceContext {
         // CHECKSTYLE DISABLE VisibilityModifier FOR 8 LINES
         public String fileName;
+        public String interfaceFileName;
         public String protoName;
         public String packageName;
+        public String commonPackageName;
         public String className;
+        public String interfaceClassName;
         public String serviceName;
         public boolean deprecated;
         public String javaDoc;
+        public boolean multipleFiles;
         public List<MethodContext> methods = new ArrayList<>();
 
         public Set<String> methodTypes = new HashSet<>();

@@ -18,11 +18,13 @@ package org.apache.dubbo.integration.single;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.metadata.MetadataInfo;
@@ -35,6 +37,8 @@ import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataS
 import org.apache.dubbo.registry.client.migration.MigrationInvoker;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,14 +95,22 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      */
     private SingleRegistryCenterIntegrationService singleRegistryCenterIntegrationService;
 
+    /**
+     * Define the {@link SingleRegistryCenterExportedServiceListener} instance to obtain the exported services.
+     */
+    private SingleRegistryCenterExportedServiceListener singleRegistryCenterExportedServiceListener;
+
+    /**
+     * Define a registry center.
+     */
+    private SingleRegistryCenter registryCenter;
+
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        //start zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
-        SingleZooKeeperServer.start();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
+        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter.startup();
         // initialize ServiceConfig
         serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
@@ -107,7 +119,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryConfig = new RegistryConfig("zookeeper://127.0.0.1:" + SingleZooKeeperServer.getPort()))
+            .registry(registryConfig = registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
     }
@@ -129,16 +141,16 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
     /**
      * There are some checkpoints needed to check as follow :
-     * <li>ZookeeperServer's status</li>
-     * <li>ServiceConfig is exported or not</li>
-     * <li>ServiceConfig's exportedUrl has values or not</li>
-     * <li>DubboBootstrap is initialized or not</li>
-     * <li>DubboBootstrap is started or not</li>
-     * <li>DubboBootstrap is shutdown or not</li>
+     * <ul>
+     *     <li>ServiceConfig is exported or not</li>
+     *     <li>ServiceConfig's exportedUrl has values or not</li>
+     *     <li>DubboBootstrap is initialized or not</li>
+     *     <li>DubboBootstrap is started or not</li>
+     *     <li>DubboBootstrap is shutdown or not</li>
+     *     <li>The ServiceListener is loaded by SPI or not</li>
+     * </ul>
      */
     private void beforeExport() {
-        // ZookeeperServer's status
-        Assertions.assertTrue(SingleZooKeeperServer.isRunning());
         // ServiceConfig is exported or not
         Assertions.assertFalse(serviceConfig.isExported());
         // ServiceConfig's exportedUrl has values or not
@@ -149,32 +161,37 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertFalse(DubboBootstrap.getInstance().isStarted());
         // DubboBootstrap is shutdown or not
         Assertions.assertFalse(DubboBootstrap.getInstance().isShutdown());
+        // The ServiceListener is loaded by SPI or not
+        Assertions.assertNull(singleRegistryCenterExportedServiceListener);
     }
 
     /**
      * There are some checkpoints needed to check as follow :
-     * <li>DubboBootstrap is initialized or not</li>
-     * <li>DubboBootstrap is started or not</li>
-     * <li>DubboBootstrap is shutdown or not</li>
-     * <li>Service has been exported or not</li>
-     * <li>There is exported urls or not</li>
-     * <li>Protocol name is right or not</li>
-     * <li>Protocol port is right or not</li>
-     * <li>ServiceDiscoveryRegistry's protocol is right or not</li>
-     * <li>ServiceDiscoveryRegistry is destroy or not</li>
-     * <li>Registered service in registry center is right or not</li>
-     * <li>Exported url is right or not in InMemoryWritableMetadataService</li>
-     * <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
-     * <li>MetadataInfo has reported or not</li>
-     * <li>MetadataInfo has reported or not has service or not</li>
-     * <li>MetadataInfo's application name is right or not</li>
-     * <li>MetadataInfo's service exists or not</li>
-     * <li>The name of MetadataInfo's service is right or not</li>
-     * <li>The group of MetadataInfo's service is right or not</li>
-     * <li>The version of MetadataInfo's service is right or not</li>
-     * <li>The protocol of MetadataInfo's service is right or not</li>
-     * <li>The serviceKey of MetadataInfo's service is right or not</li>
-     * <li>The matchKey of MetadataInfo's service is right or not</li>
+     * <ul>
+     *     <li>DubboBootstrap is initialized or not</li>
+     *     <li>DubboBootstrap is started or not</li>
+     *     <li>DubboBootstrap is shutdown or not</li>
+     *     <li>Service has been exported or not</li>
+     *     <li>There is exported urls or not</li>
+     *     <li>Protocol name is right or not</li>
+     *     <li>Protocol port is right or not</li>
+     *     <li>ServiceDiscoveryRegistry's protocol is right or not</li>
+     *     <li>ServiceDiscoveryRegistry is destroy or not</li>
+     *     <li>Registered service in registry center is right or not</li>
+     *     <li>Exported url is right or not in InMemoryWritableMetadataService</li>
+     *     <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
+     *     <li>MetadataInfo has reported or not</li>
+     *     <li>MetadataInfo has reported or not has service or not</li>
+     *     <li>MetadataInfo's application name is right or not</li>
+     *     <li>MetadataInfo's service exists or not</li>
+     *     <li>The name of MetadataInfo's service is right or not</li>
+     *     <li>The group of MetadataInfo's service is right or not</li>
+     *     <li>The version of MetadataInfo's service is right or not</li>
+     *     <li>The protocol of MetadataInfo's service is right or not</li>
+     *     <li>The serviceKey of MetadataInfo's service is right or not</li>
+     *     <li>The matchKey of MetadataInfo's service is right or not</li>
+     *     <li>The exported service are right or not</li>
+     * </ul>
      */
     private void afterExport() {
         // DubboBootstrap is initialized or not
@@ -234,17 +251,29 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // MetadataInfo's service exists or not
         Assertions.assertNotNull(serviceInfo);
         // The name of MetadataInfo's service is right or not
-        Assertions.assertEquals(serviceInfo.getName(),SingleRegistryCenterIntegrationService.class.getName());
+        Assertions.assertEquals(serviceInfo.getName(), SingleRegistryCenterIntegrationService.class.getName());
         // The group of MetadataInfo's service is right or not
         Assertions.assertNull(serviceInfo.getGroup());
         // The version of MetadataInfo's service is right or not
         Assertions.assertNull(serviceInfo.getVersion());
         // The protocol of MetadataInfo's service is right or not
-        Assertions.assertEquals(serviceInfo.getProtocol(),PROTOCOL_NAME);
+        Assertions.assertEquals(serviceInfo.getProtocol(), PROTOCOL_NAME);
         // The serviceKey of MetadataInfo's service is right or not
-        Assertions.assertEquals(serviceInfo.getServiceKey(),SingleRegistryCenterIntegrationService.class.getName());
+        Assertions.assertEquals(serviceInfo.getServiceKey(), SingleRegistryCenterIntegrationService.class.getName());
         // The matchKey of MetadataInfo's service is right or not
-        Assertions.assertEquals(serviceInfo.getMatchKey(),key);
+        Assertions.assertEquals(serviceInfo.getMatchKey(), key);
+        // The exported services are right or not
+        // 1. The exported service must contain SingleRegistryCenterIntegrationService
+        // 2. The exported service's interface must be SingleRegistryCenterIntegrationService.class
+        // 3. All exported services must be exported
+        singleRegistryCenterExportedServiceListener = (SingleRegistryCenterExportedServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension("exported");
+        Assertions.assertNotNull(singleRegistryCenterExportedServiceListener);
+        Assertions.assertEquals(singleRegistryCenterExportedServiceListener.getExportedServices().size(), 1);
+        Assertions.assertEquals(SingleRegistryCenterIntegrationService.class,
+            singleRegistryCenterExportedServiceListener.getExportedServices().get(0).getInterfaceClass());
+        ServiceConfig singleRegistryCenterServiceConfig = singleRegistryCenterExportedServiceListener.getExportedServices().get(0);
+        Assertions.assertNotNull(singleRegistryCenterServiceConfig);
+        Assertions.assertTrue(singleRegistryCenterServiceConfig.isExported());
     }
 
     /**
@@ -274,7 +303,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     /**
      * Initialize the consumer.
      */
-    private void initConsumer(){
+    private void initConsumer() {
         referenceConfig = new ReferenceConfig<>();
         referenceConfig.setInterface(SingleRegistryCenterIntegrationService.class);
         referenceConfig.setBootstrap(DubboBootstrap.getInstance());
@@ -287,29 +316,33 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
 
     /**
      * There are some checkpoints needed to check before referring as follow :
-     * <li>ReferenceConfig has integrated into DubboBootstrap or not</li>
+     * <ul>
+     *     <li>ReferenceConfig has integrated into DubboBootstrap or not</li>
+     * </ul>
      */
-    private void beforeRefer(){
+    private void beforeRefer() {
         // ReferenceConfig has integrated into DubboBootstrap or not
-        Assertions.assertEquals(referenceConfig.getBootstrap(),DubboBootstrap.getInstance());
+        Assertions.assertEquals(referenceConfig.getBootstrap(), DubboBootstrap.getInstance());
     }
 
     /**
      * There are some checkpoints needed to check after referred as follow :
-     * <li>SingleRegistryCenterIntegrationService instance can't be null</li>
-     * <li>RPC works well or not</li>
-     * <li>Invoker is right or not</li>
-     * <li>Directory is null or not</li>
-     * <li>Registered interface is right or not</li>
-     * <li>Directory is available or not</li>
-     * <li>Directory is destroyed or not</li>
-     * <li>Directory has received notification or not</li>
-     * <li>ServiceDiscoveryRegistryDirectory should register or not</li>
-     * <li>ServiceDiscoveryRegistryDirectory's registered consumer url is right or not</li>
-     * <li>ServiceDiscoveryRegistryDirectory's registry is right or not</li>
-     * <li>Directory's invokers are right or not</li>
+     * <ul>
+     *     <li>SingleRegistryCenterIntegrationService instance can't be null</li>
+     *     <li>RPC works well or not</li>
+     *     <li>Invoker is right or not</li>
+     *     <li>Directory is null or not</li>
+     *     <li>Registered interface is right or not</li>
+     *     <li>Directory is available or not</li>
+     *     <li>Directory is destroyed or not</li>
+     *     <li>Directory has received notification or not</li>
+     *     <li>ServiceDiscoveryRegistryDirectory should register or not</li>
+     *     <li>ServiceDiscoveryRegistryDirectory's registered consumer url is right or not</li>
+     *     <li>ServiceDiscoveryRegistryDirectory's registry is right or not</li>
+     *     <li>Directory's invokers are right or not</li>
+     * </ul>
      */
-    private void afterRefer(){
+    private void afterRefer() {
         // SingleRegistryCenterIntegrationService instance can't be null
         Assertions.assertNotNull(singleRegistryCenterIntegrationService);
         // Invoker is right or not
@@ -319,13 +352,13 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertEquals("Hello Reference",
             singleRegistryCenterIntegrationService.hello("Reference"));
         // get ServiceDiscoveryRegistryDirectory instance
-        Directory directory = ((MigrationInvoker)referenceConfig.getInvoker()).getDirectory();
+        Directory directory = ((MigrationInvoker) referenceConfig.getInvoker()).getDirectory();
         // Directory is null or not
         Assertions.assertNotNull(directory);
         // Check Directory's type
         Assertions.assertTrue(directory instanceof ServiceDiscoveryRegistryDirectory);
         // Registered interface is right or not
-        Assertions.assertEquals(directory.getInterface(),SingleRegistryCenterIntegrationService.class);
+        Assertions.assertEquals(directory.getInterface(), SingleRegistryCenterIntegrationService.class);
         // Directory is available or not
         Assertions.assertTrue(directory.isAvailable());
         // Directory is destroyed or not
@@ -336,12 +369,12 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // ServiceDiscoveryRegistryDirectory should register or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.isShouldRegister());
         // ServiceDiscoveryRegistryDirectory's registered consumer url is right or not
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(),CONSUMERS_CATEGORY);
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getRegisteredConsumerUrl().getCategory(), CONSUMERS_CATEGORY);
         // ServiceDiscoveryRegistryDirectory's registry is right or not
         Assertions.assertTrue(serviceDiscoveryRegistryDirectory.getRegistry() instanceof ListenerRegistryWrapper);
         // Directory's invokers are right or not
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getAllInvokers().size(),1);
-        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getInvokers(),serviceDiscoveryRegistryDirectory.getAllInvokers());
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getAllInvokers().size(), 1);
+        Assertions.assertEquals(serviceDiscoveryRegistryDirectory.getInvokers(), serviceDiscoveryRegistryDirectory.getAllInvokers());
     }
 
     @AfterEach
@@ -352,10 +385,12 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         PROTOCOL_PORT = 0;
         serviceConfig = null;
         referenceConfig = null;
+        // The exported service has been unexported
+        Assertions.assertTrue(singleRegistryCenterExportedServiceListener.getExportedServices().isEmpty());
+        singleRegistryCenterExportedServiceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
-        // destroy zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
-        SingleZooKeeperServer.shutdown();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+        // destroy registry center
+        registryCenter.shutdown();
+        registryCenter = null;
     }
 }

@@ -160,8 +160,13 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
         // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
         beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
 
-        // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
-        applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
+        try {
+            // this is an early event, it will be notified at org.springframework.context.support.AbstractApplicationContext.registerListeners()
+            applicationContext.publishEvent(new DubboAnnotationInitedEvent(applicationContext));
+        } catch (Exception e) {
+            // if spring version is less then 4.2, it does not support early application event
+            logger.error("publish early application event failed, please upgrade spring version to 4.2.x or later", e);
+        }
     }
 
     /**
