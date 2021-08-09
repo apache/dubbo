@@ -100,7 +100,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
                 try {
                     registry.destroy();
                 } catch (Throwable e) {
-                    LOGGER.error(e.getMessage(), e);
+                    LOGGER.warn(e.getMessage(), e);
                 }
             }
             REGISTRIES.clear();
