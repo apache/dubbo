@@ -17,8 +17,9 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.utils.*;
-import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
