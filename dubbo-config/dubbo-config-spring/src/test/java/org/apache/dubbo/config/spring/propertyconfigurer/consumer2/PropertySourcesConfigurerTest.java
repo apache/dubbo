@@ -23,6 +23,8 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.propertyconfigurer.consumer.DemoBeanFactoryPostProcessor;
 import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
