@@ -94,10 +94,14 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     }
 
     private Set<String> getPackagesToScan0(AnnotationMetadata metadata, Class annotationClass, String basePackagesName, String basePackageClassesName) {
-        Set<String> packagesToScan = new LinkedHashSet<>();
 
         AnnotationAttributes attributes = AnnotationAttributes.fromMap(
                 metadata.getAnnotationAttributes(annotationClass.getName()));
+        if (attributes == null) {
+            return Collections.emptySet();
+        }
+
+        Set<String> packagesToScan = new LinkedHashSet<>();
         // basePackages
         String[] basePackages = attributes.getStringArray(basePackagesName);
         packagesToScan.addAll(Arrays.asList(basePackages));
