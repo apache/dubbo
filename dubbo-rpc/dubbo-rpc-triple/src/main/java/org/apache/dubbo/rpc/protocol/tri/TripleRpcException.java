@@ -22,6 +22,19 @@ public class TripleRpcException extends RpcException {
     private final GrpcStatus status;
     private final Metadata trailers;
     private final boolean fillInStackTrace;
+    private int code;
+
+    public TripleRpcException(int code, String msg) {
+        this(code, msg, null);
+    }
+
+    public TripleRpcException(int code, String msg, Metadata trailers) {
+        super(msg);
+        this.code = code;
+        this.status = null;
+        this.trailers = trailers;
+        this.fillInStackTrace = false;
+    }
 
     public TripleRpcException(GrpcStatus status) {
         this(status, null);
@@ -36,12 +49,24 @@ public class TripleRpcException extends RpcException {
         this.status = status;
         this.trailers = trailers;
         this.fillInStackTrace = fillInStackTrace;
+        this.code = status.code.code;
         fillInStackTrace();
     }
 
     @Override
     public synchronized Throwable fillInStackTrace() {
         return fillInStackTrace ? super.fillInStackTrace() : this;
+    }
+
+    @Override
+    public void setCode(int code) {
+        this.code = code;
+    }
+
+
+    @Override
+    public int getCode() {
+        return code;
     }
 
     public GrpcStatus getStatus() {

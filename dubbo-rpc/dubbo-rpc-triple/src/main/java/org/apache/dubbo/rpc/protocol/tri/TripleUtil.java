@@ -16,8 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.ErrorInfo;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,15 +48,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 public class TripleUtil {
 
     public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-            "tri_server_stream");
+        "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-            "tri_client_stream");
+        "tri_client_stream");
+
+    public static final String LANGUAGE = "java";
+
+
     private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
@@ -109,31 +119,25 @@ public class TripleUtil {
         }
     }
 
-    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
-                                            Serialization serialization) {
+    public static Map<Class<?>, Object> tranFromStatusDetails(List<Any> detailList) {
+        Map<Class<?>, Object> map = new HashMap<>();
         try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            final Class<?> aClass = ClassUtils.forName(wrap.getType());
-            final ObjectInput in = serialization.deserialize(null, bais);
-            bais.close();
-            return (Throwable) in.readObject(aClass);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to unwrap exception", e);
+            for (Any any : detailList) {
+                if (any.is(ErrorInfo.class)) {
+                    ErrorInfo errorInfo = any.unpack(ErrorInfo.class);
+                    map.putIfAbsent(ErrorInfo.class, errorInfo);
+                } else if (any.is(DebugInfo.class)) {
+                    DebugInfo debugInfo = any.unpack(DebugInfo.class);
+                    map.putIfAbsent(DebugInfo.class, debugInfo);
+                }
+                // support others type but now only support this
+            }
+        } catch (InvalidProtocolBufferException e) {
+            e.printStackTrace();
         }
+        return map;
     }
 
-    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
-                                            MultipleSerialization serialization) {
-        String serializeType = convertHessianFromWrapper(wrap.getSerializeType());
-        try {
-            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            final Object ret = serialization.deserialize(url, serializeType, wrap.getType(), bais);
-            bais.close();
-            return (Throwable) ret;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to unwrap exception", e);
-        }
-    }
 
     public static Object[] unwrapReq(URL url, TripleWrapper.TripleRequestWrapper wrap,
                                      MultipleSerialization multipleSerialization) {
@@ -170,7 +174,7 @@ public class TripleUtil {
     }
 
     public static boolean supportExceptionSerialization(String serializeType) {
-        if (serializeType.equals("hessian2")) {
+        if (serializeType.equals(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION)) {
             return true;
         }
         return false;
@@ -179,10 +183,10 @@ public class TripleUtil {
     public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
                                                                      Serialization serialization) {
         try {
-            final TripleWrapper.TripleExceptionWrapper.Builder builder =
-                TripleWrapper.TripleExceptionWrapper.newBuilder()
-                    .setType(throwable.getClass().getName())
-                    .setSerializeType("hessian2");
+            final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
+                .setLanguage(LANGUAGE)
+                .setClassName(throwable.getClass().getName())
+                .setSerialization(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutput serialize = serialization.serialize(url, bos);
             serialize.writeObject(throwable);
@@ -191,24 +195,30 @@ public class TripleUtil {
             bos.close();
             return builder.build();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper req", e);
+            throw new RuntimeException("Failed to pack wrapper exception", e);
         }
     }
 
-    public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, String serializeType, Throwable throwable,
-                                                                     MultipleSerialization multipleSerialization) {
+    public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
+                                            Serialization serialization) {
+        if (wrap == null) {
+            return null;
+        }
+        if (!LANGUAGE.equals(wrap.getLanguage())) {
+            return null;
+        }
+        if (!supportExceptionSerialization(wrap.getSerialization())) {
+            return null;
+        }
         try {
-            final TripleWrapper.TripleExceptionWrapper.Builder builder =
-                TripleWrapper.TripleExceptionWrapper.newBuilder()
-                    .setType(throwable.getClass().getName())
-                    .setSerializeType(convertHessianToWrapper(serializeType));
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            multipleSerialization.serialize(url, serializeType, throwable.getClass().getName(), throwable, bos);
-            builder.setData(ByteString.copyFrom(bos.toByteArray()));
-            bos.close();
-            return builder.build();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to pack wrapper exception", e);
+            final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
+            final Class<?> aClass = ClassUtils.forName(wrap.getClassName());
+            final ObjectInput in = serialization.deserialize(null, bais);
+            bais.close();
+            return (Throwable) in.readObject(aClass);
+        } catch (Exception e) {
+            // if this null ,can get common exception
+            return null;
         }
     }
 

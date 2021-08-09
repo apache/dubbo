@@ -46,6 +46,11 @@ public class Http2HeaderMeta implements Metadata {
     }
 
     @Override
+    public boolean remove(CharSequence key) {
+        return headers.remove(key);
+    }
+
+    @Override
     public Iterator<Map.Entry<CharSequence, CharSequence>> iterator() {
         return headers.iterator();
     }

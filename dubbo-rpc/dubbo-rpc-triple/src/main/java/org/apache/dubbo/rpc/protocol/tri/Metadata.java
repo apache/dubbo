@@ -34,4 +34,6 @@ public interface Metadata extends Iterable<Map.Entry<CharSequence, CharSequence>
 
     boolean contains(CharSequence key);
 
+    boolean remove(CharSequence key);
+
 }
