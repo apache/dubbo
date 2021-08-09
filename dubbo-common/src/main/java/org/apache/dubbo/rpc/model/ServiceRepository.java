@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -49,6 +51,9 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     // useful to find a provider model quickly with serviceInterfaceName:version
     private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
+
+    // useful to find a url quickly with serviceInterfaceName:version
+    private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
 
     public ServiceRepository() {
         Set<BuiltinServiceDetector> builtinServices
@@ -178,6 +183,24 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     public ConsumerModel lookupReferredService(String serviceKey) {
         return consumers.get(serviceKey);
+    }
+
+    public void registerProviderUrl(URL url) {
+        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new ConcurrentHashSet<>()).add(url);
+    }
+
+    public Set<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
+        return providerUrlsWithoutGroup.get(key);
+    }
+
+    @Deprecated
+    public ConcurrentMap<String, Set<URL>> getProviderUrlsWithoutGroup() {
+        return providerUrlsWithoutGroup;
+    }
+
+    @Deprecated
+    public void setProviderUrlsWithoutGroup(ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup) {
+        this.providerUrlsWithoutGroup = providerUrlsWithoutGroup;
     }
 
     @Override
