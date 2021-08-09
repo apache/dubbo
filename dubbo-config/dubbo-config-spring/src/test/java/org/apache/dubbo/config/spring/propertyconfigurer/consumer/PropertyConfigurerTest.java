@@ -17,10 +17,13 @@
 package org.apache.dubbo.config.spring.propertyconfigurer.consumer;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
+import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.junit.jupiter.api.AfterAll;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import org.junit.jupiter.api.Assertions;
@@ -38,10 +41,19 @@ import java.util.concurrent.ConcurrentMap;
 
 public class PropertyConfigurerTest {
 
+    private static SingleRegistryCenter singleRegistryCenter;
+
     @BeforeAll
-    public static void setUp() {
+    public static void beforeAll() {
+        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter.startup();
         DubboBootstrap.reset();
-        ZooKeeperServer.start();
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        DubboBootstrap.reset();
+        singleRegistryCenter.shutdown();
     }
 
     @Test

@@ -14,11 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.single.listener;
+package org.apache.dubbo.integration;
 
-import org.apache.dubbo.common.constants.CommonConstants;
-import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmService;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
@@ -27,10 +24,16 @@ import org.apache.dubbo.rpc.cluster.filter.FilterChainBuilder;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
-@Activate(group = CommonConstants.PROVIDER, order = 1000)
-public class InjvmExporterListener implements ExporterListener {
+/**
+ * The abstraction of {@link ExporterListener} is to record exported exporters, which should be extended by different sub-classes.
+ */
+public abstract class AbstractRegistryCenterExporterListener implements ExporterListener {
 
     /**
      * Exported exporters.
@@ -43,6 +46,11 @@ public class InjvmExporterListener implements ExporterListener {
     private Set<Filter> filters = new HashSet<>();
 
     /**
+     * Returns the interface of exported service.
+     */
+    protected abstract Class<?> getInterface();
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -50,7 +58,7 @@ public class InjvmExporterListener implements ExporterListener {
         ListenerExporterWrapper listenerExporterWrapper = (ListenerExporterWrapper) exporter;
         FilterChainBuilder.FilterChainNode filterChainNode = (FilterChainBuilder.FilterChainNode) listenerExporterWrapper.getInvoker();
         if (filterChainNode == null ||
-            filterChainNode.getInterface() != SingleRegistryCenterInjvmService.class) {
+            filterChainNode.getInterface() != getInterface()) {
             return;
         }
         exportedExporters.add(exporter);

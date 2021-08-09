@@ -21,13 +21,11 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.integration.single.SingleZooKeeperServer;
-import org.apache.dubbo.integration.single.listener.InjvmExporterListener;
-import org.apache.dubbo.integration.single.listener.InjvmServiceListener;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -65,29 +63,31 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
     /**
      * The listener to record exported services
      */
-    private InjvmServiceListener serviceListener;
+    private SingleRegistryCenterInjvmServiceListener serviceListener;
 
     /**
      * The listener to record exported exporters.
      */
-    private InjvmExporterListener exporterListener;
+    private SingleRegistryCenterInjvmExporterListener exporterListener;
 
     /**
      * The filter for checking filter chain.
      */
-    private InjvmFilter filter;
+    private SingleRegistryCenterInjvmFilter filter;
+
+    /**
+     * Define a registry center.
+     */
+    private SingleRegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        //start zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to start...");
-        SingleZooKeeperServer.start();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has started.");
-
+        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter.startup();
         // initialize service config
-        serviceConfig = new ServiceConfig<SingleRegistryCenterInjvmService>();
+        serviceConfig = new ServiceConfig<>();
         serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
         serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
         serviceConfig.setAsync(false);
@@ -96,7 +96,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(new RegistryConfig("N/A"))
+            .registry(registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig("injvm"))
             .service(serviceConfig);
     }
@@ -113,9 +113,9 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      */
     private void beforeExport() {
         // ---------------initialize--------------- //
-        serviceListener = (InjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
-        exporterListener = (InjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
-        filter = (InjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
+        serviceListener = (SingleRegistryCenterInjvmServiceListener) ExtensionLoader.getExtensionLoader(ServiceListener.class).getExtension(SPI_NAME);
+        exporterListener = (SingleRegistryCenterInjvmExporterListener) ExtensionLoader.getExtensionLoader(ExporterListener.class).getExtension(SPI_NAME);
+        filter = (SingleRegistryCenterInjvmFilter) ExtensionLoader.getExtensionLoader(Filter.class).getExtension(SPI_NAME);
 
         // ---------------checkpoints--------------- //
         // There is nothing in ServiceListener
@@ -150,38 +150,38 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
      *     <li>The exported service is SingleRegistryCenterInjvmService or not</li>
      *     <li>The SingleRegistryCenterInjvmService is exported or not</li>
      *     <li>The exported exporter is only one or not</li>
-     *     <li>The exported exporter contains InjvmFilter or not</li>
+     *     <li>The exported exporter contains SingleRegistryCenterInjvmFilter or not</li>
      * </ul>
      */
     private void afterExport() {
         // The exported service is only one
-        Assertions.assertEquals(serviceListener.getExportedServices().size(),1);
+        Assertions.assertEquals(serviceListener.getExportedServices().size(), 1);
         // The exported service is SingleRegistryCenterInjvmService
         Assertions.assertEquals(serviceListener.getExportedServices().get(0).getInterfaceClass(),
             SingleRegistryCenterInjvmService.class);
         // The SingleRegistryCenterInjvmService is exported
         Assertions.assertTrue(serviceListener.getExportedServices().get(0).isExported());
         // The exported exporter is only one
-        Assertions.assertEquals(exporterListener.getExportedExporters().size(),1);
-        // The exported exporter contains InjvmFilter
+        Assertions.assertEquals(exporterListener.getExportedExporters().size(), 1);
+        // The exported exporter contains SingleRegistryCenterInjvmFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
     }
 
     /**
      * There are some checkpoints need to check after invoked as follow:
      * <ul>
-     *     <li>The InjvmFilter has called or not</li>
-     *     <li>The InjvmFilter exists error after invoked</li>
-     *     <li>The InjvmFilter's response is right or not</li>
+     *     <li>The SingleRegistryCenterInjvmFilter has called or not</li>
+     *     <li>The SingleRegistryCenterInjvmFilter exists error after invoked</li>
+     *     <li>The SingleRegistryCenterInjvmFilter's response is right or not</li>
      * </ul>
      */
-    private void afterInvoke(){
-        // The InjvmFilter has called
+    private void afterInvoke() {
+        // The SingleRegistryCenterInjvmFilter has called
         Assertions.assertTrue(filter.hasCalled());
-        // The InjvmFilter doesn't exist error
+        // The SingleRegistryCenterInjvmFilter doesn't exist error
         Assertions.assertFalse(filter.hasError());
-        // Check the InjvmFilter's response
-        Assertions.assertEquals("Hello Dubbo",filter.getResponse());
+        // Check the SingleRegistryCenterInjvmFilter's response
+        Assertions.assertEquals("Hello Dubbo", filter.getResponse());
     }
 
     @AfterEach
@@ -193,9 +193,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         Assertions.assertTrue(serviceListener.getExportedServices().isEmpty());
         serviceListener = null;
         logger.info(getClass().getSimpleName() + " testcase is ending...");
-        // destroy zookeeper only once
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " is beginning to shutdown...");
-        SingleZooKeeperServer.shutdown();
-        logger.info(SingleZooKeeperServer.getZookeeperServerName() + " has shutdown.");
+        registryCenter.shutdown();
+        registryCenter = null;
     }
 }

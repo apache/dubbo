@@ -14,30 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.integration.multiple.injvm;
 
-public class ZooKeeperServer {
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.integration.AbstractRegistryCenterExporterListener;
 
-    private static EmbeddedZooKeeper zookeeper1;
-    private static EmbeddedZooKeeper zookeeper2;
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
+public class MultipleRegistryCenterInjvmExporterListener extends AbstractRegistryCenterExporterListener {
 
-    public static void start() {
-            if (zookeeper1 == null) {
-                zookeeper1 = new EmbeddedZooKeeper(2181, true);
-                zookeeper1.start();
-            }
-            if (zookeeper2 == null) {
-                zookeeper2 = new EmbeddedZooKeeper(2182, true);
-                zookeeper2.start();
-            }
-    }
-
-    public static void stop() {
-        if (zookeeper1 != null) {
-            zookeeper1.stop();
-        }
-        if (zookeeper2 != null) {
-            zookeeper2.stop();
-        }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Class<?> getInterface() {
+        return MultipleRegistryCenterInjvmService.class;
     }
 }
