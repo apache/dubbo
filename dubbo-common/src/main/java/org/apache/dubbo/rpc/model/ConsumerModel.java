@@ -17,8 +17,9 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
-import org.apache.dubbo.common.utils.Assert;
-import org.apache.dubbo.common.utils.ClassUtils;
+import org.apache.dubbo.common.utils.*;
+import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
@@ -64,7 +65,20 @@ public class ConsumerModel {
         this.referenceConfig = referenceConfig;
     }
 
-    public void init(Map<String, AsyncMethodInfo> attributes) {
+
+    public void initMethodModels(List<MethodConfig> methodConfigs) {
+
+        Map<String, AsyncMethodInfo> attributes = null;
+        if (CollectionUtils.isNotEmpty(methodConfigs)) {
+            attributes = new HashMap<>(16);
+            for (MethodConfig methodConfig : methodConfigs) {
+                AsyncMethodInfo asyncMethodInfo = methodConfig.convertMethodConfig2AsyncInfo();
+                if (asyncMethodInfo != null) {
+                    attributes.put(methodConfig.getName(), asyncMethodInfo);
+                }
+            }
+        }
+
         if (attributes != null) {
             this.methodConfigs = attributes;
         }
@@ -145,7 +159,7 @@ public class ConsumerModel {
     }
 
     public void initMethodModels() {
-        Class[] interfaceList = null;
+        Class<?>[] interfaceList;
         if (proxyObject == null) {
             Class<?> serviceInterfaceClass = referenceConfig.getServiceInterfaceClass();
             if (serviceInterfaceClass != null) {
@@ -156,7 +170,7 @@ public class ConsumerModel {
         } else {
             interfaceList = proxyObject.getClass().getInterfaces();
         }
-        for (Class interfaceClass : interfaceList) {
+        for (Class<?> interfaceClass : interfaceList) {
             for (Method method : interfaceClass.getMethods()) {
                 methodModels.put(method, new ConsumerMethodModel(method));
             }

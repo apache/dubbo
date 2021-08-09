@@ -112,7 +112,7 @@ public class MethodConfigTest {
         methodConfig.setOninvokeMethod("setName");
         methodConfig.setOninvoke(new Person());
 
-        AsyncMethodInfo methodInfo = org.apache.dubbo.config.MethodConfig.convertMethodConfig2AsyncInfo(methodConfig);
+        AsyncMethodInfo methodInfo = methodConfig.convertMethodConfig2AsyncInfo();
 
         assertEquals(methodInfo.getOninvokeMethod(), Person.class.getMethod("setName", String.class));
     }

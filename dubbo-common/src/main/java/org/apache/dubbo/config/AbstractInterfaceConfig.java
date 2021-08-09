@@ -90,7 +90,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected MonitorConfig monitor;
 
     /**
-     * Strategies for generating dynamic agents，there are two strategies can be choosed: jdk and javassist
+     * Strategies for generating dynamic agents，there are two strategies can be chosen: jdk and javassist
      */
     protected String proxy;
 
@@ -227,7 +227,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     protected String[] methods(Class<?> interfaceClass) {
         boolean isNative = ApplicationModel.getEnvironment().getConfiguration().getBoolean(NATIVE, false);
         if (isNative) {
-            return Arrays.stream(interfaceClass.getMethods()).map(it -> it.getName()).toArray(String[]::new);
+            return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
             return Wrapper.getWrapper(interfaceClass).getMethodNames();
         }
