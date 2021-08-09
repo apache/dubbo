@@ -253,11 +253,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             null,
             serviceMetadata);
 
-        Map<String, String> parameters = appendConfig();
+        Map<String, String> referenceParameters = appendConfig();
 
-        serviceMetadata.getAttachments().putAll(parameters);
+        serviceMetadata.getAttachments().putAll(referenceParameters);
 
-        ref = createProxy(parameters);
+        ref = createProxy(referenceParameters);
 
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
@@ -274,7 +274,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * Append all configuration required for service reference.
      *
-     * @return parameters
+     * @return reference parameters
      */
     private Map<String, String> appendConfig() {
         Map<String, String> map = new HashMap<>(16);
@@ -337,18 +337,18 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     @SuppressWarnings({"unchecked"})
-    private T createProxy(Map<String, String> parameters) {
-        if (shouldJvmRefer(parameters)) {
-            createInvokerForLocal(parameters);
+    private T createProxy(Map<String, String> referenceParameters) {
+        if (shouldJvmRefer(referenceParameters)) {
+            createInvokerForLocal(referenceParameters);
         } else {
             urls.clear();
             if (url != null && url.length() > 0) {
                 // user specified URL, could be peer-to-peer address, or register center's address.
-                parseUrl();
+                parseUrl(referenceParameters);
             } else {
                 // if protocols not in jvm checkRegistry
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
-                    AggregateUrlFromRegistry();
+                    AggregateUrlFromRegistry(referenceParameters);
                 }
             }
             createInvokerForRemote();
@@ -358,7 +358,8 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             logger.info("Referred dubbo service " + interfaceClass.getName());
         }
 
-        URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, parameters.get(REGISTER_IP_KEY), 0, parameters.get(INTERFACE_KEY), parameters);
+        URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, referenceParameters.get(REGISTER_IP_KEY), 0,
+            referenceParameters.get(INTERFACE_KEY), referenceParameters);
         MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy
@@ -368,10 +369,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * Make a local reference, create a local invoker.
      *
-     * @param parameters
+     * @param referenceParameters
      */
-    private void createInvokerForLocal(Map<String, String> parameters) {
-        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(parameters);
+    private void createInvokerForLocal(Map<String, String> referenceParameters) {
+        URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
         invoker = REF_PROTOCOL.refer(interfaceClass, url);
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
@@ -381,7 +382,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * Parse the directly configured url.
      */
-    private void parseUrl() {
+    private void parseUrl(Map<String, String> referenceParameters) {
         String[] us = SEMICOLON_SPLIT_PATTERN.split(url);
         if (us != null && us.length > 0) {
             for (String u : us) {
@@ -390,9 +391,9 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                     url = url.setPath(interfaceName);
                 }
                 if (UrlUtils.isRegistry(url)) {
-                    urls.add(url.putAttribute(REFER_KEY, parameters));
+                    urls.add(url.putAttribute(REFER_KEY, referenceParameters));
                 } else {
-                    URL peerUrl = ClusterUtils.mergeUrl(url, parameters);
+                    URL peerUrl = ClusterUtils.mergeUrl(url, referenceParameters);
                     peerUrl = peerUrl.putAttribute(PEER_KEY, true);
                     urls.add(peerUrl);
                 }
@@ -403,7 +404,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * Get URLs from the registry and aggregate them.
      */
-    private void AggregateUrlFromRegistry() {
+    private void AggregateUrlFromRegistry(Map<String, String> referenceParameters) {
         checkRegistry();
         List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
@@ -412,7 +413,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (monitorUrl != null) {
                     u = u.putAttribute(MONITOR_KEY, monitorUrl);
                 }
-                urls.add(u.putAttribute(REFER_KEY, parameters));
+                urls.add(u.putAttribute(REFER_KEY, referenceParameters));
             }
         }
         if (urls.isEmpty()) {
