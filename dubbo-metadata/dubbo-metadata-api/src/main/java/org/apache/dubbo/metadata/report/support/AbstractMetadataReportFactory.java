@@ -17,6 +17,8 @@
 package org.apache.dubbo.metadata.report.support;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.metadata.report.MetadataReport;
 import org.apache.dubbo.metadata.report.MetadataReportFactory;
 
@@ -25,6 +27,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 public abstract class AbstractMetadataReportFactory implements MetadataReportFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
     private static final String EXPORT_KEY = "export";
     private static final String REFER_KEY = "refer";
 
@@ -68,7 +72,12 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
         LOCK.lock();
         try {
             for (MetadataReport metadataReport : SERVICE_STORE_MAP.values()) {
-                metadataReport.destroy();
+                try{
+                    metadataReport.destroy();
+                }catch (Throwable ignored){
+                    // ignored
+                    logger.warn(ignored.getMessage(),ignored);
+                }
             }
             SERVICE_STORE_MAP.clear();
         } finally {

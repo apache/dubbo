@@ -1377,7 +1377,11 @@ public class DubboBootstrap {
 
     private void unexportMetadataService() {
         if (metadataServiceExporter != null && metadataServiceExporter.isExported()) {
-            metadataServiceExporter.unexport();
+            try{
+                metadataServiceExporter.unexport();
+            }catch (Exception ignored){
+                // ignored
+            }
         }
     }
 
@@ -1417,8 +1421,12 @@ public class DubboBootstrap {
 
     private void unexportServices() {
         exportedServices.forEach(sc -> {
-            configManager.removeConfig(sc);
-            sc.unexport();
+            try{
+                configManager.removeConfig(sc);
+                sc.unexport();
+            }catch (Exception ignored){
+                // ignored
+            }
         });
 
         asyncExportingFutures.forEach(future -> {
@@ -1463,17 +1471,20 @@ public class DubboBootstrap {
     }
 
     private void unreferServices() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-
-        asyncReferringFutures.forEach(future -> {
-            if (!future.isDone()) {
-                future.cancel(true);
+        try{
+            if (cache == null) {
+                cache = ReferenceConfigCache.getCache();
             }
-        });
-        asyncReferringFutures.clear();
-        cache.destroyAll();
+
+            asyncReferringFutures.forEach(future -> {
+                if (!future.isDone()) {
+                    future.cancel(true);
+                }
+            });
+            asyncReferringFutures.clear();
+            cache.destroyAll();
+        }catch (Exception ignored){
+        }
     }
 
     private void registerServiceInstance() {
@@ -1484,25 +1495,27 @@ public class DubboBootstrap {
         ApplicationConfig application = getApplication();
         String serviceName = application.getName();
         ServiceInstance serviceInstance = createServiceInstance(serviceName);
-
+        boolean registered = true;
         try {
             doRegisterServiceInstance(serviceInstance);
         } catch (Exception e) {
+            registered = false;
             logger.error("Register instance error", e);
         }
-
-        // scheduled task for updating Metadata and ServiceInstance
-        executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
-            InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
-            localMetadataService.blockUntilUpdated();
-            try {
-                ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
-            } catch (Exception e) {
-                logger.error("Refresh instance and metadata error", e);
-            } finally {
-                localMetadataService.releaseBlock();
-            }
-        }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        if(registered){
+            // scheduled task for updating Metadata and ServiceInstance
+            executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
+                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+                localMetadataService.blockUntilUpdated();
+                try {
+                    ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
+                } catch (Exception e) {
+                    logger.error("Refresh instance and metadata error", e);
+                } finally {
+                    localMetadataService.releaseBlock();
+                }
+            }, 0, ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY), TimeUnit.MILLISECONDS);
+        }
     }
 
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
@@ -1536,7 +1549,11 @@ public class DubboBootstrap {
     private void unregisterServiceInstance() {
         if (serviceInstance != null) {
             getServiceDiscoveries().forEach(serviceDiscovery -> {
-                serviceDiscovery.unregister(serviceInstance);
+                try{
+                    serviceDiscovery.unregister(serviceInstance);
+                }catch (Exception ignored){
+                    // ignored
+                }
             });
         }
     }
@@ -1578,7 +1595,10 @@ public class DubboBootstrap {
 
                 destroyDynamicConfigurations();
                 ShutdownHookCallbacks.INSTANCE.clear();
-            } finally {
+            }catch (Throwable ignored){
+                // ignored
+                logger.warn(ignored.getMessage(),ignored);
+            }finally {
                 initialized.set(false);
                 startup.set(false);
                 destroyLock.unlock();
@@ -1635,7 +1655,11 @@ public class DubboBootstrap {
 
     private void destroyServiceDiscoveries() {
         getServiceDiscoveries().forEach(serviceDiscovery -> {
-            execute(serviceDiscovery::destroy);
+            try{
+                execute(serviceDiscovery::destroy);
+            }catch (Throwable ignored){
+                logger.warn(ignored.getMessage(),ignored);
+            }
         });
         if (logger.isDebugEnabled()) {
             logger.debug(NAME + "'s all ServiceDiscoveries have been destroyed.");
@@ -1684,7 +1708,12 @@ public class DubboBootstrap {
     private void shutdown() {
         if (!executorService.isShutdown()) {
             // Shutdown executorService
-            executorService.shutdown();
+            try{
+                executorService.shutdown();
+            }catch (Throwable ignored){
+                // ignored
+                logger.warn(ignored.getMessage(),ignored);
+            }
         }
     }
 

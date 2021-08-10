@@ -19,7 +19,8 @@ package org.apache.dubbo.config.spring.reference;
 
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
+import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.DubboConfigBeanInitializer;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
@@ -59,14 +60,18 @@ import java.util.List;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class DubboConfigBeanInitializerTest {
 
+    private static SingleRegistryCenter singleRegistryCenter;
     @BeforeAll
     public static void beforeAll() {
-        ZooKeeperServer.start();
+        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter.startup();
+        DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
-        ZooKeeperServer.shutdown();
+        singleRegistryCenter.shutdown();
+        DubboBootstrap.reset();
     }
 
 

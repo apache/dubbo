@@ -19,6 +19,8 @@ package org.apache.dubbo.config.spring.reference.localcall;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,14 +39,19 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @DirtiesContext(classMode = AFTER_EACH_TEST_METHOD)
 public class LocalCallTest2 {
 
+    private static SingleRegistryCenter singleRegistryCenter;
+
     @BeforeAll
     public static void setUp() {
+        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void tearDown() {
         DubboBootstrap.reset();
+        singleRegistryCenter.shutdown();
     }
 
     @DubboReference
