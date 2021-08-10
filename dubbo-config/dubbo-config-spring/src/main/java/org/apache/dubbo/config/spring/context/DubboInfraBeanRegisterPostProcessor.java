@@ -58,14 +58,17 @@ public class DubboInfraBeanRegisterPostProcessor implements BeanDefinitionRegist
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-        // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
-        // for processing early init ReferenceBean
-        ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
-            ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
-        beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
+        // In Spring 3.2.x, registry may be null because do not calling postProcessBeanDefinitionRegistry method before postProcessBeanFactory
+        if (registry != null) {
+            // register ReferenceAnnotationBeanPostProcessor early before PropertySourcesPlaceholderConfigurer/PropertyPlaceholderConfigurer
+            // for processing early init ReferenceBean
+            ReferenceAnnotationBeanPostProcessor referenceAnnotationBeanPostProcessor = beanFactory.getBean(
+                ReferenceAnnotationBeanPostProcessor.BEAN_NAME, ReferenceAnnotationBeanPostProcessor.class);
+            beanFactory.addBeanPostProcessor(referenceAnnotationBeanPostProcessor);
 
-        // register PropertySourcesPlaceholderConfigurer bean if not exits
-        DubboBeanUtils.registerBeansIfNotExists(beanFactory, registry);
+            // register PropertySourcesPlaceholderConfigurer bean if not exits
+            DubboBeanUtils.registerPlaceholderConfigurerBeanIfNotExists(beanFactory, registry);
+        }
 
         // Initialize dubbo Environment before ConfigManager
         // Extract dubbo props from Spring env and put them to app config

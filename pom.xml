@@ -153,6 +153,7 @@
         <module>dubbo-build-tools</module>
         <module>dubbo-spring-boot</module>
         <module>dubbo-native</module>
+        <module>dubbo-test</module>
     </modules>
 
     <dependencyManagement>
@@ -691,6 +692,7 @@
             <plugins>
                 <!-- keep surefire and failsafe in sync -->
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${maven_surefire_version}</version>
                 </plugin>

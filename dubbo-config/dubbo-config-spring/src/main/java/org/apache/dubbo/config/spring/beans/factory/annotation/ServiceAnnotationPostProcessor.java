@@ -29,10 +29,12 @@ import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
 import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
+import org.apache.dubbo.config.spring.util.SpringCompatUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
@@ -77,11 +79,11 @@ import java.util.Set;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.common.utils.AnnotationUtils.filterDefaultValues;
+import static org.apache.dubbo.common.utils.AnnotationUtils.findAnnotation;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
 import static org.apache.dubbo.config.spring.util.DubboAnnotationUtils.resolveInterfaceName;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 import static org.springframework.context.annotation.AnnotationConfigUtils.CONFIGURATION_BEAN_NAME_GENERATOR;
-import static org.springframework.core.annotation.AnnotatedElementUtils.findMergedAnnotation;
 import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
@@ -94,7 +96,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
  * @since 2.7.7
  */
 public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
-        ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware {
+        ResourceLoaderAware, BeanClassLoaderAware, ApplicationContextAware, InitializingBean {
 
     public static final String BEAN_NAME = "dubboServiceAnnotationPostProcessor";
 
@@ -111,6 +113,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     protected final Set<String> packagesToScan;
 
+    private Set<String> resolvedPackagesToScan;
 
     private Environment environment;
 
@@ -122,6 +125,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
 
     private ServicePackagesHolder servicePackagesHolder;
 
+    private volatile boolean scaned = false;
 
     public ServiceAnnotationPostProcessor(String... packagesToScan) {
         this(asList(packagesToScan));
@@ -136,19 +140,38 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     }
 
     @Override
+    public void afterPropertiesSet() throws Exception {
+        this.resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
+    }
+
+    @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
         this.registry = registry;
+        scanServiceBeans(resolvedPackagesToScan, registry);
+    }
 
-        Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
+    @Override
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
+        if (this.registry == null) {
+            // In spring 3.x, may be not call postProcessBeanDefinitionRegistry()
+            this.registry = (BeanDefinitionRegistry) beanFactory;
+        }
 
-        if (!CollectionUtils.isEmpty(resolvedPackagesToScan)) {
-            scanServiceBeans(resolvedPackagesToScan, registry);
-        } else {
-            if (logger.isWarnEnabled()) {
-                logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+        // scan bean definitions
+        String[] beanNames = beanFactory.getBeanDefinitionNames();
+        for (String beanName : beanNames) {
+            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+            Map<String, Object> annotationAttributes = getServiceAnnotationAttributes(beanDefinition);
+            if (annotationAttributes != null) {
+                // process @DubboService at java-config @bean method
+                processAnnotatedBeanDefinition(beanName, (AnnotatedBeanDefinition) beanDefinition, annotationAttributes);
             }
         }
 
+        if (!scaned) {
+            // In spring 3.x, may be not call postProcessBeanDefinitionRegistry(), so scan service class here
+            scanServiceBeans(resolvedPackagesToScan, registry);
+        }
     }
 
     /**
@@ -158,6 +181,14 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
      * @param registry       {@link BeanDefinitionRegistry}
      */
     private void scanServiceBeans(Set<String> packagesToScan, BeanDefinitionRegistry registry) {
+
+        scaned = true;
+        if (CollectionUtils.isEmpty(packagesToScan)) {
+            if (logger.isWarnEnabled()) {
+                logger.warn("packagesToScan is empty , ServiceBean registry will be ignored!");
+            }
+            return;
+        }
 
         DubboClassPathBeanDefinitionScanner scanner =
                 new DubboClassPathBeanDefinitionScanner(registry, environment, resourceLoader);
@@ -325,7 +356,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     private Annotation findServiceAnnotation(Class<?> beanClass) {
         return serviceAnnotationTypes
                 .stream()
-                .map(annotationType -> findMergedAnnotation(beanClass, annotationType))
+                .map(annotationType -> findAnnotation(beanClass, annotationType))
                 .filter(Objects::nonNull)
                 .findFirst()
                 .orElse(null);
@@ -482,19 +513,6 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         builder.addPropertyValue(propertyName, resolvedBeanName);
     }
 
-    @Override
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        String[] beanNames = beanFactory.getBeanDefinitionNames();
-        for (String beanName : beanNames) {
-            BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-            Map<String, Object> annotationAttributes = getServiceAnnotationAttributes(beanDefinition);
-            if (annotationAttributes != null) {
-                // process @DubboService at java-config @bean method
-                processAnnotatedBeanDefinition(beanName, (AnnotatedBeanDefinition) beanDefinition, annotationAttributes);
-            }
-        }
-    }
-
     /**
      * Get dubbo service annotation class at java-config @bean method
      * @return return service annotation attributes map if found, or return null if not found.
@@ -502,7 +520,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
     private Map<String, Object> getServiceAnnotationAttributes(BeanDefinition beanDefinition) {
         if (beanDefinition instanceof AnnotatedBeanDefinition) {
             AnnotatedBeanDefinition annotatedBeanDefinition = (AnnotatedBeanDefinition) beanDefinition;
-            MethodMetadata factoryMethodMetadata = annotatedBeanDefinition.getFactoryMethodMetadata();
+            MethodMetadata factoryMethodMetadata = SpringCompatUtils.getFactoryMethodMetadata(annotatedBeanDefinition);
             if (factoryMethodMetadata != null) {
                 // try all dubbo service annotation types
                 for (Class<? extends Annotation> annotationType : serviceAnnotationTypes) {
@@ -542,7 +560,7 @@ public class ServiceAnnotationPostProcessor implements BeanDefinitionRegistryPos
         Map<String, Object> serviceAnnotationAttributes = new LinkedHashMap<>(attributes);
 
         // get bean class from return type
-        String returnTypeName = refServiceBeanDefinition.getFactoryMethodMetadata().getReturnTypeName();
+        String returnTypeName = SpringCompatUtils.getFactoryMethodReturnType(refServiceBeanDefinition);
         Class<?> beanClass = resolveClassName(returnTypeName, classLoader);
 
         String serviceInterface = resolveInterfaceName(serviceAnnotationAttributes, beanClass);
