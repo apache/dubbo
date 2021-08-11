@@ -1405,7 +1405,7 @@ public class DubboBootstrap {
                             exportedServices.add(sc);
                         }
                     } catch (Throwable t) {
-                        logger.error("export async catch error : " + t.getMessage(), t);
+                        logger.error("async export service [" + sc.getUniqueServiceName() + "] failed: " + t.getMessage(), t);
                     }
                 }, executor);
 
@@ -1458,13 +1458,17 @@ public class DubboBootstrap {
                         try {
                             cache.get(rc);
                         } catch (Throwable t) {
-                            logger.error("refer async catch error : " + t.getMessage(), t);
+                            logger.error("async refer service [" + rc.getUniqueServiceName() + "] failed: " + t.getMessage(), t);
                         }
                     }, executor);
 
                     asyncReferringFutures.add(future);
                 } else {
-                    cache.get(rc);
+                    try {
+                        cache.get(rc);
+                    } catch (Throwable t) {
+                        logger.error("refer service [" + rc.getUniqueServiceName() + "] failed: " + t.getMessage(), t);
+                    }
                 }
             }
         });
