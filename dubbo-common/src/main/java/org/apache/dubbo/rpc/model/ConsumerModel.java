@@ -42,7 +42,7 @@ public class ConsumerModel {
 
     private Object proxyObject;
 
-    private Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
+    private final Map<String, AsyncMethodInfo> methodConfigs;
 
     /**
      * This constructor create an instance of ConsumerModel and passed objects should not be null.
@@ -64,7 +64,7 @@ public class ConsumerModel {
         this.proxyObject = proxyObject;
         this.serviceModel = serviceModel;
         this.referenceConfig = referenceConfig;
-        this.methodConfigs = methodConfigs;
+        this.methodConfigs = methodConfigs == null ? new HashMap<>() : methodConfigs;
     }
 
     /**
