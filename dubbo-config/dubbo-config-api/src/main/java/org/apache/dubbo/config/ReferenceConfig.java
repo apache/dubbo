@@ -40,10 +40,7 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ConsumerModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
+import org.apache.dubbo.rpc.model.*;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -244,15 +241,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         // TODO, uncomment this line once service key is unified
         serviceMetadata.setServiceKey(URL.buildKey(interfaceName, group, version));
 
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
-        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
-        repository.registerConsumer(
-            serviceMetadata.getServiceKey(),
-            serviceDescriptor,
-            this,
-            null,
-            serviceMetadata);
-
         Map<String, String> referenceParameters = appendConfig();
 
         serviceMetadata.getAttachments().putAll(referenceParameters);
@@ -262,13 +250,39 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
-        ConsumerModel consumerModel = repository.lookupReferredService(serviceMetadata.getServiceKey());
-        consumerModel.setProxyObject(ref);
-        consumerModel.initMethodModels(getMethods());
+        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        repository.registerConsumer(
+            serviceMetadata.getServiceKey(),
+            serviceDescriptor,
+            this,
+            ref,
+            serviceMetadata,
+            createAsyncMethodInfo());
 
         initialized = true;
 
         checkInvokerAvailable();
+    }
+
+    /**
+     * convert and aggregate async method info
+     *
+     * @return Map<String, AsyncMethodInfo>
+     */
+    private Map<String, AsyncMethodInfo> createAsyncMethodInfo() {
+        Map<String, AsyncMethodInfo> attributes = null;
+        if (CollectionUtils.isNotEmpty(getMethods())) {
+            attributes = new HashMap<>(16);
+            for (MethodConfig methodConfig : getMethods()) {
+                AsyncMethodInfo asyncMethodInfo = methodConfig.convertMethodConfig2AsyncInfo();
+                if (asyncMethodInfo != null) {
+                    attributes.put(methodConfig.getName(), asyncMethodInfo);
+                }
+            }
+        }
+
+        return attributes;
     }
 
     /**
