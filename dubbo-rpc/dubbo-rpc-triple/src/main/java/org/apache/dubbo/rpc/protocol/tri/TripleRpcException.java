@@ -59,14 +59,13 @@ public class TripleRpcException extends RpcException {
     }
 
     @Override
-    public void setCode(int code) {
-        this.code = code;
-    }
-
-
-    @Override
     public int getCode() {
         return code;
+    }
+
+    @Override
+    public void setCode(int code) {
+        this.code = code;
     }
 
     public GrpcStatus getStatus() {

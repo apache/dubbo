@@ -16,10 +16,11 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.QueryStringEncoder;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.exchange.Response;
+
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.QueryStringEncoder;
 
 import static io.netty.util.internal.ObjectUtil.checkNotNull;
 
@@ -96,6 +97,17 @@ public class GrpcStatus {
         return QueryStringDecoder.decodeComponent(raw);
     }
 
+    public static Metadata trailersFromThrowable(Throwable t) {
+        Throwable cause = checkNotNull(t, "t");
+        while (cause != null) {
+            if (cause instanceof TripleRpcException) {
+                return ((TripleRpcException) cause).getTrailers();
+            }
+            cause = cause.getCause();
+        }
+        return null;
+    }
+
     public GrpcStatus withCause(Throwable cause) {
         return new GrpcStatus(this.code, cause, this.description);
     }
@@ -110,17 +122,6 @@ public class GrpcStatus {
 
     public TripleRpcException asException(Metadata trailers) {
         return new TripleRpcException(this, trailers);
-    }
-
-    public static Metadata trailersFromThrowable(Throwable t) {
-        Throwable cause = checkNotNull(t, "t");
-        while (cause != null) {
-            if (cause instanceof TripleRpcException) {
-                return ((TripleRpcException) cause).getTrailers();
-            }
-            cause = cause.getCause();
-        }
-        return null;
     }
 
     public String toMessage() {
