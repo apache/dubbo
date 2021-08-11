@@ -19,6 +19,7 @@ package org.apache.dubbo.integration.single;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
@@ -109,7 +110,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         // initialize ServiceConfig
         serviceConfig = new ServiceConfig<>();
