@@ -76,6 +76,9 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             response.setErrorMessage(status.description);
             final AppResponse result = new AppResponse();
             result.setException(getThrowable(this.getTrailers()));
+            // avoid subsequent parse header problems
+            this.getTrailers().remove(TripleConstant.EXCEPTION_TW_BIN);
+            this.getTrailers().remove(TripleConstant.STATUS_KEY);
             result.setObjectAttachments(UnaryClientStream.this.parseMetadataToMap(this.getTrailers()));
             response.setResult(result);
             if (!result.hasException()) {
@@ -103,8 +106,6 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     } finally {
                         ClassLoadUtil.switchContextLoader(tccl);
                     }
-                    // avoid subsequent parse header problems
-                    metadata.remove(TripleConstant.EXCEPTION_TW_BIN);
                 }
             } catch (Throwable t) {
                 LOGGER.warn(String.format("Decode exception instance from triple trailers:%s failed", metadata), t);
