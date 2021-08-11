@@ -92,7 +92,7 @@ public class ConfigCenterConfigTest {
                         .configCenter(configCenter)
                         .initialize();
             } catch (Exception e) {
-                e.printStackTrace();
+                // ignore
             }
 
             Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
