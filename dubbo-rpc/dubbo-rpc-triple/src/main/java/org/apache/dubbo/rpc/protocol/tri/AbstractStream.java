@@ -242,25 +242,31 @@ public abstract class AbstractStream implements Stream {
                 .setCode(grpcStatus.code.code)
                 .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
+        if (throwable == null) {
+            return metadata;
+        }
+        DebugInfo debugInfo = DebugInfo.newBuilder()
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
+        builder.addDetails(Any.pack(debugInfo));
+        Status status = builder.build();
+        metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
+        // only wrapper mode support exception serialization
+        if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
+            return metadata;
+        }
         try {
-            if (throwable != null) {
-                DebugInfo debugInfo = DebugInfo.newBuilder()
-                        .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
-                        // can not use now
-                        // .setDetail(throwable.getMessage())
-                        .build();
-                builder.addDetails(Any.pack(debugInfo));
-                Status status = builder.build();
-                metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
-                TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable, getSerializeType(), getMultipleSerialization());
-                String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
-                if (exceptionStr.length() <= TripleConstant.DEFAULT_HEADER_LIST_SIZE) {
-                    metadata.put(TripleConstant.EXCEPTION_TW_BIN, exceptionStr);
-                }
+            TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable, getSerializeType(), getMultipleSerialization());
+            String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
+            if (exceptionStr.length() <= TripleConstant.DEFAULT_HEADER_LIST_SIZE) {
+                metadata.put(TripleConstant.EXCEPTION_TW_BIN, exceptionStr);
             }
         } catch (Throwable t) {
             LOGGER.warn("Encode triple exception to trailers failed", t);
         }
+
         return metadata;
     }
 
