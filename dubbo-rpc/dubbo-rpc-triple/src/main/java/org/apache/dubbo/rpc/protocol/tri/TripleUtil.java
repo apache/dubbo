@@ -170,13 +170,6 @@ public class TripleUtil {
         }
     }
 
-    public static boolean supportExceptionSerialization(String serializeType) {
-        if (serializeType.equals(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION)) {
-            return true;
-        }
-        return false;
-    }
-
     public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
                                                                      String serializeType,
                                                                      MultipleSerialization serialization) {
@@ -184,9 +177,9 @@ public class TripleUtil {
             final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
                     .setLanguage(LANGUAGE)
                     .setClassName(throwable.getClass().getName())
-                    .setSerialization(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION);
+                    .setSerialization(serializeType);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            serialization.serialize(url, serializeType,builder.getClassName(),throwable,bos);
+            serialization.serialize(url, serializeType, builder.getClassName(), throwable, bos);
             builder.setData(ByteString.copyFrom(bos.toByteArray()));
             bos.close();
             return builder.build();
@@ -202,9 +195,6 @@ public class TripleUtil {
             return null;
         }
         if (!LANGUAGE.equals(wrap.getLanguage())) {
-            return null;
-        }
-        if (!supportExceptionSerialization(wrap.getSerialization())) {
             return null;
         }
         try {
