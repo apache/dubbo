@@ -146,9 +146,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
                         TripleWrapper.TripleRequestWrapper.class);
                 if (!getSerializeType().equals(TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType()))) {
                     transportError(GrpcStatus.fromCode(GrpcStatus.Code.INVALID_ARGUMENT)
-                        .withDescription("Received inconsistent serialization type from client, " +
-                            "reject to deserialize! Expected:" + getSerializeType() +
-                            " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
+                            .withDescription("Received inconsistent serialization type from client, " +
+                                    "reject to deserialize! Expected:" + getSerializeType() +
+                                    " Actual:" + TripleUtil.convertHessianFromWrapper(wrapper.getSerializeType())));
                     return null;
                 }
                 if (getMethodDescriptor() == null) {

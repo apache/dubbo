@@ -318,6 +318,7 @@
                                         **/org/apache/dubbo/triple/TripleWrapper.java,
                                         **/istio/v1/auth/Ca.java,
                                         **/istio/v1/auth/IstioCertificateServiceGrpc.java,
+                                        **/com/google/rpc/*,
                                         **/generated/**/*,
                                         **/target/**/*,
                                         **/*.json

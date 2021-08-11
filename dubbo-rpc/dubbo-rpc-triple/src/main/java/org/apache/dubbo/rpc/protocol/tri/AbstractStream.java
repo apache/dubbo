@@ -24,12 +24,17 @@ import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
+import org.apache.dubbo.triple.TripleWrapper;
 
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
 import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.IOException;
@@ -54,7 +59,8 @@ public abstract class AbstractStream implements Stream {
     static {
         ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callbcak", true);
         for (int i = 0; i < 4; i++) {
-            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS, new LinkedBlockingQueue<>(1024),
+            final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
+                    new LinkedBlockingQueue<>(1024),
                     tripleTF, new ThreadPoolExecutor.AbortPolicy());
             CALLBACK_EXECUTORS.add(tp);
         }
@@ -189,24 +195,79 @@ public abstract class AbstractStream implements Stream {
     }
 
     protected void transportError(GrpcStatus status) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(status.code.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, status.toMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
+        // set metadata
+        Metadata metadata = getMetaData(status);
+        getTransportSubscriber().tryOnMetadata(metadata, false);
+        // set trailers
+        Metadata trailers = getTrailers(status);
+        getTransportSubscriber().tryOnMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] " + status.toMessage());
         }
     }
 
     protected void transportError(Throwable throwable) {
-        Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.STATUS_KEY, Integer.toString(Code.UNKNOWN.code));
-        metadata.put(TripleConstant.MESSAGE_KEY, throwable.getMessage());
-        getTransportSubscriber().tryOnMetadata(metadata, true);
+        GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
+        Metadata metadata = getMetaData(status);
+        getTransportSubscriber().tryOnMetadata(metadata, false);
+        Metadata trailers = getTrailers(status);
+        getTransportSubscriber().tryOnMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
                     + " method=" + getMethodName(), throwable);
         }
+    }
+
+    private Metadata getMetaData(GrpcStatus status) {
+        Metadata metadata = new DefaultMetadata();
+        metadata.put(TripleConstant.MESSAGE_KEY, getGrpcMessage(status));
+        metadata.put(TripleConstant.STATUS_KEY, String.valueOf(status.code.code));
+        return metadata;
+    }
+
+    private String getGrpcMessage(GrpcStatus status) {
+        if (StringUtils.isNotEmpty(status.description)) {
+            return status.description;
+        }
+        if (status.cause != null) {
+            return status.cause.getMessage();
+        }
+        return "unknown";
+    }
+
+    private Metadata getTrailers(GrpcStatus grpcStatus) {
+
+        Metadata metadata = new DefaultMetadata();
+        Status.Builder builder = Status.newBuilder()
+                .setCode(grpcStatus.code.code)
+                .setMessage(getGrpcMessage(grpcStatus));
+        Throwable throwable = grpcStatus.cause;
+        if (throwable == null) {
+            return metadata;
+        }
+        DebugInfo debugInfo = DebugInfo.newBuilder()
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
+        builder.addDetails(Any.pack(debugInfo));
+        Status status = builder.build();
+        metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
+        // only wrapper mode support exception serialization
+        if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
+            return metadata;
+        }
+        try {
+            TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable, getSerializeType(), getMultipleSerialization());
+            String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
+            if (exceptionStr.length() <= TripleConstant.DEFAULT_HEADER_LIST_SIZE) {
+                metadata.put(TripleConstant.EXCEPTION_TW_BIN, exceptionStr);
+            }
+        } catch (Throwable t) {
+            LOGGER.warn("Encode triple exception to trailers failed", t);
+        }
+
+        return metadata;
     }
 
     protected Map<String, Object> parseMetadataToMap(Metadata metadata) {
@@ -323,14 +384,7 @@ public abstract class AbstractStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
-            Metadata metadata;
-            if (getTrailers() == null) {
-                metadata = getHeaders();
-            } else {
-                metadata = getTrailers();
-            }
-
-            final GrpcStatus status = extractStatusFromMeta(metadata);
+            final GrpcStatus status = extractStatusFromMeta(getHeaders());
             if (GrpcStatus.Code.isOk(status.code.code)) {
                 doOnComplete(handler);
             } else {
