@@ -17,16 +17,10 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
-import io.netty.handler.codec.http2.Http2Headers;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.serialize.hessian2.Hessian2Serialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -37,6 +31,11 @@ import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.protocol.tri.GrpcStatus.Code;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
+import io.netty.handler.codec.http2.Http2Headers;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +52,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractStream implements Stream {
     public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
-        ConfigUtils.getProperty("triple.attachment", "false"));
+            ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
     private static final List<Executor> CALLBACK_EXECUTORS = new ArrayList<>(4);
 
@@ -61,8 +60,8 @@ public abstract class AbstractStream implements Stream {
         ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callbcak", true);
         for (int i = 0; i < 4; i++) {
             final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
-                new LinkedBlockingQueue<>(1024),
-                tripleTF, new ThreadPoolExecutor.AbortPolicy());
+                    new LinkedBlockingQueue<>(1024),
+                    tripleTF, new ThreadPoolExecutor.AbortPolicy());
             CALLBACK_EXECUTORS.add(tp);
         }
 
@@ -70,7 +69,6 @@ public abstract class AbstractStream implements Stream {
 
     private final URL url;
     private final MultipleSerialization multipleSerialization;
-    private final Serialization exceptionSerialization;
     private final StreamObserver<Object> streamObserver;
     private final TransportObserver transportObserver;
     private final Executor executor;
@@ -91,9 +89,7 @@ public abstract class AbstractStream implements Stream {
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
-            .getExtension(value);
-        // fixme should able to set the type？
-        this.exceptionSerialization = new Hessian2Serialization();
+                .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
     }
@@ -152,10 +148,6 @@ public abstract class AbstractStream implements Stream {
 
     public MultipleSerialization getMultipleSerialization() {
         return multipleSerialization;
-    }
-
-    public Serialization getExceptionMultipleSerialization() {
-        return exceptionSerialization;
     }
 
     public StreamObserver<Object> getStreamSubscriber() {
@@ -247,25 +239,27 @@ public abstract class AbstractStream implements Stream {
 
         Metadata metadata = new DefaultMetadata();
         Status.Builder builder = Status.newBuilder()
-            .setCode(grpcStatus.code.code)
-            .setMessage(getGrpcMessage(grpcStatus));
+                .setCode(grpcStatus.code.code)
+                .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
-        if (throwable != null) {
-            DebugInfo debugInfo = DebugInfo.newBuilder()
-                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
-                // can not use now
-                // .setDetail(throwable.getMessage())
-                .build();
-            builder.addDetails(Any.pack(debugInfo));
-            Status status = builder.build();
-            metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
-            // todo determine whether serialization is possible now only support hessian2
-            TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable,
-                exceptionSerialization);
-            String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
-            if (exceptionStr.length() <= TripleConstant.DEFAULT_HEADER_LIST_SIZE) {
-                metadata.put(TripleConstant.EXCEPTION_TW_BIN, exceptionStr);
+        try {
+            if (throwable != null) {
+                DebugInfo debugInfo = DebugInfo.newBuilder()
+                        .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                        // can not use now
+                        // .setDetail(throwable.getMessage())
+                        .build();
+                builder.addDetails(Any.pack(debugInfo));
+                Status status = builder.build();
+                metadata.put(TripleConstant.STATUS_DETAIL_KEY, TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable, getSerializeType(), getMultipleSerialization());
+                String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
+                if (exceptionStr.length() <= TripleConstant.DEFAULT_HEADER_LIST_SIZE) {
+                    metadata.put(TripleConstant.EXCEPTION_TW_BIN, exceptionStr);
+                }
             }
+        } catch (Throwable t) {
+            LOGGER.warn("Encode triple exception to trailers failed", t);
         }
         return metadata;
     }

@@ -16,6 +16,13 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.serialize.MultipleSerialization;
+import org.apache.dubbo.remoting.Constants;
+import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
+import org.apache.dubbo.triple.TripleWrapper;
+
 import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -30,16 +37,6 @@ import io.netty.handler.codec.http2.DefaultHttp2Headers;
 import io.netty.handler.codec.http2.DefaultHttp2HeadersFrame;
 import io.netty.handler.codec.http2.Http2Headers;
 import io.netty.util.AttributeKey;
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.serialize.MultipleSerialization;
-import org.apache.dubbo.common.serialize.ObjectInput;
-import org.apache.dubbo.common.serialize.ObjectOutput;
-import org.apache.dubbo.common.serialize.Serialization;
-import org.apache.dubbo.common.utils.ClassUtils;
-import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.RpcInvocation;
-import org.apache.dubbo.rpc.model.MethodDescriptor;
-import org.apache.dubbo.triple.TripleWrapper;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,9 +54,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 public class TripleUtil {
 
     public static final AttributeKey<AbstractServerStream> SERVER_STREAM_KEY = AttributeKey.newInstance(
-        "tri_server_stream");
+            "tri_server_stream");
     public static final AttributeKey<AbstractClientStream> CLIENT_STREAM_KEY = AttributeKey.newInstance(
-        "tri_client_stream");
+            "tri_client_stream");
 
     public static final String LANGUAGE = "java";
 
@@ -181,16 +178,15 @@ public class TripleUtil {
     }
 
     public static TripleWrapper.TripleExceptionWrapper wrapException(URL url, Throwable throwable,
-                                                                     Serialization serialization) {
+                                                                     String serializeType,
+                                                                     MultipleSerialization serialization) {
         try {
             final TripleWrapper.TripleExceptionWrapper.Builder builder = TripleWrapper.TripleExceptionWrapper.newBuilder()
-                .setLanguage(LANGUAGE)
-                .setClassName(throwable.getClass().getName())
-                .setSerialization(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION);
+                    .setLanguage(LANGUAGE)
+                    .setClassName(throwable.getClass().getName())
+                    .setSerialization(TripleConstant.DEFAULT_TRIPLE_USER_EXCEPTION_SERIALIZATION);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            ObjectOutput serialize = serialization.serialize(url, bos);
-            serialize.writeObject(throwable);
-            serialize.flushBuffer();
+            serialization.serialize(url, serializeType,builder.getClassName(),throwable,bos);
             builder.setData(ByteString.copyFrom(bos.toByteArray()));
             bos.close();
             return builder.build();
@@ -200,7 +196,8 @@ public class TripleUtil {
     }
 
     public static Throwable unWrapException(URL url, TripleWrapper.TripleExceptionWrapper wrap,
-                                            Serialization serialization) {
+                                            String serializeType,
+                                            MultipleSerialization serialization) {
         if (wrap == null) {
             return null;
         }
@@ -212,10 +209,9 @@ public class TripleUtil {
         }
         try {
             final ByteArrayInputStream bais = new ByteArrayInputStream(wrap.getData().toByteArray());
-            final Class<?> aClass = ClassUtils.forName(wrap.getClassName());
-            final ObjectInput in = serialization.deserialize(null, bais);
+            Object obj = serialization.deserialize(url, serializeType, wrap.getClassName(), bais);
             bais.close();
-            return (Throwable) in.readObject(aClass);
+            return (Throwable) obj;
         } catch (Exception e) {
             // if this null ,can get common exception
             return null;

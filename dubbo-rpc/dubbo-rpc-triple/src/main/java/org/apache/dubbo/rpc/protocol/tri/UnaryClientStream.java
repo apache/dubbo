@@ -17,15 +17,16 @@
 
 package org.apache.dubbo.rpc.protocol.tri;
 
-import com.google.protobuf.Any;
-import com.google.rpc.DebugInfo;
-import com.google.rpc.Status;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.exchange.Response;
 import org.apache.dubbo.remoting.exchange.support.DefaultFuture2;
 import org.apache.dubbo.rpc.AppResponse;
 import org.apache.dubbo.triple.TripleWrapper;
+
+import com.google.protobuf.Any;
+import com.google.rpc.DebugInfo;
+import com.google.rpc.Status;
 
 import java.util.List;
 import java.util.Map;
@@ -86,23 +87,27 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
 
         private Throwable getThrowable(Metadata metadata) {
             // first get throwable from exception tw bin
-            if (metadata.contains(TripleConstant.EXCEPTION_TW_BIN)) {
-                final CharSequence raw = metadata.get(TripleConstant.EXCEPTION_TW_BIN);
-                byte[] exceptionTwBin = TripleUtil.decodeASCIIByte(raw);
-                ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-                try {
-                    TripleWrapper.TripleExceptionWrapper wrapper = TripleUtil.unpack(exceptionTwBin,
-                        TripleWrapper.TripleExceptionWrapper.class);
-                    Throwable throwable = TripleUtil.unWrapException(getUrl(), wrapper,
-                        getExceptionMultipleSerialization());
-                    if (throwable != null) {
-                        return throwable;
+            try {
+                if (metadata.contains(TripleConstant.EXCEPTION_TW_BIN)) {
+                    final CharSequence raw = metadata.get(TripleConstant.EXCEPTION_TW_BIN);
+                    byte[] exceptionTwBin = TripleUtil.decodeASCIIByte(raw);
+                    ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+                    try {
+                        TripleWrapper.TripleExceptionWrapper wrapper = TripleUtil.unpack(exceptionTwBin,
+                                TripleWrapper.TripleExceptionWrapper.class);
+                        Throwable throwable = TripleUtil.unWrapException(getUrl(), wrapper, getSerializeType(),
+                                getMultipleSerialization());
+                        if (throwable != null) {
+                            return throwable;
+                        }
+                    } finally {
+                        ClassLoadUtil.switchContextLoader(tccl);
                     }
-                } finally {
-                    ClassLoadUtil.switchContextLoader(tccl);
+                    // avoid subsequent parse header problems
+                    metadata.remove(TripleConstant.EXCEPTION_TW_BIN);
                 }
-                // avoid subsequent parse header problems
-                metadata.remove(TripleConstant.EXCEPTION_TW_BIN);
+            } catch (Throwable t) {
+                LOGGER.warn(String.format("Decode exception instance from triple trailers:%s failed", metadata), t);
             }
             // second get status detail
             if (metadata.contains(TripleConstant.STATUS_DETAIL_KEY)) {
@@ -118,7 +123,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     DebugInfo debugInfo = (DebugInfo) classObjectMap.get(DebugInfo.class);
                     if (debugInfo == null) {
                         return new TripleRpcException(statusDetail.getCode(),
-                            statusDetail.getMessage(), metadata);
+                                statusDetail.getMessage(), metadata);
                     }
                     String msg = ExceptionUtils.getStackFrameString(debugInfo.getStackEntriesList());
                     return new TripleRpcException(statusDetail.getCode(), msg, metadata);
