@@ -65,8 +65,6 @@ public class ConsumerModel {
         this.serviceModel = serviceModel;
         this.referenceConfig = referenceConfig;
         this.methodConfigs = methodConfigs;
-
-        initMethodModels();
     }
 
     /**

@@ -44,6 +44,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
+import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -246,12 +247,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         Map<String, String> referenceParameters = appendConfig();
 
-        serviceMetadata.getAttachments().putAll(referenceParameters);
-
-        ref = createProxy(referenceParameters);
-
-        serviceMetadata.setTarget(ref);
-        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
 
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
@@ -259,9 +254,20 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             serviceMetadata.getServiceKey(),
             serviceDescriptor,
             this,
-            ref,
+            null,
             serviceMetadata,
             createAsyncMethodInfo());
+
+        serviceMetadata.getAttachments().putAll(referenceParameters);
+
+        ref = createProxy(referenceParameters);
+
+        serviceMetadata.setTarget(ref);
+        serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
+
+        ConsumerModel consumerModel = repository.lookupReferredService(serviceMetadata.getServiceKey());
+        consumerModel.setProxyObject(ref);
+        consumerModel.initMethodModels();
 
         initialized = true;
 
