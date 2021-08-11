@@ -348,7 +348,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             } else {
                 // if protocols not in jvm checkRegistry
                 if (!LOCAL_PROTOCOL.equalsIgnoreCase(getProtocol())) {
-                    AggregateUrlFromRegistry(referenceParameters);
+                    aggregateUrlFromRegistry(referenceParameters);
                 }
             }
             createInvokerForRemote();
@@ -404,7 +404,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     /**
      * Get URLs from the registry and aggregate them.
      */
-    private void AggregateUrlFromRegistry(Map<String, String> referenceParameters) {
+    private void aggregateUrlFromRegistry(Map<String, String> referenceParameters) {
         checkRegistry();
         List<URL> us = ConfigValidationUtils.loadRegistries(this, false);
         if (CollectionUtils.isNotEmpty(us)) {
