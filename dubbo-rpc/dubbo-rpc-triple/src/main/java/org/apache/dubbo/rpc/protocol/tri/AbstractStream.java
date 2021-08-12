@@ -23,7 +23,6 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.serialize.MultipleSerialization;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.common.threadlocal.NamedInternalThreadFactory;
-import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.Constants;
 import org.apache.dubbo.remoting.exchange.Request;
@@ -37,7 +36,6 @@ import com.google.rpc.DebugInfo;
 import com.google.rpc.Status;
 import io.netty.handler.codec.http2.Http2Headers;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -51,13 +49,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractStream implements Stream {
-    public static final boolean ENABLE_ATTACHMENT_WRAP = Boolean.parseBoolean(
-            ConfigUtils.getProperty("triple.attachment", "false"));
     protected static final String DUPLICATED_DATA = "Duplicated data";
     private static final List<Executor> CALLBACK_EXECUTORS = new ArrayList<>(4);
 
     static {
-        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callbcak", true);
+        ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callback", true);
         for (int i = 0; i < 4; i++) {
             final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
                     new LinkedBlockingQueue<>(1024),
@@ -278,16 +274,6 @@ public abstract class AbstractStream implements Stream {
                 continue;
             }
 
-            if (ENABLE_ATTACHMENT_WRAP) {
-                if (key.endsWith("-tw-bin") && key.length() > 7) {
-                    try {
-                        attachments.put(key.substring(0, key.length() - 7),
-                                TripleUtil.decodeObjFromHeader(url, header.getValue(), multipleSerialization));
-                    } catch (Exception e) {
-                        LOGGER.error("Failed to parse response attachment key=" + key, e);
-                    }
-                }
-            }
             if (key.endsWith("-bin") && key.length() > 4) {
                 try {
                     attachments.put(key.substring(0, key.length() - 4), TripleUtil.decodeASCIIByte(header.getValue()));
@@ -314,22 +300,13 @@ public abstract class AbstractStream implements Stream {
 
     private void convertSingleAttachment(Metadata metadata, String key, Object v) {
         try {
-            if (!ENABLE_ATTACHMENT_WRAP) {
-                if (v instanceof String) {
-                    metadata.put(key, (String) v);
-                } else if (v instanceof byte[]) {
-                    metadata.put(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
-                }
-            } else {
-                if (v instanceof String || serializeType == null) {
-                    metadata.put(key, v.toString());
-                } else {
-                    String encoded = TripleUtil.encodeWrapper(url, v, this.serializeType, getMultipleSerialization());
-                    metadata.put(key + "-tw-bin", encoded);
-                }
+            if (v instanceof String) {
+                metadata.put(key, (String) v);
+            } else if (v instanceof byte[]) {
+                metadata.put(key + "-bin", TripleUtil.encodeBase64ASCII((byte[]) v));
             }
-        } catch (IOException e) {
-            LOGGER.warn("Meet exception when convert single attachment key:" + key, e);
+        } catch (Throwable t) {
+            LOGGER.warn("Meet exception when convert single attachment key:" + key + " value=" + v, t);
         }
     }
 
