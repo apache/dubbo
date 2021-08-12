@@ -159,6 +159,7 @@ public class DubboBootstrapTest {
 
         URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
         Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("registry", url.getParameter("protocol"));
     }
 
     @Test
@@ -169,6 +170,7 @@ public class DubboBootstrapTest {
 
         URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
         Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("service-discovery-registry", url.getParameter("protocol"));
     }
 
     @Test
