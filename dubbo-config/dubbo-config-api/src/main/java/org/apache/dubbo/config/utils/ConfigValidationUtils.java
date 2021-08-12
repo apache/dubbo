@@ -319,7 +319,7 @@ public class ConfigValidationUtils {
             return URLBuilder.from(registryURL)
                 .setProtocol(DUBBO_PROTOCOL)
                 .addParameter(PROTOCOL_KEY, protocol)
-                .addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map))
+                .putAttribute(REFER_KEY, map)
                 .build();
         } else if (ConfigUtils.isNotEmpty(address) || ConfigUtils.isNotEmpty(protocol)) {
             if (!map.containsKey(PROTOCOL_KEY)) {
