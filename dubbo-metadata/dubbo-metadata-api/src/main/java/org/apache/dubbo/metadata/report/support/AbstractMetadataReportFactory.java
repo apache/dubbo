@@ -42,7 +42,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
      */
     private static final Map<String, MetadataReport> SERVICE_STORE_MAP = new ConcurrentHashMap<>();
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataReportFactory.class);
 
     @Override
     public MetadataReport getMetadataReport(URL url) {
@@ -67,7 +67,7 @@ public abstract class AbstractMetadataReportFactory implements MetadataReportFac
                 metadataReport = createMetadataReport(url);
             } catch (Exception e) {
                 if (!check) {
-                    logger.warn("The metadata reporter failed to initialize", e);
+                    LOGGER.warn("The metadata reporter failed to initialize", e);
                 } else {
                     throw e;
                 }
