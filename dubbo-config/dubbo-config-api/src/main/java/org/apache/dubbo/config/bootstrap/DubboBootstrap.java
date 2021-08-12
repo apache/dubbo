@@ -1099,7 +1099,7 @@ public class DubboBootstrap {
      */
     public synchronized DubboBootstrap start() {
         // avoid re-entry start method multiple times in same thread
-        if (isCurrentlyInStart){
+        if (isCurrentlyInStart) {
             return this;
         }
 
@@ -1330,10 +1330,23 @@ public class DubboBootstrap {
 
     private DynamicConfiguration prepareEnvironment(ConfigCenterConfig configCenter) {
         if (configCenter.isValid()) {
-            if (!configCenter.checkOrUpdateInited()) {
+            if (!configCenter.checkOrUpdateInitialized(true)) {
                 return null;
             }
-            DynamicConfiguration dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+
+            DynamicConfiguration dynamicConfiguration = null;
+            try {
+                dynamicConfiguration = getDynamicConfiguration(configCenter.toUrl());
+            } catch (Exception e) {
+                if (!configCenter.isCheck()) {
+                    logger.warn("The configuration center failed to initialize", e);
+                    configCenter.checkOrUpdateInitialized(false);
+                    return null;
+                } else {
+                    throw new IllegalStateException(e);
+                }
+            }
+
             String configContent = dynamicConfiguration.getProperties(configCenter.getConfigFile(), configCenter.getGroup());
 
             String appGroup = getApplication().getName();

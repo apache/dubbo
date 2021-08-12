@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.CHECK_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.EXPORT_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -49,13 +50,16 @@ import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
  */
 public abstract class AbstractRegistryFactory implements RegistryFactory {
 
-    // Log output
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractRegistryFactory.class);
 
-    // The lock for the acquisition process of the registry
+    /**
+     * The lock for the acquisition process of the registry
+     */
     protected static final ReentrantLock LOCK = new ReentrantLock();
 
-    // Registry Collection Map<RegistryAddress, Registry>
+    /**
+     * Registry Collection Map<RegistryAddress, Registry>
+     */
     protected static final Map<String, Registry> REGISTRIES = new HashMap<>();
 
     private static final AtomicBoolean destroyed = new AtomicBoolean(false);
@@ -75,11 +79,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
 
     public static List<ServiceDiscovery> getServiceDiscoveries() {
         return AbstractRegistryFactory.getRegistries()
-                .stream()
-                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
-                .map(registry -> (ServiceDiscoveryRegistry) registry)
-                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
+            .map(registry -> (ServiceDiscoveryRegistry) registry)
+            .map(ServiceDiscoveryRegistry::getServiceDiscovery)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -121,7 +125,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     private Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
             LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
-                    "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
+                "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
         }
         return null;
@@ -136,11 +140,13 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
 
         url = URLBuilder.from(url)
-                .setPath(RegistryService.class.getName())
-                .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
-                .build();
+            .setPath(RegistryService.class.getName())
+            .addParameter(INTERFACE_KEY, RegistryService.class.getName())
+            .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
+            .build();
         String key = createRegistryCacheKey(url);
+        Registry registry = null;
+        boolean check = url.getParameter(CHECK_KEY, true) && url.getPort() != 0;
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
         try {
@@ -150,22 +156,31 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             if (null != defaultNopRegistry) {
                 return defaultNopRegistry;
             }
-
-            Registry registry = REGISTRIES.get(key);
+            registry = REGISTRIES.get(key);
             if (registry != null) {
                 return registry;
             }
             //create registry by spi/ioc
             registry = createRegistry(url);
-            if (registry == null) {
-                throw new IllegalStateException("Can not create registry " + url);
+        } catch (Exception e) {
+            if (check) {
+                throw new RuntimeException("Can not create registry " + url, e);
+            } else {
+                LOGGER.warn("Failed to obtain or create registry ", e);
             }
-            REGISTRIES.put(key, registry);
-            return registry;
         } finally {
             // Release the lock
             LOCK.unlock();
         }
+
+        if (check && registry == null) {
+            throw new IllegalStateException("Can not create registry " + url);
+        }
+
+        if (registry != null) {
+            REGISTRIES.put(key, registry);
+        }
+        return registry;
     }
 
     /**
