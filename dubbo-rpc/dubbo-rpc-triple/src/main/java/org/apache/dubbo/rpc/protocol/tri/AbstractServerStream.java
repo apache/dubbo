@@ -119,17 +119,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         inv.setParameterTypes(getMethodDescriptor().getParameterClasses());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
-        final Map<String, Object> attachments = parseMetadataToMap(metadata);
-        attachments.remove("interface");
-        attachments.remove("serialization");
-        attachments.remove("te");
-        attachments.remove("path");
-        attachments.remove(TripleConstant.CONTENT_TYPE_KEY);
-        attachments.remove(TripleConstant.SERVICE_GROUP);
-        attachments.remove(TripleConstant.SERVICE_VERSION);
-        attachments.remove(TripleConstant.MESSAGE_KEY);
-        attachments.remove(TripleConstant.STATUS_KEY);
-        attachments.remove(TripleConstant.TIMEOUT);
+        final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
 
         return inv;

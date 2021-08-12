@@ -122,7 +122,7 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                     getTransportSubscriber().tryOnData(data, false);
 
                     Metadata trailers = new DefaultMetadata()
-                            .put(TripleConstant.STATUS_KEY, Integer.toString(GrpcStatus.Code.OK.code));
+                            .put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
                     final Map<String, Object> attachments = response.getObjectAttachments();
                     if (attachments != null) {
                         convertAttachment(trailers, attachments);

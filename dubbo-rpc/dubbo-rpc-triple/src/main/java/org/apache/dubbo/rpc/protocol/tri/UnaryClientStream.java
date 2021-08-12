@@ -58,7 +58,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                     final Object resp = deserializeResponse(getData());
                     Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
                     final AppResponse result = new AppResponse(resp);
-                    result.setObjectAttachments(parseMetadataToMap(getTrailers()));
+                    result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
                     response.setResult(result);
                     DefaultFuture2.received(getConnection(), response);
                 } catch (Exception e) {
@@ -76,10 +76,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             response.setErrorMessage(status.description);
             final AppResponse result = new AppResponse();
             result.setException(getThrowable(this.getTrailers()));
-            // avoid subsequent parse header problems
-            this.getTrailers().remove(TripleConstant.EXCEPTION_TW_BIN);
-            this.getTrailers().remove(TripleConstant.STATUS_KEY);
-            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToMap(this.getTrailers()));
+            result.setObjectAttachments(UnaryClientStream.this.parseMetadataToAttachmentMap(this.getTrailers()));
             response.setResult(result);
             if (!result.hasException()) {
                 final byte code = GrpcStatus.toDubboStatus(status.code);
@@ -91,8 +88,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         private Throwable getThrowable(Metadata metadata) {
             // first get throwable from exception tw bin
             try {
-                if (metadata.contains(TripleConstant.EXCEPTION_TW_BIN)) {
-                    final CharSequence raw = metadata.get(TripleConstant.EXCEPTION_TW_BIN);
+                if (metadata.contains(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader())) {
+                    final CharSequence raw = metadata.get(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader());
                     byte[] exceptionTwBin = TripleUtil.decodeASCIIByte(raw);
                     ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                     try {
@@ -111,8 +108,8 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
                 LOGGER.warn(String.format("Decode exception instance from triple trailers:%s failed", metadata), t);
             }
             // second get status detail
-            if (metadata.contains(TripleConstant.STATUS_DETAIL_KEY)) {
-                final CharSequence raw = metadata.get(TripleConstant.STATUS_DETAIL_KEY);
+            if (metadata.contains(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader())) {
+                final CharSequence raw = metadata.get(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader());
                 byte[] statusDetailBin = TripleUtil.decodeASCIIByte(raw);
                 ClassLoader tccl = Thread.currentThread().getContextClassLoader();
                 try {

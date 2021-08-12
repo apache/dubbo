@@ -61,8 +61,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onCompleted() {
             Metadata metadata = new DefaultMetadata();
-            metadata.put(TripleConstant.MESSAGE_KEY, "OK");
-            metadata.put(TripleConstant.STATUS_KEY, Integer.toString(GrpcStatus.Code.OK.code));
+            metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
+            metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
             getTransportSubscriber().tryOnMetadata(metadata, true);
         }
     }
