@@ -185,17 +185,23 @@ public abstract class AbstractStream implements Stream {
     public TransportObserver asTransportObserver() {
         return transportObserver;
     }
-
-    protected void transportError(GrpcStatus status) {
+    protected void transportError(GrpcStatus status, Map<String,Object> attachments) {
         // set metadata
         Metadata metadata = getMetaData(status);
         getTransportSubscriber().tryOnMetadata(metadata, false);
         // set trailers
         Metadata trailers = getTrailers(status);
+        if (attachments != null) {
+            convertAttachment(trailers, attachments);
+        }
         getTransportSubscriber().tryOnMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] " + status.toMessage());
         }
+    }
+
+    protected void transportError(GrpcStatus status) {
+        transportError(status,null);
     }
 
     protected void transportError(Throwable throwable) {
