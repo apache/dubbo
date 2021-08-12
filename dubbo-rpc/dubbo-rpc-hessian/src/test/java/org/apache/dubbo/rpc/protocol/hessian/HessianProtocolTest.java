@@ -32,9 +32,9 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcException;
-import org.apache.dubbo.rpc.protocol.hessian.HessianServiceImpl.MyException;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +48,11 @@ import static org.junit.jupiter.api.Assertions.fail;
  * HessianProtocolTest
  */
 public class HessianProtocolTest {
+    
+    @AfterEach
+    public void after() {
+        ExtensionLoader.getExtensionLoader(Protocol.class).getExtension("hessian").destroy();
+    }
 
     @Test
     public void testHessianProtocol() {
@@ -154,7 +159,7 @@ public class HessianProtocolTest {
         invoker.destroy();
         exporter.unexport();
     }
-
+    
     @Test
     public void testOverload() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -173,7 +178,7 @@ public class HessianProtocolTest {
         invoker.destroy();
         exporter.unexport();
     }
-
+    
     @Test
     public void testHttpClient() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -191,7 +196,7 @@ public class HessianProtocolTest {
         invoker.destroy();
         exporter.unexport();
     }
-
+    
     @Test
     public void testTimeOut() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -211,9 +216,9 @@ public class HessianProtocolTest {
             invoker.destroy();
             exporter.unexport();
         }
-
+        
     }
-
+    
     @Test
     public void testCustomException() {
         HessianServiceImpl server = new HessianServiceImpl();
@@ -227,14 +232,14 @@ public class HessianProtocolTest {
         try {
             client.customException();
             fail();
-        } catch (MyException expected) {
-
+        } catch (HessianServiceImpl.MyException expected) {
+        
         }
         invoker.destroy();
         exporter.unexport();
     }
-
-
+    
+    
     @Test
     public void testRemoteApplicationName() {
         HessianServiceImpl server = new HessianServiceImpl();
