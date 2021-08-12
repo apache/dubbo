@@ -86,23 +86,23 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
             CompletionStage<Object> future = result.thenApply(Function.identity());
 
             BiConsumer<Object, Throwable> onComplete = (appResult, t) -> {
-                try {
-                    if (t != null) {
-                        if (t instanceof TimeoutException) {
-                            transportError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED).withCause(t));
-                        } else {
-                            transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
-                        }
-                        return;
+                if (t != null) {
+                    if (t instanceof TimeoutException) {
+                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.DEADLINE_EXCEEDED).withCause(t));
+                    } else {
+                        transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN).withCause(t));
                     }
-                    AppResponse response = (AppResponse) appResult;
+                    return;
+                }
+                AppResponse response = (AppResponse) appResult;
+                try {
                     if (response.hasException()) {
                         final Throwable exception = response.getException();
                         if (exception instanceof TripleRpcException) {
-                            transportError(((TripleRpcException) exception).getStatus());
+                            transportError(((TripleRpcException) exception).getStatus(), response.getObjectAttachments());
                         } else {
                             transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
-                                    .withCause(exception));
+                                    .withCause(exception), response.getObjectAttachments());
                         }
                         return;
                     }
@@ -131,11 +131,11 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                 } catch (Throwable e) {
                     LOGGER.warn("Exception processing triple message", e);
                     if (e instanceof TripleRpcException) {
-                        transportError(((TripleRpcException) e).getStatus());
+                        transportError(((TripleRpcException) e).getStatus(), response.getObjectAttachments());
                     } else {
                         transportError(GrpcStatus.fromCode(GrpcStatus.Code.UNKNOWN)
                                 .withDescription("Exception occurred in provider's execution:" + e.getMessage())
-                                .withCause(e));
+                                .withCause(e), response.getObjectAttachments());
                     }
                 }
             };
