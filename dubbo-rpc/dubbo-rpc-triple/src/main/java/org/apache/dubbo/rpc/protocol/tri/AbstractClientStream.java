@@ -145,22 +145,18 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
 
     protected Metadata createRequestMeta(RpcInvocation inv) {
         Metadata metadata = new DefaultMetadata();
-        metadata.put(TripleConstant.PATH_KEY, "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
-                .put(TripleConstant.AUTHORITY_KEY, getUrl().getAddress())
-                .put(TripleConstant.CONTENT_TYPE_KEY, TripleConstant.CONTENT_PROTO)
-                .put(TripleConstant.TIMEOUT, inv.get(CommonConstants.TIMEOUT_KEY) + "m")
+        metadata.put(TripleHeaderEnum.PATH_KEY.getHeader(), "/" + inv.getObjectAttachment(CommonConstants.PATH_KEY) + "/" + inv.getMethodName())
+                .put(TripleHeaderEnum.AUTHORITY_KEY.getHeader(), getUrl().getAddress())
+                .put(TripleHeaderEnum.CONTENT_TYPE_KEY.getHeader(), TripleConstant.CONTENT_PROTO)
+                .put(TripleHeaderEnum.TIMEOUT.getHeader(), inv.get(CommonConstants.TIMEOUT_KEY) + "m")
                 .put(HttpHeaderNames.TE, HttpHeaderValues.TRAILERS);
 
-        metadata.putIfNotNull(TripleConstant.SERVICE_VERSION, inv.getInvoker().getUrl().getVersion())
-                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+        metadata.putIfNotNull(TripleHeaderEnum.SERVICE_VERSION.getHeader(), inv.getInvoker().getUrl().getVersion())
+                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                         (String) inv.getObjectAttachments().remove(CommonConstants.APPLICATION_KEY))
-                .putIfNotNull(TripleConstant.CONSUMER_APP_NAME_KEY,
+                .putIfNotNull(TripleHeaderEnum.CONSUMER_APP_NAME_KEY.getHeader(),
                         (String) inv.getObjectAttachments().remove(CommonConstants.REMOTE_APPLICATION_KEY))
-                .putIfNotNull(TripleConstant.SERVICE_GROUP, inv.getInvoker().getUrl().getGroup());
-        inv.getObjectAttachments().remove(CommonConstants.GROUP_KEY);
-        inv.getObjectAttachments().remove(CommonConstants.INTERFACE_KEY);
-        inv.getObjectAttachments().remove(CommonConstants.PATH_KEY);
-        metadata.forEach(e -> metadata.put(e.getKey(), e.getValue()));
+                .putIfNotNull(TripleHeaderEnum.SERVICE_GROUP.getHeader(), inv.getInvoker().getUrl().getGroup());
         final Map<String, Object> attachments = inv.getObjectAttachments();
         if (attachments != null) {
             convertAttachment(metadata, attachments);

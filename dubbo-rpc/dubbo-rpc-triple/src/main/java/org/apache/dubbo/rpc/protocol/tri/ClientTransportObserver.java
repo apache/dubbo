@@ -56,8 +56,8 @@ public class ClientTransportObserver implements TransportObserver {
     public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
         if (!headerSent) {
             final Http2Headers headers = new DefaultHttp2Headers(true)
-                    .path(metadata.get(TripleConstant.PATH_KEY))
-                    .authority(metadata.get(TripleConstant.AUTHORITY_KEY))
+                    .path(metadata.get(TripleHeaderEnum.PATH_KEY.getHeader()))
+                    .authority(metadata.get(TripleHeaderEnum.AUTHORITY_KEY.getHeader()))
                     .scheme(SCHEME)
                     .method(HttpMethod.POST.asciiName());
             metadata.forEach(e -> headers.set(e.getKey(), e.getValue()));
