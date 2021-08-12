@@ -44,8 +44,8 @@ public abstract class AbstractClientStream extends AbstractStream implements Str
         super(url, executor);
     }
 
-    public static UnaryClientStream unary(URL url, Executor executor) {
-        return new UnaryClientStream(url, executor);
+    public static UnaryClientStream unary(URL url) {
+        return new UnaryClientStream(url);
     }
 
     public static AbstractClientStream stream(URL url) {

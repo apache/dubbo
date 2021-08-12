@@ -38,8 +38,6 @@ import io.netty.handler.codec.http2.Http2GoAwayFrame;
 import io.netty.handler.codec.http2.Http2SettingsFrame;
 import io.netty.util.ReferenceCountUtil;
 
-import java.util.concurrent.Executor;
-
 public class TripleClientHandler extends ChannelDuplexHandler {
 
     @Override
@@ -78,10 +76,9 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         if (service != null) {
             ClassLoadUtil.switchContextLoader(service.getServiceInterfaceClass().getClassLoader());
         }
-        final Executor executor = (Executor) inv.getAttributes().remove("callback.executor");
         AbstractClientStream stream;
         if (methodDescriptor.isUnary()) {
-            stream = AbstractClientStream.unary(url, executor);
+            stream = AbstractClientStream.unary(url);
         } else {
             stream = AbstractClientStream.stream(url);
         }
