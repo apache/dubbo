@@ -162,6 +162,16 @@ public class DubboBootstrapTest {
     }
 
     @Test
+    public void testLoadUserMonitor_service_discovery() {
+        // dubbo.monitor.protocol=service-discovery-registry
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("service-discovery-registry");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("dubbo", url.getProtocol());
+    }
+
+    @Test
     public void testLoadUserMonitor_user() {
         // dubbo.monitor.protocol=user
         MonitorConfig monitorConfig = new MonitorConfig();
