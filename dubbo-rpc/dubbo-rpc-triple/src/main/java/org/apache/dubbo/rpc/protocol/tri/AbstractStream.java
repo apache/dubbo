@@ -103,10 +103,6 @@ public abstract class AbstractStream implements Stream {
         return this;
     }
 
-    public Executor getExecutor() {
-        return executor;
-    }
-
     @Override
     public void execute(Runnable runnable) {
         executor.execute(runnable);

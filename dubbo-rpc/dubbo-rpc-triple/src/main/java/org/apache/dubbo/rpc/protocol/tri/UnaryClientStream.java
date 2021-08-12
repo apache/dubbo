@@ -30,13 +30,12 @@ import com.google.rpc.Status;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Executor;
 
 public class UnaryClientStream extends AbstractClientStream implements Stream {
 
 
-    protected UnaryClientStream(URL url, Executor executor) {
-        super(url, executor);
+    protected UnaryClientStream(URL url) {
+        super(url);
     }
 
     @Override
