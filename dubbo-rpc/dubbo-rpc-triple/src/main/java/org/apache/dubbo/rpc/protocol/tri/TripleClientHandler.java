@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
@@ -82,13 +83,14 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractClientStream.stream(url);
         }
+        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY,false);
         stream.service(service)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)
                 .methodName(methodDescriptor.getMethodName())
                 .request(req)
                 .serialize((String) inv.getObjectAttachment(Constants.SERIALIZATION_KEY))
-                .subscribe(new ClientTransportObserver(ctx, stream, promise));
+                .subscribe(new ClientTransportObserver(ctx, stream, promise, ssl));
 
         if (methodDescriptor.isUnary()) {
             stream.asStreamObserver().onNext(inv);
