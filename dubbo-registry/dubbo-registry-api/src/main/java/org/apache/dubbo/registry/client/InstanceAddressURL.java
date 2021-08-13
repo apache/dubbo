@@ -62,38 +62,30 @@ public class InstanceAddressURL extends URL {
 
     @Override
     public String getServiceInterface() {
-        String serviceInterface = RpcContext.getServiceContext().getInterfaceName();
-        return StringUtils.isEmpty(serviceInterface) ? super.getParameter(INTERFACE_KEY) : serviceInterface;
+        return RpcContext.getServiceContext().getInterfaceName();
     }
 
-    @Override
     public String getGroup() {
-        String group = RpcContext.getServiceContext().getGroup();
-        return StringUtils.isEmpty(group) ? super.getGroup() : group;
+        return RpcContext.getServiceContext().getGroup();
     }
 
-    @Override
     public String getVersion() {
-        String version = RpcContext.getServiceContext().getVersion();
-        return StringUtils.isEmpty(version) ? super.getVersion() : version;
+        return RpcContext.getServiceContext().getVersion();
     }
 
     @Override
     public String getProtocol() {
-        String protocol = RpcContext.getServiceContext().getProtocol();
-        return StringUtils.isEmpty(protocol) ? super.getProtocol() : protocol;
+        return RpcContext.getServiceContext().getProtocol();
     }
 
     @Override
     public String getProtocolServiceKey() {
-        String protocolServiceKey = RpcContext.getServiceContext().getProtocolServiceKey();
-        return StringUtils.isEmpty(protocolServiceKey) ? super.getProtocolServiceKey() : protocolServiceKey;
+        return RpcContext.getServiceContext().getProtocolServiceKey();
     }
 
     @Override
     public String getServiceKey() {
-        String serviceKey = RpcContext.getServiceContext().getServiceKey();
-        return StringUtils.isEmpty(serviceKey) ? super.getServiceKey() : serviceKey;
+        return RpcContext.getServiceContext().getServiceKey();
     }
 
     @Override
