@@ -36,7 +36,7 @@ public class InstanceAddressUrlListener implements AddressListener {
         if (CollectionUtils.isNotEmpty(addresses)) {
             for (URL url : addresses) {
                 if (url instanceof InstanceAddressURL) {
-                    url.addParametersIfAbsent(consumerUrl.getParameters());
+                    ((InstanceAddressURL) url).setConsumerUrl(consumerUrl);
                 }
             }
         }

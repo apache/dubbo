@@ -42,6 +42,8 @@ public class InstanceAddressURL extends URL {
     private volatile transient Map<String, Number> numbers;
     private volatile transient Map<String, Map<String, Number>> methodNumbers;
 
+    private URL consumerUrl;
+
     public InstanceAddressURL() {}
 
     public InstanceAddressURL(
@@ -63,37 +65,37 @@ public class InstanceAddressURL extends URL {
     @Override
     public String getServiceInterface() {
         String serviceInterface = RpcContext.getServiceContext().getInterfaceName();
-        return StringUtils.isEmpty(serviceInterface) ? super.getParameter(INTERFACE_KEY) : serviceInterface;
+        return StringUtils.isEmpty(serviceInterface) ? (null != consumerUrl ? consumerUrl.getServiceInterface() : serviceInterface) : serviceInterface;
     }
 
     @Override
     public String getGroup() {
         String group = RpcContext.getServiceContext().getGroup();
-        return StringUtils.isEmpty(group) ? super.getGroup() : group;
+        return StringUtils.isEmpty(group) ? (null != consumerUrl ? consumerUrl.getGroup() : group) : group;
     }
 
     @Override
     public String getVersion() {
         String version = RpcContext.getServiceContext().getVersion();
-        return StringUtils.isEmpty(version) ? super.getVersion() : version;
+        return StringUtils.isEmpty(version) ? (null != consumerUrl ? consumerUrl.getVersion() : version) : version;
     }
 
     @Override
     public String getProtocol() {
         String protocol = RpcContext.getServiceContext().getProtocol();
-        return StringUtils.isEmpty(protocol) ? super.getProtocol() : protocol;
+        return StringUtils.isEmpty(protocol) ? (null != consumerUrl ? consumerUrl.getProtocol() : protocol) : protocol;
     }
 
     @Override
     public String getProtocolServiceKey() {
         String protocolServiceKey = RpcContext.getServiceContext().getProtocolServiceKey();
-        return StringUtils.isEmpty(protocolServiceKey) ? super.getProtocolServiceKey() : protocolServiceKey;
+        return StringUtils.isEmpty(protocolServiceKey) ? (null != consumerUrl ? consumerUrl.getProtocolServiceKey() : protocolServiceKey) : protocolServiceKey;
     }
 
     @Override
     public String getServiceKey() {
         String serviceKey = RpcContext.getServiceContext().getServiceKey();
-        return StringUtils.isEmpty(serviceKey) ? super.getServiceKey() : serviceKey;
+        return StringUtils.isEmpty(serviceKey) ? (null != consumerUrl ? consumerUrl.getServiceKey() : serviceKey) : serviceKey;
     }
 
     @Override
@@ -397,6 +399,10 @@ public class InstanceAddressURL extends URL {
 
     private Map<String, String> getInstanceMetadata() {
         return this.instance.getMetadata();
+    }
+
+    public void setConsumerUrl(URL consumerUrl) {
+        this.consumerUrl = consumerUrl;
     }
 
     @Override
