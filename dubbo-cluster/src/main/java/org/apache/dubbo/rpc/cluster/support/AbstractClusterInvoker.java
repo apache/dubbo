@@ -336,7 +336,8 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         RpcContext context = RpcContext.getServiceContext();
         context.setInvoker(invoker)
                 .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
+                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication())
+                .setConsumerUrl(invoker.getUrl());
     }
 
     private void clearContext(Invoker<T> invoker) {
