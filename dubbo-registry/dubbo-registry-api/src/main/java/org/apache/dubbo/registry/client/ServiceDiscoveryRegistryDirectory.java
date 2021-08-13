@@ -120,7 +120,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
          */
         ExtensionLoader<AddressListener> addressListenerExtensionLoader = ExtensionLoader.getExtensionLoader(AddressListener.class);
         List<AddressListener> supportedListeners = addressListenerExtensionLoader.getActivateExtension(getUrl(), (String[]) null);
-        if (supportedListeners != null && !supportedListeners.isEmpty()) {
+        if (CollectionUtils.isNotEmpty(supportedListeners)) {
             for (AddressListener addressListener : supportedListeners) {
                 instanceUrls = addressListener.notify(instanceUrls, getConsumerUrl(), this);
             }
