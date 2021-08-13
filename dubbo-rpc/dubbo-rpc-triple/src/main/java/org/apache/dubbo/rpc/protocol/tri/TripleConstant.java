@@ -17,6 +17,8 @@
 package org.apache.dubbo.rpc.protocol.tri;
 
 import io.netty.handler.codec.http2.Http2CodecUtil;
+import io.netty.util.AttributeKey;
+import org.apache.dubbo.common.constants.CommonConstants;
 
 public interface TripleConstant {
     String CONTENT_PROTO = "application/grpc+proto";
@@ -27,5 +29,7 @@ public interface TripleConstant {
     String TE_KEY="te";
     // each header size
     long DEFAULT_HEADER_LIST_SIZE = Http2CodecUtil.DEFAULT_HEADER_LIST_SIZE;
+
+    AttributeKey<Boolean> SSL_ATTRIBUTE_KEY = AttributeKey.valueOf(CommonConstants.SSL_ENABLED_KEY);
 
 }

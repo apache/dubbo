@@ -38,10 +38,11 @@ public class ClientTransportObserver implements TransportObserver {
     private boolean endStreamSent = false;
 
 
-    public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise, boolean ssl) {
+    public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
         this.ctx = ctx;
         this.promise = promise;
-        if (ssl) {
+        Boolean ssl = ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).get();
+        if (ssl != null && ssl) {
             SCHEME = AsciiString.of("https");
         }else {
             SCHEME = AsciiString.of("http");
