@@ -17,7 +17,6 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.compiler.support.ClassUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.url.component.URLParam;
 import org.apache.dubbo.common.utils.ArrayUtils;
@@ -25,15 +24,12 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.io.Serializable;
-import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -191,10 +187,10 @@ public class MetadataInfo implements Serializable {
     @Override
     public String toString() {
         return "metadata{" +
-                "app='" + app + "'," +
-                "revision='" + revision + "'," +
-                "services=" + services +
-                "}";
+            "app='" + app + "'," +
+            "revision='" + revision + "'," +
+            "services=" + services +
+            "}";
     }
 
     public static class ServiceInfo implements Serializable {
@@ -409,17 +405,7 @@ public class MetadataInfo implements Serializable {
         }
 
         public String toDescString() {
-            return this.getMatchKey() + getMethodSignaturesString() + new TreeMap<>(getParams());
-        }
-
-        private String getMethodSignaturesString() {
-            SortedSet<String> methodStrings = new TreeSet();
-
-            Method[] methods = ClassUtils.forName(name).getMethods();
-            for (Method method : methods) {
-                methodStrings.add(method.toString());
-            }
-            return methodStrings.toString();
+            return this.getMatchKey() + path + new TreeMap<>(getParams());
         }
 
         public void addParameter(String key, String value) {
@@ -490,13 +476,13 @@ public class MetadataInfo implements Serializable {
         @Override
         public String toString() {
             return "service{" +
-                    "name='" + name + "'," +
-                    "group='" + group + "'," +
-                    "version='" + version + "'," +
-                    "protocol='" + protocol + "'," +
-                    "params=" + params + "," +
-                    "consumerParams=" + consumerParams +
-                    "}";
+                "name='" + name + "'," +
+                "group='" + group + "'," +
+                "version='" + version + "'," +
+                "protocol='" + protocol + "'," +
+                "params=" + params + "," +
+                "consumerParams=" + consumerParams +
+                "}";
         }
     }
 }
