@@ -16,3 +16,4 @@
 #
 
 multipleConfigCenterServiceDiscoveryRegistry=org.apache.dubbo.integration.multiple.servicediscoveryregistry.MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener
+singleConfigCenterServiceDiscoveryRegistry=org.apache.dubbo.integration.single.listener.ServiceDiscoveryRegistryListener
