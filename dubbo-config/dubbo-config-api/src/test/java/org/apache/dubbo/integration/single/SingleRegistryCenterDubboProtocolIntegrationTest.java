@@ -220,8 +220,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(serviceDiscoveryRegistry.getServiceDiscovery() instanceof ZookeeperServiceDiscovery);
         // Convert to ZookeeperServiceDiscovery instance
         ZookeeperServiceDiscovery zookeeperServiceDiscovery = (ZookeeperServiceDiscovery) serviceDiscoveryRegistry.getServiceDiscovery();
-        // ServiceDiscoveryRegistry is destroy or not
-        Assertions.assertFalse(zookeeperServiceDiscovery.isDestroy());
         // Gets registered service by ZookeeperServiceDiscovery
         Set<String> services = zookeeperServiceDiscovery.getServices();
         // check service exists
