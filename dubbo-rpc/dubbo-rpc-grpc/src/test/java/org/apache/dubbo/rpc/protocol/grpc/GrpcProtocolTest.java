@@ -24,6 +24,7 @@ import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.protocol.grpc.support.DubboGreeterGrpc;
@@ -32,6 +33,9 @@ import org.apache.dubbo.rpc.protocol.grpc.support.HelloReply;
 import org.apache.dubbo.rpc.protocol.grpc.support.HelloRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class GrpcProtocolTest {
     private Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
@@ -61,13 +65,14 @@ public class GrpcProtocolTest {
         ServiceMetadata serviceMetadata = new ServiceMetadata();
         serviceMetadata.setServiceKey(URL.buildKey(DubboGreeterGrpc.IGreeter.class.getName(), null, null));
 
+        Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
         ApplicationModel.getServiceRepository().registerConsumer(
             url.getServiceKey(),
             serviceDescriptor,
             mockReferenceConfig,
             null,
-            serviceMetadata
-        );
+            serviceMetadata,
+            methodConfigs);
 
         protocol.export(proxy.getInvoker(serviceImpl, DubboGreeterGrpc.IGreeter.class, url));
         serviceImpl = proxy.getProxy(protocol.refer(DubboGreeterGrpc.IGreeter.class, url));
