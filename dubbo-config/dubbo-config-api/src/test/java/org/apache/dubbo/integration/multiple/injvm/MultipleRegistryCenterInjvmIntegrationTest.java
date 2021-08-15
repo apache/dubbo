@@ -87,7 +87,7 @@ public class MultipleRegistryCenterInjvmIntegrationTest implements IntegrationTe
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
         //start all zookeeper services only once
-        registryCenter = new DefaultMultipleRegistryCenter();
+        registryCenter = new DefaultMultipleRegistryCenter(-1);
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();

@@ -17,6 +17,7 @@
 package org.apache.dubbo.integration.single.injvm;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceListener;
@@ -84,7 +85,7 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
