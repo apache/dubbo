@@ -25,6 +25,7 @@ import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmService;
 import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmServiceImpl;
 import org.apache.dubbo.integration.ServiceDiscoveryRegistryListener;
+import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.rpc.ExporterListener;
@@ -37,6 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
@@ -151,11 +155,35 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         // registryServiceListener onSubscribe is called
         Assertions.assertTrue(registryServiceListener.isSubscribeHasCalled());
         // exportedServiceURLs of InMemoryWritableMetadataService is empty
-        Assertions.assertTrue(CollectionUtils.isEmpty(writableMetadataService.getExportedURLs()));
+        Assertions.assertTrue(isCorrectForExportedURLs(writableMetadataService.getExportedURLs()));
         // metadataInfos of InMemoryWritableMetadataService is empty
-        Assertions.assertTrue(MapUtil.isEmpty(writableMetadataService.getMetadataInfos()));
+        Assertions.assertTrue(isCorrectForMetadataInfos(writableMetadataService.getMetadataInfos()));
         // serviceToAppsMapping of InMemoryWritableMetadataService is empty
-        Assertions.assertTrue(MapUtil.isEmpty(writableMetadataService.getCachedMapping()));
+        Assertions.assertTrue(isCorrectForServiceToAppsMapping(writableMetadataService.getCachedMapping()));
+    }
+
+    private Boolean isCorrectForExportedURLs(SortedSet<String> exportedURLs) {
+        if(CollectionUtils.isEmpty(exportedURLs)) {
+            return false;
+        }
+        if(!exportedURLs.contains(PROVIDER_APPLICATION_NAME) || !exportedURLs.contains("SingleRegistryCenterInjvmService")) {
+            return false;
+        }
+        return true;
+    }
+
+    private Boolean isCorrectForMetadataInfos(Map<String, MetadataInfo> metadataInfos) {
+        if(MapUtil.isEmpty(metadataInfos)) {
+            return false;
+        }
+        if(!metadataInfos.containsValue(PROVIDER_APPLICATION_NAME) || !metadataInfos.containsValue("SingleRegistryCenterInjvmService")) {
+            return false;
+        }
+        return true;
+    }
+
+    private Boolean isCorrectForServiceToAppsMapping(Map<String, Set<String>> serviceToAppsMapping) {
+        return true;
     }
 
     @AfterEach
