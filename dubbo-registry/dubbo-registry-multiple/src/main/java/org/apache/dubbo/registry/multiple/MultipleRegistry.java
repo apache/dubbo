@@ -212,7 +212,25 @@ public class MultipleRegistry extends AbstractRegistry {
                 urls.addAll(tmpUrls);
             }
         }
+        urls = removeDuplicate(urls);
         return urls;
+    }
+
+    protected static List<URL> removeDuplicate(List<URL> urls) {
+        Set<List<String>> set = new HashSet<>();
+        List<URL> dedupList = new ArrayList<>();
+        for (URL url : urls) {
+            List<String> tmp = new ArrayList<>();
+            tmp.add(url.getAddress());
+            tmp.add(url.getProtocol());
+            tmp.add(url.getParameter("group"));
+            tmp.add(url.getParameter("version"));
+            if (!set.contains(tmp)) {
+                set.add(tmp);
+                dedupList.add(url);
+            }
+        }
+        return dedupList;
     }
 
     protected void init() {
@@ -310,6 +328,7 @@ public class MultipleRegistry extends AbstractRegistry {
 
         @Override
         public void notify(List<URL> urls) {
+            urls = removeDuplicate(urls);
             sourceNotifyListener.notify(urls);
         }
 
