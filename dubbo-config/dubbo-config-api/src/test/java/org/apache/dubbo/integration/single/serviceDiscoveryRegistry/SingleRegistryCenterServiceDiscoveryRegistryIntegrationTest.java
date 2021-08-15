@@ -45,7 +45,7 @@ import java.util.SortedSet;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
- * The testcases are only for checking the process of exporting provider using injvm protocol.
+ * The testcases are only for checking the process of saving metainfos for service-discovery-registry protocol.
  */
 public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest implements IntegrationTest {
 
@@ -54,7 +54,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
     /**
      * Define the provider application name.
      */
-    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-injvm-protocol";
+    private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-service-discovery-registry-protocol";
 
     /**
      * The name for getting the specified instance, which is loaded using SPI.
@@ -97,16 +97,6 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         writableMetadataService = WritableMetadataService.getDefaultExtension();
     }
 
-    /**
-     * Define {@link ServiceListener}, {@link ExporterListener} and {@link Filter} for helping check.
-     * <p>Use SPI to load them before exporting.
-     * <p>After that, there are some checkpoints need to verify as follow:
-     * <ul>
-     *     <li>There is nothing in ServiceListener or not</li>
-     *     <li>There is nothing in ExporterListener or not</li>
-     *     <li>ServiceConfig is exported or not</li>
-     * </ul>
-     */
     private void beforeServiceDiscoveryRegistry() {
         // ---------------initialize--------------- //
         registryServiceListener = (ServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
@@ -135,16 +125,6 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         afterServiceDiscoveryRegistry();
     }
 
-    /**
-     * There are some checkpoints need to check after exported as follow:
-     * <ul>
-     *     <li>The exported service is only one or not</li>
-     *     <li>The exported service is SingleRegistryCenterInjvmService or not</li>
-     *     <li>The SingleRegistryCenterInjvmService is exported or not</li>
-     *     <li>The exported exporter is only one or not</li>
-     *     <li>The exported exporter contains InjvmFilter or not</li>
-     * </ul>
-     */
     private void afterServiceDiscoveryRegistry() {
         // ---------------initialize--------------- //
         registryServiceListener = (ServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
