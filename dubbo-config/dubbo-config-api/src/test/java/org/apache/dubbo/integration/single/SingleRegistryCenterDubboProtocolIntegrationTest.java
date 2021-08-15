@@ -177,7 +177,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
      *     <li>Protocol name is right or not</li>
      *     <li>Protocol port is right or not</li>
      *     <li>ServiceDiscoveryRegistry's protocol is right or not</li>
-     *     <li>ServiceDiscoveryRegistry is destroy or not</li>
      *     <li>Registered service in registry center is right or not</li>
      *     <li>Exported url is right or not in InMemoryWritableMetadataService</li>
      *     <li>MetadataInfo exists or not in InMemoryWritableMetadataService</li>
@@ -221,8 +220,6 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(serviceDiscoveryRegistry.getServiceDiscovery() instanceof ZookeeperServiceDiscovery);
         // Convert to ZookeeperServiceDiscovery instance
         ZookeeperServiceDiscovery zookeeperServiceDiscovery = (ZookeeperServiceDiscovery) serviceDiscoveryRegistry.getServiceDiscovery();
-        // ServiceDiscoveryRegistry is destroy or not
-        Assertions.assertFalse(zookeeperServiceDiscovery.isDestroy());
         // Gets registered service by ZookeeperServiceDiscovery
         Set<String> services = zookeeperServiceDiscovery.getServices();
         // check service exists
