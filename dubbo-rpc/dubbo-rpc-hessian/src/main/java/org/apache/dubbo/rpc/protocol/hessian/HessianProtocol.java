@@ -26,6 +26,7 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.protocol.AbstractProxyProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
+import org.apache.dubbo.serialize.hessian.dubbo.Hessian2FactoryInitializer;
 
 import com.caucho.hessian.HessianException;
 import com.caucho.hessian.client.HessianConnectionException;
@@ -131,6 +132,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
         int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
         hessianProxyFactory.setConnectTimeout(timeout);
         hessianProxyFactory.setReadTimeout(timeout);
+        hessianProxyFactory.setSerializerFactory(Hessian2FactoryInitializer.getInstance().getSerializerFactory());
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
     }
 
@@ -190,7 +192,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 }
 
                 try {
-                    skeleton.invoke(request.getInputStream(), response.getOutputStream());
+                    skeleton.invoke(request.getInputStream(), response.getOutputStream(), Hessian2FactoryInitializer.getInstance().getSerializerFactory());
                 } catch (Throwable e) {
                     throw new ServletException(e);
                 }

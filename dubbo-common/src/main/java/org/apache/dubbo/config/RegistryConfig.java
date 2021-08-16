@@ -223,11 +223,6 @@ public class RegistryConfig extends AbstractConfig {
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());
                 updatePropertyIfAbsent(this::getPort, this::setPort, url.getPort());
 
-//                setUsername(url.getUsername());
-//                setPassword(url.getPassword());
-//                updateIdIfAbsent(url.getProtocol());
-//                updateProtocolIfAbsent(url.getProtocol());
-//                updatePortIfAbsent(url.getPort());
                 Map<String, String> params = url.getParameters();
                 if (CollectionUtils.isNotEmptyMap(params)) {
                     params.remove(BACKUP_KEY);
