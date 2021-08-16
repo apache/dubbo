@@ -16,21 +16,18 @@
  */
 package org.apache.dubbo.registry.nacos;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.function.ThrowableFunction;
-import org.apache.dubbo.common.logger.Logger;
-import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
-import org.apache.dubbo.registry.client.ServiceInstance;
-import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
-
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.function.ThrowableFunction;
+import org.apache.dubbo.registry.client.AbstractServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceDiscovery;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+import org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils;
 
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,9 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.apache.dubbo.common.function.ThrowableConsumer.execute;
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.createNamingService;
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.getGroup;
-import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.toInstance;
+import static org.apache.dubbo.registry.nacos.util.NacosNamingServiceUtils.*;
 
 /**
  * Nacos {@link ServiceDiscovery} implementation
