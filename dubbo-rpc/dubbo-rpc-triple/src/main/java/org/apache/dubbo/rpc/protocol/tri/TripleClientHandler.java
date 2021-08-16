@@ -25,6 +25,7 @@ import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
+import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.remoting.api.Connection;
 import org.apache.dubbo.remoting.api.ConnectionHandler;
@@ -82,8 +83,10 @@ public class TripleClientHandler extends ChannelDuplexHandler {
         } else {
             stream = AbstractClientStream.stream(url);
         }
-        boolean ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY,false);
-        ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(ssl);
+        String ssl = url.getParameter(CommonConstants.SSL_ENABLED_KEY);
+        if (StringUtils.isNotEmpty(ssl)) {
+            ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).set(Boolean.parseBoolean(ssl));
+        }
         stream.service(service)
                 .connection(Connection.getConnectionFromChannel(ctx.channel()))
                 .method(methodDescriptor)

@@ -43,9 +43,9 @@ public class ClientTransportObserver implements TransportObserver {
         this.promise = promise;
         Boolean ssl = ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).get();
         if (ssl != null && ssl) {
-            SCHEME = AsciiString.of("https");
-        }else {
-            SCHEME = AsciiString.of("http");
+            SCHEME = TripleConstant.HTTPS_SCHEME;
+        } else {
+            SCHEME = TripleConstant.HTTP_SCHEME;
         }
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
