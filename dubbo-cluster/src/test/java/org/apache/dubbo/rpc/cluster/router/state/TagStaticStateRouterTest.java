@@ -73,9 +73,11 @@ public class TagStaticStateRouterTest {
         Assertions.assertTrue(invokerBitList.contains(invoker1));
 
         invocation.setAttachment(TAG_KEY, "tag2");
+        invokerBitList = router.route(bitList, cache, url, invocation);
         Assertions.assertTrue(invokerBitList.contains(invoker2));
 
         invocation.setAttachment(TAG_KEY, "tag3");
+        invokerBitList = router.route(bitList, cache, url, invocation);
         Assertions.assertTrue(invokerBitList.contains(invoker3));
     }
 
