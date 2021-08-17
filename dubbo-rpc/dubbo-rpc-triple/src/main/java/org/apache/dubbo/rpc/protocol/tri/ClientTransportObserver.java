@@ -30,7 +30,7 @@ import io.netty.handler.codec.http2.Http2StreamChannelBootstrap;
 import io.netty.util.AsciiString;
 
 public class ClientTransportObserver implements TransportObserver {
-    private static final AsciiString SCHEME = AsciiString.of("http");
+    private final AsciiString SCHEME;
     private final ChannelHandlerContext ctx;
     private final Http2StreamChannel streamChannel;
     private final ChannelPromise promise;
@@ -41,6 +41,12 @@ public class ClientTransportObserver implements TransportObserver {
     public ClientTransportObserver(ChannelHandlerContext ctx, AbstractClientStream stream, ChannelPromise promise) {
         this.ctx = ctx;
         this.promise = promise;
+        Boolean ssl = ctx.channel().attr(TripleConstant.SSL_ATTRIBUTE_KEY).get();
+        if (ssl != null && ssl) {
+            SCHEME = TripleConstant.HTTPS_SCHEME;
+        } else {
+            SCHEME = TripleConstant.HTTP_SCHEME;
+        }
 
         final Http2StreamChannelBootstrap streamChannelBootstrap = new Http2StreamChannelBootstrap(ctx.channel());
         streamChannel = streamChannelBootstrap.open().syncUninterruptibly().getNow();
