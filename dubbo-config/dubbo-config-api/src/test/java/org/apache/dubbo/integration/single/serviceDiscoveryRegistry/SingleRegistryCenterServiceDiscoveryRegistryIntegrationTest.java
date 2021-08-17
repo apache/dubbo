@@ -17,6 +17,7 @@
 package org.apache.dubbo.integration.single.serviceDiscoveryRegistry;
 
 import com.alibaba.nacos.common.utils.MapUtil;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.*;
@@ -28,6 +29,10 @@ import org.apache.dubbo.integration.ServiceDiscoveryRegistryListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.RegistryServiceListener;
+import org.apache.dubbo.registrycenter.DefaultMultipleRegistryCenter;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.MultipleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -57,6 +62,15 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
     private static String PROVIDER_APPLICATION_NAME = "single-registry-center-provider-for-service-discovery-registry-protocol";
 
     /**
+     * Define the protocol's name.
+     */
+    private static String PROTOCOL_NAME = CommonConstants.DUBBO;
+    /**
+     * Define the protocol's port.
+     */
+    private static int PROTOCOL_PORT = 20880;
+
+    /**
      * The name for getting the specified instance, which is loaded using SPI.
      */
     private static String SPI_NAME = "singleConfigCenterServiceDiscoveryRegistry";
@@ -75,23 +89,34 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
      */
     private WritableMetadataService writableMetadataService;
 
+    /**
+     * Default a registry center.
+     */
+    private SingleRegistryCenter registryCenter;
+
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
+
+        //start all zookeeper services only once
+        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter.startup();
 
         // initialize service config
         serviceConfig = new ServiceConfig<SingleRegistryCenterInjvmService>();
         serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
         serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
         serviceConfig.setAsync(false);
-        serviceConfig.setScope(SCOPE_LOCAL);
+//        serviceConfig.setScope(SCOPE_LOCAL);
+
+        // initailize bootstrap
+        DubboBootstrap.getInstance().registry(registryCenter.getRegistryConfig());
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(new RegistryConfig("N/A"))
-            .protocol(new ProtocolConfig("tri"))
+            .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
 
         writableMetadataService = WritableMetadataService.getDefaultExtension();
@@ -146,7 +171,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         if(CollectionUtils.isEmpty(exportedURLs)) {
             return false;
         }
-        if(!exportedURLs.contains(PROVIDER_APPLICATION_NAME) || !exportedURLs.contains("SingleRegistryCenterInjvmService")) {
+        if(!exportedURLs.toString().contains(PROVIDER_APPLICATION_NAME) || !exportedURLs.toString().contains("SingleRegistryCenterInjvmService")) {
             return false;
         }
         return true;
@@ -156,7 +181,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         if(MapUtil.isEmpty(metadataInfos)) {
             return false;
         }
-        if(!metadataInfos.containsValue(PROVIDER_APPLICATION_NAME) || !metadataInfos.containsValue("SingleRegistryCenterInjvmService")) {
+        if(!metadataInfos.toString().contains(PROVIDER_APPLICATION_NAME) || !metadataInfos.toString().contains("SingleRegistryCenterInjvmService")) {
             return false;
         }
         return true;
