@@ -82,7 +82,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         }
 
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+            .deserialize(channel.getUrl(), input);
 
         byte flag = in.readByte();
         switch (flag) {
@@ -119,7 +119,10 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
         if (!hasDecoded && channel != null && inputStream != null) {
             try {
                 if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
-                    Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
+                    Object serializationType_obj = null;
+                    if (invocation != null) {
+                        serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
+                    }
                     if (serializationType_obj != null) {
                         if ((byte) serializationType_obj != serializationType) {
                             throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
