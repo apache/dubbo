@@ -199,5 +199,8 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         Assertions.assertTrue(registryServiceListener.isUnRegisterHasCalled());
         Assertions.assertTrue(registryServiceListener.isUnSubscribeHasCalled());
         logger.info(getClass().getSimpleName() + " testcase is ending...");
+        // destroy registry center
+        registryCenter.shutdown();
+        registryCenter = null;
     }
 }
