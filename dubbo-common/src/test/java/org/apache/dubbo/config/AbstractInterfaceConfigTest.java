@@ -43,7 +43,7 @@ public class AbstractInterfaceConfigTest {
 
 
     @Test
-    public void checkStubAndMock1() {
+    public void checkStub1() {
         Assertions.assertThrows(IllegalStateException.class, () -> {
             InterfaceConfig interfaceConfig = new InterfaceConfig();
             interfaceConfig.setLocal(GreetingLocal1.class.getName());
@@ -51,6 +51,46 @@ public class AbstractInterfaceConfigTest {
         });
     }
 
+    @Test
+    public void checkStub2() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            InterfaceConfig interfaceConfig = new InterfaceConfig();
+            interfaceConfig.setLocal(GreetingLocal2.class.getName());
+            interfaceConfig.checkStubAndLocal(Greeting.class);
+        });
+    }
+
+    @Test
+    public void checkStub3() {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setLocal(GreetingLocal3.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+    }
+
+    @Test
+    public void checkStub4() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            InterfaceConfig interfaceConfig = new InterfaceConfig();
+            interfaceConfig.setStub(GreetingLocal1.class.getName());
+            interfaceConfig.checkStubAndLocal(Greeting.class);
+        });
+    }
+
+    @Test
+    public void checkStub5() {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            InterfaceConfig interfaceConfig = new InterfaceConfig();
+            interfaceConfig.setStub(GreetingLocal2.class.getName());
+            interfaceConfig.checkStubAndLocal(Greeting.class);
+        });
+    }
+
+    @Test
+    public void checkStub6() {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
+        interfaceConfig.setStub(GreetingLocal3.class.getName());
+        interfaceConfig.checkStubAndLocal(Greeting.class);
+    }
 
     @Test
     public void testLocal() {

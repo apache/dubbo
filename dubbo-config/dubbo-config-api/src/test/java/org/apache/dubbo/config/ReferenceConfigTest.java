@@ -140,9 +140,10 @@ public class ReferenceConfigTest {
         referenceConfig.setRouter("default");
         referenceConfig.setReferAsync(true);
 
-        DubboBootstrap dubboBootstrap = mock(DubboBootstrap.class);
-        when(dubboBootstrap.isInitialized()).thenReturn(true);
-        referenceConfig.setBootstrap(dubboBootstrap);
+        DubboBootstrap.getInstance()
+            .application("application1")
+            .initialize();
+        referenceConfig.setBootstrap(DubboBootstrap.getInstance());
 
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("application1");
