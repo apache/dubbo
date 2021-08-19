@@ -119,6 +119,8 @@ public class ReferenceConfigTest {
     public void tearDown() throws IOException {
         DubboBootstrap.reset();
         zkServer.stop();
+        Mockito.framework().clearInlineMocks();
+
     }
 
     /**
@@ -405,8 +407,8 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(DemoService.class.getMethods().length,
             StringUtils.split((String) serviceMetadata.getAttachments().get(METHODS_KEY), ',').length);
 
-        applicationModelMockedStatic.reset();
-        metadataReportInstanceMockedStatic.reset();
+        applicationModelMockedStatic.closeOnDemand();
+        metadataReportInstanceMockedStatic.closeOnDemand();
     }
 
     @Test
