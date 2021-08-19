@@ -75,7 +75,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if ("false".equals(mock)) {
             value = false;
         } else if (mock.length() >= 2 && (mock.startsWith("\"") && mock.endsWith("\"")
-                || mock.startsWith("\'") && mock.endsWith("\'"))) {
+            || mock.startsWith("\'") && mock.endsWith("\'"))) {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
@@ -119,7 +119,7 @@ final public class MockInvoker<T> implements Invoker<T> {
                 return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
             } catch (Exception ew) {
                 throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
-                        + ", mock:" + mock + ", url: " + url, ew);
+                    + ", mock:" + mock + ", url: " + url, ew);
             }
         } else if (mock.startsWith(THROW_PREFIX)) {
             mock = mock.substring(THROW_PREFIX.length()).trim();
@@ -161,14 +161,15 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Invoker<T> getInvoker(String mockService) {
+    private Invoker<T> getInvoker(String mock) {
+        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
+        String mockService = ConfigUtils.isDefault(mock) ? serviceType.getName() + "Mock" : mock;
         Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
         if (invoker != null) {
             return invoker;
         }
 
-        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
-        T mockObject = (T) getMockObject(mockService, serviceType);
+        T mockObject = (T) getMockObject(mock, serviceType);
         invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
         if (MOCK_MAP.size() < 10000) {
             MOCK_MAP.put(mockService, invoker);
@@ -189,20 +190,20 @@ final public class MockInvoker<T> implements Invoker<T> {
         } catch (Exception e) {
             if (!isDefault) {// does not check Spring bean if it is default config.
                 ExtensionFactory extensionFactory =
-                        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
+                    ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
                 Object obj = extensionFactory.getExtension(serviceType, mockService);
                 if (obj != null) {
                     return obj;
                 }
             }
             throw new IllegalStateException("Did not find mock class or instance "
-                    + mockService
-                    + ", please check if there's mock class or instance implementing interface "
-                    + serviceType.getName(), e);
+                + mockService
+                + ", please check if there's mock class or instance implementing interface "
+                + serviceType.getName(), e);
         }
         if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
             throw new IllegalStateException("The mock class " + mockClass.getName() +
-                    " not implement interface " + serviceType.getName());
+                " not implement interface " + serviceType.getName());
         }
 
         try {
