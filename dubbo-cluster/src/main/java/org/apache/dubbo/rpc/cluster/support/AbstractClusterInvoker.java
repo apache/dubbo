@@ -87,6 +87,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         return getDirectory().getConsumerUrl();
     }
 
+    @Override
     public URL getRegistryUrl() {
         return getDirectory().getUrl();
     }
@@ -100,6 +101,7 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         return getDirectory().isAvailable();
     }
 
+    @Override
     public Directory<T> getDirectory() {
         return directory;
     }
@@ -301,6 +303,22 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
         return result;
     }
 
+    /**
+     * When using a thread pool to fork a child thread, ThreadLocal cannot be passed.
+     * In this scenario, please use the invokeWithContextAsync method.
+     * @return
+     */
+    protected Result invokeWithContextAsync(Invoker<T> invoker, Invocation invocation, URL consumerUrl) {
+       setContext(invoker, consumerUrl);
+        Result result;
+        try {
+            result = invoker.invoke(invocation);
+        } finally {
+            clearContext(invoker);
+        }
+       return result;
+    }
+
     protected abstract Result doInvoke(Invocation invocation, List<Invoker<T>> invokers,
                                        LoadBalance loadbalance) throws RpcException;
 
@@ -333,10 +351,13 @@ public abstract class AbstractClusterInvoker<T> implements ClusterInvoker<T> {
 
 
     private void setContext(Invoker<T> invoker) {
+        setContext(invoker, null);
+    }
+
+    private void setContext(Invoker<T> invoker, URL consumerUrl) {
         RpcContext context = RpcContext.getServiceContext();
         context.setInvoker(invoker)
-                .setRemoteAddress(invoker.getUrl().getHost(), invoker.getUrl().getPort())
-                .setRemoteApplicationName(invoker.getUrl().getRemoteApplication());
+            .setConsumerUrl(null != consumerUrl ? consumerUrl : RpcContext.getServiceContext().getConsumerUrl());
     }
 
     private void clearContext(Invoker<T> invoker) {

@@ -443,7 +443,9 @@ public interface CommonConstants {
      * use native image to compile dubbo's identifier
      */
     String NATIVE = "native";
-  
+
+    String DUBBO_MONITOR_ADDRESS = "dubbo.monitor.address";
+
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
 
 }

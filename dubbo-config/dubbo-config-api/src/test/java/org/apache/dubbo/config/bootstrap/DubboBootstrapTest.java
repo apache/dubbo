@@ -47,6 +47,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 
+import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_MONITOR_ADDRESS;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY;
 
@@ -138,20 +139,66 @@ public class DubboBootstrapTest {
         }
     }
 
-
     @Test
-    public void testLoadMonitor() {
-        SysProps.setProperty("dubbo.monitor.address", "monitor-addr:12080");
-        SysProps.setProperty("dubbo.monitor.protocol", "monitor");
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
-        interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
-        interfaceConfig.setMonitor(new MonitorConfig());
-        URL url = ConfigValidationUtils.loadMonitor(interfaceConfig, new ServiceConfigURL("dubbo", "addr1", 9090));
+    public void testLoadUserMonitor_address_only() {
+        // -Ddubbo.monitor.address=monitor-addr:12080
+        SysProps.setProperty(DUBBO_MONITOR_ADDRESS, "monitor-addr:12080");
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(new MonitorConfig()), new ServiceConfigURL("dubbo", "addr1", 9090));
         Assertions.assertEquals("monitor-addr:12080", url.getAddress());
         Assertions.assertEquals(MonitorService.class.getName(), url.getParameter("interface"));
         Assertions.assertNotNull(url.getParameter("dubbo"));
         Assertions.assertNotNull(url.getParameter("pid"));
         Assertions.assertNotNull(url.getParameter("timestamp"));
+    }
+
+    @Test
+    public void testLoadUserMonitor_registry() {
+        // dubbo.monitor.protocol=registry
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("registry");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("registry", url.getParameter("protocol"));
+    }
+
+    @Test
+    public void testLoadUserMonitor_service_discovery() {
+        // dubbo.monitor.protocol=service-discovery-registry
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("service-discovery-registry");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("dubbo", url.getProtocol());
+        Assertions.assertEquals("service-discovery-registry", url.getParameter("protocol"));
+    }
+
+    @Test
+    public void testLoadUserMonitor_user() {
+        // dubbo.monitor.protocol=user
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setProtocol("user");
+
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("user", url.getProtocol());
+    }
+
+    @Test
+    public void testLoadUserMonitor_user_address() {
+        // dubbo.monitor.address=user://1.2.3.4:5678?k=v
+        MonitorConfig monitorConfig = new MonitorConfig();
+        monitorConfig.setAddress("user://1.2.3.4:5678?param1=value1");
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(monitorConfig), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertEquals("user", url.getProtocol());
+        Assertions.assertEquals("1.2.3.4:5678", url.getAddress());
+        Assertions.assertEquals("value1", url.getParameter("param1"));
+    }
+
+    private AbstractInterfaceConfigTest.InterfaceConfig getTestInterfaceConfig(MonitorConfig monitorConfig) {
+        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
+        interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
+        interfaceConfig.setMonitor(monitorConfig);
+        return interfaceConfig;
     }
 
     private void writeDubboProperties(String key, String value) {

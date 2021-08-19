@@ -48,6 +48,16 @@ public class DefaultMultipleRegistryCenter implements MultipleRegistryCenter {
      */
     private static final int DEFAULT_PORT = 2181;
 
+    private final int port;
+
+    public DefaultMultipleRegistryCenter() {
+        this(DEFAULT_PORT);
+    }
+
+    public DefaultMultipleRegistryCenter(int port) {
+        this.port = port;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -55,7 +65,7 @@ public class DefaultMultipleRegistryCenter implements MultipleRegistryCenter {
     public void startup() throws RpcException {
         try {
             logger.info("The DefaultMultipleRegistryCenter is starting...");
-            this.zookeeperServer1 = new TestingServer(DEFAULT_PORT);
+            this.zookeeperServer1 = new TestingServer(port);
             this.zookeeperServer2 = new TestingServer();
             logger.info("The DefaultMultipleRegistryCenter is started successfully");
         } catch (Exception exception) {
