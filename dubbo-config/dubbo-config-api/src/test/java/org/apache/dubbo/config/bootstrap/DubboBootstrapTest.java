@@ -125,7 +125,7 @@ public class DubboBootstrapTest {
 
         serviceConfig.refresh();
 
-        //ApplicationModel.getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
+        //ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(new CompositeDynamicConfiguration());
         List<URL> urls = ConfigValidationUtils.loadRegistries(serviceConfig, true);
         Assertions.assertEquals(2, urls.size());
         for (URL url : urls) {

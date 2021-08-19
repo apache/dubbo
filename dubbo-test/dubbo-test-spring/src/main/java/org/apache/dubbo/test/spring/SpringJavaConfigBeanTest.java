@@ -83,7 +83,7 @@ public class SpringJavaConfigBeanTest {
         try {
             consumerContext.start();
 
-            ConfigManager configManager = ApplicationModel.getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
             ApplicationConfig application = configManager.getApplication().get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());

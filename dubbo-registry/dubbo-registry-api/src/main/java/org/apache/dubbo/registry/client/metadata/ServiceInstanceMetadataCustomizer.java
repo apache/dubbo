@@ -63,7 +63,7 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
         Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
-            inputParameters.put(APPLICATION_KEY, ApplicationModel.getName());
+            inputParameters.put(APPLICATION_KEY, ApplicationModel.defaultModel().getName());
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {

@@ -167,7 +167,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         try {
             String[] clusters = getRegistryCluster(url).split(",");
             for (String cluster : clusters) {
-                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.getName()));
+                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.defaultModel().getName()));
                 metadataInfo.addService(new ServiceInfo(url));
             }
             metadataSemaphore.release();

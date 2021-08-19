@@ -58,7 +58,7 @@ public class ReferenceConfigTest {
 
         // preload
         ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
-        ApplicationModel.getConfigManager();
+        ApplicationModel.defaultModel().getConfigManager();
         DubboBootstrap.getInstance();
     }
 
@@ -74,7 +74,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
         application.setEnableFileCache(false);
-        ApplicationModel.getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(registryUrl);
@@ -118,7 +118,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         application.setEnableFileCache(false);
-        ApplicationModel.getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(registryUrl);
@@ -212,7 +212,7 @@ public class ReferenceConfigTest {
         configCenterConfig.setAddress("diamond://");
 
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.defaultModel().getConfigManager().clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
 
         long t1 = System.currentTimeMillis();
@@ -269,7 +269,7 @@ public class ReferenceConfigTest {
                 referenceConfig.setConfigCenter(configCenterConfig);
                 DubboBootstrap.getInstance().reference(referenceConfig);
 
-                //ApplicationModel.getConfigManager().getConfigCenters();
+                //ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             }
         } catch (Throwable e) {
             e.printStackTrace();

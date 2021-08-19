@@ -231,7 +231,7 @@ public class MethodConfig extends AbstractMethodConfig {
     private void refreshArgument(ArgumentConfig argument, InmemoryConfiguration subPropsConfiguration) {
         if (argument.getIndex() != null && argument.getIndex() >= 0) {
             String prefix = argument.getIndex() + ".";
-            Environment environment = ApplicationModel.getEnvironment();
+            Environment environment = ApplicationModel.defaultModel().getEnvironment();
             java.lang.reflect.Method[] methods = argument.getClass().getMethods();
             for (java.lang.reflect.Method method : methods) {
                 if (MethodUtils.isSetter(method)) {

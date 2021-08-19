@@ -72,7 +72,7 @@ public class Issue7003Test {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.assertEquals(1, referenceBeanMap.size());
 
-            Collection<ReferenceConfigBase<?>> references = ApplicationModel.getConfigManager().getReferences();
+            Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getConfigManager().getReferences();
             Assertions.assertEquals(1, references.size());
 
         } finally {

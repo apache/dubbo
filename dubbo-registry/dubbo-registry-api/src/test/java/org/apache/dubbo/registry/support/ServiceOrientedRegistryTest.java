@@ -85,7 +85,7 @@ public class ServiceOrientedRegistryTest {
         registry = ServiceDiscoveryRegistry.create(registryURL);
         metadataService = WritableMetadataService.getDefaultExtension();
         notifyListener = new MyNotifyListener();
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig("Test"));
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig("Test"));
     }
 
     @Test

@@ -37,7 +37,6 @@ import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getName;
 
 public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
 
@@ -50,7 +49,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     @Override
     public void map(URL url) {
         execute(() -> {
-            if (CollectionUtils.isEmpty(ApplicationModel.getConfigManager().getMetadataConfigs())) {
+            if (CollectionUtils.isEmpty(ApplicationModel.defaultModel().getConfigManager().getMetadataConfigs())) {
                 return;
             }
             String serviceInterface = url.getServiceInterface();
@@ -60,23 +59,24 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             String registryCluster = getRegistryCluster(url);
             MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
 
-            if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
+            String appName = ApplicationModel.defaultModel().getName();
+            if (metadataReport.registerServiceAppMapping(serviceInterface, appName, url)) {
                 // MetadataReport support directly register service-app mapping
                 return;
             }
 
             int currentRetryTimes = 1;
             boolean success;
-            String newConfigContent = getName();
+            String newConfigContent = appName;
             do {
                 ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
                 String oldConfigContent = configItem.getContent();
                 if (StringUtils.isNotEmpty(oldConfigContent)) {
-                    boolean contains = StringUtils.isContains(oldConfigContent, getName());
+                    boolean contains = StringUtils.isContains(oldConfigContent, appName);
                     if (contains) {
                         break;
                     }
-                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + appName;
                 }
                 success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
             } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);

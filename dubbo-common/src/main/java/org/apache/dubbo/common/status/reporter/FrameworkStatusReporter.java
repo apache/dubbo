@@ -69,7 +69,7 @@ public interface FrameworkStatusReporter {
 
     static String createRegistrationReport(String status) {
         return "{\"application\":\"" +
-                ApplicationModel.getName() +
+                ApplicationModel.defaultModel().getName() +
                 "\",\"status\":\"" +
                 status +
                 "\"}";
@@ -78,7 +78,7 @@ public interface FrameworkStatusReporter {
     static String createConsumptionReport(String interfaceName, String version, String group, String status) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "consumption");
-        migrationStatus.put("application", ApplicationModel.getName());
+        migrationStatus.put("application", ApplicationModel.defaultModel().getName());
         migrationStatus.put("service", interfaceName);
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
@@ -89,7 +89,7 @@ public interface FrameworkStatusReporter {
     static String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "migrationStepStatus");
-        migrationStatus.put("application", ApplicationModel.getName());
+        migrationStatus.put("application", ApplicationModel.defaultModel().getName());
         migrationStatus.put("service", interfaceName);
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);

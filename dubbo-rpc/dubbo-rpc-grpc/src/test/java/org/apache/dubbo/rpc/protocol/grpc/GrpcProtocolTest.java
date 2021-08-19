@@ -49,8 +49,8 @@ public class GrpcProtocolTest {
 
         URL url = URL.valueOf("grpc://127.0.0.1:" + availablePort + "/" + DubboGreeterGrpc.IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.getServiceRepository().registerService(DubboGreeterGrpc.IGreeter.class);
-        ApplicationModel.getServiceRepository().registerProvider(
+        ServiceDescriptor serviceDescriptor = ApplicationModel.defaultModel().getServiceRepository().registerService(DubboGreeterGrpc.IGreeter.class);
+        ApplicationModel.defaultModel().getServiceRepository().registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -66,7 +66,7 @@ public class GrpcProtocolTest {
         serviceMetadata.setServiceKey(URL.buildKey(DubboGreeterGrpc.IGreeter.class.getName(), null, null));
 
         Map<String, AsyncMethodInfo> methodConfigs = new HashMap<>();
-        ApplicationModel.getServiceRepository().registerConsumer(
+        ApplicationModel.defaultModel().getServiceRepository().registerConsumer(
             url.getServiceKey(),
             serviceDescriptor,
             mockReferenceConfig,
@@ -81,7 +81,7 @@ public class GrpcProtocolTest {
         Assertions.assertEquals("Hello World", hello.getMessage());
 
         // resource recycle.
-        ApplicationModel.getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getServiceRepository().destroy();
     }
 
     class MockReferenceConfig extends ReferenceConfigBase {

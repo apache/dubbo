@@ -192,7 +192,7 @@ public class FutureFilter implements ClusterFilter, ClusterFilter.Listener {
             return asyncMethodInfo;
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+        ConsumerModel consumerModel = ApplicationModel.defaultModel().getConsumerModel(invoker.getUrl().getServiceKey());
         if (consumerModel == null) {
             return null;
         }

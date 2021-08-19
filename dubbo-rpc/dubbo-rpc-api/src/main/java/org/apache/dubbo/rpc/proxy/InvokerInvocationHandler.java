@@ -57,7 +57,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         String serviceKey = this.url.getServiceKey();
         this.protocolServiceKey = this.url.getProtocolServiceKey();
         if (serviceKey != null) {
-            this.consumerModel = ApplicationModel.getConsumerModel(serviceKey);
+            this.consumerModel = ApplicationModel.defaultModel().getConsumerModel(serviceKey);
         }
     }
 

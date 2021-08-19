@@ -49,7 +49,7 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getSystemConfiguration() {
-        return ApplicationModel.getEnvironment().getSystemConfiguration();
+        return ApplicationModel.defaultModel().getEnvironment().getSystemConfiguration();
     }
 
     /**
@@ -58,7 +58,7 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getEnvConfiguration() {
-        return ApplicationModel.getEnvironment().getEnvironmentConfiguration();
+        return ApplicationModel.defaultModel().getEnvironment().getEnvironmentConfiguration();
     }
 
     /**
@@ -69,11 +69,11 @@ public class ConfigurationUtils {
      * @return
      */
     public static Configuration getGlobalConfiguration() {
-        return ApplicationModel.getEnvironment().getConfiguration();
+        return ApplicationModel.defaultModel().getEnvironment().getConfiguration();
     }
 
     public static Configuration getDynamicGlobalConfiguration() {
-        return ApplicationModel.getEnvironment().getDynamicGlobalConfiguration();
+        return ApplicationModel.defaultModel().getEnvironment().getDynamicGlobalConfiguration();
     }
 
     // FIXME

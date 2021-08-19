@@ -227,7 +227,7 @@ public class RegistryConfigTest {
         DubboBootstrap.getInstance()
             .application("demo-app")
             .initialize();
-        Collection<RegistryConfig> registries = ApplicationModel.getConfigManager().getRegistries();
+        Collection<RegistryConfig> registries = ApplicationModel.defaultModel().getConfigManager().getRegistries();
         Assertions.assertEquals(1, registries.size());
         RegistryConfig registryConfig = registries.iterator().next();
         Assertions.assertEquals("zookeeper://localhost:2188", registryConfig.getAddress());

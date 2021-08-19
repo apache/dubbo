@@ -443,7 +443,7 @@ public abstract class AbstractConfig implements Serializable {
             // check and init before do refresh
             preProcessRefresh();
 
-            Environment environment = ApplicationModel.getEnvironment();
+            Environment environment = ApplicationModel.defaultModel().getEnvironment();
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
             // Search props starts with PREFIX in order

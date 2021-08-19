@@ -75,6 +75,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.FrameworkModel;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -161,7 +162,8 @@ public class DubboBootstrap {
     private final ExecutorService executorService = newSingleThreadExecutor();
 
     private final ExecutorRepository executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
-    ;
+
+    private final ApplicationModel applicationModel;
 
     private final ConfigManager configManager;
 
@@ -206,11 +208,19 @@ public class DubboBootstrap {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
-                    instance = new DubboBootstrap();
+                    instance = new DubboBootstrap(FrameworkModel.defaultModel());
                 }
             }
         }
         return instance;
+    }
+
+    public static DubboBootstrap newInstance() {
+        return new DubboBootstrap(new FrameworkModel());
+    }
+
+    public static DubboBootstrap newInstance(FrameworkModel frameworkModel) {
+        return new DubboBootstrap(frameworkModel);
     }
 
     /**
@@ -239,8 +249,6 @@ public class DubboBootstrap {
             }
             MetadataReportInstance.reset();
             AbstractRegistryFactory.reset();
-            ExtensionLoader.destroyAll();
-            //ExtensionLoader.resetExtensionLoader(GovernanceRuleRepository.class);
         } else {
             instance = null;
         }
@@ -249,12 +257,17 @@ public class DubboBootstrap {
         ShutdownHookCallbacks.INSTANCE.clear();
     }
 
-    private DubboBootstrap() {
-        configManager = ApplicationModel.getConfigManager();
-        environment = ApplicationModel.getEnvironment();
+    private DubboBootstrap(FrameworkModel frameworkModel) {
+        applicationModel = new ApplicationModel(frameworkModel);
+        configManager = applicationModel.getConfigManager();
+        environment = applicationModel.getEnvironment();
 
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
+    }
+
+    public ApplicationModel getApplicationModel() {
+        return applicationModel;
     }
 
     public ConfigManager getConfigManager() {
@@ -557,7 +570,7 @@ public class DubboBootstrap {
             return;
         }
 
-        ApplicationModel.initFrameworkExts();
+        getApplicationModel().initFrameworkExts();
 
         startConfigCenter();
 
@@ -1045,8 +1058,7 @@ public class DubboBootstrap {
         // If none config of the type, try load single config
         if (configManager.getConfigs(cls).isEmpty()) {
             // load single config
-            Environment env = ApplicationModel.getEnvironment();
-            List<Map<String, String>> configurationMaps = env.getConfigurationMaps();
+            List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
             if (ConfigurationUtils.hasSubProperties(configurationMaps, AbstractConfig.getTypePrefix(cls))) {
                 T config = null;
                 try {
@@ -1081,7 +1093,6 @@ public class DubboBootstrap {
      */
     private Set<String> getConfigIds(Class<? extends AbstractConfig> clazz) {
         String prefix = CommonConstants.DUBBO + "." + AbstractConfig.getPluralTagName(clazz) + ".";
-        Environment environment = ApplicationModel.getEnvironment();
         return ConfigurationUtils.getSubIds(environment.getConfigurationMaps(), prefix);
     }
 

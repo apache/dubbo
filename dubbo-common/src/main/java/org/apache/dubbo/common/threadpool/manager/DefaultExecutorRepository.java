@@ -27,6 +27,7 @@ import org.apache.dubbo.common.utils.ExecutorUtil;
 import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProviderConfig;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +47,6 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_REFER_TH
 import static org.apache.dubbo.common.constants.CommonConstants.EXECUTOR_SERVICE_COMPONENT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.SIDE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
-import static org.apache.dubbo.rpc.model.ApplicationModel.getConfigManager;
 
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
@@ -228,7 +228,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private Integer getExportThreadNum() {
-        List<Integer> threadNum = getConfigManager().getProviders()
+        List<Integer> threadNum = ApplicationModel.defaultModel().getConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportThreadNum)
             .filter(k -> k != null && k > 0)
@@ -275,7 +275,7 @@ public class DefaultExecutorRepository implements ExecutorRepository {
     }
 
     private Integer getReferThreadNum() {
-        List<Integer> threadNum = getConfigManager().getConsumers()
+        List<Integer> threadNum = ApplicationModel.defaultModel().getConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferThreadNum)
             .filter(k -> k != null && k > 0)

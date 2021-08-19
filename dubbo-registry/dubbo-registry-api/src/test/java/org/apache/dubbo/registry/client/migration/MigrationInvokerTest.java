@@ -41,7 +41,7 @@ public class MigrationInvokerTest {
     public void before() {
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("Test");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach

@@ -66,7 +66,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
     @Override
     public void subscribe(URL url) {
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             enableConfigurationListen = true;
             CONSUMER_CONFIGURATION_LISTENER.addNotifyListener(this);
             referenceConfigurationListener = new ReferenceConfigurationListener(this, url);
@@ -80,7 +80,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
     public void unSubscribe(URL url) {
         super.unSubscribe(url);
         this.originalUrls = null;
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             CONSUMER_CONFIGURATION_LISTENER.removeNotifyListener(this);
             referenceConfigurationListener.stop();
         }
@@ -421,7 +421,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             if (listeners.size() == 0) {
-                this.initWith(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+                this.initWith(ApplicationModel.defaultModel().getName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
         }
@@ -429,7 +429,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
             if (listeners.size() == 0) {
-                this.stopListen(ApplicationModel.getApplication() + CONFIGURATORS_SUFFIX);
+                this.stopListen(ApplicationModel.defaultModel().getName() + CONFIGURATORS_SUFFIX);
             }
         }
 

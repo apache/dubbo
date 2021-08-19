@@ -43,7 +43,7 @@ public class Ls implements BaseCommand {
     public String listProvider() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("As Provider side:" + System.lineSeparator());
-        Collection<ProviderModel> providerModelList = ApplicationModel.allProviderModels();
+        Collection<ProviderModel> providerModelList = ApplicationModel.defaultModel().allProviderModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(TTable.Align.MIDDLE),
@@ -65,7 +65,7 @@ public class Ls implements BaseCommand {
     public String listConsumer() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("As Consumer side:" + System.lineSeparator());
-        Collection<ConsumerModel> consumerModelList = ApplicationModel.allConsumerModels();
+        Collection<ConsumerModel> consumerModelList = ApplicationModel.defaultModel().allConsumerModels();
 
         TTable tTable = new TTable(new TTable.ColumnDefine[]{
                 new TTable.ColumnDefine(TTable.Align.MIDDLE),

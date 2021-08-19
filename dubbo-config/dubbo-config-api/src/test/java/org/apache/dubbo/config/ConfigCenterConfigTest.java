@@ -95,7 +95,7 @@ public class ConfigCenterConfigTest {
                 // ignore
             }
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -123,7 +123,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -150,7 +150,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -179,7 +179,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
@@ -207,7 +207,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -237,7 +237,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());

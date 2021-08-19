@@ -62,10 +62,10 @@ public class PropertyConfigurerTest {
         try {
             providerContext.start();
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             try {
                 Thread.sleep(1000);

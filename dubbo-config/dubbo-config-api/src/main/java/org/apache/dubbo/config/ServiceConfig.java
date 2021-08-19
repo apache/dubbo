@@ -345,7 +345,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
         repository.registerProvider(
                 getUniqueServiceName(),

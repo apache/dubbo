@@ -113,7 +113,7 @@ public class EnableDubboConfigTest {
         RegistryConfig registry2 = context.getBean("registry2", RegistryConfig.class);
         Assertions.assertEquals(2182, registry2.getPort());
 
-        ConfigManager configManager = ApplicationModel.getConfigManager();
+        ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
         Collection<ProtocolConfig> protocolConfigs = configManager.getProtocols();
         Assertions.assertEquals(3, protocolConfigs.size());
 

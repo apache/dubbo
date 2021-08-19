@@ -73,7 +73,7 @@ public class AbstractMetadataReportTest {
         URL url = URL.valueOf("zookeeper://" + NetUtils.getLocalAddress().getHostName() + ":4444/org.apache.dubbo.TestService?version=1.0.0&application=vic");
         abstractMetadataReport = new NewMetadataReport(url);
         // set the simple name of current class as the application name
-        ApplicationModel.getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
+        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig(getClass().getSimpleName()));
     }
 
     @AfterEach

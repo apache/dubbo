@@ -118,7 +118,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.getConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -148,7 +148,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.getConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());
@@ -181,7 +181,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.getConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(true, consumerConfig.isCheck());
@@ -211,7 +211,7 @@ public class ConsumerConfigTest {
                     .consumer(consumerConfig)
                     .initialize();
 
-            Collection<ConsumerConfig> consumers = ApplicationModel.getConfigManager().getConsumers();
+            Collection<ConsumerConfig> consumers = ApplicationModel.defaultModel().getConfigManager().getConsumers();
             Assertions.assertEquals(1, consumers.size());
             Assertions.assertEquals(consumerConfig, consumers.iterator().next());
             Assertions.assertEquals(false, consumerConfig.isCheck());

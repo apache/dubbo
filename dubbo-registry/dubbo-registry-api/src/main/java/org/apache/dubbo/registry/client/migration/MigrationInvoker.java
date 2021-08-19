@@ -92,7 +92,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.url = url;
         this.consumerUrl = consumerUrl;
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
+        ConsumerModel consumerModel = ApplicationModel.defaultModel().getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;
@@ -315,7 +315,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
         }
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerUrl.getServiceKey());
+        ConsumerModel consumerModel = ApplicationModel.defaultModel().getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;

@@ -115,7 +115,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
     protected void preProcessRefresh() {
         super.preProcessRefresh();
         if (consumer == null) {
-            consumer = ApplicationModel.getConfigManager()
+            consumer = ApplicationModel.defaultModel().getConfigManager()
                     .getDefaultConsumer()
                     .orElseThrow(() -> new IllegalArgumentException("Default consumer is not initialized"));
         }

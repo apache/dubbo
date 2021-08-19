@@ -45,11 +45,11 @@ public class MigrationRuleListenerTest {
 
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
-        ApplicationModel.getEnvironment().setDynamicConfiguration(dynamicConfiguration);
-        ApplicationModel.getEnvironment().setLocalMigrationRule(rule);
+        ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(dynamicConfiguration);
+        ApplicationModel.defaultModel().getEnvironment().setLocalMigrationRule(rule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
         applicationConfig.setName("demo-consumer");
-        ApplicationModel.getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getConfigManager().setApplication(applicationConfig);
 
         URL consumerURL = Mockito.mock(URL.class);
         Mockito.when(consumerURL.getServiceKey()).thenReturn("Test");

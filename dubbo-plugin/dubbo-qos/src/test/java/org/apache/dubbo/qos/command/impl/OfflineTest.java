@@ -47,7 +47,7 @@
 //        when(providerUrl.toFullString()).thenReturn("dubbo://localhost:8888/org.apache.dubbo.BarService");
 //        when(providerInvoker.getUrl()).thenReturn(providerUrl);
 //        ApplicationModel.registerProviderInvoker(providerInvoker, registryUrl, providerUrl);
-//        for (ProviderInvokerWrapper wrapper : ApplicationModel.getProviderInvokers("org.apache.dubbo.BarService")) {
+//        for (ProviderInvokerWrapper wrapper : ApplicationModel.defaultModel().getProviderInvokers("org.apache.dubbo.BarService")) {
 //            wrapper.setReg(true);
 //        }
 //
@@ -58,7 +58,7 @@
 //        String output = offline.execute(mock(CommandContext.class), new String[]{"org.apache.dubbo.BarService"});
 //        assertThat(output, containsString("OK"));
 //        Mockito.verify(registry).unregister(providerUrl);
-//        for (ProviderInvokerWrapper wrapper : ApplicationModel.getProviderInvokers("org.apache.dubbo.BarService")) {
+//        for (ProviderInvokerWrapper wrapper : ApplicationModel.defaultModel().getProviderInvokers("org.apache.dubbo.BarService")) {
 //            assertThat(wrapper.isReg(), is(false));
 //        }
 //

@@ -185,7 +185,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     private void registerStatedUrl(URL registryUrl, URL registeredProviderUrl, boolean registered) {
-        ProviderModel model = ApplicationModel.getProviderModel(registeredProviderUrl.getServiceKey());
+        ProviderModel model = ApplicationModel.defaultModel().getProviderModel(registeredProviderUrl.getServiceKey());
         model.addStatedUrl(new ProviderModel.RegisterStatedURL(
             registeredProviderUrl,
             registryUrl,
@@ -339,7 +339,7 @@ public class RegistryProtocol implements Protocol {
     }
 
     private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
-        ProviderModel providerModel = ApplicationModel.getServiceRepository()
+        ProviderModel providerModel = ApplicationModel.defaultModel().getServiceRepository()
             .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
@@ -561,9 +561,9 @@ public class RegistryProtocol implements Protocol {
         }
         bounds.clear();
 
-        if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+        if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
             ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
-                .removeListener(ApplicationModel.getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
+                .removeListener(ApplicationModel.defaultModel().getName() + CONFIGURATORS_SUFFIX, providerConfigurationListener);
         }
     }
 
@@ -719,7 +719,7 @@ public class RegistryProtocol implements Protocol {
         public ServiceConfigurationListener(URL providerUrl, OverrideListener notifyListener) {
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
             }
         }
@@ -737,8 +737,8 @@ public class RegistryProtocol implements Protocol {
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
         public ProviderConfigurationListener() {
-            if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
-                this.initWith(ApplicationModel.getName() + CONFIGURATORS_SUFFIX);
+            if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                this.initWith(ApplicationModel.defaultModel().getName() + CONFIGURATORS_SUFFIX);
             }
         }
 
@@ -806,7 +806,7 @@ public class RegistryProtocol implements Protocol {
             try {
                 NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
-                if (ApplicationModel.getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
+                if (ApplicationModel.defaultModel().getEnvironment().getConfiguration().convert(Boolean.class, org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN, true)) {
                     ExtensionLoader.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                         .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
                             serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));

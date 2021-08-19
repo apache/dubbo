@@ -135,10 +135,10 @@ public class ConfigTest {
         try {
             ctx.start();
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
             // clear config manager
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             DemoService demoService = refer("dubbo://127.0.0.1:20887");
             String hello = demoService.sayName("hello");
@@ -245,10 +245,10 @@ public class ConfigTest {
         try {
             ctx.start();
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
             // clear config manager
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             DemoService demoService = refer("dubbo://127.0.0.1:20881");
             String hello = demoService.sayName("hello");
@@ -487,10 +487,10 @@ public class ConfigTest {
         try {
             providerContext.start();
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
             // clear config manager
             DubboBootstrap.reset(false);
-            ApplicationModel.getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext(resourcePath + "/init-reference.xml",
                     resourcePath + "/init-reference-properties.xml");
@@ -732,7 +732,7 @@ public class ConfigTest {
         ClassPathXmlApplicationContext providerContext = new ClassPathXmlApplicationContext(resourcePath + "/override-protocol.xml");
         try {
             providerContext.start();
-            ConfigManager configManager = ApplicationModel.getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
             ProtocolConfig protocol = configManager.getProtocol("dubbo").get();
             assertEquals(20812, protocol.getPort());
         } finally {
@@ -748,7 +748,7 @@ public class ConfigTest {
                 "/override-multi-protocol.xml");
         try {
             providerContext.start();
-            ConfigManager configManager = ApplicationModel.getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
 
             ProtocolConfig dubboProtocol = configManager.getProtocol("dubbo").get();
             assertEquals(20814, dubboProtocol.getPort().intValue());
@@ -841,7 +841,7 @@ public class ConfigTest {
             // set default value of check
             assertEquals(false, reference.shouldCheck());
 
-            ConsumerConfig defaultConsumer = ApplicationModel.getConfigManager().getDefaultConsumer().get();
+            ConsumerConfig defaultConsumer = ApplicationModel.defaultModel().getConfigManager().getDefaultConsumer().get();
             assertEquals(1234, defaultConsumer.getTimeout());
             assertEquals(false, defaultConsumer.isCheck());
         } finally {

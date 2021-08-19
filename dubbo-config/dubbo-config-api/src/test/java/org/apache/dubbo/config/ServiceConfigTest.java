@@ -88,7 +88,7 @@ public class ServiceConfigTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.defaultModel().getConfigManager().clear();
 
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
@@ -151,7 +151,7 @@ public class ServiceConfigTest {
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.getConfigManager().clear();
+        ApplicationModel.defaultModel().getConfigManager().clear();
     }
 
     @Test

@@ -248,7 +248,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         Map<String, String> referenceParameters = appendConfig();
 
 
-        ServiceRepository repository = ApplicationModel.getServiceRepository();
+        ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         repository.registerConsumer(
             serviceMetadata.getServiceKey(),

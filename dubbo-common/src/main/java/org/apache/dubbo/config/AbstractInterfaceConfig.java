@@ -225,7 +225,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
      * @return
      */
     protected String[] methods(Class<?> interfaceClass) {
-        boolean isNative = ApplicationModel.getEnvironment().getConfiguration().getBoolean(NATIVE, false);
+        boolean isNative = ApplicationModel.defaultModel().getEnvironment().getConfiguration().getBoolean(NATIVE, false);
         if (isNative) {
             return Arrays.stream(interfaceClass.getMethods()).map(Method::getName).toArray(String[]::new);
         } else {
@@ -278,7 +278,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<MethodConfig> methodConfigs = this.getMethods();
             if (methodConfigs != null && methodConfigs.size() > 0) {
                 // whether ignore invalid method config
-                Object ignoreInvalidMethodConfigVal = ApplicationModel.getEnvironment().getConfiguration()
+                Object ignoreInvalidMethodConfigVal = ApplicationModel.defaultModel().getEnvironment().getConfiguration()
                     .getProperty(ConfigKeys.DUBBO_CONFIG_IGNORE_INVALID_METHOD_CONFIG, "false");
                 boolean ignoreInvalidMethodConfig = Boolean.parseBoolean(ignoreInvalidMethodConfigVal.toString());
 
@@ -388,7 +388,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         computeValidRegistryIds();
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
-                List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
+                List<RegistryConfig> registryConfigs = ApplicationModel.defaultModel().getConfigManager().getDefaultRegistries();
                 registryConfigs = new ArrayList<>(registryConfigs);
                 setRegistries(registryConfigs);
             }
@@ -397,7 +397,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             List<RegistryConfig> tmpRegistries = new ArrayList<>();
             Arrays.stream(ids).forEach(id -> {
                 if (tmpRegistries.stream().noneMatch(reg -> reg.getId().equals(id))) {
-                    Optional<RegistryConfig> globalRegistry = ApplicationModel.getConfigManager().getRegistry(id);
+                    Optional<RegistryConfig> globalRegistry = ApplicationModel.defaultModel().getConfigManager().getRegistry(id);
                     if (globalRegistry.isPresent()) {
                         tmpRegistries.add(globalRegistry.get());
                     } else {
@@ -561,14 +561,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (application != null) {
             return application;
         }
-        return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
+        return ApplicationModel.defaultModel().getConfigManager().getApplicationOrElseThrow();
     }
 
     @Deprecated
     public void setApplication(ApplicationConfig application) {
         this.application = application;
         if (application != null) {
-            ApplicationModel.getConfigManager().setApplication(application);
+            ApplicationModel.defaultModel().getConfigManager().setApplication(application);
         }
     }
 
@@ -576,14 +576,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (module != null) {
             return module;
         }
-        return ApplicationModel.getConfigManager().getModule().orElse(null);
+        return ApplicationModel.defaultModel().getConfigManager().getModule().orElse(null);
     }
 
     @Deprecated
     public void setModule(ModuleConfig module) {
         this.module = module;
         if (module != null) {
-            ApplicationModel.getConfigManager().setModule(module);
+            ApplicationModel.defaultModel().getConfigManager().setModule(module);
         }
     }
 
@@ -637,7 +637,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             return monitor;
         }
         // FIXME: instead of return null, we should set default monitor when getMonitor() return null in ConfigManager
-        return ApplicationModel.getConfigManager().getMonitor().orElse(null);
+        return ApplicationModel.defaultModel().getConfigManager().getMonitor().orElse(null);
     }
 
     @Deprecated
@@ -649,7 +649,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMonitor(MonitorConfig monitor) {
         this.monitor = monitor;
         if (monitor != null) {
-            ApplicationModel.getConfigManager().setMonitor(monitor);
+            ApplicationModel.defaultModel().getConfigManager().setMonitor(monitor);
         }
     }
 
@@ -666,7 +666,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (configCenter != null) {
             return configCenter;
         }
-        Collection<ConfigCenterConfig> configCenterConfigs = ApplicationModel.getConfigManager().getConfigCenters();
+        Collection<ConfigCenterConfig> configCenterConfigs = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
         if (CollectionUtils.isNotEmpty(configCenterConfigs)) {
             return configCenterConfigs.iterator().next();
         }
@@ -677,7 +677,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setConfigCenter(ConfigCenterConfig configCenter) {
         this.configCenter = configCenter;
         if (configCenter != null) {
-            ApplicationModel.getConfigManager().addConfigCenter(configCenter);
+            ApplicationModel.defaultModel().getConfigManager().addConfigCenter(configCenter);
         }
     }
 
@@ -718,7 +718,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metadataReportConfig != null) {
             return metadataReportConfig;
         }
-        Collection<MetadataReportConfig> metadataReportConfigs = ApplicationModel.getConfigManager().getMetadataConfigs();
+        Collection<MetadataReportConfig> metadataReportConfigs = ApplicationModel.defaultModel().getConfigManager().getMetadataConfigs();
         if (CollectionUtils.isNotEmpty(metadataReportConfigs)) {
             return metadataReportConfigs.iterator().next();
         }
@@ -729,7 +729,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     public void setMetadataReportConfig(MetadataReportConfig metadataReportConfig) {
         this.metadataReportConfig = metadataReportConfig;
         if (metadataReportConfig != null) {
-            ApplicationModel.getConfigManager().addMetadataReport(metadataReportConfig);
+            ApplicationModel.defaultModel().getConfigManager().addMetadataReport(metadataReportConfig);
         }
     }
 
@@ -738,14 +738,14 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         if (metrics != null) {
             return metrics;
         }
-        return ApplicationModel.getConfigManager().getMetrics().orElse(null);
+        return ApplicationModel.defaultModel().getConfigManager().getMetrics().orElse(null);
     }
 
     @Deprecated
     public void setMetrics(MetricsConfig metrics) {
         this.metrics = metrics;
         if (metrics != null) {
-            ApplicationModel.getConfigManager().setMetrics(metrics);
+            ApplicationModel.defaultModel().getConfigManager().setMetrics(metrics);
         }
     }
 
@@ -767,7 +767,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
     }
 
     public SslConfig getSslConfig() {
-        return ApplicationModel.getConfigManager().getSsl().orElse(null);
+        return ApplicationModel.defaultModel().getConfigManager().getSsl().orElse(null);
     }
     
     protected void initServiceMetadata(AbstractInterfaceConfig interfaceConfig) {

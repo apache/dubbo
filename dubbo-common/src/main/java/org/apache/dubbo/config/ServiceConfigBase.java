@@ -199,7 +199,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         super.preProcessRefresh();
         convertProviderIdToProvider();
         if (provider == null) {
-            provider = ApplicationModel.getConfigManager()
+            provider = ApplicationModel.defaultModel().getConfigManager()
                     .getDefaultProvider()
                     .orElseThrow(() -> new IllegalArgumentException("Default provider is not initialized"));
         }
@@ -247,7 +247,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     protected void convertProviderIdToProvider() {
         if (provider == null && StringUtils.hasText(providerIds)) {
-            provider = ApplicationModel.getConfigManager().getProvider(providerIds)
+            provider = ApplicationModel.defaultModel().getConfigManager().getProvider(providerIds)
                     .orElseThrow(() -> new IllegalStateException("Provider config not found: " + providerIds));
         }
     }
@@ -255,7 +255,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     protected void convertProtocolIdsToProtocols() {
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
-                List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
+                List<ProtocolConfig> protocolConfigs = ApplicationModel.defaultModel().getConfigManager().getDefaultProtocols();
                 if (protocolConfigs.isEmpty()) {
                     throw new IllegalStateException("The default protocol has not been initialized.");
                 }
@@ -266,7 +266,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             Set<String> idsSet = new LinkedHashSet<>(Arrays.asList(idsArray));
             List<ProtocolConfig> tmpProtocols = new ArrayList<>();
             for (String id : idsSet) {
-                Optional<ProtocolConfig> globalProtocol = ApplicationModel.getConfigManager().getProtocol(id);
+                Optional<ProtocolConfig> globalProtocol = ApplicationModel.defaultModel().getConfigManager().getProtocol(id);
                 if (globalProtocol.isPresent()) {
                     tmpProtocols.add(globalProtocol.get());
                 } else {
@@ -336,7 +336,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void setProvider(ProviderConfig provider) {
-        ApplicationModel.getConfigManager().addProvider(provider);
+        ApplicationModel.defaultModel().getConfigManager().addProvider(provider);
         this.provider = provider;
     }
 

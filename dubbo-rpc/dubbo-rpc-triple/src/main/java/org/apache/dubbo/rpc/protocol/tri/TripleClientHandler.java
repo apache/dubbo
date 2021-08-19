@@ -66,7 +66,7 @@ public class TripleClientHandler extends ChannelDuplexHandler {
     private void writeRequest(ChannelHandlerContext ctx, final Request req, final ChannelPromise promise) {
         final RpcInvocation inv = (RpcInvocation) req.getData();
         final URL url = inv.getInvoker().getUrl();
-        ServiceRepository repo = ApplicationModel.getServiceRepository();
+        ServiceRepository repo = ApplicationModel.defaultModel().getServiceRepository();
         MethodDescriptor methodDescriptor = repo.lookupMethod(inv.getServiceName(), inv.getMethodName());
         String serviceKey = url.getServiceKey();
         // If it is InstanceAddressURL, the serviceKey may not be obtained.

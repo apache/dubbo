@@ -53,7 +53,7 @@
 //        Online online = new Online();
 //        String output = online.execute(mock(CommandContext.class), new String[]{"org.apache.dubbo.BarService"});
 //        assertThat(output, equalTo("OK"));
-//        for (ProviderInvokerWrapper wrapper : ApplicationModel.getProviderInvokers("org.apache.dubbo.BarService")) {
+//        for (ProviderInvokerWrapper wrapper : ApplicationModel.defaultModel().getProviderInvokers("org.apache.dubbo.BarService")) {
 //            assertTrue(wrapper.isReg());
 //        }
 //    }

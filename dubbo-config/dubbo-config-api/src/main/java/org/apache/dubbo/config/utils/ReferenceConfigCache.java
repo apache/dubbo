@@ -173,7 +173,7 @@ public class ReferenceConfigCache {
             return;
         }
 
-        ApplicationModel.getConfigManager().removeConfig(rc);
+        ApplicationModel.defaultModel().getConfigManager().removeConfig(rc);
         rc.destroy();
 
         Map<String, Object> proxiesOftype = proxies.get(type);
@@ -215,7 +215,7 @@ public class ReferenceConfigCache {
 
         referredReferences.forEach((_k, referenceConfig) -> {
             referenceConfig.destroy();
-            ApplicationModel.getConfigManager().removeConfig(referenceConfig);
+            ApplicationModel.defaultModel().getConfigManager().removeConfig(referenceConfig);
         });
 
         proxies.forEach((_type, proxiesOfType) -> {

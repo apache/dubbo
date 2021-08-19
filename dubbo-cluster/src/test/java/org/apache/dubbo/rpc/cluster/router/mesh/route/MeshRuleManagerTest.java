@@ -38,11 +38,11 @@ public class MeshRuleManagerTest {
 
     @Test
     public void subscribeAppRule() {
-        Optional<DynamicConfiguration> before = ApplicationModel.getEnvironment().getDynamicConfiguration();
+        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getEnvironment().getDynamicConfiguration();
         try {
             DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
 
-            ApplicationModel.getEnvironment().setDynamicConfiguration(dynamicConfiguration);
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(dynamicConfiguration);
 
             MeshRuleManager.subscribeAppRule("test");
 
@@ -53,7 +53,7 @@ public class MeshRuleManagerTest {
 
             assertEquals("test.MESHAPPRULE", result);
         } finally {
-            ApplicationModel.getEnvironment().setDynamicConfiguration(before.orElse(null));
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(before.orElse(null));
         }
 
 
@@ -61,11 +61,11 @@ public class MeshRuleManagerTest {
 
     @Test
     public void register() {
-        Optional<DynamicConfiguration> before = ApplicationModel.getEnvironment().getDynamicConfiguration();
+        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getEnvironment().getDynamicConfiguration();
         try {
             DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
 
-            ApplicationModel.getEnvironment().setDynamicConfiguration(dynamicConfiguration);
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(dynamicConfiguration);
 
             when(dynamicConfiguration.getConfig(anyString(), anyString(), anyLong())).thenReturn("apiVersion: service.dubbo.apache.org/v1alpha1\n" +
                     "kind: VirtualService\n" +
@@ -109,17 +109,17 @@ public class MeshRuleManagerTest {
             assertEquals(1, result.getVirtualServiceRuleList().size());
             assertEquals(0, result.getDestinationRuleList().size());
         } finally {
-            ApplicationModel.getEnvironment().setDynamicConfiguration(before.orElse(null));
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(before.orElse(null));
         }
     }
 
     @Test
     public void unregister() {
-        Optional<DynamicConfiguration> before = ApplicationModel.getEnvironment().getDynamicConfiguration();
+        Optional<DynamicConfiguration> before = ApplicationModel.defaultModel().getEnvironment().getDynamicConfiguration();
         try {
             DynamicConfiguration dynamicConfiguration = mock(DynamicConfiguration.class);
 
-            ApplicationModel.getEnvironment().setDynamicConfiguration(dynamicConfiguration);
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(dynamicConfiguration);
 
             when(dynamicConfiguration.getConfig(anyString(), anyString(), anyLong())).thenReturn("apiVersion: service.dubbo.apache.org/v1alpha1\n" +
                     "kind: VirtualService\n" +
@@ -154,7 +154,7 @@ public class MeshRuleManagerTest {
             MeshRuleManager.unregister(meshRuleRouter);
 
         } finally {
-            ApplicationModel.getEnvironment().setDynamicConfiguration(before.orElse(null));
+            ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(before.orElse(null));
         }
     }
 }

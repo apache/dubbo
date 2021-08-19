@@ -110,7 +110,7 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt {
 
     @Override
     public void initialize() throws IllegalStateException {
-        CompositeConfiguration configuration = ApplicationModel.getEnvironment().getConfiguration();
+        CompositeConfiguration configuration = ApplicationModel.defaultModel().getEnvironment().getConfiguration();
         String configModeStr = (String) configuration.getProperty(DUBBO_CONFIG_MODE);
         try {
             if (StringUtils.hasText(configModeStr)) {

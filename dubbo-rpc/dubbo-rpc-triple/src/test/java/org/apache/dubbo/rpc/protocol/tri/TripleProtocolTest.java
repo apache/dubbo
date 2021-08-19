@@ -43,8 +43,8 @@ public class TripleProtocolTest {
 
         URL url = URL.valueOf("tri://127.0.0.1:" + availablePort + "/" + IGreeter.class.getName());
 
-        ServiceDescriptor serviceDescriptor = ApplicationModel.getServiceRepository().registerService(IGreeter.class);
-        ApplicationModel.getServiceRepository().registerProvider(
+        ServiceDescriptor serviceDescriptor = ApplicationModel.defaultModel().getServiceRepository().registerService(IGreeter.class);
+        ApplicationModel.defaultModel().getServiceRepository().registerProvider(
             url.getServiceKey(),
             serviceImpl,
             serviceDescriptor,
@@ -58,6 +58,6 @@ public class TripleProtocolTest {
         Assertions.assertEquals("hello world", serviceImpl.echo("hello world"));
 
         // resource recycle.
-        ApplicationModel.getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getServiceRepository().destroy();
     }
 }

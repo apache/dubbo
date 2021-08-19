@@ -72,7 +72,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
 
-        ServiceRepository serviceRepository = ApplicationModel.getServiceRepository();
+        ServiceRepository serviceRepository = ApplicationModel.defaultModel().getServiceRepository();
         ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
         if (providerModel == null) {
             throw new IllegalStateException("Service " + url.getServiceKey() + "should have already been stored in service repository, " +
@@ -123,7 +123,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig()
+                    ApplicationModel.defaultModel().getConsumerModel(url.getServiceKey()).getReferenceConfig()
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);

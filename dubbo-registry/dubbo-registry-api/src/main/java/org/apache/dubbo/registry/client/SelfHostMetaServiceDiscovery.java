@@ -225,7 +225,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery {
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
-            String consumerId = ApplicationModel.getName() + NetUtils.getLocalHost();
+            String consumerId = ApplicationModel.defaultModel().getName() + NetUtils.getLocalHost();
             String metadata = metadataService.getAndListenInstanceMetadata(
                     consumerId, metadataString -> {
                         if(logger.isDebugEnabled()) {
