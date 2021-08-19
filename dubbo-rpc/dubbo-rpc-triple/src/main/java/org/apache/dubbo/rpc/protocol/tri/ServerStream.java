@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
@@ -72,14 +73,16 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
             super.onMetadata(metadata, endStream, handler);
-            final RpcInvocation inv = buildInvocation(metadata);
-            inv.setArguments(new Object[]{asStreamObserver()});
-            final Result result = getInvoker().invoke(inv);
-            try {
-                subscribe((StreamObserver<Object>) result.getValue());
-            } catch (Throwable t) {
-                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Failed to create server's observer"));
+            if (getMethodDescriptor().getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM) {
+                final RpcInvocation inv = buildInvocation(metadata);
+                inv.setArguments(new Object[]{asStreamObserver()});
+                final Result result = getInvoker().invoke(inv);
+                try {
+                    subscribe((StreamObserver<Object>) result.getValue());
+                } catch (Throwable t) {
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Failed to create server's observer"));
+                }
             }
         }
 
@@ -88,7 +91,13 @@ public class ServerStream extends AbstractServerStream implements Stream {
             try {
                 final Object[] arguments = deserializeRequest(in);
                 if (arguments != null) {
-                    getStreamSubscriber().onNext(arguments[0]);
+                    if (getMethodDescriptor().getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM) {
+                        getStreamSubscriber().onNext(arguments[0]);
+                    } else {
+                        final RpcInvocation inv = buildInvocation(getHeaders());
+                        inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                        getInvoker().invoke(inv);
+                    }
                 }
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
