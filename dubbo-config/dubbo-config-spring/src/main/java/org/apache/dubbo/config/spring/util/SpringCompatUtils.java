@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.config.TypedStringValue;
 import org.springframework.core.type.MethodMetadata;
 import org.springframework.core.type.StandardMethodMetadata;
 
@@ -39,7 +40,12 @@ public class SpringCompatUtils {
 
     public static <T> T getPropertyValue(PropertyValues pvs, String propertyName) {
         PropertyValue pv = pvs.getPropertyValue(propertyName);
-        return (pv != null ? (T) pv.getValue() : null);
+        Object val = pv != null ? pv.getValue() : null;
+        if (val instanceof TypedStringValue) {
+            TypedStringValue typedString = (TypedStringValue) val;
+            return (T) typedString.getValue();
+        }
+        return (T) val;
     }
 
     public static boolean isFactoryMethodMetadataEnabled() {

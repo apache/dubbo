@@ -21,6 +21,7 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.test.common.ZooKeeperServer;
 import org.apache.dubbo.test.common.api.DemoService;
+import org.apache.dubbo.test.spring.context.MockSpringInitializationCustomizer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ public class SpringAnnotationBeanTest {
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(TestConfiguration.class);
         TestService testService = applicationContext.getBean(TestService.class);
         testService.test();
+
+        // check initialization customizer
+        MockSpringInitializationCustomizer.checkCustomizer(applicationContext);
     }
 
     @EnableDubbo(scanBasePackages = "org.apache.dubbo.test.common.impl")

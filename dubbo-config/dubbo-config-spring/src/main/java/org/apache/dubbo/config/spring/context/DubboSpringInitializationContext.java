@@ -14,27 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.tri;
+package org.apache.dubbo.config.spring.context;
 
-import io.netty.handler.codec.http2.Http2CodecUtil;
-import io.netty.util.AsciiString;
-import io.netty.util.AttributeKey;
-import org.apache.dubbo.common.constants.CommonConstants;
+import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 
-public interface TripleConstant {
-    String CONTENT_PROTO = "application/grpc+proto";
-    String APPLICATION_GRPC = "application/grpc";
-    String TRI_VERSION = "1.0.0";
+/**
+ * Dubbo spring initialization context object
+ */
+public class DubboSpringInitializationContext {
 
-    String SERIALIZATION_KEY = "serialization";
-    String TE_KEY = "te";
-    // each header size
-    long DEFAULT_HEADER_LIST_SIZE = Http2CodecUtil.DEFAULT_HEADER_LIST_SIZE;
+    private BeanDefinitionRegistry registry;
 
-    AttributeKey<Boolean> SSL_ATTRIBUTE_KEY = AttributeKey.valueOf(CommonConstants.SSL_ENABLED_KEY);
+    public BeanDefinitionRegistry getRegistry() {
+        return registry;
+    }
 
-
-    AsciiString HTTPS_SCHEME = AsciiString.of("https");
-    AsciiString HTTP_SCHEME = AsciiString.of("http");
+    void setRegistry(BeanDefinitionRegistry registry) {
+        this.registry = registry;
+    }
 
 }

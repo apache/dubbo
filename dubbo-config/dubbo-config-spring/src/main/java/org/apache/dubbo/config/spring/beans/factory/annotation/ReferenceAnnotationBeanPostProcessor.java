@@ -164,7 +164,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
             List<BeanPostProcessor> beanPostProcessors = ((AbstractBeanFactory) beanFactory).getBeanPostProcessors();
             for (BeanPostProcessor beanPostProcessor : beanPostProcessors) {
                 if (beanPostProcessor == this) {
-                    // This bean has bean register as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
+                    // This bean has been registered as BeanPostProcessor at org.apache.dubbo.config.spring.context.DubboInfraBeanRegisterPostProcessor.postProcessBeanFactory()
                     // so destroy this bean here, prevent register it as BeanPostProcessor again, avoid cause BeanPostProcessorChecker detection error
                     beanDefinitionRegistry.removeBeanDefinition(BEAN_NAME);
                     break;
@@ -334,7 +334,7 @@ public class ReferenceAnnotationBeanPostProcessor extends AbstractAnnotationBean
 
     protected void prepareInjection(AnnotatedInjectionMetadata metadata) throws BeansException {
         try {
-            //find and registry bean definition for @DubboReference/@Reference
+            //find and register bean definition for @DubboReference/@Reference
             for (AnnotatedFieldElement fieldElement : metadata.getFieldElements()) {
                 if (fieldElement.injectedObject != null) {
                     continue;

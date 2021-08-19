@@ -19,7 +19,7 @@ package org.apache.dubbo.config.spring.context.annotation;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ReferenceAnnotationBeanPostProcessor;
 import org.apache.dubbo.config.spring.beans.factory.annotation.ServiceAnnotationPostProcessor;
-
+import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -35,7 +35,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.rootBeanDefinition;
 
 /**
@@ -53,8 +52,8 @@ public class DubboComponentScanRegistrar implements ImportBeanDefinitionRegistra
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
-        // @since 2.7.6 Register the common beans
-        registerCommonBeans(registry);
+        // initialize dubbo beans
+        DubboSpringInitializer.initialize(registry);
 
         Set<String> packagesToScan = getPackagesToScan(importingClassMetadata);
 

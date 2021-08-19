@@ -17,12 +17,11 @@
 package org.apache.dubbo.config.spring.context.annotation;
 
 import org.apache.dubbo.config.AbstractConfig;
+import org.apache.dubbo.config.spring.context.DubboSpringInitializer;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.Ordered;
 import org.springframework.core.type.AnnotationMetadata;
-
-import static org.apache.dubbo.config.spring.util.DubboBeanUtils.registerCommonBeans;
 
 /**
  * Dubbo {@link AbstractConfig Config} {@link ImportBeanDefinitionRegistrar register}, which order can be configured
@@ -37,6 +36,9 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
 
+        // initialize dubbo beans
+        DubboSpringInitializer.initialize(registry);
+
         // Config beans creating from props have move to DubboBootstrap
 //        AnnotationAttributes attributes = AnnotationAttributes.fromMap(
 //                importingClassMetadata.getAnnotationAttributes(EnableDubboConfig.class.getName()));
@@ -50,7 +52,5 @@ public class DubboConfigConfigurationRegistrar implements ImportBeanDefinitionRe
 //            registerBeans(registry, DubboConfigConfiguration.Multiple.class);
 //        }
 
-        // Since 2.7.6
-        registerCommonBeans(registry);
     }
 }
