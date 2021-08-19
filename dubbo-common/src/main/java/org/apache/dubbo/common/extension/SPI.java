@@ -61,4 +61,8 @@ public @interface SPI {
      */
     String value() default "";
 
+    /**
+     * scope of SPI
+     */
+    ExtensionScope scope() default ExtensionScope.FRAMEWORK;
 }

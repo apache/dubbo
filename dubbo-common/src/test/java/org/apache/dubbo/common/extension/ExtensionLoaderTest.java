@@ -61,6 +61,7 @@ import org.apache.dubbo.common.extension.injection.impl.InjectExtImpl;
 import org.apache.dubbo.common.lang.Prioritized;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -70,7 +71,6 @@ import java.util.List;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 import static org.apache.dubbo.common.extension.ExtensionLoader.getLoadingStrategies;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.anyOf;
@@ -84,6 +84,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 public class ExtensionLoaderTest {
+
+    private <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(type);
+    }
+
     @Test
     public void test_getExtensionLoader_Null() throws Exception {
         try {
@@ -559,7 +564,7 @@ public class ExtensionLoaderTest {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(false),
                 new DubboInternalLoadingStrategyTest(false));
-        ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
+        ExtensionLoader<DuplicatedWithoutOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedWithoutOverriddenExt.class);
         try {
             extensionLoader.getExtension("duplicated");
             fail();
@@ -577,7 +582,7 @@ public class ExtensionLoaderTest {
         List<LoadingStrategy> loadingStrategies = ExtensionLoader.getLoadingStrategies();
         ExtensionLoader.setLoadingStrategies(new DubboExternalLoadingStrategyTest(true),
                 new DubboInternalLoadingStrategyTest(true));
-        ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = ExtensionLoader.getExtensionLoader(DuplicatedOverriddenExt.class);
+        ExtensionLoader<DuplicatedOverriddenExt> extensionLoader = getExtensionLoader(DuplicatedOverriddenExt.class);
         DuplicatedOverriddenExt duplicatedOverriddenExt = extensionLoader.getExtension("duplicated");
         assertEquals("DuplicatedOverriddenExt1", duplicatedOverriddenExt.echo());
         //recover the loading strategies
