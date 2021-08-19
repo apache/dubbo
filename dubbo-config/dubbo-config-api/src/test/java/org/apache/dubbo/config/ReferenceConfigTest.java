@@ -404,6 +404,8 @@ public class ReferenceConfigTest {
         Assertions.assertEquals(DemoService.class.getMethods().length,
             StringUtils.split((String) serviceMetadata.getAttachments().get(METHODS_KEY), ',').length);
 
+        applicationModelMockedStatic.reset();
+        metadataReportInstanceMockedStatic.reset();
     }
 
     @Test
