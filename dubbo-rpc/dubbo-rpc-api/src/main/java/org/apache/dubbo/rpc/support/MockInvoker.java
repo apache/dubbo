@@ -75,7 +75,7 @@ final public class MockInvoker<T> implements Invoker<T> {
         } else if ("false".equals(mock)) {
             value = false;
         } else if (mock.length() >= 2 && (mock.startsWith("\"") && mock.endsWith("\"")
-                || mock.startsWith("\'") && mock.endsWith("\'"))) {
+            || mock.startsWith("\'") && mock.endsWith("\'"))) {
             value = mock.subSequence(1, mock.length() - 1);
         } else if (returnTypes != null && returnTypes.length > 0 && returnTypes[0] == String.class) {
             value = mock;
@@ -92,51 +92,6 @@ final public class MockInvoker<T> implements Invoker<T> {
             value = PojoUtils.realize(value, (Class<?>) returnTypes[0], returnTypes.length > 1 ? returnTypes[1] : null);
         }
         return value;
-    }
-
-    @Override
-    public Result invoke(Invocation invocation) throws RpcException {
-        if (invocation instanceof RpcInvocation) {
-            ((RpcInvocation) invocation).setInvoker(this);
-        }
-        String mock = null;
-        if (getUrl().hasMethodParameter(invocation.getMethodName())) {
-            mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
-        }
-        if (StringUtils.isBlank(mock)) {
-            mock = getUrl().getParameter(MOCK_KEY);
-        }
-
-        if (StringUtils.isBlank(mock)) {
-            throw new RpcException(new IllegalAccessException("mock can not be null. url :" + url));
-        }
-        mock = normalizeMock(URL.decode(mock));
-        if (mock.startsWith(RETURN_PREFIX)) {
-            mock = mock.substring(RETURN_PREFIX.length()).trim();
-            try {
-                Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
-                Object value = parseMockValue(mock, returnTypes);
-                return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
-            } catch (Exception ew) {
-                throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
-                        + ", mock:" + mock + ", url: " + url, ew);
-            }
-        } else if (mock.startsWith(THROW_PREFIX)) {
-            mock = mock.substring(THROW_PREFIX.length()).trim();
-            if (StringUtils.isBlank(mock)) {
-                throw new RpcException("mocked exception for service degradation.");
-            } else { // user customized class
-                Throwable t = getThrowable(mock);
-                throw new RpcException(RpcException.BIZ_EXCEPTION, t);
-            }
-        } else { //impl mock
-            try {
-                Invoker<T> invoker = getInvoker(mock);
-                return invoker.invoke(invocation);
-            } catch (Throwable t) {
-                throw new RpcException("Failed to create mock implementation class " + mock, t);
-            }
-        }
     }
 
     public static Throwable getThrowable(String throwstr) {
@@ -161,22 +116,6 @@ final public class MockInvoker<T> implements Invoker<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Invoker<T> getInvoker(String mockService) {
-        Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
-        if (invoker != null) {
-            return invoker;
-        }
-
-        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
-        T mockObject = (T) getMockObject(mockService, serviceType);
-        invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
-        if (MOCK_MAP.size() < 10000) {
-            MOCK_MAP.put(mockService, invoker);
-        }
-        return invoker;
-    }
-
-    @SuppressWarnings("unchecked")
     public static Object getMockObject(String mockService, Class serviceType) {
         boolean isDefault = ConfigUtils.isDefault(mockService);
         if (isDefault) {
@@ -189,20 +128,20 @@ final public class MockInvoker<T> implements Invoker<T> {
         } catch (Exception e) {
             if (!isDefault) {// does not check Spring bean if it is default config.
                 ExtensionFactory extensionFactory =
-                        ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
+                    ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension();
                 Object obj = extensionFactory.getExtension(serviceType, mockService);
                 if (obj != null) {
                     return obj;
                 }
             }
             throw new IllegalStateException("Did not find mock class or instance "
-                    + mockService
-                    + ", please check if there's mock class or instance implementing interface "
-                    + serviceType.getName(), e);
+                + mockService
+                + ", please check if there's mock class or instance implementing interface "
+                + serviceType.getName(), e);
         }
         if (mockClass == null || !serviceType.isAssignableFrom(mockClass)) {
             throw new IllegalStateException("The mock class " + mockClass.getName() +
-                    " not implement interface " + serviceType.getName());
+                " not implement interface " + serviceType.getName());
         }
 
         try {
@@ -213,7 +152,6 @@ final public class MockInvoker<T> implements Invoker<T> {
             throw new IllegalStateException(e);
         }
     }
-
 
     /**
      * Normalize mock string:
@@ -261,6 +199,68 @@ final public class MockInvoker<T> implements Invoker<T> {
         }
 
         return mock;
+    }
+
+    @Override
+    public Result invoke(Invocation invocation) throws RpcException {
+        if (invocation instanceof RpcInvocation) {
+            ((RpcInvocation) invocation).setInvoker(this);
+        }
+        String mock = null;
+        if (getUrl().hasMethodParameter(invocation.getMethodName())) {
+            mock = getUrl().getParameter(invocation.getMethodName() + "." + MOCK_KEY);
+        }
+        if (StringUtils.isBlank(mock)) {
+            mock = getUrl().getParameter(MOCK_KEY);
+        }
+
+        if (StringUtils.isBlank(mock)) {
+            throw new RpcException(new IllegalAccessException("mock can not be null. url :" + url));
+        }
+        mock = normalizeMock(URL.decode(mock));
+        if (mock.startsWith(RETURN_PREFIX)) {
+            mock = mock.substring(RETURN_PREFIX.length()).trim();
+            try {
+                Type[] returnTypes = RpcUtils.getReturnTypes(invocation);
+                Object value = parseMockValue(mock, returnTypes);
+                return AsyncRpcResult.newDefaultAsyncResult(value, invocation);
+            } catch (Exception ew) {
+                throw new RpcException("mock return invoke error. method :" + invocation.getMethodName()
+                    + ", mock:" + mock + ", url: " + url, ew);
+            }
+        } else if (mock.startsWith(THROW_PREFIX)) {
+            mock = mock.substring(THROW_PREFIX.length()).trim();
+            if (StringUtils.isBlank(mock)) {
+                throw new RpcException("mocked exception for service degradation.");
+            } else { // user customized class
+                Throwable t = getThrowable(mock);
+                throw new RpcException(RpcException.BIZ_EXCEPTION, t);
+            }
+        } else { //impl mock
+            try {
+                Invoker<T> invoker = getInvoker(mock);
+                return invoker.invoke(invocation);
+            } catch (Throwable t) {
+                throw new RpcException("Failed to create mock implementation class " + mock, t);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Invoker<T> getInvoker(String mock) {
+        Class<T> serviceType = (Class<T>) ReflectUtils.forName(url.getServiceInterface());
+        String mockService = ConfigUtils.isDefault(mock) ? serviceType.getName() + "Mock" : mock;
+        Invoker<T> invoker = (Invoker<T>) MOCK_MAP.get(mockService);
+        if (invoker != null) {
+            return invoker;
+        }
+
+        T mockObject = (T) getMockObject(mock, serviceType);
+        invoker = PROXY_FACTORY.getInvoker(mockObject, serviceType, url);
+        if (MOCK_MAP.size() < 10000) {
+            MOCK_MAP.put(mockService, invoker);
+        }
+        return invoker;
     }
 
     @Override
