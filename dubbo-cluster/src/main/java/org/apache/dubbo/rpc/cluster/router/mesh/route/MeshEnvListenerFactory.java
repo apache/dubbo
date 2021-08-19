@@ -14,22 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
-/**
- * Mesh Rule Listener
- * Such as Kubernetes, Service Mesh (xDS) environment support define rule in env
- */
-public interface MeshEnvListener {
-    /**
-     * @return whether current environment support listen
-     */
-    default boolean isEnable() {
-        return false;
-    }
+import org.apache.dubbo.common.extension.SPI;
 
-    void onSubscribe(String appName, MeshAppRuleListener listener);
-
-    void onUnSubscribe(String appName);
+@SPI
+public interface MeshEnvListenerFactory {
+    MeshEnvListener getListener();
 }
