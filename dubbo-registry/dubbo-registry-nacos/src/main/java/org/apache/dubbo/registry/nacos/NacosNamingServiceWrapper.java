@@ -74,6 +74,10 @@ public class NacosNamingServiceWrapper {
         return namingService.selectInstances(handleInnerSymbol(serviceName), healthy);
     }
 
+    public List<Instance> selectInstances(String serviceName, String group, boolean healthy) throws NacosException {
+        return namingService.selectInstances(handleInnerSymbol(serviceName), group, healthy);
+    }
+
     public void shutdown() throws NacosException {
         this.namingService.shutDown();
     }
