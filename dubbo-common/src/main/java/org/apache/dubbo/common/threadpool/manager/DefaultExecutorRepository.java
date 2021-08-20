@@ -353,13 +353,12 @@ public class DefaultExecutorRepository implements ExecutorRepository {
             }
         });
 
-        // TODO shutdown all executor services
-//        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
-//            executorService.shutdown();
-//        }
-//
-//        for (ExecutorService executorService : executorServiceRing.listItems()) {
-//            executorService.shutdown();
-//        }
+        for (ScheduledExecutorService executorService : scheduledExecutors.listItems()) {
+            executorService.shutdown();
+        }
+
+        for (ExecutorService executorService : executorServiceRing.listItems()) {
+            executorService.shutdown();
+        }
     }
 }
