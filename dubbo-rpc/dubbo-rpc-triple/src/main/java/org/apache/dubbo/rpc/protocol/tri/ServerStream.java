@@ -73,16 +73,17 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
             super.onMetadata(metadata, endStream, handler);
-            if (getMethodDescriptor().getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM) {
-                final RpcInvocation inv = buildInvocation(metadata);
-                inv.setArguments(new Object[]{asStreamObserver()});
-                final Result result = getInvoker().invoke(inv);
-                try {
-                    subscribe((StreamObserver<Object>) result.getValue());
-                } catch (Throwable t) {
-                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                            .withDescription("Failed to create server's observer"));
-                }
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
+            final RpcInvocation inv = buildInvocation(metadata);
+            inv.setArguments(new Object[]{asStreamObserver()});
+            final Result result = getInvoker().invoke(inv);
+            try {
+                subscribe((StreamObserver<Object>) result.getValue());
+            } catch (Throwable t) {
+                transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription("Failed to create server's observer"));
             }
         }
 
@@ -91,12 +92,12 @@ public class ServerStream extends AbstractServerStream implements Stream {
             try {
                 final Object[] arguments = deserializeRequest(in);
                 if (arguments != null) {
-                    if (getMethodDescriptor().getRpcType() != MethodDescriptor.RpcType.SERVER_STREAM) {
-                        getStreamSubscriber().onNext(arguments[0]);
-                    } else {
+                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                         final RpcInvocation inv = buildInvocation(getHeaders());
                         inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
                         getInvoker().invoke(inv);
+                    } else {
+                        getStreamSubscriber().onNext(arguments[0]);
                     }
                 }
             } catch (Throwable t) {
@@ -108,6 +109,9 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
             getStreamSubscriber().onCompleted();
         }
     }
