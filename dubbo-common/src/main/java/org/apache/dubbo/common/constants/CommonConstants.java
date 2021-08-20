@@ -415,4 +415,9 @@ public interface CommonConstants {
     String DISPATHER = "dispather";
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+
+    /**
+     * The key name for provider startup timestamp
+     */
+    String REMOTE_TIMESTAMP_KEY = "remote.timestamp";
 }

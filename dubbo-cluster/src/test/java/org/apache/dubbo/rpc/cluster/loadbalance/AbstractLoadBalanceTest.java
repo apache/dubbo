@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import java.util.HashMap;
 import java.util.List;
 
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_KEY;
 import static org.apache.dubbo.rpc.cluster.Constants.WEIGHT_KEY;
@@ -50,12 +51,12 @@ public class AbstractLoadBalanceTest {
 
         Invoker invoker1 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         URL url1 = new URL("", "", 0, "DemoService", new HashMap<>());
-        url1 = url1.addParameter(TIMESTAMP_KEY, System.currentTimeMillis() - Integer.MAX_VALUE - 1);
+        url1 = url1.addParameter(REMOTE_TIMESTAMP_KEY, System.currentTimeMillis() - Integer.MAX_VALUE - 1);
         given(invoker1.getUrl()).willReturn(url1);
 
         Invoker invoker2 = mock(Invoker.class, Mockito.withSettings().stubOnly());
         URL url2 = new URL("", "", 0, "DemoService", new HashMap<>());
-        url2 = url2.addParameter(TIMESTAMP_KEY, System.currentTimeMillis() - 10 * 60 * 1000L - 1);
+        url2 = url2.addParameter(REMOTE_TIMESTAMP_KEY, System.currentTimeMillis() - Integer.MAX_VALUE - 1);
         given(invoker2.getUrl()).willReturn(url2);
 
         Assertions.assertEquals(balance.getWeight(invoker1, invocation), balance.getWeight(invoker2, invocation));

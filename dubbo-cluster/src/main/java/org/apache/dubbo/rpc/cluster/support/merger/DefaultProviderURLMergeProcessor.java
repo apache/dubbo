@@ -42,6 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREAD_NAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.GENERIC_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_TIMESTAMP_KEY;
 
 
 public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcessor {
@@ -76,15 +77,18 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
 
             map.remove(Constants.TRANSPORTER_KEY);
             map.remove(DEFAULT_KEY_PREFIX + Constants.TRANSPORTER_KEY);
+
+            // For loadBalance warmup, provider startup timestamp
+            map.put(REMOTE_TIMESTAMP_KEY, remoteMap.get(TIMESTAMP_KEY));
         }
 
         if (localParametersMap != null && localParametersMap.size() > 0) {
             Map<String, String> copyOfLocalMap = new HashMap<>(localParametersMap);
 
-            if(map.containsKey(GROUP_KEY)){
+            if (map.containsKey(GROUP_KEY)) {
                 copyOfLocalMap.remove(GROUP_KEY);
             }
-            if(map.containsKey(VERSION_KEY)){
+            if (map.containsKey(VERSION_KEY)) {
                 copyOfLocalMap.remove(VERSION_KEY);
             }
             if (map.containsKey(GENERIC_KEY)) {
@@ -94,7 +98,7 @@ public class DefaultProviderURLMergeProcessor implements ProviderURLMergeProcess
             copyOfLocalMap.remove(RELEASE_KEY);
             copyOfLocalMap.remove(DUBBO_VERSION_KEY);
             copyOfLocalMap.remove(METHODS_KEY);
-//            copyOfLocalMap.remove(TIMESTAMP_KEY);
+            copyOfLocalMap.remove(TIMESTAMP_KEY);
             copyOfLocalMap.remove(TAG_KEY);
 
             map.putAll(copyOfLocalMap);

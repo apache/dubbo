@@ -37,6 +37,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.QUEUES_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_FILTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.RELEASE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADPOOL_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
@@ -72,7 +73,7 @@ public class ClusterUtilsTest {
                 .addParameter(DEFAULT_KEY_PREFIX + THREAD_NAME_KEY, "test")
                 .addParameter(APPLICATION_KEY, "provider")
                 .addParameter(REFERENCE_FILTER_KEY, "filter1,filter2")
-                .addParameter(TAG_KEY,"TTT")
+                .addParameter(TAG_KEY, "TTT")
                 .build();
 
         URL consumerURL = new URLBuilder(DUBBO_PROTOCOL, "localhost", 55555)
@@ -80,7 +81,7 @@ public class ClusterUtilsTest {
                 .addParameter(THREADPOOL_KEY, "foo")
                 .addParameter(APPLICATION_KEY, "consumer")
                 .addParameter(REFERENCE_FILTER_KEY, "filter3")
-                .addParameter(TAG_KEY,"UUU")
+                .addParameter(TAG_KEY, "UUU")
                 .build();
 
         URL url = ClusterUtils.mergeUrl(providerURL, consumerURL.getParameters());
@@ -120,53 +121,54 @@ public class ClusterUtilsTest {
         URL localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
                 "&methods=local&tag=local&timestamp=local");
         URL remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=remote&group=remote&dubbo=remote&release=remote" +
-                "&methods=remote&tag=remote&timestamp=remote");
-        URL mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
+                "&methods=remote&tag=remote&timestamp=remote&remote.timestamp=remote");
+        URL mergedURL = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertEquals(remoteURL.getParameter(VERSION_KEY), mergedUrl.getParameter(VERSION_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(GROUP_KEY), mergedUrl.getParameter(GROUP_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(DUBBO_VERSION_KEY), mergedUrl.getParameter(DUBBO_VERSION_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(RELEASE_KEY), mergedUrl.getParameter(RELEASE_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(METHODS_KEY), mergedUrl.getParameter(METHODS_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(TIMESTAMP_KEY), mergedUrl.getParameter(TIMESTAMP_KEY));
-        Assertions.assertEquals(remoteURL.getParameter(TAG_KEY), mergedUrl.getParameter(TAG_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(VERSION_KEY), mergedURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(GROUP_KEY), mergedURL.getParameter(GROUP_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(DUBBO_VERSION_KEY), mergedURL.getParameter(DUBBO_VERSION_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(RELEASE_KEY), mergedURL.getParameter(RELEASE_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(METHODS_KEY), mergedURL.getParameter(METHODS_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(TIMESTAMP_KEY), mergedURL.getParameter(TIMESTAMP_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(REMOTE_TIMESTAMP_KEY), mergedURL.getParameter(REMOTE_TIMESTAMP_KEY));
+        Assertions.assertEquals(remoteURL.getParameter(TAG_KEY), mergedURL.getParameter(TAG_KEY));
 
         // present in local url but not in remote url, parameters of remote url is empty
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
                 "&methods=local&tag=local&timestamp=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService");
-        mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
+        mergedURL = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
-        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(TIMESTAMP_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(TAG_KEY));
+        Assertions.assertEquals(mergedURL.getParameter(VERSION_KEY), localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedURL.getParameter(GROUP_KEY), localURL.getParameter(GROUP_KEY));
+        Assertions.assertNull(mergedURL.getParameter(DUBBO_VERSION_KEY));
+        Assertions.assertNull(mergedURL.getParameter(RELEASE_KEY));
+        Assertions.assertNull(mergedURL.getParameter(METHODS_KEY));
+        Assertions.assertNull(mergedURL.getParameter(TIMESTAMP_KEY));
+        Assertions.assertNull(mergedURL.getParameter(TAG_KEY));
 
         // present in local url but not in remote url
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?version=local&group=local&dubbo=local&release=local" +
                 "&methods=local&tag=local&timestamp=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?key=value");
-        mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
+        mergedURL = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertEquals(mergedUrl.getParameter(VERSION_KEY),localURL.getParameter(VERSION_KEY));
-        Assertions.assertEquals(mergedUrl.getParameter(GROUP_KEY),localURL.getParameter(GROUP_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(DUBBO_VERSION_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(RELEASE_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(METHODS_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(TIMESTAMP_KEY));
-        Assertions.assertNull(mergedUrl.getParameter(TAG_KEY));
+        Assertions.assertEquals(mergedURL.getParameter(VERSION_KEY), localURL.getParameter(VERSION_KEY));
+        Assertions.assertEquals(mergedURL.getParameter(GROUP_KEY), localURL.getParameter(GROUP_KEY));
+        Assertions.assertNull(mergedURL.getParameter(DUBBO_VERSION_KEY));
+        Assertions.assertNull(mergedURL.getParameter(RELEASE_KEY));
+        Assertions.assertNull(mergedURL.getParameter(METHODS_KEY));
+        Assertions.assertNull(mergedURL.getParameter(TIMESTAMP_KEY));
+        Assertions.assertNull(mergedURL.getParameter(TAG_KEY));
 
         // present in both local and remote, uses local url params
         localURL = URL.valueOf("dubbo://localhost:20880/DemoService?loadbalance=local&timeout=1000&cluster=local");
         remoteURL = URL.valueOf("dubbo://localhost:20880/DemoService?loadbalance=remote&timeout=2000&cluster=remote");
-        mergedUrl = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
+        mergedURL = ClusterUtils.mergeUrl(remoteURL, localURL.getParameters());
 
-        Assertions.assertEquals(localURL.getParameter(CLUSTER_KEY), mergedUrl.getParameter(CLUSTER_KEY));
-        Assertions.assertEquals(localURL.getParameter(TIMEOUT_KEY), mergedUrl.getParameter(TIMEOUT_KEY));
-        Assertions.assertEquals(localURL.getParameter(LOADBALANCE_KEY), mergedUrl.getParameter(LOADBALANCE_KEY));
+        Assertions.assertEquals(localURL.getParameter(CLUSTER_KEY), mergedURL.getParameter(CLUSTER_KEY));
+        Assertions.assertEquals(localURL.getParameter(TIMEOUT_KEY), mergedURL.getParameter(TIMEOUT_KEY));
+        Assertions.assertEquals(localURL.getParameter(LOADBALANCE_KEY), mergedURL.getParameter(LOADBALANCE_KEY));
     }
 
 }
