@@ -566,7 +566,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
     }
 
 
-
     @SuppressWarnings({"unchecked", "rawtypes"})
     /**
      * always export injvm
