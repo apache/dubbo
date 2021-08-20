@@ -32,6 +32,7 @@ public class ModuleModel {
         this.applicationModel = applicationModel;
         extensionDirector = new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE);
         extensionDirector.addExtensionPostProcessor(new ModelAwarePostProcessor(this));
+        applicationModel.addModule(this);
     }
 
     public ApplicationModel getApplicationModel() {

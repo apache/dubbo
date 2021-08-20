@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.director;
+package org.apache.dubbo.common.extension.director.impl;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.director.FooFrameworkProvider;
 
-@SPI(scope = ExtensionScope.FRAMEWORK)
-public interface FrameworkService {
+public class TestFrameworkProvider implements FooFrameworkProvider {
+    @Override
+    public void process(URL url) {
 
+    }
 }

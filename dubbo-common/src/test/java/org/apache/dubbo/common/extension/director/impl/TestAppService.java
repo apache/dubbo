@@ -18,11 +18,14 @@ package org.apache.dubbo.common.extension.director.impl;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.director.FooAppProvider;
+import org.apache.dubbo.common.extension.director.FooAppService;
 import org.apache.dubbo.common.extension.director.FooFrameworkProvider;
 import org.apache.dubbo.common.extension.director.FooFrameworkService;
 import org.apache.dubbo.common.extension.director.FooModuleProvider;
 
-public class TestFrameworkService extends BaseTestService implements FooFrameworkService {
+public class TestAppService extends BaseTestService implements FooAppService {
+
+    private FooFrameworkService frameworkService;
 
     private FooFrameworkProvider frameworkProvider;
 
@@ -30,12 +33,12 @@ public class TestFrameworkService extends BaseTestService implements FooFramewor
 
     private FooModuleProvider moduleProvider;
 
-    public FooFrameworkProvider getFrameworkProvider() {
-        return frameworkProvider;
+    public FooFrameworkService getFrameworkService() {
+        return frameworkService;
     }
 
-    public void setFrameworkProvider(FooFrameworkProvider frameworkProvider) {
-        this.frameworkProvider = frameworkProvider;
+    public void setFrameworkService(FooFrameworkService frameworkService) {
+        this.frameworkService = frameworkService;
     }
 
     public FooAppProvider getAppProvider() {
@@ -52,6 +55,14 @@ public class TestFrameworkService extends BaseTestService implements FooFramewor
 
     public void setModuleProvider(FooModuleProvider moduleProvider) {
         this.moduleProvider = moduleProvider;
+    }
+
+    public FooFrameworkProvider getFrameworkProvider() {
+        return frameworkProvider;
+    }
+
+    public void setFrameworkProvider(FooFrameworkProvider frameworkProvider) {
+        this.frameworkProvider = frameworkProvider;
     }
 
     @Override

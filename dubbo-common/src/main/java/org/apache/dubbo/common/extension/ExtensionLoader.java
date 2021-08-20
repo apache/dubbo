@@ -734,6 +734,9 @@ public class ExtensionLoader<T> {
     }
 
     private T postProcessAfterInitialization(T instance, String name) throws Exception {
+        if (instance instanceof ExtensionDirectorAware) {
+            ((ExtensionDirectorAware) instance).setExtensionDirector(extensionDirector);
+        }
         if (extensionPostProcessors != null) {
             for (ExtensionPostProcessor processor : extensionPostProcessors) {
                 instance = (T) processor.postProcessAfterInitialization(instance, name);
@@ -1114,6 +1117,7 @@ public class ExtensionLoader<T> {
             instance = postProcessBeforeInitialization(instance, null);
             instance = injectExtension(instance);
             instance = postProcessAfterInitialization(instance, null);
+            initExtension(instance);
             return instance;
         } catch (Exception e) {
             throw new IllegalStateException("Can't create adaptive extension " + type + ", cause: " + e.getMessage(), e);

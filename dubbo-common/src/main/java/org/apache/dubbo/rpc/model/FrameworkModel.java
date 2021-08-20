@@ -19,15 +19,25 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
  */
 public class FrameworkModel {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
+
     private volatile static FrameworkModel defaultInstance;
 
     private final ExtensionDirector extensionDirector;
+
+    private Collection<ApplicationModel> applicationModels = Collections.synchronizedSet(new LinkedHashSet<>());
 
     public FrameworkModel() {
         extensionDirector = new ExtensionDirector(null, ExtensionScope.FRAMEWORK);
@@ -51,5 +61,17 @@ public class FrameworkModel {
 
     public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         return extensionDirector.getExtensionLoader(type);
+    }
+
+    public void addApplication(ApplicationModel model) {
+        this.applicationModels.add(model);
+    }
+
+    public void removeApplication(ApplicationModel model) {
+        this.applicationModels.remove(model);
+    }
+
+    public Collection<ApplicationModel> getApplicationModels() {
+        return applicationModels;
     }
 }

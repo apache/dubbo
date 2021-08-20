@@ -14,9 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.director.impl;
+package org.apache.dubbo.common.extension.director;
 
-import org.apache.dubbo.common.extension.director.ApplicationService;
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-public class TestApplicationService extends BaseTestService implements ApplicationService {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface FooFrameworkService {
+    @Adaptive
+    void process(URL url);
 }

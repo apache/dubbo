@@ -28,6 +28,8 @@ import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -50,6 +52,7 @@ public class ApplicationModel {
     public static final String NAME = "application";
     private static volatile ApplicationModel defaultInstance;
 
+    private Collection<ModuleModel> moduleModels = Collections.synchronizedSet(new LinkedHashSet<>());
     private AtomicBoolean initFlag = new AtomicBoolean(false);
     private Environment environment;
     private ConfigManager configManager;
@@ -62,6 +65,7 @@ public class ApplicationModel {
         this.frameworkModel = frameworkModel;
         extensionDirector = new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION);
         extensionDirector.addExtensionPostProcessor(new ModelAwarePostProcessor(this));
+        frameworkModel.addApplication(this);
     }
 
     public static ApplicationModel defaultModel() {
@@ -158,6 +162,18 @@ public class ApplicationModel {
 
     public String getName() {
         return getApplicationConfig().getName();
+    }
+
+    public void addModule(ModuleModel model) {
+        this.moduleModels.add(model);
+    }
+
+    public void removeModule(ModuleModel model) {
+        this.moduleModels.remove(model);
+    }
+
+    public Collection<ModuleModel> getModuleModels() {
+        return moduleModels;
     }
 
     // only for unit test

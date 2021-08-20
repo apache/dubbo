@@ -69,5 +69,10 @@ public enum ExtensionScope {
      * <li>Isolate extension data in different modules inside application</li>
      * </ol>
      */
-    MODULE
+    MODULE,
+
+    /**
+     * self-sufficient, creates an instance for per scope, for special SPI extension, like {@link ExtensionInjector}
+     */
+    SELF
 }

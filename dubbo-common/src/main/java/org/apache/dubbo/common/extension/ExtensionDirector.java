@@ -80,6 +80,14 @@ public class ExtensionDirector {
         // 1. find in local cache
         ExtensionLoader<T> loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
 
+        final SPI annotation = type.getAnnotation(SPI.class);
+        ExtensionScope scope = annotation.scope();
+
+        if (loader == null && scope == ExtensionScope.SELF) {
+            // create an instance in self scope
+            loader = createExtensionLoader0(type);
+        }
+
         // 2. find in parent
         if (loader == null) {
             if (this.parent != null) {
@@ -99,14 +107,20 @@ public class ExtensionDirector {
         ExtensionLoader<T> loader = null;
         if (isScopeMatched(type)) {
             // if scope is matched, just create it
-            extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this));
-            loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
+            loader = createExtensionLoader0(type);
         } else {
             // if scope is not matched, redirect to parent director
             if (this.parent != null) {
                 loader = this.parent.createExtensionLoader(type);
             }
         }
+        return loader;
+    }
+
+    private <T> ExtensionLoader<T> createExtensionLoader0(Class<T> type) {
+        ExtensionLoader<T> loader;
+        extensionLoadersMap.putIfAbsent(type, new ExtensionLoader<T>(type, this));
+        loader = (ExtensionLoader<T>) extensionLoadersMap.get(type);
         return loader;
     }
 

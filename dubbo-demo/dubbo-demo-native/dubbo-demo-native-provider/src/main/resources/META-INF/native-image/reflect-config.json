@@ -442,11 +442,11 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.apache.dubbo.common.extension.factory.AdaptiveExtensionFactory",
+  "name":"org.apache.dubbo.common.extension.inject.AdaptiveExtensionInjector",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.apache.dubbo.common.extension.factory.SpiExtensionFactory",
+  "name":"org.apache.dubbo.common.extension.inject.SpiExtensionInjector",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {

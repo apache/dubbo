@@ -14,39 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.factory;
+package org.apache.dubbo.common.extension.inject;
 
-import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * AdaptiveExtensionInjector
+ * SpiExtensionInjector
  */
-@Adaptive
-public class AdaptiveExtensionInjector implements ExtensionInjector {
+public class SpiExtensionInjector implements ExtensionInjector {
 
-    private final List<ExtensionInjector> factories;
+    private ExtensionDirector extensionDirector;
 
-    public AdaptiveExtensionInjector() {
-        ExtensionLoader<ExtensionInjector> loader = ExtensionLoader.getExtensionLoader(ExtensionInjector.class);
-        List<ExtensionInjector> list = new ArrayList<ExtensionInjector>();
-        for (String name : loader.getSupportedExtensions()) {
-            list.add(loader.getExtension(name));
-        }
-        factories = Collections.unmodifiableList(list);
+    @Override
+    public void setExtensionDirector(ExtensionDirector extensionDirector) {
+        this.extensionDirector = extensionDirector;
     }
 
     @Override
     public <T> T getInstance(Class<T> type, String name) {
-        for (ExtensionInjector factory : factories) {
-            T extension = factory.getInstance(type, name);
-            if (extension != null) {
-                return extension;
+        if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            ExtensionLoader<T> loader = extensionDirector.getExtensionLoader(type);
+            if (loader == null) {
+                return null;
+            }
+            if (!loader.getSupportedExtensions().isEmpty()) {
+                return loader.getAdaptiveExtension();
             }
         }
         return null;

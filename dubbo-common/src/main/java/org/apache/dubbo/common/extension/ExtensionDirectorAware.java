@@ -14,12 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension.director;
+package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
+/**
+ * SPI extension can implement this aware interface to obtain appropriate {@link ExtensionDirector} instance.
+ */
+public interface ExtensionDirectorAware {
 
-@SPI(scope = ExtensionScope.MODULE)
-public interface ModuleService {
+    void setExtensionDirector(ExtensionDirector extensionDirector);
 
 }

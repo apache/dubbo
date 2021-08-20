@@ -47,10 +47,6 @@ public class SpringExtensionInjector implements ExtensionInjector, Lifecycle {
         }
     }
 
-    public static void removeApplicationContext(ApplicationContext context) {
-        CONTEXTS.remove(context);
-    }
-
     public static Set<ApplicationContext> getContexts() {
         return CONTEXTS;
     }

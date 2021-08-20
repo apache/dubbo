@@ -1,2 +1,2 @@
-adaptive=org.apache.dubbo.common.extension.factory.AdaptiveExtensionInjector
-spi=org.apache.dubbo.common.extension.factory.SpiExtensionInjector
+adaptive=org.apache.dubbo.common.extension.inject.AdaptiveExtensionInjector
+spi=org.apache.dubbo.common.extension.inject.SpiExtensionInjector

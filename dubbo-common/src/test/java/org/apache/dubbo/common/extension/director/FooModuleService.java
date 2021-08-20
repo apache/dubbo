@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common.extension.director;
 
-/**
- * An injector to provide resources for SPI extension.
- */
-@SPI(scope = ExtensionScope.SELF)
-public interface ExtensionInjector extends ExtensionDirectorAware {
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.Adaptive;
+import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
-    /**
-     * Get instance of specify type and name.
-     *
-     * @param type object type.
-     * @param name object name.
-     * @return object instance.
-     */
-    <T> T getInstance(Class<T> type, String name);
+@SPI(scope = ExtensionScope.MODULE)
+public interface FooModuleService {
 
-    @Override
-    default void setExtensionDirector(ExtensionDirector extensionDirector) {
-    }
+    @Adaptive
+    void process(URL url);
+
 }
