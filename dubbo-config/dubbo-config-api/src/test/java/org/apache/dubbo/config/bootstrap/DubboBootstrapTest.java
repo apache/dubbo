@@ -174,6 +174,12 @@ public class DubboBootstrapTest {
     }
 
     @Test
+    public void testLoadUserMonitor_no_monitor() {
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(null), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertNull(url);
+    }
+
+    @Test
     public void testLoadUserMonitor_user() {
         // dubbo.monitor.protocol=user
         MonitorConfig monitorConfig = new MonitorConfig();
@@ -197,7 +203,9 @@ public class DubboBootstrapTest {
     private AbstractInterfaceConfigTest.InterfaceConfig getTestInterfaceConfig(MonitorConfig monitorConfig) {
         AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
         interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
-        interfaceConfig.setMonitor(monitorConfig);
+        if(monitorConfig!=null) {
+            interfaceConfig.setMonitor(monitorConfig);
+        }
         return interfaceConfig;
     }
 
