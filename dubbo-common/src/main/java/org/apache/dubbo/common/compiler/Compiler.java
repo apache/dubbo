@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.compiler;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  * Compiler. (SPI, Singleton, ThreadSafe)
  */
-@SPI("javassist")
+@SPI(value = "javassist", scope = ExtensionScope.FRAMEWORK)
 public interface Compiler {
 
     /**

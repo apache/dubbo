@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.status;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
  * StatusChecker
  */
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface StatusChecker {
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.convert.multiple;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
@@ -32,7 +33,7 @@ import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
  * @param <S> The source type
  * @since 2.7.6
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface MultiValueConverter<S> extends Prioritized {
 
     /**

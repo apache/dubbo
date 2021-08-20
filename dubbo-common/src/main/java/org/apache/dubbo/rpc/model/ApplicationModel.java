@@ -75,14 +75,6 @@ public class ApplicationModel {
         return defaultInstance;
     }
 
-    public FrameworkModel getFrameworkModel() {
-        return frameworkModel;
-    }
-
-    public ExtensionDirector getExtensionDirector() {
-        return extensionDirector;
-    }
-
     public void init() {
         if (initFlag.compareAndSet(false, true)) {
             ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
@@ -95,6 +87,18 @@ public class ApplicationModel {
 
     public void destroy() {
         // TODO destroy application resources
+    }
+
+    public FrameworkModel getFrameworkModel() {
+        return frameworkModel;
+    }
+
+    public ExtensionDirector getExtensionDirector() {
+        return extensionDirector;
+    }
+
+    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return extensionDirector.getExtensionLoader(type);
     }
 
     public Collection<ConsumerModel> allConsumerModels() {

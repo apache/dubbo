@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 
 /**
@@ -41,4 +42,7 @@ public class ModuleModel {
         return extensionDirector;
     }
 
+    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return extensionDirector.getExtensionLoader(type);
+    }
 }

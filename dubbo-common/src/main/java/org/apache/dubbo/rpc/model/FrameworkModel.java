@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 
 /**
@@ -33,10 +34,6 @@ public class FrameworkModel {
         extensionDirector.addExtensionPostProcessor(new ModelAwarePostProcessor(this));
     }
 
-    public ExtensionDirector getExtensionDirector() {
-        return extensionDirector;
-    }
-
     public static FrameworkModel defaultModel() {
         if (defaultInstance == null) {
             synchronized (FrameworkModel.class) {
@@ -46,5 +43,13 @@ public class FrameworkModel {
             }
         }
         return defaultInstance;
+    }
+
+    public ExtensionDirector getExtensionDirector() {
+        return extensionDirector;
+    }
+
+    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
+        return extensionDirector.getExtensionLoader(type);
     }
 }

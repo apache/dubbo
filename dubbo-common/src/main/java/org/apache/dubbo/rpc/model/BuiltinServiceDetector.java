@@ -16,9 +16,10 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 public interface BuiltinServiceDetector {
 
     Class<?> getService();

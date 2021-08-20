@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.status.reporter;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -28,7 +29,7 @@ import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.Set;
 
-@SPI
+@SPI(scope = ExtensionScope.APPLICATION)
 public interface FrameworkStatusReporter {
     static final Gson gson = new Gson();
     Logger logger = LoggerFactory.getLogger(FrameworkStatusReporter.class);

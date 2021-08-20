@@ -17,6 +17,7 @@
 package org.apache.dubbo.common.convert;
 
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.lang.Prioritized;
 
@@ -31,7 +32,7 @@ import static org.apache.dubbo.common.utils.TypeUtils.findActualTypeArgument;
  * @param <T> The target type
  * @since 2.7.6
  */
-@SPI
+@SPI(scope = ExtensionScope.FRAMEWORK)
 @FunctionalInterface
 public interface Converter<S, T> extends Prioritized {
 
