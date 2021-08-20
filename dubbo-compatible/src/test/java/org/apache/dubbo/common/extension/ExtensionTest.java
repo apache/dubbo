@@ -27,13 +27,15 @@ public class ExtensionTest {
     @Test
     public void testExtensionFactory() {
         try {
-            ExtensionFactory factory = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("myfactory");
-            Assertions.assertTrue(factory instanceof ExtensionFactory);
-            Assertions.assertTrue(factory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
-            Assertions.assertTrue(factory instanceof MyExtensionFactory);
+            ExtensionInjector myfactory = ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("myfactory");
+            Assertions.assertTrue(myfactory instanceof ExtensionInjector);
+            Assertions.assertTrue(myfactory instanceof ExtensionFactory);
+            Assertions.assertTrue(myfactory instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
+            Assertions.assertTrue(myfactory instanceof MyExtensionFactory);
 
-            ExtensionFactory spring = ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getExtension("spring");
-            Assertions.assertTrue(spring instanceof ExtensionFactory);
+            ExtensionInjector spring = ExtensionLoader.getExtensionLoader(ExtensionInjector.class).getExtension("spring");
+            Assertions.assertTrue(spring instanceof ExtensionInjector);
+            Assertions.assertFalse(spring instanceof ExtensionFactory);
             Assertions.assertFalse(spring instanceof com.alibaba.dubbo.common.extension.ExtensionFactory);
         } catch (IllegalArgumentException expected) {
             fail();

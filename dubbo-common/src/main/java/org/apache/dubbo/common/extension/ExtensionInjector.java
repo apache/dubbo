@@ -14,13 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.alibaba.dubbo.common.extension;
+package org.apache.dubbo.common.extension;
 
-import org.apache.dubbo.common.extension.ExtensionScope;
-import org.apache.dubbo.common.extension.SPI;
-
-@Deprecated
+/**
+ * An injector to provide resources for SPI extension.
+ */
 @SPI(scope = ExtensionScope.FRAMEWORK)
-public interface ExtensionFactory extends org.apache.dubbo.common.extension.ExtensionFactory {
+public interface ExtensionInjector {
+
+    /**
+     * Get instance of specify type and name.
+     *
+     * @param type object type.
+     * @param name object name.
+     * @return object instance.
+     */
+    <T> T getInstance(Class<T> type, String name);
 
 }

@@ -16,17 +16,17 @@
  */
 package org.apache.dubbo.common.extension.factory;
 
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
 
 /**
- * SpiExtensionFactory
+ * SpiExtensionInjector
  */
-public class SpiExtensionFactory implements ExtensionFactory {
+public class SpiExtensionInjector implements ExtensionInjector {
 
     @Override
-    public <T> T getExtension(Class<T> type, String name) {
+    public <T> T getInstance(Class<T> type, String name) {
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
             ExtensionLoader<T> loader = ExtensionLoader.getExtensionLoader(type);
             if (!loader.getSupportedExtensions().isEmpty()) {

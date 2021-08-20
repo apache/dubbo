@@ -17,7 +17,7 @@
 package org.apache.dubbo.common.extension.factory;
 
 import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
 import java.util.ArrayList;
@@ -25,16 +25,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * AdaptiveExtensionFactory
+ * AdaptiveExtensionInjector
  */
 @Adaptive
-public class AdaptiveExtensionFactory implements ExtensionFactory {
+public class AdaptiveExtensionInjector implements ExtensionInjector {
 
-    private final List<ExtensionFactory> factories;
+    private final List<ExtensionInjector> factories;
 
-    public AdaptiveExtensionFactory() {
-        ExtensionLoader<ExtensionFactory> loader = ExtensionLoader.getExtensionLoader(ExtensionFactory.class);
-        List<ExtensionFactory> list = new ArrayList<ExtensionFactory>();
+    public AdaptiveExtensionInjector() {
+        ExtensionLoader<ExtensionInjector> loader = ExtensionLoader.getExtensionLoader(ExtensionInjector.class);
+        List<ExtensionInjector> list = new ArrayList<ExtensionInjector>();
         for (String name : loader.getSupportedExtensions()) {
             list.add(loader.getExtension(name));
         }
@@ -42,9 +42,9 @@ public class AdaptiveExtensionFactory implements ExtensionFactory {
     }
 
     @Override
-    public <T> T getExtension(Class<T> type, String name) {
-        for (ExtensionFactory factory : factories) {
-            T extension = factory.getExtension(type, name);
+    public <T> T getInstance(Class<T> type, String name) {
+        for (ExtensionInjector factory : factories) {
+            T extension = factory.getInstance(type, name);
             if (extension != null) {
                 return extension;
             }

@@ -98,7 +98,7 @@ public class ExtensionLoader<T> {
 
     private final Class<?> type;
 
-    private final ExtensionFactory objectFactory;
+    private final ExtensionInjector injector;
 
     private final ConcurrentMap<Class<?>, String> cachedNames = new ConcurrentHashMap<>();
 
@@ -161,17 +161,16 @@ public class ExtensionLoader<T> {
         this.extensionDirector = extensionDirector;
         this.extensionPostProcessors = extensionDirector.getExtensionPostProcessors();
         this.type = type;
-        this.objectFactory = (type == ExtensionFactory.class ? null : extensionDirector.getExtensionLoader(ExtensionFactory.class)
+        this.injector = (type == ExtensionInjector.class ? null : extensionDirector.getExtensionLoader(ExtensionInjector.class)
             .getAdaptiveExtension());
     }
 
     /**
-     * @deprecated get extension loader from extension director of some module.
-     *
      * @see ApplicationModel#getExtensionDirector()
      * @see FrameworkModel#getExtensionDirector()
      * @see ModuleModel#getExtensionDirector()
      * @see ExtensionDirector#getExtensionLoader(java.lang.Class)
+     * @deprecated get extension loader from extension director of some module.
      */
     @Deprecated
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
@@ -749,7 +748,7 @@ public class ExtensionLoader<T> {
 
     private T injectExtension(T instance) {
 
-        if (objectFactory == null) {
+        if (injector == null) {
             return instance;
         }
 
@@ -771,7 +770,7 @@ public class ExtensionLoader<T> {
 
                 try {
                     String property = getSetterProperty(method);
-                    Object object = objectFactory.getExtension(pt, property);
+                    Object object = injector.getInstance(pt, property);
                     if (object != null) {
                         method.invoke(instance, object);
                     }
@@ -851,14 +850,23 @@ public class ExtensionLoader<T> {
         Map<String, Class<?>> extensionClasses = new HashMap<>();
 
         for (LoadingStrategy strategy : strategies) {
-            loadDirectory(extensionClasses, strategy.directory(), type.getName(), strategy.preferExtensionClassLoader(),
-                strategy.overridden(), strategy.excludedPackages());
-            String oldType = this.type.getName().replace("org.apache", "com.alibaba");
-            loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
-                strategy.overridden(), strategy.excludedPackages());
+            loadDirectory(extensionClasses, strategy, type.getName());
+
+            // compatible with old ExtensionFactory
+            if (this.type == ExtensionInjector.class) {
+                loadDirectory(extensionClasses, strategy, ExtensionFactory.class.getName());
+            }
         }
 
         return extensionClasses;
+    }
+
+    private void loadDirectory(Map<String, Class<?>> extensionClasses, LoadingStrategy strategy, String type) {
+        loadDirectory(extensionClasses, strategy.directory(), type, strategy.preferExtensionClassLoader(),
+            strategy.overridden(), strategy.excludedPackages());
+        String oldType = type.replace("org.apache", "com.alibaba");
+        loadDirectory(extensionClasses, strategy.directory(), oldType, strategy.preferExtensionClassLoader(),
+            strategy.overridden(), strategy.excludedPackages());
     }
 
     /**

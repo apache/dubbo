@@ -21,7 +21,7 @@ import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.context.event.ServiceBeanExportedEvent;
-import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
+import org.apache.dubbo.config.spring.extension.SpringExtensionInjector;
 import org.apache.dubbo.config.support.Parameter;
 
 import org.springframework.aop.support.AopUtils;
@@ -65,8 +65,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext;
-        //TODO remove SpringExtensionFactory.addApplicationContext();
-        SpringExtensionFactory.addApplicationContext(applicationContext);
+        //TODO remove SpringExtensionInjector.addApplicationContext();
+        SpringExtensionInjector.addApplicationContext(applicationContext);
     }
 
     @Override
@@ -126,7 +126,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
     @Override
     public void destroy() throws Exception {
         // no need to call unexport() here, see
-        // org.apache.dubbo.config.spring.extension.SpringExtensionFactory.ShutdownHookListener
+        // org.apache.dubbo.config.spring.extension.SpringExtensionInjector.ShutdownHookListener
     }
 
     // merged from dubbox
