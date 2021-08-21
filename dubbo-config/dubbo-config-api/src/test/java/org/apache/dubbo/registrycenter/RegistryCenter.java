@@ -18,6 +18,8 @@ package org.apache.dubbo.registrycenter;
 
 import org.apache.dubbo.rpc.RpcException;
 
+import java.util.List;
+
 /**
  * The mock registry center.
  */
@@ -25,13 +27,44 @@ public interface RegistryCenter {
 
     /**
      * Start the registry center.
+     *
      * @throws RpcException when an exception occurred
      */
     void startup() throws RpcException;
 
     /**
+     * Returns the registry center instance.
+     * <p>This method can be called only after {@link #startup()} is called</p>
+     *
+     * @throws RpcException when an exception occurred
+     */
+    List<Instance> getRegistryCenterInstance() throws RpcException;
+
+    /**
      * Stop the registry center.
+     *
      * @throws RpcException when an exception occurred
      */
     void shutdown() throws RpcException;
+
+    /**
+     * The registry center instance.
+     */
+    interface Instance {
+
+        /**
+         * Returns the registry center type.
+         */
+        String getType();
+
+        /**
+         * Returns the hostname of registry center.
+         */
+        String getHostname();
+
+        /**
+         * Returns the port of registry center.
+         */
+        int getPort();
+    }
 }

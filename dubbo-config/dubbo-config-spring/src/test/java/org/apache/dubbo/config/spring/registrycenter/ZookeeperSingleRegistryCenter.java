@@ -16,30 +16,29 @@
  */
 package org.apache.dubbo.config.spring.registrycenter;
 
-import org.apache.dubbo.config.spring.EmbeddedZooKeeper;
+/**
+ * The default zookeeper single registry center.
+ */
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
-public class ZooKeeperServer {
-
-    private static EmbeddedZooKeeper zookeeper1;
-    private static EmbeddedZooKeeper zookeeper2;
-
-    public static void start() {
-            if (zookeeper1 == null) {
-                zookeeper1 = new EmbeddedZooKeeper(2181, true);
-                zookeeper1.start();
-            }
-            if (zookeeper2 == null) {
-                zookeeper2 = new EmbeddedZooKeeper(2182, true);
-                zookeeper2.start();
-            }
+    /**
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
+     */
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
     }
 
-    public static void shutdown() {
-        if (zookeeper1 != null) {
-            zookeeper1.stop();
-        }
-        if (zookeeper2 != null) {
-            zookeeper2.stop();
-        }
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
     }
+
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }
