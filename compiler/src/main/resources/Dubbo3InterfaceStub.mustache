@@ -1,5 +1,5 @@
 {{#packageName}}
-    package {{packageName}};
+package {{packageName}};
 {{/packageName}}
 
 import java.util.concurrent.CompletableFuture;
@@ -18,11 +18,37 @@ static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
     // FIXME, initialize Dubbo3 stub when interface loaded, thinking of new ways doing this.
     static final boolean inited = {{className}}.init();
 
-{{#methods}}
+{{#unaryMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
     {{outputType}} {{methodName}}({{inputType}} request);
 
     CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request);
 
-{{/methods}}
+{{/unaryMethods}}
+
+{{#serverStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    void {{methodName}}({{inputType}} request, org.apache.dubbo.common.stream.StreamObserver<{{outputType}}> responseObserver);
+{{/serverStreamingMethods}}
+
+{{#biStreamingMethods}}
+    {{#javaDoc}}
+        {{{javaDoc}}}
+    {{/javaDoc}}
+    {{#deprecated}}
+        @java.lang.Deprecated
+    {{/deprecated}}
+    org.apache.dubbo.common.stream.StreamObserver<{{inputType}}> {{methodName}}(org.apache.dubbo.common.stream.StreamObserver<{{outputType}}> responseObserver);
+{{/biStreamingMethods}}
 
 }

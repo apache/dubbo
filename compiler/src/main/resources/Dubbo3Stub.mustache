@@ -17,7 +17,7 @@ private static final AtomicBoolean registered = new AtomicBoolean();
 public static boolean init() {
     if (registered.compareAndSet(false, true)) {
         {{#methodTypes}}
-            org.apache.dubbo.common.serialize.protobuf.support.ProtobufUtils.marshaller(
+            org.apache.dubbo.rpc.protocol.tri.SingleProtobufUtils.marshaller(
             {{.}}.getDefaultInstance());
         {{/methodTypes}}
     }
