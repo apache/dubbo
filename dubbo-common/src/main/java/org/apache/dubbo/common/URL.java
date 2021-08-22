@@ -55,6 +55,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PASSWORD_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PATH_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.USERNAME_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
@@ -1690,6 +1691,9 @@ class URL implements Serializable {
                 if (key.equals(TIMESTAMP_KEY)) {
                     continue;
                 }
+                if (key.equals(REMOTE_TIMESTAMP_KEY)) {
+                    continue;
+                }
                 if (!parameters.get(key).equals(other.parameters.get(key))) {
                     return false;
                 }
@@ -1718,6 +1722,9 @@ class URL implements Serializable {
         int h = 0;
         for (Map.Entry<String, String> next : parameters.entrySet()) {
             if (TIMESTAMP_KEY.equals(next.getKey())) {
+                continue;
+            }
+            if (REMOTE_TIMESTAMP_KEY.equals(next.getKey())) {
                 continue;
             }
 
