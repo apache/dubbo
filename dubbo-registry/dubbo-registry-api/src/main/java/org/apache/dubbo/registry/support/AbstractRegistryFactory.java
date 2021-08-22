@@ -75,11 +75,11 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
 
     public static List<ServiceDiscovery> getServiceDiscoveries() {
         return AbstractRegistryFactory.getRegistries()
-                .stream()
-                .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
-                .map(registry -> (ServiceDiscoveryRegistry) registry)
-                .map(ServiceDiscoveryRegistry::getServiceDiscovery)
-                .collect(Collectors.toList());
+            .stream()
+            .filter(registry -> registry instanceof ServiceDiscoveryRegistry)
+            .map(registry -> (ServiceDiscoveryRegistry) registry)
+            .map(ServiceDiscoveryRegistry::getServiceDiscovery)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -121,7 +121,7 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
     private Registry getDefaultNopRegistryIfDestroyed() {
         if (destroyed.get()) {
             LOGGER.warn("All registry instances have been destroyed, failed to fetch any instance. " +
-                    "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
+                "Usually, this means no need to try to do unnecessary redundant resource clearance, all registries has been taken care of.");
             return DEFAULT_NOP_REGISTRY;
         }
         return null;
@@ -136,10 +136,10 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
         }
 
         url = URLBuilder.from(url)
-                .setPath(RegistryService.class.getName())
-                .addParameter(INTERFACE_KEY, RegistryService.class.getName())
-                .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
-                .build();
+            .setPath(RegistryService.class.getName())
+            .addParameter(INTERFACE_KEY, RegistryService.class.getName())
+            .removeParameters(EXPORT_KEY, REFER_KEY, TIMESTAMP_KEY)
+            .build();
         String key = createRegistryCacheKey(url);
         // Lock the registry access process to ensure a single instance of the registry
         LOCK.lock();
@@ -162,6 +162,9 @@ public abstract class AbstractRegistryFactory implements RegistryFactory {
             }
             REGISTRIES.put(key, registry);
             return registry;
+        } catch (Exception e) {
+            LOGGER.error(e);
+            throw new IllegalStateException("Can not create registry " + url);
         } finally {
             // Release the lock
             LOCK.unlock();
