@@ -415,4 +415,6 @@ public interface CommonConstants {
     String DISPATHER = "dispather";
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
+    
+    String ASYNC_METHODS_HASHCODE_KEY = "async-methods-hashcode";
 }

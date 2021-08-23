@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.proxy;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ReflectUtils;
@@ -58,7 +59,13 @@ public class InvokerInvocationHandler implements InvocationHandler {
         String serviceKey = this.url.getServiceKey();
         this.protocolServiceKey = this.url.getProtocolServiceKey();
         if (serviceKey != null) {
-            this.consumerModel = ApplicationModel.getConsumerModel(serviceKey);
+            String consumerModelKey = null;
+            if (this.url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+                consumerModelKey = serviceKey;
+            } else {
+                consumerModelKey = serviceKey + this.url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+            }
+            this.consumerModel = ApplicationModel.getConsumerModel(consumerModelKey);
         }
     }
 

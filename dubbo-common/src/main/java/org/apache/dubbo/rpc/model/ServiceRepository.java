@@ -93,21 +93,22 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         services.remove(path);
     }
 
-    public void registerConsumer(String serviceKey,
+    public void registerConsumer(String consumerModelKey,
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
                                  ServiceMetadata serviceMetadata) {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
                 serviceMetadata);
-        consumers.putIfAbsent(serviceKey, consumerModel);
+        consumers.putIfAbsent(consumerModelKey, consumerModel);
     }
 
-    public void reRegisterConsumer(String newServiceKey, String serviceKey) {
-        ConsumerModel consumerModel = consumers.get(serviceKey);
+    public void reRegisterConsumer(String newServiceKey, String serviceKey,
+            String newConsumerModelKey, String consumerModelKey) {
+        ConsumerModel consumerModel = consumers.get(consumerModelKey);
         consumerModel.setServiceKey(newServiceKey);
-        consumers.putIfAbsent(newServiceKey, consumerModel);
-        consumers.remove(serviceKey);
+        consumers.putIfAbsent(newConsumerModelKey, consumerModel);
+        consumers.remove(consumerModelKey);
 
     }
 
@@ -170,8 +171,8 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         return Collections.unmodifiableList(new ArrayList<>(consumers.values()));
     }
 
-    public ConsumerModel lookupReferredService(String serviceKey) {
-        return consumers.get(serviceKey);
+    public ConsumerModel lookupReferredService(String consumerModelKey) {
+        return consumers.get(consumerModelKey);
     }
 
     @Override

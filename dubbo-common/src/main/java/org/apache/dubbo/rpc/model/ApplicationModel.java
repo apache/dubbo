@@ -71,8 +71,8 @@ public class ApplicationModel {
         return getServiceRepository().lookupExportedService(serviceKey);
     }
 
-    public static ConsumerModel getConsumerModel(String serviceKey) {
-        return getServiceRepository().lookupReferredService(serviceKey);
+    public static ConsumerModel getConsumerModel(String consumerModelKey) {
+        return getServiceRepository().lookupReferredService(consumerModelKey);
     }
 
     private static final ExtensionLoader<FrameworkExt> LOADER = ExtensionLoader.getExtensionLoader(FrameworkExt.class);

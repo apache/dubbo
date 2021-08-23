@@ -53,6 +53,8 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -62,6 +64,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
+import static org.apache.dubbo.common.constants.CommonConstants.ASYNC_METHODS_HASHCODE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
@@ -244,12 +247,37 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             bootstrap.initialize();
         }
 
-        checkAndUpdateSubConfigs();
+        Map<String, String> map = new HashMap<String, String>();
+        Map<String, AsyncMethodInfo> attributes = null;
+        if (CollectionUtils.isNotEmpty(getMethods())) {
+            attributes = new HashMap<>();
+            for (MethodConfig methodConfig : getMethods()) {
+                AbstractConfig.appendParameters(map, methodConfig, methodConfig.getName());
+                String retryKey = methodConfig.getName() + ".retry";
+                if (map.containsKey(retryKey)) {
+                    String retryValue = map.remove(retryKey);
+                    if ("false".equals(retryValue)) {
+                        map.put(methodConfig.getName() + ".retries", "0");
+                    }
+                }
+                AsyncMethodInfo asyncMethodInfo = AbstractConfig.convertMethodConfig2AsyncInfo(methodConfig);
+                if (asyncMethodInfo != null) {
+//                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(ASYNC_KEY, asyncMethodInfo);
+                    attributes.put(methodConfig.getName(), asyncMethodInfo);
+                }
+            }
+        }
+
+        String asyncMethodsJsonHashcode = null;
+        if (!CollectionUtils.isEmptyMap(attributes)) {
+            asyncMethodsJsonHashcode = String.valueOf(JSON.toJSONString(attributes).hashCode());
+            map.put(ASYNC_METHODS_HASHCODE_KEY, asyncMethodsJsonHashcode);
+        }
+        checkAndUpdateSubConfigs(asyncMethodsJsonHashcode);
 
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
 
-        Map<String, String> map = new HashMap<String, String>();
         map.put(SIDE_KEY, CONSUMER_SIDE);
 
         ReferenceConfigBase.appendRuntimeParameters(map);
@@ -279,25 +307,6 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         if (metadataReportConfig != null && metadataReportConfig.isValid()) {
             map.putIfAbsent(METADATA_KEY, REMOTE_METADATA_STORAGE_TYPE);
         }
-        Map<String, AsyncMethodInfo> attributes = null;
-        if (CollectionUtils.isNotEmpty(getMethods())) {
-            attributes = new HashMap<>();
-            for (MethodConfig methodConfig : getMethods()) {
-                AbstractConfig.appendParameters(map, methodConfig, methodConfig.getName());
-                String retryKey = methodConfig.getName() + ".retry";
-                if (map.containsKey(retryKey)) {
-                    String retryValue = map.remove(retryKey);
-                    if ("false".equals(retryValue)) {
-                        map.put(methodConfig.getName() + ".retries", "0");
-                    }
-                }
-                AsyncMethodInfo asyncMethodInfo = AbstractConfig.convertMethodConfig2AsyncInfo(methodConfig);
-                if (asyncMethodInfo != null) {
-//                    consumerModel.getMethodModel(methodConfig.getName()).addAttribute(ASYNC_KEY, asyncMethodInfo);
-                    attributes.put(methodConfig.getName(), asyncMethodInfo);
-                }
-            }
-        }
 
         String hostToRegistry = ConfigUtils.getSystemProperty(DUBBO_IP_TO_REGISTRY);
         if (StringUtils.isEmpty(hostToRegistry)) {
@@ -314,7 +323,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
-        ConsumerModel consumerModel = repository.lookupReferredService(serviceMetadata.getServiceKey());
+        String consumerModelKey = null;
+        if (asyncMethodsJsonHashcode == null) {
+            consumerModelKey = serviceMetadata.getServiceKey();
+        } else {
+            consumerModelKey = serviceMetadata.getServiceKey() +  asyncMethodsJsonHashcode;
+        }
+        ConsumerModel consumerModel = repository.lookupReferredService(consumerModelKey);
         consumerModel.setProxyObject(ref);
         consumerModel.init(attributes);
 
@@ -436,7 +451,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
      * Check each config modules are created properly and override their properties if necessary.
      */
-    public void checkAndUpdateSubConfigs() {
+    public void checkAndUpdateSubConfigs(String asyncMethodsJsonHashcode) {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
@@ -472,8 +487,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
+        String consumerModelKey = null;
+        if (asyncMethodsJsonHashcode == null) {
+            consumerModelKey = serviceMetadata.getServiceKey();
+        } else {
+            consumerModelKey = serviceMetadata.getServiceKey() +  asyncMethodsJsonHashcode;
+        }
         repository.registerConsumer(
-                serviceMetadata.getServiceKey(),
+                consumerModelKey,
                 serviceDescriptor,
                 this,
                 null,

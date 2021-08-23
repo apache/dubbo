@@ -187,7 +187,14 @@ public class FutureFilter implements Filter, Filter.Listener {
             return asyncMethodInfo;
         }
 
-        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(invoker.getUrl().getServiceKey());
+        String consumerModelKey = null;
+        if (invoker.getUrl().getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+            consumerModelKey = invoker.getUrl().getServiceKey();
+        } else {
+            consumerModelKey = invoker.getUrl().getServiceKey() 
+                    + invoker.getUrl().getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+        }
+        ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerModelKey);
         if (consumerModel == null) {
             return null;
         }

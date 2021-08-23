@@ -23,6 +23,7 @@ import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.api.MethodCallback;
 import org.apache.dubbo.config.spring.context.annotation.provider.ProviderConfiguration;
 import org.apache.dubbo.config.spring.impl.MethodCallbackImpl;
+import org.apache.dubbo.config.spring.impl.MethodCallbackImpl2;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -67,12 +68,23 @@ public class MethodConfigCallbackTest {
                     onthrow = "methodCallback.onthrow")})
     private HelloService helloServiceMethodCallBack;
 
+    @DubboReference(check = false,
+            methods = {@Method(name = "sayHello",
+                    oninvoke = "methodCallback2.oninvoke",
+                    onreturn = "methodCallback2.onreturn",
+                    onthrow = "methodCallback2.onthrow")})
+    private HelloService helloServiceMethodCallBack2;
+    
     @Test
     public void testMethodAnnotationCallBack() {
         helloServiceMethodCallBack.sayHello("dubbo");
+        helloServiceMethodCallBack2.sayHello("dubbo(2)");
         MethodCallback notify = (MethodCallback) context.getBean("methodCallback");
         Assertions.assertEquals("dubbo invoke success", notify.getOnInvoke());
         Assertions.assertEquals("dubbo return success", notify.getOnReturn());
+        MethodCallback notify2 = (MethodCallback) context.getBean("methodCallback2");
+        Assertions.assertEquals("dubbo invoke success(2)", notify2.getOnInvoke());
+        Assertions.assertEquals("dubbo return success(2)", notify2.getOnReturn());
     }
 
     @Configuration
@@ -81,6 +93,11 @@ public class MethodConfigCallbackTest {
         @Bean("methodCallback")
         public MethodCallback methodCallback() {
             return new MethodCallbackImpl();
+        }
+
+        @Bean("methodCallback2")
+        public MethodCallback methodCallback2() {
+            return new MethodCallbackImpl2();
         }
 
     }

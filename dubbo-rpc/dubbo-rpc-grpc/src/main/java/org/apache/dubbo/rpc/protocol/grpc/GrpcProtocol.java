@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc.protocol.grpc;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.ProtocolServer;
@@ -115,11 +116,17 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         // CallOptions
         try {
+            String consumerModelKey = null;
+            if (url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+                consumerModelKey = url.getServiceKey();
+            } else {
+                consumerModelKey = url.getServiceKey() + url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+            }
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    ApplicationModel.getConsumerModel(url.getServiceKey()).getReferenceConfig()
+                    ApplicationModel.getConsumerModel(consumerModelKey).getReferenceConfig()
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);
