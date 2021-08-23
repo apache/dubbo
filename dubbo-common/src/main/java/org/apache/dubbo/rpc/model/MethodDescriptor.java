@@ -38,6 +38,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.PROTOBUF_MESSAGE
  *
  */
 public class MethodDescriptor {
+    private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
     private final Method method;
     //    private final boolean isCallBack;
     //    private final boolean isFuture;
@@ -49,10 +50,9 @@ public class MethodDescriptor {
     private final Type[] returnTypes;
     private final String methodName;
     private final boolean generic;
+    private final boolean wrap;
     private final RpcType rpcType;
-
     private final ConcurrentMap<String, Object> attributeMap = new ConcurrentHashMap<>();
-    private static final Logger logger = LoggerFactory.getLogger(MethodDescriptor.class);
 
     public MethodDescriptor(Method method) {
         this.method = method;
@@ -63,20 +63,18 @@ public class MethodDescriptor {
                     (Class<?>) ((ParameterizedType) method.getGenericReturnType()).getActualTypeArguments()[0]};
             this.returnClass = (Class<?>) ((ParameterizedType) method.getGenericParameterTypes()[0])
                     .getActualTypeArguments()[0];
-            if (needWrap()) {
-                rpcType = RpcType.STREAM_WRAP;
-            } else {
-                rpcType = RpcType.STREAM_UNWRAP;
-            }
+            this.rpcType = RpcType.BIDIRECTIONAL_STREAM;
+        } else if (parameterTypes.length == 2 && method.getReturnType().equals(Void.TYPE)
+                && !isStreamType(parameterTypes[0]) && isStreamType(parameterTypes[1])) {
+            this.parameterClasses = method.getParameterTypes();
+            this.returnClass = (Class<?>) ((ParameterizedType)method.getGenericParameterTypes()[1]).getActualTypeArguments()[0];
+            this.rpcType = RpcType.SERVER_STREAM;
         } else {
             this.parameterClasses = method.getParameterTypes();
             this.returnClass = method.getReturnType();
-            if (needWrap()) {
-                rpcType = RpcType.UNARY_WRAP;
-            } else {
-                rpcType = RpcType.UNARY_UNWRAP;
-            }
+            this.rpcType = RpcType.UNARY;
         }
+        this.wrap = needWrap();
         Type[] returnTypesResult;
         try {
             returnTypesResult = ReflectUtils.getReturnTypes(method);
@@ -98,15 +96,19 @@ public class MethodDescriptor {
     }
 
     public boolean isStream() {
-        return rpcType.equals(RpcType.STREAM_WRAP) || rpcType.equals(RpcType.STREAM_UNWRAP);
+        return rpcType.equals(RpcType.SERVER_STREAM) || rpcType.equals(RpcType.BIDIRECTIONAL_STREAM) || rpcType.equals(RpcType.CLIENT_STREAM);
     }
 
     public boolean isUnary() {
-        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.UNARY_UNWRAP);
+        return rpcType.equals(RpcType.UNARY);
     }
 
     public boolean isNeedWrap() {
-        return rpcType.equals(RpcType.UNARY_WRAP) || rpcType.equals(RpcType.STREAM_WRAP);
+        return wrap;
+    }
+
+    public RpcType getRpcType() {
+        return rpcType;
     }
 
     private boolean needWrap() {
@@ -115,7 +117,7 @@ public class MethodDescriptor {
         } else if ($ECHO.equals(methodName)) {
             return true;
         } else {
-            if (parameterClasses.length != 1 || parameterClasses[0] == null) {
+            if ((rpcType != RpcType.SERVER_STREAM && parameterClasses.length != 1) || parameterClasses[0] == null) {
                 return true;
             }
 
@@ -129,10 +131,8 @@ public class MethodDescriptor {
                         }
                     }
                 }
-
                 clazz = clazz.getSuperclass();
             }
-
             return true;
         }
     }
@@ -182,10 +182,7 @@ public class MethodDescriptor {
     }
 
     public enum RpcType {
-        UNARY_WRAP,
-        UNARY_UNWRAP,
-        STREAM_WRAP,
-        STREAM_UNWRAP;
+        UNARY, SERVER_STREAM, CLIENT_STREAM, BIDIRECTIONAL_STREAM
     }
 
 }
