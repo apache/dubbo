@@ -14,32 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring.registrycenter;
+package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.config.spring.EmbeddedZooKeeper;
-
-public class ZooKeeperServer {
-
-    private static EmbeddedZooKeeper zookeeper1;
-    private static EmbeddedZooKeeper zookeeper2;
-
-    public static void start() {
-            if (zookeeper1 == null) {
-                zookeeper1 = new EmbeddedZooKeeper(2181, true);
-                zookeeper1.start();
-            }
-            if (zookeeper2 == null) {
-                zookeeper2 = new EmbeddedZooKeeper(2182, true);
-                zookeeper2.start();
-            }
-    }
-
-    public static void shutdown() {
-        if (zookeeper1 != null) {
-            zookeeper1.stop();
-        }
-        if (zookeeper2 != null) {
-            zookeeper2.stop();
-        }
-    }
+public interface DemoServiceA {
+    String methodA();
 }

@@ -1444,28 +1444,33 @@ public class DubboBootstrap {
         }
 
         configManager.getReferences().forEach(rc -> {
-            // TODO, compatible with  ReferenceConfig.refer()
-            ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
-            referenceConfig.setBootstrap(this);
-            if (!referenceConfig.isRefreshed()) {
-                referenceConfig.refresh();
-            }
-
-            if (rc.shouldInit()) {
-                if (rc.shouldReferAsync()) {
-                    ExecutorService executor = executorRepository.getServiceReferExecutor();
-                    CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                        try {
-                            cache.get(rc);
-                        } catch (Throwable t) {
-                            logger.error("refer async catch error : " + t.getMessage(), t);
-                        }
-                    }, executor);
-
-                    asyncReferringFutures.add(future);
-                } else {
-                    cache.get(rc);
+            try {
+                // TODO, compatible with  ReferenceConfig.refer()
+                ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
+                referenceConfig.setBootstrap(this);
+                if (!referenceConfig.isRefreshed()) {
+                    referenceConfig.refresh();
                 }
+
+                if (rc.shouldInit()) {
+                    if (rc.shouldReferAsync()) {
+                        ExecutorService executor = executorRepository.getServiceReferExecutor();
+                        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                            try {
+                                cache.get(rc);
+                            } catch (Throwable t) {
+                                logger.error("refer async catch error : " + t.getMessage(), t);
+                            }
+                        }, executor);
+
+                        asyncReferringFutures.add(future);
+                    } else {
+                        cache.get(rc);
+                    }
+                }
+            } catch (Throwable t) {
+                logger.error("refer catch error", t);
+                cache.destroy(rc);
             }
         });
     }
