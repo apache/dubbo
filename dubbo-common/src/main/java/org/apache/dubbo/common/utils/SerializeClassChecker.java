@@ -32,6 +32,7 @@ public class SerializeClassChecker {
 
     private static volatile SerializeClassChecker INSTANCE = null;
 
+    private final boolean OPEN_CHECK_CLASS;
     private final boolean BLOCK_ALL_CLASS_EXCEPT_ALLOW;
     private final Set<String> CLASS_DESERIALIZE_ALLOWED_SET = new ConcurrentHashSet<>();
     private final Set<String> CLASS_DESERIALIZE_BLOCKED_SET = new ConcurrentHashSet<>();
@@ -43,6 +44,9 @@ public class SerializeClassChecker {
     private final AtomicLong counter = new AtomicLong(0);
 
     private SerializeClassChecker() {
+        String openCheckClass = System.getProperty(CommonConstants.CLASS_DESERIALIZE_OPEN_CHECK, "true");
+        OPEN_CHECK_CLASS = Boolean.parseBoolean(openCheckClass);
+
         String blockAllClassExceptAllow = System.getProperty(CommonConstants.CLASS_DESERIALIZE_BLOCK_ALL, "false");
         BLOCK_ALL_CLASS_EXCEPT_ALLOW = Boolean.parseBoolean(blockAllClassExceptAllow);
 
@@ -107,6 +111,10 @@ public class SerializeClassChecker {
      * @param name class name ( all are convert to lower case )
      */
     public void validateClass(String name) {
+        if(!OPEN_CHECK_CLASS){
+            return;
+        }
+
         name = name.toLowerCase(Locale.ROOT);
         if (CACHE == CLASS_ALLOW_LFU_CACHE.get(name)) {
             return;
