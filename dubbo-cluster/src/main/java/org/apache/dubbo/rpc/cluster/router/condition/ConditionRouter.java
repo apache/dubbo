@@ -251,9 +251,6 @@ public class ConditionRouter extends AbstractRouter {
                 sampleValue = url.getHost();
             } else {
                 sampleValue = sample.get(key);
-                if (sampleValue == null) {
-                    sampleValue = sample.get(key);
-                }
             }
             if (sampleValue != null) {
                 if (!matchPair.getValue().isMatch(sampleValue, param)) {
