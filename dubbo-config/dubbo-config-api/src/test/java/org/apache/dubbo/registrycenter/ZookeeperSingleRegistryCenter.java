@@ -16,15 +16,29 @@
  */
 package org.apache.dubbo.registrycenter;
 
-import org.apache.dubbo.config.RegistryConfig;
-
 /**
- * Mock single registry center.
+ * The default zookeeper single registry center.
  */
-public interface SingleRegistryCenter extends RegistryCenter {
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
     /**
-     * Returns {@link RegistryConfig} instance.
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
      */
-    RegistryConfig getRegistryConfig();
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
+    }
+
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
+    }
+
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }

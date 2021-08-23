@@ -16,17 +16,28 @@
  */
 package org.apache.dubbo.registrycenter;
 
-import org.apache.dubbo.config.RegistryConfig;
-
-import java.util.List;
-
 /**
- * Mock multiple registry center.
+ * The default zookeeper multiple registry center.
  */
-public interface MultipleRegistryCenter extends RegistryCenter {
+public class ZookeeperMultipleRegistryCenter extends ZookeeperRegistryCenter {
 
     /**
-     * Returns {@link RegistryConfig} instances.
+     * Initialize {@link ZookeeperMultipleRegistryCenter} instance.
+     *
+     * @param port1 the zookeeper server's port.
+     * @param port2 the zookeeper server's port.
      */
-    List<RegistryConfig> getRegistryConfigs();
+    public ZookeeperMultipleRegistryCenter(int port1, int port2) {
+        super(port1, port2);
+    }
+
+    /**
+     * Initialize {@link ZookeeperMultipleRegistryCenter} instance.
+     */
+    public ZookeeperMultipleRegistryCenter() {
+        this(DEFAULT_PORT1, DEFAULT_PORT2);
+    }
+
+    private static final int DEFAULT_PORT1 = 2181;
+    private static final int DEFAULT_PORT2 = 2182;
 }
