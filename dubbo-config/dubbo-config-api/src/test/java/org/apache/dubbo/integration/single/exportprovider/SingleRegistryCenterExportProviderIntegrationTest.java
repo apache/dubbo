@@ -19,18 +19,19 @@ package org.apache.dubbo.integration.single.exportprovider;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
-import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -78,7 +79,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     /**
      * Define a registry center.
      */
-    private SingleRegistryCenter registryCenter;
+    private RegistryCenter registryCenter;
 
     /**
      * Define a {@link RegistryProtocolListener} instance.
@@ -104,7 +105,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter();
+        registryCenter = new ZookeeperMultipleRegistryCenter();
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
@@ -115,9 +116,14 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+        RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+        DubboBootstrap.getInstance().registry(registryConfig);
     }
 
     /**

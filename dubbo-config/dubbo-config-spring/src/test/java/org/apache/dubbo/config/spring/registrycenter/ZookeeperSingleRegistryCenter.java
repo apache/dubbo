@@ -14,24 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.descriptor;
+package org.apache.dubbo.config.spring.registrycenter;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.proto.HelloReply;
-
-public interface DescriptorService {
-
-    void noParameterMethod();
+/**
+ * The default zookeeper single registry center.
+ */
+public class ZookeeperSingleRegistryCenter extends ZookeeperRegistryCenter {
 
     /**
-     * only for test.
-     *
-     * @param reply
-     * @return
+     * Initialize {@link ZookeeperSingleRegistryCenter} instance.
      */
-    HelloReply sayHello(HelloReply reply);
+    public ZookeeperSingleRegistryCenter() {
+        this(DEFAULT_PORT);
+    }
 
-    void sayHelloServerStream(HelloReply request, StreamObserver<HelloReply> reply);
+    /**
+     * Initialize {@link RegistryCenter} instance.
+     *
+     * @param port the zookeeper server's port.
+     */
+    public ZookeeperSingleRegistryCenter(int port) {
+        super(port);
+    }
 
-    void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
+    /**
+     * The zookeeper server's default port.
+     */
+    private static final int DEFAULT_PORT = 2181;
 }

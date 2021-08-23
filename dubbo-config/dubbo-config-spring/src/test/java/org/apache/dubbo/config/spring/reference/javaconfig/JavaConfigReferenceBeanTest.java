@@ -21,13 +21,14 @@ import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.spring.ReferenceBean;
-import org.apache.dubbo.config.spring.registrycenter.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.DemoService;
 import org.apache.dubbo.config.spring.api.HelloService;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.extension.SpringExtensionFactory;
 import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.reference.ReferenceBeanBuilder;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperMultipleRegistryCenter;
 import org.apache.dubbo.rpc.service.GenericException;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.Assertions;
@@ -49,14 +50,19 @@ import java.util.Map;
 
 public class JavaConfigReferenceBeanTest {
 
+    private static RegistryCenter multipleRegistryCenter;
+
     @BeforeAll
     public static void beforeAll() {
-        ZooKeeperServer.start();
+        multipleRegistryCenter = new ZookeeperMultipleRegistryCenter();
+        multipleRegistryCenter.startup();
+        DubboBootstrap.reset();
     }
 
     @AfterAll
     public static void afterAll() {
-        ZooKeeperServer.shutdown();
+        DubboBootstrap.reset();
+        multipleRegistryCenter.shutdown();
     }
 
     @BeforeEach

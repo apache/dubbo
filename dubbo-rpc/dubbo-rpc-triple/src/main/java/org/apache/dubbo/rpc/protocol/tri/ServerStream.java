@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
+import org.apache.dubbo.rpc.model.MethodDescriptor;
 
 public class ServerStream extends AbstractServerStream implements Stream {
     protected ServerStream(URL url) {
@@ -72,6 +73,9 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
             super.onMetadata(metadata, endStream, handler);
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
             final RpcInvocation inv = buildInvocation(metadata);
             inv.setArguments(new Object[]{asStreamObserver()});
             final Result result = getInvoker().invoke(inv);
@@ -88,7 +92,13 @@ public class ServerStream extends AbstractServerStream implements Stream {
             try {
                 final Object[] arguments = deserializeRequest(in);
                 if (arguments != null) {
-                    getStreamSubscriber().onNext(arguments[0]);
+                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                        final RpcInvocation inv = buildInvocation(getHeaders());
+                        inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
+                        getInvoker().invoke(inv);
+                    } else {
+                        getStreamSubscriber().onNext(arguments[0]);
+                    }
                 }
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
@@ -99,6 +109,9 @@ public class ServerStream extends AbstractServerStream implements Stream {
 
         @Override
         public void onComplete(OperationHandler handler) {
+            if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                return;
+            }
             getStreamSubscriber().onCompleted();
         }
     }

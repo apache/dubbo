@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.descriptor;
+package org.apache.dubbo.rpc.support;
 
-import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.proto.HelloReply;
+/**
+ * default mock service for DemoServiceA
+ */
+public class DemoServiceBMock implements DemoServiceB {
+    public static final String MOCK_VALUE = "mockB";
 
-public interface DescriptorService {
-
-    void noParameterMethod();
-
-    /**
-     * only for test.
-     *
-     * @param reply
-     * @return
-     */
-    HelloReply sayHello(HelloReply reply);
-
-    void sayHelloServerStream(HelloReply request, StreamObserver<HelloReply> reply);
-
-    void sayHelloServerStream2(Object request, StreamObserver<Object> reply);
+    @Override
+    public String methodB() {
+        return MOCK_VALUE;
+    }
 }
