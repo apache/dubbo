@@ -102,7 +102,12 @@ import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLI
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_PUBLISH_INTERFACE_KEY;
 import static org.apache.dubbo.registry.Constants.ENABLE_CONFIGURATION_LISTEN;
 import static org.apache.dubbo.registry.Constants.REGISTER_IP_KEY;
-import static org.apache.dubbo.rpc.Constants.*;
+import static org.apache.dubbo.rpc.Constants.SCOPE_REMOTE;
+import static org.apache.dubbo.rpc.Constants.LOCAL_PROTOCOL;
+import static org.apache.dubbo.rpc.Constants.DEFAULT_STUB_EVENT;
+import static org.apache.dubbo.rpc.Constants.LOCAL_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_KEY;
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -557,13 +562,13 @@ public class ReferenceConfigTest {
         protocol.setName("dubbo");
 
         ServiceConfig<DemoService> demoService;
-        demoService = new ServiceConfig<DemoService>();
+        demoService = new ServiceConfig<>();
         demoService.setInterface(DemoService.class);
         demoService.setRef(new DemoServiceImpl());
         demoService.setRegistry(registry);
         demoService.setProtocol(protocol);
 
-        ReferenceConfig<DemoService> rc = new ReferenceConfig<DemoService>();
+        ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
         rc.setInterface(DemoService.class.getName());
         rc.setScope(SCOPE_REMOTE);
@@ -597,7 +602,7 @@ public class ReferenceConfigTest {
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(registryUrl);
         ProtocolConfig protocol = new ProtocolConfig();
-        protocol.setName("mockprotocol");
+        protocol.setName("injvm");
 
         ReferenceConfig<DemoService> rc = new ReferenceConfig<>();
         rc.setRegistry(registry);
@@ -622,7 +627,11 @@ public class ReferenceConfigTest {
 
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
-            sc.export();
+            ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+            DemoService service = new DemoServiceImpl();
+            URL url = URL.valueOf("dubbo://127.0.0.1/DemoService")
+                .addParameter(INTERFACE_KEY, DemoService.class.getName());
+            InjvmProtocol.getInjvmProtocol().export(proxy.getInvoker(service, DemoService.class, url));
             demoService = rc.get();
             success = true;
         } catch (Exception e) {
