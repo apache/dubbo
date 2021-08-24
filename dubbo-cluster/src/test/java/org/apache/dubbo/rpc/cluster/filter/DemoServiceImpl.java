@@ -14,33 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.injvm;
+package org.apache.dubbo.rpc.cluster.filter;
 
-import org.apache.dubbo.rpc.Exporter;
-import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
 
-import java.util.Map;
+public class DemoServiceImpl implements DemoService{
 
-/**
- * InjvmExporter
- */
-public class InjvmExporter<T> extends AbstractExporter<T> {
-
-    private final String key;
-
-    private final Map<String, Exporter<?>> exporterMap;
-
-    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
+    @Override
+    public String sayHello(String name) {
+        return name;
     }
 
     @Override
-    public void afterUnExport() {
-        exporterMap.remove(key);
+    public int plus(int a, int b) {
+        return 0;
     }
-
 }

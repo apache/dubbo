@@ -14,33 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.injvm;
+package org.apache.dubbo.rpc.cluster.filter;
 
-import org.apache.dubbo.rpc.Exporter;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.rpc.Filter;
+import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
+import org.apache.dubbo.rpc.Invocation;
+import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Map;
+import static org.apache.dubbo.common.constants.CommonConstants.CONSUMER;
 
-/**
- * InjvmExporter
- */
-public class InjvmExporter<T> extends AbstractExporter<T> {
 
-    private final String key;
+@Activate(group = CONSUMER, value = "log")
+public class LogFilter implements Filter, Filter.Listener {
 
-    private final Map<String, Exporter<?>> exporterMap;
-
-    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
+    @Override
+    public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
+        return invoker.invoke(invocation);
     }
 
     @Override
-    public void afterUnExport() {
-        exporterMap.remove(key);
+    public void onResponse(Result appResponse, Invoker<?> invoker, Invocation invocation) {
+
     }
 
+    @Override
+    public void onError(Throwable t, Invoker<?> invoker, Invocation invocation) {
+
+    }
 }

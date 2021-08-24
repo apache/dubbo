@@ -14,33 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.protocol.injvm;
+package org.apache.dubbo.rpc.protocol;
 
-import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.Invoker;
-import org.apache.dubbo.rpc.protocol.AbstractExporter;
+import org.apache.dubbo.rpc.InvokerListener;
+import org.apache.dubbo.rpc.RpcException;
 
-import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * InjvmExporter
- */
-public class InjvmExporter<T> extends AbstractExporter<T> {
 
-    private final String key;
+public class CountInvokerListener implements InvokerListener {
 
-    private final Map<String, Exporter<?>> exporterMap;
+    private final static AtomicInteger counter = new AtomicInteger(0);
 
-    InjvmExporter(Invoker<T> invoker, String key, Map<String, Exporter<?>> exporterMap) {
-        super(invoker);
-        this.key = key;
-        this.exporterMap = exporterMap;
-        exporterMap.put(key, this);
+    @Override
+    public void referred(Invoker<?> invoker) throws RpcException {
+        counter.incrementAndGet();
     }
 
     @Override
-    public void afterUnExport() {
-        exporterMap.remove(key);
+    public void destroyed(Invoker<?> invoker) {
+
     }
 
+    public static int getCounter() {
+        return counter.get();
+    }
 }
