@@ -16,12 +16,6 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.http2.Http2GoAwayFrame;
-import io.netty.handler.codec.http2.Http2SettingsFrame;
-import io.netty.util.ReferenceCountUtil;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.stream.StreamObserver;
@@ -38,6 +32,13 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
+
+import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
+import io.netty.handler.codec.http2.Http2GoAwayFrame;
+import io.netty.handler.codec.http2.Http2SettingsFrame;
+import io.netty.util.ReferenceCountUtil;
 
 public class TripleClientHandler extends ChannelDuplexHandler {
 
@@ -99,10 +100,20 @@ public class TripleClientHandler extends ChannelDuplexHandler {
             stream.asStreamObserver().onNext(inv);
             stream.asStreamObserver().onCompleted();
         } else {
-            final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
-            stream.subscribe(streamObserver);
             Response response = new Response(req.getId(), req.getVersion());
-            final AppResponse result = new AppResponse(stream.asStreamObserver());
+            AppResponse result;
+            if (methodDescriptor.getRpcType() == MethodDescriptor.RpcType.BIDIRECTIONAL_STREAM
+                    || methodDescriptor.getRpcType() == MethodDescriptor.RpcType.CLIENT_STREAM) {
+                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[0];
+                stream.subscribe(streamObserver);
+                result = new AppResponse(stream.asStreamObserver());
+            } else {
+                final StreamObserver<Object> streamObserver = (StreamObserver<Object>) inv.getArguments()[1];
+                stream.subscribe(streamObserver);
+                result = new AppResponse();
+                stream.asStreamObserver().onNext(inv.getArguments()[0]);
+                stream.asStreamObserver().onCompleted();
+            }
             response.setResult(result);
             DefaultFuture2.received(stream.getConnection(), response);
         }

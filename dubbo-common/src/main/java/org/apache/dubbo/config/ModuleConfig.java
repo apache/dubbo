@@ -87,6 +87,7 @@ public class ModuleConfig extends AbstractConfig {
         this.version = version;
     }
 
+    @Parameter(key = "module.owner")
     public String getOwner() {
         return owner;
     }
@@ -95,6 +96,7 @@ public class ModuleConfig extends AbstractConfig {
         this.owner = owner;
     }
 
+    @Parameter(key = "module.organization")
     public String getOrganization() {
         return organization;
     }

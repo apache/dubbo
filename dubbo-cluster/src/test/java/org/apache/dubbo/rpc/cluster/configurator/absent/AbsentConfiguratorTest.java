@@ -23,6 +23,9 @@ import org.apache.dubbo.rpc.cluster.configurator.consts.UrlConstant;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * OverrideConfiguratorTest
  */
@@ -63,6 +66,55 @@ public class AbsentConfiguratorTest {
 
         url = configurator1.configure(URL.valueOf(UrlConstant.TIMEOUT_1000_SIDE_CONSUMER_10));
         Assertions.assertEquals("1000", url.getParameter("timeout"));
+    }
+
+    // Test the version after 2.7
+    @Test
+    public void testAbsentForVersion27() {
+        {
+            String consumerUrlV27 = "dubbo://172.24.160.179/com.foo.BarService?application=foo&side=consumer&timeout=100";
+
+            URL consumerConfiguratorUrl = URL.valueOf("absent://0.0.0.0/com.foo.BarService");
+            Map<String, String> params = new HashMap<>();
+            params.put("side", "consumer");
+            params.put("configVersion", "2.7");
+            params.put("application", "foo");
+            params.put("timeout", "10000");
+            params.put("weight", "200");
+            consumerConfiguratorUrl = consumerConfiguratorUrl.addParameters(params);
+
+            AbsentConfigurator configurator = new AbsentConfigurator(consumerConfiguratorUrl);
+            // Meet the configured conditions:
+            // same side
+            // The port of configuratorUrl is 0
+            // The host of configuratorUrl is 0.0.0.0 or the local address is the same as consumerUrlV27
+            // same appName
+            URL url = configurator.configure(URL.valueOf(consumerUrlV27));
+            Assertions.assertEquals(url.getParameter("timeout"), "100");
+            Assertions.assertEquals(url.getParameter("weight"), "200");
+        }
+
+        {
+            String providerUrlV27 = "dubbo://172.24.160.179:21880/com.foo.BarService?application=foo&side=provider&weight=100";
+
+            URL providerConfiguratorUrl = URL.valueOf("absent://172.24.160.179:21880/com.foo.BarService");
+            Map<String, String> params = new HashMap<>();
+            params.put("side", "provider");
+            params.put("configVersion", "2.7");
+            params.put("application", "foo");
+            params.put("timeout", "20000");
+            params.put("weight", "200");
+            providerConfiguratorUrl = providerConfiguratorUrl.addParameters(params);
+            // Meet the configured conditions:
+            // same side
+            // same port
+            // The host of configuratorUrl is 0.0.0.0 or the host of providerConfiguratorUrl is the same as consumerUrlV27
+            // same appName
+            AbsentConfigurator configurator = new AbsentConfigurator(providerConfiguratorUrl);
+            URL url = configurator.configure(URL.valueOf(providerUrlV27));
+            Assertions.assertEquals(url.getParameter("timeout"), "20000");
+            Assertions.assertEquals(url.getParameter("weight"), "100");
+        }
     }
 
 }

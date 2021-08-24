@@ -23,10 +23,11 @@ import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
-import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.registrycenter.RegistryCenter;
+import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.ExporterListener;
 import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
@@ -79,13 +80,13 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
     /**
      * Define a registry center.
      */
-    private SingleRegistryCenter registryCenter;
+    private RegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
         logger.info(getClass().getSimpleName() + " testcase is beginning...");
         DubboBootstrap.reset();
-        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter = new ZookeeperSingleRegistryCenter(NetUtils.getAvailablePort());
         registryCenter.startup();
         // initialize service config
         serviceConfig = new ServiceConfig<>();
@@ -97,9 +98,14 @@ public class SingleRegistryCenterInjvmIntegrationTest implements IntegrationTest
         // initailize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
-            .registry(registryCenter.getRegistryConfig())
             .protocol(new ProtocolConfig("injvm"))
             .service(serviceConfig);
+        RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+        RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
+            instance.getType(),
+            instance.getHostname(),
+            instance.getPort()));
+        DubboBootstrap.getInstance().registry(registryConfig);
     }
 
     /**
