@@ -49,15 +49,18 @@ public class MetadataReportInstance {
         if (METADATA_REPORT_KEY.equals(url.getProtocol())) {
             String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             url = URLBuilder.from(url)
-                    .setProtocol(protocol)
-                    .removeParameter(METADATA_REPORT_KEY)
-                    .build();
+                .setProtocol(protocol)
+                .removeParameter(METADATA_REPORT_KEY)
+                .build();
         }
         url = url.addParameterIfAbsent(APPLICATION_KEY, ApplicationModel.getApplicationConfig().getName());
         String relatedRegistryId = config.getRegistry() == null ? DEFAULT_KEY : config.getRegistry();
 //        RegistryConfig registryConfig = ApplicationModel.getConfigManager().getRegistry(relatedRegistryId)
 //                .orElseThrow(() -> new IllegalStateException("Registry id " + relatedRegistryId + " does not exist."));
-        metadataReports.put(relatedRegistryId, metadataReportFactory.getMetadataReport(url));
+        MetadataReport metadataReport = metadataReportFactory.getMetadataReport(url);
+        if (metadataReport != null) {
+            metadataReports.put(relatedRegistryId, metadataReport);
+        }
         init.set(true);
     }
 
@@ -80,7 +83,7 @@ public class MetadataReportInstance {
 
     private static void checkInit() {
         if (!init.get()) {
-            throw new IllegalStateException("the metadata report was not inited.");
+            throw new IllegalStateException("the metadata report was not initialized.");
         }
     }
 
