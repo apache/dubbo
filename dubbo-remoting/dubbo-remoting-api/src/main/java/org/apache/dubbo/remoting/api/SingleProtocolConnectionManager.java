@@ -35,7 +35,7 @@ public class SingleProtocolConnectionManager implements ConnectionManager {
         return connections.compute(url.getAddress(), (address, conn) -> {
             if (conn == null) {
                 final Connection created = new Connection(url);
-                created.getCloseFuture().addListener(future -> connections.remove(address, created));
+                created.getClosePromise().addListener(future -> connections.remove(address, created));
                 return created;
             } else {
                 conn.retain();

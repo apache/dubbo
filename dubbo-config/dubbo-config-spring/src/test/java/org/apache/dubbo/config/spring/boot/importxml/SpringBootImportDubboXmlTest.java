@@ -17,8 +17,9 @@
 package org.apache.dubbo.config.spring.boot.importxml;
 
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
-import org.apache.dubbo.config.spring.ZooKeeperServer;
 import org.apache.dubbo.config.spring.api.HelloService;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,15 +44,19 @@ import org.springframework.context.annotation.ImportResource;
 @ImportResource("classpath:/org/apache/dubbo/config/spring/boot/importxml/consumer/dubbo-consumer.xml")
 public class SpringBootImportDubboXmlTest {
 
+    private static RegistryCenter singleRegistryCenter;
+
     @BeforeAll
-    public static void setUp(){
-        ZooKeeperServer.start();
+    public static void beforeAll(){
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
+        singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }
 
     @AfterAll
-    public static void tearDown(){
+    public static void afterAll(){
         DubboBootstrap.reset();
+        singleRegistryCenter.shutdown();
     }
 
     @Autowired

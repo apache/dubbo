@@ -16,10 +16,12 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 import org.apache.dubbo.config.ServiceConfigBase;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -50,9 +53,12 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
     // useful to find a provider model quickly with serviceInterfaceName:version
     private ConcurrentMap<String, ProviderModel> providersWithoutGroup = new ConcurrentHashMap<>();
 
+    // useful to find a url quickly with serviceInterfaceName:version
+    private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
+
     public ServiceRepository() {
         Set<BuiltinServiceDetector> builtinServices
-                = ExtensionLoader.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
+            = ExtensionLoader.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(builtinServices)) {
             for (BuiltinServiceDetector service : builtinServices) {
                 registerService(service.getService());
@@ -62,7 +68,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     public ServiceDescriptor registerService(Class<?> interfaceClazz) {
         return services.computeIfAbsent(interfaceClazz.getName(),
-                _k -> new ServiceDescriptor(interfaceClazz));
+            _k -> new ServiceDescriptor(interfaceClazz));
     }
 
     /**
@@ -98,9 +104,10 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceDescriptor serviceDescriptor,
                                  ReferenceConfigBase<?> rc,
                                  Object proxy,
-                                 ServiceMetadata serviceMetadata) {
+                                 ServiceMetadata serviceMetadata,
+                                 Map<String, AsyncMethodInfo> methodConfigs) {
         ConsumerModel consumerModel = new ConsumerModel(serviceMetadata.getServiceKey(), proxy, serviceDescriptor, rc,
-                serviceMetadata);
+            serviceMetadata, methodConfigs);
         consumers.putIfAbsent(serviceKey, consumerModel);
     }
 
@@ -118,7 +125,7 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
                                  ServiceConfigBase<?> serviceConfig,
                                  ServiceMetadata serviceMetadata) {
         ProviderModel providerModel = new ProviderModel(serviceKey, serviceInstance, serviceModel, serviceConfig,
-                serviceMetadata);
+            serviceMetadata);
         providers.putIfAbsent(serviceKey, providerModel);
         providersWithoutGroup.putIfAbsent(keyWithoutGroup(serviceKey), providerModel);
     }
@@ -178,6 +185,24 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     public ConsumerModel lookupReferredService(String serviceKey) {
         return consumers.get(serviceKey);
+    }
+
+    public void registerProviderUrl(URL url) {
+        providerUrlsWithoutGroup.computeIfAbsent(keyWithoutGroup(url.getServiceKey()), (k) -> new ConcurrentHashSet<>()).add(url);
+    }
+
+    public Set<URL> lookupRegisteredProviderUrlsWithoutGroup(String key) {
+        return providerUrlsWithoutGroup.get(key);
+    }
+
+    @Deprecated
+    public ConcurrentMap<String, Set<URL>> getProviderUrlsWithoutGroup() {
+        return providerUrlsWithoutGroup;
+    }
+
+    @Deprecated
+    public void setProviderUrlsWithoutGroup(ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup) {
+        this.providerUrlsWithoutGroup = providerUrlsWithoutGroup;
     }
 
     @Override

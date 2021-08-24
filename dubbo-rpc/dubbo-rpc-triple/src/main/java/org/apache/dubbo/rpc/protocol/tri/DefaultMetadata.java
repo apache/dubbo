@@ -52,8 +52,15 @@ public class DefaultMetadata implements Metadata {
         return innerMap.entrySet().spliterator();
     }
 
+    @Override
     public boolean contains(CharSequence key) {
         return innerMap.containsKey(key);
+    }
+
+    @Override
+    public boolean remove(CharSequence key) {
+        innerMap.remove(key);
+        return true;
     }
 
 }

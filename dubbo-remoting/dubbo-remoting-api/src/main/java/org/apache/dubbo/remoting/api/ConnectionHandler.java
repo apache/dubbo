@@ -49,8 +49,8 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
         if (connection != null) {
             connection.onGoaway(channel);
         }
-        if (log.isInfoEnabled()) {
-            log.info(String.format("Channel %s go away ,schedule reconnect", channel));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Channel %s go away ,schedule reconnect", channel));
         }
         reconnect(channel);
     }
@@ -82,8 +82,8 @@ public class ConnectionHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void reconnect(Channel channel) {
-        if (log.isInfoEnabled()) {
-            log.info(String.format("Connection %s is reconnecting, attempt=%d", connection, 1));
+        if (log.isDebugEnabled()) {
+            log.debug(String.format("Connection %s is reconnecting, attempt=%d", connection, 1));
         }
         final EventLoop eventLoop = channel.eventLoop();
         eventLoop.schedule(connection::connect, 1, TimeUnit.SECONDS);

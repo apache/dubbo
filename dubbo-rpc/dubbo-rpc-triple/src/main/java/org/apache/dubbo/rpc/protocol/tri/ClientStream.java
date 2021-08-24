@@ -65,18 +65,12 @@ public class ClientStream extends AbstractClientStream implements Stream {
             @Override
             public void onComplete(OperationHandler handler) {
                 execute(() -> {
-                    Metadata metadata;
-                    if (getTrailers() == null) {
-                        metadata = getHeaders();
-                    } else {
-                        metadata = getTrailers();
-                    }
-                    final GrpcStatus status = extractStatusFromMeta(metadata);
+                    final GrpcStatus status = extractStatusFromMeta(getHeaders());
 
                     if (GrpcStatus.Code.isOk(status.code.code)) {
                         getStreamSubscriber().onCompleted();
                     } else {
-                        getStreamSubscriber().onError(status.asException());
+                        getStreamSubscriber().onError(status.asException(getTrailers()));
                     }
                 });
             }

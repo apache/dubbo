@@ -277,6 +277,7 @@ public class ExtensionLoaderTest {
 
         assertThat(ext, instanceOf(Ext9Empty.class));
         assertEquals("ext9", getExtensionLoader(Ext9Empty.class).getExtensionName(Ext9EmptyImpl.class));
+        ExtensionLoader.resetExtensionLoader(Ext9Empty.class);
     }
 
     @Test
@@ -298,6 +299,7 @@ public class ExtensionLoaderTest {
 
         AddExt2 adaptive = loader.getAdaptiveExtension();
         assertTrue(adaptive instanceof AddExt2_ManualAdaptive);
+        ExtensionLoader.resetExtensionLoader(AddExt2.class);
     }
 
     @Test

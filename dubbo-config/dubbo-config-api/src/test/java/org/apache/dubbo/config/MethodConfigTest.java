@@ -429,7 +429,7 @@ public class MethodConfigTest {
                 .initialize();
             Assertions.fail("Method config verification should failed");
         } catch (Exception e) {
-            e.printStackTrace();
+            // ignore
             Throwable cause = e.getCause();
             Assertions.assertEquals(IllegalStateException.class, cause.getClass());
             Assertions.assertTrue(cause.getMessage().contains("not found method"), cause.toString());

@@ -25,6 +25,6 @@ public class MultipleRegistryCenterInjvmServiceImpl implements MultipleRegistryC
      */
     @Override
     public String hello(String name) {
-        return null;
+        return "Hello " + name;
     }
 }

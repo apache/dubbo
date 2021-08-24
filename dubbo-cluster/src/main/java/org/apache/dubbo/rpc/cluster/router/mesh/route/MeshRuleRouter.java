@@ -18,6 +18,7 @@
 package org.apache.dubbo.rpc.cluster.router.mesh.route;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.Invocation;
 import org.apache.dubbo.rpc.Invoker;
@@ -59,7 +60,9 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
     private volatile Map<String, List<Invoker<?>>> subsetMap;
 
-    private String remoteAppName;
+    private volatile String remoteAppName;
+
+    private static final String INVALID_APP_NAME = "unknown";
 
     public MeshRuleRouter(URL url) {
         this.url = url;
@@ -83,7 +86,6 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
             DubboDestination dubboDestination = dubboRouteDestination.getDestination();
 
-            String host = dubboDestination.getHost();
             String subset = dubboDestination.getSubset();
 
             List<Invoker<?>> result;
@@ -96,7 +98,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                 do {
                     result = subsetMapCopy.get(subset);
 
-                    if (result != null && result.size() > 0) {
+                    if (CollectionUtils.isNotEmpty(result)) {
                         return (List) result;
                     }
 
@@ -106,7 +108,6 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
                     }
                     dubboDestination = dubboRouteDestination.getDestination();
 
-                    host = dubboDestination.getHost();
                     subset = dubboDestination.getSubset();
                 } while (true);
 
@@ -129,10 +130,10 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
     private void registerAppRule(List<Invoker<?>> invokers) {
         if (StringUtils.isEmpty(remoteAppName)) {
             synchronized (this) {
-                if (StringUtils.isEmpty(remoteAppName) && invokers != null && invokers.size() > 0) {
+                if (StringUtils.isEmpty(remoteAppName) && CollectionUtils.isNotEmpty(invokers)) {
                     for (Invoker invoker : invokers) {
                         String applicationName = invoker.getUrl().getRemoteApplication();
-                        if (StringUtils.isNotEmpty(applicationName) && !"unknown".equals(applicationName)) {
+                        if (StringUtils.isNotEmpty(applicationName) && !INVALID_APP_NAME.equals(applicationName)) {
                             remoteAppName = applicationName;
                             MeshRuleManager.register(remoteAppName, this);
                             break;
@@ -190,7 +191,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
         if (dubboRouteList.size() > 0) {
             for (DubboRoute dubboRoute : dubboRouteList) {
                 List<StringMatch> stringMatchList = dubboRoute.getServices();
-                if (stringMatchList == null || stringMatchList.size() == 0) {
+                if (CollectionUtils.isEmpty(stringMatchList)) {
                     return dubboRoute;
                 }
                 for (StringMatch stringMatch : stringMatchList) {
@@ -226,7 +227,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
         for (DubboRouteDetail dubboRouteDetail : dubboRouteDetailList) {
             List<DubboMatchRequest> matchRequestList = dubboRouteDetail.getMatch();
-            if (matchRequestList == null || matchRequestList.size() == 0) {
+            if (CollectionUtils.isEmpty(matchRequestList)) {
                 return dubboRouteDetail;
             }
 
@@ -252,7 +253,7 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
 
     protected synchronized void computeSubset() {
-        if (invokerList == null || invokerList.size() == 0) {
+        if (CollectionUtils.isEmpty(invokerList)) {
             this.subsetMap = null;
             return;
         }
@@ -277,7 +278,6 @@ public class MeshRuleRouter implements Router, VsDestinationGroupRuleListener {
 
         for (DestinationRule destinationRule : destinationRules) {
             DestinationRuleSpec destinationRuleSpec = destinationRule.getSpec();
-            String host = destinationRuleSpec.getHost();
             List<Subset> subsetList = destinationRuleSpec.getSubsets();
 
             for (Subset subset : subsetList) {

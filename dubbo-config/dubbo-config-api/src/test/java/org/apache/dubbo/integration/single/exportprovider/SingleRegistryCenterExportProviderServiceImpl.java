@@ -14,30 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.config.spring;
+package org.apache.dubbo.integration.single.exportprovider;
 
-public class ZooKeeperServer {
-
-    private static EmbeddedZooKeeper zookeeper1;
-    private static EmbeddedZooKeeper zookeeper2;
-
-    public static void start() {
-            if (zookeeper1 == null) {
-                zookeeper1 = new EmbeddedZooKeeper(2181, true);
-                zookeeper1.start();
-            }
-            if (zookeeper2 == null) {
-                zookeeper2 = new EmbeddedZooKeeper(2182, true);
-                zookeeper2.start();
-            }
-    }
-
-    public static void stop() {
-        if (zookeeper1 != null) {
-            zookeeper1.stop();
-        }
-        if (zookeeper2 != null) {
-            zookeeper2.stop();
-        }
+/**
+ * The implementation of {@link SingleRegistryCenterExportProviderService}
+ */
+public class SingleRegistryCenterExportProviderServiceImpl implements SingleRegistryCenterExportProviderService {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String hello(String name) {
+        return "Hello " + name;
     }
 }

@@ -84,11 +84,6 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
     }
 
     @Override
-    public URL getUrl() {
-        return url;
-    }
-
-    @Override
     public <T> BitList<Invoker<T>> route(BitList<Invoker<T>> invokers, RouterCache<T> cache, URL url,
         Invocation invocation) throws RpcException {
 
@@ -154,11 +149,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
 
         if (tagRouterRuleCopy == null || !tagRouterRuleCopy.isValid() || !tagRouterRuleCopy.isEnabled()) {
-            BitList<Invoker<T>> noTagList = new BitList<>(invokers, true);
-
-            for (int index = 0; index < invokers.size(); index++) {
-                noTagList.addIndex(index);
-            }
+            BitList<Invoker<T>> noTagList = new BitList<>(invokers, false);
             addrPool.put(NO_TAG, noTagList);
             routerCache.setAddrPool(addrPool);
             return routerCache;
