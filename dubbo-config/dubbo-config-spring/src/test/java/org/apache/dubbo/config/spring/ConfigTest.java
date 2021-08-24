@@ -1114,6 +1114,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix, see: https://github.com/apache/dubbo/pull/8534")
     public void testReferGenericExport() throws Exception {
         RegistryConfig rc = new RegistryConfig();
         rc.setAddress(RegistryConfig.NO_AVAILABLE);

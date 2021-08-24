@@ -27,16 +27,24 @@ import java.util.Map;
  */
 public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig, MetadataReportBuilder> {
 
-    // Register center address
+    /**
+     * Register center address
+     */
     private String address;
 
-    // Username to login register center
+    /**
+     * Username to login register center
+     */
     private String username;
 
-    // Password to login register center
+    /**
+     * Password to login register center
+     */
     private String password;
 
-    // Request timeout in milliseconds for register center
+    /**
+     * Request timeout in milliseconds for register center
+     */
     private Integer timeout;
 
     /**
@@ -44,14 +52,16 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
      */
     private String group;
 
-    // Customized parameters
+    /**
+     * Customized parameters
+     */
     private Map<String, String> parameters;
 
     private Integer retryTimes;
 
     private Integer retryPeriod;
     /**
-     * By default the metadatastore will store full metadata repeatedly every day .
+     * By default the metadata store will store full metadata repeatedly every day .
      */
     private Boolean cycleReport;
 
@@ -59,6 +69,13 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
      * Sync report, default async
      */
     private Boolean syncReport;
+
+    /**
+     * Decide the behaviour when initial connection try fails,
+     * 'true' means interrupt the whole process once fail.
+     * The default value is true
+     */
+    private Boolean check;
 
     public static MetadataReportBuilder newBuilder() {
         return new MetadataReportBuilder();
@@ -119,6 +136,12 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         return getThis();
     }
 
+    public MetadataReportBuilder check(Boolean check) {
+        this.check = check;
+        return getThis();
+    }
+
+    @Override
     public MetadataReportConfig build() {
         MetadataReportConfig metadataReport = new MetadataReportConfig();
         super.build(metadataReport);
@@ -133,6 +156,7 @@ public class MetadataReportBuilder extends AbstractBuilder<MetadataReportConfig,
         metadataReport.setRetryPeriod(retryPeriod);
         metadataReport.setCycleReport(cycleReport);
         metadataReport.setSyncReport(syncReport);
+        metadataReport.setCheck(check);
 
         return metadataReport;
     }
