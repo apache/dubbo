@@ -21,6 +21,7 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
 import org.apache.dubbo.remoting.TimeoutException;
 import org.apache.dubbo.rpc.AppResponse;
+import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcContext;
 import org.apache.dubbo.rpc.RpcInvocation;
@@ -66,11 +67,14 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
 
         public void invoke() {
 
-            final RpcInvocation invocation;
+            RpcInvocation invocation;
             try {
+                invocation = buildInvocation(getHeaders());
+                for (HeaderFilter headerFilter : getHeaderFilters()) {
+                    invocation = headerFilter.invoke(getInvoker(), invocation);
+                }
                 final Object[] arguments = deserializeRequest(getData());
                 if (arguments != null) {
-                    invocation = buildInvocation(getHeaders());
                     invocation.setArguments(arguments);
                 } else {
                     return;
