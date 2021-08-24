@@ -42,8 +42,8 @@ import org.apache.dubbo.config.spring.impl.HelloServiceImpl;
 import org.apache.dubbo.config.spring.impl.NotifyService;
 import org.apache.dubbo.config.spring.registry.MockRegistry;
 import org.apache.dubbo.config.spring.registry.MockRegistryFactory;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryService;
 import org.apache.dubbo.rpc.Exporter;
@@ -88,11 +88,11 @@ public class ConfigTest {
 
     private static String resourcePath = ConfigTest.class.getPackage().getName().replace('.', '/');
 
-    private static SingleRegistryCenter singleRegistryCenter;
+    private static RegistryCenter singleRegistryCenter;
 
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
     }
 
@@ -1114,6 +1114,7 @@ public class ConfigTest {
     }
 
     @Test
+    @Disabled("waiting-to-fix, see: https://github.com/apache/dubbo/pull/8534")
     public void testReferGenericExport() throws Exception {
         RegistryConfig rc = new RegistryConfig();
         rc.setAddress(RegistryConfig.NO_AVAILABLE);

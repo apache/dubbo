@@ -23,8 +23,8 @@ import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.spring.ServiceBean;
 import org.apache.dubbo.config.spring.api.DemoService;
-import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
-import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.config.spring.registrycenter.RegistryCenter;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,11 +44,11 @@ import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER
 @ImportResource(locations = "classpath:/META-INF/spring/dubbo-generic-consumer.xml")
 public class GenericServiceTest {
 
-    private static SingleRegistryCenter singleRegistryCenter;
+    private static RegistryCenter singleRegistryCenter;
 
     @BeforeAll
     public static void beforeAll() {
-        singleRegistryCenter = new DefaultSingleRegistryCenter();
+        singleRegistryCenter = new ZookeeperSingleRegistryCenter();
         singleRegistryCenter.startup();
         DubboBootstrap.reset();
     }

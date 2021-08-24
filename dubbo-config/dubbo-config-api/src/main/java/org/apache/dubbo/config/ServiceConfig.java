@@ -199,8 +199,6 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             // load ServiceListeners from extension
             ExtensionLoader<ServiceListener> extensionLoader = ExtensionLoader.getExtensionLoader(ServiceListener.class);
             this.serviceListeners.addAll(extensionLoader.getSupportedExtensionInstances());
-
-            this.checkAndUpdateSubConfigs();
         }
 
         initServiceMetadata(provider);

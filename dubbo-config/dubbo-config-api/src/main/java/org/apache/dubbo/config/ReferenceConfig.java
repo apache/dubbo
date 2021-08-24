@@ -41,10 +41,10 @@ import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
 import org.apache.dubbo.rpc.model.ApplicationModel;
-import org.apache.dubbo.rpc.model.ServiceDescriptor;
-import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
 import org.apache.dubbo.rpc.model.ConsumerModel;
+import org.apache.dubbo.rpc.model.ServiceDescriptor;
+import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -200,15 +200,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     @Override
     public synchronized void destroy() {
-        if (ref == null) {
-            return;
-        }
         if (destroyed) {
             return;
         }
         destroyed = true;
         try {
-            invoker.destroy();
+            if (invoker != null) {
+                invoker.destroy();
+            }
         } catch (Throwable t) {
             logger.warn("Unexpected error occurred when destroy invoker of ReferenceConfig(" + url + ").", t);
         }
@@ -570,7 +569,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         URL tmpUrl = new ServiceConfigURL("temp", "localhost", 0, map);
         boolean isJvmRefer;
         if (isInjvm() == null) {
-            // if a url is specified, don't do local reference
+            // if an url is specified, don't do local reference
             if (url != null && url.length() > 0) {
                 isJvmRefer = false;
             } else {

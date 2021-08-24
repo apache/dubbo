@@ -336,6 +336,7 @@ public class ServiceInstancesChangedListener {
                 // change the instance used to communicate to avoid all requests route to the same instance
                 MetadataService metadataServiceProxy = MetadataUtils.getMetadataServiceProxy(instance);
                 metadataInfo = metadataServiceProxy.getMetadataInfo(ServiceInstanceMetadataUtils.getExportedServicesRevision(instance));
+                MetadataUtils.destroyMetadataServiceProxy(instance);
             }
         } catch (Exception e) {
             logger.error("Failed to load service metadata, meta type is " + metadataType, e);
