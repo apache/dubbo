@@ -8,12 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 {{#deprecated}}
     @java.lang.Deprecated
 {{/deprecated}}
-@javax.annotation.Generated(
-value = "by Dubbo generator",
-comments = "Source: {{protoName}}")
 public interface {{interfaceClassName}} {
-static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
-static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
+
+    static final String JAVA_SERVICE_NAME = "{{packageName}}.{{serviceName}}";
+    static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
 
     // FIXME, initialize Dubbo3 stub when interface loaded, thinking of new ways doing this.
     static final boolean inited = {{className}}.init();
@@ -27,7 +25,9 @@ static final String SERVICE_NAME = "{{commonPackageName}}.{{serviceName}}";
     {{/deprecated}}
     {{outputType}} {{methodName}}({{inputType}} request);
 
-    CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request);
+    default CompletableFuture<{{outputType}}> {{methodName}}Async({{inputType}} request){
+        return CompletableFuture.supplyAsync(() -> {{methodName}}(request));
+    }
 
 {{/unaryMethods}}
 
