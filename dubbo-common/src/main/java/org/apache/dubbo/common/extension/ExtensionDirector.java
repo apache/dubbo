@@ -109,10 +109,7 @@ public class ExtensionDirector {
             // if scope is matched, just create it
             loader = createExtensionLoader0(type);
         } else {
-            // if scope is not matched, redirect to parent director
-            if (this.parent != null) {
-                loader = this.parent.createExtensionLoader(type);
-            }
+            // if scope is not matched, ignore it
         }
         return loader;
     }
