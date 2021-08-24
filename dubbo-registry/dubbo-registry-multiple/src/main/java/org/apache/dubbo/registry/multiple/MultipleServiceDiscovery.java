@@ -45,7 +45,7 @@ public class MultipleServiceDiscovery implements ServiceDiscovery {
     @Override
     public void initialize(URL registryURL) throws Exception {
         this.registryURL = registryURL;
-        this.applicationName = registryURL.getParameter(CommonConstants.APPLICATION_KEY);
+        this.applicationName = registryURL.getApplication();
 
         Map<String, String> parameters = registryURL.getParameters();
         for (String key : parameters.keySet()) {

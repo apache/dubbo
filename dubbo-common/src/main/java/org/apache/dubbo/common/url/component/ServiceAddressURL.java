@@ -82,7 +82,7 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public String getGroup() {
-        String group = super.getParameter(GROUP_KEY);
+        String group = super.getGroup();
         if (StringUtils.isNotEmpty(group)) {
             return group;
         }
@@ -91,7 +91,7 @@ public abstract class ServiceAddressURL extends URL {
 
     @Override
     public String getVersion() {
-        String version = super.getParameter(VERSION_KEY);
+        String version = super.getVersion();
         if (StringUtils.isNotEmpty(version)) {
             return version;
         }
