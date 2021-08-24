@@ -583,7 +583,7 @@
         </xsd:attribute>
         <xsd:attribute name="check" type="xsd:string">
             <xsd:annotation>
-                <xsd:documentation><![CDATA[ Check registry status on stratup. ]]></xsd:documentation>
+                <xsd:documentation><![CDATA[ Check registry status on startup. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
         <xsd:attribute name="dynamic" type="xsd:string">
@@ -735,6 +735,12 @@
         <xsd:attribute name="file" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metadata report file store. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="check" type="xsd:boolean" use="optional">
+            <xsd:annotation>
+                <xsd:documentation>
+                    <![CDATA[ The policy to apply when connecting to metadata center fails. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
     </xsd:complexType>
