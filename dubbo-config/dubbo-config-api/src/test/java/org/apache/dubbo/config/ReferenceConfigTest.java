@@ -481,6 +481,7 @@ public class ReferenceConfigTest {
         parameters.put(CLUSTER_KEY, BROADCAST_CLUSTER);
         Assertions.assertFalse(referenceConfig.shouldJvmRefer(parameters));
         parameters.clear();
+        InjvmProtocol.getInjvmProtocol().destroy();
     }
 
     @Test
@@ -619,12 +620,6 @@ public class ReferenceConfigTest {
         Assertions.assertFalse(success);
         Assertions.assertNull(demoService);
 
-        ServiceConfig<DemoService> sc = new ServiceConfig<>();
-        sc.setInterface(DemoService.class);
-        sc.setRef(new DemoServiceImpl());
-        sc.setRegistry(registry);
-        sc.setProtocol(protocol);
-
         try {
             System.setProperty("java.net.preferIPv4Stack", "true");
             ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
@@ -638,8 +633,9 @@ public class ReferenceConfigTest {
             // ignore
         } finally {
             rc.destroy();
-            sc.unexport();
+            InjvmProtocol.getInjvmProtocol().destroy();
             System.clearProperty("java.net.preferIPv4Stack");
+
         }
         Assertions.assertTrue(success);
         Assertions.assertNotNull(demoService);
