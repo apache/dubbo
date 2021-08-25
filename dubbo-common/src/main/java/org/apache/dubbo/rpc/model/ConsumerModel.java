@@ -18,6 +18,7 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.BaseServiceMetadata;
 import org.apache.dubbo.common.utils.Assert;
+import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
 
 import java.lang.reflect.Method;
@@ -64,7 +65,7 @@ public class ConsumerModel {
     }
 
     public void init(Map<String, AsyncMethodInfo> attributes) {
-        if (attributes != null) {
+        if (!CollectionUtils.isEmptyMap(attributes)) {
             this.methodConfigs = attributes;
         }
 

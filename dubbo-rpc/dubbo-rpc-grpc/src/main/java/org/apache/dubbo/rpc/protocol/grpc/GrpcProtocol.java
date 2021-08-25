@@ -117,10 +117,10 @@ public class GrpcProtocol extends AbstractProxyProtocol {
         // CallOptions
         try {
             String consumerModelKey = null;
-            if (url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+            if (url.getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY) == null) {
                 consumerModelKey = url.getServiceKey();
             } else {
-                consumerModelKey = url.getServiceKey() + url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+                consumerModelKey = url.getServiceKey() + url.getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY);
             }
             @SuppressWarnings("unchecked") final T stub = (T) dubboStubMethod.invoke(null,
                     channel,

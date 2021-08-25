@@ -188,11 +188,11 @@ public class FutureFilter implements Filter, Filter.Listener {
         }
 
         String consumerModelKey = null;
-        if (invoker.getUrl().getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+        if (invoker.getUrl().getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY) == null) {
             consumerModelKey = invoker.getUrl().getServiceKey();
         } else {
             consumerModelKey = invoker.getUrl().getServiceKey() 
-                    + invoker.getUrl().getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+                    + invoker.getUrl().getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY);
         }
         ConsumerModel consumerModel = ApplicationModel.getConsumerModel(consumerModelKey);
         if (consumerModel == null) {

@@ -60,10 +60,10 @@ public class InvokerInvocationHandler implements InvocationHandler {
         this.protocolServiceKey = this.url.getProtocolServiceKey();
         if (serviceKey != null) {
             String consumerModelKey = null;
-            if (this.url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY) == null) {
+            if (this.url.getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY) == null) {
                 consumerModelKey = serviceKey;
             } else {
-                consumerModelKey = serviceKey + this.url.getParameter(CommonConstants.ASYNC_METHODS_HASHCODE_KEY);
+                consumerModelKey = serviceKey + this.url.getParameter(CommonConstants.METHOD_CONFIGS_HASHCODE_KEY);
             }
             this.consumerModel = ApplicationModel.getConsumerModel(consumerModelKey);
         }

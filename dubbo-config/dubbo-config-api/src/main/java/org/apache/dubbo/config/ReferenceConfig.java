@@ -64,7 +64,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static org.apache.dubbo.common.constants.CommonConstants.ANY_VALUE;
-import static org.apache.dubbo.common.constants.CommonConstants.ASYNC_METHODS_HASHCODE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.METHOD_CONFIGS_HASHCODE_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.CLUSTER_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR;
 import static org.apache.dubbo.common.constants.CommonConstants.COMMA_SEPARATOR_CHAR;
@@ -268,12 +268,12 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
             }
         }
 
-        String asyncMethodsJsonHashcode = null;
+        String methodConfigsHashcode = null;
         if (!CollectionUtils.isEmptyMap(attributes)) {
-            asyncMethodsJsonHashcode = String.valueOf(JSON.toJSONString(attributes).hashCode());
-            map.put(ASYNC_METHODS_HASHCODE_KEY, asyncMethodsJsonHashcode);
+            methodConfigsHashcode = String.valueOf(attributes.hashCode());
+            map.put(METHOD_CONFIGS_HASHCODE_KEY, methodConfigsHashcode);
         }
-        checkAndUpdateSubConfigs(asyncMethodsJsonHashcode);
+        checkAndUpdateSubConfigs(methodConfigsHashcode);
 
         checkStubAndLocal(interfaceClass);
         ConfigValidationUtils.checkMock(interfaceClass, this);
@@ -324,10 +324,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         serviceMetadata.setTarget(ref);
         serviceMetadata.addAttribute(PROXY_CLASS_REF, ref);
         String consumerModelKey = null;
-        if (asyncMethodsJsonHashcode == null) {
+        if (methodConfigsHashcode == null) {
             consumerModelKey = serviceMetadata.getServiceKey();
         } else {
-            consumerModelKey = serviceMetadata.getServiceKey() +  asyncMethodsJsonHashcode;
+            consumerModelKey = serviceMetadata.getServiceKey() + methodConfigsHashcode;
         }
         ConsumerModel consumerModel = repository.lookupReferredService(consumerModelKey);
         consumerModel.setProxyObject(ref);
@@ -451,7 +451,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * This method should be called right after the creation of this class's instance, before any property in other config modules is used.
      * Check each config modules are created properly and override their properties if necessary.
      */
-    public void checkAndUpdateSubConfigs(String asyncMethodsJsonHashcode) {
+    public void checkAndUpdateSubConfigs(String methodConfigsHashcode) {
         if (StringUtils.isEmpty(interfaceName)) {
             throw new IllegalStateException("<dubbo:reference interface=\"\" /> interface not allow null!");
         }
@@ -488,10 +488,10 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         String consumerModelKey = null;
-        if (asyncMethodsJsonHashcode == null) {
+        if (methodConfigsHashcode == null) {
             consumerModelKey = serviceMetadata.getServiceKey();
         } else {
-            consumerModelKey = serviceMetadata.getServiceKey() +  asyncMethodsJsonHashcode;
+            consumerModelKey = serviceMetadata.getServiceKey() + methodConfigsHashcode;
         }
         repository.registerConsumer(
                 consumerModelKey,

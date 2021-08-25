@@ -416,5 +416,5 @@ public interface CommonConstants {
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
     
-    String ASYNC_METHODS_HASHCODE_KEY = "async-methods-hashcode";
+    String METHOD_CONFIGS_HASHCODE_KEY = "method-configs-hashcode";
 }
