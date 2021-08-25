@@ -16,3 +16,4 @@
 #
 
 singleConfigCenterExportProvider=org.apache.dubbo.integration.single.exportprovider.SingleRegistryCenterExportProviderRegistryProtocolListener
+multipleConfigCenterExportProvider=org.apache.dubbo.integration.multiple.exportprovider.MultipleRegistryCenterExportProviderRegistryProtocolListener

@@ -53,8 +53,8 @@ public class GenericServiceTest {
     @BeforeAll
     public static void beforeAll() {
         singleRegistryCenter = new ZookeeperSingleRegistryCenter();
-        singleRegistryCenter.startup();
         DubboBootstrap.reset();
+        singleRegistryCenter.startup();
     }
 
     @AfterAll
