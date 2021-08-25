@@ -193,9 +193,9 @@ public class DubboBootstrap {
 
     private final List<CompletableFuture<?>> asyncReferringFutures = new ArrayList<>();
 
-    private boolean asyncExportFinish = true;
+    private volatile boolean asyncExportFinish = true;
 
-    private boolean asyncReferFinish = true;
+    private volatile boolean asyncReferFinish = true;
 
     private static boolean ignoreConfigState;
 

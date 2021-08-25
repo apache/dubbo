@@ -45,14 +45,12 @@ public class WrapperComparator implements Comparator<Object> {
 
         Class clazz1 = (Class) o1;
         Class clazz2 = (Class) o2;
-
-        Class<?> inf = findSpi(clazz1);
-
+        
         OrderInfo a1 = parseOrder(clazz1);
         OrderInfo a2 = parseOrder(clazz2);
 
-        int n1 = a1 == null ? 0 : a1.order;
-        int n2 = a2 == null ? 0 : a2.order;
+        int n1 = a1.order;
+        int n2 = a2.order;
         // never return 0 even if n1 equals n2, otherwise, o1 and o2 will override each other in collection like HashSet
         return n1 > n2 ? 1 : -1;
     }
