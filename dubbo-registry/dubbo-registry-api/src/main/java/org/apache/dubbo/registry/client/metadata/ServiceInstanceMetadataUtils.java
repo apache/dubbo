@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -35,6 +34,7 @@ import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -48,6 +48,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_METADATA
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PORT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.PROTOCOL_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.REMOTE_METADATA_STORAGE_TYPE;
 import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
 import static org.apache.dubbo.common.constants.RegistryConstants.REGISTRY_CLUSTER_KEY;
 import static org.apache.dubbo.common.utils.StringUtils.isBlank;
@@ -258,8 +259,10 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
-        remoteMetadataService.publishMetadata(ApplicationModel.getName());
+        if (REMOTE_METADATA_STORAGE_TYPE.equals(ServiceInstanceMetadataUtils.getMetadataStorageType(serviceInstance))) {
+            RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+            remoteMetadataService.publishMetadata(ApplicationModel.getName());
+        }
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();

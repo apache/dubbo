@@ -1539,7 +1539,9 @@ public class DubboBootstrap {
     private void doRegisterServiceInstance(ServiceInstance serviceInstance) {
         // register instance only when at least one service is exported.
         if (serviceInstance.getPort() > 0) {
-            publishMetadataToRemote(serviceInstance);
+            if (REMOTE_METADATA_STORAGE_TYPE.equals(ServiceInstanceMetadataUtils.getMetadataStorageType(serviceInstance))) {
+                publishMetadataToRemote(serviceInstance);
+            }
             logger.info("Start registering instance address to registry.");
             getServiceDiscoveries().forEach(serviceDiscovery ->
             {
