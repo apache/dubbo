@@ -53,8 +53,6 @@ import org.apache.dubbo.rpc.protocol.injvm.InjvmProtocol;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
-import com.alibaba.fastjson.JSON;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
