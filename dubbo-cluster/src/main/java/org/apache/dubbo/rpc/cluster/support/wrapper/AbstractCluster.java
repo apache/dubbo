@@ -44,7 +44,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.REFERENCE_INTERC
 
 public abstract class AbstractCluster implements Cluster {
 
-    private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker, String key) {
+    private <T> Invoker<T> buildClusterInterceptors(AbstractClusterInvoker<T> clusterInvoker) {
 //        AbstractClusterInvoker<T> last = clusterInvoker;
         AbstractClusterInvoker<T> last = buildInterceptorInvoker(new ClusterFilterInvoker<>(clusterInvoker));
 
@@ -59,7 +59,7 @@ public abstract class AbstractCluster implements Cluster {
         if (directory instanceof StaticDirectory) {
             return doJoin(directory);
         }
-        return buildClusterInterceptors(doJoin(directory), directory.getUrl().getParameter(REFERENCE_INTERCEPTOR_KEY));
+        return buildClusterInterceptors(doJoin(directory));
     }
 
     private <T> AbstractClusterInvoker<T> buildInterceptorInvoker(AbstractClusterInvoker<T> invoker) {

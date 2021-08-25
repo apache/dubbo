@@ -18,6 +18,8 @@ package org.apache.dubbo.registry.client.migration.model;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
+
 public class SubMigrationRule {
     private String serviceKey;
     private MigrationStep step;
@@ -50,7 +52,7 @@ public class SubMigrationRule {
             interfaceMigrationRule.setDelay(Integer.valueOf(delay.toString()));
         }
 
-        Object force = map.get("force");
+        Object force = map.get(FORCE_KEY);
         if (force != null) {
             interfaceMigrationRule.setForce(Boolean.valueOf(force.toString()));
         }

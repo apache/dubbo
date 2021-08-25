@@ -18,6 +18,8 @@ package org.apache.dubbo.rpc.cluster.router;
 
 import java.util.Map;
 
+import static org.apache.dubbo.rpc.cluster.Constants.FORCE_KEY;
+
 /**
  * TODO Extract more code here if necessary
  */
@@ -41,7 +43,7 @@ public abstract class AbstractRouterRule {
             setRuntime(Boolean.parseBoolean(runtime.toString()));
         }
 
-        Object force = map.get("force");
+        Object force = map.get(FORCE_KEY);
         if (force != null) {
             setForce(Boolean.parseBoolean(force.toString()));
         }
