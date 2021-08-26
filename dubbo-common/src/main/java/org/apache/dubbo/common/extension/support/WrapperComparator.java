@@ -21,7 +21,8 @@ import org.apache.dubbo.common.extension.Activate;
 import java.util.Comparator;
 
 /**
- * OrderComparator
+ * OrderComparator  
+ * Derived from {@link ActivateComparator}
  */
 public class WrapperComparator implements Comparator<Object> {
 
