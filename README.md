@@ -168,10 +168,10 @@ The consumer will print out `hi, dubbo` on the screen.
 
 ### Next steps
 
-* [Your first Dubbo application](http://dubbo.apache.org/blog/2018/08/07/dubbo-101/) - A 101 tutorial to reveal more details, with the same code above.
-* [Dubbo user manual](http://dubbo.apache.org/docs/v2.7/user/preface/background/) - How to use Dubbo and all its features.
-* [Dubbo developer guide](http://dubbo.apache.org/docs/v2.7/dev/build/) - How to involve in Dubbo development.
-* [Dubbo admin manual](http://dubbo.apache.org/docs/v2.7/admin/install/provider-demo/) - How to admin and manage Dubbo services.
+* [Your first Dubbo application](https://dubbo.apache.org/blog/2018/08/07/dubbo-101/) - A 101 tutorial to reveal more details, with the same code above.
+* [Dubbo user manual](https://dubbo.apache.org/docs/v2.7/user/preface/background/) - How to use Dubbo and all its features.
+* [Dubbo developer guide](https://dubbo.apache.org/docs/v2.7/dev/build/) - How to involve in Dubbo development.
+* [Dubbo admin manual](https://dubbo.apache.org/docs/v2.7/admin/install/provider-demo/) - How to admin and manage Dubbo services.
 
 ## Building
 
