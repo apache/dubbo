@@ -19,7 +19,8 @@ package org.apache.dubbo.rpc.model;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.context.FrameworkExt;
 import org.apache.dubbo.common.context.LifecycleAdapter;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -37,7 +38,7 @@ import java.util.concurrent.ConcurrentMap;
 import static org.apache.dubbo.common.BaseServiceMetadata.interfaceFromServiceKey;
 import static org.apache.dubbo.common.BaseServiceMetadata.versionFromServiceKey;
 
-public class ServiceRepository extends LifecycleAdapter implements FrameworkExt {
+public class ServiceRepository extends LifecycleAdapter implements FrameworkExt, ExtensionAccessorAware {
 
     public static final String NAME = "repository";
 
@@ -55,10 +56,15 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
 
     // useful to find a url quickly with serviceInterfaceName:version
     private ConcurrentMap<String, Set<URL>> providerUrlsWithoutGroup = new ConcurrentHashMap<>();
+    private ExtensionAccessor extensionAccessor;
 
     public ServiceRepository() {
+    }
+
+    @Override
+    public void initialize() throws IllegalStateException {
         Set<BuiltinServiceDetector> builtinServices
-            = ExtensionLoader.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
+            = extensionAccessor.getExtensionLoader(BuiltinServiceDetector.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(builtinServices)) {
             for (BuiltinServiceDetector service : builtinServices) {
                 registerService(service.getService());
@@ -212,5 +218,10 @@ public class ServiceRepository extends LifecycleAdapter implements FrameworkExt 
         consumers.clear();
         providers.clear();
         providersWithoutGroup.clear();
+    }
+
+    @Override
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
     }
 }

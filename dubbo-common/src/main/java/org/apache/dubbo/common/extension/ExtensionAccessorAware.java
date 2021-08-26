@@ -14,27 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
-
-import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.ExtensionScope;
+package org.apache.dubbo.common.extension;
 
 /**
- * Model of a service module
+ * SPI extension can implement this aware interface to obtain appropriate {@link ExtensionAccessor} instance.
  */
-public class ModuleModel extends ScopeModel {
+public interface ExtensionAccessorAware {
 
-    private final ApplicationModel applicationModel;
-
-    public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
-        this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
-        postProcessAfterCreated();
-    }
-
-    public ApplicationModel getApplicationModel() {
-        return applicationModel;
-    }
+    void setExtensionAccessor(ExtensionAccessor extensionAccessor);
 
 }

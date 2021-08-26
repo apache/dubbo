@@ -17,7 +17,6 @@
 package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.compiler.support.AdaptiveCompiler;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.infra.InfraAdapter;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -551,7 +550,7 @@ public class ApplicationConfig extends AbstractConfig {
             parameters = new HashMap<>();
         }
 
-        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters = this.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
             inputParameters.put(APPLICATION_KEY, getName());

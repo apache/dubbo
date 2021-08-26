@@ -18,35 +18,38 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 
-public class ModelAwarePostProcessor implements ExtensionPostProcessor {
-    private Object model;
+public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor {
+    private ScopeModel scopeModel;
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
+    private volatile boolean inited;
 
-    public ModelAwarePostProcessor(Object model) {
-        this.model = model;
-        if (model instanceof FrameworkModel) {
-            frameworkModel = (FrameworkModel) model;
-        } else if (model instanceof ApplicationModel) {
-            applicationModel = (ApplicationModel) model;
-            frameworkModel = applicationModel.getFrameworkModel();
-        } else if (model instanceof ModuleModel) {
-            moduleModel = (ModuleModel) model;
-            applicationModel = moduleModel.getApplicationModel();
-            frameworkModel = applicationModel.getFrameworkModel();
+    public ScopeModelAwareExtensionProcessor(ScopeModel scopeModel) {
+        this.scopeModel = scopeModel;
+    }
+
+    private void init() {
+        if (inited) {
+            return;
         }
+        frameworkModel = ScopeModelUtil.getFrameworkModel(scopeModel);
+        applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
+        moduleModel = ScopeModelUtil.getModuleModel(scopeModel);
+        inited = true;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object instance, String name) throws Exception {
-        if (instance instanceof ModelAware) {
-            ModelAware modelAware = (ModelAware) instance;
-            if (this.applicationModel != null) {
-                modelAware.setApplicationModel(this.applicationModel);
-            }
+        init();
+        if (instance instanceof ScopeModelAware) {
+            ScopeModelAware modelAware = (ScopeModelAware) instance;
+            modelAware.setScopeModel(scopeModel);
             if (this.moduleModel != null) {
                 modelAware.setModuleModel(this.moduleModel);
+            }
+            if (this.applicationModel != null) {
+                modelAware.setApplicationModel(this.applicationModel);
             }
             if (this.frameworkModel != null) {
                 modelAware.setFrameworkModel(this.frameworkModel);
@@ -54,4 +57,5 @@ public class ModelAwarePostProcessor implements ExtensionPostProcessor {
         }
         return instance;
     }
+
 }

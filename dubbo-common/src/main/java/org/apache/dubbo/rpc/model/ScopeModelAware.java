@@ -19,7 +19,10 @@ package org.apache.dubbo.rpc.model;
 /**
  * Interface to inject FrameworkModel/ApplicationModel/ModuleModel for SPI extension.
  */
-public interface ModelAware {
+public interface ScopeModelAware {
+
+    default void setScopeModel(ScopeModel scopeModel) {
+    }
 
     default void setFrameworkModel(FrameworkModel frameworkModel) {
     }

@@ -20,7 +20,7 @@ package org.apache.dubbo.common.extension;
  * An injector to provide resources for SPI extension.
  */
 @SPI(scope = ExtensionScope.SELF)
-public interface ExtensionInjector extends ExtensionDirectorAware {
+public interface ExtensionInjector extends ExtensionAccessorAware {
 
     /**
      * Get instance of specify type and name.
@@ -32,6 +32,6 @@ public interface ExtensionInjector extends ExtensionDirectorAware {
     <T> T getInstance(Class<T> type, String name);
 
     @Override
-    default void setExtensionDirector(ExtensionDirector extensionDirector) {
+    default void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
     }
 }

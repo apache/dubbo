@@ -27,9 +27,10 @@ import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.context.ConfigManager;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -47,25 +48,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>
  */
 
-public class ApplicationModel {
+public class ApplicationModel extends ScopeModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(ApplicationModel.class);
     public static final String NAME = "application";
     private static volatile ApplicationModel defaultInstance;
 
-    private Collection<ModuleModel> moduleModels = Collections.synchronizedSet(new LinkedHashSet<>());
+    private volatile List<ModuleModel> moduleModels = Collections.synchronizedList(new ArrayList<>());
     private AtomicBoolean initFlag = new AtomicBoolean(false);
     private Environment environment;
     private ConfigManager configManager;
     private ServiceRepository serviceRepository;
 
     private FrameworkModel frameworkModel;
-    private ExtensionDirector extensionDirector;
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        super(frameworkModel, new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION));
         this.frameworkModel = frameworkModel;
-        extensionDirector = new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION);
-        extensionDirector.addExtensionPostProcessor(new ModelAwarePostProcessor(this));
         frameworkModel.addApplication(this);
+        postProcessAfterCreated();
     }
 
     public static ApplicationModel defaultModel() {
@@ -81,7 +81,7 @@ public class ApplicationModel {
 
     public void init() {
         if (initFlag.compareAndSet(false, true)) {
-            ExtensionLoader<ApplicationInitListener> extensionLoader = ExtensionLoader.getExtensionLoader(ApplicationInitListener.class);
+            ExtensionLoader<ApplicationInitListener> extensionLoader = this.getExtensionLoader(ApplicationInitListener.class);
             Set<String> listenerNames = extensionLoader.getSupportedExtensions();
             for (String listenerName : listenerNames) {
                 extensionLoader.getExtension(listenerName).init();
@@ -95,14 +95,6 @@ public class ApplicationModel {
 
     public FrameworkModel getFrameworkModel() {
         return frameworkModel;
-    }
-
-    public ExtensionDirector getExtensionDirector() {
-        return extensionDirector;
-    }
-
-    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return extensionDirector.getExtensionLoader(type);
     }
 
     public Collection<ConsumerModel> allConsumerModels() {
@@ -122,7 +114,7 @@ public class ApplicationModel {
     }
 
     public void initFrameworkExts() {
-        Set<FrameworkExt> exts = extensionDirector.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
+        Set<FrameworkExt> exts = this.getExtensionLoader(FrameworkExt.class).getSupportedExtensionInstances();
         for (FrameworkExt ext : exts) {
             ext.initialize();
         }
@@ -130,7 +122,7 @@ public class ApplicationModel {
 
     public Environment getEnvironment() {
         if (environment == null) {
-            environment = (Environment) extensionDirector.getExtensionLoader(FrameworkExt.class)
+            environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(Environment.NAME);
         }
         return environment;
@@ -138,7 +130,7 @@ public class ApplicationModel {
 
     public ConfigManager getConfigManager() {
         if (configManager == null) {
-            configManager = (ConfigManager) extensionDirector.getExtensionLoader(FrameworkExt.class)
+            configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(ConfigManager.NAME);
         }
         return configManager;
@@ -146,14 +138,14 @@ public class ApplicationModel {
 
     public ServiceRepository getServiceRepository() {
         if (serviceRepository == null) {
-            serviceRepository = (ServiceRepository) extensionDirector.getExtensionLoader(FrameworkExt.class)
+            serviceRepository = (ServiceRepository) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(ServiceRepository.NAME);
         }
         return serviceRepository;
     }
 
     public ExecutorRepository getExecutorRepository() {
-        return extensionDirector.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
+        return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     }
 
     public ApplicationConfig getApplicationConfig() {
@@ -165,15 +157,24 @@ public class ApplicationModel {
     }
 
     public void addModule(ModuleModel model) {
-        this.moduleModels.add(model);
+        if (!this.moduleModels.contains(model)) {
+            this.moduleModels.add(model);
+        }
     }
 
     public void removeModule(ModuleModel model) {
         this.moduleModels.remove(model);
     }
 
-    public Collection<ModuleModel> getModuleModels() {
+    public List<ModuleModel> getModuleModels() {
         return moduleModels;
+    }
+
+    public synchronized ModuleModel getDefaultModule() {
+        if (moduleModels.isEmpty()) {
+            this.addModule(new ModuleModel(this));
+        }
+        return moduleModels.get(0);
     }
 
     // only for unit test

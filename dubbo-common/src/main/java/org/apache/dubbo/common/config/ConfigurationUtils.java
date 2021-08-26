@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.common.config;
 
+import org.apache.dubbo.common.config.configcenter.DynamicConfigurationFactory;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -275,4 +278,16 @@ public class ConfigurationUtils {
         return ids;
     }
 
+    /**
+     * Get an instance of {@link DynamicConfigurationFactory} by the specified name. If not found, take the default
+     * extension of {@link DynamicConfigurationFactory}
+     *
+     * @param name the name of extension of {@link DynamicConfigurationFactory}
+     * @return non-null
+     * @see 2.7.4
+     */
+    public static DynamicConfigurationFactory getDynamicConfigurationFactory(ExtensionAccessor extensionAccessor, String name) {
+        ExtensionLoader<DynamicConfigurationFactory> loader = extensionAccessor.getExtensionLoader(DynamicConfigurationFactory.class);
+        return loader.getOrDefaultExtension(name);
+    }
 }

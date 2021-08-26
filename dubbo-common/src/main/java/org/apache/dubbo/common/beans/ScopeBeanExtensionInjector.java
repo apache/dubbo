@@ -14,13 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.common.extension;
+package org.apache.dubbo.common.beans;
+
+import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
+import org.apache.dubbo.common.extension.ExtensionInjector;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 /**
- * SPI extension can implement this aware interface to obtain appropriate {@link ExtensionDirector} instance.
+ * Inject scope bean to SPI extension instance
  */
-public interface ExtensionDirectorAware {
+public class ScopeBeanExtensionInjector implements ExtensionInjector, ScopeModelAware {
+    private ScopeModel scopeModel;
+    private ScopeBeanFactory beanFactory;
 
-    void setExtensionDirector(ExtensionDirector extensionDirector);
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        this.scopeModel = scopeModel;
+        this.beanFactory = scopeModel.getBeanFactory();
+    }
 
+    @Override
+    public <T> T getInstance(Class<T> type, String name) {
+        return beanFactory.getBean(name, type);
+    }
 }

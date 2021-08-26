@@ -16,25 +16,23 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.ExtensionScope;
-
 /**
- * Model of a service module
+ * An accessor for scope module, it can be use in interface default methods to get scope model.
  */
-public class ModuleModel extends ScopeModel {
+public interface ScopeModelAccessor {
 
-    private final ApplicationModel applicationModel;
+    ScopeModel getScopeModel();
 
-    public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
-        this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
-        postProcessAfterCreated();
+    default FrameworkModel getFrameworkModel() {
+        return ScopeModelUtil.getFrameworkModel(getScopeModel());
     }
 
-    public ApplicationModel getApplicationModel() {
-        return applicationModel;
+    default ApplicationModel getApplicationModel() {
+        return ScopeModelUtil.getApplicationModel(getScopeModel());
+    }
+
+    default ModuleModel getModuleModel() {
+        return ScopeModelUtil.getModuleModel(getScopeModel());
     }
 
 }

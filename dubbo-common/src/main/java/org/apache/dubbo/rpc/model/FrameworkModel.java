@@ -17,31 +17,28 @@
 package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.List;
 
 /**
  * Model of dubbo framework, it can be shared with multiple applications.
  */
-public class FrameworkModel {
+public class FrameworkModel extends ScopeModel {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(FrameworkModel.class);
 
     private volatile static FrameworkModel defaultInstance;
 
-    private final ExtensionDirector extensionDirector;
-
-    private Collection<ApplicationModel> applicationModels = Collections.synchronizedSet(new LinkedHashSet<>());
+    private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
     public FrameworkModel() {
-        extensionDirector = new ExtensionDirector(null, ExtensionScope.FRAMEWORK);
-        extensionDirector.addExtensionPostProcessor(new ModelAwarePostProcessor(this));
+        super(null, new ExtensionDirector(null, ExtensionScope.FRAMEWORK));
+        postProcessAfterCreated();
     }
 
     public static FrameworkModel defaultModel() {
@@ -55,23 +52,17 @@ public class FrameworkModel {
         return defaultInstance;
     }
 
-    public ExtensionDirector getExtensionDirector() {
-        return extensionDirector;
-    }
-
-    public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return extensionDirector.getExtensionLoader(type);
-    }
-
     public void addApplication(ApplicationModel model) {
-        this.applicationModels.add(model);
+        if (!this.applicationModels.contains(model)) {
+            this.applicationModels.add(model);
+        }
     }
 
     public void removeApplication(ApplicationModel model) {
         this.applicationModels.remove(model);
     }
 
-    public Collection<ApplicationModel> getApplicationModels() {
+    public List<ApplicationModel> getApplicationModels() {
         return applicationModels;
     }
 }

@@ -18,6 +18,7 @@ package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
@@ -32,7 +33,7 @@ import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoad
  *
  * @since 2.7.5
  */
-@SPI("default")
+@SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
     /**
      * Gets the current Dubbo Service name

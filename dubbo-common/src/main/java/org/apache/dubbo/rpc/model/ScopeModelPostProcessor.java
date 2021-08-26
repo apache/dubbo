@@ -16,25 +16,19 @@
  */
 package org.apache.dubbo.rpc.model;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
 import org.apache.dubbo.common.extension.ExtensionScope;
+import org.apache.dubbo.common.extension.SPI;
 
 /**
- * Model of a service module
+ * A post-processor after scope model is created (one of FrameworkModel/ApplicationModel/ModuleModel)
  */
-public class ModuleModel extends ScopeModel {
+@SPI(scope = ExtensionScope.FRAMEWORK)
+public interface ScopeModelPostProcessor {
 
-    private final ApplicationModel applicationModel;
-
-    public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
-        this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
-        postProcessAfterCreated();
-    }
-
-    public ApplicationModel getApplicationModel() {
-        return applicationModel;
-    }
+    /**
+     * Post-process after a scope model is created.
+     * @param scopeModel
+     */
+    void postProcessScopeModel(ScopeModel scopeModel);
 
 }

@@ -16,7 +16,7 @@
  */
 package org.apache.dubbo.common.extension.inject;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.SPI;
@@ -26,17 +26,17 @@ import org.apache.dubbo.common.extension.SPI;
  */
 public class SpiExtensionInjector implements ExtensionInjector {
 
-    private ExtensionDirector extensionDirector;
+    private ExtensionAccessor extensionAccessor;
 
     @Override
-    public void setExtensionDirector(ExtensionDirector extensionDirector) {
-        this.extensionDirector = extensionDirector;
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
     }
 
     @Override
     public <T> T getInstance(Class<T> type, String name) {
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
-            ExtensionLoader<T> loader = extensionDirector.getExtensionLoader(type);
+            ExtensionLoader<T> loader = extensionAccessor.getExtensionLoader(type);
             if (loader == null) {
                 return null;
             }

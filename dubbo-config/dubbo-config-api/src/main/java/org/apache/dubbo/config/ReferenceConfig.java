@@ -40,7 +40,6 @@ import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.directory.StaticDirectory;
 import org.apache.dubbo.rpc.cluster.support.ClusterUtils;
 import org.apache.dubbo.rpc.cluster.support.registry.ZoneAwareCluster;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceDescriptor;
 import org.apache.dubbo.rpc.model.ServiceRepository;
 import org.apache.dubbo.rpc.model.AsyncMethodInfo;
@@ -104,13 +103,13 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      * Actually，when the {@link ExtensionLoader} init the {@link Protocol} instants,it will automatically wraps two
      * layers, and eventually will get a <b>ProtocolFilterWrapper</b> or <b>ProtocolListenerWrapper</b>
      */
-    private static final Protocol REF_PROTOCOL = ExtensionLoader.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+    private Protocol protocolSPI;
 
     /**
      * A {@link ProxyFactory} implementation that will generate a reference service's proxy,the JavassistProxyFactory is
      * its default implementation
      */
-    private static final ProxyFactory PROXY_FACTORY = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
+    private ProxyFactory proxyFactory;
 
     /**
      * The interface proxy reference
@@ -147,6 +146,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
     public ReferenceConfig(Reference reference) {
         super(reference);
+    }
+
+    @Override
+    protected void initExtensions() {
+        super.initExtensions();
+
+        protocolSPI = this.getExtensionLoader(Protocol.class).getAdaptiveExtension();
+        proxyFactory = this.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     }
 
     /**
@@ -248,7 +255,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         Map<String, String> referenceParameters = appendConfig();
 
 
-        ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+        ServiceRepository repository = getApplicationModel().getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(interfaceClass);
         repository.registerConsumer(
             serviceMetadata.getServiceKey(),
@@ -386,7 +393,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy
-        return (T) PROXY_FACTORY.getProxy(invoker, ProtocolUtils.isGeneric(generic));
+        return (T) proxyFactory.getProxy(invoker, ProtocolUtils.isGeneric(generic));
     }
 
     /**
@@ -396,7 +403,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void createInvokerForLocal(Map<String, String> referenceParameters) {
         URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
-        invoker = REF_PROTOCOL.refer(interfaceClass, url);
+        invoker = protocolSPI.refer(interfaceClass, url);
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
         }
@@ -454,14 +461,14 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createInvokerForRemote() {
         if (urls.size() == 1) {
-            invoker = REF_PROTOCOL.refer(interfaceClass, urls.get(0));
+            invoker = protocolSPI.refer(interfaceClass, urls.get(0));
         } else {
             List<Invoker<?>> invokers = new ArrayList<>();
             URL registryUrl = null;
             for (URL url : urls) {
                 // For multi-registry scenarios, it is not checked whether each referInvoker is available.
                 // Because this invoker may become available later.
-                invokers.add(REF_PROTOCOL.refer(interfaceClass, url));
+                invokers.add(protocolSPI.refer(interfaceClass, url));
 
                 if (UrlUtils.isRegistry(url)) {
                     // use last registry url
@@ -516,7 +523,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         completeCompoundConfigs();
 
         // init some null configuration.
-        List<ConfigInitializer> configInitializers = ExtensionLoader.getExtensionLoader(ConfigInitializer.class)
+        List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
             .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
         configInitializers.forEach(e -> e.initReferConfig(this));
 
@@ -592,7 +599,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
     }
 
     private void postProcessConfig() {
-        List<ConfigPostProcessor> configPostProcessors = ExtensionLoader.getExtensionLoader(ConfigPostProcessor.class)
+        List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
             .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessReferConfig(this));
     }

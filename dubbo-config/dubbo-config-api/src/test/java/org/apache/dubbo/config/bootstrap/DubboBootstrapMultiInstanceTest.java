@@ -16,6 +16,12 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.api.DemoService;
+import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.junit.jupiter.api.Assertions;
@@ -34,18 +40,37 @@ public class DubboBootstrapMultiInstanceTest {
         Assertions.assertNotSame(applicationModel1.getFrameworkModel(), applicationModel2.getFrameworkModel());
         Assertions.assertNotSame(dubboBootstrap1.getConfigManager(), dubboBootstrap2.getConfigManager());
 
-//        dubboBootstrap1.application("app1")
-//            .registry(registry1)
-//            .configCenter(configCenter1)
-//            .metadataReport(metadataReport1)
-//            .protocol(protocol1)
-//            .provider(provider1)
-//            .consumer(consumer1)
-//            .monitor(monitor1)
-//            .metrics(metrics1)
-//            .ssl(sslConfig1);
-//
+        // bootstrap1: provider app
+        RegistryConfig registry1 = new RegistryConfig();
+        registry1.setAddress("zookeeper://localhost:2181");
 
+        ProtocolConfig protocol1 = new ProtocolConfig();
+        protocol1.setName("dubbo");
+        protocol1.setPort(2001);
+
+        ServiceConfig<DemoService> serviceConfig = new ServiceConfig<>();
+        serviceConfig.setInterface(DemoService.class);
+        serviceConfig.setRef(new DemoServiceImpl());
+
+        dubboBootstrap1.application("provider-app")
+            .registry(registry1)
+            .protocol(protocol1)
+            .service(serviceConfig)
+            .start();
+
+
+        // bootstrap2: consumer app
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(DemoService.class);
+
+        dubboBootstrap2.application("consumer-app")
+            .registry(new RegistryConfig("zookeeper://localhost:2181"))
+            .reference(referenceConfig)
+            .start();
+
+        DemoService demoServiceRefer = dubboBootstrap2.getCache().get(DemoService.class);
+        String result = demoServiceRefer.sayName("dubbo");
+        System.out.println("result: " + result);
     }
 
     @Test

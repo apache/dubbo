@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p>ExtensionDirector supports multiple levels, and the child can inherit the parent's extension instances. </p>
  * <p>The way to find and create an extension instance is similar to Java classloader.</p>
  */
-public class ExtensionDirector {
+public class ExtensionDirector implements ExtensionAccessor {
 
     private final ConcurrentMap<Class<?>, ExtensionLoader<?>> extensionLoadersMap = new ConcurrentHashMap<>(64);
     private ExtensionDirector parent;
@@ -50,21 +50,12 @@ public class ExtensionDirector {
         return extensionPostProcessors;
     }
 
-    public <T> T getExtension(Class<T> type, String name) {
-        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
-        return extensionLoader != null ? extensionLoader.getExtension(name) : null;
+    @Override
+    public ExtensionDirector getExtensionDirector() {
+        return this;
     }
 
-    public <T> T getAdaptiveExtension(Class<T> type) {
-        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
-        return extensionLoader != null ? extensionLoader.getAdaptiveExtension() : null;
-    }
-
-    public <T> T getDefaultExtension(Class<T> type) {
-        ExtensionLoader<T> extensionLoader = getExtensionLoader(type);
-        return extensionLoader != null ? extensionLoader.getDefaultExtension() : null;
-    }
-
+    @Override
     public <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null) {
             throw new IllegalArgumentException("Extension type == null");
@@ -130,7 +121,7 @@ public class ExtensionDirector {
         return type.isAnnotationPresent(SPI.class);
     }
 
-    protected ExtensionDirector getParent() {
+    public ExtensionDirector getParent() {
         return parent;
     }
 }

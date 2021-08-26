@@ -14,27 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.model;
+package org.apache.dubbo.common.beans;
 
-import org.apache.dubbo.common.extension.ExtensionDirector;
-import org.apache.dubbo.common.extension.ExtensionScope;
+public class ScopeBeanException extends RuntimeException {
 
-/**
- * Model of a service module
- */
-public class ModuleModel extends ScopeModel {
-
-    private final ApplicationModel applicationModel;
-
-    public ModuleModel(ApplicationModel applicationModel) {
-        super(applicationModel, new ExtensionDirector(applicationModel.getExtensionDirector(), ExtensionScope.MODULE));
-        this.applicationModel = applicationModel;
-        applicationModel.addModule(this);
-        postProcessAfterCreated();
+    public ScopeBeanException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public ApplicationModel getApplicationModel() {
-        return applicationModel;
+    public ScopeBeanException(String message) {
+        super(message);
     }
-
 }

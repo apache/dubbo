@@ -17,7 +17,8 @@
 package org.apache.dubbo.monitor.dubbo;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
+import org.apache.dubbo.common.extension.ExtensionAccessorAware;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.store.DataStore;
@@ -67,12 +68,13 @@ import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
 import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
 
-public class MetricsFilter implements Filter {
+public class MetricsFilter implements Filter, ExtensionAccessorAware {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
     protected static volatile AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
+    private ExtensionAccessor extensionAccessor;
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -80,7 +82,7 @@ public class MetricsFilter implements Filter {
             this.protocolName = invoker.getUrl().getParameter(METRICS_PROTOCOL) == null ?
                     DEFAULT_PROTOCOL : invoker.getUrl().getParameter(METRICS_PROTOCOL);
 
-            Protocol protocol = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(protocolName);
+            Protocol protocol = extensionAccessor.getExtensionLoader(Protocol.class).getExtension(protocolName);
 
             this.port = invoker.getUrl().getParameter(METRICS_PORT) == null ?
                     protocol.getDefaultPort() : Integer.valueOf(invoker.getUrl().getParameter(METRICS_PORT));
@@ -176,7 +178,7 @@ public class MetricsFilter implements Filter {
     }
 
     private List<MetricObject> getThreadPoolMessage() {
-        DataStore dataStore = ExtensionLoader.getExtensionLoader(DataStore.class).getDefaultExtension();
+        DataStore dataStore = extensionAccessor.getExtensionLoader(DataStore.class).getDefaultExtension();
         Map<String, Object> executors = dataStore.get(EXECUTOR_SERVICE_COMPONENT_KEY);
 
         List<MetricObject> threadPoolMtricList = new ArrayList<>();
@@ -256,5 +258,10 @@ public class MetricsFilter implements Filter {
         };
 
         return metricsInvoker;
+    }
+
+    @Override
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
     }
 }

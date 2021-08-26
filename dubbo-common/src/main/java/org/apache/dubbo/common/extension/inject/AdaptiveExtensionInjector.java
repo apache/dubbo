@@ -18,7 +18,7 @@ package org.apache.dubbo.common.extension.inject;
 
 import org.apache.dubbo.common.context.Lifecycle;
 import org.apache.dubbo.common.extension.Adaptive;
-import org.apache.dubbo.common.extension.ExtensionDirector;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionInjector;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 
@@ -34,19 +34,19 @@ public class AdaptiveExtensionInjector implements ExtensionInjector, Lifecycle {
 
     private List<ExtensionInjector> injectors = Collections.emptyList();
 
-    private ExtensionDirector extensionDirector;
+    private ExtensionAccessor extensionAccessor;
 
     public AdaptiveExtensionInjector() {
     }
 
     @Override
-    public void setExtensionDirector(ExtensionDirector extensionDirector) {
-        this.extensionDirector = extensionDirector;
+    public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
+        this.extensionAccessor = extensionAccessor;
     }
 
     @Override
     public void initialize() throws IllegalStateException {
-        ExtensionLoader<ExtensionInjector> loader = extensionDirector.getExtensionLoader(ExtensionInjector.class);
+        ExtensionLoader<ExtensionInjector> loader = extensionAccessor.getExtensionLoader(ExtensionInjector.class);
         List<ExtensionInjector> list = new ArrayList<ExtensionInjector>();
         for (String name : loader.getSupportedExtensions()) {
             list.add(loader.getExtension(name));

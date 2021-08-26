@@ -18,10 +18,10 @@ package org.apache.dubbo.common.extension.director.impl;
 
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
-import org.apache.dubbo.rpc.model.ModelAware;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.model.ModuleModel;
 
-public class BaseTestService implements ModelAware {
+public class BaseTestService implements ScopeModelAware {
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;

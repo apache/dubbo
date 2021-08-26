@@ -174,7 +174,7 @@ public class ExtensionLoader<T> {
      */
     @Deprecated
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
-        return ApplicationModel.defaultModel().getExtensionDirector().getExtensionLoader(type);
+        return ApplicationModel.defaultModel().getExtensionLoader(type);
     }
 
     // For testing purposes only
@@ -734,8 +734,8 @@ public class ExtensionLoader<T> {
     }
 
     private T postProcessAfterInitialization(T instance, String name) throws Exception {
-        if (instance instanceof ExtensionDirectorAware) {
-            ((ExtensionDirectorAware) instance).setExtensionDirector(extensionDirector);
+        if (instance instanceof ExtensionAccessorAware) {
+            ((ExtensionAccessorAware) instance).setExtensionAccessor(extensionDirector);
         }
         if (extensionPostProcessors != null) {
             for (ExtensionPostProcessor processor : extensionPostProcessors) {
