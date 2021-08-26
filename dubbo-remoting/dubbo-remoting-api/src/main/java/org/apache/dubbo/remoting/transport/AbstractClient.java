@@ -54,8 +54,8 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
 
     public AbstractClient(URL url, ChannelHandler handler) throws RemotingException {
         super(url, handler);
-
-        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, false);
+        // set default needReconnect true when channel is not connected
+        needReconnect = url.getParameter(Constants.SEND_RECONNECT_KEY, true);
 
         initExecutor(url);
 

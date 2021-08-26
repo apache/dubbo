@@ -17,14 +17,22 @@
 package org.apache.dubbo.rpc.cluster.support.migration;
 
 import org.apache.dubbo.common.config.configcenter.DynamicConfiguration;
+import org.apache.dubbo.common.logger.Logger;
+import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.utils.PojoUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import java.util.Map;
 import java.util.Optional;
 
+import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
+
 public class MigrationRule {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MigrationRule.class);
+
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION_KEY = "dubbo.application.service-discovery.migration";
     public static final String DUBBO_SERVICEDISCOVERY_MIGRATION_GROUP = "MIGRATION";
     public static final String RULE_KEY = ApplicationModel.getName() + ".migration";
@@ -33,9 +41,7 @@ public class MigrationRule {
 
     static {
         Optional<DynamicConfiguration> optional = ApplicationModel.getEnvironment().getDynamicConfiguration();
-        if (optional.isPresent()) {
-            configuration = optional.get();
-        }
+        optional.ifPresent(dynamicConfiguration -> configuration = dynamicConfiguration);
     }
 
     private String key;
@@ -62,15 +68,28 @@ public class MigrationRule {
             return getMigrationRule(null);
         }
 
-        if (StringUtils.isBlank(rawRule) || "INIT".equals(rawRule)) {
+        if (StringUtils.isBlank(rawRule) || INIT.equals(rawRule)) {
             String step = (String)configuration.getInternalProperty(DUBBO_SERVICEDISCOVERY_MIGRATION_KEY);
             return getMigrationRule(step);
 
         }
 
-        Constructor constructor = new Constructor(MigrationRule.class);
-        Yaml yaml = new Yaml(constructor);
-        return yaml.load(rawRule);
+        Yaml yaml = new Yaml(new SafeConstructor());
+        MigrationRule migrationRule = null;
+        try {
+            Map<String, Object> map = yaml.load(rawRule);
+            migrationRule = PojoUtils.mapToPojo(map, MigrationRule.class);
+
+            if (null == migrationRule.getStep()) {
+                LOGGER.warn("Failed to parse migrationRule, step is empty, automatically switch to APPLICATION_FIRST.");
+                migrationRule = getMigrationRule(null);
+            }
+        } catch (Exception e) {
+            LOGGER.error("Failed to parse migrationRule, automatically switch to APPLICATION_FIRST.");
+            migrationRule = getMigrationRule(null);
+        }
+
+        return migrationRule;
     }
 
     public static MigrationRule queryRule() {

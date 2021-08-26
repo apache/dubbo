@@ -53,7 +53,8 @@ public class ProtocolFilterWrapper implements Protocol {
         List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(invoker.getUrl(), key, group);
 
         if (!filters.isEmpty()) {
-            for (Filter filter : filters) {
+            for (int i = filters.size() - 1; i >= 0; i--) {
+                final Filter filter = filters.get(i);
                 last = new FilterNode<T>(invoker, last, filter);
             }
         }

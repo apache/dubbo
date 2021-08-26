@@ -41,7 +41,7 @@ public interface MigrationClusterInvoker<T> extends ClusterInvoker<T> {
 
     void destroyInterfaceInvoker(ClusterInvoker<T> invoker);
 
-    boolean isMigrationMultiRegsitry();
+    boolean isMigrationMultiRegistry();
 
     void migrateToServiceDiscoveryInvoker(boolean forceMigrate);
 

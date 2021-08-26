@@ -39,6 +39,11 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-remoting-zookeeper-curator5</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.curator</groupId>
             <artifactId>curator-test</artifactId>
             <scope>test</scope>

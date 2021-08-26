@@ -16,13 +16,11 @@
  */
 package org.apache.dubbo.registry.client.migration;
 
-import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationRule;
 import org.apache.dubbo.rpc.cluster.support.migration.MigrationStep;
 
-@Activate
 public class MigrationRuleHandler<T> {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleHandler.class);
 
@@ -48,7 +46,7 @@ public class MigrationRuleHandler<T> {
 
         migrationInvoker.setMigrationRule(rule);
 
-        if (migrationInvoker.isMigrationMultiRegsitry()) {
+        if (migrationInvoker.isMigrationMultiRegistry()) {
             if (migrationInvoker.isServiceInvoker()) {
                 migrationInvoker.refreshServiceDiscoveryInvoker();
             } else {

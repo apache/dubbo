@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+
 import org.apache.dubbo.rpc.proxy.InvokerInvocationHandler;
 
 import java.util.HashMap;
@@ -26,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+
+import static org.apache.dubbo.rpc.Constants.INVOCATION_KEY;
 
 /**
  * {@link AsyncRpcResult} is introduced in 3.0.0 to replace RpcResult, and RpcResult is replaced with {@link AppResponse}:
@@ -42,7 +45,7 @@ import java.util.function.Function;
  *  }
  * </pre>
  * AsyncRpcResult is a future representing an unfinished RPC call, while AppResponse is the actual return type of this call.
- * In theory, AppResponse does'n have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
+ * In theory, AppResponse doesn't have to implement the {@link Result} interface, this is done mainly for compatibility purpose.
  *
  * @serial Do not change the class name and properties.
  */
@@ -56,7 +59,13 @@ public class AppResponse implements Result {
 
     private Map<String, Object> attachments = new HashMap<>();
 
+    private Map<String, Object> attributes = new HashMap<>();
+
     public AppResponse() {
+    }
+
+    public AppResponse(Invocation invocation) {
+        this.setAttribute(INVOCATION_KEY, invocation);
     }
 
     public AppResponse(Object result) {
@@ -203,6 +212,14 @@ public class AppResponse implements Result {
     @Override
     public void setObjectAttachment(String key, Object value) {
         attachments.put(key, value);
+    }
+
+    public Object getAttribute(String key) {
+        return attributes.get(key);
+    }
+
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
     }
 
     @Override

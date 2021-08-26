@@ -22,20 +22,24 @@ import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.nacos.NacosNamingServiceWrapper;
 
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.PropertyKeyConst;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.alibaba.nacos.api.naming.NamingService;
+import com.alibaba.nacos.api.naming.PreservedMetadataKeys;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.utils.NamingUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
 import static com.alibaba.nacos.api.PropertyKeyConst.NAMING_LOAD_CACHE_AT_START;
 import static com.alibaba.nacos.api.PropertyKeyConst.SERVER_ADDR;
 import static com.alibaba.nacos.api.common.Constants.DEFAULT_GROUP;
+import static com.alibaba.nacos.client.naming.utils.UtilAndComs.NACOS_NAMING_LOG_NAME;
 import static org.apache.dubbo.common.constants.RemotingConstants.BACKUP_KEY;
 import static org.apache.dubbo.common.utils.StringConstantFieldValuePredicate.of;
 
@@ -101,7 +105,7 @@ public class NacosNamingServiceUtils {
      * @return {@link NamingService}
      * @since 2.7.5
      */
-    public static NamingService createNamingService(URL connectionURL) {
+    public static NacosNamingServiceWrapper createNamingService(URL connectionURL) {
         Properties nacosProperties = buildNacosProperties(connectionURL);
         NamingService namingService;
         try {
@@ -112,7 +116,7 @@ public class NacosNamingServiceUtils {
             }
             throw new IllegalStateException(e);
         }
-        return namingService;
+        return new NacosNamingServiceWrapper(namingService);
     }
 
     private static Properties buildNacosProperties(URL url) {
@@ -139,6 +143,8 @@ public class NacosNamingServiceUtils {
     }
 
     private static void setProperties(URL url, Properties properties) {
+        putPropertyIfAbsent(url, properties, NACOS_NAMING_LOG_NAME);
+
         // @since 2.7.8 : Refactoring
         // Get the parameters from constants
         Map<String, String> parameters = url.getParameters(of(PropertyKeyConst.class));
@@ -162,5 +168,25 @@ public class NacosNamingServiceUtils {
         } else {
             properties.setProperty(propertyName, defaultValue);
         }
+    }
+
+    public static Map<String, String> getNacosPreservedParam(URL registryUrl) {
+        Map<String, String> map = new HashMap<>();
+        if (registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE) != null) {
+            map.put(PreservedMetadataKeys.REGISTER_SOURCE, registryUrl.getParameter(PreservedMetadataKeys.REGISTER_SOURCE));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT) != null) {
+            map.put(PreservedMetadataKeys.HEART_BEAT_TIMEOUT, registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT) != null) {
+            map.put(PreservedMetadataKeys.IP_DELETE_TIMEOUT, registryUrl.getParameter(PreservedMetadataKeys.IP_DELETE_TIMEOUT));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL) != null) {
+            map.put(PreservedMetadataKeys.HEART_BEAT_INTERVAL, registryUrl.getParameter(PreservedMetadataKeys.HEART_BEAT_INTERVAL));
+        }
+        if (registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR) != null) {
+            map.put(PreservedMetadataKeys.INSTANCE_ID_GENERATOR, registryUrl.getParameter(PreservedMetadataKeys.INSTANCE_ID_GENERATOR));
+        }
+        return map;
     }
 }

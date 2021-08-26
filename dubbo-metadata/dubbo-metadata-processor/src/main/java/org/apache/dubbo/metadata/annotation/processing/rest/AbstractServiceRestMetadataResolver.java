@@ -61,9 +61,9 @@ import static org.apache.dubbo.metadata.annotation.processing.util.ServiceAnnota
  */
 public abstract class AbstractServiceRestMetadataResolver implements ServiceRestMetadataResolver {
 
-    private final static ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
+    private static final ThreadLocal<Map<String, Object>> threadLocalCache = withInitial(HashMap::new);
 
-    private final static Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
+    private static final Map<String, List<AnnotatedMethodParameterProcessor>> parameterProcessorsMap = loadAnnotatedMethodParameterProcessors();
 
     private final String processorName = getClass().getSimpleName();
 

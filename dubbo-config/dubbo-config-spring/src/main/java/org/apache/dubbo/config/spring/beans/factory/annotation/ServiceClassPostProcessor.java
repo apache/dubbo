@@ -18,15 +18,15 @@ package org.apache.dubbo.config.spring.beans.factory.annotation;
 
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.config.MethodConfig;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.apache.dubbo.config.annotation.Method;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.spring.ServiceBean;
+import org.apache.dubbo.config.spring.context.DubboBootstrapApplicationListener;
 import org.apache.dubbo.config.spring.context.annotation.DubboClassPathBeanDefinitionScanner;
 import org.apache.dubbo.config.spring.schema.AnnotationBeanDefinitionParser;
-
+import org.apache.dubbo.config.spring.util.DubboAnnotationUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.BeanClassLoaderAware;
@@ -49,6 +49,7 @@ import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.AnnotationConfigUtils;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
@@ -60,13 +61,12 @@ import org.springframework.util.StringUtils;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static com.alibaba.spring.util.BeanRegistrar.registerInfrastructureBean;
 import static com.alibaba.spring.util.ObjectUtils.of;
 import static java.util.Arrays.asList;
 import static org.apache.dubbo.config.spring.beans.factory.annotation.ServiceBeanNameBuilder.create;
@@ -79,7 +79,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 
 /**
  * {@link BeanFactoryPostProcessor} used for processing of {@link Service @Service} annotated classes. it's also the
- * infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbbo:annotation /&gt;
+ * infrastructure class of XML {@link BeanDefinitionParser} on &lt;dubbo:annotation /&gt;
  *
  * @see AnnotationBeanDefinitionParser
  * @see BeanDefinitionRegistryPostProcessor
@@ -88,7 +88,7 @@ import static org.springframework.util.ClassUtils.resolveClassName;
 public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProcessor, EnvironmentAware,
         ResourceLoaderAware, BeanClassLoaderAware {
 
-    private final static List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
+    private static final List<Class<? extends Annotation>> serviceAnnotationTypes = asList(
             // @since 2.7.7 Add the @DubboService , the issue : https://github.com/apache/dubbo/issues/6007
             DubboService.class,
             // @since 2.7.0 the substitute @com.alibaba.dubbo.config.annotation.Service
@@ -122,6 +122,9 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
+
+        // @since 2.7.5
+        registerInfrastructureBean(registry, DubboBootstrapApplicationListener.BEAN_NAME, DubboBootstrapApplicationListener.class);
 
         Set<String> resolvedPackagesToScan = resolvePackagesToScan(packagesToScan);
 
@@ -234,7 +237,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
      * {@link Service} Annotation.
      *
      * @param scanner       {@link ClassPathBeanDefinitionScanner}
-     * @param packageToScan pachage to scan
+     * @param packageToScan package to scan
      * @param registry      {@link BeanDefinitionRegistry}
      * @return non-null
      * @since 2.5.8
@@ -286,12 +289,21 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
 
         AbstractBeanDefinition serviceBeanDefinition =
                 buildServiceBeanDefinition(service, serviceAnnotationAttributes, interfaceClass, annotatedServiceBeanName);
-
+        /**
+         * Supports {@link Lazy} annotation
+         * */
+        Lazy lazyAnnotation = beanClass.getAnnotation(Lazy.class);
+        if (lazyAnnotation != null) {
+            serviceBeanDefinition.setLazyInit(lazyAnnotation.value());
+        }
         // ServiceBean Bean name
         String beanName = generateServiceBeanName(serviceAnnotationAttributes, interfaceClass);
 
         if (scanner.checkCandidate(beanName, serviceBeanDefinition)) { // check duplicated candidate bean
             registry.registerBeanDefinition(beanName, serviceBeanDefinition);
+            if (!serviceBeanDefinition.getPropertyValues().contains("id")) {
+                serviceBeanDefinition.getPropertyValues().addPropertyValue("id", beanName);
+            }
 
             if (logger.isInfoEnabled()) {
                 logger.info("The BeanDefinition[" + serviceBeanDefinition +
@@ -399,7 +411,7 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
         // Set interface
         builder.addPropertyValue("interface", interfaceClass.getName());
         // Convert parameters into map
-        builder.addPropertyValue("parameters", convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
+        builder.addPropertyValue("parameters", DubboAnnotationUtils.convertParameters(serviceAnnotationAttributes.getStringArray("parameters")));
         // Add methods parameters
         List<MethodConfig> methodConfigs = convertMethodConfigs(serviceAnnotationAttributes.get("methods"));
         if (!methodConfigs.isEmpty()) {
@@ -494,22 +506,6 @@ public class ServiceClassPostProcessor implements BeanDefinitionRegistryPostProc
     private void addPropertyReference(BeanDefinitionBuilder builder, String propertyName, String beanName) {
         String resolvedBeanName = environment.resolvePlaceholders(beanName);
         builder.addPropertyReference(propertyName, resolvedBeanName);
-    }
-
-    private Map<String, String> convertParameters(String[] parameters) {
-        if (ArrayUtils.isEmpty(parameters)) {
-            return null;
-        }
-
-        if (parameters.length % 2 != 0) {
-            throw new IllegalArgumentException("parameter attribute must be paired with key followed by value");
-        }
-
-        Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < parameters.length; i += 2) {
-            map.put(parameters[i], parameters[i + 1]);
-        }
-        return map;
     }
 
     @Override
