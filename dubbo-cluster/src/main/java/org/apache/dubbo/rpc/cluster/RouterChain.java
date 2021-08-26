@@ -207,10 +207,10 @@ public class RouterChain<T> {
 
     /**
      * Build the asynchronous address cache for stateRouter.
-     * @param notify Whether the addresses in registry has changed.
+     * @param notify Whether the addresses in registry have changed.
      */
     private void buildCache(boolean notify) {
-        if (invokers == null || invokers.size() <= 0) {
+        if (CollectionUtils.isEmpty(invokers)) {
             return;
         }
         AddrCache<T> origin = cache.get();
