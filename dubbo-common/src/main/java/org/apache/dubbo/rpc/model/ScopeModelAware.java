@@ -17,19 +17,35 @@
 package org.apache.dubbo.rpc.model;
 
 /**
- * Interface to inject FrameworkModel/ApplicationModel/ModuleModel for SPI extension.
+ * An interface to inject FrameworkModel/ApplicationModel/ModuleModel for SPI extensions and internal beans.
  */
 public interface ScopeModelAware {
 
+    /**
+     * Override this method if you need get the scope model (maybe one of FrameworkModel/ApplicationModel/ModuleModel).
+     * @param scopeModel
+     */
     default void setScopeModel(ScopeModel scopeModel) {
     }
 
+    /**
+     * Override this method if you just need framework model
+     * @param frameworkModel
+     */
     default void setFrameworkModel(FrameworkModel frameworkModel) {
     }
 
+    /**
+     * Override this method if you just need application model
+     * @param applicationModel
+     */
     default void setApplicationModel(ApplicationModel applicationModel) {
     }
 
+    /**
+     * Override this method if you just need module model
+     * @param moduleModel
+     */
     default void setModuleModel(ModuleModel moduleModel) {
     }
 
