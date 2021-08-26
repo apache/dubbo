@@ -14,19 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.registrycenter;
+package org.apache.dubbo.integration.single.exportmetadata;
 
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.integration.AbstractRegistryCenterExporterListener;
+import org.apache.dubbo.metadata.MetadataService;
 
-import java.util.List;
-
-/**
- * Mock multiple registry center.
- */
-public interface MultipleRegistryCenter extends RegistryCenter {
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
+public class SingleRegistryCenterExportMetadataExporterListener extends AbstractRegistryCenterExporterListener {
 
     /**
-     * Returns {@link RegistryConfig} instances.
+     * Returns the interface of exported service.
      */
-    List<RegistryConfig> getRegistryConfigs();
+    @Override
+    protected Class<?> getInterface() {
+        return MetadataService.class;
+    }
 }

@@ -384,7 +384,8 @@ public class ConfigUtils {
         if (PID < 0) {
             try {
                 RuntimeMXBean runtime = ManagementFactory.getRuntimeMXBean();
-                String name = runtime.getName(); // format: "pid@hostname"
+                // format: "pid@hostname"
+                String name = runtime.getName();
                 PID = Integer.parseInt(name.substring(0, name.indexOf('@')));
             } catch (Throwable e) {
                 PID = 0;

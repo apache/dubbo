@@ -85,6 +85,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
         return registryURL;
     }
 
+    @Override
     public void doDestroy() throws Exception {
         serviceDiscovery.close();
     }
@@ -153,13 +154,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 }
 
                 if (healthyOnly) {
-                    Iterator<ServiceInstance> instanceIterator = serviceInstances.iterator();
-                    while (instanceIterator.hasNext()) {
-                        ServiceInstance instance = instanceIterator.next();
-                        if (!instance.isHealthy()) {
-                            instanceIterator.remove();
-                        }
-                    }
+                    serviceInstances.removeIf(instance -> !instance.isHealthy());
                 }
             } catch (KeeperException.NoNodeException e) {
                 logger.warn(p + " path not exist.", e);

@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.url.component.ServiceConfigURL;
 import org.apache.dubbo.common.utils.ConfigUtils;
-import org.apache.dubbo.config.AbstractInterfaceConfigTest;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
@@ -174,6 +174,12 @@ public class DubboBootstrapTest {
     }
 
     @Test
+    public void testLoadUserMonitor_no_monitor() {
+        URL url = ConfigValidationUtils.loadMonitor(getTestInterfaceConfig(null), URL.valueOf("zookeeper://127.0.0.1:2181"));
+        Assertions.assertNull(url);
+    }
+
+    @Test
     public void testLoadUserMonitor_user() {
         // dubbo.monitor.protocol=user
         MonitorConfig monitorConfig = new MonitorConfig();
@@ -194,10 +200,12 @@ public class DubboBootstrapTest {
         Assertions.assertEquals("value1", url.getParameter("param1"));
     }
 
-    private AbstractInterfaceConfigTest.InterfaceConfig getTestInterfaceConfig(MonitorConfig monitorConfig) {
-        AbstractInterfaceConfigTest.InterfaceConfig interfaceConfig = new AbstractInterfaceConfigTest.InterfaceConfig();
+    private InterfaceConfig getTestInterfaceConfig(MonitorConfig monitorConfig) {
+        InterfaceConfig interfaceConfig = new InterfaceConfig();
         interfaceConfig.setApplication(new ApplicationConfig("testLoadMonitor"));
-        interfaceConfig.setMonitor(monitorConfig);
+        if(monitorConfig!=null) {
+            interfaceConfig.setMonitor(monitorConfig);
+        }
         return interfaceConfig;
     }
 
@@ -218,6 +226,11 @@ public class DubboBootstrapTest {
                 }
             }
         }
+    }
+
+
+    public static class InterfaceConfig extends AbstractInterfaceConfig {
+
     }
 
 }

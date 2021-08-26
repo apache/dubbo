@@ -27,13 +27,25 @@ import java.util.regex.Pattern;
 public interface CommonConstants {
     String DUBBO = "dubbo";
 
-    String TRIPLE= "tri";
+    String TRIPLE = "tri";
 
     String PROVIDER = "provider";
 
     String CONSUMER = "consumer";
 
     String APPLICATION_KEY = "application";
+
+    String APPLICATION_VERSION_KEY = "application.version";
+
+    String APPLICATION_PROTOCOL_KEY = "application-protocol";
+
+    String METADATA_SERVICE_PORT_KEY = "metadata-service-port";
+
+    String LIVENESS_PROBE_KEY = "liveness-probe";
+
+    String READINESS_PROBE_KEY = "readiness-probe";
+
+    String STARTUP_PROBE = "startup-probe";
 
     String REMOTE_APPLICATION_KEY = "remote.application";
 
@@ -413,7 +425,9 @@ public interface CommonConstants {
 
     String UTF8ENCODE = "UTF-8";
 
-    /** Pseudo URL prefix for loading from the class path: "classpath:". */
+    /**
+     * Pseudo URL prefix for loading from the class path: "classpath:".
+     */
     String CLASSPATH_URL_PREFIX = "classpath:";
 
     String DEFAULT_VERSION = "0.0.0";
