@@ -163,6 +163,9 @@ public class MigrationRule {
             }
         }
 
+        /**
+         * FIXME, it's really hard to follow setting default values here.
+         */
         if (step == null) {
             // initial step : APPLICATION_FIRST
             step = MigrationStep.APPLICATION_FIRST;

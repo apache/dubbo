@@ -31,7 +31,6 @@ import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -48,65 +47,59 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
     private static final int CAS_RETRY_TIMES = 6;
 
     @Override
-    public void map(URL url) {
-        execute(() -> {
-            if (CollectionUtils.isEmpty(ApplicationModel.getConfigManager().getMetadataConfigs())) {
-                return;
-            }
-            String serviceInterface = url.getServiceInterface();
-            if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
-                return;
-            }
-            String registryCluster = getRegistryCluster(url);
-            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+    public boolean map(URL url) {
+        if (CollectionUtils.isEmpty(ApplicationModel.getConfigManager().getMetadataConfigs())) {
+            return false;
+        }
+        String serviceInterface = url.getServiceInterface();
+        if (IGNORED_SERVICE_INTERFACES.contains(serviceInterface)) {
+            return false;
+        }
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
 
-            if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
-                // MetadataReport support directly register service-app mapping
-                return;
-            }
+        if (metadataReport.registerServiceAppMapping(serviceInterface, getName(), url)) {
+            // MetadataReport support directly register service-app mapping
+            return true;
+        }
 
-            int currentRetryTimes = 1;
-            boolean success;
-            String newConfigContent = getName();
-            do {
-                ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
-                String oldConfigContent = configItem.getContent();
-                if (StringUtils.isNotEmpty(oldConfigContent)) {
-                    boolean contains = StringUtils.isContains(oldConfigContent, getName());
-                    if (contains) {
-                        break;
-                    }
-                    newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+        int currentRetryTimes = 1;
+        boolean succeeded = false;
+        String newConfigContent = getName();
+        do {
+            ConfigItem configItem = metadataReport.getConfigItem(serviceInterface, DEFAULT_MAPPING_GROUP);
+            String oldConfigContent = configItem.getContent();
+            if (StringUtils.isNotEmpty(oldConfigContent)) {
+                boolean contains = StringUtils.isContains(oldConfigContent, getName());
+                if (contains) {
+                    break;
                 }
-                success = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
-            } while (!success && currentRetryTimes++ <= CAS_RETRY_TIMES);
-        });
+                newConfigContent = oldConfigContent + COMMA_SEPARATOR + getName();
+            }
+            succeeded = metadataReport.registerServiceAppMapping(serviceInterface, DEFAULT_MAPPING_GROUP, newConfigContent, configItem.getTicket());
+        } while (!succeeded && currentRetryTimes++ <= CAS_RETRY_TIMES);
+
+        if (!succeeded) {
+            throw new RuntimeException();
+        }
+
+        return true;
     }
 
     @Override
     public Set<String> get(URL url) {
-        Set<String> serviceNames = new LinkedHashSet<>();
-        execute(() -> {
-            String serviceInterface = url.getServiceInterface();
-            String registryCluster = getRegistryCluster(url);
-            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
-            Set<String> apps = metadataReport.getServiceAppMapping(serviceInterface, url);
-            serviceNames.addAll(apps);
-        });
-        return serviceNames;
+        String serviceInterface = url.getServiceInterface();
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        return metadataReport.getServiceAppMapping(serviceInterface, url);
     }
 
     @Override
     public Set<String> getAndListen(URL url, MappingListener mappingListener) {
-        Set<String> serviceNames = new LinkedHashSet<>();
-        execute(() -> {
-            String serviceInterface = url.getServiceInterface();
-            String registryCluster = getRegistryCluster(url);
-            MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
-            Set<String> apps = metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
-            serviceNames.addAll(apps);
-        });
-        return serviceNames;
+        String serviceInterface = url.getServiceInterface();
+        String registryCluster = getRegistryCluster(url);
+        MetadataReport metadataReport = MetadataReportInstance.getMetadataReport(registryCluster);
+        return metadataReport.getServiceAppMapping(serviceInterface, mappingListener, url);
     }
 
     protected String getRegistryCluster(URL url) {
@@ -119,15 +112,5 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping {
             registryCluster = registryCluster.substring(0, i);
         }
         return registryCluster;
-    }
-
-    private void execute(Runnable runnable) {
-        try {
-            runnable.run();
-        } catch (Throwable e) {
-            if (logger.isWarnEnabled()) {
-                logger.warn(e.getMessage(), e);
-            }
-        }
     }
 }

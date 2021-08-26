@@ -119,7 +119,7 @@ public class ServiceInstancesChangedListener {
             List<ServiceInstance> instances = entry.getValue();
             for (ServiceInstance instance : instances) {
                 String revision = getExportedServicesRevision(instance);
-                if (EMPTY_REVISION.equals(revision)) {
+                if (revision == null || EMPTY_REVISION.equals(revision)) {
                     if (logger.isDebugEnabled()) {
                         logger.debug("Find instance without valid service metadata: " + instance.getAddress());
                     }

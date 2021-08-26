@@ -215,4 +215,12 @@ public class MigrationInvokerTest {
         migrationInvoker.migrateToForceApplicationInvoker(migrationRule);
         Assertions.assertTrue(System.currentTimeMillis() - currentTimeMillis >= 2000);
     }
+
+    @Test
+    public void testConcurrency() {
+        // 独立线程
+
+        // 独立线程invoker状态切换
+
+    }
 }

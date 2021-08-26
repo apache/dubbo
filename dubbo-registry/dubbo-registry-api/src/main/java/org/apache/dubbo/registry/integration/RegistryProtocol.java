@@ -476,6 +476,19 @@ public class RegistryProtocol implements Protocol {
         return new ServiceDiscoveryMigrationInvoker<T>(registryProtocol, cluster, registry, type, url, consumerUrl);
     }
 
+    /**
+     * This method tries to load all RegistryProtocolListener definitions, which are used to control the behaviour of invoker by interacting with defined, then uses those listeners to
+     * change the status and behaviour of the MigrationInvoker.
+     *
+     * Currently available Listener is MigrationRuleListener, one used to control the Migration behaviour with dynamically changing rules.
+     *
+     * @param invoker MigrationInvoker that determines which type of invoker list to use
+     * @param url The original url generated during refer, more like a registry:// style url
+     * @param consumerUrl Consumer url representing current interface and its config
+     * @param registryURL The actual registry url, zookeeper:// for example
+     * @param <T> The service definition
+     * @return The @param MigrationInvoker passed in
+     */
     protected <T> Invoker<T> interceptInvoker(ClusterInvoker<T> invoker, URL url, URL consumerUrl, URL registryURL) {
         List<RegistryProtocolListener> listeners = findRegistryProtocolListeners(url);
         if (CollectionUtils.isEmpty(listeners)) {
