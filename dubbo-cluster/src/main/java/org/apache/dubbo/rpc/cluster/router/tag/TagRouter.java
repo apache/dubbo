@@ -241,7 +241,7 @@ public class TagRouter extends AbstractRouter implements ConfigurationListener {
 
         synchronized (this) {
             if (!providerApplication.equals(application)) {
-                if (!StringUtils.isEmpty(application)) {
+                if (StringUtils.isNotEmpty(application)) {
                     this.getRuleRepository().removeListener(application + RULE_SUFFIX, this);
                 }
                 String key = providerApplication + RULE_SUFFIX;

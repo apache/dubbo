@@ -123,16 +123,10 @@ public class TagStaticStateRouter extends AbstractStateRouter {
             Invoker<T> invoker = invokers.get(index);
             String tag = invoker.getUrl().getParameter(TAG_KEY);
             if (StringUtils.isEmpty(tag)) {
-                BitList<Invoker<T>> noTagList = addrPool.putIfAbsent(NO_TAG, new BitList<>(invokers, true));
-                if (noTagList == null) {
-                    noTagList = addrPool.get(NO_TAG);
-                }
+                BitList<Invoker<T>> noTagList = addrPool.computeIfAbsent(NO_TAG, k -> new BitList<>(invokers, true));
                 noTagList.addIndex(index);
             } else {
-                BitList<Invoker<T>> list = addrPool.putIfAbsent(tag, new BitList<>(invokers, true));
-                if (list == null) {
-                    list = addrPool.get(tag);
-                }
+                BitList<Invoker<T>> list = addrPool.computeIfAbsent(tag, k -> new BitList<>(invokers, true));
                 list.addIndex(index);
             }
         }
