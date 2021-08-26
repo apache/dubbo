@@ -25,7 +25,7 @@ import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 
-@Activate
+@Activate(value = "multipleConfigCenterServiceDiscoveryRegistry")
 public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener implements RegistryServiceListener {
 
     private ServiceDiscoveryRegistryStorage storage = new ServiceDiscoveryRegistryStorage();
@@ -33,7 +33,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Create an {@link ServiceDiscoveryRegistryInfoWrapper} instance.
      */
-    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry){
+    private ServiceDiscoveryRegistryInfoWrapper createServiceDiscoveryRegistryInfoWrapper(ServiceDiscoveryRegistry serviceDiscoveryRegistry) {
         String host = serviceDiscoveryRegistry.getUrl().getHost();
         int port = serviceDiscoveryRegistry.getUrl().getPort();
         ServiceDiscoveryRegistryInfoWrapper serviceDiscoveryRegistryInfoWrapper = new ServiceDiscoveryRegistryInfoWrapper();
@@ -48,7 +48,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Checks if the registry is checked application
      */
-    private boolean isCheckedApplication(Registry registry){
+    private boolean isCheckedApplication(Registry registry) {
         return registry.getUrl().getParameter(CommonConstants.APPLICATION_KEY)
             .equals(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest
                 .PROVIDER_APPLICATION_NAME);
@@ -56,13 +56,13 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
 
     public void onRegister(URL url, Registry registry) {
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
-            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry)registry;
+            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
             String host = serviceDiscoveryRegistry.getUrl().getHost();
             int port = serviceDiscoveryRegistry.getUrl().getPort();
-            if (!storage.contains(host,port)){
-                storage.put(host,port,createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
+            if (!storage.contains(host, port)) {
+                storage.put(host, port, createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
             }
-            storage.get(host,port).setRegistered(true);
+            storage.get(host, port).setRegistered(true);
         }
     }
 
@@ -70,19 +70,19 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
             String host = registry.getUrl().getHost();
             int port = registry.getUrl().getPort();
-            storage.get(host,port).setRegistered(false);
+            storage.get(host, port).setRegistered(false);
         }
     }
 
     public void onSubscribe(URL url, Registry registry) {
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
-            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry)registry;
+            ServiceDiscoveryRegistry serviceDiscoveryRegistry = (ServiceDiscoveryRegistry) registry;
             String host = serviceDiscoveryRegistry.getUrl().getHost();
             int port = serviceDiscoveryRegistry.getUrl().getPort();
-            if (!storage.contains(host,port)){
-                storage.put(host,port,createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
+            if (!storage.contains(host, port)) {
+                storage.put(host, port, createServiceDiscoveryRegistryInfoWrapper(serviceDiscoveryRegistry));
             }
-            storage.get(host,port).setSubscribed(true);
+            storage.get(host, port).setSubscribed(true);
         }
     }
 
@@ -90,7 +90,7 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
         if (registry instanceof ServiceDiscoveryRegistry && isCheckedApplication(registry)) {
             String host = registry.getUrl().getHost();
             int port = registry.getUrl().getPort();
-            storage.get(host,port).setSubscribed(false);
+            storage.get(host, port).setSubscribed(false);
         }
     }
 

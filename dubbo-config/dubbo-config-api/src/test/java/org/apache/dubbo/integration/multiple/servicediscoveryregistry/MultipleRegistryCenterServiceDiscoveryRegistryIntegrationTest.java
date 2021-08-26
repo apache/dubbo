@@ -37,7 +37,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -104,12 +106,16 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest imple
         serviceConfig.setRef(new MultipleRegistryCenterServiceDiscoveryRegistryServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         for (RegistryCenter.Instance instance : registryCenter.getRegistryCenterInstance()) {
-            DubboBootstrap.getInstance().registry(new RegistryConfig(String.format("%s://%s:%s",
+            RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
                 instance.getType(),
                 instance.getHostname(),
-                instance.getPort())));
+                instance.getPort()));
+            Map<String, String> parameters = new HashMap<>();
+            parameters.put("registry.listeners", "multipleConfigCenterServiceDiscoveryRegistry");
+            registryConfig.updateParameters(parameters);
+            DubboBootstrap.getInstance().registry(registryConfig);
             ports.add(instance.getPort());
         }
         DubboBootstrap.getInstance()

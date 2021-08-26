@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
@@ -110,16 +112,20 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         serviceConfig.setRef(new SingleRegistryCenterExportProviderServiceImpl());
         serviceConfig.setAsync(false);
 
-        // initailize bootstrap
+        // initialize bootstrap
         DubboBootstrap.getInstance()
             .application(new ApplicationConfig(PROVIDER_APPLICATION_NAME))
             .protocol(new ProtocolConfig(PROTOCOL_NAME, PROTOCOL_PORT))
             .service(serviceConfig);
         RegistryCenter.Instance instance = registryCenter.getRegistryCenterInstance().get(0);
+
         RegistryConfig registryConfig = new RegistryConfig(String.format("%s://%s:%s",
             instance.getType(),
             instance.getHostname(),
             instance.getPort()));
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("registry.protocol.listener", "singleConfigCenterExportProvider");
+        registryConfig.updateParameters(parameters);
         DubboBootstrap.getInstance().registry(registryConfig);
     }
 

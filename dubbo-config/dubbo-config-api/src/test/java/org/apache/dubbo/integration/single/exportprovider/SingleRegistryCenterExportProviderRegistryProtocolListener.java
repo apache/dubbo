@@ -27,7 +27,7 @@ import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 /**
  * The {@link RegistryProtocolListener} for {@link SingleRegistryCenterExportProviderService}
  */
-@Activate(order = 100)
+@Activate(order = 100, value = "singleConfigCenterExportProvider")
 public class SingleRegistryCenterExportProviderRegistryProtocolListener implements RegistryProtocolListener {
 
     private boolean exported = false;
