@@ -120,9 +120,9 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             try {
                 if (invocation != null) {
                     if (ConfigurationUtils.getSystemConfiguration().getBoolean(SERIALIZATION_SECURITY_CHECK_KEY, true)) {
-                        Object serializationType_obj = invocation.get(SERIALIZATION_ID_KEY);
-                        if (serializationType_obj != null) {
-                            if ((byte) serializationType_obj != serializationType) {
+                        Object serializationTypeObj = invocation.get(SERIALIZATION_ID_KEY);
+                        if (serializationTypeObj != null) {
+                            if ((byte) serializationTypeObj != serializationType) {
                                 throw new IOException("Unexpected serialization id:" + serializationType + " received from network, please check if the peer send the right id.");
                             }
                         }

@@ -60,8 +60,6 @@ public class TripleUtil {
 
     public static final String LANGUAGE = "java";
 
-
-    private static final SingleProtobufSerialization pbSerialization = new SingleProtobufSerialization();
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
     private static final Base64.Encoder BASE64_ENCODER = Base64.getEncoder().withoutPadding();
 
@@ -255,7 +253,7 @@ public class TripleUtil {
 
     public static <T> T unpack(InputStream is, Class<T> clz) {
         try {
-            final T req = (T) pbSerialization.deserialize(is, clz);
+            final T req = SingleProtobufUtils.deserialize(is, clz);
             is.close();
             return req;
         } catch (IOException e) {
@@ -278,7 +276,7 @@ public class TripleUtil {
     public static byte[] pack(Object obj) {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try {
-            pbSerialization.serialize(obj, baos);
+            SingleProtobufUtils.serialize(obj, baos);
         } catch (IOException e) {
             throw new RuntimeException("Failed to pack protobuf object", e);
         }
