@@ -266,8 +266,7 @@ public class RouterChain<T> {
      * @param notify Whether the addresses in registry has changed.
      */
     public void loop(boolean notify) {
-        if (firstBuildCache.get()) {
-            firstBuildCache.compareAndSet(true,false);
+        if (firstBuildCache.compareAndSet(true,false)) {
             buildCache(notify);
         }
         if (notify) {
