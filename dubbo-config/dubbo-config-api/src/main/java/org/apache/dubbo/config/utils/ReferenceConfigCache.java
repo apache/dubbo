@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A simple util class for cache {@link ReferenceConfigBase}.
@@ -65,6 +66,8 @@ public class ReferenceConfigCache {
         return ret.toString();
     };
 
+    private static final AtomicInteger nameIndex = new AtomicInteger();
+
     static final ConcurrentMap<String, ReferenceConfigCache> CACHE_HOLDER = new ConcurrentHashMap<String, ReferenceConfigCache>();
     private final String name;
     private final KeyGenerator generator;
@@ -84,6 +87,10 @@ public class ReferenceConfigCache {
      */
     public static ReferenceConfigCache getCache() {
         return getCache(DEFAULT_NAME);
+    }
+
+    public static ReferenceConfigCache newCache() {
+        return getCache(DEFAULT_NAME + "#" + nameIndex.incrementAndGet());
     }
 
     /**
@@ -240,7 +247,7 @@ public class ReferenceConfigCache {
     @Override
     public String toString() {
         return "ReferenceConfigCache(name: " + name
-                + ")";
+            + ")";
     }
 
     public interface KeyGenerator {

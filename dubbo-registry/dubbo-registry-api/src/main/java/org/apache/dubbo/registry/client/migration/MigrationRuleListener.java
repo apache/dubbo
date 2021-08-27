@@ -33,6 +33,7 @@ import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.rpc.Exporter;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.Map;
 import java.util.Objects;
@@ -47,11 +48,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.dubbo.common.constants.RegistryConstants.INIT;
 
 @Activate
-public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener {
+public class MigrationRuleListener implements RegistryProtocolListener, ConfigurationListener, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(MigrationRuleListener.class);
     private static final String DUBBO_SERVICEDISCOVERY_MIGRATION = "DUBBO_SERVICEDISCOVERY_MIGRATION";
     private static final String MIGRATION_DELAY_KEY = "dubbo.application.migration.delay";
-    private final String RULE_KEY = ApplicationModel.defaultModel().getName() + ".migration";
+    private String ruleKey;
 
     private final Map<MigrationInvoker, MigrationRuleHandler> handlers = new ConcurrentHashMap<>();
     private final LinkedBlockingQueue<String> ruleQueue = new LinkedBlockingQueue<>();
@@ -63,15 +64,26 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private volatile String rawRule;
     private volatile MigrationRule rule;
+    private ApplicationModel applicationModel;
 
     public MigrationRuleListener() {
-        this.configuration = ApplicationModel.defaultModel().getEnvironment().getDynamicConfiguration().orElse(null);
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+        init();
+    }
+
+    private void init() {
+        this.ruleKey = applicationModel.getName() + ".migration";
+        this.configuration = applicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
 
         if (this.configuration != null) {
-            logger.info("Listening for migration rules on dataId " + RULE_KEY + ", group " + DUBBO_SERVICEDISCOVERY_MIGRATION);
-            configuration.addListener(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
+            logger.info("Listening for migration rules on dataId " + ruleKey + ", group " + DUBBO_SERVICEDISCOVERY_MIGRATION);
+            configuration.addListener(ruleKey, DUBBO_SERVICEDISCOVERY_MIGRATION, this);
 
-            String rawRule = configuration.getConfig(RULE_KEY, DUBBO_SERVICEDISCOVERY_MIGRATION);
+            String rawRule = configuration.getConfig(ruleKey, DUBBO_SERVICEDISCOVERY_MIGRATION);
             if (StringUtils.isEmpty(rawRule)) {
                 rawRule = INIT;
             }
@@ -83,7 +95,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
             setRawRule(INIT);
         }
 
-        String localRawRule = ApplicationModel.defaultModel().getEnvironment().getLocalMigrationRule();
+        String localRawRule = applicationModel.getEnvironment().getLocalMigrationRule();
         if (!StringUtils.isEmpty(localRawRule)) {
             Executors.newSingleThreadScheduledExecutor(new NamedThreadFactory("DubboMigrationRuleDelayWorker", true))
                 .schedule(() -> {
@@ -214,7 +226,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     @Override
     public void onDestroy() {
         if (configuration != null) {
-            configuration.removeListener(RULE_KEY, this);
+            configuration.removeListener(ruleKey, this);
         }
     }
 

@@ -30,7 +30,7 @@ public interface RegistryClusterIdentifier {
 
     static RegistryClusterIdentifier getExtension(URL url) {
         ExtensionLoader<RegistryClusterIdentifier> loader
-                = ExtensionLoader.getExtensionLoader(RegistryClusterIdentifier.class);
+                = url.getScopeModel().getExtensionLoader(RegistryClusterIdentifier.class);
         return loader.getExtension(url.getParameter(REGISTRY_CLUSTER_TYPE_KEY, "default"));
     }
 }

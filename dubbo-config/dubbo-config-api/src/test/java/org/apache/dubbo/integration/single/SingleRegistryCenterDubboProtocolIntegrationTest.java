@@ -228,7 +228,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         Assertions.assertTrue(services.contains(PROVIDER_APPLICATION_NAME));
 
         // obtain InMemoryWritableMetadataService instance
-        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+        InMemoryWritableMetadataService inMemoryWritableMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(serviceConfig.getScopeModel());
         // Exported url is right or not in InMemoryWritableMetadataService
         Assertions.assertEquals(inMemoryWritableMetadataService.getExportedURLs().size(), 1);
         // MetadataInfo exists or not in InMemoryWritableMetadataService

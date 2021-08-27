@@ -17,6 +17,7 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
@@ -24,8 +25,6 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.Map;
 import java.util.Set;
-
-import static org.apache.dubbo.common.extension.ExtensionLoader.getExtensionLoader;
 
 /**
  * Local {@link MetadataService} that extends {@link MetadataService} and provides the modification, which is used for
@@ -104,7 +103,7 @@ public interface WritableMetadataService extends MetadataService {
      *
      * @return non-null
      */
-    static WritableMetadataService getDefaultExtension() {
-        return getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+    static WritableMetadataService getDefaultExtension(ExtensionAccessor extensionAccessor) {
+        return extensionAccessor.getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
     }
 }

@@ -693,10 +693,9 @@ public class ExtensionLoader<T> {
             }
             instance = postProcessBeforeInitialization(instance, name);
             injectExtension(instance);
-
+            instance = postProcessAfterInitialization(instance, name);
 
             if (wrap) {
-
                 List<Class<?>> wrapperClassesList = new ArrayList<>();
                 if (cachedWrapperClasses != null) {
                     wrapperClassesList.addAll(cachedWrapperClasses);
@@ -710,12 +709,12 @@ public class ExtensionLoader<T> {
                         if (wrapper == null
                             || (ArrayUtils.contains(wrapper.matches(), name) && !ArrayUtils.contains(wrapper.mismatches(), name))) {
                             instance = injectExtension((T) wrapperClass.getConstructor(type).newInstance(instance));
+                            instance = postProcessAfterInitialization(instance, name);
                         }
                     }
                 }
             }
 
-            instance = postProcessAfterInitialization(instance, name);
             initExtension(instance);
             return instance;
         } catch (Throwable t) {

@@ -72,6 +72,7 @@ public class DNSServiceDiscoveryTest {
 
     @Test
     public void testProvider() throws Exception {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         ServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
 
         URL registryURL = URL.valueOf("dns://");
@@ -84,7 +85,7 @@ public class DNSServiceDiscoveryTest {
 
         dnsServiceDiscovery.register(serviceInstance);
 
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         InstanceMetadataChangedListener changeListener = Mockito.mock(InstanceMetadataChangedListener.class);
 
         String metadataString = metadataService
@@ -106,23 +107,24 @@ public class DNSServiceDiscoveryTest {
 
     @Test
     public void testConsumer() throws Exception {
+        ApplicationModel applicationModel = ApplicationModel.defaultModel();
         DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
 
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
-        ApplicationModel.defaultModel().getEnvironment().getAppExternalConfigMap()
+        applicationModel.getEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
-        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
         ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345);
         serviceInstance.getMetadata().put("a", "b");
 
         dnsServiceDiscovery.register(serviceInstance);
 
         int port = NetUtils.getAvailablePort();
-        ApplicationModel.defaultModel().getApplicationConfig().setMetadataServicePort(port);
+        applicationModel.getApplicationConfig().setMetadataServicePort(port);
 
         WritableMetadataService spiedMetadataService = Mockito.spy(metadataService);
 
@@ -164,7 +166,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        ApplicationModel.defaultModel().getEnvironment().getAppExternalConfigMap()
+        applicationModel.getEnvironment().getAppExternalConfigMap()
                 .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 

@@ -32,6 +32,7 @@ import org.apache.dubbo.metadata.definition.ServiceDefinitionBuilder;
 import org.apache.dubbo.metadata.definition.model.ServiceDefinition;
 import org.apache.dubbo.registry.client.RegistryClusterIdentifier;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
 import com.google.gson.Gson;
@@ -74,7 +75,7 @@ import static org.apache.dubbo.rpc.Constants.GENERIC_KEY;
  * @see WritableMetadataService
  * @since 2.7.5
  */
-public class InMemoryWritableMetadataService implements WritableMetadataService {
+public class InMemoryWritableMetadataService implements WritableMetadataService, ScopeModelAware {
 
     final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -113,9 +114,15 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
     ConcurrentNavigableMap<String, SortedSet<URL>> subscribedServiceURLs = new ConcurrentSkipListMap<>();
 
     ConcurrentNavigableMap<String, String> serviceDefinitions = new ConcurrentSkipListMap<>();
+    private ApplicationModel applicationModel;
 
     public InMemoryWritableMetadataService() {
         this.metadataInfos = new ConcurrentHashMap<>();
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 
     @Override
@@ -167,7 +174,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService 
         try {
             String[] clusters = getRegistryCluster(url).split(",");
             for (String cluster : clusters) {
-                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(ApplicationModel.defaultModel().getName()));
+                MetadataInfo metadataInfo = metadataInfos.computeIfAbsent(cluster, k -> new MetadataInfo(applicationModel.getName()));
                 metadataInfo.addService(new ServiceInfo(url));
             }
             metadataSemaphore.release();

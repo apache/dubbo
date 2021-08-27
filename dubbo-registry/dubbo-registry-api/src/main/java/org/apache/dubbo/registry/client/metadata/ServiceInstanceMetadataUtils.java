@@ -33,8 +33,6 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
-
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -233,7 +231,7 @@ public class ServiceInstanceMetadataUtils {
         if (registryCluster == null) {
             registryCluster = DEFAULT_KEY;
         }
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(instance.getApplicationModel());
         MetadataInfo metadataInfo = writableMetadataService.getMetadataInfos().get(registryCluster);
         if (metadataInfo == null) {
             metadataInfo = ((InMemoryWritableMetadataService) writableMetadataService).getDefaultMetadataInfo();
@@ -258,8 +256,8 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getScopeModel());
-        remoteMetadataService.publishMetadata(ApplicationModel.defaultModel().getName());
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getApplicationModel());
+        remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();

@@ -60,7 +60,6 @@ import org.apache.dubbo.config.bootstrap.builders.ReferenceBuilder;
 import org.apache.dubbo.config.bootstrap.builders.RegistryBuilder;
 import org.apache.dubbo.config.bootstrap.builders.ServiceBuilder;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.config.metadata.ConfigurableMetadataServiceExporter;
 import org.apache.dubbo.config.utils.ConfigValidationUtils;
 import org.apache.dubbo.config.utils.ReferenceConfigCache;
 import org.apache.dubbo.metadata.MetadataService;
@@ -114,7 +113,6 @@ import static org.apache.dubbo.common.utils.StringUtils.isEmpty;
 import static org.apache.dubbo.common.utils.StringUtils.isNotEmpty;
 import static org.apache.dubbo.metadata.MetadataConstants.DEFAULT_METADATA_PUBLISH_DELAY;
 import static org.apache.dubbo.metadata.MetadataConstants.METADATA_PUBLISH_DELAY_KEY;
-import static org.apache.dubbo.metadata.WritableMetadataService.getDefaultExtension;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.calInstanceRevision;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.setMetadataStorageType;
 import static org.apache.dubbo.registry.support.AbstractRegistryFactory.getServiceDiscoveries;
@@ -271,6 +269,7 @@ public class DubboBootstrap {
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         DubboShutdownHook.getDubboShutdownHook().register();
         ShutdownHookCallbacks.INSTANCE.addCallback(DubboBootstrap.this::destroy);
+        cache = ReferenceConfigCache.newCache();
 
         initInternalBeans();
     }
@@ -280,7 +279,7 @@ public class DubboBootstrap {
      */
     private void initInternalBeans() {
         ScopeBeanFactory beanFactory = applicationModel.getBeanFactory();
-
+        beanFactory.registerBean(this);
         beanFactory.registerBean(MetadataReportInstance.class);
         beanFactory.registerBean(RemoteMetadataServiceImpl.class);
         beanFactory.registerBean(FrameworkStatusReportService.class);
@@ -584,15 +583,7 @@ public class DubboBootstrap {
         return this;
     }
 
-    public DubboBootstrap cache(ReferenceConfigCache cache) {
-        this.cache = cache;
-        return this;
-    }
-
     public ReferenceConfigCache getCache() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
         return cache;
     }
 
@@ -1504,10 +1495,6 @@ public class DubboBootstrap {
     }
 
     private void referServices() {
-        if (cache == null) {
-            cache = ReferenceConfigCache.getCache();
-        }
-
         configManager.getReferences().forEach(rc -> {
             // TODO, compatible with  ReferenceConfig.refer()
             ReferenceConfig<?> referenceConfig = (ReferenceConfig<?>) rc;
@@ -1537,10 +1524,6 @@ public class DubboBootstrap {
 
     private void unreferServices() {
         try {
-            if (cache == null) {
-                cache = ReferenceConfigCache.getCache();
-            }
-
             asyncReferringFutures.forEach(future -> {
                 if (!future.isDone()) {
                     future.cancel(true);
@@ -1570,7 +1553,7 @@ public class DubboBootstrap {
         if (registered) {
             // scheduled task for updating Metadata and ServiceInstance
             executorRepository.nextScheduledExecutor().scheduleAtFixedRate(() -> {
-                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+                InMemoryWritableMetadataService localMetadataService = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
                 localMetadataService.blockUntilUpdated();
                 try {
                     ServiceInstanceMetadataUtils.refreshMetadataAndInstance(serviceInstance);
@@ -1625,7 +1608,7 @@ public class DubboBootstrap {
 
     private ServiceInstance createServiceInstance(String serviceName) {
         this.serviceInstance = new DefaultServiceInstance(serviceName);
-        serviceInstance.setScopeModel(applicationModel);
+        serviceInstance.setApplicationModel(applicationModel);
         setMetadataStorageType(serviceInstance, getMetadataType());
         ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance);
         return this.serviceInstance;

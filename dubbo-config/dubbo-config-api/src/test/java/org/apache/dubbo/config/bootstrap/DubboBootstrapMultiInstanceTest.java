@@ -54,6 +54,9 @@ public class DubboBootstrapMultiInstanceTest {
         // bootstrap2: consumer app
         configConsumerApp(dubboBootstrap2).start();
         testConsumer(dubboBootstrap2);
+
+        DemoService demoServiceFromProvider = dubboBootstrap1.getCache().get(DemoService.class);
+        Assertions.assertNull(demoServiceFromProvider);
     }
 
     @Test
@@ -113,6 +116,7 @@ public class DubboBootstrapMultiInstanceTest {
     private void testConsumer(DubboBootstrap dubboBootstrap) {
         DemoService demoService = dubboBootstrap.getCache().get(DemoService.class);
         String result = demoService.sayName("dubbo");
+        System.out.println("result: " + result);
         Assertions.assertEquals("say:dubbo", result);
     }
 
@@ -136,6 +140,5 @@ public class DubboBootstrapMultiInstanceTest {
             .service(serviceConfig);
         return dubboBootstrap;
     }
-
 
 }

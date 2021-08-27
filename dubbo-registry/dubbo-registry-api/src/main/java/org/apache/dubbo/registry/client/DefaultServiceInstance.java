@@ -19,7 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -213,13 +213,13 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
-    public void setScopeModel(ScopeModel scopeModel) {
-        this.attributes.put(SCOPE_MODEL,scopeModel);
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.attributes.put(SCOPE_MODEL, applicationModel);
     }
 
     @Override
-    public ScopeModel getScopeModel() {
-        return (ScopeModel) this.attributes.get(SCOPE_MODEL);
+    public ApplicationModel getApplicationModel() {
+        return (ApplicationModel) this.attributes.get(SCOPE_MODEL);
     }
 
     public void setMetadata(Map<String, String> metadata) {

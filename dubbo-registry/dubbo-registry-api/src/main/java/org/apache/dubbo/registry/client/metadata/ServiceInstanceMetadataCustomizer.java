@@ -40,11 +40,12 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
 
     @Override
     public void customize(ServiceInstance serviceInstance) {
-        ExtensionLoader<MetadataParamsFilter> loader = ExtensionLoader.getExtensionLoader(MetadataParamsFilter.class);
+        ApplicationModel applicationModel = serviceInstance.getApplicationModel();
+        ExtensionLoader<MetadataParamsFilter> loader = applicationModel.getExtensionLoader(MetadataParamsFilter.class);
         Set<MetadataParamsFilter> paramsFilters = loader.getSupportedExtensionInstances();
 
         InMemoryWritableMetadataService localMetadataService
-                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension();
+                = (InMemoryWritableMetadataService) WritableMetadataService.getDefaultExtension(applicationModel);
         // pick the first interface metadata available.
         // FIXME, check the same key in different urls has the same value
         Map<String, MetadataInfo> metadataInfos = localMetadataService.getMetadataInfos();
@@ -60,10 +61,10 @@ public class ServiceInstanceMetadataCustomizer implements ServiceInstanceCustomi
 
         // load instance params users want to load.
         // TODO, duplicate logic with that in ApplicationConfig
-        Set<InfraAdapter> adapters = ExtensionLoader.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
+        Set<InfraAdapter> adapters = applicationModel.getExtensionLoader(InfraAdapter.class).getSupportedExtensionInstances();
         if (CollectionUtils.isNotEmpty(adapters)) {
             Map<String, String> inputParameters = new HashMap<>();
-            inputParameters.put(APPLICATION_KEY, ApplicationModel.defaultModel().getName());
+            inputParameters.put(APPLICATION_KEY, applicationModel.getName());
             for (InfraAdapter adapter : adapters) {
                 Map<String, String> extraParameters = adapter.getExtraAttributes(inputParameters);
                 if (CollectionUtils.isNotEmptyMap(extraParameters)) {

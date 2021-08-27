@@ -102,7 +102,7 @@ public class ServiceDiscoveryRegistry implements Registry {
     public ServiceDiscoveryRegistry(URL registryURL) {
         this.registryURL = registryURL;
         this.serviceDiscovery = createServiceDiscovery(registryURL);
-        this.writableMetadataService = WritableMetadataService.getDefaultExtension();
+        this.writableMetadataService = WritableMetadataService.getDefaultExtension(registryURL.getScopeModel());
     }
 
     public ServiceDiscovery getServiceDiscovery() {
@@ -437,14 +437,14 @@ public class ServiceDiscoveryRegistry implements Registry {
             }
 
             if (CollectionUtils.isEmpty(tempOldApps) && newApps.size() > 0) {
-                WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                 subscribeURLs(url, listener, newApps);
                 return;
             }
 
             for (String newAppName : newApps) {
                 if (!tempOldApps.contains(newAppName)) {
-                    WritableMetadataService.getDefaultExtension().putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
+                    writableMetadataService.putCachedMapping(ServiceNameMapping.buildMappingKey(url), newApps);
                     subscribeURLs(url, listener, newApps);
                     return;
                 }

@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -76,6 +77,46 @@ public class ScopeBeanFactory {
         }
 
         Class<?> beanClass = bean.getClass();
+        if (name == null) {
+            name = beanClass.getName() + "#" + getNextId(beanClass);
+        }
+        initializeBean(name, bean);
+
+        registeredBeanInfos.add(new BeanInfo(name, bean));
+    }
+
+    public <T> T registerBeanIfAbsent(Class<T> type) {
+        return registerBeanIfAbsent(null, type);
+    }
+
+    public <T> T registerBeanIfAbsent(String name, Class<T> type) {
+        T bean = getBean(name, type);
+        if (bean == null) {
+            bean = registerBean(name, type);
+        }
+        return bean;
+    }
+
+    public <T> T registerBeanIfAbsent(Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+        return registerBeanIfAbsent(null, type, mappingFunction);
+    }
+
+    public <T> T registerBeanIfAbsent(String name, Class<T> type, Function<? super Class<T>, ? extends T> mappingFunction) {
+        T bean = getBean(name, type);
+        if (bean == null) {
+            //TODO add lock
+            bean = mappingFunction.apply(type);
+            registerBean(name, bean);
+        }
+        return bean;
+    }
+
+    public <T> T initializeBean(T bean) {
+        this.initializeBean(null, bean);
+        return bean;
+    }
+
+    private void initializeBean(String name, Object bean) {
         try {
             if (bean instanceof ExtensionAccessorAware) {
                 ((ExtensionAccessorAware) bean).setExtensionAccessor(extensionAccessor);
@@ -84,13 +125,8 @@ public class ScopeBeanFactory {
                 processor.postProcessAfterInitialization(bean, name);
             }
         } catch (Exception e) {
-            throw new ScopeBeanException("register bean failed! name=" + name + ", type=" + beanClass.getName(), e);
+            throw new ScopeBeanException("register bean failed! name=" + name + ", type=" + bean.getClass().getName(), e);
         }
-
-        if (name == null) {
-            name = beanClass.getName() + "#" + getNextId(beanClass);
-        }
-        registeredBeanInfos.add(new BeanInfo(name, bean));
     }
 
     private boolean containsBean(String name, Object bean) {

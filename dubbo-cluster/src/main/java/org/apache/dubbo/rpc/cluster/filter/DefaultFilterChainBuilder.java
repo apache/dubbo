@@ -16,8 +16,8 @@
  */
 package org.apache.dubbo.rpc.cluster.filter;
 
+import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.Activate;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
@@ -33,7 +33,8 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
     @Override
     public <T> Invoker<T> buildInvokerChain(final Invoker<T> originalInvoker, String key, String group) {
         Invoker<T> last = originalInvoker;
-        List<Filter> filters = ExtensionLoader.getExtensionLoader(Filter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
+        URL url = originalInvoker.getUrl();
+        List<Filter> filters = url.getScopeModel().getExtensionLoader(Filter.class).getActivateExtension(url, key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
@@ -52,7 +53,8 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
     @Override
     public <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> originalInvoker, String key, String group) {
         ClusterInvoker<T> last = originalInvoker;
-        List<ClusterFilter> filters = ExtensionLoader.getExtensionLoader(ClusterFilter.class).getActivateExtension(originalInvoker.getUrl(), key, group);
+        URL url = originalInvoker.getUrl();
+        List<ClusterFilter> filters = url.getScopeModel().getExtensionLoader(ClusterFilter.class).getActivateExtension(url, key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {

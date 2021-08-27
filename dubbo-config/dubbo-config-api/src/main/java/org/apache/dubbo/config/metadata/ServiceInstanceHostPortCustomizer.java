@@ -40,13 +40,14 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
             return;
         }
 
-        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension();
+        WritableMetadataService writableMetadataService = WritableMetadataService.getDefaultExtension(serviceInstance.getApplicationModel());
 
         String host = null;
         int port = -1;
         Set<URL> urls = writableMetadataService.getExportedServiceURLs();
         if (CollectionUtils.isNotEmpty(urls)) {
-            String preferredProtocol = ApplicationModel.defaultModel().getApplicationConfig().getProtocol();
+            ApplicationModel applicationModel = serviceInstance.getApplicationModel();
+            String preferredProtocol = applicationModel.getApplicationConfig().getProtocol();
             if (preferredProtocol != null) {
                 for (URL exportedURL : urls) {
                     if (preferredProtocol.equals(exportedURL.getProtocol())) {

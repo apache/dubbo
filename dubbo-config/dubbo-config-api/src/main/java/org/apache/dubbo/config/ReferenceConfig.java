@@ -404,6 +404,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
      */
     private void createInvokerForLocal(Map<String, String> referenceParameters) {
         URL url = new ServiceConfigURL(LOCAL_PROTOCOL, LOCALHOST_VALUE, 0, interfaceClass.getName()).addParameters(referenceParameters);
+        url.setScopeModel(getScopeModel());
         invoker = protocolSPI.refer(interfaceClass, url);
         if (logger.isInfoEnabled()) {
             logger.info("Using in jvm service " + interfaceClass.getName());
