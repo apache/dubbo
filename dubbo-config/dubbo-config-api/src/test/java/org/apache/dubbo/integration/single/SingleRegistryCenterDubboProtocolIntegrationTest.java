@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.NetUtils;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
-import org.apache.dubbo.config.ReferenceConfig;
 import org.apache.dubbo.config.ApplicationConfig;
 import org.apache.dubbo.config.ProtocolConfig;
+import org.apache.dubbo.config.ReferenceConfig;
+import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
@@ -41,9 +41,10 @@ import org.apache.dubbo.registry.zookeeper.ZookeeperServiceDiscovery;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
 import org.apache.dubbo.rpc.cluster.Directory;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,7 +244,7 @@ public class SingleRegistryCenterDubboProtocolIntegrationTest implements Integra
         // MetadataInfo exists or not in InMemoryWritableMetadataService
         Assertions.assertNotNull(metadataInfo);
         // MetadataInfo has reported or not
-        Assertions.assertTrue(metadataInfo.hasReported());
+        Assertions.assertFalse(metadataInfo.hasReported());
         // MetadataInfo has reported or not has service or not
         Assertions.assertFalse(metadataInfo.getServices().isEmpty());
         // MetadataInfo has reported or not has service or not
