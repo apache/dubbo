@@ -55,7 +55,7 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
             execute(() -> {
                 try {
                     AppResponse result;
-                    if (!"void".equals(getMethodDescriptor().getReturnClass().getName())) {
+                    if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
                         final Object resp = deserializeResponse(getData());
                         result = new AppResponse(resp);
                     } else {
