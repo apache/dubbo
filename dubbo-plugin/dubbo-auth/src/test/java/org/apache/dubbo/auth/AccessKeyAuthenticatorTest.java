@@ -58,7 +58,7 @@ class AccessKeyAuthenticatorTest {
         when(helper.getAccessKeyPair(invocation, url)).thenReturn(accessKeyPair);
 
         helper.sign(invocation, url);
-        assertEquals(String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER)), url.getParameter(CommonConstants.APPLICATION_KEY));
+        assertEquals(String.valueOf(invocation.getAttachment(CommonConstants.CONSUMER)), url.getApplication());
         assertNotNull(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY));
         assertEquals(invocation.getAttachments().get(Constants.REQUEST_SIGNATURE_KEY), "dubbo");
     }
