@@ -183,7 +183,16 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     @Override
     public void execute(Runnable runnable) {
         try {
-            super.execute(runnable);
+            super.execute(() -> {
+                try {
+                    runnable.run();
+                } catch (Throwable t) {
+                    LOGGER.error("Exception processing triple message", t);
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Exception in invoker chain :" + t.getMessage())
+                            .withCause(t));
+                }
+            });
         } catch (RejectedExecutionException e) {
             LOGGER.error("Provider's thread pool is full", e);
             transportError(GrpcStatus.fromCode(GrpcStatus.Code.RESOURCE_EXHAUSTED)
