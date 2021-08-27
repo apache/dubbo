@@ -25,7 +25,10 @@ import org.apache.dubbo.registry.RegistryServiceListener;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 
-@Activate(value = "multipleConfigCenterServiceDiscoveryRegistry")
+import static org.apache.dubbo.integration.Constants.MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY;
+
+
+@Activate(value = MULTIPLE_CONFIG_CENTER_SERVICE_DISCOVERY_REGISTRY)
 public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListener implements RegistryServiceListener {
 
     private ServiceDiscoveryRegistryStorage storage = new ServiceDiscoveryRegistryStorage();

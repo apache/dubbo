@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.apache.dubbo.integration.Constants.SINGLE_CONFIG_CENTER_EXPORT_PROVIDER;
 import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
@@ -55,11 +56,6 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      * Define the provider application name.
      */
     private static String PROVIDER_APPLICATION_NAME = "single-registry-center-for-export-provider";
-
-    /**
-     * The name for getting the specified instance, which is loaded using SPI.
-     */
-    private static String SPI_NAME = "singleConfigCenterExportProvider";
 
     /**
      * Define the protocol's name.
@@ -141,16 +137,16 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
     private void beforeExport() {
         registryProtocolListener = (SingleRegistryCenterExportProviderRegistryProtocolListener) ExtensionLoader
             .getExtensionLoader(RegistryProtocolListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         exporterListener = (SingleRegistryCenterExportProviderExporterListener) ExtensionLoader
             .getExtensionLoader(ExporterListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         filter = (SingleRegistryCenterExportProviderFilter) ExtensionLoader
             .getExtensionLoader(Filter.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         serviceListener = (SingleRegistryCenterExportProviderServiceListener) ExtensionLoader
             .getExtensionLoader(ServiceListener.class)
-            .getExtension(SPI_NAME);
+            .getExtension(SINGLE_CONFIG_CENTER_EXPORT_PROVIDER);
         // ---------------checkpoints--------------- //
         // ServiceConfig isn't exported
         Assertions.assertFalse(serviceConfig.isExported());
