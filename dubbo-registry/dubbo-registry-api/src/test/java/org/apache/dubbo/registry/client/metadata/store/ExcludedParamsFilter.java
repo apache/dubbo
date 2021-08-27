@@ -14,14 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.metadata;
+package org.apache.dubbo.registry.client.metadata.store;
 
-public class DefaultMetadataParamsFilter implements MetadataParamsFilter {
+import org.apache.dubbo.metadata.MetadataParamsFilter;
+
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+
+public class ExcludedParamsFilter implements MetadataParamsFilter {
+
     @Override
     public String[] serviceParamsIncluded() {
-        return new String[0];
+        return new String[]{INTERFACE_KEY};
     }
 
+    /**
+     * Not included in this test
+     */
     @Override
     public String[] instanceParamsIncluded() {
         return new String[0];

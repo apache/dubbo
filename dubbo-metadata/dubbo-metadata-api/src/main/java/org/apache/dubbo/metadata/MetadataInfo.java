@@ -148,8 +148,8 @@ public class MetadataInfo implements Serializable {
         this.services = services;
     }
 
-    public ServiceInfo getServiceInfo(String serviceKey) {
-        return services.get(serviceKey);
+    public ServiceInfo getServiceInfo(String protocolServiceKey) {
+        return services.get(protocolServiceKey);
     }
 
     public Map<String, String> getExtendParams() {
@@ -182,6 +182,28 @@ public class MetadataInfo implements Serializable {
             return null;
         }
         return serviceInfo.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(app, services);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (!(obj instanceof MetadataInfo)) {
+            return false;
+        }
+
+        MetadataInfo other = (MetadataInfo)obj;
+
+        return Objects.equals(app, other.getApp())
+            && ((services == null && other.getServices() == null)
+                || (services != null && services.equals(other.getServices())));
     }
 
     @Override
