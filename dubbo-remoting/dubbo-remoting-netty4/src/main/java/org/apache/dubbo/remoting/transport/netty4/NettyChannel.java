@@ -39,7 +39,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
 /**
  * NettyChannel maintains the cache of channel.
  */
-final class NettyChannel extends AbstractChannel {
+public final class NettyChannel extends AbstractChannel {
 
     private static final Logger logger = LoggerFactory.getLogger(NettyChannel.class);
     /**
