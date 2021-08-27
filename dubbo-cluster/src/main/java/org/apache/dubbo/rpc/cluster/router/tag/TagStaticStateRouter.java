@@ -42,10 +42,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.TAG_KEY;
 public class TagStaticStateRouter extends AbstractStateRouter {
     public static final String NAME = "TAG_ROUTER";
     private static final int TAG_ROUTER_DEFAULT_PRIORITY = 100;
-    private static final Logger logger = LoggerFactory.getLogger(TagStaticStateRouter.class);
     private static final String NO_TAG = "noTag";
-
-    private TagRouterRule tagRouterRule;
 
     public TagStaticStateRouter(URL url, RouterChain chain) {
         super(url, chain);
@@ -87,10 +84,6 @@ public class TagStaticStateRouter extends AbstractStateRouter {
         return tags;
     }
 
-    @Override
-    public boolean isRuntime() {
-        return tagRouterRule != null && tagRouterRule.isRuntime();
-    }
 
     @Override
     public boolean isEnable() {

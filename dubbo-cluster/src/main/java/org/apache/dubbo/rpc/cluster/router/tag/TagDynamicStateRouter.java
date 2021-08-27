@@ -121,7 +121,7 @@ public class TagDynamicStateRouter extends AbstractStateRouter implements Config
 
     @Override
     public boolean isEnable() {
-        return tagRouterRule.isEnabled();
+        return tagRouterRule != null && tagRouterRule.isEnabled();
     }
 
     @Override
