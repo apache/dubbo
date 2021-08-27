@@ -1,0 +1,1 @@
+log=org.apache.dubbo.rpc.cluster.filter.LogFilter
