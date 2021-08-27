@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.registry.Registry;
@@ -44,7 +43,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
-import static org.apache.dubbo.common.status.reporter.FrameworkStatusReporter.createConsumptionReport;
 import static org.apache.dubbo.registry.client.migration.model.MigrationStep.APPLICATION_FIRST;
 import static org.apache.dubbo.rpc.cluster.Constants.REFER_KEY;
 
@@ -426,9 +424,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         setListener(serviceDiscoveryInvoker, () -> {
             latch.countDown();
-            FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
-            );
+            //TODO FrameworkStatusReporter
+//            FrameworkStatusReporter.reportConsumptionStatus(
+//                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "app")
+//            );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
             }
@@ -449,9 +448,10 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         }
         setListener(invoker, () -> {
             latch.countDown();
-            FrameworkStatusReporter.reportConsumptionStatus(
-                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
-            );
+            //TODO FrameworkStatusReporter
+//            FrameworkStatusReporter.reportConsumptionStatus(
+//                createConsumptionReport(consumerUrl.getServiceInterface(), consumerUrl.getVersion(), consumerUrl.getGroup(), "interface")
+//            );
             if (step == APPLICATION_FIRST) {
                 calcPreferredInvoker(rule);
             }

@@ -98,11 +98,12 @@ public class MigrationRuleHandler<T> {
     }
 
     private void report(MigrationStep step, MigrationStep originStep, String success) {
-        if (FrameworkStatusReporter.hasReporter()) {
-            FrameworkStatusReporter.reportMigrationStepStatus(
-                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
-                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
-        }
+        //TODO FrameworkStatusReporter
+//        if (FrameworkStatusReporter.hasReporter()) {
+//            FrameworkStatusReporter.reportMigrationStepStatus(
+//                    FrameworkStatusReporter.createMigrationStepReport(consumerURL.getServiceInterface(), consumerURL.getVersion(),
+//                            consumerURL.getGroup(), String.valueOf(originStep), String.valueOf(step), success));
+//        }
     }
 
     private void setMigrationRule(MigrationRule rule) {

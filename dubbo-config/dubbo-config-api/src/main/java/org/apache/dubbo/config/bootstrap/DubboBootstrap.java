@@ -29,6 +29,7 @@ import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
+import org.apache.dubbo.common.status.reporter.FrameworkStatusReportService;
 import org.apache.dubbo.common.threadpool.manager.ExecutorRepository;
 import org.apache.dubbo.common.utils.ArrayUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -278,6 +279,7 @@ public class DubboBootstrap {
 
         beanFactory.registerBean(MetadataReportInstance.class);
         beanFactory.registerBean(RemoteMetadataServiceImpl.class);
+        beanFactory.registerBean(FrameworkStatusReportService.class);
     }
 
     public ApplicationModel getApplicationModel() {
