@@ -131,6 +131,9 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);
         inv.setObjectAttachments(attachments);
 
+        for (HeaderFilter headerFilter : getHeaderFilters()) {
+            inv = headerFilter.invoke(getInvoker(), inv);
+        }
         return inv;
     }
 

@@ -19,7 +19,6 @@ package org.apache.dubbo.rpc.protocol.tri;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.stream.StreamObserver;
-import org.apache.dubbo.rpc.HeaderFilter;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcInvocation;
 import org.apache.dubbo.rpc.model.MethodDescriptor;
@@ -93,9 +92,6 @@ public class ServerStream extends AbstractServerStream implements Stream {
             try {
                 if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                     RpcInvocation inv = buildInvocation(getHeaders());
-                    for (HeaderFilter headerFilter : getHeaderFilters()) {
-                        inv = headerFilter.invoke(getInvoker(), inv);
-                    }
                     final Object[] arguments = deserializeRequest(in);
                     if (arguments != null) {
                         inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
