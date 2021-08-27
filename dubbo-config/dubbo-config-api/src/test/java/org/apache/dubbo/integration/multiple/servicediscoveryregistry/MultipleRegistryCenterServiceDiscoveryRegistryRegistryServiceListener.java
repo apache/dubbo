@@ -17,7 +17,6 @@
 package org.apache.dubbo.integration.multiple.servicediscoveryregistry;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Registry;
@@ -51,8 +50,8 @@ public class MultipleRegistryCenterServiceDiscoveryRegistryRegistryServiceListen
     /**
      * Checks if the registry is checked application
      */
-    private boolean isCheckedApplication(Registry registry) {
-        return registry.getUrl().getParameter(CommonConstants.APPLICATION_KEY)
+    private boolean isCheckedApplication(Registry registry){
+        return registry.getUrl().getApplication()
             .equals(MultipleRegistryCenterServiceDiscoveryRegistryIntegrationTest
                 .PROVIDER_APPLICATION_NAME);
     }

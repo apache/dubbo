@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.integration.single.exportprovider;
 
+import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.RegistryConfig;
@@ -26,6 +27,8 @@ import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ServiceListener;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
+import org.apache.dubbo.metadata.ServiceNameMapping;
+import org.apache.dubbo.metadata.report.MetadataReportInstance;
 import org.apache.dubbo.registry.integration.RegistryProtocolListener;
 import org.apache.dubbo.registrycenter.RegistryCenter;
 import org.apache.dubbo.registrycenter.ZookeeperMultipleRegistryCenter;
@@ -185,6 +188,7 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      *     <li>The exported service is SingleRegistryCenterExportProviderService or not</li>
      *     <li>The SingleRegistryCenterExportProviderService is exported or not</li>
      *     <li>The exported exporter contains SingleRegistryCenterExportProviderFilter or not</li>
+     *     <li>The metadata mapping info is right or not</li>
      * </ul>
      */
     private void afterExport() {
@@ -204,6 +208,23 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
         Assertions.assertEquals(exporterListener.getExportedExporters().size(), 3);
         // The exported exporter contains SingleRegistryCenterExportProviderFilter
         Assertions.assertTrue(exporterListener.getFilters().contains(filter));
+        // The consumer can be notified and get provider's metadata through metadata mapping info.
+        // So, the metadata mapping is necessary to check after exported service (or provider)
+        // The best way to verify this issue is to check if the exported service (or provider)
+        // has been registered in the path of /dubbo/mapping/****
+        // What are the parameters?
+        // registryKey: the registryKey is the default cluster, CommonConstants.DEFAULT_KEY
+        // key: The exported interface's name
+        // group: the group is "mapping", ServiceNameMapping.DEFAULT_MAPPING_GROUP
+        ConfigItem configItem = MetadataReportInstance.getMetadataReport(CommonConstants.DEFAULT_KEY)
+            .getConfigItem(serviceConfig.getInterface()
+                , ServiceNameMapping.DEFAULT_MAPPING_GROUP);
+        // Check if the exported service (provider) is registered
+        Assertions.assertNotNull(configItem);
+        // Check if registered service (provider)'s name is right
+        Assertions.assertEquals(PROVIDER_APPLICATION_NAME,configItem.getContent());
+        // Check if registered service (provider)'s version exists
+        Assertions.assertNotNull(configItem.getTicket());
     }
 
     /**
@@ -215,11 +236,11 @@ public class SingleRegistryCenterExportProviderIntegrationTest implements Integr
      * </ul>
      */
     private void afterInvoke() {
-        // The SingleRegistryCenterInjvmFilter has called
+        // The SingleRegistryCenterExportProviderFilter has called
         Assertions.assertTrue(filter.hasCalled());
-        // The SingleRegistryCenterInjvmFilter doesn't exist error
+        // The SingleRegistryCenterExportProviderFilter doesn't exist error
         Assertions.assertFalse(filter.hasError());
-        // Check the SingleRegistryCenterInjvmFilter's response
+        // Check the SingleRegistryCenterExportProviderFilter's response
         Assertions.assertEquals("Hello " + PROVIDER_APPLICATION_NAME, filter.getResponse());
     }
 
