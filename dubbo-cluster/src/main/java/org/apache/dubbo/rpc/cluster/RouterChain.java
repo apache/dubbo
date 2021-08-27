@@ -154,10 +154,6 @@ public class RouterChain<T> {
         return stateRouters;
     }
 
-    private void sort() {
-        Collections.sort(routers);
-    }
-
     /**
      * @param url
      * @param invocation
