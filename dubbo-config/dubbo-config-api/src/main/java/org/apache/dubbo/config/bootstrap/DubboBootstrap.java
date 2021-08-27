@@ -210,7 +210,7 @@ public class DubboBootstrap {
         if (instance == null) {
             synchronized (DubboBootstrap.class) {
                 if (instance == null) {
-                    instance = new DubboBootstrap(FrameworkModel.defaultModel());
+                    instance = new DubboBootstrap(ApplicationModel.defaultModel());
                 }
             }
         }
@@ -260,7 +260,11 @@ public class DubboBootstrap {
     }
 
     private DubboBootstrap(FrameworkModel frameworkModel) {
-        applicationModel = new ApplicationModel(frameworkModel);
+        this(new ApplicationModel(frameworkModel));
+    }
+
+    private DubboBootstrap(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
         configManager = applicationModel.getConfigManager();
         environment = applicationModel.getEnvironment();
 

@@ -41,6 +41,48 @@ public class DubboBootstrapMultiInstanceTest {
         Assertions.assertNotSame(dubboBootstrap1.getConfigManager(), dubboBootstrap2.getConfigManager());
 
         // bootstrap1: provider app
+        testProviderApp(dubboBootstrap1);
+
+        // bootstrap2: consumer app
+        testConsumerApp(dubboBootstrap2);
+
+        DemoService demoServiceRefer = dubboBootstrap2.getCache().get(DemoService.class);
+        String result = demoServiceRefer.sayName("dubbo");
+        System.out.println("result: " + result);
+    }
+
+    @Test
+    public void testDefaultApplication() {
+
+        testProviderApp(DubboBootstrap.getInstance());
+
+    }
+
+    @Test
+    public void testSharedApplications() {
+
+        FrameworkModel frameworkModel = new FrameworkModel();
+        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
+        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(frameworkModel);
+        ApplicationModel applicationModel1 = dubboBootstrap1.getApplicationModel();
+        ApplicationModel applicationModel2 = dubboBootstrap2.getApplicationModel();
+        Assertions.assertNotSame(applicationModel1, applicationModel2);
+        Assertions.assertSame(applicationModel1.getFrameworkModel(), applicationModel2.getFrameworkModel());
+        Assertions.assertNotSame(dubboBootstrap1.getConfigManager(), dubboBootstrap2.getConfigManager());
+
+    }
+
+    private void testConsumerApp(DubboBootstrap dubboBootstrap2) {
+        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
+        referenceConfig.setInterface(DemoService.class);
+
+        dubboBootstrap2.application("consumer-app")
+            .registry(new RegistryConfig("zookeeper://localhost:2181"))
+            .reference(referenceConfig)
+            .start();
+    }
+
+    private void testProviderApp(DubboBootstrap dubboBootstrap1) {
         RegistryConfig registry1 = new RegistryConfig();
         registry1.setAddress("zookeeper://localhost:2181");
 
@@ -57,33 +99,7 @@ public class DubboBootstrapMultiInstanceTest {
             .protocol(protocol1)
             .service(serviceConfig)
             .start();
-
-
-        // bootstrap2: consumer app
-        ReferenceConfig<DemoService> referenceConfig = new ReferenceConfig<>();
-        referenceConfig.setInterface(DemoService.class);
-
-        dubboBootstrap2.application("consumer-app")
-            .registry(new RegistryConfig("zookeeper://localhost:2181"))
-            .reference(referenceConfig)
-            .start();
-
-        DemoService demoServiceRefer = dubboBootstrap2.getCache().get(DemoService.class);
-        String result = demoServiceRefer.sayName("dubbo");
-        System.out.println("result: " + result);
     }
 
-    @Test
-    public void testSharedApplications() {
 
-        FrameworkModel frameworkModel = new FrameworkModel();
-        DubboBootstrap dubboBootstrap1 = DubboBootstrap.newInstance(frameworkModel);
-        DubboBootstrap dubboBootstrap2 = DubboBootstrap.newInstance(frameworkModel);
-        ApplicationModel applicationModel1 = dubboBootstrap1.getApplicationModel();
-        ApplicationModel applicationModel2 = dubboBootstrap2.getApplicationModel();
-        Assertions.assertNotSame(applicationModel1, applicationModel2);
-        Assertions.assertSame(applicationModel1.getFrameworkModel(), applicationModel2.getFrameworkModel());
-        Assertions.assertNotSame(dubboBootstrap1.getConfigManager(), dubboBootstrap2.getConfigManager());
-
-    }
 }
