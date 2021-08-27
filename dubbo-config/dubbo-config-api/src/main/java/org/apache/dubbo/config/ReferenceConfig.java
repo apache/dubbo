@@ -390,6 +390,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
 
         URL consumerUrl = new ServiceConfigURL(CONSUMER_PROTOCOL, referenceParameters.get(REGISTER_IP_KEY), 0,
             referenceParameters.get(INTERFACE_KEY), referenceParameters);
+        consumerUrl.setScopeModel(getScopeModel());
         MetadataUtils.publishServiceDefinition(consumerUrl);
 
         // create service proxy

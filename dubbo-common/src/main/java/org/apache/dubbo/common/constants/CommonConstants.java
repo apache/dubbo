@@ -448,4 +448,5 @@ public interface CommonConstants {
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
 
+    String SCOPE_MODEL = "scopeModel";
 }

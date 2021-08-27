@@ -23,6 +23,7 @@ import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 import org.apache.dubbo.common.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +39,7 @@ public class ScopeBeanFactory {
     private ExtensionAccessor extensionAccessor;
     private List<ExtensionPostProcessor> extensionPostProcessors;
     private Map<Class, AtomicInteger> beanNameIdCounterMap = new ConcurrentHashMap<>();
-    private Map<Class, List<BeanInfo>> beanMap = new ConcurrentHashMap<>();
+    private List<BeanInfo> registeredBeanInfos = Collections.synchronizedList(new ArrayList<>());
 
     public ScopeBeanFactory(ScopeBeanFactory parent, ExtensionAccessor extensionAccessor) {
         this.parent = parent;
@@ -69,6 +70,11 @@ public class ScopeBeanFactory {
     }
 
     public void registerBean(String name, Object bean) {
+        // avoid duplicated register same bean
+        if (containsBean(name, bean)) {
+            return;
+        }
+
         Class<?> beanClass = bean.getClass();
         try {
             if (bean instanceof ExtensionAccessorAware) {
@@ -84,8 +90,17 @@ public class ScopeBeanFactory {
         if (name == null) {
             name = beanClass.getName() + "#" + getNextId(beanClass);
         }
-        List<BeanInfo> beanInfos = beanMap.computeIfAbsent(beanClass, key -> new ArrayList<>());
-        beanInfos.add(new BeanInfo(name, bean));
+        registeredBeanInfos.add(new BeanInfo(name, bean));
+    }
+
+    private boolean containsBean(String name, Object bean) {
+        for (BeanInfo beanInfo : registeredBeanInfos) {
+            if (beanInfo.instance == bean &&
+                (name == null || StringUtils.isEquals(name, beanInfo.name))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int getNextId(Class<?> beanClass) {
@@ -105,24 +120,28 @@ public class ScopeBeanFactory {
     }
 
     private <T> T getBeanInternal(String name, Class<T> type) {
-        List<BeanInfo> beanInfos = beanMap.get(type);
-        if (beanInfos == null || beanInfos.isEmpty()) {
-            return null;
-        }
-
-        for (BeanInfo beanInfo : beanInfos) {
-            if (name == null || StringUtils.isEquals(beanInfo.name, name)) {
-                return (T) beanInfo.instance;
+        List<BeanInfo> candidates = null;
+        for (BeanInfo beanInfo : registeredBeanInfos) {
+            // if required bean type is same class/superclass/interface of the registered bean
+            if (type.isAssignableFrom(beanInfo.instance.getClass())) {
+                if (StringUtils.isEquals(beanInfo.name, name)) {
+                    return (T) beanInfo.instance;
+                } else {
+                    if (candidates == null) {
+                        candidates = new ArrayList<>();
+                    }
+                    candidates.add(beanInfo);
+                }
             }
         }
 
         // if bean name not matched and only single candidate
-        if (name != null) {
-            if (beanInfos.size() == 1) {
-                return (T) beanInfos.get(0);
-            } else if (beanInfos.size() > 1) {
-                List<String> candidateBeanNames = beanInfos.stream().map(beanInfo -> beanInfo.name).collect(Collectors.toList());
-                throw new ScopeBeanException("expected single matching bean but found " + beanInfos.size() + " candidates for type [" + type.getName() + "]: " + candidateBeanNames);
+        if (candidates != null) {
+            if (candidates.size() == 1) {
+                return (T) candidates.get(0).instance;
+            } else if (candidates.size() > 1) {
+                List<String> candidateBeanNames = candidates.stream().map(beanInfo -> beanInfo.name).collect(Collectors.toList());
+                throw new ScopeBeanException("expected single matching bean but found " + candidates.size() + " candidates for type [" + type.getName() + "]: " + candidateBeanNames);
             }
         }
         return null;

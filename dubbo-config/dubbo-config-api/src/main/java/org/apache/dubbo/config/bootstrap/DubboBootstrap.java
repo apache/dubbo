@@ -869,7 +869,7 @@ public class DubboBootstrap {
     private ConfigCenterConfig registryAsConfigCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
         Integer port = registryConfig.getPort();
-        URL url = URL.valueOf(registryConfig.getAddress());
+        URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
         String id = "config-center-" + protocol + "-" + url.getHost() + "-" + port;
         ConfigCenterConfig cc = new ConfigCenterConfig();
         cc.setId(id);
@@ -979,7 +979,7 @@ public class DubboBootstrap {
 
     private MetadataReportConfig registryAsMetadataCenter(RegistryConfig registryConfig) {
         String protocol = registryConfig.getProtocol();
-        URL url = URL.valueOf(registryConfig.getAddress());
+        URL url = URL.valueOf(registryConfig.getAddress(), registryConfig.getScopeModel());
         String id = "metadata-center-" + protocol + "-" + url.getHost() + "-" + url.getPort();
         MetadataReportConfig metadataReportConfig = new MetadataReportConfig();
         metadataReportConfig.setId(id);
@@ -1009,7 +1009,7 @@ public class DubboBootstrap {
         // since 2.7.8
         // Issue : https://github.com/apache/dubbo/issues/6476
         StringBuilder metadataAddressBuilder = new StringBuilder();
-        URL url = URL.valueOf(address);
+        URL url = URL.valueOf(address, registryConfig.getScopeModel());
         String protocolFromAddress = url.getProtocol();
         if (isEmpty(protocolFromAddress)) {
             // If the protocol from address is missing, is like :
@@ -1150,8 +1150,12 @@ public class DubboBootstrap {
      */
     private void initMetadataService() {
 //        startMetadataCenter();
-        this.metadataService = getDefaultExtension();
-        this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
+        this.metadataService = getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+        // support injection by super type MetadataService
+        applicationModel.getBeanFactory().registerBean(this.metadataService);
+
+        //this.metadataServiceExporter = new ConfigurableMetadataServiceExporter(metadataService);
+        this.metadataServiceExporter = getExtensionLoader(MetadataServiceExporter.class).getDefaultExtension();
     }
 
     /**
@@ -1621,6 +1625,7 @@ public class DubboBootstrap {
 
     private ServiceInstance createServiceInstance(String serviceName) {
         this.serviceInstance = new DefaultServiceInstance(serviceName);
+        serviceInstance.setScopeModel(applicationModel);
         setMetadataStorageType(serviceInstance, getMetadataType());
         ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance);
         return this.serviceInstance;

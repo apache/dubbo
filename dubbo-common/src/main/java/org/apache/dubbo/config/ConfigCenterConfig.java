@@ -131,7 +131,9 @@ public class ConfigCenterConfig extends AbstractConfig {
         if (StringUtils.isEmpty(map.get(PROTOCOL_KEY))) {
             map.put(PROTOCOL_KEY, ZOOKEEPER_PROTOCOL);
         }
-        return UrlUtils.parseURL(address, map);
+        URL url = UrlUtils.parseURL(address, map);
+        url.setScopeModel(getScopeModel());
+        return url;
     }
 
     public boolean checkOrUpdateInited() {
@@ -171,7 +173,7 @@ public class ConfigCenterConfig extends AbstractConfig {
         this.address = address;
         if (address != null) {
             try {
-                URL url = URL.valueOf(address);
+                URL url = URL.valueOf(address, getScopeModel());
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());
                 updatePropertyIfAbsent(this::getPassword, this::setPassword, url.getPassword());
                 updatePropertyIfAbsent(this::getProtocol, this::setProtocol, url.getProtocol());

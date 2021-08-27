@@ -19,6 +19,7 @@ package org.apache.dubbo.registry.client;
 import org.apache.dubbo.metadata.MetadataInfo;
 
 import com.alibaba.fastjson.JSON;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static org.apache.dubbo.common.constants.CommonConstants.REVISION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.SCOPE_MODEL;
 import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataUtils.ENDPOINTS;
 
 /**
@@ -59,6 +61,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     private transient String registryCluster; // extendParams can be more flexiable, but one single property uses less space
     private transient Map<String, String> extendParams;
     private transient List<Endpoint> endpoints;
+    private transient Map<String, Object> attributes = new HashMap<>();
 
     public DefaultServiceInstance() {
     }
@@ -75,6 +78,7 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.extendParams = other.extendParams;
         this.endpoints = other.endpoints;
         this.address = null;
+        this.attributes = other.attributes;
     }
 
     public DefaultServiceInstance(String serviceName, String host, Integer port) {
@@ -201,6 +205,21 @@ public class DefaultServiceInstance implements ServiceInstance {
             allParams.putAll(extendParams);
             return allParams;
         }
+    }
+
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public void setScopeModel(ScopeModel scopeModel) {
+        this.attributes.put(SCOPE_MODEL,scopeModel);
+    }
+
+    @Override
+    public ScopeModel getScopeModel() {
+        return (ScopeModel) this.attributes.get(SCOPE_MODEL);
     }
 
     public void setMetadata(Map<String, String> metadata) {

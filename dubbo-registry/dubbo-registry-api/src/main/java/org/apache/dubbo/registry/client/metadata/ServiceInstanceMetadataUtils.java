@@ -258,7 +258,7 @@ public class ServiceInstanceMetadataUtils {
     }
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
-        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+        RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getScopeModel());
         remoteMetadataService.publishMetadata(ApplicationModel.defaultModel().getName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {

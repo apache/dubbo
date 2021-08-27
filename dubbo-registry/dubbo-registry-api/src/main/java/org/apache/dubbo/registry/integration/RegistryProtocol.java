@@ -141,8 +141,8 @@ public class RegistryProtocol implements Protocol {
     //provider url <--> exporter
     private final ConcurrentMap<String, ExporterChangeableWrapper<?>> bounds = new ConcurrentHashMap<>();
     protected Protocol protocol;
-    protected RegistryFactory registryFactory;
     protected ProxyFactory proxyFactory;
+    //protected RegistryFactory registryFactory;
 
     private ConcurrentMap<URL, ReExportTask> reExportFailedTasks = new ConcurrentHashMap<>();
     private HashedWheelTimer retryTimer = new HashedWheelTimer(new NamedThreadFactory("DubboReexportTimer", true), DEFAULT_REGISTRY_RETRY_PERIOD, TimeUnit.MILLISECONDS, 128);
@@ -163,9 +163,10 @@ public class RegistryProtocol implements Protocol {
         this.protocol = protocol;
     }
 
-    public void setRegistryFactory(RegistryFactory registryFactory) {
-        this.registryFactory = registryFactory;
-    }
+    // Cannot inject registryFactory (application scope) into protocol (framework scope)
+//    public void setRegistryFactory(RegistryFactory registryFactory) {
+//        this.registryFactory = registryFactory;
+//    }
 
     public void setProxyFactory(ProxyFactory proxyFactory) {
         this.proxyFactory = proxyFactory;
@@ -356,6 +357,7 @@ public class RegistryProtocol implements Protocol {
      * @return
      */
     protected Registry getRegistry(final URL registryUrl) {
+        RegistryFactory registryFactory = registryUrl.getScopeModel().getAdaptiveExtension(RegistryFactory.class);
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -435,7 +437,7 @@ public class RegistryProtocol implements Protocol {
     @SuppressWarnings("unchecked")
     public <T> Invoker<T> refer(Class<T> type, URL url) throws RpcException {
         url = getRegistryUrl(url);
-        Registry registry = registryFactory.getRegistry(url);
+        Registry registry = getRegistry(url);
         if (RegistryService.class.equals(type)) {
             return proxyFactory.getInvoker((T) registry, type, url);
         }
@@ -843,19 +845,4 @@ public class RegistryProtocol implements Protocol {
         }
     }
 
-    // for unit test
-    private static RegistryProtocol INSTANCE;
-
-    // for unit test
-    public RegistryProtocol() {
-        INSTANCE = this;
-    }
-
-    // for unit test
-    public static RegistryProtocol getRegistryProtocol() {
-        if (INSTANCE == null) {
-            ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(REGISTRY_PROTOCOL); // load
-        }
-        return INSTANCE;
-    }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.dubbo.registry.client;
 
+import org.apache.dubbo.rpc.model.ScopeModel;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.SortedMap;
@@ -87,6 +89,12 @@ public interface ServiceInstance extends Serializable {
     Map<String, String> getExtendParams();
 
     Map<String, String> getAllParams();
+
+    Map<String, Object> getAttributes();
+
+    void setScopeModel(ScopeModel scopeModel);
+
+    ScopeModel getScopeModel();
 
     /**
      * Get the value of metadata by the specified name

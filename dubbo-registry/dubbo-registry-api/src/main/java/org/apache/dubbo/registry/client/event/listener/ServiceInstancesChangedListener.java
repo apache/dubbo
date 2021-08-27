@@ -330,7 +330,7 @@ public class ServiceInstancesChangedListener {
                 logger.debug("Instance " + instance.getAddress() + " is using metadata type " + metadataType);
             }
             if (REMOTE_METADATA_STORAGE_TYPE.equals(metadataType)) {
-                RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService();
+                RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(instance.getScopeModel());
                 metadataInfo = remoteMetadataService.getMetadata(instance);
             } else {
                 // change the instance used to communicate to avoid all requests route to the same instance

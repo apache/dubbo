@@ -268,7 +268,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
         // init some null configuration.
         List<ConfigInitializer> configInitializers = this.getExtensionLoader(ConfigInitializer.class)
-                .getActivateExtension(URL.valueOf("configInitializer://"), (String[]) null);
+                .getActivateExtension(URL.valueOf("configInitializer://", getScopeModel()), (String[]) null);
         configInitializers.forEach(e -> e.initServiceConfig(this));
 
         // if protocol is not injvm checkRegistry
@@ -528,6 +528,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         String host = findConfigedHosts(protocolConfig, registryURLs, params);
         Integer port = findConfigedPorts(protocolConfig, name, params);
         URL url = new ServiceConfigURL(name, null, null, host, port, getContextPath(protocolConfig).map(p -> p + "/" + path).orElse(path), params);
+        url.setScopeModel(getScopeModel());
 
         // You can customize Configurator to append extra parameters
         if (this.getExtensionLoader(ConfiguratorFactory.class)
@@ -535,7 +536,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
             url = this.getExtensionLoader(ConfiguratorFactory.class)
                     .getExtension(url.getProtocol()).getConfigurator(url).configure(url);
         }
-
+        url.setScopeModel(getScopeModel());
         return url;
     }
 
@@ -813,7 +814,7 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     private void postProcessConfig() {
         List<ConfigPostProcessor> configPostProcessors = this.getExtensionLoader(ConfigPostProcessor.class)
-                .getActivateExtension(URL.valueOf("configPostProcessor://"), (String[]) null);
+                .getActivateExtension(URL.valueOf("configPostProcessor://", getScopeModel()), (String[]) null);
         configPostProcessors.forEach(component -> component.postProcessServiceConfig(this));
     }
 

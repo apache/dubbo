@@ -213,6 +213,7 @@ public class ConfigValidationUtils {
                         url = URLBuilder.from(url)
                             .addParameter(REGISTRY_KEY, url.getProtocol())
                             .setProtocol(extractRegistryType(url))
+                            .setScopeModel(interfaceConfig.getScopeModel())
                             .build();
                         if ((provider && url.getParameter(REGISTER_KEY, true))
                             || (!provider && url.getParameter(SUBSCRIBE_KEY, true))) {

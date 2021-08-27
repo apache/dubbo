@@ -52,6 +52,7 @@ public class MetadataReportInstance {
             String protocol = url.getParameter(METADATA_REPORT_KEY, DEFAULT_DIRECTORY);
             url = URLBuilder.from(url)
                     .setProtocol(protocol)
+                    .setScopeModel(config.getScopeModel())
                     .removeParameter(METADATA_REPORT_KEY)
                     .build();
         }

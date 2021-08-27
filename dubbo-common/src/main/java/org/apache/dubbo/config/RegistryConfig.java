@@ -220,7 +220,7 @@ public class RegistryConfig extends AbstractConfig {
         this.address = address;
         if (address != null) {
             try {
-                URL url = URL.valueOf(address);
+                URL url = URL.valueOf(address, getScopeModel());
 
                 // Refactor since 2.7.8
                 updatePropertyIfAbsent(this::getUsername, this::setUsername, url.getUsername());

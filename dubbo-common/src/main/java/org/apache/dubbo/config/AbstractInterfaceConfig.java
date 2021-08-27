@@ -289,6 +289,7 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
                 Class<?> finalInterfaceClass = interfaceClass;
                 List<MethodConfig> validMethodConfigs = methodConfigs.stream().filter(methodConfig -> {
                     methodConfig.setParentPrefix(preferredPrefix);
+                    methodConfig.setScopeModel(getScopeModel());
                     methodConfig.refresh();
                     // verify method config
                     return verifyMethodConfig(methodConfig, finalInterfaceClass, ignoreInvalidMethodConfig);
