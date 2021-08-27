@@ -61,7 +61,16 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
                         .withDescription("Missing request data"));
                 return;
             }
-            execute(this::invoke);
+            execute(()->{
+                try {
+                    this.invoke();
+                }catch (Throwable t){
+                    LOGGER.warn("Exception processing triple message", t);
+                    transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                            .withDescription("Exception in invoker chain :" + t.getMessage())
+                            .withCause(t));
+                }
+            });
         }
 
         public void invoke() {
