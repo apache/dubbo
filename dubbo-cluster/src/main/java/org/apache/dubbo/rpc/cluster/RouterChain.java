@@ -90,6 +90,7 @@ public class RouterChain<T> {
 
         List<Router> routers = extensionFactories.stream()
             .map(factory -> factory.getRouter(url))
+            .sorted(Router::compareTo)
             .collect(Collectors.toList());
 
         initWithRouters(routers);
@@ -114,7 +115,6 @@ public class RouterChain<T> {
     public void initWithRouters(List<Router> builtinRouters) {
         this.builtinRouters = builtinRouters;
         this.routers = new ArrayList<>(builtinRouters);
-        this.sort();
     }
 
     private void initWithStateRouters(List<StateRouter> builtinRouters) {
