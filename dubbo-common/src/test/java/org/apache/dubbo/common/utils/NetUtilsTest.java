@@ -24,6 +24,7 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.regex.Pattern;
 import java.net.NetworkInterface;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
@@ -352,7 +353,7 @@ public class NetUtilsTest {
             NetworkInterface networkInterface = NetUtils.findNetworkInterface();
             assertNotNull(networkInterface);
             // ignore the given network interface's display name
-            this.setIgnoredInterfaces(networkInterface.getDisplayName());
+            this.setIgnoredInterfaces(Pattern.quote(networkInterface.getDisplayName()));
             NetworkInterface newNetworkInterface = NetUtils.findNetworkInterface();
             if(newNetworkInterface!=null){
                 assertTrue(!networkInterface.getDisplayName().equals(newNetworkInterface.getDisplayName()));
@@ -373,7 +374,7 @@ public class NetUtilsTest {
             // ignore the given prefix network interface's display name
             String displayName = networkInterface.getDisplayName();
             if(StringUtils.isNotEmpty(displayName)&&displayName.length()>2){
-                String ignoredInterfaces = displayName.substring(0,1)+".*";
+                String ignoredInterfaces = Pattern.quote(displayName.substring(0,1)) + ".*";
                 this.setIgnoredInterfaces(ignoredInterfaces);
                 NetworkInterface newNetworkInterface = NetUtils.findNetworkInterface();
                 if(newNetworkInterface!=null){
