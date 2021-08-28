@@ -18,7 +18,6 @@ package org.apache.dubbo.metadata.report;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.URLBuilder;
-import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.MetadataReportConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
