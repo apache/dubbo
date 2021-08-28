@@ -330,7 +330,8 @@ public class NetUtils {
         if(StringUtils.isNotEmpty(ignoredInterfaces)
                 &&StringUtils.isNotEmpty(networkInterfaceDisplayName=networkInterface.getDisplayName())){
             for(String ignoredInterface: ignoredInterfaces.split(",")){
-                if(networkInterfaceDisplayName.matches(ignoredInterface.trim())){
+                if(networkInterfaceDisplayName.matches(ignoredInterface.trim())
+                        || networkInterfaceDisplayName.equals(ignoredInterface.trim())){
                     return true;
                 }
             }
