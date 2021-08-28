@@ -19,7 +19,6 @@ package org.apache.dubbo.registry.client.migration;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.common.status.reporter.FrameworkStatusReporter;
 import org.apache.dubbo.registry.client.migration.model.MigrationRule;
 import org.apache.dubbo.registry.client.migration.model.MigrationStep;
 
