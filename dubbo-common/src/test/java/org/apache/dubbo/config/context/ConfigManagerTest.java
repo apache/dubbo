@@ -25,8 +25,8 @@ import org.apache.dubbo.config.MonitorConfig;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.config.RegistryConfig;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -274,6 +274,7 @@ public class ConfigManagerTest {
             // test override mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
             ApplicationModel.reset();
+            configManager = ApplicationModel.defaultModel().getConfigManager();
             Assertions.assertEquals(ConfigMode.OVERRIDE, configManager.getConfigMode());
 
             configManager.addConfig(applicationConfig1);
@@ -284,6 +285,7 @@ public class ConfigManagerTest {
             // test ignore mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
             ApplicationModel.reset();
+            configManager = ApplicationModel.defaultModel().getConfigManager();
             Assertions.assertEquals(ConfigMode.IGNORE, configManager.getConfigMode());
 
             configManager.addConfig(applicationConfig1);
