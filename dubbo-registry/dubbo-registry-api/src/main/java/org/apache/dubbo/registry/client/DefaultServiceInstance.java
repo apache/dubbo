@@ -21,6 +21,7 @@ import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
 
+import java.beans.Transient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -221,6 +222,7 @@ public class DefaultServiceInstance implements ServiceInstance {
     }
 
     @Override
+    @Transient
     public ApplicationModel getApplicationModel() {
         return (ApplicationModel) this.attributes.get(SCOPE_MODEL);
     }
