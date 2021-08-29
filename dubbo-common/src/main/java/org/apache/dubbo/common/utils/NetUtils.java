@@ -336,7 +336,7 @@ public class NetUtils {
                 try {                     
                     matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
                 } catch (PatternSyntaxException e) {
-                    // if networkInterfaceDisplayName has meta characters, matches might throw PatternSyntaxException
+                    // if trimIgnoredInterface is a invalid regular expression, a PatternSyntaxException will be thrown out
                     logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
                 } finally {
                     if (matched) {
