@@ -25,14 +25,14 @@ public class ScopeModelUtil {
             ModuleModel moduleModel = (ModuleModel) scopeModel;
             return moduleModel.getApplicationModel();
         }
-        return null;
+        return ApplicationModel.defaultModel();
     }
 
     public static ModuleModel getModuleModel(ScopeModel scopeModel) {
         if (scopeModel instanceof ModuleModel) {
             return (ModuleModel) scopeModel;
         }
-        return null;
+        return ApplicationModel.defaultModel().getDefaultModule();
     }
 
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {
@@ -44,7 +44,7 @@ public class ScopeModelUtil {
         } else if (scopeModel instanceof FrameworkModel) {
             return (FrameworkModel) scopeModel;
         }
-        return null;
+        return FrameworkModel.defaultModel();
     }
 
 }
