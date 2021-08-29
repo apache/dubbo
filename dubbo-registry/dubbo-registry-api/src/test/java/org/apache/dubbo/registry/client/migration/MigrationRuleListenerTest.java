@@ -45,6 +45,7 @@ public class MigrationRuleListenerTest {
 
         DynamicConfiguration dynamicConfiguration = Mockito.mock(DynamicConfiguration.class);
 
+        ApplicationModel.reset();
         ApplicationModel.defaultModel().getEnvironment().setDynamicConfiguration(dynamicConfiguration);
         ApplicationModel.defaultModel().getEnvironment().setLocalMigrationRule(rule);
         ApplicationConfig applicationConfig = new ApplicationConfig();
@@ -61,6 +62,7 @@ public class MigrationRuleListenerTest {
         MigrationRuleListener migrationRuleListener = new MigrationRuleListener();
         MigrationInvoker<?> migrationInvoker = Mockito.mock(MigrationInvoker.class);
         migrationRuleListener.getHandlers().put(migrationInvoker, handler);
+        migrationRuleListener.setApplicationModel(ApplicationModel.defaultModel());
 
         Thread.sleep(5000);
         Mockito.verify(handler, Mockito.timeout(5000)).doMigrate(Mockito.any());

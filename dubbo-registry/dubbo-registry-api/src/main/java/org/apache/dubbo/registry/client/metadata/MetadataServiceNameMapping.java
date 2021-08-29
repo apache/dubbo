@@ -114,7 +114,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
 
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
-        this.applicationModel = applicationModel;
+        super.setApplicationModel(applicationModel);
         metadataReportInstance = applicationModel.getBeanFactory().getBean(MetadataReportInstance.class);
     }
 
