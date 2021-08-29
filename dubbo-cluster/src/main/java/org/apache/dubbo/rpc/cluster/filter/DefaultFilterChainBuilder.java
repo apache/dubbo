@@ -21,6 +21,7 @@ import org.apache.dubbo.common.extension.Activate;
 import org.apache.dubbo.rpc.Filter;
 import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 
@@ -34,7 +35,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
     public <T> Invoker<T> buildInvokerChain(final Invoker<T> originalInvoker, String key, String group) {
         Invoker<T> last = originalInvoker;
         URL url = originalInvoker.getUrl();
-        List<Filter> filters = url.getScopeModel().getExtensionLoader(Filter.class).getActivateExtension(url, key, group);
+        List<Filter> filters = ScopeModelUtil.getExtensionLoader(Filter.class, url.getScopeModel()).getActivateExtension(url, key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {
@@ -54,7 +55,7 @@ public class DefaultFilterChainBuilder implements FilterChainBuilder {
     public <T> ClusterInvoker<T> buildClusterInvokerChain(final ClusterInvoker<T> originalInvoker, String key, String group) {
         ClusterInvoker<T> last = originalInvoker;
         URL url = originalInvoker.getUrl();
-        List<ClusterFilter> filters = url.getScopeModel().getExtensionLoader(ClusterFilter.class).getActivateExtension(url, key, group);
+        List<ClusterFilter> filters = ScopeModelUtil.getExtensionLoader(ClusterFilter.class, url.getScopeModel()).getActivateExtension(url, key, group);
 
         if (!filters.isEmpty()) {
             for (int i = filters.size() - 1; i >= 0; i--) {

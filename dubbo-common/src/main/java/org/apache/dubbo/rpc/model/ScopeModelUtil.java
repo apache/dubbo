@@ -16,6 +16,9 @@
  */
 package org.apache.dubbo.rpc.model;
 
+import org.apache.dubbo.common.extension.ExtensionLoader;
+import org.apache.dubbo.common.extension.SPI;
+
 public class ScopeModelUtil {
 
     public static ModuleModel getModuleModel(ScopeModel scopeModel) {
@@ -56,4 +59,19 @@ public class ScopeModelUtil {
         return null;
     }
 
+    public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type, ScopeModel scopeModel) {
+        if(scopeModel != null) {
+            return scopeModel.getExtensionLoader(type);
+        } else {
+            SPI spi = type.getAnnotation(SPI.class);
+            switch (spi.scope()) {
+                case FRAMEWORK:
+                    return FrameworkModel.defaultModel().getExtensionLoader(type);
+                case APPLICATION:
+                    return ApplicationModel.defaultModel().getExtensionLoader(type);
+                default:
+                    return ApplicationModel.defaultModel().getDefaultModule().getExtensionLoader(type);
+            }
+        }
+    }
 }

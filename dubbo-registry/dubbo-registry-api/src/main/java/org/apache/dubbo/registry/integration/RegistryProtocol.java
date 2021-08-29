@@ -53,6 +53,7 @@ import org.apache.dubbo.rpc.model.FrameworkModel;
 import org.apache.dubbo.rpc.model.ProviderModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.InvokerWrapper;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
 
@@ -247,7 +248,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private <T> void notifyExport(ExporterChangeableWrapper<T> exporter) {
         ScopeModel scopeModel = exporter.getRegisterUrl().getScopeModel();
-        List<RegistryProtocolListener> listeners = scopeModel.getExtensionLoader(RegistryProtocolListener.class)
+        List<RegistryProtocolListener> listeners = ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, scopeModel)
             .getActivateExtension(exporter.getOriginInvoker().getUrl(), "registry.protocol.listener");
         if (CollectionUtils.isNotEmpty(listeners)) {
             for (RegistryProtocolListener listener : listeners) {
@@ -373,7 +374,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
      * @return
      */
     protected Registry getRegistry(final URL registryUrl) {
-        RegistryFactory registryFactory = registryUrl.getScopeModel().getAdaptiveExtension(RegistryFactory.class);
+        RegistryFactory registryFactory = ScopeModelUtil.getExtensionLoader(RegistryFactory.class, registryUrl.getScopeModel()).getAdaptiveExtension();
         return registryFactory.getRegistry(registryUrl);
     }
 
@@ -550,7 +551,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     protected List<RegistryProtocolListener> findRegistryProtocolListeners(URL url) {
-        return url.getScopeModel().getExtensionLoader(RegistryProtocolListener.class)
+        return ScopeModelUtil.getExtensionLoader(RegistryProtocolListener.class, url.getScopeModel())
             .getActivateExtension(url, "registry.protocol.listener");
     }
 

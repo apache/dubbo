@@ -25,6 +25,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class ProtocolFilterWrapper implements Protocol {
     }
 
     private <T> FilterChainBuilder getFilterChainBuilder(URL url) {
-        return url.getScopeModel().getExtensionLoader(FilterChainBuilder.class).getDefaultExtension();
+        return ScopeModelUtil.getExtensionLoader(FilterChainBuilder.class, url.getScopeModel()).getDefaultExtension();
     }
 
     @Override

@@ -29,6 +29,7 @@ import org.apache.dubbo.rpc.ProtocolServer;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.listener.ListenerExporterWrapper;
 import org.apache.dubbo.rpc.listener.ListenerInvokerWrapper;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Collections;
 import java.util.List;
@@ -63,7 +64,7 @@ public class ProtocolListenerWrapper implements Protocol {
             return protocol.export(invoker);
         }
         return new ListenerExporterWrapper<T>(protocol.export(invoker),
-                Collections.unmodifiableList(invoker.getUrl().getScopeModel().getExtensionLoader(ExporterListener.class)
+                Collections.unmodifiableList(ScopeModelUtil.getExtensionLoader(ExporterListener.class, invoker.getUrl().getScopeModel())
                         .getActivateExtension(invoker.getUrl(), EXPORTER_LISTENER_KEY)));
     }
 
@@ -77,7 +78,7 @@ public class ProtocolListenerWrapper implements Protocol {
         if (StringUtils.isEmpty(url.getParameter(REGISTRY_CLUSTER_TYPE_KEY))) {
             invoker = new ListenerInvokerWrapper<>(invoker,
                     Collections.unmodifiableList(
-                        invoker.getUrl().getScopeModel().getExtensionLoader(InvokerListener.class)
+                        ScopeModelUtil.getExtensionLoader(InvokerListener.class, invoker.getUrl().getScopeModel())
                                     .getActivateExtension(url, INVOKER_LISTENER_KEY)));
         }
         return invoker;

@@ -17,11 +17,12 @@
 package org.apache.dubbo.metadata;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +104,7 @@ public interface WritableMetadataService extends MetadataService {
      *
      * @return non-null
      */
-    static WritableMetadataService getDefaultExtension(ExtensionAccessor extensionAccessor) {
-        return extensionAccessor.getExtensionLoader(WritableMetadataService.class).getDefaultExtension();
+    static WritableMetadataService getDefaultExtension(ScopeModel scopeModel) {
+        return ScopeModelUtil.getExtensionLoader(WritableMetadataService.class, scopeModel).getDefaultExtension();
     }
 }

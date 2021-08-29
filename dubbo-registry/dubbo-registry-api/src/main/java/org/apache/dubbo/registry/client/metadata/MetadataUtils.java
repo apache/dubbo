@@ -28,6 +28,7 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.ProxyFactory;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class MetadataUtils {
         WritableMetadataService.getDefaultExtension(url.getScopeModel()).publishServiceDefinition(url);
         // send to remote
         if (REMOTE_METADATA_STORAGE_TYPE.equalsIgnoreCase(url.getParameter(METADATA_KEY))) {
-            getRemoteMetadataService(url.getScopeModel()).publishServiceDefinition(url);
+            getRemoteMetadataService(ScopeModelUtil.getApplicationModel(url.getScopeModel())).publishServiceDefinition(url);
         }
     }
 

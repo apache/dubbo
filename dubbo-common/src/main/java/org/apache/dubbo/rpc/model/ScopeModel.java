@@ -37,7 +37,7 @@ public abstract class ScopeModel implements ExtensionAccessor {
         this.parent = parent;
         this.extensionDirector = extensionDirector;
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
-        this.beanFactory = new ScopeBeanFactory(parent!=null?parent.getBeanFactory():null, extensionDirector);
+        this.beanFactory = new ScopeBeanFactory(parent != null ? parent.getBeanFactory() : null, extensionDirector);
     }
 
     @PostConstruct
