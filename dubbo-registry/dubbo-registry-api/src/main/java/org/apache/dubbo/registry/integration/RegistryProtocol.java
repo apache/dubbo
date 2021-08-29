@@ -138,7 +138,6 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     };
 
     private final static Logger logger = LoggerFactory.getLogger(RegistryProtocol.class);
-    private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
     private final Map<String, ServiceConfigurationListener> serviceConfigurationListeners = new ConcurrentHashMap<>();
     //To solve the problem of RMI repeated exposure port conflicts, the services that have been exposed are no longer exposed.
     //provider url <--> exporter
@@ -187,7 +186,16 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
     }
 
     public Map<URL, NotifyListener> getOverrideListeners() {
-        return overrideListeners;
+        Map<URL, NotifyListener> map = new HashMap<>();
+        List<ApplicationModel> applicationModels = frameworkModel.getApplicationModels();
+        if (applicationModels.size() == 1) {
+            return applicationModels.get(0).getBeanFactory().getBean(ProviderConfigurationListener.class).getOverrideListeners();
+        } else {
+            for (ApplicationModel applicationModel : applicationModels) {
+                map.putAll(applicationModel.getBeanFactory().getBean(ProviderConfigurationListener.class).getOverrideListeners());
+            }
+        }
+        return map;
     }
 
     private void register(Registry registry, URL registeredProviderUrl) {
@@ -215,6 +223,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
+        Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(providerUrl).getOverrideListeners();
         overrideListeners.put(registryUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
@@ -761,6 +770,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private class ProviderConfigurationListener extends AbstractConfiguratorListener {
 
+        private final Map<URL, NotifyListener> overrideListeners = new ConcurrentHashMap<>();
+
         public ProviderConfigurationListener(ApplicationModel applicationModel) {
             super(applicationModel);
             if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
@@ -782,6 +793,10 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         @Override
         protected void notifyOverrides() {
             overrideListeners.values().forEach(listener -> ((OverrideListener) listener).doOverrideIfNecessary());
+        }
+
+        public Map<URL, NotifyListener> getOverrideListeners() {
+            return overrideListeners;
         }
     }
 
@@ -830,7 +845,8 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.warn(t.getMessage(), t);
             }
             try {
-                NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(registerUrl);
+                Map<URL, NotifyListener> overrideListeners = getProviderConfigurationListener(subscribeUrl).getOverrideListeners();
+                NotifyListener listener = overrideListeners.remove(registerUrl);
                 registry.unsubscribe(subscribeUrl, listener);
                 ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                 if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
