@@ -37,7 +37,7 @@ import static org.apache.dubbo.common.utils.StringUtils.isBlank;
 
 public abstract class AbstractServiceNameMapping implements ServiceNameMapping, ScopeModelAware {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    private ApplicationModel applicationModel;
+    protected ApplicationModel applicationModel;
     private WritableMetadataService metadataService;
 
     @Override

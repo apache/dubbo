@@ -26,6 +26,7 @@ import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,7 @@ public class DubboBootstrapMultiInstanceTest {
     @AfterEach
     protected void afterEach() {
         SysProps.clear();
+        DubboBootstrap.reset();
     }
 
     @Test

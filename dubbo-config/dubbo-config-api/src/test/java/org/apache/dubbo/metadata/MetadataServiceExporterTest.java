@@ -58,6 +58,7 @@ public class MetadataServiceExporterTest {
         MetadataService metadataService = Mockito.mock(MetadataService.class);
         ConfigurableMetadataServiceExporter exporter = new ConfigurableMetadataServiceExporter();
         exporter.setMetadataService(metadataService);
+        exporter.setApplicationModel(ApplicationModel.defaultModel());
 
         exporter.export();
         assertTrue(exporter.isExported());

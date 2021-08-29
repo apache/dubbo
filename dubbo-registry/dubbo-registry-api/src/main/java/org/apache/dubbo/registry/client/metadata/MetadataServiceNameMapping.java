@@ -47,7 +47,6 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
 
     private static final int CAS_RETRY_TIMES = 6;
     private MetadataReportInstance metadataReportInstance;
-    private ApplicationModel applicationModel;
 
     @Override
     public void map(URL url) {
