@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration;
+package org.apache.dubbo.integration.single.servicediscoveryregistry;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.constants.CommonConstants;
@@ -23,7 +23,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryServiceListener;
 
 @Activate(group = CommonConstants.PROVIDER, order = 1000)
-public class ServiceDiscoveryRegistryListener implements RegistryServiceListener {
+public class SingleRegistryCenterServiceDiscoveryRegistryListener implements RegistryServiceListener {
 
     /**
      * register is called or not
