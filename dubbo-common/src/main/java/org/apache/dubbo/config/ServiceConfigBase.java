@@ -21,6 +21,7 @@ import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.annotation.Service;
 import org.apache.dubbo.config.support.Parameter;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ServiceMetadata;
 import org.apache.dubbo.rpc.service.GenericService;
 import org.apache.dubbo.rpc.support.ProtocolUtils;
@@ -83,6 +84,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     public ServiceConfigBase() {
         serviceMetadata = new ServiceMetadata();
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
+        setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
     }
 
     public ServiceConfigBase(Service service) {
@@ -90,6 +92,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         serviceMetadata.addAttribute("ORIGIN_CONFIG", this);
         appendAnnotation(Service.class, service);
         setMethods(MethodConfig.constructMethodConfig(service.methods()));
+        setScopeModel(ApplicationModel.defaultModel().getDefaultModule());
     }
 
     @Deprecated

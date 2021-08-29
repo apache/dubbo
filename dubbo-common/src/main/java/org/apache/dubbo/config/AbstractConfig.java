@@ -31,9 +31,9 @@ import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.context.ConfigManager;
 import org.apache.dubbo.config.support.Parameter;
-import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ModuleModel;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -104,6 +104,10 @@ public abstract class AbstractConfig implements Serializable {
      * the extension spi instance needs to be reinitialized after changing the model!
      */
     protected ScopeModel scopeModel;
+
+    public AbstractConfig() {
+        setScopeModel(ApplicationModel.defaultModel());
+    }
 
     public static String getTagName(Class<?> cls) {
         return tagNameCache.computeIfAbsent(cls, (key) -> {
