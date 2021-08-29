@@ -217,6 +217,8 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         // destroy registry center
         registryCenter.shutdown();
         registryCenter = null;
+        writableMetadataService.getExportedURLs().clear();
+        writableMetadataService.getMetadataInfos().clear();
         writableMetadataService = null;
     }
         }
