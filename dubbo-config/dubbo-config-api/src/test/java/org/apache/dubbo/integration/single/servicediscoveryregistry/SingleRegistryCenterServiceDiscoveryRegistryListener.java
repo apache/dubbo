@@ -52,7 +52,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryListener implements Reg
 
     @Override
     public void onUnregister(URL url, Registry registry) {
-        unRegisterIsCalled = true;
+        unRegisterIsCalled = false;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryListener implements Reg
 
     @Override
     public void onUnsubscribe(URL url, Registry registry) {
-        unSubscribeIsCalled = true;
+        unSubscribeIsCalled = false;
     }
 
     /**
