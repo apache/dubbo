@@ -37,6 +37,7 @@ import org.apache.dubbo.registry.dns.util.DNSClientConst;
 import org.apache.dubbo.registry.dns.util.DNSResolver;
 import org.apache.dubbo.registry.dns.util.ResolveResult;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.fastjson.JSONObject;
 import org.junit.jupiter.api.AfterEach;
@@ -76,11 +77,12 @@ public class DNSServiceDiscoveryTest {
         dnsServiceDiscovery.setApplicationModel(applicationModel);
 
         URL registryURL = URL.valueOf("dns://");
+        registryURL.setScopeModel(ApplicationModel.defaultModel());
         dnsServiceDiscovery.initialize(registryURL);
 
         assertEquals(registryURL, dnsServiceDiscovery.getUrl());
 
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345, ScopeModelUtil.getApplicationModel(dnsServiceDiscovery.getUrl().getScopeModel()));
         serviceInstance.getMetadata().put("a", "b");
 
         dnsServiceDiscovery.register(serviceInstance);
@@ -114,12 +116,13 @@ public class DNSServiceDiscoveryTest {
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
+        registryURL.setScopeModel(ApplicationModel.defaultModel());
         applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
         WritableMetadataService metadataService = WritableMetadataService.getDefaultExtension(applicationModel);
-        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345);
+        ServiceInstance serviceInstance = new DefaultServiceInstance("TestService", "localhost", 12345, ScopeModelUtil.getApplicationModel(dnsServiceDiscovery.getUrl().getScopeModel()));
         serviceInstance.getMetadata().put("a", "b");
 
         dnsServiceDiscovery.register(serviceInstance);

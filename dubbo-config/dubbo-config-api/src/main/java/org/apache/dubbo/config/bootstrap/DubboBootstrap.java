@@ -1607,8 +1607,7 @@ public class DubboBootstrap {
     }
 
     private ServiceInstance createServiceInstance(String serviceName) {
-        this.serviceInstance = new DefaultServiceInstance(serviceName);
-        serviceInstance.setApplicationModel(applicationModel);
+        this.serviceInstance = new DefaultServiceInstance(serviceName, applicationModel);
         setMetadataStorageType(serviceInstance, getMetadataType());
         ServiceInstanceMetadataUtils.customizeInstance(this.serviceInstance);
         return this.serviceInstance;

@@ -17,9 +17,9 @@
 package org.apache.dubbo.registry.client;
 
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import com.alibaba.fastjson.JSON;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.HashMap;
 import java.util.List;
@@ -81,22 +81,25 @@ public class DefaultServiceInstance implements ServiceInstance {
         this.attributes = other.attributes;
     }
 
-    public DefaultServiceInstance(String serviceName, String host, Integer port) {
+    public DefaultServiceInstance(String serviceName, String host, Integer port, ApplicationModel applicationModel) {
         if (port == null || port < 1) {
             throw new IllegalArgumentException("The port value is illegal, the value is " + port);
         }
         this.serviceName = serviceName;
         this.host = host;
         this.port = port;
+        setApplicationModel(applicationModel);
+    }
+
+    public DefaultServiceInstance(String serviceName, ApplicationModel applicationModel) {
+        this.serviceName = serviceName;
+        setApplicationModel(applicationModel);
     }
 
     public void setRawAddress(String rawAddress) {
         this.rawAddress = rawAddress;
     }
 
-    public DefaultServiceInstance(String serviceName) {
-        this.serviceName = serviceName;
-    }
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;

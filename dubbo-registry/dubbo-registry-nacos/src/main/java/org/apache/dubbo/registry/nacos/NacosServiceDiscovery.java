@@ -105,7 +105,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
         return ThrowableFunction.execute(namingService, service ->
                 service.selectInstances(serviceName, true)
-                        .stream().map(NacosNamingServiceUtils::toServiceInstance)
+                        .stream().map((i)->NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                         .collect(Collectors.toList())
         );
     }
@@ -138,7 +138,7 @@ public class NacosServiceDiscovery extends AbstractServiceDiscovery {
         String serviceName = event.getServiceName();
         List<ServiceInstance> serviceInstances = event.getInstances()
                 .stream()
-                .map(NacosNamingServiceUtils::toServiceInstance)
+                .map((i)->NacosNamingServiceUtils.toServiceInstance(registryURL, i))
                 .collect(Collectors.toList());
         listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
     }

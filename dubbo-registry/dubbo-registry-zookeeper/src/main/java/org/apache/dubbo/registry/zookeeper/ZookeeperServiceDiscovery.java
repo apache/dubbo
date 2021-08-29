@@ -118,7 +118,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return doInServiceDiscovery(s -> build(s.queryForInstances(serviceName)));
+        return doInServiceDiscovery(s -> build(registryURL, s.queryForInstances(serviceName)));
     }
 
     @Override
@@ -147,7 +147,7 @@ public class ZookeeperServiceDiscovery extends AbstractServiceDiscovery {
                 for (int i = 0; i < pageSize; i++) {
                     if (iterator.hasNext()) {
                         String serviceId = iterator.next();
-                        ServiceInstance serviceInstance = build(serviceDiscovery.queryForInstance(serviceName, serviceId));
+                        ServiceInstance serviceInstance = build(registryURL, serviceDiscovery.queryForInstance(serviceName, serviceId));
                         serviceInstances.add(serviceInstance);
                     }
                 }
