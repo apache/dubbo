@@ -30,6 +30,7 @@ import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.RegistryNotifier;
 import org.apache.dubbo.registry.nacos.util.NacosInstanceManageUtil;
 import org.apache.dubbo.registry.support.FailbackRegistry;
+import org.apache.dubbo.rpc.RpcException;
 
 import com.alibaba.nacos.api.common.Constants;
 import com.alibaba.nacos.api.exception.NacosException;
@@ -39,7 +40,6 @@ import com.alibaba.nacos.api.naming.listener.NamingEvent;
 import com.alibaba.nacos.api.naming.pojo.Instance;
 import com.alibaba.nacos.api.naming.pojo.ListView;
 import com.google.common.collect.Lists;
-import org.apache.dubbo.rpc.RpcException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +69,7 @@ import static org.apache.dubbo.common.constants.RegistryConstants.EMPTY_PROTOCOL
 import static org.apache.dubbo.common.constants.RegistryConstants.PROVIDERS_CATEGORY;
 import static org.apache.dubbo.common.constants.RegistryConstants.ROUTERS_CATEGORY;
 import static org.apache.dubbo.registry.Constants.ADMIN_PROTOCOL;
+import static org.apache.dubbo.registry.nacos.NacosServiceName.NAME_SEPARATOR;
 import static org.apache.dubbo.registry.nacos.NacosServiceName.valueOf;
 
 /**
@@ -307,6 +308,7 @@ public class NacosRegistry extends FailbackRegistry {
             serviceNames.addAll(namingService.getServicesOfServer(1, Integer.MAX_VALUE,
                 getUrl().getGroup(Constants.DEFAULT_GROUP)).getData()
                 .stream()
+                .filter(this::isConformRules)
                 .map(NacosServiceName::new)
                 .filter(serviceName::isCompatible)
                 .map(NacosServiceName::toString)
@@ -316,6 +318,18 @@ public class NacosRegistry extends FailbackRegistry {
             throw new RpcException("Failed to filter serviceName from nacos, url: " + getUrl() + ", serviceName: "+serviceName+", cause: " + cause.getMessage(), cause);
         }
     }
+
+    /**
+     * Verify whether it is a dubbo service
+     *
+     * @param serviceName
+     * @return
+     * @since 2.7.12
+     */
+    private boolean isConformRules(String serviceName) {
+        return serviceName.split(NAME_SEPARATOR, -1).length == 4;
+    }
+
 
     /**
      * Get the legacy subscribed service name for compatible with Dubbo 2.7.3 and below

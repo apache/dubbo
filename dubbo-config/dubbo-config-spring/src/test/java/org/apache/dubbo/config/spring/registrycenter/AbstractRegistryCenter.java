@@ -53,9 +53,9 @@ abstract class AbstractRegistryCenter implements RegistryCenter {
     private static final int DEFAULT_SERVER_ID = -1;
 
     /**
-     * The default tick time is 5000
+     * The default tick time is 6000
      */
-    private static final int DEFAULT_TICK_TIME = 5 * 1000;
+    private static final int DEFAULT_TICK_TIME = 6 * 1000;
 
     /**
      * The default value is -1.

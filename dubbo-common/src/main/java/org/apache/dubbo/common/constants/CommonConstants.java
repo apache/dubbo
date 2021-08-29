@@ -462,4 +462,12 @@ public interface CommonConstants {
 
     String SERVICE_NAME_MAPPING_KEY = "service-name-mapping";
 
+    /**
+     * The property name for {@link NetworkInterface#getDisplayName() the name of network interface} that
+     * the Dubbo application will be ignored
+     *
+     * @since 2.7.6
+     */
+    String DUBBO_NETWORK_IGNORED_INTERFACE = "dubbo.network.interface.ignored";
+
 }
