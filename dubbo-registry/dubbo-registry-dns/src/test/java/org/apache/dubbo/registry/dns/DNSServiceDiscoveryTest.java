@@ -30,7 +30,6 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.Constants;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
-import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
@@ -73,7 +72,8 @@ public class DNSServiceDiscoveryTest {
     @Test
     public void testProvider() throws Exception {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
-        ServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        dnsServiceDiscovery.setApplicationModel(applicationModel);
 
         URL registryURL = URL.valueOf("dns://");
         dnsServiceDiscovery.initialize(registryURL);
