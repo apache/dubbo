@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.registry.client.metadata;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.Logger;
@@ -33,6 +32,8 @@ import org.apache.dubbo.registry.client.ServiceInstanceCustomizer;
 import org.apache.dubbo.registry.client.metadata.store.InMemoryWritableMetadataService;
 import org.apache.dubbo.registry.client.metadata.store.RemoteMetadataServiceImpl;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -257,7 +258,7 @@ public class ServiceInstanceMetadataUtils {
 
     public static void refreshMetadataAndInstance(ServiceInstance serviceInstance) {
         RemoteMetadataServiceImpl remoteMetadataService = MetadataUtils.getRemoteMetadataService(serviceInstance.getApplicationModel());
-        remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getName());
+        remoteMetadataService.publishMetadata(serviceInstance.getApplicationModel().getApplicationName());
 
         AbstractRegistryFactory.getServiceDiscoveries().forEach(serviceDiscovery -> {
             ServiceInstance instance = serviceDiscovery.getLocalInstance();

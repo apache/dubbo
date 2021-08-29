@@ -16,12 +16,13 @@
  */
 package org.apache.dubbo.common.status.reporter;
 
-import com.google.gson.Gson;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -76,7 +77,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
 
     public String createRegistrationReport(String status) {
         return "{\"application\":\"" +
-            applicationModel.getName() +
+            applicationModel.getApplicationName() +
             "\",\"status\":\"" +
             status +
             "\"}";
@@ -85,7 +86,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
     public String createConsumptionReport(String interfaceName, String version, String group, String status) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "consumption");
-        migrationStatus.put("application", applicationModel.getName());
+        migrationStatus.put("application", applicationModel.getApplicationName());
         migrationStatus.put("service", interfaceName);
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);
@@ -96,7 +97,7 @@ public class FrameworkStatusReportService implements ScopeModelAware {
     public String createMigrationStepReport(String interfaceName, String version, String group, String originStep, String newStep, String success) {
         HashMap<String, String> migrationStatus = new HashMap<>();
         migrationStatus.put("type", "migrationStepStatus");
-        migrationStatus.put("application", applicationModel.getName());
+        migrationStatus.put("application", applicationModel.getApplicationName());
         migrationStatus.put("service", interfaceName);
         migrationStatus.put("version", version);
         migrationStatus.put("group", group);

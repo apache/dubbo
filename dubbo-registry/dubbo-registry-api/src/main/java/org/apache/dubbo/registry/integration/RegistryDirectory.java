@@ -639,7 +639,7 @@ public class RegistryDirectory<T> extends DynamicDirectory<T> {
 
         ConsumerConfigurationListener(ApplicationModel applicationModel) {
             super(applicationModel);
-            this.initWith(applicationModel.getName() + CONFIGURATORS_SUFFIX);
+            this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
         }
 
         void addNotifyListener(RegistryDirectory listener) {

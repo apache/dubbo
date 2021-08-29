@@ -162,7 +162,12 @@ public class ApplicationModel extends ScopeModel {
         return getConfigManager().getApplicationOrElseThrow();
     }
 
-    public String getName() {
+    @Deprecated
+    public static String getName() {
+        return defaultModel().getApplicationConfig().getName();
+    }
+
+    public String getApplicationName() {
         return getApplicationConfig().getName();
     }
 

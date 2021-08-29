@@ -76,7 +76,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
     }
 
     private void init() {
-        this.ruleKey = applicationModel.getName() + ".migration";
+        this.ruleKey = applicationModel.getApplicationName() + ".migration";
         this.configuration = applicationModel.getEnvironment().getDynamicConfiguration().orElse(null);
 
         if (this.configuration != null) {

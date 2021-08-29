@@ -42,7 +42,7 @@ public interface WritableMetadataService extends MetadataService {
      */
     @Override
     default String serviceName() {
-        return ApplicationModel.defaultModel().getName();
+        return ApplicationModel.defaultModel().getApplicationName();
     }
 
     /**

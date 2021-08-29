@@ -33,9 +33,9 @@ import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedLi
 import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import com.alibaba.fastjson.JSONObject;
-import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -232,7 +232,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery, 
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
-            String consumerId = ApplicationModel.defaultModel().getName() + NetUtils.getLocalHost();
+            String consumerId = ApplicationModel.defaultModel().getApplicationName() + NetUtils.getLocalHost();
             String metadata = metadataService.getAndListenInstanceMetadata(
                     consumerId, metadataString -> {
                         if(logger.isDebugEnabled()) {

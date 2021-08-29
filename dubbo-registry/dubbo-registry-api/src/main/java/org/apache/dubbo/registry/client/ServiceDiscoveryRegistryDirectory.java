@@ -427,7 +427,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
 
         void addNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             if (listeners.size() == 0) {
-                this.initWith(applicationModel.getName() + CONFIGURATORS_SUFFIX);
+                this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
             this.listeners.add(listener);
         }
@@ -435,7 +435,7 @@ public class ServiceDiscoveryRegistryDirectory<T> extends DynamicDirectory<T> {
         void removeNotifyListener(ServiceDiscoveryRegistryDirectory<?> listener) {
             this.listeners.remove(listener);
             if (listeners.size() == 0) {
-                this.stopListen(applicationModel.getName() + CONFIGURATORS_SUFFIX);
+                this.stopListen(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
 
