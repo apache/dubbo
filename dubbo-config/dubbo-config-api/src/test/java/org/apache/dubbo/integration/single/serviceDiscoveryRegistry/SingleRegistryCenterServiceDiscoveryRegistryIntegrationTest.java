@@ -14,23 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.integration.single.servicediscoveryregistry;
+package org.apache.dubbo.integration.single.serviceDiscoveryRegistry;
 
 import com.alibaba.nacos.common.utils.MapUtil;
 import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.utils.CollectionUtils;
-import org.apache.dubbo.config.ApplicationConfig;
-import org.apache.dubbo.config.ProtocolConfig;
-import org.apache.dubbo.config.RegistryConfig;
-import org.apache.dubbo.config.ServiceConfig;
+import org.apache.dubbo.config.*;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.integration.IntegrationTest;
+import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmService;
+import org.apache.dubbo.integration.single.injvm.SingleRegistryCenterInjvmServiceImpl;
+import org.apache.dubbo.integration.ServiceDiscoveryRegistryListener;
 import org.apache.dubbo.metadata.MetadataInfo;
 import org.apache.dubbo.metadata.WritableMetadataService;
 import org.apache.dubbo.registry.RegistryServiceListener;
-import org.apache.dubbo.registrycenter.RegistryCenter;
-import org.apache.dubbo.registrycenter.ZookeeperSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.DefaultMultipleRegistryCenter;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
+import org.apache.dubbo.registrycenter.MultipleRegistryCenter;
+import org.apache.dubbo.registrycenter.SingleRegistryCenter;
+import org.apache.dubbo.rpc.ExporterListener;
+import org.apache.dubbo.rpc.Filter;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +44,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+
+import static org.apache.dubbo.rpc.Constants.SCOPE_LOCAL;
 
 /**
  * The testcases are only for checking the process of saving metainfos for service-discovery-registry protocol.
@@ -66,16 +73,16 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
     /**
      * The name for getting the specified instance, which is loaded using SPI.
      */
-    private static String SPI_NAME = "singleRegistryCenterServiceDiscoveryRegistry";
+    private static String SPI_NAME = "singleConfigCenterServiceDiscoveryRegistry";
     /**
      * Define the {@link ServiceConfig} instance.
      */
-    private ServiceConfig<SingleRegistryCenterServiceDiscoveryRegistryService> serviceConfig;
+    private ServiceConfig<SingleRegistryCenterInjvmService> serviceConfig;
 
     /**
      * The listener to mark is Called
      */
-    private SingleRegistryCenterServiceDiscoveryRegistryListener registryServiceListener;
+    private ServiceDiscoveryRegistryListener registryServiceListener;
 
     /**
      * the service to write meta info locally
@@ -85,7 +92,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
     /**
      * Default a registry center.
      */
-    private RegistryCenter registryCenter;
+    private SingleRegistryCenter registryCenter;
 
     @BeforeEach
     public void setUp() throws Exception {
@@ -93,22 +100,18 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         DubboBootstrap.reset();
 
         //start all zookeeper services only once
-        registryCenter = new ZookeeperSingleRegistryCenter();
+        registryCenter = new DefaultSingleRegistryCenter();
         registryCenter.startup();
 
         // initialize service config
-        serviceConfig = new ServiceConfig<>();
-        serviceConfig.setInterface(SingleRegistryCenterServiceDiscoveryRegistryService.class);
-        serviceConfig.setRef(new SingleRegistryCenterServiceDiscoveryRegistryServiceImpl());
+        serviceConfig = new ServiceConfig<SingleRegistryCenterInjvmService>();
+        serviceConfig.setInterface(SingleRegistryCenterInjvmService.class);
+        serviceConfig.setRef(new SingleRegistryCenterInjvmServiceImpl());
         serviceConfig.setAsync(false);
+//        serviceConfig.setScope(SCOPE_LOCAL);
 
         // initailize bootstrap
-        for (RegistryCenter.Instance instance : registryCenter.getRegistryCenterInstance()) {
-            DubboBootstrap.getInstance().registry(new RegistryConfig(String.format("%s://%s:%s",
-                instance.getType(),
-                instance.getHostname(),
-                instance.getPort())));
-        }
+        DubboBootstrap.getInstance().registry(registryCenter.getRegistryConfig());
 
         // initailize bootstrap
         DubboBootstrap.getInstance()
@@ -117,13 +120,12 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
             .service(serviceConfig);
 
         writableMetadataService = WritableMetadataService.getDefaultExtension();
-
-        registryServiceListener = (SingleRegistryCenterServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
-        // RegistryServiceListener is not null
-        Assertions.assertNotNull(registryServiceListener);
     }
 
     private void beforeServiceDiscoveryRegistry() {
+        // ---------------initialize--------------- //
+        registryServiceListener = (ServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
+
         // ---------------checkpoints--------------- //
         // registryServiceListener onRegister is not called
         Assertions.assertFalse(registryServiceListener.isRegisterHasCalled());
@@ -148,54 +150,44 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         afterServiceDiscoveryRegistry();
     }
 
-    /**
-     * There are some checkpoints need to check after start as follow:
-     * <ul>
-     *     <li>ServiceDiscoveryRegistry is called through checking the listener is called</li>
-     *     <li>the metadata info is correct through checking the store of writableMetadataService</li>
-     * </ul>
-     */
     private void afterServiceDiscoveryRegistry() {
+        // ---------------initialize--------------- //
+        registryServiceListener = (ServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
+
         // ---------------checkpoints--------------- //
         // registryServiceListener onRegister is called
         Assertions.assertTrue(registryServiceListener.isRegisterHasCalled());
         // registryServiceListener onSubscribe is called
         Assertions.assertTrue(registryServiceListener.isSubscribeHasCalled());
-        // exportedServiceURLs of InMemoryWritableMetadataService has stored correct info
+        // exportedServiceURLs of InMemoryWritableMetadataService is empty
         Assertions.assertTrue(isCorrectForExportedURLs(writableMetadataService.getExportedURLs()));
-        // metadataInfos of InMemoryWritableMetadataService has stored correct info
+        // metadataInfos of InMemoryWritableMetadataService is empty
         Assertions.assertTrue(isCorrectForMetadataInfos(writableMetadataService.getMetadataInfos()));
         // serviceToAppsMapping of InMemoryWritableMetadataService is empty
-        Assertions.assertTrue(MapUtil.isEmpty(writableMetadataService.getCachedMapping()));
+        Assertions.assertTrue(isCorrectForServiceToAppsMapping(writableMetadataService.getCachedMapping()));
     }
 
-    /**
-     * check the important info such as application name, exported service is correct for exportedURLs
-     * @param exportedURLs
-     * @return
-     */
     private Boolean isCorrectForExportedURLs(SortedSet<String> exportedURLs) {
         if(CollectionUtils.isEmpty(exportedURLs)) {
             return false;
         }
-        if(!exportedURLs.toString().contains(PROVIDER_APPLICATION_NAME) || !exportedURLs.toString().contains("SingleRegistryCenterServiceDiscoveryRegistryService")) {
+        if(!exportedURLs.toString().contains(PROVIDER_APPLICATION_NAME) || !exportedURLs.toString().contains("SingleRegistryCenterInjvmService")) {
             return false;
         }
         return true;
     }
 
-    /**
-     * check the important info such as application name, exported service is correct for metadataInfos
-     * @param metadataInfos
-     * @return
-     */
     private Boolean isCorrectForMetadataInfos(Map<String, MetadataInfo> metadataInfos) {
         if(MapUtil.isEmpty(metadataInfos)) {
             return false;
         }
-        if(!metadataInfos.toString().contains(PROVIDER_APPLICATION_NAME) || !metadataInfos.toString().contains("SingleRegistryCenterServiceDiscoveryRegistryService")) {
+        if(!metadataInfos.toString().contains(PROVIDER_APPLICATION_NAME) || !metadataInfos.toString().contains("SingleRegistryCenterInjvmService")) {
             return false;
         }
+        return true;
+    }
+
+    private Boolean isCorrectForServiceToAppsMapping(Map<String, Set<String>> serviceToAppsMapping) {
         return true;
     }
 
@@ -204,13 +196,11 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         DubboBootstrap.reset();
         PROVIDER_APPLICATION_NAME = null;
         serviceConfig = null;
-//        Assertions.assertTrue(registryServiceListener.isUnRegisterHasCalled());
-//        Assertions.assertTrue(registryServiceListener.isUnSubscribeHasCalled());
-        registryServiceListener = null;
+        Assertions.assertTrue(registryServiceListener.isUnRegisterHasCalled());
+        Assertions.assertTrue(registryServiceListener.isUnSubscribeHasCalled());
         logger.info(getClass().getSimpleName() + " testcase is ending...");
         // destroy registry center
         registryCenter.shutdown();
         registryCenter = null;
-        writableMetadataService = null;
     }
 }
