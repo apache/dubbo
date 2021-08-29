@@ -22,21 +22,25 @@ import org.mockito.Mockito;
 
 import java.util.Enumeration;
 import java.util.NoSuchElementException;
+import java.net.InetAddress;
 import java.net.NetworkInterface;
 
 import static org.apache.dubbo.common.constants.CommonConstants.DUBBO_NETWORK_IGNORED_INTERFACE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
-    private static final String DISPLAY_NAME_HAS_METACHARACTERS = "Mock(R) ^$*+?.|-[0-9] Adapter";
+    private static final String IGNORED_DISPLAY_NAME_HAS_METACHARACTERS = "Mock(R) ^$*+?.|-[0-9] Adapter";
+    private static final String SELECTED_DISPLAY_NAME = "Selected Adapter";
+    private static final String SELECTED_HOST_ADDR = "192.168.0.1";
 
     @Test
-    public void testIgnoreGivenInterfaceNameWithMetaCharacters() throws Exception {        
+    public void testIgnoreGivenInterfaceNameWithMetaCharacters() throws Exception {
         String originIgnoredInterfaces = this.getIgnoredInterfaces();
-        // mock static method (getNetworkInterfaces) of final class (NetworkInterface)
+        // mock static methods of final class NetworkInterface
         try (MockedStatic<NetworkInterface> mockedStaticNetif = Mockito.mockStatic(NetworkInterface.class)) {
-            NetworkInterface mockNetif = Mockito.mock(NetworkInterface.class);
-            NetworkInterface[] mockNetifs = { mockNetif };
+            NetworkInterface mockIgnoredNetif = Mockito.mock(NetworkInterface.class);
+            NetworkInterface mockSelectedNetif = Mockito.mock(NetworkInterface.class);
+            NetworkInterface[] mockNetifs = { mockIgnoredNetif, mockSelectedNetif };
             Enumeration<NetworkInterface> mockEnumIfs = new Enumeration<NetworkInterface>() {
                 private int i = 0;
                 public NetworkInterface nextElement() {
@@ -52,15 +56,42 @@ public class NetUtilsInterfaceDisplayNameHasMetaCharactersTest {
                     return (mockNetifs != null && i < mockNetifs.length);
                 }
             };
-            mockedStaticNetif.when(() -> { NetworkInterface.getNetworkInterfaces(); }).thenReturn(mockEnumIfs);
-            Mockito.when(mockNetif.isUp()).thenReturn(true);
-            Mockito.when(mockNetif.getDisplayName()).thenReturn(DISPLAY_NAME_HAS_METACHARACTERS);
 
-            this.setIgnoredInterfaces(DISPLAY_NAME_HAS_METACHARACTERS);
+            InetAddress mockSelectedAddr = Mockito.mock(InetAddress.class);
+            InetAddress[] mockAddrs = { mockSelectedAddr };
+            Enumeration<InetAddress> mockEnumAddrs = new Enumeration<InetAddress>() {
+                private int i = 0;
+                public InetAddress nextElement() {
+                    if (mockAddrs != null && i < mockAddrs.length) {
+                        InetAddress addr = mockAddrs[i++];
+                        return addr;
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                }
+
+                public boolean hasMoreElements() {
+                    return (mockAddrs != null && i < mockAddrs.length);
+                }
+            };
+
+            // mock static method getNetworkInterfaces
+            mockedStaticNetif.when(() -> { NetworkInterface.getNetworkInterfaces(); }).thenReturn(mockEnumIfs);
+
+            Mockito.when(mockIgnoredNetif.isUp()).thenReturn(true);
+            Mockito.when(mockIgnoredNetif.getDisplayName()).thenReturn(IGNORED_DISPLAY_NAME_HAS_METACHARACTERS);
+
+            Mockito.when(mockSelectedNetif.isUp()).thenReturn(true);
+            Mockito.when(mockSelectedNetif.getDisplayName()).thenReturn(SELECTED_DISPLAY_NAME);
+            Mockito.when(mockSelectedNetif.getInetAddresses()).thenReturn(mockEnumAddrs);
+
+            Mockito.when(mockSelectedAddr.isLoopbackAddress()).thenReturn(false);
+            Mockito.when(mockSelectedAddr.getHostAddress()).thenReturn(SELECTED_HOST_ADDR);
+            Mockito.when(mockSelectedAddr.isReachable(Mockito.anyInt())).thenReturn(true);
+
+            this.setIgnoredInterfaces(IGNORED_DISPLAY_NAME_HAS_METACHARACTERS);
             NetworkInterface newNetworkInterface = NetUtils.findNetworkInterface();
-            if(newNetworkInterface!=null){
-                assertTrue(!DISPLAY_NAME_HAS_METACHARACTERS.equals(newNetworkInterface.getDisplayName()));
-            }
+            assertTrue(!IGNORED_DISPLAY_NAME_HAS_METACHARACTERS.equals(newNetworkInterface.getDisplayName()));
         } finally {
             // recover the origin ignored interfaces
             this.setIgnoredInterfaces(originIgnoredInterfaces);
