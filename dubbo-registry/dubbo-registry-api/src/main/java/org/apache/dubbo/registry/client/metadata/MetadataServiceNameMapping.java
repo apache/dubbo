@@ -51,7 +51,7 @@ public class MetadataServiceNameMapping extends AbstractServiceNameMapping imple
     @Override
     public void map(URL url) {
         execute(() -> {
-            if (CollectionUtils.isEmpty(applicationModel.getConfigManager().getMetadataConfigs())) {
+            if (CollectionUtils.isEmpty(applicationModel.getApplicationConfigManager().getMetadataConfigs())) {
                 return;
             }
             String serviceInterface = url.getServiceInterface();

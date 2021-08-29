@@ -46,7 +46,7 @@ public class InvokeTelnetTest {
     private Channel mockChannel;
     private CommandContext mockCommandContext;
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
-    private final ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+    private final ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @BeforeEach
     public void setup() {

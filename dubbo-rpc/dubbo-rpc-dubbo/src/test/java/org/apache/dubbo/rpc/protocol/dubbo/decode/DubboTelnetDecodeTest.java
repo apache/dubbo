@@ -69,13 +69,13 @@ public class DubboTelnetDecodeTest {
 
     @BeforeAll
     public static void setup() {
-        ApplicationModel.defaultModel().getServiceRepository().destroy();
-        ApplicationModel.defaultModel().getServiceRepository().registerService(DemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(DemoService.class);
     }
 
     @AfterAll
     public static void teardown() {
-        ApplicationModel.defaultModel().getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
     }
 
     /**

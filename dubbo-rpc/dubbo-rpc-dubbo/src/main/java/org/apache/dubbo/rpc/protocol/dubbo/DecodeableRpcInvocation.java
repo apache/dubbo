@@ -132,7 +132,7 @@ public class DecodeableRpcInvocation extends RpcInvocation implements Codec, Dec
 //                if (RpcUtils.isGenericCall(path, getMethodName()) || RpcUtils.isEcho(path, getMethodName())) {
 //                    pts = ReflectUtils.desc2classArray(desc);
 //                } else {
-                ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+                ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
                 ServiceDescriptor serviceDescriptor = repository.lookupService(path);
                 if (serviceDescriptor != null) {
                     MethodDescriptor methodDescriptor = serviceDescriptor.getMethod(getMethodName(), desc);

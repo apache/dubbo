@@ -44,12 +44,12 @@ public class MultiThreadTest {
     @AfterEach
     public void after() {
         ProtocolUtils.closeAll();
-        ApplicationModel.defaultModel().getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
     }
 
     @Test
     public void testDubboMultiThreadInvoke() throws Exception {
-        ApplicationModel.defaultModel().getServiceRepository().registerService("TestService", DemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService("TestService", DemoService.class);
         int port = NetUtils.getAvailablePort();
         Exporter<?> rpcExporter = protocol.export(proxy.getInvoker(new DemoServiceImpl(), DemoService.class, URL.valueOf("dubbo://127.0.0.1:" + port + "/TestService")));
 

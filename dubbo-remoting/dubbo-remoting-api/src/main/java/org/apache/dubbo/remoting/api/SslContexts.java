@@ -39,7 +39,7 @@ public class SslContexts {
     private static final Logger logger = LoggerFactory.getLogger(SslContexts.class);
 
     public static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getConfigManager();
+        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder;
@@ -68,7 +68,7 @@ public class SslContexts {
     }
 
     public static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getConfigManager();
+        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder builder = SslContextBuilder.forClient();
@@ -98,7 +98,7 @@ public class SslContexts {
     }
 
     private static SslConfig getSslConfig() {
-        return ApplicationModel.defaultModel().getConfigManager().getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
+        return ApplicationModel.defaultModel().getApplicationConfigManager().getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
     }
 
     /**

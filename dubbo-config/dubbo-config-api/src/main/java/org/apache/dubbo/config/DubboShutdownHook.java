@@ -57,7 +57,7 @@ public class DubboShutdownHook extends Thread {
 
     @Override
     public void run() {
-        String disableShutdownHookValue = (String) ApplicationModel.defaultModel().getEnvironment().getConfiguration()
+        String disableShutdownHookValue = (String) ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration()
             .getProperty(ConfigKeys.DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK, "false");
         if (Boolean.parseBoolean(disableShutdownHookValue)) {
             if (logger.isWarnEnabled()) {

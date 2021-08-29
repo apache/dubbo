@@ -78,10 +78,10 @@ public class PropertySourcesInJavaConfigTest {
             } catch (InterruptedException e) {
             }
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             // Resolve placeholder by import property sources
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, ImportPropertyConfiguration.class);
@@ -116,10 +116,10 @@ public class PropertySourcesInJavaConfigTest {
             } catch (InterruptedException e) {
             }
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             // Resolve placeholder by custom PropertySourcesPlaceholderConfigurer bean
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class, PropertyBeanConfiguration.class);

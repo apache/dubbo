@@ -34,7 +34,7 @@ import java.util.List;
 public class BaseOffline implements BaseCommand {
     private Logger logger = LoggerFactory.getLogger(OfflineInterface.class);
     public static RegistryFactory registryFactory = ExtensionLoader.getExtensionLoader(RegistryFactory.class).getAdaptiveExtension();
-    public static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getServiceRepository();
+    public static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @Override
     public String execute(CommandContext commandContext, String[] args) {

@@ -49,7 +49,7 @@ public class SelectTelnetTest {
     private Channel mockChannel;
     private CommandContext mockCommandContext;
 
-    private final ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+    private final ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
     private final DefaultAttributeMap defaultAttributeMap = new DefaultAttributeMap();
     private List<Method> methods;
 

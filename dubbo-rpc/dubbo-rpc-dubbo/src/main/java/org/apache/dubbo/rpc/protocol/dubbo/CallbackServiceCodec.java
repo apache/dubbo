@@ -129,7 +129,7 @@ class CallbackServiceCodec {
             // one channel can have multiple callback instances, no need to re-export for different instance.
             if (!channel.hasAttribute(cacheKey)) {
                 if (!isInstancesOverLimit(channel, url, clazz.getName(), instid, false)) {
-                    ApplicationModel.defaultModel().getServiceRepository().registerService(clazz);
+                    ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(clazz);
                     Invoker<?> invoker = PROXY_FACTORY.getInvoker(inst, clazz, exportUrl);
                     // should destroy resource?
                     Exporter<?> exporter = PROTOCOL.export(invoker);
@@ -167,7 +167,7 @@ class CallbackServiceCodec {
                 URL referurl = URL.valueOf("callback://" + url.getAddress() + "/" + clazz.getName() + "?" + INTERFACE_KEY + "=" + clazz.getName());
                 referurl = referurl.addParametersIfAbsent(url.getParameters()).removeParameter(METHODS_KEY);
                 if (!isInstancesOverLimit(channel, referurl, clazz.getName(), instid, true)) {
-                    ApplicationModel.defaultModel().getServiceRepository().registerService(clazz);
+                    ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(clazz);
                     @SuppressWarnings("rawtypes")
                     Invoker<?> invoker = new ChannelWrappedInvoker(clazz, channel, referurl, String.valueOf(instid));
                     proxy = PROXY_FACTORY.getProxy(invoker);

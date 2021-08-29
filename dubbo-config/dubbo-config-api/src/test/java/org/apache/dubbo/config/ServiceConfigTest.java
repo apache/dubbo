@@ -17,8 +17,6 @@
 
 package org.apache.dubbo.config;
 
-import com.google.common.collect.Lists;
-
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.config.api.DemoService;
@@ -35,6 +33,7 @@ import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.service.GenericService;
 
+import com.google.common.collect.Lists;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,10 +70,10 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.withSettings;
 
 public class ServiceConfigTest {
@@ -88,7 +87,7 @@ public class ServiceConfigTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        ApplicationModel.defaultModel().getConfigManager().clear();
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
 
         MockProtocol2.delegate = protocolDelegate;
         MockRegistryFactory2.registry = registryDelegate;
@@ -151,7 +150,7 @@ public class ServiceConfigTest {
 
     @AfterEach
     public void tearDown() {
-        ApplicationModel.defaultModel().getConfigManager().clear();
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
     }
 
     @Test

@@ -49,7 +49,7 @@ import static org.junit.jupiter.api.Assertions.fail;
  */
 public class ConfigManagerTest {
 
-    private ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
+    private ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
 
     @BeforeEach
     public void init() {
@@ -255,7 +255,7 @@ public class ConfigManagerTest {
         try {
             // test strict mode
             ApplicationModel.reset();
-            ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             Assertions.assertEquals(ConfigMode.STRICT, configManager.getConfigMode());
 
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.STRICT.name());
@@ -274,7 +274,7 @@ public class ConfigManagerTest {
             // test override mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.OVERRIDE.name());
             ApplicationModel.reset();
-            configManager = ApplicationModel.defaultModel().getConfigManager();
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             Assertions.assertEquals(ConfigMode.OVERRIDE, configManager.getConfigMode());
 
             configManager.addConfig(applicationConfig1);
@@ -285,7 +285,7 @@ public class ConfigManagerTest {
             // test ignore mode
             System.setProperty(DUBBO_CONFIG_MODE, ConfigMode.IGNORE.name());
             ApplicationModel.reset();
-            configManager = ApplicationModel.defaultModel().getConfigManager();
+            configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             Assertions.assertEquals(ConfigMode.IGNORE, configManager.getConfigMode());
 
             configManager.addConfig(applicationConfig1);

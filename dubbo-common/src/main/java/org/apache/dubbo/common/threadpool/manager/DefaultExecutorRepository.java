@@ -230,7 +230,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getExportThreadNum() {
-        List<Integer> threadNum = ApplicationModel.defaultModel().getConfigManager().getProviders()
+        List<Integer> threadNum = ApplicationModel.defaultModel().getApplicationConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportThreadNum)
             .filter(k -> k != null && k > 0)
@@ -277,7 +277,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getReferThreadNum() {
-        List<Integer> threadNum = ApplicationModel.defaultModel().getConfigManager().getConsumers()
+        List<Integer> threadNum = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferThreadNum)
             .filter(k -> k != null && k > 0)

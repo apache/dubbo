@@ -68,10 +68,10 @@ public class PropertySourcesConfigurerTest {
             } catch (InterruptedException e) {
             }
 
-            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
+            ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
             // reset ConfigManager of provider context
             DubboBootstrap.reset(false);
-            ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+            ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
             // Resolve placeholder by PropertySourcesPlaceholderConfigurer in dubbo-consumer.xml, without import property source.
             AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(ConsumerConfiguration.class);

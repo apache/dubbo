@@ -150,7 +150,7 @@ public class RpcInvocation implements Invocation, Serializable {
     }
 
     private void initParameterDesc() {
-        ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+        ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
         if (StringUtils.isNotEmpty(serviceName)) {
             ServiceDescriptor serviceDescriptor = repository.lookupService(serviceName);
             if (serviceDescriptor != null) {

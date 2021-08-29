@@ -22,6 +22,7 @@ import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +96,7 @@ public class ConfigCenterConfigTest {
                 // ignore
             }
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -123,7 +124,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(zkAddr, configCenter.getAddress());
@@ -150,7 +151,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -179,7 +180,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .initialize();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());
@@ -207,7 +208,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(1234, configCenter.getTimeout());
@@ -237,7 +238,7 @@ public class ConfigCenterConfigTest {
                     .configCenter(configCenter)
                     .start();
 
-            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getConfigManager().getConfigCenters();
+            Collection<ConfigCenterConfig> configCenters = ApplicationModel.defaultModel().getApplicationConfigManager().getConfigCenters();
             Assertions.assertEquals(1, configCenters.size());
             Assertions.assertEquals(configCenter, configCenters.iterator().next());
             Assertions.assertEquals(3000L, configCenter.getTimeout());

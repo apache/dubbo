@@ -45,7 +45,7 @@ public class ShortestResponseLoadBalance extends AbstractLoadBalance {
 
     public static final String NAME = "shortestresponse";
 
-    private static final int SLIDE_PERIOD = ApplicationModel.defaultModel().getEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
+    private static final int SLIDE_PERIOD = ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration().getInt(Constants.SHORTEST_RESPONSE_SLIDE_PERIOD, 30_000);
 
     private ConcurrentMap<RpcStatus, SlideWindowData> methodMap = new ConcurrentHashMap<>();
 

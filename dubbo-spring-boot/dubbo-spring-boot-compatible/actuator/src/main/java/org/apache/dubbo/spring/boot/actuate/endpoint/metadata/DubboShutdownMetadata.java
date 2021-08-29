@@ -61,7 +61,7 @@ public class DubboShutdownMetadata extends AbstractDubboMetadata {
         shutdownCountData.put("services", serviceBeansMap.size());
 
         // Reference Beans
-        Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getConfigManager().getReferences();
+        Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getApplicationConfigManager().getReferences();
         for (ReferenceConfigBase<?> reference : references) {
             reference.destroy();
         }

@@ -25,6 +25,7 @@ import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
 import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter;
 import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -72,7 +73,7 @@ public class Issue7003Test {
             Map<String, ReferenceBean> referenceBeanMap = context.getBeansOfType(ReferenceBean.class);
             Assertions.assertEquals(1, referenceBeanMap.size());
 
-            Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getConfigManager().getReferences();
+            Collection<ReferenceConfigBase<?>> references = ApplicationModel.defaultModel().getApplicationConfigManager().getReferences();
             Assertions.assertEquals(1, references.size());
 
         } finally {

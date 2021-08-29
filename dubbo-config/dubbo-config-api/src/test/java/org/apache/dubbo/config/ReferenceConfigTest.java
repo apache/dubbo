@@ -23,8 +23,8 @@ import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.bootstrap.DubboBootstrap;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
-
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
 import org.apache.curator.test.TestingServer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -58,7 +58,7 @@ public class ReferenceConfigTest {
 
         // preload
         ReferenceConfig preloadReferenceConfig = new ReferenceConfig();
-        ApplicationModel.defaultModel().getConfigManager();
+        ApplicationModel.defaultModel().getApplicationConfigManager();
         DubboBootstrap.getInstance();
     }
 
@@ -74,7 +74,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-protocol-random-port");
         application.setEnableFileCache(false);
-        ApplicationModel.defaultModel().getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(registryUrl);
@@ -118,7 +118,7 @@ public class ReferenceConfigTest {
         ApplicationConfig application = new ApplicationConfig();
         application.setName("test-reference-retry");
         application.setEnableFileCache(false);
-        ApplicationModel.defaultModel().getConfigManager().setApplication(application);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(application);
 
         RegistryConfig registry = new RegistryConfig();
         registry.setAddress(registryUrl);
@@ -212,7 +212,7 @@ public class ReferenceConfigTest {
         configCenterConfig.setAddress("diamond://");
 
         testInitReferences(0, amount, applicationConfig, metadataReportConfig, configCenterConfig);
-        ApplicationModel.defaultModel().getConfigManager().clear();
+        ApplicationModel.defaultModel().getApplicationConfigManager().clear();
         testInitReferences(0, 1, applicationConfig, metadataReportConfig, configCenterConfig);
 
         long t1 = System.currentTimeMillis();

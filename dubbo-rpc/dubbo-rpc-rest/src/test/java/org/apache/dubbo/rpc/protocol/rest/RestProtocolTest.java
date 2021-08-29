@@ -50,7 +50,7 @@ public class RestProtocolTest {
     private ProxyFactory proxy = ExtensionLoader.getExtensionLoader(ProxyFactory.class).getAdaptiveExtension();
     private final int availablePort = NetUtils.getAvailablePort();
     private final URL exportUrl = URL.valueOf("rest://127.0.0.1:" + availablePort + "/rest?interface=org.apache.dubbo.rpc.protocol.rest.DemoService");
-    private final ServiceRepository repository = ApplicationModel.defaultModel().getServiceRepository();
+    private final ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @AfterEach
     public void tearDown() {

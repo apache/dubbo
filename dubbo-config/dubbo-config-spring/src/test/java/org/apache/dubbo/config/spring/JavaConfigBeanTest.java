@@ -32,10 +32,11 @@ import org.apache.dubbo.config.spring.registrycenter.DefaultSingleRegistryCenter
 import org.apache.dubbo.config.spring.registrycenter.SingleRegistryCenter;
 import org.apache.dubbo.rpc.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -88,7 +89,7 @@ public class JavaConfigBeanTest {
         try {
             consumerContext.start();
 
-            ConfigManager configManager = ApplicationModel.defaultModel().getConfigManager();
+            ConfigManager configManager = ApplicationModel.defaultModel().getApplicationConfigManager();
             ApplicationConfig application = configManager.getApplication().get();
             Assertions.assertEquals(false, application.getQosEnable());
             Assertions.assertEquals("Tom", application.getOwner());

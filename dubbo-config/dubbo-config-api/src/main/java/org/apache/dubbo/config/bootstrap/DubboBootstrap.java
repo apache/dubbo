@@ -263,8 +263,8 @@ public class DubboBootstrap {
 
     private DubboBootstrap(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
-        configManager = applicationModel.getConfigManager();
-        environment = applicationModel.getEnvironment();
+        configManager = applicationModel.getApplicationConfigManager();
+        environment = applicationModel.getApplicationEnvironment();
 
         executorRepository = getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
         DubboShutdownHook.getDubboShutdownHook().register();

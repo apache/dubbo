@@ -49,7 +49,7 @@ public class NettyEventLoopFactory {
     }
 
     private static boolean shouldEpoll() {
-        Configuration configuration = ApplicationModel.defaultModel().getEnvironment().getConfiguration();
+        Configuration configuration = ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration();
         if (configuration.getBoolean("netty.epoll.enable", false)) {
             String osName = configuration.getString("os.name");
             return osName.toLowerCase().contains("linux") && Epoll.isAvailable();

@@ -33,7 +33,7 @@ public class Startup implements BaseCommand {
     @Override
     public String execute(CommandContext commandContext, String[] args) {
         URL url = URL.valueOf("application://")
-                .addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, ApplicationModel.defaultModel().getApplicationConfig().getStartupProbe());
+                .addParameter(CommonConstants.QOS_STARTUP_PROBE_EXTENSION, ApplicationModel.defaultModel().getCurrentConfig().getStartupProbe());
         List<StartupProbe> startupProbes = ExtensionLoader.getExtensionLoader(StartupProbe.class)
                 .getActivateExtension(url, CommonConstants.QOS_STARTUP_PROBE_EXTENSION);
         if (!startupProbes.isEmpty()) {

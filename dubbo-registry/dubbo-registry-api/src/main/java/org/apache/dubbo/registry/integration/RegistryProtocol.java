@@ -357,7 +357,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
     private ProviderModel.RegisterStatedURL getStatedUrl(URL registryUrl, URL providerUrl) {
         ApplicationModel applicationModel = getApplicationModel(registryUrl.getScopeModel());
-        ProviderModel providerModel = applicationModel.getServiceRepository()
+        ProviderModel providerModel = applicationModel.getApplicationServiceRepository()
             .lookupExportedService(providerUrl.getServiceKey());
 
         List<ProviderModel.RegisterStatedURL> statedUrls = providerModel.getStatedUrl();
@@ -746,7 +746,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
             super(applicationModel);
             this.providerUrl = providerUrl;
             this.notifyListener = notifyListener;
-            if (applicationModel.getEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(DynamicConfiguration.getRuleKey(providerUrl) + CONFIGURATORS_SUFFIX);
             }
         }
@@ -765,7 +765,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
         public ProviderConfigurationListener(ApplicationModel applicationModel) {
             super(applicationModel);
-            if (applicationModel.getEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+            if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                 this.initWith(applicationModel.getApplicationName() + CONFIGURATORS_SUFFIX);
             }
         }
@@ -835,7 +835,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
                 registry.unsubscribe(subscribeUrl, listener);
                 ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
-                if (applicationModel.getEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
+                if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                     applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                         .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
                             serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));

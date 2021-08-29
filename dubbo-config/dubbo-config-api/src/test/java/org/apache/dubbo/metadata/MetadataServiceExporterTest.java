@@ -43,9 +43,9 @@ public class MetadataServiceExporterTest {
     @BeforeAll
     public static void init() {
         DubboBootstrap.reset();
-        ApplicationModel.defaultModel().getConfigManager().setApplication(new ApplicationConfig("Test"));
-        ApplicationModel.defaultModel().getConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
-        ApplicationModel.defaultModel().getConfigManager().addProtocol(new ProtocolConfig("injvm"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(new ApplicationConfig("Test"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().addRegistry(new RegistryConfig("multicast://224.5.6.7:1234"));
+        ApplicationModel.defaultModel().getApplicationConfigManager().addProtocol(new ProtocolConfig("injvm"));
     }
 
     @AfterAll

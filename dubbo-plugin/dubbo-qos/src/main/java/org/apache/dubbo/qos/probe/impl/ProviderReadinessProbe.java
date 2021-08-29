@@ -27,7 +27,7 @@ import java.util.List;
 
 @Activate
 public class ProviderReadinessProbe implements ReadinessProbe {
-    private static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getServiceRepository();
+    private static ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
 
     @Override
     public boolean check() {

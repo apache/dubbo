@@ -61,7 +61,7 @@ public class DNSServiceDiscoveryTest {
     public void setup() {
         DubboBootstrap.reset();
         ApplicationConfig applicationConfig = new ApplicationConfig("Test");
-        ApplicationModel.defaultModel().getConfigManager().setApplication(applicationConfig);
+        ApplicationModel.defaultModel().getApplicationConfigManager().setApplication(applicationConfig);
     }
 
     @AfterEach
@@ -113,7 +113,7 @@ public class DNSServiceDiscoveryTest {
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
                 .addParameter(Constants.ECHO_POLLING_CYCLE_KEY, 100);
-        applicationModel.getEnvironment().getAppExternalConfigMap()
+        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
                 .put(METADATA_PROXY_TIMEOUT_KEY, String.valueOf(500));
         dnsServiceDiscovery.initialize(registryURL);
 
@@ -124,7 +124,7 @@ public class DNSServiceDiscoveryTest {
         dnsServiceDiscovery.register(serviceInstance);
 
         int port = NetUtils.getAvailablePort();
-        applicationModel.getApplicationConfig().setMetadataServicePort(port);
+        applicationModel.getCurrentConfig().setMetadataServicePort(port);
 
         WritableMetadataService spiedMetadataService = Mockito.spy(metadataService);
 
@@ -166,7 +166,7 @@ public class DNSServiceDiscoveryTest {
         serviceConfig.unexport();
 
         dnsServiceDiscovery.destroy();
-        applicationModel.getEnvironment().getAppExternalConfigMap()
+        applicationModel.getApplicationEnvironment().getAppExternalConfigMap()
                 .remove(METADATA_PROXY_TIMEOUT_KEY);
     }
 

@@ -76,10 +76,10 @@ public class DubboComponentScanRegistrarTest {
         // Test @Transactional is present or not
         Assertions.assertNotNull(findAnnotation(beanClass, Transactional.class));
 
-        ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getServiceRepository().getProviderUrlsWithoutGroup();
+        ConcurrentMap<String, Set<URL>> tmp = ApplicationModel.defaultModel().getApplicationServiceRepository().getProviderUrlsWithoutGroup();
         // reset ConfigManager of provider context
         DubboBootstrap.reset(false);
-        ApplicationModel.defaultModel().getServiceRepository().setProviderUrlsWithoutGroup(tmp);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().setProviderUrlsWithoutGroup(tmp);
 
         AnnotationConfigApplicationContext consumerContext = new AnnotationConfigApplicationContext();
 

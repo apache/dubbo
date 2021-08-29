@@ -59,14 +59,14 @@ public class ArgumentCallbackTest {
         // export one service first, to test connection sharing
         serviceURL = serviceURL.addParameter("connections", 1);
         URL hellourl = serviceURL.setPath(IHelloService.class.getName());
-        ApplicationModel.defaultModel().getServiceRepository().registerService(IDemoService.class);
-        ApplicationModel.defaultModel().getServiceRepository().registerService(IHelloService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(IDemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(IHelloService.class);
         hello_exporter = ProtocolUtils.export(new HelloServiceImpl(), IHelloService.class, hellourl);
         exporter = ProtocolUtils.export(new DemoServiceImpl(), IDemoService.class, serviceURL);
     }
 
     void referService() {
-        ApplicationModel.defaultModel().getServiceRepository().registerService(IDemoService.class);
+        ApplicationModel.defaultModel().getApplicationServiceRepository().registerService(IDemoService.class);
         demoProxy = (IDemoService) ProtocolUtils.refer(IDemoService.class, consumerUrl);
     }
 
@@ -96,7 +96,7 @@ public class ArgumentCallbackTest {
     }
 
     public void destroyService() {
-        ApplicationModel.defaultModel().getServiceRepository().destroy();
+        ApplicationModel.defaultModel().getApplicationServiceRepository().destroy();
         demoProxy = null;
         try {
             if (exporter != null) exporter.unexport();

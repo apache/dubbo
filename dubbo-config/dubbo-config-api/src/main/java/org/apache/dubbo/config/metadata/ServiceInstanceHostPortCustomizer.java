@@ -47,7 +47,7 @@ public class ServiceInstanceHostPortCustomizer implements ServiceInstanceCustomi
         Set<URL> urls = writableMetadataService.getExportedServiceURLs();
         if (CollectionUtils.isNotEmpty(urls)) {
             ApplicationModel applicationModel = serviceInstance.getApplicationModel();
-            String preferredProtocol = applicationModel.getApplicationConfig().getProtocol();
+            String preferredProtocol = applicationModel.getCurrentConfig().getProtocol();
             if (preferredProtocol != null) {
                 for (URL exportedURL : urls) {
                     if (preferredProtocol.equals(exportedURL.getProtocol())) {

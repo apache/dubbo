@@ -496,7 +496,7 @@ public abstract class AbstractConfig implements Serializable {
             // check and init before do refresh
             preProcessRefresh();
 
-            Environment environment = getApplicationModel().getEnvironment();
+            Environment environment = getApplicationModel().getApplicationEnvironment();
             List<Map<String, String>> configurationMaps = environment.getConfigurationMaps();
 
             // Search props starts with PREFIX in order
@@ -783,6 +783,6 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     protected ConfigManager getConfigManager() {
-        return getApplicationModel().getConfigManager();
+        return getApplicationModel().getApplicationConfigManager();
     }
 }

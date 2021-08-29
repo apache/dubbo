@@ -108,19 +108,19 @@ public class ApplicationModel extends ScopeModel {
     }
 
     public Collection<ConsumerModel> allConsumerModels() {
-        return getServiceRepository().getReferredServices();
+        return getApplicationServiceRepository().getReferredServices();
     }
 
     public Collection<ProviderModel> allProviderModels() {
-        return getServiceRepository().getExportedServices();
+        return getApplicationServiceRepository().getExportedServices();
     }
 
     public ProviderModel getProviderModel(String serviceKey) {
-        return getServiceRepository().lookupExportedService(serviceKey);
+        return getApplicationServiceRepository().lookupExportedService(serviceKey);
     }
 
     public ConsumerModel getConsumerModel(String serviceKey) {
-        return getServiceRepository().lookupReferredService(serviceKey);
+        return getApplicationServiceRepository().lookupReferredService(serviceKey);
     }
 
     public void initFrameworkExts() {
@@ -130,7 +130,12 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
-    public Environment getEnvironment() {
+    @Deprecated
+    public static Environment getEnvironment() {
+        return defaultModel().getApplicationEnvironment();
+    }
+
+    public Environment getApplicationEnvironment() {
         if (environment == null) {
             environment = (Environment) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(Environment.NAME);
@@ -138,7 +143,12 @@ public class ApplicationModel extends ScopeModel {
         return environment;
     }
 
-    public ConfigManager getConfigManager() {
+    @Deprecated
+    public static ConfigManager getConfigManager() {
+        return defaultModel().getApplicationConfigManager();
+    }
+
+    public ConfigManager getApplicationConfigManager() {
         if (configManager == null) {
             configManager = (ConfigManager) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(ConfigManager.NAME);
@@ -146,7 +156,12 @@ public class ApplicationModel extends ScopeModel {
         return configManager;
     }
 
-    public ServiceRepository getServiceRepository() {
+    @Deprecated
+    public static ServiceRepository getServiceRepository() {
+        return defaultModel().getApplicationServiceRepository();
+    }
+
+    public ServiceRepository getApplicationServiceRepository() {
         if (serviceRepository == null) {
             serviceRepository = (ServiceRepository) this.getExtensionLoader(FrameworkExt.class)
                 .getExtension(ServiceRepository.NAME);
@@ -154,21 +169,31 @@ public class ApplicationModel extends ScopeModel {
         return serviceRepository;
     }
 
-    public ExecutorRepository getExecutorRepository() {
+    @Deprecated
+    public static ExecutorRepository getExecutorRepository() {
+        return defaultModel().getApplicationExecutorRepository();
+    }
+
+    public ExecutorRepository getApplicationExecutorRepository() {
         return this.getExtensionLoader(ExecutorRepository.class).getDefaultExtension();
     }
 
-    public ApplicationConfig getApplicationConfig() {
-        return getConfigManager().getApplicationOrElseThrow();
+    @Deprecated
+    public static ApplicationConfig getApplicationConfig() {
+        return defaultModel().getCurrentConfig();
+    }
+
+    public ApplicationConfig getCurrentConfig() {
+        return getApplicationConfigManager().getApplicationOrElseThrow();
     }
 
     @Deprecated
     public static String getName() {
-        return defaultModel().getApplicationConfig().getName();
+        return defaultModel().getCurrentConfig().getName();
     }
 
     public String getApplicationName() {
-        return getApplicationConfig().getName();
+        return getCurrentConfig().getName();
     }
 
     public void addModule(ModuleModel model) {

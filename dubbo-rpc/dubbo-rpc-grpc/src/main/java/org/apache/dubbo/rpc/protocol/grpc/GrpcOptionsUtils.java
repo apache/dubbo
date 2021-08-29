@@ -153,7 +153,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getConfigManager();
+        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder = null;
@@ -183,7 +183,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getConfigManager();
+        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
 

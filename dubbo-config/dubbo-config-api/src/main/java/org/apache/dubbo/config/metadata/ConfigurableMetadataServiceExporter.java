@@ -152,7 +152,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     private ApplicationConfig getApplicationConfig() {
-        return applicationModel.getConfigManager().getApplication().get();
+        return applicationModel.getApplicationConfigManager().getApplication().get();
     }
 
     private ProtocolConfig generateMetadataProtocol() {
@@ -163,7 +163,7 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
             if (logger.isInfoEnabled()) {
                 logger.info("Metadata Service Port hasn't been set will use default protocol defined in protocols.");
             }
-            List<ProtocolConfig> defaultProtocols = applicationModel.getConfigManager().getDefaultProtocols();
+            List<ProtocolConfig> defaultProtocols = applicationModel.getApplicationConfigManager().getDefaultProtocols();
 
             ProtocolConfig dubboProtocol = findDubboProtocol(defaultProtocols);
             if (dubboProtocol != null) {
