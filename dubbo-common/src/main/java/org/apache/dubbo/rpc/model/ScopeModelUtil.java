@@ -18,6 +18,16 @@ package org.apache.dubbo.rpc.model;
 
 public class ScopeModelUtil {
 
+    public static ModuleModel getModuleModel(ScopeModel scopeModel) {
+        if (scopeModel instanceof ModuleModel) {
+            return (ModuleModel) scopeModel;
+        }
+        if (scopeModel == null) {
+            ApplicationModel.defaultModel().getDefaultModule();
+        }
+        return null;
+    }
+
     public static ApplicationModel getApplicationModel(ScopeModel scopeModel) {
         if (scopeModel instanceof ApplicationModel) {
             return (ApplicationModel) scopeModel;
@@ -25,14 +35,10 @@ public class ScopeModelUtil {
             ModuleModel moduleModel = (ModuleModel) scopeModel;
             return moduleModel.getApplicationModel();
         }
-        return ApplicationModel.defaultModel();
-    }
-
-    public static ModuleModel getModuleModel(ScopeModel scopeModel) {
-        if (scopeModel instanceof ModuleModel) {
-            return (ModuleModel) scopeModel;
+        if (scopeModel == null) {
+            ApplicationModel.defaultModel();
         }
-        return ApplicationModel.defaultModel().getDefaultModule();
+        return null;
     }
 
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {
@@ -44,7 +50,10 @@ public class ScopeModelUtil {
         } else if (scopeModel instanceof FrameworkModel) {
             return (FrameworkModel) scopeModel;
         }
-        return FrameworkModel.defaultModel();
+        if (scopeModel == null) {
+            FrameworkModel.defaultModel();
+        }
+        return null;
     }
 
 }
