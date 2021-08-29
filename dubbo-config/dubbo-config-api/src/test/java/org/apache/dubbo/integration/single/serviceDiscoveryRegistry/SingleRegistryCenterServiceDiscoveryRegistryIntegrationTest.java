@@ -126,6 +126,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         registryServiceListener.setSubscribeIsCalled(false);
         registryServiceListener.setUnRegisterIsCalled(false);
         registryServiceListener.setUnSubscribeIsCalled(false);
+        writableMetadataService.getCachedMapping().clear();
     }
 
     private void beforeServiceDiscoveryRegistry() {
