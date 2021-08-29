@@ -96,6 +96,7 @@
         <jaxb_api_version>2.2.7</jaxb_api_version>
         <cglib_version>2.2</cglib_version>
         <mockito_version>3.8.0</mockito_version>
+        <jmockit_version>1.49</jmockit_version>
         <!-- Build args -->
         <argline>-server -Xms256m -Xmx512m -Dfile.encoding=UTF-8
             -Djava.net.preferIPv4Stack=true -XX:MetaspaceSize=64m -XX:MaxMetaspaceSize=128m
@@ -167,6 +168,13 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- JMockit should precede junit -->
+        <dependency>
+            <groupId>org.jmockit</groupId>
+            <artifactId>jmockit</artifactId>
+            <version>${jmockit_version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
@@ -474,7 +482,10 @@
                 <configuration>
                     <useSystemClassLoader>true</useSystemClassLoader>
                     <forkMode>once</forkMode>
-                    <argLine>${argline} ${jacocoArgLine}</argLine>
+                    <argLine>
+                        ${argline} ${jacocoArgLine}
+                        -javaagent:${settings.localRepository}/org/jmockit/jmockit/${jmockit_version}/jmockit-${jmockit_version}.jar
+                    </argLine>
                     <systemProperties>
                         <!-- common shared -->
                     </systemProperties>

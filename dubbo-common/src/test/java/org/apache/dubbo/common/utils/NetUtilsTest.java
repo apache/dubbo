@@ -337,7 +337,7 @@ public class NetUtilsTest {
         String originIgnoredInterfaces = this.getIgnoredInterfaces();
         try{
             // ignore all interfaces
-            this.setIgnoredInterfaces("*");
+            this.setIgnoredInterfaces(".*");
             assertNull(NetUtils.findNetworkInterface());
         }finally {
             // recover the origin ignored interfaces

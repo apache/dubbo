@@ -42,6 +42,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import static java.util.Collections.emptyList;
 import static org.apache.dubbo.common.constants.CommonConstants.ANYHOST_VALUE;
@@ -330,9 +331,20 @@ public class NetUtils {
         if(StringUtils.isNotEmpty(ignoredInterfaces)
                 &&StringUtils.isNotEmpty(networkInterfaceDisplayName=networkInterface.getDisplayName())){
             for(String ignoredInterface: ignoredInterfaces.split(",")){
-                if(networkInterfaceDisplayName.matches(ignoredInterface.trim())
-                        || networkInterfaceDisplayName.equals(ignoredInterface.trim())){
-                    return true;
+                String trimIgnoredInterface = ignoredInterface.trim();
+                boolean matched = false;
+                try {                     
+                    matched = networkInterfaceDisplayName.matches(trimIgnoredInterface);
+                } catch (PatternSyntaxException e) {
+                    // if networkInterfaceDisplayName has meta characters, matches might throw PatternSyntaxException
+                    logger.warn("exception occurred: " + networkInterfaceDisplayName + " matches " + trimIgnoredInterface, e);
+                } finally {
+                    if (matched) {
+                        return true;
+                    }
+                    if (networkInterfaceDisplayName.equals(trimIgnoredInterface)) {
+                        return true;
+                    }
                 }
             }
         }
