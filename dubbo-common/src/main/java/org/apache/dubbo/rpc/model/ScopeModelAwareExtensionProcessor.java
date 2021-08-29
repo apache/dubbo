@@ -18,25 +18,26 @@ package org.apache.dubbo.rpc.model;
 
 import org.apache.dubbo.common.extension.ExtensionPostProcessor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor {
     private ScopeModel scopeModel;
     private FrameworkModel frameworkModel;
     private ApplicationModel applicationModel;
     private ModuleModel moduleModel;
-    private volatile boolean inited;
+    private final AtomicBoolean inited = new AtomicBoolean(false);
 
     public ScopeModelAwareExtensionProcessor(ScopeModel scopeModel) {
         this.scopeModel = scopeModel;
     }
 
     private void init() {
-        if (inited) {
+        if (!inited.compareAndSet(false, true)) {
             return;
         }
         frameworkModel = ScopeModelUtil.getFrameworkModel(scopeModel);
         applicationModel = ScopeModelUtil.getApplicationModel(scopeModel);
         moduleModel = ScopeModelUtil.getModuleModel(scopeModel);
-        inited = true;
     }
 
     @Override

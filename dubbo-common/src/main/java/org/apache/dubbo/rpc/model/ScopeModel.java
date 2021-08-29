@@ -20,6 +20,7 @@ import org.apache.dubbo.common.beans.factory.ScopeBeanFactory;
 import org.apache.dubbo.common.extension.ExtensionAccessor;
 import org.apache.dubbo.common.extension.ExtensionDirector;
 
+import javax.annotation.PostConstruct;
 import java.util.Set;
 
 public abstract class ScopeModel implements ExtensionAccessor {
@@ -30,11 +31,23 @@ public abstract class ScopeModel implements ExtensionAccessor {
 
     private final ScopeBeanFactory beanFactory;
 
+    private volatile boolean ready = false;
+
     public ScopeModel(ScopeModel parent, ExtensionDirector extensionDirector) {
         this.parent = parent;
         this.extensionDirector = extensionDirector;
         this.extensionDirector.addExtensionPostProcessor(new ScopeModelAwareExtensionProcessor(this));
         this.beanFactory = new ScopeBeanFactory(parent!=null?parent.getBeanFactory():null, extensionDirector);
+    }
+
+    @PostConstruct
+    public void postConstruct() {
+        postProcessAfterCreated();
+        ready = true;
+    }
+
+    public boolean isReady() {
+        return ready;
     }
 
     public ExtensionDirector getExtensionDirector() {

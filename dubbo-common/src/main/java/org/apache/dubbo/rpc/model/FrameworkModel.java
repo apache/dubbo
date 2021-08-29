@@ -37,15 +37,24 @@ public class FrameworkModel extends ScopeModel {
     private List<ApplicationModel> applicationModels = Collections.synchronizedList(new ArrayList<>());
 
     public FrameworkModel() {
+        this(true);
+    }
+
+    public FrameworkModel(boolean shouldInit) {
         super(null, new ExtensionDirector(null, ExtensionScope.FRAMEWORK));
-        postProcessAfterCreated();
+        if (shouldInit) {
+            postConstruct();
+        }
     }
 
     public static FrameworkModel defaultModel() {
-        if (defaultInstance == null) {
+        if (defaultInstance == null || !defaultInstance.isReady()) {
             synchronized (FrameworkModel.class) {
                 if (defaultInstance == null) {
-                    defaultInstance = new FrameworkModel();
+                    defaultInstance = new FrameworkModel(false);
+                }
+                if (!defaultInstance.isReady()) {
+                    defaultInstance.postConstruct();
                 }
             }
         }

@@ -62,17 +62,27 @@ public class ApplicationModel extends ScopeModel {
     private FrameworkModel frameworkModel;
 
     public ApplicationModel(FrameworkModel frameworkModel) {
+        this(frameworkModel, true);
+    }
+
+    public ApplicationModel(FrameworkModel frameworkModel, boolean shouldInit) {
         super(frameworkModel, new ExtensionDirector(frameworkModel.getExtensionDirector(), ExtensionScope.APPLICATION));
         this.frameworkModel = frameworkModel;
         frameworkModel.addApplication(this);
-        postProcessAfterCreated();
+
+        if (shouldInit) {
+            postConstruct();
+        }
     }
 
     public static ApplicationModel defaultModel() {
-        if (defaultInstance == null) {
+        if (defaultInstance == null || !defaultInstance.isReady()) {
             synchronized (ApplicationModel.class) {
                 if (defaultInstance == null) {
-                    defaultInstance = new ApplicationModel(FrameworkModel.defaultModel());
+                    defaultInstance = new ApplicationModel(FrameworkModel.defaultModel(), false);
+                }
+                if (!defaultInstance.isReady()) {
+                    defaultInstance.postConstruct();
                 }
             }
         }
