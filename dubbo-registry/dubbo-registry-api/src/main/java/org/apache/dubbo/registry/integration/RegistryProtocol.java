@@ -215,7 +215,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         //  subscription information to cover.
         final URL overrideSubscribeUrl = getSubscribedOverrideUrl(providerUrl);
         final OverrideListener overrideSubscribeListener = new OverrideListener(overrideSubscribeUrl, originInvoker);
-        overrideListeners.put(overrideSubscribeUrl, overrideSubscribeListener);
+        overrideListeners.put(registryUrl, overrideSubscribeListener);
 
         providerUrl = overrideUrlWithConfig(providerUrl, overrideSubscribeListener);
         //export invoker
@@ -262,9 +262,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
         ProviderConfigurationListener providerConfigurationListener = getProviderConfigurationListener(providerUrl);
         providerUrl = providerConfigurationListener.overrideUrl(providerUrl);
 
-        URL finalProviderUrl = providerUrl;
-        ServiceConfigurationListener serviceConfigurationListener = applicationModel.getBeanFactory().registerBeanIfAbsent(ServiceConfigurationListener.class,
-            type -> new ServiceConfigurationListener(applicationModel, finalProviderUrl, listener));
+        ServiceConfigurationListener serviceConfigurationListener = new ServiceConfigurationListener(applicationModel, providerUrl, listener);
         serviceConfigurationListeners.put(providerUrl.getServiceKey(), serviceConfigurationListener);
         return serviceConfigurationListener.overrideUrl(providerUrl);
     }
@@ -832,13 +830,13 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
                 logger.warn(t.getMessage(), t);
             }
             try {
-                NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(subscribeUrl);
+                NotifyListener listener = RegistryProtocol.this.overrideListeners.remove(registerUrl);
                 registry.unsubscribe(subscribeUrl, listener);
                 ApplicationModel applicationModel = getApplicationModel(registerUrl.getScopeModel());
                 if (applicationModel.getApplicationEnvironment().getConfiguration().convert(Boolean.class, ENABLE_CONFIGURATION_LISTEN, true)) {
                     applicationModel.getExtensionLoader(GovernanceRuleRepository.class).getDefaultExtension()
                         .removeListener(subscribeUrl.getServiceKey() + CONFIGURATORS_SUFFIX,
-                            serviceConfigurationListeners.get(subscribeUrl.getServiceKey()));
+                            serviceConfigurationListeners.remove(subscribeUrl.getServiceKey()));
                 }
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
