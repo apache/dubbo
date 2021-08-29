@@ -109,6 +109,7 @@ public class DNSServiceDiscoveryTest {
     public void testConsumer() throws Exception {
         ApplicationModel applicationModel = ApplicationModel.defaultModel();
         DNSServiceDiscovery dnsServiceDiscovery = new DNSServiceDiscovery();
+        dnsServiceDiscovery.setApplicationModel(applicationModel);
 
         URL registryURL = URL.valueOf("dns://")
                 .addParameter(DNSClientConst.DNS_POLLING_CYCLE, 100)
