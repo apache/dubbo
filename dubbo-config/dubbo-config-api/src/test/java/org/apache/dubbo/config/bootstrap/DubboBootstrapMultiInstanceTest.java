@@ -16,22 +16,38 @@
  */
 package org.apache.dubbo.config.bootstrap;
 
+import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ProtocolConfig;
 import org.apache.dubbo.config.ReferenceConfig;
-import org.apache.dubbo.config.RegistryConfig;
 import org.apache.dubbo.config.ServiceConfig;
 import org.apache.dubbo.config.SysProps;
 import org.apache.dubbo.config.api.DemoService;
 import org.apache.dubbo.config.provider.impl.DemoServiceImpl;
+import org.apache.dubbo.registrycenter.DefaultSingleRegistryCenter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.FrameworkModel;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 public class DubboBootstrapMultiInstanceTest {
+
+    private static DefaultSingleRegistryCenter registryCenter;
+
+    @BeforeAll
+    public static void setup() {
+        registryCenter = new DefaultSingleRegistryCenter(NetUtils.getAvailablePort());
+        registryCenter.startup();
+    }
+
+    @AfterAll
+    public static void teardown() {
+        registryCenter.shutdown();
+    }
 
     @AfterEach
     protected void afterEach() {
@@ -110,7 +126,7 @@ public class DubboBootstrapMultiInstanceTest {
         if (!dubboBootstrap.getConfigManager().getApplication().isPresent()) {
             dubboBootstrap.application("consumer-app");
         }
-        dubboBootstrap.registry(new RegistryConfig("zookeeper://localhost:2181"))
+        dubboBootstrap.registry(registryCenter.getRegistryConfig())
             .reference(referenceConfig);
         return dubboBootstrap;
     }
@@ -123,9 +139,6 @@ public class DubboBootstrapMultiInstanceTest {
     }
 
     private DubboBootstrap configProviderApp(DubboBootstrap dubboBootstrap) {
-        RegistryConfig registry1 = new RegistryConfig();
-        registry1.setAddress("zookeeper://localhost:2181");
-
         ProtocolConfig protocol1 = new ProtocolConfig();
         protocol1.setName("dubbo");
         protocol1.setPort(2001);
@@ -137,7 +150,7 @@ public class DubboBootstrapMultiInstanceTest {
         if (!dubboBootstrap.getConfigManager().getApplication().isPresent()) {
             dubboBootstrap.application("provider-app");
         }
-        dubboBootstrap.registry(registry1)
+        dubboBootstrap.registry(registryCenter.getRegistryConfig())
             .protocol(protocol1)
             .service(serviceConfig);
         return dubboBootstrap;
