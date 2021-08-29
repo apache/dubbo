@@ -375,6 +375,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
     // ServiceConfig correlative methods
 
     public void addService(ServiceConfigBase<?> serviceConfig) {
+        if (serviceConfig.getScopeModel() == null) {
+            serviceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(serviceConfig);
     }
 
@@ -393,6 +396,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
     // ReferenceConfig correlative methods
 
     public void addReference(ReferenceConfigBase<?> referenceConfig) {
+        if (referenceConfig.getScopeModel() == null) {
+            referenceConfig.setScopeModel(applicationModel.getDefaultModule());
+        }
         addConfig(referenceConfig);
     }
 
@@ -465,6 +471,9 @@ public class ConfigManager extends LifecycleAdapter implements FrameworkExt, Sco
     public void addConfig(AbstractConfig config) {
         if (config == null) {
             return;
+        }
+        if (config.getScopeModel() == null) {
+            config.setScopeModel(applicationModel);
         }
         addConfig(config, isUniqueConfig(config));
     }
