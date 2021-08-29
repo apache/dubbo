@@ -23,7 +23,7 @@ public class ScopeModelUtil {
             return (ModuleModel) scopeModel;
         }
         if (scopeModel == null) {
-            ApplicationModel.defaultModel().getDefaultModule();
+            return ApplicationModel.defaultModel().getDefaultModule();
         }
         return null;
     }
@@ -36,7 +36,7 @@ public class ScopeModelUtil {
             return moduleModel.getApplicationModel();
         }
         if (scopeModel == null) {
-            ApplicationModel.defaultModel();
+            return ApplicationModel.defaultModel();
         }
         return null;
     }
@@ -51,7 +51,7 @@ public class ScopeModelUtil {
             return (FrameworkModel) scopeModel;
         }
         if (scopeModel == null) {
-            FrameworkModel.defaultModel();
+            return FrameworkModel.defaultModel();
         }
         return null;
     }
