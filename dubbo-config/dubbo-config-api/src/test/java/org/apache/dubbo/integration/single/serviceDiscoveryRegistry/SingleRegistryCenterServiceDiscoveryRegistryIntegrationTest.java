@@ -122,6 +122,10 @@ public class SingleRegistryCenterServiceDiscoveryRegistryIntegrationTest impleme
         registryServiceListener = (SingleRegistryCenterServiceDiscoveryRegistryListener) ExtensionLoader.getExtensionLoader(RegistryServiceListener.class).getExtension(SPI_NAME);
         // RegistryServiceListener is not null
         Assertions.assertNotNull(registryServiceListener);
+        registryServiceListener.setRegisterIsCalled(false);
+        registryServiceListener.setSubscribeIsCalled(false);
+        registryServiceListener.setUnRegisterIsCalled(false);
+        registryServiceListener.setUnSubscribeIsCalled(false);
     }
 
     private void beforeServiceDiscoveryRegistry() {

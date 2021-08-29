@@ -52,7 +52,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryListener implements Reg
 
     @Override
     public void onUnregister(URL url, Registry registry) {
-        unRegisterIsCalled = false;
+        unRegisterIsCalled = true;
     }
 
     @Override
@@ -62,7 +62,7 @@ public class SingleRegistryCenterServiceDiscoveryRegistryListener implements Reg
 
     @Override
     public void onUnsubscribe(URL url, Registry registry) {
-        unSubscribeIsCalled = false;
+        unSubscribeIsCalled = true;
     }
 
     /**
@@ -91,5 +91,21 @@ public class SingleRegistryCenterServiceDiscoveryRegistryListener implements Reg
      */
     public boolean isUnSubscribeHasCalled() {
         return unSubscribeIsCalled;
+    }
+
+    public void setRegisterIsCalled(boolean registerIsCalled) {
+        this.registerIsCalled = registerIsCalled;
+    }
+
+    public void setUnRegisterIsCalled(boolean unRegisterIsCalled) {
+        this.unRegisterIsCalled = unRegisterIsCalled;
+    }
+
+    public void setSubscribeIsCalled(boolean subscribeIsCalled) {
+        this.subscribeIsCalled = subscribeIsCalled;
+    }
+
+    public void setUnSubscribeIsCalled(boolean unSubscribeIsCalled) {
+        this.unSubscribeIsCalled = unSubscribeIsCalled;
     }
 }
