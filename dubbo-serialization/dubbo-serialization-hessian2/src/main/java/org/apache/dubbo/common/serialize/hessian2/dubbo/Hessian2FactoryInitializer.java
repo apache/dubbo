@@ -16,7 +16,6 @@
  */
 package org.apache.dubbo.common.serialize.hessian2.dubbo;
 
-import org.apache.dubbo.common.config.ConfigurationUtils;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
@@ -34,7 +33,7 @@ public interface Hessian2FactoryInitializer {
     SerializerFactory getSerializerFactory();
 
     static Hessian2FactoryInitializer getInstance() {
-        String whitelist = ConfigurationUtils.getProperty(WHITELIST);
+        String whitelist = System.getProperty(WHITELIST);
         if (StringUtils.isNotEmpty(whitelist)) {
             return loader.getExtension("whitelist");
         }

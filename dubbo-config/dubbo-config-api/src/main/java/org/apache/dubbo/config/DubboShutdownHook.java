@@ -19,7 +19,6 @@ package org.apache.dubbo.config;
 import org.apache.dubbo.common.lang.ShutdownHookCallbacks;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -57,8 +56,7 @@ public class DubboShutdownHook extends Thread {
 
     @Override
     public void run() {
-        String disableShutdownHookValue = (String) ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration()
-            .getProperty(ConfigKeys.DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK, "false");
+        String disableShutdownHookValue = System.getProperty(ConfigKeys.DUBBO_LIFECYCLE_DISABLE_SHUTDOWN_HOOK, "false");
         if (Boolean.parseBoolean(disableShutdownHookValue)) {
             if (logger.isWarnEnabled()) {
                 logger.warn("Shutdown hook is disabled, please shutdown dubbo services by qos manually");

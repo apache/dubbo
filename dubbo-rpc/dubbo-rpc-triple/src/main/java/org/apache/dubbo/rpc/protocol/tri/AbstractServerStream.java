@@ -86,6 +86,7 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     private static ProviderModel lookupProviderModel(URL url) {
+        // TODO: fetch from FrameworkModel
         ServiceRepository repo = ApplicationModel.defaultModel().getApplicationServiceRepository();
         final ProviderModel model = repo.lookupExportedService(url.getServiceKey());
         if (model != null) {

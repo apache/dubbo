@@ -120,6 +120,16 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
         this.metadataInfos = new ConcurrentHashMap<>();
     }
 
+    /**
+     * Gets the current Dubbo Service name
+     *
+     * @return non-null
+     */
+    @Override
+    public String serviceName() {
+        return ApplicationModel.ofNullable(applicationModel).getApplicationName();
+    }
+
     @Override
     public void setApplicationModel(ApplicationModel applicationModel) {
         this.applicationModel = applicationModel;
@@ -305,7 +315,7 @@ public class InMemoryWritableMetadataService implements WritableMetadataService,
 
     public void blockUntilUpdated() {
         try {
-            metadataSemaphore.tryAcquire(ConfigurationUtils.get(METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
+            metadataSemaphore.tryAcquire(ConfigurationUtils.get(applicationModel, METADATA_PUBLISH_DELAY_KEY, DEFAULT_METADATA_PUBLISH_DELAY) * 100L, TimeUnit.MILLISECONDS);
             metadataSemaphore.drainPermits();
             updateLock.writeLock().lock();
         } catch (InterruptedException e) {

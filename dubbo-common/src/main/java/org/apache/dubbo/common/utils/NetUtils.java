@@ -22,6 +22,7 @@ import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
+import org.apache.dubbo.rpc.model.ScopeModel;
 
 import java.io.IOException;
 import java.net.Inet4Address;
@@ -236,8 +237,8 @@ public class NetUtils {
         return host;
     }
 
-    public static String getIpByConfig() {
-        String configIp = ConfigurationUtils.getProperty(DUBBO_IP_TO_BIND);
+    public static String getIpByConfig(ScopeModel scopeModel) {
+        String configIp = ConfigurationUtils.getProperty(scopeModel, DUBBO_IP_TO_BIND);
         if (configIp != null) {
             return configIp;
         }

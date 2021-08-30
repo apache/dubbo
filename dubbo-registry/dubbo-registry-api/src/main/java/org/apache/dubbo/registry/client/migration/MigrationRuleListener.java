@@ -108,7 +108,7 @@ public class MigrationRuleListener implements RegistryProtocolListener, Configur
 
     private int getDelay() {
         int delay = 60000;
-        String delayStr = ConfigurationUtils.getProperty(MIGRATION_DELAY_KEY);
+        String delayStr = ConfigurationUtils.getProperty(applicationModel, MIGRATION_DELAY_KEY);
         if (StringUtils.isEmpty(delayStr)) {
             return delay;
         }

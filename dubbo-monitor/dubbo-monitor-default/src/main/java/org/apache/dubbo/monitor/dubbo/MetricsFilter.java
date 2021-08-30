@@ -31,6 +31,8 @@ import org.apache.dubbo.rpc.Invoker;
 import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.Result;
 import org.apache.dubbo.rpc.RpcException;
+import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 import org.apache.dubbo.rpc.support.RpcUtils;
 
 import com.alibaba.fastjson.JSON;
@@ -68,13 +70,19 @@ import static org.apache.dubbo.monitor.Constants.DUBBO_PROVIDER_METHOD;
 import static org.apache.dubbo.monitor.Constants.METHOD;
 import static org.apache.dubbo.monitor.Constants.SERVICE;
 
-public class MetricsFilter implements Filter, ExtensionAccessorAware {
+public class MetricsFilter implements Filter, ExtensionAccessorAware, ScopeModelAware {
 
     private static final Logger logger = LoggerFactory.getLogger(MetricsFilter.class);
     protected static volatile AtomicBoolean exported = new AtomicBoolean(false);
     private Integer port;
     private String protocolName;
     private ExtensionAccessor extensionAccessor;
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
@@ -243,7 +251,7 @@ public class MetricsFilter implements Filter, ExtensionAccessorAware {
 
             @Override
             public URL getUrl() {
-                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig() + ":" + port + "/" + MetricsService.class.getName());
+                return URL.valueOf(protocolName + "://" + NetUtils.getIpByConfig(applicationModel) + ":" + port + "/" + MetricsService.class.getName());
             }
 
             @Override

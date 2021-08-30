@@ -72,6 +72,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
 
         GrpcRemotingServer grpcServer = (GrpcRemotingServer) protocolServer.getRemotingServer();
 
+        // TODO: fetch from FrameworkModel
         ServiceRepository serviceRepository = ApplicationModel.defaultModel().getApplicationServiceRepository();
         ProviderModel providerModel = serviceRepository.lookupExportedService(url.getServiceKey());
         if (providerModel == null) {
@@ -123,7 +124,7 @@ public class GrpcProtocol extends AbstractProxyProtocol {
                     channel,
                     GrpcOptionsUtils.buildCallOptions(url),
                     url,
-                    ApplicationModel.defaultModel().getConsumerModel(url.getServiceKey()).getReferenceConfig()
+                    url.getServiceModel().getReferenceConfig()
             );
             final Invoker<T> target = proxyFactory.getInvoker(stub, type, url);
             GrpcInvoker<T> grpcInvoker = new GrpcInvoker<>(type, url, target, channel);

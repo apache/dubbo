@@ -29,6 +29,7 @@ import org.apache.dubbo.common.utils.NamedThreadFactory;
 import org.apache.dubbo.config.ConsumerConfig;
 import org.apache.dubbo.config.ProviderConfig;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ import static org.apache.dubbo.common.constants.CommonConstants.THREADS_KEY;
 /**
  * Consider implementing {@code Licycle} to enable executors shutdown when the process stops.
  */
-public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware {
+public class DefaultExecutorRepository implements ExecutorRepository, ExtensionAccessorAware, ScopeModelAware {
     private static final Logger logger = LoggerFactory.getLogger(DefaultExecutorRepository.class);
 
     private int DEFAULT_SCHEDULER_SIZE = Runtime.getRuntime().availableProcessors();
@@ -81,6 +82,8 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
 
     private static final Object LOCK = new Object();
     private ExtensionAccessor extensionAccessor;
+
+    private ApplicationModel applicationModel;
 
     public DefaultExecutorRepository() {
         for (int i = 0; i < DEFAULT_SCHEDULER_SIZE; i++) {
@@ -230,7 +233,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getExportThreadNum() {
-        List<Integer> threadNum = ApplicationModel.defaultModel().getApplicationConfigManager().getProviders()
+        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getApplicationConfigManager().getProviders()
             .stream()
             .map(ProviderConfig::getExportThreadNum)
             .filter(k -> k != null && k > 0)
@@ -277,7 +280,7 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     }
 
     private Integer getReferThreadNum() {
-        List<Integer> threadNum = ApplicationModel.defaultModel().getApplicationConfigManager().getConsumers()
+        List<Integer> threadNum = ApplicationModel.ofNullable(applicationModel).getApplicationConfigManager().getConsumers()
             .stream()
             .map(ConsumerConfig::getReferThreadNum)
             .filter(k -> k != null && k > 0)
@@ -368,5 +371,10 @@ public class DefaultExecutorRepository implements ExecutorRepository, ExtensionA
     @Override
     public void setExtensionAccessor(ExtensionAccessor extensionAccessor) {
         this.extensionAccessor = extensionAccessor;
+    }
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
     }
 }

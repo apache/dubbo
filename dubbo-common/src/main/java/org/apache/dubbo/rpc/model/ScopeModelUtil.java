@@ -27,8 +27,9 @@ public class ScopeModelUtil {
         }
         if (scopeModel instanceof ModuleModel) {
             return (ModuleModel) scopeModel;
+        } else {
+            throw new IllegalArgumentException("Unable to get ModuleModel from" + scopeModel);
         }
-        return null;
     }
 
     public static ApplicationModel getApplicationModel(ScopeModel scopeModel) {
@@ -40,8 +41,9 @@ public class ScopeModelUtil {
         } else if (scopeModel instanceof ModuleModel) {
             ModuleModel moduleModel = (ModuleModel) scopeModel;
             return moduleModel.getApplicationModel();
+        } else {
+            throw new IllegalArgumentException("Unable to get ApplicationModel from" + scopeModel);
         }
-        return null;
     }
 
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {
@@ -55,8 +57,9 @@ public class ScopeModelUtil {
             return moduleModel.getApplicationModel().getFrameworkModel();
         } else if (scopeModel instanceof FrameworkModel) {
             return (FrameworkModel) scopeModel;
+        } else {
+            throw new IllegalArgumentException("Unable to get FrameworkModel from" + scopeModel);
         }
-        return null;
     }
 
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type, ScopeModel scopeModel) {

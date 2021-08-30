@@ -34,6 +34,7 @@ import org.apache.dubbo.registry.client.metadata.MetadataUtils;
 import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModelAware;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -232,7 +233,7 @@ public abstract class SelfHostMetaServiceDiscovery implements ServiceDiscovery, 
             // refer from MetadataUtils, this proxy is different from the one used to refer exportedURL
             MetadataService metadataService = MetadataUtils.getMetadataServiceProxy(serviceInstance);
 
-            String consumerId = ApplicationModel.defaultModel().getApplicationName() + NetUtils.getLocalHost();
+            String consumerId = ScopeModelUtil.getApplicationModel(registryURL.getScopeModel()).getApplicationName() + NetUtils.getLocalHost();
             String metadata = metadataService.getAndListenInstanceMetadata(
                     consumerId, metadataString -> {
                         if(logger.isDebugEnabled()) {

@@ -68,6 +68,14 @@ public class ApplicationModel extends ScopeModel {
         postProcessAfterCreated();
     }
 
+    public static ApplicationModel ofNullable(ApplicationModel applicationModel) {
+        if (applicationModel != null) {
+            return applicationModel;
+        } else {
+            return defaultModel();
+        }
+    }
+
     public static ApplicationModel defaultModel() {
         if (defaultInstance == null) {
             synchronized (ApplicationModel.class) {
@@ -102,8 +110,19 @@ public class ApplicationModel extends ScopeModel {
         return defaultModel().getApplicationServiceRepository().getReferredServices();
     }
 
+    public Collection<ConsumerModel> allApplicationConsumerModels() {
+        // TODO: aggregate from sub modules
+        return defaultModel().getApplicationServiceRepository().getReferredServices();
+    }
+
+
     @Deprecated
     public static Collection<ProviderModel> allProviderModels() {
+        return defaultModel().getApplicationServiceRepository().getExportedServices();
+    }
+
+    public Collection<ProviderModel> allApplicationProviderModels() {
+        // TODO: aggregate from sub modules
         return defaultModel().getApplicationServiceRepository().getExportedServices();
     }
 
@@ -225,4 +244,15 @@ public class ApplicationModel extends ScopeModel {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ApplicationModel{" +
+            "moduleModels=" + moduleModels +
+            ", initFlag=" + initFlag +
+            ", environment=" + environment +
+            ", configManager=" + configManager +
+            ", serviceRepository=" + serviceRepository +
+            ", frameworkModel=" + frameworkModel +
+            '}';
+    }
 }

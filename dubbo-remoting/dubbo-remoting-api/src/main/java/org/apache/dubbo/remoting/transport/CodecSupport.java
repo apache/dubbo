@@ -158,6 +158,7 @@ public class CodecSupport {
     }
 
     public static void checkSerialization(String path, String version, Byte id) throws IOException {
+        // TODO: fetch from FrameworkModel
         ServiceRepository repository = ApplicationModel.defaultModel().getApplicationServiceRepository();
         Set<URL> urls = repository.lookupRegisteredProviderUrlsWithoutGroup(keyWithoutGroup(path, version));
         if (CollectionUtils.isEmpty(urls)) {

@@ -19,7 +19,7 @@ package org.apache.dubbo.config.utils;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.config.ReferenceConfigBase;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.service.Destroyable;
 
 import java.util.ArrayList;
@@ -180,7 +180,7 @@ public class ReferenceConfigCache {
             return;
         }
 
-        ApplicationModel.defaultModel().getApplicationConfigManager().removeConfig(rc);
+        ScopeModelUtil.getApplicationModel(rc.getScopeModel()).getApplicationConfigManager().removeConfig(rc);
         rc.destroy();
 
         Map<String, Object> proxiesOftype = proxies.get(type);
@@ -222,7 +222,7 @@ public class ReferenceConfigCache {
 
         referredReferences.forEach((_k, referenceConfig) -> {
             referenceConfig.destroy();
-            ApplicationModel.defaultModel().getApplicationConfigManager().removeConfig(referenceConfig);
+            ScopeModelUtil.getApplicationModel(referenceConfig.getScopeModel()).getApplicationConfigManager().removeConfig(referenceConfig);
         });
 
         proxies.forEach((_type, proxiesOfType) -> {

@@ -168,7 +168,7 @@ public class MigrationRule {
             step = MigrationStep.APPLICATION_FIRST;
             step = Enum.valueOf(MigrationStep.class,
                 consumerURL.getParameter(MIGRATION_STEP_KEY,
-                    ConfigurationUtils.getCachedDynamicProperty(DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
+                    ConfigurationUtils.getCachedDynamicProperty(consumerURL.getScopeModel(), DUBBO_SERVICEDISCOVERY_MIGRATION, step.name())));
         }
 
         return step;

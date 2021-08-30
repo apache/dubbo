@@ -646,7 +646,7 @@ public class DubboProtocol extends AbstractProtocol {
                     logger.info("Close dubbo server: " + server.getLocalAddress());
                 }
 
-                server.close(ConfigurationUtils.getServerShutdownTimeout());
+                server.close(ConfigurationUtils.getServerShutdownTimeout(server.getUrl().getScopeModel()));
 
             } catch (Throwable t) {
                 logger.warn(t.getMessage(), t);
@@ -686,7 +686,7 @@ public class DubboProtocol extends AbstractProtocol {
                 logger.info("Close dubbo connect: " + client.getLocalAddress() + "-->" + client.getRemoteAddress());
             }
 
-            client.close(ConfigurationUtils.getServerShutdownTimeout());
+            client.close(ConfigurationUtils.getServerShutdownTimeout(client.getUrl().getScopeModel()));
 
             // TODO
             /*

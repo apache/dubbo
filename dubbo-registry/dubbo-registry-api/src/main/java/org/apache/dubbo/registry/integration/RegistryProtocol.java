@@ -861,7 +861,7 @@ public class RegistryProtocol implements Protocol, ScopeModelAware {
 
             executor.submit(() -> {
                 try {
-                    int timeout = ConfigurationUtils.getServerShutdownTimeout();
+                    int timeout = ConfigurationUtils.getServerShutdownTimeout(subscribeUrl.getScopeModel());
                     if (timeout > 0) {
                         logger.info("Waiting " + timeout + "ms for registry to notify all consumers before unexport. " +
                             "Usually, this is called when you use dubbo API");

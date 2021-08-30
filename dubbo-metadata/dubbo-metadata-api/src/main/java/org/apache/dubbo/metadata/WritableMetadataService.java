@@ -20,7 +20,6 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.extension.ExtensionScope;
 import org.apache.dubbo.common.extension.SPI;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ScopeModel;
 import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
@@ -35,15 +34,6 @@ import java.util.Set;
  */
 @SPI(value = "default", scope = ExtensionScope.APPLICATION)
 public interface WritableMetadataService extends MetadataService {
-    /**
-     * Gets the current Dubbo Service name
-     *
-     * @return non-null
-     */
-    @Override
-    default String serviceName() {
-        return ApplicationModel.defaultModel().getApplicationName();
-    }
 
     /**
      * Exports a {@link URL}

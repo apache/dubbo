@@ -22,7 +22,7 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.client.event.ServiceInstancesChangedEvent;
 import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import org.apache.curator.framework.api.CuratorWatcher;
 import org.apache.zookeeper.WatchedEvent;
@@ -65,10 +65,11 @@ public class ZookeeperServiceDiscoveryChangeWatcher implements CuratorWatcher {
         this.serviceName = serviceName;
         this.path = path;
         this.latch = latch;
-        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(), ApplicationModel.defaultModel().getApplicationExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
+        this.notifier = new RegistryNotifier(zookeeperServiceDiscovery.getDelay(),
+            ScopeModelUtil.getApplicationModel(zookeeperServiceDiscovery.getUrl().getScopeModel()).getApplicationExecutorRepository().getServiceDiscoveryAddressNotificationExecutor()) {
             @Override
             protected void doNotify(Object rawAddresses) {
-                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent)rawAddresses));
+                listeners.forEach(listener -> listener.onEvent((ServiceInstancesChangedEvent) rawAddresses));
             }
         };
     }

@@ -33,7 +33,6 @@ import org.apache.dubbo.rpc.RpcException;
 import org.apache.dubbo.rpc.cluster.Cluster;
 import org.apache.dubbo.rpc.cluster.ClusterInvoker;
 import org.apache.dubbo.rpc.cluster.Directory;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.util.Map;
@@ -56,6 +55,7 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
     private Class<T> type;
     private RegistryProtocol registryProtocol;
     private MigrationRuleListener migrationRuleListener;
+    private ConsumerModel consumerModel;
 
     private volatile ClusterInvoker<T> invoker;
     private volatile ClusterInvoker<T> serviceDiscoveryInvoker;
@@ -89,8 +89,8 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         this.type = type;
         this.url = url;
         this.consumerUrl = consumerUrl;
+        this.consumerModel = (ConsumerModel) consumerUrl.getServiceModel();
 
-        ConsumerModel consumerModel = ApplicationModel.defaultModel().getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;
@@ -313,7 +313,6 @@ public class MigrationInvoker<T> implements MigrationClusterInvoker<T> {
         if (serviceDiscoveryInvoker != null) {
             serviceDiscoveryInvoker.destroy();
         }
-        ConsumerModel consumerModel = ApplicationModel.defaultModel().getConsumerModel(consumerUrl.getServiceKey());
         if (consumerModel != null) {
             Object object = consumerModel.getServiceMetadata().getAttribute("currentClusterInvoker");
             Map<Registry, MigrationInvoker<?>> invokerMap;

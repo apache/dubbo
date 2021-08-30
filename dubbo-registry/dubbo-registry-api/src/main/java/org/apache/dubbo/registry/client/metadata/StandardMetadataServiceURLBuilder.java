@@ -25,6 +25,7 @@ import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.remoting.Constants;
 import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelAware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,11 +49,18 @@ import static org.apache.dubbo.registry.client.metadata.ServiceInstanceMetadataU
  * @see MetadataService
  * @since 2.7.5
  */
-public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder {
+public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuilder, ScopeModelAware {
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String NAME = "standard";
+
+    private ApplicationModel applicationModel;
+
+    @Override
+    public void setApplicationModel(ApplicationModel applicationModel) {
+        this.applicationModel = applicationModel;
+    }
 
     /**
      * Build the {@link URL urls} from {@link ServiceInstance#getMetadata() the metadata} of {@link ServiceInstance}
@@ -88,7 +96,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPort(port)
                 .setProtocol(protocol)
                 .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(SIDE_KEY, CONSUMER);
 
         // add parameters
@@ -120,7 +128,7 @@ public class StandardMetadataServiceURLBuilder implements MetadataServiceURLBuil
                 .setPort(port)
                 .setProtocol(DUBBO_PROTOCOL)
                 .setPath(MetadataService.class.getName())
-                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
+                .addParameter(TIMEOUT_KEY, ConfigurationUtils.get(applicationModel, METADATA_PROXY_TIMEOUT_KEY, DEFAULT_METADATA_TIMEOUT_VALUE))
                 .addParameter(Constants.RECONNECT_KEY, false)
                 .addParameter(SIDE_KEY, CONSUMER)
                 .addParameter(GROUP_KEY, serviceName)

@@ -22,7 +22,7 @@ import org.apache.dubbo.common.threadpool.ThreadPool;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.config.SslConfig;
 import org.apache.dubbo.config.context.ConfigManager;
-import org.apache.dubbo.rpc.model.ApplicationModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ClientInterceptor;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.GrpcConfigurator;
 import org.apache.dubbo.rpc.protocol.grpc.interceptors.ServerInterceptor;
@@ -153,7 +153,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildServerSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
         SslContextBuilder sslClientContextBuilder = null;
@@ -183,7 +183,7 @@ public class GrpcOptionsUtils {
     }
 
     private static SslContext buildClientSslContext(URL url) {
-        ConfigManager globalConfigManager = ApplicationModel.defaultModel().getApplicationConfigManager();
+        ConfigManager globalConfigManager = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getApplicationConfigManager();
         SslConfig sslConfig = globalConfigManager.getSsl().orElseThrow(() -> new IllegalStateException("Ssl enabled, but no ssl cert information provided!"));
 
 

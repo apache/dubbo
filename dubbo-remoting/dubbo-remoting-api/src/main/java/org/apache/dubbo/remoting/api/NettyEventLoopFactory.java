@@ -16,9 +16,7 @@
  */
 package org.apache.dubbo.remoting.api;
 
-import org.apache.dubbo.common.config.Configuration;
 import org.apache.dubbo.remoting.Constants;
-import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
@@ -55,9 +53,8 @@ public class NettyEventLoopFactory {
     }
 
     private static boolean shouldEpoll() {
-        Configuration configuration = ApplicationModel.defaultModel().getApplicationEnvironment().getConfiguration();
-        if (configuration.getBoolean("netty.epoll.enable", false)) {
-            String osName = configuration.getString("os.name");
+        if (Boolean.parseBoolean(System.getProperty("netty.epoll.enable", "false"))) {
+            String osName = System.getProperty("os.name");
             return osName.toLowerCase().contains("linux") && Epoll.isAvailable();
         }
 
