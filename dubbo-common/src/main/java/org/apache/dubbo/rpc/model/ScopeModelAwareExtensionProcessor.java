@@ -34,7 +34,7 @@ public class ScopeModelAwareExtensionProcessor implements ExtensionPostProcessor
             return;
         }
 
-        // NOTE: Do not use ScopeModelUtil.getXxxModel() here, because cannot create a new model or use the default application/module model here.
+        // NOTE: Do not create a new model or use the default application/module model here!
         // Only the visible and only matching scope model can be injected, that is, module -> application -> framework.
         // The converse is a one-to-many relationship and cannot be injected.
         // One framework may have multiple applications, and one application may have multiple modules.

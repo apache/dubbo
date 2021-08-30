@@ -22,29 +22,32 @@ import org.apache.dubbo.common.extension.SPI;
 public class ScopeModelUtil {
 
     public static ModuleModel getModuleModel(ScopeModel scopeModel) {
-        if (scopeModel instanceof ModuleModel) {
-            return (ModuleModel) scopeModel;
-        }
         if (scopeModel == null) {
             return ApplicationModel.defaultModel().getDefaultModule();
+        }
+        if (scopeModel instanceof ModuleModel) {
+            return (ModuleModel) scopeModel;
         }
         return null;
     }
 
     public static ApplicationModel getApplicationModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            return ApplicationModel.defaultModel();
+        }
         if (scopeModel instanceof ApplicationModel) {
             return (ApplicationModel) scopeModel;
         } else if (scopeModel instanceof ModuleModel) {
             ModuleModel moduleModel = (ModuleModel) scopeModel;
             return moduleModel.getApplicationModel();
         }
-        if (scopeModel == null) {
-            return ApplicationModel.defaultModel();
-        }
         return null;
     }
 
     public static FrameworkModel getFrameworkModel(ScopeModel scopeModel) {
+        if (scopeModel == null) {
+            return FrameworkModel.defaultModel();
+        }
         if (scopeModel instanceof ApplicationModel) {
             return ((ApplicationModel) scopeModel).getFrameworkModel();
         } else if (scopeModel instanceof ModuleModel) {
@@ -52,9 +55,6 @@ public class ScopeModelUtil {
             return moduleModel.getApplicationModel().getFrameworkModel();
         } else if (scopeModel instanceof FrameworkModel) {
             return (FrameworkModel) scopeModel;
-        }
-        if (scopeModel == null) {
-            return FrameworkModel.defaultModel();
         }
         return null;
     }
