@@ -30,9 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
-import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
-
 /**
  * AccessLogData is a container for log event data. In internally uses map and store each filed of log as value. It
  * does not generate any dynamic value e.g. time stamp, local jmv machine host address etc. It does not allow any null
@@ -271,8 +268,8 @@ public final class AccessLogData {
     public void buildAccessLogData(Invoker<?> invoker, Invocation inv) {
         setServiceName(invoker.getInterface().getName());
         setMethodName(inv.getMethodName());
-        setVersion(invoker.getUrl().getParameter(VERSION_KEY));
-        setGroup(invoker.getUrl().getParameter(GROUP_KEY));
+        setVersion(invoker.getUrl().getVersion());
+        setGroup(invoker.getUrl().getGroup());
         setInvocationTime(new Date());
         setTypes(inv.getParameterTypes());
         setArguments(inv.getArguments());

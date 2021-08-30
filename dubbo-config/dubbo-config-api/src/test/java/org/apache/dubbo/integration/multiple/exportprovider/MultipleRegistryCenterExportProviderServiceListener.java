@@ -14,22 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.integration.multiple.exportprovider;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.ServiceListener;
+import org.apache.dubbo.integration.AbstractRegistryCenterServiceListener;
 
 /**
- * Application level router, "application.condition-router"
+ * This implementation of {@link ServiceListener} is to record exported services with injvm protocol in single registry center.
  */
-public class AppRouter extends ListenableRouter {
-    public static final String NAME = "APP_ROUTER";
-    /**
-     * AppRouter should after ServiceRouter
-     */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
+public class MultipleRegistryCenterExportProviderServiceListener extends AbstractRegistryCenterServiceListener {
 
-    public AppRouter(URL url) {
-        super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Class<?> getInterface() {
+        return MultipleRegistryCenterExportProviderService.class;
     }
 }

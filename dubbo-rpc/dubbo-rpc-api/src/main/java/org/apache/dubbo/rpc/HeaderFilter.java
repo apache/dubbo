@@ -14,22 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.rpc;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.extension.SPI;
 
-/**
- * Application level router, "application.condition-router"
- */
-public class AppRouter extends ListenableRouter {
-    public static final String NAME = "APP_ROUTER";
-    /**
-     * AppRouter should after ServiceRouter
-     */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
+@SPI
+public interface HeaderFilter {
 
-    public AppRouter(URL url) {
-        super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
-    }
+    RpcInvocation invoke(Invoker<?> invoker, RpcInvocation invocation) throws RpcException;
 }

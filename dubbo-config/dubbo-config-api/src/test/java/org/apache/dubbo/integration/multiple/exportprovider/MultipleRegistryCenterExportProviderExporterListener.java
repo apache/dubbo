@@ -14,22 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
+package org.apache.dubbo.integration.multiple.exportprovider;
 
-import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.constants.CommonConstants;
+import org.apache.dubbo.common.extension.Activate;
+import org.apache.dubbo.integration.AbstractRegistryCenterExporterListener;
 
-/**
- * Application level router, "application.condition-router"
- */
-public class AppRouter extends ListenableRouter {
-    public static final String NAME = "APP_ROUTER";
+@Activate(group = CommonConstants.PROVIDER, order = 1000)
+public class MultipleRegistryCenterExportProviderExporterListener extends AbstractRegistryCenterExporterListener {
+
     /**
-     * AppRouter should after ServiceRouter
+     * Returns the interface of exported service.
      */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
-
-    public AppRouter(URL url) {
-        super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
+    @Override
+    protected Class<?> getInterface() {
+        return MultipleRegistryCenterExportProviderService.class;
     }
 }

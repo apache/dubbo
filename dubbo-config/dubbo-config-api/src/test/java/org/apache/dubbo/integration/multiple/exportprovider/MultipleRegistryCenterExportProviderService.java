@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.dubbo.rpc.cluster.router.condition.config;
-
-import org.apache.dubbo.common.URL;
+package org.apache.dubbo.integration.multiple.exportprovider;
 
 /**
- * Application level router, "application.condition-router"
+ * This interface is used to check if the exported provider works well or not in multiple registry center.
  */
-public class AppRouter extends ListenableRouter {
-    public static final String NAME = "APP_ROUTER";
-    /**
-     * AppRouter should after ServiceRouter
-     */
-    private static final int APP_ROUTER_DEFAULT_PRIORITY = 150;
+public interface MultipleRegistryCenterExportProviderService {
 
-    public AppRouter(URL url) {
-        super(url, url.getApplication());
-        this.setPriority(APP_ROUTER_DEFAULT_PRIORITY);
-    }
+    /**
+     * The simple method for testing.
+     */
+    String hello(String name);
 }
