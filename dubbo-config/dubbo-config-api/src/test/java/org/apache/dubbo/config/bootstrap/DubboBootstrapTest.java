@@ -84,6 +84,8 @@ public class DubboBootstrapTest {
     public static void setUp(@TempDir Path folder) {
         DubboBootstrap.reset();
         try {
+            int zkServerPort = NetUtils.getAvailablePort(NetUtils.getRandomPort());
+            server = new TestingServer(zkServerPort, true);
             server.start();
         } catch (Exception e) {
             e.printStackTrace();
