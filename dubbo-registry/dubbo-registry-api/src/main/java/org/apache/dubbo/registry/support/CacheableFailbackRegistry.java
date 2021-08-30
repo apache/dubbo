@@ -32,6 +32,7 @@ import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.common.utils.UrlUtils;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -82,7 +83,7 @@ public abstract class CacheableFailbackRegistry extends FailbackRegistry {
         extraParameters = new HashMap<>(8);
         extraParameters.put(CHECK_KEY, String.valueOf(false));
 
-        cacheRemovalScheduler = url.getScopeModel().getExtensionLoader(ExecutorRepository.class).getDefaultExtension().nextScheduledExecutor();
+        cacheRemovalScheduler = ScopeModelUtil.getApplicationModel(url.getScopeModel()).getExtensionLoader(ExecutorRepository.class).getDefaultExtension().nextScheduledExecutor();
         cacheRemovalTaskIntervalInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_TASK_INTERVAL, 2 * 60 * 1000);
         cacheClearWaitingThresholdInMillis = getIntConfig(url.getScopeModel(), CACHE_CLEAR_WAITING_THRESHOLD, 5 * 60 * 1000);
     }
