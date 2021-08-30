@@ -31,6 +31,7 @@ import org.apache.dubbo.common.utils.LRUCache;
 import org.apache.dubbo.common.utils.NetUtils;
 import org.apache.dubbo.common.utils.StringUtils;
 import org.apache.dubbo.rpc.model.ScopeModel;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -548,12 +549,21 @@ class URL implements Serializable {
     }
 
     public URL setScopeModel(ScopeModel scopeModel) {
-        this.attributes.put(CommonConstants.SCOPE_MODEL, scopeModel);
+        putAttribute(CommonConstants.SCOPE_MODEL, scopeModel);
         return this;
     }
 
     public ScopeModel getScopeModel() {
-        return (ScopeModel) this.attributes.get(CommonConstants.SCOPE_MODEL);
+        return (ScopeModel) getAttribute(CommonConstants.SCOPE_MODEL);
+    }
+
+    public URL setServiceModel(ServiceModel serviceModel) {
+        putAttribute(CommonConstants.SERVICE_MODEL, serviceModel);
+        return this;
+    }
+
+    public ServiceModel getServiceModel() {
+        return (ServiceModel) getAttribute(CommonConstants.SERVICE_MODEL);
     }
 
     protected Map<String, Number> getNumbers() {

@@ -112,11 +112,10 @@ public abstract class AbstractServerStream extends AbstractStream implements Str
     }
 
     protected RpcInvocation buildInvocation(Metadata metadata) {
-        RpcInvocation inv = new RpcInvocation();
-        inv.setServiceName(getServiceDescriptor().getServiceName());
+        RpcInvocation inv = new RpcInvocation(getUrl().getServiceModel(),
+            getMethodName(), getServiceDescriptor().getServiceName(),
+            getUrl().getProtocolServiceKey(), getMethodDescriptor().getParameterClasses(), new Object[0]);
         inv.setTargetServiceUniqueName(getUrl().getServiceKey());
-        inv.setMethodName(getMethodDescriptor().getMethodName());
-        inv.setParameterTypes(getMethodDescriptor().getParameterClasses());
         inv.setReturnTypes(getMethodDescriptor().getReturnTypes());
 
         final Map<String, Object> attachments = parseMetadataToAttachmentMap(metadata);

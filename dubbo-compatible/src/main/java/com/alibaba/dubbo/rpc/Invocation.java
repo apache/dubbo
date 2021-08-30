@@ -17,6 +17,8 @@
 
 package com.alibaba.dubbo.rpc;
 
+import org.apache.dubbo.rpc.model.ServiceModel;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -71,6 +73,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
 
     @Override
     default String getAttachment(String key, String defaultValue) {
+        return null;
+    }
+
+    @Override
+    default ServiceModel getServiceModel() {
         return null;
     }
 
@@ -155,6 +162,11 @@ public interface Invocation extends org.apache.dubbo.rpc.Invocation {
         @Override
         public Invoker<?> getInvoker() {
             return new Invoker.CompatibleInvoker(delegate.getInvoker());
+        }
+
+        @Override
+        public ServiceModel getServiceModel() {
+            return delegate.getServiceModel();
         }
 
         @Override

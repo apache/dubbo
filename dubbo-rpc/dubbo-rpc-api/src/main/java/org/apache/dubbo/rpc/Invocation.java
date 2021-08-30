@@ -17,6 +17,7 @@
 package org.apache.dubbo.rpc;
 
 import org.apache.dubbo.common.Experimental;
+import org.apache.dubbo.rpc.model.ServiceModel;
 
 import java.util.Map;
 import java.util.stream.Stream;
@@ -137,6 +138,8 @@ public interface Invocation {
      * @transient
      */
     Invoker<?> getInvoker();
+
+    ServiceModel getServiceModel();
 
     Object put(Object key, Object value);
 

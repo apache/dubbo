@@ -176,7 +176,7 @@ public class GenericFilter implements Filter, Filter.Listener {
                 }
 
                 RpcInvocation rpcInvocation =
-                        new RpcInvocation(method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args,
+                        new RpcInvocation(invoker.getUrl().getServiceModel(), method, invoker.getInterface().getName(), invoker.getUrl().getProtocolServiceKey(), args,
                                 inv.getObjectAttachments(), inv.getAttributes());
                 rpcInvocation.setInvoker(inv.getInvoker());
                 rpcInvocation.setTargetServiceUniqueName(inv.getTargetServiceUniqueName());
