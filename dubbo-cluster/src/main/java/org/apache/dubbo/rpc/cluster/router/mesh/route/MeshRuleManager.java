@@ -53,7 +53,7 @@ public final class MeshRuleManager {
             return;
         }
 
-        if(configuration != null) {
+        if (configuration != null) {
             try {
                 String rawConfig = configuration.getConfig(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, 5000L);
                 if (rawConfig != null) {
@@ -67,12 +67,24 @@ public final class MeshRuleManager {
         }
 
         for (MeshEnvListener envListener : envListeners) {
-            if(envListener.isEnable()) {
+            if (envListener.isEnable()) {
                 envListener.onSubscribe(app, meshAppRuleListener);
             }
         }
 
         APP_RULE_LISTENERS.put(app, meshAppRuleListener);
+    }
+
+    public static void unsubscribeAppRule(String app) {
+        DynamicConfiguration configuration = ApplicationModel.getEnvironment().getDynamicConfiguration()
+            .orElse(null);
+
+        String appRuleDataId = app + MESH_RULE_DATA_ID_SUFFIX;
+        MeshAppRuleListener meshAppRuleListener = APP_RULE_LISTENERS.get(app);
+
+        if (meshAppRuleListener != null && configuration != null) {
+            configuration.removeListener(appRuleDataId, DynamicConfiguration.DEFAULT_GROUP, meshAppRuleListener);
+        }
     }
 
     public static void register(String app, MeshRuleRouter subscriber) {
