@@ -66,11 +66,11 @@ public class UnaryServerStream extends AbstractServerStream implements Stream {
 
         public void invoke() {
 
-            final RpcInvocation invocation;
+            RpcInvocation invocation;
             try {
+                invocation = buildInvocation(getHeaders());
                 final Object[] arguments = deserializeRequest(getData());
                 if (arguments != null) {
-                    invocation = buildInvocation(getHeaders());
                     invocation.setArguments(arguments);
                 } else {
                     return;

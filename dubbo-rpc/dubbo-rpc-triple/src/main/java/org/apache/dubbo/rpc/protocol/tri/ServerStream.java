@@ -54,8 +54,8 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onError(Throwable throwable) {
             final GrpcStatus status = GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                    .withCause(throwable)
-                    .withDescription("Biz exception");
+                .withCause(throwable)
+                .withDescription("Biz exception");
             transportError(status);
         }
 
@@ -83,27 +83,31 @@ public class ServerStream extends AbstractServerStream implements Stream {
                 subscribe((StreamObserver<Object>) result.getValue());
             } catch (Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Failed to create server's observer"));
+                    .withDescription("Failed to create server's observer"));
             }
         }
 
         @Override
         public void onData(byte[] in, boolean endStream, OperationHandler handler) {
             try {
-                final Object[] arguments = deserializeRequest(in);
-                if (arguments != null) {
-                    if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
-                        final RpcInvocation inv = buildInvocation(getHeaders());
+                if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
+                    RpcInvocation inv = buildInvocation(getHeaders());
+                    final Object[] arguments = deserializeRequest(in);
+                    if (arguments != null) {
                         inv.setArguments(new Object[]{arguments[0], asStreamObserver()});
                         getInvoker().invoke(inv);
-                    } else {
+                    }
+                } else {
+                    final Object[] arguments = deserializeRequest(in);
+                    if (arguments != null) {
                         getStreamSubscriber().onNext(arguments[0]);
                     }
                 }
-            } catch (Throwable t) {
+            } catch (
+                Throwable t) {
                 transportError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription("Deserialize request failed")
-                        .withCause(t));
+                    .withDescription("Deserialize request failed")
+                    .withCause(t));
             }
         }
 

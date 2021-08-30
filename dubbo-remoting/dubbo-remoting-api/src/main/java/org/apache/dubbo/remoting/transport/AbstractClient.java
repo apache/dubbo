@@ -197,13 +197,13 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             doConnect();
 
             if (!isConnected()) {
-                throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                 + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                 + ", cause: Connect wait timeout: " + getConnectTimeout() + "ms.");
 
             } else {
                 if (logger.isInfoEnabled()) {
-                    logger.info("Successed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+                    logger.info("Successfully connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                                     + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                                     + ", channel is " + this.getChannel());
                 }
@@ -213,7 +213,7 @@ public abstract class AbstractClient extends AbstractEndpoint implements Client 
             throw e;
 
         } catch (Throwable e) {
-            throw new RemotingException(this, "Failed connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
+            throw new RemotingException(this, "Failed to connect to server " + getRemoteAddress() + " from " + getClass().getSimpleName() + " "
                             + NetUtils.getLocalHost() + " using dubbo version " + Version.getVersion()
                             + ", cause: " + e.getMessage(), e);
 

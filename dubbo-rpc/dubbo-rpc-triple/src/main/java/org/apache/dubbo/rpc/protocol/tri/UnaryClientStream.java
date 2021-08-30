@@ -54,9 +54,14 @@ public class UnaryClientStream extends AbstractClientStream implements Stream {
         public void doOnComplete(OperationHandler handler) {
             execute(() -> {
                 try {
-                    final Object resp = deserializeResponse(getData());
+                    AppResponse result;
+                    if (!Void.TYPE.equals(getMethodDescriptor().getReturnClass())) {
+                        final Object resp = deserializeResponse(getData());
+                        result = new AppResponse(resp);
+                    } else {
+                        result = new AppResponse();
+                    }
                     Response response = new Response(getRequest().getId(), TripleConstant.TRI_VERSION);
-                    final AppResponse result = new AppResponse(resp);
                     result.setObjectAttachments(parseMetadataToAttachmentMap(getTrailers()));
                     response.setResult(result);
                     DefaultFuture2.received(getConnection(), response);

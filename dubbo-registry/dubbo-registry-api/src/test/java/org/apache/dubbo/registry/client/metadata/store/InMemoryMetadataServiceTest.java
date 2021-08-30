@@ -1,0 +1,127 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.dubbo.registry.client.metadata.store;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.metadata.MetadataInfo;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import static org.apache.dubbo.common.constants.CommonConstants.APPLICATION_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.INTERFACE_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.PID_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMEOUT_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.TIMESTAMP_KEY;
+import static org.apache.dubbo.common.constants.CommonConstants.VERSION_KEY;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+/**
+ * Construction of {@link org.apache.dubbo.metadata.MetadataInfo} and {@link org.apache.dubbo.metadata.MetadataInfo.ServiceInfo} included.
+ */
+public class InMemoryMetadataServiceTest {
+
+    /**
+     * <ul>
+     *   export url
+     *   <li>normal service</li>
+     *   <li>generic service</li>
+     * </ul>
+     */
+    @Test
+    public void testExport() {
+        InMemoryWritableMetadataService metadataService = new InMemoryWritableMetadataService();
+        // export normal url
+        URL url = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService?" +
+            "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
+            "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService" +
+            "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
+            "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0");
+        metadataService.exportURL(url);
+
+        Map<String, MetadataInfo> metadataInfoMap = metadataService.getMetadataInfos();
+        MetadataInfo defaultMetadataInfo = metadataInfoMap.get(DEFAULT_KEY);
+        assertNotNull(defaultMetadataInfo);
+        assertEquals("demo-provider2", defaultMetadataInfo.getApp());
+        assertEquals(1, defaultMetadataInfo.getServices().size());
+        MetadataInfo.ServiceInfo serviceInfo = defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey());
+        assertNotNull(serviceInfo);
+        assertEquals(url.getServiceKey(), serviceInfo.getServiceKey());
+        assertEquals(url.getProtocolServiceKey(), serviceInfo.getMatchKey());
+        assertNull(serviceInfo.getParams().get(PID_KEY));
+        assertNull(serviceInfo.getParams().get(TIMESTAMP_KEY));
+        assertNotNull(serviceInfo.getParams().get(APPLICATION_KEY));
+        assertNotNull(serviceInfo.getParams().get(INTERFACE_KEY));
+        assertNotNull(serviceInfo.getParams().get("delay"));
+
+        // export normal url again
+        URL url2 = URL.valueOf("dubbo://30.225.21.30:20880/org.apache.dubbo.registry.service.DemoService2?" +
+            "REGISTRY_CLUSTER=registry1&anyhost=true&application=demo-provider2&delay=5000&deprecated=false&dubbo=2.0.2" +
+            "&dynamic=true&generic=false&group=greeting&interface=org.apache.dubbo.registry.service.DemoService2" +
+            "&metadata-type=remote&methods=sayHello&pid=36621&release=&revision=1.0.0&service-name-mapping=true" +
+            "&side=provider&timeout=5000&timestamp=1629970068002&version=1.0.0&params-filter=customized,-excluded");
+        metadataService.exportURL(url2);
+        assertEquals("demo-provider2", defaultMetadataInfo.getApp());
+        assertEquals(2, defaultMetadataInfo.getServices().size());
+        MetadataInfo.ServiceInfo serviceInfo2 = defaultMetadataInfo.getServiceInfo(url2.getProtocolServiceKey());
+        assertNotNull(serviceInfo2);
+        assertEquals(4, serviceInfo2.getParams().size());
+        assertNull(serviceInfo2.getParams().get(INTERFACE_KEY));
+        assertNull(serviceInfo2.getParams().get("delay"));
+        assertNotNull(serviceInfo2.getParams().get(APPLICATION_KEY));
+        assertNotNull(serviceInfo2.getParams().get(VERSION_KEY));
+        assertNotNull(serviceInfo2.getParams().get(GROUP_KEY));
+        assertNotNull(serviceInfo2.getParams().get(TIMEOUT_KEY));
+
+        // repeat the same url
+        metadataService.exportURL(url);
+        // serviceInfo is replaced
+        assertEquals(2, defaultMetadataInfo.getServices().size());
+        assertNotEquals(serviceInfo, defaultMetadataInfo.getServiceInfo(url.getProtocolServiceKey()));
+    }
+
+
+
+    /**
+     * <ul>
+     *   unexport url
+     *   <li>normal service</li>
+     *   <li>generic service</li>
+     * </ul>
+     */
+    @Test
+    public void testUnExport() {
+
+    }
+
+    @Test
+    public void testPublishServiceDefinition() {}
+
+    /**
+     * <p>Test </p>
+     */
+    @Test
+    public void testBlockUntilUpdated() {
+
+    }
+}

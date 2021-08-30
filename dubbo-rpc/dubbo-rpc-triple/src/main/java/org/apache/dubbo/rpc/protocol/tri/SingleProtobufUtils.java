@@ -16,11 +16,21 @@
  */
 package org.apache.dubbo.rpc.protocol.tri;
 
+import com.google.protobuf.BoolValue;
+import com.google.protobuf.BytesValue;
+import com.google.protobuf.DoubleValue;
+import com.google.protobuf.Empty;
+import com.google.protobuf.EnumValue;
 import com.google.protobuf.ExtensionRegistryLite;
+import com.google.protobuf.FloatValue;
+import com.google.protobuf.Int32Value;
+import com.google.protobuf.Int64Value;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
+import com.google.protobuf.StringValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,11 +39,36 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class SingleProtobufSerialization {
+public class SingleProtobufUtils {
     private static final ConcurrentHashMap<Class<?>, Message> instCache = new ConcurrentHashMap<>();
     private static final ExtensionRegistryLite globalRegistry =
-            ExtensionRegistryLite.getEmptyRegistry();
-    private final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> marshallers = new ConcurrentHashMap<>();
+        ExtensionRegistryLite.getEmptyRegistry();
+    private static final ConcurrentMap<Class<?>, SingleMessageMarshaller<?>> marshallers = new ConcurrentHashMap<>();
+
+    static boolean isSupported(Class<?> clazz) {
+        if (clazz == null) {
+            return false;
+        }
+        return MessageLite.class.isAssignableFrom(clazz);
+    }
+
+    static {
+        // Built-in types need to be registered in advance
+        marshaller(Empty.getDefaultInstance());
+        marshaller(BoolValue.getDefaultInstance());
+        marshaller(Int32Value.getDefaultInstance());
+        marshaller(Int64Value.getDefaultInstance());
+        marshaller(FloatValue.getDefaultInstance());
+        marshaller(DoubleValue.getDefaultInstance());
+        marshaller(BytesValue.getDefaultInstance());
+        marshaller(StringValue.getDefaultInstance());
+        marshaller(EnumValue.getDefaultInstance());
+        marshaller(ListValue.getDefaultInstance());
+    }
+
+    public static <T extends MessageLite> void marshaller(T defaultInstance) {
+        marshallers.put(defaultInstance.getClass(), new SingleMessageMarshaller<>(defaultInstance));
+    }
 
     @SuppressWarnings("all")
     public static Message defaultInst(Class<?> clz) {
@@ -56,29 +91,40 @@ public class SingleProtobufSerialization {
         return (Parser<T>) defaultInst.getParserForType();
     }
 
-    public Object deserialize(InputStream in, Class<?> clz) throws IOException {
+
+    public static <T> T deserialize(InputStream in, Class<T> clz) throws IOException {
+        if (!isSupported(clz)) {
+            throw new IllegalArgumentException("This serialization only support google protobuf messages, but the " +
+                "actual input type is :" + clz.getName());
+        }
         try {
-            return getMarshaller(clz).parse(in);
+            return (T) getMarshaller(clz).parse(in);
         } catch (InvalidProtocolBufferException e) {
             throw new IOException(e);
         }
     }
 
-    public void serialize(Object obj, OutputStream os) throws IOException {
+    public static void serialize(Object obj, OutputStream os) throws IOException {
         final MessageLite msg = (MessageLite) obj;
         msg.writeTo(os);
     }
 
-    private SingleMessageMarshaller<?> getMarshaller(Class<?> clz) {
+    private static SingleMessageMarshaller<?> getMarshaller(Class<?> clz) {
         return marshallers.computeIfAbsent(clz, k -> new SingleMessageMarshaller(k));
     }
 
     public static final class SingleMessageMarshaller<T extends MessageLite> {
         private final Parser<T> parser;
+        private final T defaultInstance;
 
         SingleMessageMarshaller(Class<T> clz) {
-            final T inst = (T) defaultInst(clz);
-            this.parser = (Parser<T>) inst.getParserForType();
+            this.defaultInstance = (T) defaultInst(clz);
+            this.parser = (Parser<T>) defaultInstance.getParserForType();
+        }
+
+        SingleMessageMarshaller(T defaultInstance) {
+            this.defaultInstance = defaultInstance;
+            this.parser = (Parser<T>) defaultInstance.getParserForType();
         }
 
         public T parse(InputStream stream) throws InvalidProtocolBufferException {
