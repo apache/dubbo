@@ -287,8 +287,8 @@ class URL implements Serializable {
                 }
             }
         }
-        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null)
-                : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap);
+        return newMap.isEmpty() ? new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), (Map<String, String>) null, url.getAttributes())
+                : new ServiceConfigURL(url.getProtocol(), url.getUsername(), url.getPassword(), url.getHost(), url.getPort(), url.getPath(), newMap, url.getAttributes());
     }
 
     public static String encode(String value) {
