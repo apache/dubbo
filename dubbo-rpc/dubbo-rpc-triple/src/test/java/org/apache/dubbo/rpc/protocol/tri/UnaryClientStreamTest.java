@@ -55,7 +55,7 @@ class UnaryClientStreamTest {
         stream.subscribe(transportObserver);
         // no method descriptor
         Assertions.assertThrows(NullPointerException.class, () -> observer.onNext(inv));
-        Mockito.verify(transportObserver).tryOnMetadata(any(), anyBoolean());
+        Mockito.verify(transportObserver).onMetadata(any(), anyBoolean());
 
         MethodDescriptor md = Mockito.mock(MethodDescriptor.class);
         when(md.isNeedWrap()).thenReturn(true);

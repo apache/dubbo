@@ -44,11 +44,11 @@ public class ServerStream extends AbstractServerStream implements Stream {
         @Override
         public void onNext(Object data) {
             if (!headersSent) {
-                getTransportSubscriber().tryOnMetadata(new DefaultMetadata(), false);
+                getTransportSubscriber().onMetadata(new DefaultMetadata(), false);
                 headersSent = true;
             }
             final byte[] bytes = encodeResponse(data);
-            getTransportSubscriber().tryOnData(bytes, false);
+            getTransportSubscriber().onData(bytes, false);
         }
 
         @Override
@@ -64,15 +64,15 @@ public class ServerStream extends AbstractServerStream implements Stream {
             Metadata metadata = new DefaultMetadata();
             metadata.put(TripleHeaderEnum.MESSAGE_KEY.getHeader(), "OK");
             metadata.put(TripleHeaderEnum.STATUS_KEY.getHeader(), Integer.toString(GrpcStatus.Code.OK.code));
-            getTransportSubscriber().tryOnMetadata(metadata, true);
+            getTransportSubscriber().onMetadata(metadata, true);
         }
     }
 
     private class StreamTransportObserver extends AbstractTransportObserver implements TransportObserver {
 
         @Override
-        public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
-            super.onMetadata(metadata, endStream, handler);
+        public void onMetadata(Metadata metadata, boolean endStream) {
+            super.onMetadata(metadata, endStream);
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }
@@ -88,7 +88,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void onData(byte[] in, boolean endStream, OperationHandler handler) {
+        public void onData(byte[] in, boolean endStream) {
             try {
                 if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                     RpcInvocation inv = buildInvocation(getHeaders());
@@ -112,7 +112,7 @@ public class ServerStream extends AbstractServerStream implements Stream {
         }
 
         @Override
-        public void onComplete(OperationHandler handler) {
+        public void onComplete() {
             if (getMethodDescriptor().getRpcType() == MethodDescriptor.RpcType.SERVER_STREAM) {
                 return;
             }

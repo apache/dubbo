@@ -34,7 +34,7 @@ public class ServerTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onMetadata(Metadata metadata, boolean endStream, Stream.OperationHandler handler) {
+    public void onMetadata(Metadata metadata, boolean endStream) {
         final DefaultHttp2Headers headers = new DefaultHttp2Headers(true);
         metadata.forEach(e -> {
             headers.set(e.getKey(), e.getValue());
@@ -50,15 +50,11 @@ public class ServerTransportObserver implements TransportObserver {
     }
 
     @Override
-    public void onData(byte[] data, boolean endStream, Stream.OperationHandler handler) {
+    public void onData(byte[] data, boolean endStream) {
         ByteBuf buf = ctx.alloc().buffer();
         buf.writeByte(0);
         buf.writeInt(data.length);
         buf.writeBytes(data);
         ctx.writeAndFlush(new DefaultHttp2DataFrame(buf, false));
-    }
-
-    @Override
-    public void onComplete(Stream.OperationHandler handler) {
     }
 }

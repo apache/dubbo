@@ -56,8 +56,8 @@ public abstract class AbstractStream implements Stream {
         ThreadFactory tripleTF = new NamedInternalThreadFactory("tri-callback", true);
         for (int i = 0; i < 4; i++) {
             final ThreadPoolExecutor tp = new ThreadPoolExecutor(1, 1, 0, TimeUnit.DAYS,
-                new LinkedBlockingQueue<>(1024),
-                tripleTF, new ThreadPoolExecutor.AbortPolicy());
+                    new LinkedBlockingQueue<>(1024),
+                    tripleTF, new ThreadPoolExecutor.AbortPolicy());
             CALLBACK_EXECUTORS.add(tp);
         }
 
@@ -85,7 +85,7 @@ public abstract class AbstractStream implements Stream {
         this.executor = executor;
         final String value = url.getParameter(Constants.MULTI_SERIALIZATION_KEY, CommonConstants.DEFAULT_KEY);
         this.multipleSerialization = ExtensionLoader.getExtensionLoader(MultipleSerialization.class)
-            .getExtension(value);
+                .getExtension(value);
         this.streamObserver = createStreamObserver();
         this.transportObserver = createTransportObserver();
     }
@@ -185,34 +185,35 @@ public abstract class AbstractStream implements Stream {
     public TransportObserver asTransportObserver() {
         return transportObserver;
     }
-    protected void transportError(GrpcStatus status, Map<String,Object> attachments) {
+
+    protected void transportError(GrpcStatus status, Map<String, Object> attachments) {
         // set metadata
         Metadata metadata = getMetaData(status);
-        getTransportSubscriber().tryOnMetadata(metadata, false);
+        getTransportSubscriber().onMetadata(metadata, false);
         // set trailers
         Metadata trailers = getTrailers(status);
         if (attachments != null) {
             convertAttachment(trailers, attachments);
         }
-        getTransportSubscriber().tryOnMetadata(trailers, true);
+        getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] " + status.toMessage());
         }
     }
 
     protected void transportError(GrpcStatus status) {
-        transportError(status,null);
+        transportError(status, null);
     }
 
     protected void transportError(Throwable throwable) {
         GrpcStatus status = new GrpcStatus(Code.UNKNOWN, throwable, throwable.getMessage());
         Metadata metadata = getMetaData(status);
-        getTransportSubscriber().tryOnMetadata(metadata, false);
+        getTransportSubscriber().onMetadata(metadata, false);
         Metadata trailers = getTrailers(status);
-        getTransportSubscriber().tryOnMetadata(trailers, true);
+        getTransportSubscriber().onMetadata(trailers, true);
         if (LOGGER.isErrorEnabled()) {
             LOGGER.error("[Triple-Server-Error] service=" + getServiceDescriptor().getServiceName()
-                + " method=" + getMethodName(), throwable);
+                    + " method=" + getMethodName(), throwable);
         }
     }
 
@@ -237,28 +238,28 @@ public abstract class AbstractStream implements Stream {
 
         Metadata metadata = new DefaultMetadata();
         Status.Builder builder = Status.newBuilder()
-            .setCode(grpcStatus.code.code)
-            .setMessage(getGrpcMessage(grpcStatus));
+                .setCode(grpcStatus.code.code)
+                .setMessage(getGrpcMessage(grpcStatus));
         Throwable throwable = grpcStatus.cause;
         if (throwable == null) {
             return metadata;
         }
         DebugInfo debugInfo = DebugInfo.newBuilder()
-            .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
-            // can not use now
-            // .setDetail(throwable.getMessage())
-            .build();
+                .addAllStackEntries(ExceptionUtils.getStackFrameList(throwable))
+                // can not use now
+                // .setDetail(throwable.getMessage())
+                .build();
         builder.addDetails(Any.pack(debugInfo));
         Status status = builder.build();
         metadata.put(TripleHeaderEnum.STATUS_DETAIL_KEY.getHeader(),
-            TripleUtil.encodeBase64ASCII(status.toByteArray()));
+                TripleUtil.encodeBase64ASCII(status.toByteArray()));
         // only wrapper mode support exception serialization
         if (getMethodDescriptor() != null && !getMethodDescriptor().isNeedWrap()) {
             return metadata;
         }
         try {
             TripleWrapper.TripleExceptionWrapper exceptionWrapper = TripleUtil.wrapException(getUrl(), throwable,
-                getSerializeType(), getMultipleSerialization());
+                    getSerializeType(), getMultipleSerialization());
             String exceptionStr = TripleUtil.encodeBase64ASCII(exceptionWrapper.toByteArray());
             if (!TripleUtil.overEachHeaderListSize(exceptionStr)) {
                 metadata.put(TripleHeaderEnum.EXCEPTION_TW_BIN.getHeader(), exceptionStr);
@@ -341,7 +342,7 @@ public abstract class AbstractStream implements Stream {
         }
 
         @Override
-        public void onMetadata(Metadata metadata, boolean endStream, OperationHandler handler) {
+        public void onMetadata(Metadata metadata, boolean endStream) {
             if (headers == null) {
                 headers = metadata;
             } else {
@@ -378,24 +379,25 @@ public abstract class AbstractStream implements Stream {
         protected abstract void onError(GrpcStatus status);
 
         @Override
-        public void onComplete(OperationHandler handler) {
+        public void onComplete() {
             final GrpcStatus status = extractStatusFromMeta(getHeaders());
-            if (GrpcStatus.Code.isOk(status.code.code)) {
-                doOnComplete(handler);
+            if (Code.isOk(status.code.code)) {
+                doOnComplete();
             } else {
                 onError(status);
             }
         }
 
-        protected abstract void doOnComplete(OperationHandler handler);
+        protected abstract void doOnComplete() ;
+
 
         @Override
-        public void onData(byte[] in, boolean endStream, OperationHandler handler) {
+        public void onData(byte[] in, boolean endStream) {
             if (data == null) {
                 this.data = in;
             } else {
-                handler.operationDone(OperationResult.FAILURE, GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
-                        .withDescription(DUPLICATED_DATA).asException());
+                onError(GrpcStatus.fromCode(GrpcStatus.Code.INTERNAL)
+                        .withDescription(DUPLICATED_DATA));
             }
         }
     }
